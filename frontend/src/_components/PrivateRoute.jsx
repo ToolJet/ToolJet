@@ -12,7 +12,7 @@ export const PrivateRoute = ({ children }) => {
 
   const params = useParams();
   const [extraProps, setExtraProps] = useState({});
-  const [isValidating, setValidationStatus] = useState(true);
+  const [isValidatingUserAccess, setUserValidationStatus] = useState(true);
 
   const pathname = getPathname(null, true);
   const isEditorOrViewerGoingToRender = pathname.startsWith('/apps/') || pathname.startsWith('/applications/');
@@ -33,10 +33,7 @@ export const PrivateRoute = ({ children }) => {
 
   useEffect(() => {
     const subject = authenticationService.currentSession.subscribe(async (newSession) => {
-      /* When user refreshes the editor page this validation will happen. and pass the props to the component if the user has access to the app */
-      validateRoutes(newSession?.group_permissions, () => {
-        setSession(newSession);
-      });
+      setSession(newSession);
     });
 
     () => subject.unsubscribe();
@@ -44,13 +41,13 @@ export const PrivateRoute = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    setValidationStatus(true);
-    /* When change routes (not hard reload) will validate the access */
+    setUserValidationStatus(true);
+    /* When change routes (not hard reload). will validate the access */
     validateRoutes(session?.group_permissions, () => {
-      setValidationStatus(false);
+      setUserValidationStatus(false);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, session]);
 
   //get either slug or id from the session and replace
   const { current_organization_slug, current_organization_id } = session;
@@ -60,9 +57,9 @@ export const PrivateRoute = ({ children }) => {
   }
 
   if (
-    (session?.group_permissions && !isValidating) ||
-    (location.pathname.startsWith('/applications/') && !isValidating) ||
-    (location.pathname === '/switch-workspace' && session?.current_organization_id)
+    (session?.group_permissions && !isValidatingUserAccess) ||
+    (pathname.startsWith('/applications/') && !isValidatingUserAccess) ||
+    (pathname === '/switch-workspace' && session?.current_organization_id)
   ) {
     return isEditorOrViewerGoingToRender ? React.cloneElement(children, extraProps) : children;
   } else {

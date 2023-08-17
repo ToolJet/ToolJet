@@ -224,11 +224,13 @@ class ViewerComponent extends React.Component {
   };
 
   setupViewer() {
-    const slug = this.props.params.slug;
-    const appId = this.props.id;
-    const versionId = this.props.versionId;
-
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
+      const slug = this.props.params.slug;
+      const appId = this.props.id;
+      const versionId = this.props.versionId;
+
+      console.log('inside', this.props);
+
       if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
           useAppDataStore.getState().actions.setAppId(appId);

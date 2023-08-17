@@ -120,6 +120,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
   if (!['integrations', 'applications'].find((path) => pathname.includes(path))) {
+    pathname = getSubpath() ? pathname.replace(getSubpath(), '') : pathname;
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
     const newPath = paths.join('/');

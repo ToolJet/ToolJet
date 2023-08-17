@@ -21,7 +21,7 @@ import {
 export const authorizeWorkspace = () => {
   if (!isThisExistedRoute()) {
     const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
-    const isApplicationsPath = getPathname().includes('/applications/');
+    const isApplicationsPath = getPathname(null, true).includes('/applications/');
     const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
     /* CASE-1 */
     authenticationService
