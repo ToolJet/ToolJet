@@ -145,7 +145,7 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appService.renameApp(newAppName, appId);
+      await appService.saveApp(appId, { name: newAppName });
       await this.fetchApps();
       toast.success('App name has been updated!');
       return true;

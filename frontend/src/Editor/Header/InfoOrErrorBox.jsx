@@ -1,6 +1,6 @@
 import React from 'react';
 
-function InfoOrErrorBox({ active, message, isError, darkMode }) {
+function InfoOrErrorBox({ active, message, isError, darkMode, additionalClassName }) {
   const boxStyle = {
     display: active ? 'flex' : 'none',
     flexDirection: 'column',
@@ -21,10 +21,17 @@ function InfoOrErrorBox({ active, message, isError, darkMode }) {
     fontStyle: 'normal',
     fontWeight: 500,
     lineHeight: '16px',
-    padding: '0 8px',
+    padding: '2px 8px',
+    ...(additionalClassName && {
+      ...additionalClassName.split(' ').reduce((acc, cls) => ({ ...acc, [cls]: true }), {}),
+    }),
   };
 
-  return <div style={boxStyle}>{message && <div>{message}</div>}</div>;
+  return (
+    <div className={additionalClassName} style={boxStyle}>
+      {message && <div>{message}</div>}
+    </div>
+  );
 }
 
 export default InfoOrErrorBox;

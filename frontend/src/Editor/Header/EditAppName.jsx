@@ -80,12 +80,24 @@ function EditAppName({ appId, appName, onNameChanged }) {
     }
   };
 
+  const borderColor = isError
+    ? 'var(--light-tomato-10, #DB4324)' // Apply error border color
+    : darkMode
+    ? 'var(--dark-border-color, #2D3748)' // Change this to the appropriate dark border color
+    : 'var(--light-border-color, #FFF0EE)';
+
   return (
     <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
       <ToolTip message={name} placement="bottom" isVisible={!isEditing}>
         <input
           ref={inputRef}
           type="text"
+          onChange={() => {
+            //this was quick fix. replace this with actual tooltip props and state later
+            if (document.getElementsByClassName('tooltip').length) {
+              document.getElementsByClassName('tooltip')[0].style.display = 'none';
+            }
+          }}
           onInput={handleInput}
           onBlur={handleBlur}
           onFocus={handleFocus}
@@ -95,7 +107,8 @@ function EditAppName({ appId, appName, onNameChanged }) {
           }}
           className={`form-control-plaintext form-control-plaintext-sm ${
             (!isError && !isEditing) || isValid ? '' : 'is-invalid'
-          }`}
+          } ${isError ? 'error' : ''}`} // Add the 'error' class when there's an error
+          style={{ border: `1px solid ${borderColor}` }}
           value={name}
           maxLength={51}
           data-cy="app-name-input"
@@ -106,6 +119,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
         message={errorMessage || 'App name should be unique and max 50 characters'}
         isError={isError}
         darkMode={darkMode}
+        additionalClassName={isError ? 'error' : ''}
       />
     </div>
   );
