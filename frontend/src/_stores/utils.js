@@ -53,7 +53,7 @@ const eventHandlerType = Object.freeze({
 export const computeAppDiff = (appDiff, currentPageId, opts) => {
   const { updateDiff, type, operation } = updateFor(appDiff, currentPageId, opts);
 
-  console.log('----arpit [updateFor]', { updateDiff, type, operation });
+  // console.log('----arpit [updateFor]', { updateDiff, type, operation });
   return { updateDiff, type, operation };
 };
 

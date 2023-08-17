@@ -104,7 +104,7 @@ const EditorComponent = (props) => {
 
   const dataQueries = useDataQueries();
 
-  const { isMaintenanceOn, appId, app, currentUser, currentVersionId, appDefinitionDiff, appDiffOptions } =
+  const { isMaintenanceOn, appId, app, currentUser, currentVersionId, appDefinitionDiff, appDiffOptions, events } =
     useAppInfo();
 
   const [currentPageId, setCurrentPageId] = useState(null);
@@ -255,9 +255,6 @@ const EditorComponent = (props) => {
     });
   };
 
-  // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
-  // 2. Whenever you perform an undo – you can always redo and keep doing undo as long as we have a patch for it.
-  // 3. Whenever you redo – you can always undo and keep doing redo as long as we have a patch for it.
   const initComponentVersioning = () => {
     const currentVersion = {
       [currentPageId]: -1,
@@ -607,13 +604,17 @@ const EditorComponent = (props) => {
 
   //!--------
 
-  const buildComponentMetaDefinition = (components = {}) => {
+  const buildComponentMetaDefinition = (components = {}, events = []) => {
     for (const componentId in components) {
       const currentComponentData = components[componentId];
+      const componentEvents = events
+        .filter((event) => event.sourceId === componentId)
+        ?.map((event) => ({ ...event.event, id: event.id }));
       const componentMeta = componentTypes.find((comp) => currentComponentData.component.component === comp.component);
 
       const mergedDefinition = {
         ...componentMeta.definition,
+        events: componentEvents,
         properties: {
           ...componentMeta.definition.properties,
           ...currentComponentData?.component.definition.properties,
@@ -644,6 +645,7 @@ const EditorComponent = (props) => {
 
       components[componentId] = mergedComponent;
     }
+
     return components;
   };
 
@@ -653,8 +655,10 @@ const EditorComponent = (props) => {
     editingVersion['currentVersionId'] = editingVersion.id;
     _.unset(editingVersion, 'id');
 
+    const eventsData = data?.events;
+
     const pages = data.pages.reduce((acc, page) => {
-      const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
+      const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components), eventsData);
 
       page.components = currentComponents;
 
@@ -669,8 +673,6 @@ const EditorComponent = (props) => {
       showHideViewerNavigation: editingVersion.showHideViewerNavigation ?? true,
       pages: pages,
     };
-
-    // const componentMeta = componentTypes.find((comp) => component.component === comp.component);
 
     return appJSON;
   };
@@ -857,18 +859,44 @@ const EditorComponent = (props) => {
       const updateDiff = computeAppDiff(appDefinitionDiff, currentPageId, appDiffOptions);
 
       updateAppVersion(appId, props.editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
-        .then(() => {
+        .then((data) => {
           const _editingVersion = {
             ...props.editingVersion,
             ...{ definition: appDefinition },
           };
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
+
+          if (updateDiff?.type === 'components' && updateDiff?.operation === 'delete') {
+            const appEvents = JSON.parse(JSON.stringify(events));
+
+            const updatedEvents = appEvents.filter((event) => {
+              return !updateDiff?.updateDiff.includes(event.sourceId);
+            });
+
+            updateState({
+              events: updatedEvents,
+            });
+          }
+
+          if (updateDiff?.type === 'events') {
+            const appEvents = JSON.parse(JSON.stringify(events));
+
+            if (updateDiff?.operation === 'create') {
+              appEvents.push(data);
+            }
+
+            updateState({
+              events: appEvents,
+            });
+          }
+
           updateEditorState({
             saveError: false,
             isSaving: false,
           });
         })
-        .catch(() => {
+        .catch((e) => {
+          console.log('--piku error', e);
           updateEditorState({
             saveError: true,
             isSaving: false,

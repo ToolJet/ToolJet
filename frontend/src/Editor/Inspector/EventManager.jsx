@@ -210,14 +210,16 @@ export const EventManager = ({
 
   function addHandler() {
     let newEvents = component.component.definition.events;
+    const eventIndex = newEvents.length;
     newEvents.push({
       eventId: Object.keys(componentMeta.events)[0],
       actionId: 'show-alert',
       message: 'Hello world!',
       alertType: 'info',
+      eventIndex: eventIndex,
     });
     setEvents(newEvents);
-    eventsChanged(newEvents, false, true);
+    eventsChanged(newEvents, null, false, true);
   }
 
   //following two are functions responsible for on change and value for the control specific actions
@@ -771,7 +773,7 @@ export const EventManager = ({
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
     setEvents(result);
-    eventsChanged(result, true);
+    eventsChanged(result, null, true);
   };
 
   const onDragEnd = ({ source, destination }) => {

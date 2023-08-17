@@ -6,9 +6,13 @@ import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
+import { EventsService } from './events_handler.service';
+
 @Injectable()
 export class ComponentsService {
   constructor(
+    private eventHandlerService: EventsService,
+
     @InjectRepository(Component)
     private componentsRepository: Repository<Component>
   ) {}
@@ -108,6 +112,10 @@ export class ComponentsService {
           },
         };
       }
+
+      components.forEach((component) => {
+        this.eventHandlerService.cascadeDeleteEvents(component.id);
+      });
 
       await manager.delete(Component, componentIds);
     });
