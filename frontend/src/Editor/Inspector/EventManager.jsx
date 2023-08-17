@@ -219,7 +219,7 @@ export const EventManager = ({
       eventIndex: eventIndex,
     });
     setEvents(newEvents);
-    eventsChanged(newEvents, null, false, true);
+    eventsChanged(newEvents, false, true);
   }
 
   //following two are functions responsible for on change and value for the control specific actions
