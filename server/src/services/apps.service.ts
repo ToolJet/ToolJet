@@ -123,8 +123,8 @@ export class AppsService {
 
       const defaultHomePage = await manager.save(
         manager.create(Page, {
-          name: 'Defualt Page',
-          handle: 'defaultpage',
+          name: 'Home',
+          handle: 'home',
           appVersionId: appVersion.id,
           index: 1,
         })
