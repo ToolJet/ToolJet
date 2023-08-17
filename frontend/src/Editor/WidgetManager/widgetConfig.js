@@ -1,3 +1,5 @@
+import config from 'config';
+
 export const widgets = [
   {
     name: 'Table',
@@ -5521,7 +5523,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        icon: { value: 'IconHome2' },
+        icon: { value: config.UI_LIB === 'mui' ? 'Home' : 'IconHome2' },
       },
       events: [],
       styles: {
