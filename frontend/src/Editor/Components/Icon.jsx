@@ -3,11 +3,15 @@ import React, { useState, useEffect } from 'react';
 import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
 
+import config from 'config';
+import * as IconsMUI from '@mui/icons-material';
+import { Box } from '@mui/material';
+
 export const Icon = ({ properties, styles, fireEvent, width, height, registerAction, darkMode, dataCy, component }) => {
   const { icon } = properties;
   const { iconColor, visibility, boxShadow } = styles;
   // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon];
+  const IconElement = config.UI_LIB === 'mui' ? IconsMUI[icon] : Icons[icon];
   const { definition } = component;
   const { events = [] } = definition;
 
@@ -33,23 +37,50 @@ export const Icon = ({ properties, styles, fireEvent, width, height, registerAct
   });
 
   return (
-    <div
-      className={cx('icon-widget', { 'd-none': !showIcon }, { 'cursor-pointer': events.length > 0 })}
-      data-cy={dataCy}
-    >
-      <IconElement
-        color={color}
-        style={{ width, height, boxShadow }}
-        onClick={(event) => {
-          event.stopPropagation();
-          fireEvent('onClick');
-        }}
-        onMouseOver={(event) => {
-          event.stopPropagation();
-          fireEvent('onHover');
-        }}
-        stroke={1.5}
-      />
-    </div>
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div
+          className={cx('icon-widget', { 'd-none': !showIcon }, { 'cursor-pointer': events.length > 0 })}
+          data-cy={dataCy}
+        >
+          <IconElement
+            color={color}
+            style={{ width, height, boxShadow }}
+            onClick={(event) => {
+              event.stopPropagation();
+              fireEvent('onClick');
+            }}
+            onMouseOver={(event) => {
+              event.stopPropagation();
+              fireEvent('onHover');
+            }}
+            stroke={1.5}
+          />
+        </div>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <Box data-cy={dataCy}>
+          {showIcon && (
+            <IconElement
+              onClick={(event) => {
+                event.stopPropagation();
+                fireEvent('onClick');
+              }}
+              onMouseOver={(event) => {
+                event.stopPropagation();
+                fireEvent('onHover');
+              }}
+              stroke={1.5}
+              sx={{
+                color: color,
+                width: width,
+                height: height,
+                boxShadow: boxShadow,
+              }}
+            />
+          )}
+        </Box>
+      )}
+    </>
   );
 };
