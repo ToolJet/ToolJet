@@ -1081,8 +1081,11 @@ export function Table({
                     titleTooltip="Columns"
                     Icon={<ViewWeek color="primary" />}
                   >
-                    <FormGroup>
-                      <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+                    <FormGroup sx={{ minWidth: '150px' }}>
+                      <IndeterminateCheckbox
+                        {...getToggleHideAllColumnsProps()}
+                        label="Select All"
+                      />
 
                       {allColumns.map(
                         (column, index) =>
@@ -1093,7 +1096,7 @@ export function Table({
                               {...column.getToggleHiddenProps()}
                               control={<Checkbox />}
                               label={` ${column.Header}`}
-                              sx={{ minWidth: '150px', mx: '5px' }}
+                              sx={{ minWidth: '100%', mx: '5px', pl: '5px' }}
                             />
                           )
                       )}

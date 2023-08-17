@@ -2,7 +2,7 @@ import React from 'react';
 import config from 'config';
 import { Checkbox, FormControlLabel } from '@mui/material';
 
-const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
+const IndeterminateCheckbox = React.forwardRef(({ indeterminate, label, ...rest }, ref) => {
   const defaultRef = React.useRef();
   const resolvedRef = ref || defaultRef;
 
@@ -34,8 +34,8 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref)
           onClick={(event) => event.stopPropagation()}
           {...rest}
           control={<Checkbox />}
-          label="Select All"
-          sx={{ minWidth: '150px', mx: '5px' }}
+          label={label ?? ''}
+          sx={{ minWidth: '100%', mx: '5px', pl: '5px' }}
         />
       )}
     </>
