@@ -50,7 +50,7 @@ const Runjs = (props) => {
   };
 
   return (
-    <Card className="runjs-editor">
+    <Card className="runjs-editor mb-3">
       {(options.hasParamSupport || props.mode === 'create') && (
         <ParameterList
           parameters={options.parameters}

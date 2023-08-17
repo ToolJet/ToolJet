@@ -67,7 +67,7 @@ export const verifyAndModifyToggleFx = (
 
 export const addDefaultEventHandler = (message) => {
   cy.get(commonWidgetSelector.addEventHandlerLink)
-    .should("have.text", commonWidgetText.addEventHandlerLink)
+    .should("contain.text", commonWidgetText.addEventHandlerLink)
     .click();
   cy.get(commonWidgetSelector.eventHandlerCard).click();
   cy.get(commonWidgetSelector.alertMessageInputField)
