@@ -665,10 +665,11 @@ export class AppsService {
         .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
         .getMany();
 
-      return tooljetDbDataQueries.reduce((acc, dq) => {
-        acc.push({ table_id: dq.options['table_id'] });
-        return acc;
-      }, []);
+      const uniqTableIds = [...new Set(tooljetDbDataQueries.map((dq) => dq.options['table_id']))];
+
+      return uniqTableIds.map((table_id) => {
+        return { table_id };
+      });
     });
   }
 }

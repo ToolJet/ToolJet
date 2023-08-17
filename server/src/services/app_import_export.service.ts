@@ -787,7 +787,7 @@ export class AppImportExportService {
             const component = definition.pages[pageId].components[id].component;
 
             if (component?.definition?.events) {
-              const replacedComponentEvents = component.definition.events.map((event: { queryId: string | number }) => {
+              const replacedComponentEvents = component.definition.events.map((event: { queryId: string }) => {
                 if (event.queryId) {
                   event.queryId = dataQueryMapping[event.queryId];
                 }
@@ -799,7 +799,7 @@ export class AppImportExportService {
             if (component?.definition?.properties?.actions?.value) {
               for (const value of component.definition.properties.actions.value) {
                 if (value?.events) {
-                  const replacedComponentActionEvents = value.events.map((event: { queryId: string | number }) => {
+                  const replacedComponentActionEvents = value.events.map((event: { queryId: string }) => {
                     if (event.queryId) {
                       event.queryId = dataQueryMapping[event.queryId];
                     }
@@ -813,7 +813,7 @@ export class AppImportExportService {
             if (component?.component === 'Table') {
               for (const column of component?.definition?.properties?.columns?.value ?? []) {
                 if (column?.events) {
-                  const replacedComponentActionEvents = column.events.map((event: { queryId: string | number }) => {
+                  const replacedComponentActionEvents = column.events.map((event: { queryId: string }) => {
                     if (event.queryId) {
                       event.queryId = dataQueryMapping[event.queryId];
                     }
