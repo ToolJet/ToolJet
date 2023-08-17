@@ -55,7 +55,7 @@ export const PasswordInput = ({
             className="invalid-feedback"
             data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
           >
-            {validationError}
+            {localizeMessage(validationError)}
           </div>
         </div>
       )}
