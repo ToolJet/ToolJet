@@ -51,8 +51,13 @@ export class TooljetDbImportExportService {
     if (internalTable && (await this.isTableColumnsSubset(internalTable, tjDbDto)))
       return { id: internalTable.id, name: internalTable.tableName };
 
+    const tableWithSameNameExists = !!(await this.manager.findOne(InternalTable, {
+      where: { tableName: tjDbDto.table_name, organizationId },
+    }));
+    const tableName = tableWithSameNameExists ? `${tjDbDto.table_name}_${new Date().getTime()}` : tjDbDto.table_name;
+
     return await this.tooljetDbService.perform(organizationId, 'create_table', {
-      table_name: `${tjDbDto.table_name}_${new Date().getTime()}`,
+      table_name: tableName,
       ...tjDbDto.schema,
     });
   }
