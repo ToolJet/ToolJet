@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 import { appService, folderService, authenticationService } from '@/_services';
-import { ConfirmDialog, CreateApp } from '@/_components';
+import { ConfirmDialog, CreateApp, RenameApp } from '@/_components';
 import Select from '@/_ui/Select';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
@@ -62,6 +62,7 @@ class HomePageComponent extends React.Component {
       showTemplateLibraryModal: false,
       app: {},
       showCreateAppModal: false,
+      showRenameAppModal: false,
     };
   }
 
@@ -133,6 +134,25 @@ class HomePageComponent extends React.Component {
     } catch (errorResponse) {
       if (errorResponse.statusCode === 409) {
         _self.setState({ creatingApp: false });
+        return false;
+      } else {
+        throw errorResponse;
+      }
+    }
+  };
+
+  renameApp = async (newAppName, appId) => {
+    let _self = this;
+    _self.setState({ renamingApp: true });
+    try {
+      await appService.saveApp(appId, { name: newAppName });
+      await this.fetchApps();
+      toast.success('App name has been updated!');
+      return true;
+    } catch (errorResponse) {
+      if (errorResponse.statusCode === 409) {
+        console.log(errorResponse);
+        _self.setState({ renamingApp: false });
         return false;
       } else {
         throw errorResponse;
@@ -382,6 +402,12 @@ class HomePageComponent extends React.Component {
           showRemoveAppFromFolderConfirmation: true,
         });
         break;
+      case 'rename-app':
+        this.setState({
+          appOperations: { ...appOperations, selectedApp: app },
+          showRenameAppModal: true,
+        });
+        break;
     }
   };
 
@@ -441,6 +467,12 @@ class HomePageComponent extends React.Component {
     this.setState({ showCreateAppModal: true });
   };
 
+  closeRenameAppModal = () => {
+    this.setState({
+      showRenameAppModal: false,
+    });
+  };
+
   render() {
     const {
       apps,
@@ -461,6 +493,7 @@ class HomePageComponent extends React.Component {
       appToBeDeleted,
       app,
       showCreateAppModal,
+      showRenameAppModal,
     } = this.state;
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
@@ -470,6 +503,15 @@ class HomePageComponent extends React.Component {
               closeModal={() => this.setState({ showCreateAppModal: false })}
               createApp={this.createApp}
               show={showCreateAppModal}
+            />
+          )}
+          {showRenameAppModal && (
+            <RenameApp
+              show={showRenameAppModal}
+              closeModal={this.closeRenameAppModal}
+              renameApp={this.renameApp}
+              selectedAppId={appOperations.selectedApp.id}
+              selectedAppName={appOperations.selectedApp.name}
             />
           )}
           <ConfirmDialog

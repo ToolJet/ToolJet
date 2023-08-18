@@ -1,57 +1,127 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { ToolTip } from '@/_components';
 import { appService } from '@/_services';
-import { handleHttpErrorMessages, validateName } from '../../_helpers/utils';
+import { handleHttpErrorMessages, validateAppName } from '../../_helpers/utils';
+import InfoOrErrorBox from './InfoOrErrorBox';
+import { toast } from 'react-hot-toast';
 
 function EditAppName({ appId, appName, onNameChanged }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const [name, setName] = React.useState(appName);
+  const [name, setName] = useState(appName);
+  const [isValid, setIsValid] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  React.useEffect(() => {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
     setName(appName);
   }, [appName]);
 
-  const saveAppName = async (name) => {
-    const newName = name.trim();
-    if (!validateName(name, 'App name').status) {
-      return;
-    }
-    if (newName === appName) {
-      //will set back name without starting and ending spaces
-      setName(newName);
-      return;
-    }
-    await appService
-      .saveApp(appId, { name: newName })
-      .then(() => {
-        onNameChanged(newName);
-      })
-      .catch((error) => {
-        handleHttpErrorMessages(error, 'app');
-      });
+  const clearError = () => {
+    setIsError(false);
+    setErrorMessage('');
   };
 
+  const setError = (message) => {
+    setIsError(true);
+    setErrorMessage(message);
+  };
+
+  const saveAppName = async (newName) => {
+    const trimmedName = newName.trim();
+    if (validateAppName(trimmedName).errorMsg) {
+      setName(appName);
+      clearError();
+      toast.error('App name could not be updated. Please try again!');
+      setIsEditing(false);
+      return;
+    }
+
+    if (trimmedName === appName) {
+      setIsValid(true);
+      setIsEditing(false);
+      return;
+    }
+
+    try {
+      await appService.saveApp(appId, { name: trimmedName });
+      onNameChanged(trimmedName);
+      setIsValid(true);
+      setIsEditing(false);
+    } catch (error) {
+      if (error.statusCode === 409) {
+        setError('App name already exists');
+      } else {
+        handleHttpErrorMessages(error, 'app');
+      }
+    }
+  };
+
+  const handleBlur = () => {
+    saveAppName(name);
+  };
+
+  const handleFocus = () => {
+    setIsValid(true);
+    setIsEditing(true);
+  };
+
+  const handleInput = (e) => {
+    const newValue = e.target.value;
+    setIsValid(true);
+    setName(newValue);
+
+    if (newValue.length > 50) {
+      setError('Maximum length has been reached');
+    } else {
+      clearError();
+    }
+  };
+
+  const borderColor = isError
+    ? 'var(--light-tomato-10, #DB4324)' // Apply error border color
+    : darkMode
+    ? 'var(--dark-border-color, #2D3748)' // Change this to the appropriate dark border color
+    : 'var(--light-border-color, #FFF0EE)';
+
   return (
-    <ToolTip message={name} placement="bottom">
-      <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
+    <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
+      <ToolTip message={name} placement="bottom" isVisible={!isEditing}>
         <input
+          ref={inputRef}
           type="text"
-          onChange={(e) => {
+          onChange={() => {
             //this was quick fix. replace this with actual tooltip props and state later
             if (document.getElementsByClassName('tooltip').length) {
               document.getElementsByClassName('tooltip')[0].style.display = 'none';
             }
-            validateName(e.target.value, 'App name', true);
-            setName(e.target.value);
           }}
-          onBlur={(e) => saveAppName(e.target.value)}
-          className="form-control-plaintext form-control-plaintext-sm"
+          onInput={handleInput}
+          onBlur={handleBlur}
+          onFocus={handleFocus}
+          onClick={() => {
+            inputRef.current.select();
+            setIsEditing(true);
+          }}
+          className={`form-control-plaintext form-control-plaintext-sm ${
+            (!isError && !isEditing) || isValid ? '' : 'is-invalid'
+          } ${isError ? 'error' : ''}`} // Add the 'error' class when there's an error
+          style={{ border: `1px solid ${borderColor}` }}
           value={name}
-          maxLength={50}
+          maxLength={51}
           data-cy="app-name-input"
         />
-      </div>
-    </ToolTip>
+      </ToolTip>
+      <InfoOrErrorBox
+        active={isError || isEditing}
+        message={errorMessage || 'App name should be unique and max 50 characters'}
+        isError={isError}
+        darkMode={darkMode}
+        additionalClassName={isError ? 'error' : ''}
+      />
+    </div>
   );
 }
 
