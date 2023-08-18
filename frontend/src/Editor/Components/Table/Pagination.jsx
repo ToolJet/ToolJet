@@ -121,6 +121,7 @@ export const Pagination = function Pagination({
             />
             <span
               className="font-weight-500 total-page-number"
+              style={{ width: 'max-content' }}
               data-cy={`total-page-number-${autoPageOptions.length || 1}`}
             >
               of {pageCount || 1}
