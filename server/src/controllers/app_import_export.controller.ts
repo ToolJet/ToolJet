@@ -24,8 +24,7 @@ export class AppsImportExportController {
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const appContent = appImportDto.app;
-    const appName = appImportDto.name;
+    const { name:appName, app: appContent } = appImportDto;
     const app = await this.appImportExportService.import(user, appContent, appName);
     return decamelizeKeys(app);
   }
