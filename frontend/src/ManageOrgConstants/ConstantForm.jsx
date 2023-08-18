@@ -15,7 +15,7 @@ const ConstantForm = ({
 }) => {
   const [fields, setFields] = useState(() => ({
     ...selectedConstant,
-    environments: [{ label: currentEnvironment.name, value: currentEnvironment.id }],
+    environments: [{ label: currentEnvironment?.name, value: currentEnvironment?.id }],
   }));
 
   const [error, setError] = useState({});
@@ -26,12 +26,14 @@ const ConstantForm = ({
   }
 
   const ERROR_MESSAGES = Object.freeze({
-    name_already_exists: `Constant with this name already exists in ${capitalize(currentEnvironment.name)} environment`,
+    name_already_exists: `Constant with this name already exists in ${capitalize(
+      currentEnvironment?.name
+    )} environment`,
     invalid_name_length: 'Constant name should be between 1 and 32 characters',
     max_name_length_reached: 'Maximum length has been reached',
     invalid_name:
       'Constant name should start with a letter or underscore and can only contain letters, numbers and underscores',
-    invalid_value_length: 'Value should be less than 10000 characters',
+    invalid_value_length: 'Value should be less than 10000 characters and cannot be empty',
     invalid_value: 'This value is already in use. Please enter a different value',
   });
 
@@ -40,7 +42,7 @@ const ConstantForm = ({
 
     if (name !== 'name') return;
 
-    const isNameAlreadyExists = checkIfConstantNameExists(value, currentEnvironment.id);
+    const isNameAlreadyExists = checkIfConstantNameExists(value, currentEnvironment?.id);
     const invalidNameLength = value.length > 32;
     const maxNameLengthReached = value.length === 32;
     const invalidName = !isValidPropertyName(value);
@@ -70,7 +72,7 @@ const ConstantForm = ({
   const handleConstantValueError = (name, value) => {
     if (name !== 'value') return;
 
-    const invalidValueLength = value.length > 10000;
+    const invalidValueLength = value.trim().length > 10000 || value.trim().length === 0;
 
     if (invalidValueLength) {
       setError((prev) => ({ ...prev, value: ERROR_MESSAGES.invalid_value_length }));
@@ -138,7 +140,7 @@ const ConstantForm = ({
         </h3>
       </div>
       <div className="card-body org-constant-form">
-        <form noValidate>
+        <form noValidate onSubmit={(e) => e.preventDefault()}>
           <div className="form-group mb-3 ">
             <div className="d-flex mb-3">
               <div
