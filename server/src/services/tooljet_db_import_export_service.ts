@@ -28,14 +28,44 @@ export class TooljetDbImportExportService {
   }
 
   async import(organizationId: string, tjDbDto: ImportTooljetDatabaseDto) {
-    const tableExists = !!(await this.manager.findOne(InternalTable, {
-      where: { tableName: tjDbDto.table_name, organizationId },
-    }));
-    const tableName = tableExists ? `${tjDbDto.table_name}_${new Date().getTime()}` : tjDbDto.table_name;
+    const internalTableWithSameIdExists = async (tjDbDto: ImportTooljetDatabaseDto) => {
+      return await this.manager.findOne(InternalTable, {
+        where: {
+          id: tjDbDto.id,
+          tableName: tjDbDto.table_name,
+          organizationId,
+        },
+      });
+    };
+    const internalTableWithSameNameExists = async (tjDbDto: ImportTooljetDatabaseDto) => {
+      return await this.manager.findOne(InternalTable, {
+        where: {
+          tableName: tjDbDto.table_name,
+          organizationId,
+        },
+      });
+    };
+    const internalTable =
+      (await internalTableWithSameIdExists(tjDbDto)) || (await internalTableWithSameNameExists(tjDbDto));
+
+    if (internalTable && (await this.isTableColumnsSubset(internalTable, tjDbDto)))
+      return { id: internalTable.id, name: internalTable.tableName };
 
     return await this.tooljetDbService.perform(organizationId, 'create_table', {
-      table_name: tableName,
+      table_name: `${tjDbDto.table_name}_${new Date().getTime()}`,
       ...tjDbDto.schema,
     });
+  }
+
+  async isTableColumnsSubset(internalTable: InternalTable, tjDbDto: ImportTooljetDatabaseDto): Promise<boolean> {
+    const dtoColumns = new Set<string>(tjDbDto.schema.columns.map((c) => c.column_name));
+
+    const internalTableColumnSchema = await this.tooljetDbService.perform(internalTable.organizationId, 'view_table', {
+      id: internalTable.id,
+    });
+    const internalTableColumns = new Set<string>(internalTableColumnSchema.map((c) => c.column_name));
+    const isSubset = (subset: Set<string>, superset: Set<string>) => [...subset].every((item) => superset.has(item));
+
+    return isSubset(dtoColumns, internalTableColumns);
   }
 }
