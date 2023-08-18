@@ -502,10 +502,6 @@ class HomePageComponent extends React.Component {
     this.setState({ showTemplateLibraryModal: false });
   };
 
-  // openCreateAppModal = () => {
-  //   this.setState({ showCreateAppModal: true });
-  // };
-
   openCreateAppFromTemplateModal = (template) => {
     this.setState({ showCreateAppFromTemplateModal: true, selectedTemplate: template });
   };
