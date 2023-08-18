@@ -111,7 +111,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
           } ${isError ? 'error' : ''}`} // Add the 'error' class when there's an error
           style={{ border: `1px solid ${borderColor}` }}
           value={name}
-          maxLength={51}
+          maxLength={50}
           data-cy="app-name-input"
         />
       </ToolTip>

@@ -173,7 +173,7 @@ class HomePageComponent extends React.Component {
   cloneApp = async (appId, appName) => {
     this.setState({ isCloningApp: true });
     try {
-      const data = await appService.cloneApp(appId, appName);
+      const data = await appService.cloneApp(appName, appId);
       toast.success('App cloned successfully!');
       this.setState({ isCloningApp: false });
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
@@ -543,7 +543,7 @@ class HomePageComponent extends React.Component {
               closeModal={() => this.setState({ showCreateAppModal: false })}
               processApp={this.createApp}
               show={() => this.setState({ showCreateAppModal: true })}
-              title={'+ Create app'}
+              title={'Create app'}
               actionButton={'+ Create app'}
             />
           )}

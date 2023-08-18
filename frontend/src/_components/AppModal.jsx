@@ -131,7 +131,8 @@ export function AppModal({
             disabled={
               isLoading ||
               errorText ||
-              (actionButton === 'Rename app' && !isNameChanged && newAppName.trim().length === 0) || // For rename case
+              (actionButton === 'Rename app' &&
+                (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
               (actionButton !== 'Rename app' && (newAppName.length > 50 || newAppName.trim().length === 0)) // For other cases
             }
           >
