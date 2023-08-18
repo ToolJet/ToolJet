@@ -97,6 +97,7 @@ class ViewerComponent extends React.Component {
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
         groups: authenticationService.currentSessionValue?.group_permissions.map((group) => group.group),
+        id: currentUser.id,
       };
     }
 
@@ -310,6 +311,7 @@ class ViewerComponent extends React.Component {
             firstName: currentUser.first_name,
             lastName: currentUser.last_name,
             groups: currentSession?.group_permissions?.map((group) => group.group),
+            id: currentUser.id,
           };
           this.props.setCurrentState({
             globals: {
