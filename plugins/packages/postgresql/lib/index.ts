@@ -146,7 +146,7 @@ export default class PostgresqlQueryService implements QueryService {
 
       for (const key of Object.keys(record)) {
         if (key !== primaryKey) {
-          queryText = ` ${queryText} ${key} = '${record[key]}',`;
+          queryText = ` ${queryText} ${key} = ${record[key] === null ? null : `'${record[key]}'`},`;
         }
       }
 

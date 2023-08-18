@@ -115,6 +115,8 @@ import Lock from './Lock.jsx';
 import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
+import Minimize from './Minimize.jsx';
+import Maximize from './Maximize.jsx';
 import PlusRectangle from './PlusRectangle.jsx';
 import CheveronLeftDouble from './CheveronLeftDouble.jsx';
 import CheveronRightDouble from './CheveronRightDouble.jsx';
@@ -366,6 +368,10 @@ const Icon = (props) => {
       return <Check {...props} />;
     case 'editable':
       return <Editable {...props} />;
+    case 'minimize':
+      return <Minimize {...props} />;
+    case 'maximize':
+      return <Maximize {...props} />;
     default:
       return <Apps {...props} />;
   }

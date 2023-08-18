@@ -135,8 +135,8 @@
 
 .tj-tertiary-btn {
     color: var(--slate12);
-    border: 1px solid var(--slate7, #D7DBDF) !important;
-    background: var(--slate1, #FBFCFD) !important;
+    border: 1px solid var(--slate7) !important;
+    background: var(--slate1) !important;
 
     &:hover {
         color: var(--slate11) !important;
@@ -151,7 +151,13 @@
 
     &:active,&:focus {
         border: 1px solid var(--slate7, #D7DBDF) !important;
-        background: var(--slate5, #E6E8EB) !important;
+        background: var(--slate5) !important;
+        color: var(--slate12);
+        border: 1px solid var(--slate7);
+    }
+
+    &:active {
+        background: transparent;
         box-shadow: none;
         color: var(--slate12) !important;
         svg{
@@ -178,6 +184,7 @@
 
     &:hover {
         color: var(--indigo10);
+        background-color: var(--indigo4);
     }
 
     &:active {
@@ -190,6 +197,9 @@
         border: none;
         box-shadow: 0px 0px 0px 4px var(--indigo6);
         outline: none;
+    }
+    &:focus {
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
     }
 }
 
