@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { validateAppName } from '@/_helpers/utils';
 
@@ -52,7 +51,7 @@ export function RenameApp({ closeModal, renameApp, show, selectedAppId, selected
 
   const handleInputChange = (e) => {
     const newAppName = e.target.value;
-    const error = validateAppName(newAppName, 'App name', true, false);
+    const error = validateAppName(newAppName);
     setErrorText(error?.errorMsg || '');
 
     if (clearInput) {

@@ -2,8 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import { toast } from 'react-hot-toast';
 import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { appService } from '@/_services';
-import _ from 'lodash';
 import { validateAppName } from '@/_helpers/utils';
 
 export function CreateApp({ closeModal, createApp, show }) {
@@ -31,7 +29,7 @@ export function CreateApp({ closeModal, createApp, show }) {
 
   const handleInputChange = (e) => {
     const newAppName = e.target.value.trim();
-    const error = validateAppName(newAppName, 'App Name', true, false);
+    const error = validateAppName(newAppName);
     setErrorText(error?.errorMsg || '');
     setappName(newAppName);
   };

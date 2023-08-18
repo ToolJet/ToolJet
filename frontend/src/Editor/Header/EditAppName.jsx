@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ToolTip } from '@/_components';
 import { appService } from '@/_services';
-import { handleHttpErrorMessages, validateAppName, validateName } from '../../_helpers/utils';
+import { handleHttpErrorMessages, validateAppName } from '../../_helpers/utils';
 import InfoOrErrorBox from './InfoOrErrorBox';
 import { toast } from 'react-hot-toast';
 
