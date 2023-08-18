@@ -348,7 +348,6 @@ class ViewerComponent extends React.Component {
     if (data?.type === 'redirectTo') {
       const redirectCookie = data?.payload['redirectPath'];
       setCookie('redirectPath', redirectCookie, 1);
-      setCookie;
     }
   };
 

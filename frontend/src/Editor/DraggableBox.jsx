@@ -192,8 +192,8 @@ export const DraggableBox = React.memo(
     };
 
     const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
-    const gridWidth = canvasWidth / 43;
-    const width = (canvasWidth * layoutData.width) / 43;
+    const gridWidth = canvasWidth / NO_OF_GRIDS;
+    const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
 
     const configWidgetHandlerForModalComponent =
       !isSelectedComponent &&
