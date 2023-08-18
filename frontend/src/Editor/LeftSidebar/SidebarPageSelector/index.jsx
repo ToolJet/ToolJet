@@ -139,7 +139,7 @@ const LeftSidebarPageSelector = ({
           )}
         </HeaderSection>
 
-        <div className={`${darkMode && 'dark theme-dark'} page-selector-panel-body`}>
+        <div className={`${darkMode && 'dark-theme'} page-selector-panel-body`}>
           <div>
             {allpages.length > 0 ? (
               <SortableList

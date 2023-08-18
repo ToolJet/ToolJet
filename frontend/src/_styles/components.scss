@@ -96,14 +96,20 @@ $btn-dark-color: #FFFFFF;
 
 .leftsidebar-panel-header {
   height: 100%;
+  background-color: var(--slate3);
+  padding: 12px 16px;
+  height: 52px;
+  border-bottom: 1px solid var(--slate5);
+
 
   .panel-header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    height: 52px;
-    border-bottom: 1px solid var(--slate7);
+    height: 28px;
+    // background-color: red;
+    display: flex;
+    align-items: center;
 
     .add-new-page {
       margin-left: 4px;
@@ -122,12 +128,12 @@ $btn-dark-color: #FFFFFF;
 .page-selector-panel-body {
   height: 100%;
   padding: 12px;
-  background-color: #FFFFFF;
+  background-color: var(--base);
 
   .page-handler {
     height: 32px !important;
     padding: 0;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
     font-weight: 500;
 
     .card,
@@ -137,11 +143,12 @@ $btn-dark-color: #FFFFFF;
 
       .page-name {
         padding: 2px;
+        color: var(--slate12)
       }
     }
 
     .card.active {
-      background: #E6EDFE;
+      background: var(--slate5);
     }
 
     .card.non-active-page {
@@ -159,21 +166,21 @@ $btn-dark-color: #FFFFFF;
   }
 }
 
-.page-selector-panel-body.dark {
-  .page-handler {
-    .card {
-      background: none !important
-    }
+// .page-selector-panel-body.dark {
+//   .page-handler {
+//     .card {
+//       background: none !important
+//     }
 
-    .card.active {
-      background: #26292B !important;
-    }
+//     .card.active {
+//       background: #26292B !important;
+//     }
 
-    .card:hover {
-      background: #2C3547 !important;
-    }
-  }
-}
+//     .card:hover {
+//       background: #2C3547 !important;
+//     }
+//   }
+// }
 
 .left-sidebar-page-selector.dark {
   background: #1F2936 !important;

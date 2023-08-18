@@ -181,7 +181,9 @@
   }
 }
 
-
+.debugger-content {
+  background-color: var(--base);
+}
 
 
 .datasource-modal-button {
@@ -548,16 +550,17 @@
   .card.active {
     width: inherit;
     background-color: var(--slate5);
-    color: #3e525b;
+    color: var(--slate12);
+    border: none;
   }
 }
 
-.bm-item .pages-container.dark {
-  .card.active {
-    background-color: #2c405c;
-    color: #fff;
-  }
-}
+// .bm-item .pages-container.dark {
+//   .card.active {
+//     background-color: #2c405c;
+//     color: #fff;
+//   }
+// }
 
 .viewer-footer {
   height: 48px;
@@ -573,10 +576,15 @@
   position: relative;
   height: 100vh;
   margin-top: 0px;
+  border-radius: 0px;
 
   .add-datasource-btn {
     position: absolute;
     bottom: 3rem;
+  }
+
+  .card {
+    border: none !important;
   }
 }
 

@@ -30,7 +30,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
           {t('editor.queryManager.notificationDuration', 'duration (s)')}
         </label>
         {/* </div> */}
-        <div className="flex-grow-1 query-manager-input-elem">
+        <div className="flex-grow-1 query-manager-input-elem ">
           <input
             type="number"
             disabled={!options.showSuccessNotification}

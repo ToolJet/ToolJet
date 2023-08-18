@@ -2719,10 +2719,10 @@ hr {
   width: 100%;
   font-size: 0.875rem;
   font-weight: 400;
-  color: #232e3c;
-  background-color: #ffffff;
+  color: var(--slate9);
+  background-color: var(--base) !important;
   background-clip: padding-box;
-  border: 1px solid #dadcde;
+  border: 1px solid var(--slate7);
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -3509,29 +3509,29 @@ input:focus-visible {
     background-color: transparent !important;
   }
 
-  .codehinter-default-input {
-    background-color: transparent;
-    border: 1px solid #333c48;
-  }
+  // .codehinter-default-input {
+  //   background-color: transparent;
+  //   border: 1px solid #333c48;
+  // }
 
   .color-picker-input {
     border: solid 1px #333c48;
     height: 36px;
   }
 
-  .codehinter-query-editor-input {
-    background-color: #272822;
-    border: 1px solid #2c3a4c;
-    border-radius: 0;
-  }
+  // .codehinter-query-editor-input {
+  //   background-color: #272822;
+  //   border: 1px solid #2c3a4c;
+  //   border-radius: 0;
+  // }
 
   .codehinter-query-editor-input .CodeMirror {
     height: 31px !important;
   }
 
-  .codehinter-query-editor-input .CodeMirror {
-    color: #c3c3c3 !important;
-  }
+  // .codehinter-query-editor-input .CodeMirror {
+  //   color: #c3c3c3 !important;
+  // }
 
   .select-search:not(.is-loading):not(.select-search--multiple) .select-search__value::after {
     transform: rotate(45deg);
@@ -11135,4 +11135,24 @@ tbody {
     border-radius: 6px;
   }
 
+}
+
+.copilot-toggle {
+  font-family: IBM Plex Sans;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  background-color: transparent !important;
+  display: flex;
+  align-items: center;
+}
+
+.codehinter-border-bottom {
+  border-bottom: 1px solid var(--slate5);
+}
+
+.copilot-codehinter-wrap {
+  .CodeMirror.cm-s-monokai.CodeMirror-wrap {
+    border-radius: 0px;
+  }
 }

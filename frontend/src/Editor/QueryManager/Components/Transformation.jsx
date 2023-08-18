@@ -194,7 +194,7 @@ return [row for row in data if row['amount'] > 1000]
         </div>
       </div>
       <br></br>
-      <div className="d-flex">
+      <div className="d-flex copilot-codehinter-wrap">
         <div className="form-label"></div>
         <div className="col flex-grow-1">
           {enableTransformation && (
@@ -202,7 +202,7 @@ return [row for row in data if row['amount'] > 1000]
               className="rounded-3"
               style={{ marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
             >
-              <div className="py-3 px-3 d-flex justify-content-between">
+              <div className="py-3 px-3 d-flex justify-content-between copilot-section-header">
                 <div className="d-flex">
                   <div className="d-flex align-items-center border transformation-language-select-wrapper">
                     <span className="px-2">Language</span>
@@ -254,7 +254,7 @@ return [row for row in data if row['amount'] > 1000]
                   />
                 )}
               </div>
-              <div className="border-top mx-3"></div>
+              <div className="codehinter-border-bottom mx-3"></div>
               <CodeHinter
                 initialValue={state[lang]}
                 mode={lang}
@@ -309,14 +309,14 @@ const EducativeLabel = ({ darkMode }) => {
   const title = () => {
     return (
       <>
-        Powered by <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong>
+        Powered by <strong style={{ fontWeight: 700, color: '#3E63DD' }}> &nbsp;AI copilot</strong>
       </>
     );
   };
 
   return (
-    <div className="d-flex">
-      <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1">
+    <div className="d-flex align-items-center ">
+      <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1 copilot-toggle">
         <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
       </Button.UnstyledButton>
       <OverlayTrigger

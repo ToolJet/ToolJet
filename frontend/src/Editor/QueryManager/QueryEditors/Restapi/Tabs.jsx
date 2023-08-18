@@ -68,7 +68,7 @@ function ControlledTabs({
                 componentName={componentName}
               />
             </Tab.Pane>
-            <Tab.Pane eventKey="body" bsPrefix="rest-api-tabpanes" transition={false}>
+            <Tab.Pane eventKey="body" bsPrefix="rest-api-tabpanes rest-api-tabpanes-body" transition={false}>
               <Body
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}

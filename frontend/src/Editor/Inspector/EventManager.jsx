@@ -960,7 +960,7 @@ export const EventManager = ({
         {renderAddHandlerBtn()}
         {!hideEmptyEventsAlert ? (
           <div className="text-left">
-            <small className="color-disabled" data-cy="no-event-handler-message">
+            <small className="color-slate9" data-cy="no-event-handler-message">
               {t(
                 'editor.inspector.eventManager.emptyMessage',
                 "This {{componentName}} doesn't have any event handlers",

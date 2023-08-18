@@ -306,10 +306,7 @@ export function CodeHinter({
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`}>
-          <div
-            className="code-hinter-wrapper position-relative"
-            style={{ width: '100%', backgroundColor: darkMode && '#272822' }}
-          >
+          <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
               key={componentName}

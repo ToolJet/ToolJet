@@ -1,6 +1,5 @@
 import React, { useState, forwardRef, useRef, useEffect } from 'react';
 import RenameIcon from '../Icons/RenameIcon';
-import FloppyDisk from '@/_ui/Icon/solidIcons/FloppyDisk';
 import Eye1 from '@/_ui/Icon/solidIcons/Eye1';
 import Play from '@/_ui/Icon/solidIcons/Play';
 import cx from 'classnames';

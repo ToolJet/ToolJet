@@ -7,6 +7,7 @@ import { isExpectedDataType } from '@/_helpers/utils.js';
 
 export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode, dataCy }) => {
   const { label } = properties;
+  console.log('styles', styles);
   const { visibility, disabledState, checkboxColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checked, setChecked] = useState(checkedData);
