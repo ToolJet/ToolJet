@@ -26,6 +26,18 @@ export const ssoEeText = {
   testclientSecret: "2345-client-id-.apps.googleusercontent.com",
   testWellknownUrl: "google.com",
   oidcSSOText: "Sign in with Tooljet OIDC",
+
+  ldapPageElements: {
+    ldapToggleLabel: "LDAP",
+    nameLabel: "Name",
+    hostLabel: 'Host Name',
+    portLabel: 'Port',
+    baseDnLabel: "Base DN",
+    baseDnHelperText: "Location without UID or CN",
+    sslLabel: "SSL",
+  },
+  ldapSSOText: "Sign in with Tooljet LDAP Auth",
+  userNameInputLabel: "Username"
 };
 export const eeGroupsText = {
   resourceDs: "Datasources",
