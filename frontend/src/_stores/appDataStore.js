@@ -5,7 +5,6 @@ const initialState = {
   editingVersion: null,
   currentUser: null,
   apps: [],
-  appId: null,
   appName: null,
   slug: null,
   isPublic: null,
@@ -21,6 +20,8 @@ const initialState = {
   eventHandlers: [],
   appDefinitionDiff: null,
   appDiffOptions: {},
+  isSaving: false,
+  appId: null,
 };
 
 export const useAppDataStore = create(
@@ -43,6 +44,8 @@ export const useAppDataStore = create(
             isUserSwitchedVersion
           );
         },
+        setIsSaving: (isSaving) => set(() => ({ isSaving })),
+        setAppId: (appId) => set(() => ({ appId })),
       },
     }),
     { name: 'App Data Store' }
@@ -50,6 +53,7 @@ export const useAppDataStore = create(
 );
 
 export const useEditingVersion = () => useAppDataStore((state) => state.editingVersion);
+export const useIsSaving = () => useAppDataStore((state) => state.isSaving);
 export const useUpdateEditingVersion = () => useAppDataStore((state) => state.actions);
 export const useCurrentUser = () => useAppDataStore((state) => state.currentUser);
 export const useAppInfo = () => useAppDataStore((state) => state);

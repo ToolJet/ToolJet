@@ -1,4 +1,7 @@
 import { QueryError } from './query.error';
+import { Headers } from 'got';
+import * as tls from 'tls';
+import { readFileSync } from 'fs';
 
 const CACHED_CONNECTIONS: any = {};
 
@@ -52,6 +55,16 @@ function clearData(data, keys) {
   }
 }
 
+export function isEmpty(value: number | null | undefined | string) {
+  return (
+    value === undefined ||
+    value === null ||
+    !isNaN(value as number) ||
+    (typeof value === 'object' && Object.keys(value).length === 0) ||
+    (typeof value === 'string' && value.trim().length === 0)
+  );
+}
+
 export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string, isAppPublic: boolean) => {
   if (isMultiAuthEnabled) {
     if (!tokenData || !Array.isArray(tokenData)) return null;
@@ -63,4 +76,39 @@ export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, use
   } else {
     return tokenData;
   }
+};
+
+export const sanitizeHeaders = (sourceOptions: any, queryOptions: any, hasDataSource = true): Headers => {
+  const _headers = (queryOptions.headers || []).filter((o) => {
+    return o.some((e) => !isEmpty(e));
+  });
+
+  if (!hasDataSource) return Object.fromEntries(_headers);
+
+  const headerData = _headers.concat(sourceOptions.headers || []);
+  const headers = Object.fromEntries(headerData);
+  Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
+
+  return headers;
+};
+
+export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasDataSource = true): object => {
+  const _urlParams = (queryOptions.url_params || []).filter((o) => {
+    return o.some((e) => !isEmpty(e));
+  });
+
+  if (!hasDataSource) return Object.fromEntries(_urlParams);
+
+  const urlParams = _urlParams.concat(sourceOptions.url_params || []);
+  return Object.fromEntries(urlParams);
+};
+
+export const fetchHttpsCertsForCustomCA = () => {
+  if (!process.env.NODE_EXTRA_CA_CERTS) return {};
+
+  return {
+    https: {
+      certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
+    },
+  };
 };
