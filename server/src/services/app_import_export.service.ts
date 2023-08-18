@@ -329,23 +329,16 @@ export class AppImportExportService {
           importingDataQueries
         );
 
-      // TODO: have version based conditional based on app versions
-      // isLessThanExportVersion(appParams.tooljet_version, 'v2.0.0')
-      const { defaultDataSourceIdMapping } = await this.createDefaultDatasourcesForAppVersionIfPresent(
+      const { defaultDataSourceIdMapping } = await this.createDefaultDatasourcesForAppVersion(
         manager,
         importingAppVersion,
         user,
-        importingDataSourcesForAppVersion,
         appResourceMappings
       );
       appResourceMappings.defaultDataSourceIdMapping = defaultDataSourceIdMapping;
 
-      const importingDataSourcesWithoutDefaultDataSources = importingDataSourcesForAppVersion.filter(
-        (ds) => !DefaultDataSourceKinds.includes(ds.kind as DefaultDataSourceKind)
-      );
-
       // associate data sources and queries for each of the app versions
-      for (const importingDataSource of importingDataSourcesWithoutDefaultDataSources) {
+      for (const importingDataSource of importingDataSourcesForAppVersion) {
         const dataSourceForAppVersion = await this.findOrCreateDataSourceForAppVersion(
           manager,
           importingDataSource,
@@ -508,26 +501,19 @@ export class AppImportExportService {
     }
   }
 
-  async createDefaultDatasourcesForAppVersionIfPresent(
+  async createDefaultDatasourcesForAppVersion(
     manager: EntityManager,
     appVersion: AppVersion,
     user: User,
-    dataSources: DataSource[],
     appResourceMappings: AppResourceMappings
   ) {
-    const dsKindsToCreate: DefaultDataSourceKind[] = DefaultDataSourceKinds.filter(
-      (kind) => !dataSources.some((ds) => ds.kind === kind && ds.type === DataSourceTypes.STATIC)
+    const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
+      user.organizationId,
+      appResourceMappings.appVersionMapping[appVersion.id],
+      DefaultDataSourceKinds,
+      manager
     );
-
-    if (dsKindsToCreate.length > 0) {
-      const defaultDataSourceId = await this.createDefaultDataSourceForVersion(
-        user.organizationId,
-        appResourceMappings.appVersionMapping[appVersion.id],
-        dsKindsToCreate,
-        manager
-      );
-      appResourceMappings.defaultDataSourceIdMapping[appVersion.id] = defaultDataSourceId;
-    }
+    appResourceMappings.defaultDataSourceIdMapping[appVersion.id] = defaultDataSourceIds;
 
     return appResourceMappings;
   }
@@ -537,7 +523,22 @@ export class AppImportExportService {
     dataSource: DataSource,
     appVersionId: string,
     user: User
-  ) {
+  ): Promise<DataSource> {
+    const isDefaultDatasource = DefaultDataSourceKinds.includes(dataSource.kind as DefaultDataSourceKind);
+
+    if (isDefaultDatasource) {
+      const createdDefaultDatasource = await manager.findOne(DataSource, {
+        where: {
+          appVersionId,
+          kind: dataSource.kind,
+          type: DataSourceTypes.STATIC,
+          scope: 'local',
+        },
+      });
+
+      return createdDefaultDatasource;
+    }
+
     const globalDataSourceWithSameIdExists = async (dataSource: DataSource) => {
       return await manager.findOne(DataSource, {
         where: {
