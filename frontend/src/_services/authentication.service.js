@@ -54,6 +54,7 @@ export const authenticationService = {
   getUserDetails,
   getLoginOrganizationSlug,
   saveLoginOrganizationSlug,
+  deleteLoginOrganizationSlug,
 };
 
 function login(email, password, organizationId) {
@@ -106,6 +107,10 @@ function saveLoginOrganizationSlug(organizationSlug) {
 
 function getLoginOrganizationSlug() {
   return getCookie('login-workspace-slug');
+}
+
+function deleteLoginOrganizationSlug() {
+  eraseCookie('login-workspace-slug');
 }
 
 function getOrganizationConfigs(organizationId) {

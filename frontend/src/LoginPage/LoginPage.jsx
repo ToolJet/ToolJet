@@ -32,9 +32,11 @@ class LoginPageComponent extends React.Component {
   darkMode = localStorage.getItem('darkMode') === 'true';
 
   componentDidMount() {
-    this.organizationSlug = this.organizationId;
-
+    /* remove login oranization's id and slug from the cookie */
     authenticationService.deleteLoginOrganizationId();
+    authenticationService.deleteLoginOrganizationSlug();
+
+    this.organizationSlug = this.organizationId;
     this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
       if (newSession?.current_organization_name)
         this.setState({ current_organization_name: newSession.current_organization_name });
@@ -63,11 +65,10 @@ class LoginPageComponent extends React.Component {
     authenticationService.getOrganizationConfigs(this.organizationSlug).then(
       (configs) => {
         this.organizationId = configs.id;
-        if (this.organizationId) {
-          authenticationService.saveLoginOrganizationId(this.organizationId);
-          authenticationService.saveLoginOrganizationSlug(this.organizationSlug);
-        }
-        this.setState({ isGettingConfigs: false, configs });
+        this.setState({
+          isGettingConfigs: false,
+          configs,
+        });
       },
       (response) => {
         if (response.data.statusCode !== 404 && response.data.statusCode !== 422) {
@@ -154,6 +155,8 @@ class LoginPageComponent extends React.Component {
     const params = iframe ? new URL(window.location.href).searchParams : new URL(location.href).searchParams;
     const redirectPath = params.get('redirectTo');
 
+    authenticationService.saveLoginOrganizationId(this.organizationId);
+    authenticationService.saveLoginOrganizationSlug(this.organizationSlug);
     redirectPath && setCookie('redirectPath', redirectPath, iframe);
   }
 
@@ -279,7 +282,9 @@ class LoginPageComponent extends React.Component {
                         <div className="login-sso-wrapper">
                           <GitSSOLoginButton
                             configs={this.state?.configs?.git?.configs}
-                            setRedirectUrlToCookie={this.setRedirectUrlToCookie}
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
                           />
                         </div>
                       )}
@@ -288,7 +293,9 @@ class LoginPageComponent extends React.Component {
                           <GoogleSSOLoginButton
                             configs={this.state?.configs?.google?.configs}
                             configId={this.state?.configs?.google?.config_id}
-                            setRedirectUrlToCookie={this.setRedirectUrlToCookie}
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
                           />
                         </div>
                       )}
