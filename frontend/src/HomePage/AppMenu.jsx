@@ -48,6 +48,12 @@ export const AppMenu = function AppMenu({
               <div data-cy="card-options">
                 {canUpdateApp && (
                   <Field
+                    text={t('homePage.appCard.renameApp', 'Rename app')}
+                    onClick={() => openAppActionModal('rename-app')}
+                  />
+                )}
+                {canUpdateApp && (
+                  <Field
                     text={t('homePage.appCard.changeIcon', 'Change Icon')}
                     onClick={() => openAppActionModal('change-icon')}
                   />

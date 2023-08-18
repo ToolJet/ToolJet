@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import { AppMenu } from './AppMenu';
 import moment from 'moment';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/index';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link, useNavigate } from 'react-router-dom';
@@ -76,7 +76,7 @@ export default function AppCard({
               </div>
             </div>
             <div visible={focused}>
-              {(canCreateApp(app) || canDeleteApp(app)) && (
+              {(canCreateApp(app) || canDeleteApp(app) || canUpdateApp(app)) && (
                 <AppMenu
                   onMenuOpen={onMenuToggle}
                   openAppActionModal={appActionModalCallBack}

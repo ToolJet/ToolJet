@@ -4,7 +4,9 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 export default function Modal({ title, show, closeModal, customClassName, children, footerContent = null }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const modalFooter = footerContent ? (
-    <BootstrapModal.Footer className="modal-divider">{footerContent}</BootstrapModal.Footer>
+    <BootstrapModal.Footer className={`modal-divider ${darkMode ? 'dark-theme-modal-divider' : ''}`}>
+      {footerContent}
+    </BootstrapModal.Footer>
   ) : null;
   return (
     <BootstrapModal
