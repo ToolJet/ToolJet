@@ -16,15 +16,15 @@ export const workspaceConstantsSelectors = {
         '[data-cy="workspace-variable-table-value-header"]',
 
     constantName: (constName) => {
-        return `[data-cy="${constName}-workspace-constant-name"]`;
+        return `[data-cy="${cyParamName(constName)}-workspace-constant-name"]`;
     },
     constantValue: (constName) => {
-        return `[data-cy="${constName}-workspace-constant-value"]`;
+        return `[data-cy="${cyParamName(constName)}-workspace-constant-value"]`;
     },
     constEditButton: (constName) => {
-        return `[data-cy="${constName}-edit-button"]`;
+        return `[data-cy="${cyParamName(constName)}-edit-button"]`;
     },
     constDeleteButton: (constName) => {
-        return `[data-cy="${constName}-delete-button"]`;
+        return `[data-cy="${cyParamName(constName)}-delete-button"]`;
     },
 };

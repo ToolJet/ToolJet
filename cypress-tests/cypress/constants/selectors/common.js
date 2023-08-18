@@ -219,6 +219,9 @@ export const commonSelectors = {
   valueInputField: '[data-cy="value-input-field"]',
   yesButton: '[data-cy="yes-button"]',
   pagination: '[data-cy="pagination-section"]',
+  workspaceConstantsOption: '[data-cy="workspace-constants-list-item"]',
+  nameErrorText: '[data-cy="name-error-text"]',
+  valueErrorText: '[data-cy="value-error-text"]',
 };
 
 export const commonWidgetSelector = {
