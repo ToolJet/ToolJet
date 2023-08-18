@@ -172,6 +172,8 @@ export const commonText = {
   },
   groupInputFieldLabel: "Select Group",
   documentationLink: "Read Documentation",
+  constantsNameError: "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
+  constantsValueError: "Value should be less than 10000 characters and cannot be empty"
 };
 
 export const commonWidgetText = {
