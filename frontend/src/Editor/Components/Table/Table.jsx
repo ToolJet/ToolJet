@@ -48,7 +48,6 @@ import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import SingleOptionOflist from '@/ToolJetUI/SingleOptionOfList';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -874,8 +873,8 @@ export function Table({
         placement="top-end"
       >
         <Popover.Body className="p-0">
-          <div className="">
-            {/* <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
+          <div className="table-download-option cursor-pointer">
+            <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
               Download as CSV
             </span>
             <span
@@ -891,21 +890,7 @@ export function Table({
               onClick={() => exportData('pdf', true)}
             >
               Download as PDF
-            </span> */}
-            {options.map((option) => {
-              return (
-                <SingleOptionOflist
-                  size="sm"
-                  darkMode={darkMode}
-                  className="table-download-option cursor-pointer"
-                  onClickFunction={() => exportData(option.value, true)}
-                  key={option.value}
-                  dataCy={option.dataCy}
-                >
-                  <SingleOptionOflist.optionForPopover size="sm" optionText={option.text} className="pointer" />
-                </SingleOptionOflist>
-              );
-            })}
+            </span>
           </div>
         </Popover.Body>
       </Popover>
