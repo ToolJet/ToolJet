@@ -318,6 +318,7 @@
         "how-to/use-form-component",
         "how-to/access-cellvalue-rowdata",
         "how-to/bulk-update-multiple-rows",
+        "how-to/use-server-side-pagination",
         "how-to/access-currentuser",
         "how-to/use-axios-in-runjs",
         "how-to/import-external-libraries-using-runpy",
