@@ -92,6 +92,14 @@ export class AppsController {
     };
     /* If the request comes from preview which needs version id */
     if (versionName) {
+      if (!ability.can('fetchVersions', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+      
       const version = await this.appsService.findVersionFromName(versionName, id);
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
