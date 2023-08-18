@@ -13,6 +13,7 @@ export const Pagination = function Pagination({
   setPageIndex,
   enablePrevButton,
   enableNextButton,
+  // eslint-disable-next-line no-unused-vars
   darkMode,
 }) {
   const [pageCount, setPageCount] = useState(autoPageCount);
@@ -66,7 +67,7 @@ export const Pagination = function Pagination({
               cursor: pageIndex === 1 ? 'not-allowed' : 'pointer',
             }}
             leftIcon="cheveronleftdouble"
-            fill={darkMode ? '#ECEDEE' : '#11181C'}
+            fill={`var(--slate12)`}
             iconWidth="14"
             size="md"
             disabled={pageIndex === 1}
@@ -91,7 +92,7 @@ export const Pagination = function Pagination({
             cursor: pageIndex === 1 || !enablePrevButton ? 'not-allowed' : 'pointer',
           }}
           leftIcon="cheveronleft"
-          fill={darkMode ? '#ECEDEE' : '#11181C'}
+          fill={`var(--slate12)`}
           iconWidth="14"
           size="md"
           disabled={pageIndex === 1 || !enablePrevButton}
@@ -142,7 +143,7 @@ export const Pagination = function Pagination({
             cursor: (!autoCanNextPage && !serverSide) || !enableNextButton ? 'not-allowed' : 'pointer',
           }}
           leftIcon="cheveronright"
-          fill={darkMode ? '#ECEDEE' : '#11181C'}
+          fill={`var(--slate12)`}
           iconWidth="14"
           size="md"
           disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
@@ -167,7 +168,7 @@ export const Pagination = function Pagination({
               cursor: !autoCanNextPage && !serverSide ? 'not-allowed' : 'pointer',
             }}
             leftIcon="cheveronrightdouble"
-            fill={darkMode ? '#ECEDEE' : '#11181C'}
+            fill={`var(--slate12)`}
             iconWidth="14"
             size="md"
             onClick={(event) => {
