@@ -8,6 +8,9 @@ else
   SETUP_CMD='npm run db:setup'
 fi
 
+# Clean npm cache
+npm cache clean --force
+
 if [ -f "./.env" ]
 then
   declare $(grep -v '^#' ./.env | xargs) 
