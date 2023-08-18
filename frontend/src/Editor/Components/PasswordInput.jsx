@@ -1,6 +1,7 @@
 import React from 'react';
 import config from 'config';
 import { TextField } from '@mui/material';
+import { localizeMessage } from '@/_helpers/localize';
 
 export const PasswordInput = ({
   height,
@@ -18,7 +19,7 @@ export const PasswordInput = ({
   const placeholder = properties.placeholder;
 
   const [passwordValue, setPasswordValue] = React.useState('');
-  const { isValid, validationError } = validate(passwordValue);
+  let { isValid, validationError } = validate(passwordValue);
 
   React.useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -54,7 +55,7 @@ export const PasswordInput = ({
             className="invalid-feedback"
             data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
           >
-            {validationError}
+            {localizeMessage(validationError)}
           </div>
         </div>
       )}
@@ -80,7 +81,7 @@ export const PasswordInput = ({
               },
             }}
             error={!isValid}
-            helperText={validationError}
+            helperText={localizeMessage(validationError)}
             placeholder={placeholder}
           />
         </>

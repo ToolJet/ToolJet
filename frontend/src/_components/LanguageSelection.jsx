@@ -17,14 +17,14 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
   const { t } = useTranslation();
 
   useEffect(() => {
-    const lang = i18n.language || 'en';
+    const lang = i18n.language || 'es';
     (async () => {
       languageRef.current = await fetch('/assets/translations/languages.json')
         .then((response) => response.json())
         .then((data) => data.languageList);
       const filteredLanguage = languageRef.current.find((ln) => ln.code === lang);
       if (filteredLanguage === undefined) {
-        setLanguage(languageRef.current.find((ln) => ln.code === 'en'));
+        setLanguage(languageRef.current.find((ln) => ln.code === 'es'));
       } else {
         setLanguage(filteredLanguage);
       }
@@ -63,12 +63,20 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
     return (
       <>
         {filteredLang.length === 0 ? (
-          <ListGroup.Item variant="light" className="no-results-item">
+          <ListGroup.Item
+            variant="light"
+            className="no-results-item"
+          >
             No results
           </ListGroup.Item>
         ) : (
           <>
-            <ListGroup.Item key={selectedLang.code} action active onClick={() => onLanguageSelection(selectedLang)}>
+            <ListGroup.Item
+              key={selectedLang.code}
+              action
+              active
+              onClick={() => onLanguageSelection(selectedLang)}
+            >
               <div className="row align-items-center">
                 <div className="col-auto">
                   {selectedLang.lang}
@@ -87,7 +95,12 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none" /> <path d="M5 12l5 5l10 -10" />
+                    <path
+                      stroke="none"
+                      d="M0 0h24v24H0z"
+                      fill="none"
+                    />{' '}
+                    <path d="M5 12l5 5l10 -10" />
                   </svg>
                 </div>
               </div>
@@ -95,7 +108,11 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
             {filteredLang.map((ln) => {
               if (ln.code === selectedLang.code) return;
               return (
-                <ListGroup.Item key={ln.code} action onClick={() => onLanguageSelection(ln)}>
+                <ListGroup.Item
+                  key={ln.code}
+                  action
+                  onClick={() => onLanguageSelection(ln)}
+                >
                   <div className="row align-items-center">
                     <div className="col-auto">
                       {ln.lang}
@@ -122,8 +139,15 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
       >
         <Modal.Header>
           <Modal.Title>{t('header.languageSelection.changeLanguage', 'Change language')}</Modal.Title>
-          <span className={`close-btn mx-4 mt-3 ${darkMode ? 'dark' : ''}`} onClick={handleClose}>
-            <img src="assets/images/icons/close.svg" width="12" height="12" />
+          <span
+            className={`close-btn mx-4 mt-3 ${darkMode ? 'dark' : ''}`}
+            onClick={handleClose}
+          >
+            <img
+              src="assets/images/icons/close.svg"
+              width="12"
+              height="12"
+            />
           </span>
         </Modal.Header>
         <Modal.Body>
@@ -165,10 +189,28 @@ export const LanguageSelection = ({ darkMode = false, tooltipPlacement = 'bottom
           onClick={handleOpen}
           style={{ cursor: 'pointer' }}
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <circle cx="12" cy="12" r="9" />
-          <line x1="3.6" y1="9" x2="20.4" y2="9" />
-          <line x1="3.6" y1="15" x2="20.4" y2="15" />
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="9"
+          />
+          <line
+            x1="3.6"
+            y1="9"
+            x2="20.4"
+            y2="9"
+          />
+          <line
+            x1="3.6"
+            y1="15"
+            x2="20.4"
+            y2="15"
+          />
           <path d="M11.5 3a17 17 0 0 0 0 18" />
           <path d="M12.5 3a17 17 0 0 1 0 18" />
         </svg>

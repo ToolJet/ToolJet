@@ -1198,7 +1198,7 @@ export function Table({
                   justifyContent="center"
                   alignItems="center"
                 >
-                  no data
+                  {t('widget.Table.noData', 'no data')}
                 </Box>
               )}
 
@@ -1413,8 +1413,12 @@ export function Table({
                     data-cy={`footer-number-of-records`}
                     variant="body1"
                   >
-                    {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
-                    {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
+                    {clientSidePagination &&
+                      !serverSidePagination &&
+                      `${globalFilteredRows.length} ${t('widget.Table.records', 'Records')}`}
+                    {serverSidePagination && totalRecords
+                      ? `${totalRecords} ${t('widget.Table.records', 'Records')}`
+                      : ''}
                   </Typography>
                 )}
               </Box>
@@ -1733,7 +1737,7 @@ export function Table({
 
               {!loadingState && page.length === 0 && (
                 <center className="w-100">
-                  <div className="py-5"> no data </div>
+                  <div className="py-5"> {t('widget.Table.noData', 'no data')} </div>
                 </center>
               )}
 
@@ -1951,8 +1955,12 @@ export function Table({
                     </>
                   ) : (
                     <span data-cy={`footer-number-of-records`}>
-                      {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
-                      {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
+                      {clientSidePagination &&
+                        !serverSidePagination &&
+                        `${globalFilteredRows.length} ${t('widget.Table.records', 'Records')}`}
+                      {serverSidePagination && totalRecords
+                        ? `${totalRecords} ${t('widget.Table.records', 'Records')}`
+                        : ''}
                     </span>
                   )}
                 </div>
