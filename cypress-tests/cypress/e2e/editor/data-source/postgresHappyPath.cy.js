@@ -25,6 +25,7 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.wait(1000);
     cy.get(commonSelectors.addNewDataSourceButton)
       .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();

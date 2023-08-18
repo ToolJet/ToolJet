@@ -49,7 +49,7 @@ On file loaded event is triggered when a file is loaded in the browser.
 On file selected event can be triggered when one or more files are removed from the picker.
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+Checkout **[this](/docs/2.3.0/how-to/loading-image-pdf-from-db)** guide to learn how to refer or display images/PDFs using base64 string
 :::
 
 ## Properties
