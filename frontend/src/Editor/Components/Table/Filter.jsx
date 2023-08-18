@@ -211,7 +211,6 @@ export function Filter(props) {
         <ButtonSolid
           variant="secondary"
           className={`tj-text-xsm`}
-          fill={darkMode ? '#3E63DD' : '#3E63DD'}
           onClick={addFilter}
           size="sm"
           style={{ padding: '10px 20px' }}
@@ -222,7 +221,6 @@ export function Filter(props) {
         <ButtonSolid
           variant="tertiary"
           className={`tj-text-xsm`}
-          fill={darkMode ? '#697177' : '#889096'}
           onClick={() => clearFilters()}
           size="sm"
           style={{ padding: '10px 20px' }}

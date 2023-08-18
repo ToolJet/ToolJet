@@ -158,7 +158,6 @@ export function AddNewRowComponent({
         <ButtonSolid
           variant="secondary"
           className={`tj-text-xsm`}
-          fill={darkMode ? '#3E63DD' : '#3E63DD'}
           onClick={() => {
             onEvent('onNewRowsAdded', { component }).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
@@ -173,7 +172,6 @@ export function AddNewRowComponent({
         <ButtonSolid
           variant="tertiary"
           className={`tj-text-xsm`}
-          fill={darkMode ? '#697177' : '#889096'}
           onClick={() => {
             setExposedVariable('newRows', []).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });

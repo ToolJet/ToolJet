@@ -991,7 +991,7 @@ export function Table({
                   className={`tj-text-xsm ${tableDetails?.filterDetails?.filtersVisible && 'cursor-not-allowed'}`}
                   style={{ minWidth: '32px' }}
                   leftIcon="filter"
-                  fill={darkMode ? '#ECEDEE' : '#11181C'}
+                  fill={`var(--slate12)`}
                   iconWidth="16"
                   onClick={() => {
                     showFilters();
@@ -1373,7 +1373,6 @@ export function Table({
                   <ButtonSolid
                     variant="secondary"
                     className={`tj-text-xsm`}
-                    fill={darkMode ? '#3E63DD' : '#3E63DD'}
                     onClick={() => {
                       onEvent('onBulkUpdate', { component }).then(() => {
                         handleChangesSaved();
@@ -1389,7 +1388,6 @@ export function Table({
                   <ButtonSolid
                     variant="tertiary"
                     className={`tj-text-xsm`}
-                    fill={darkMode ? '#697177' : '#889096'}
                     onClick={() => {
                       handleChangesDiscarded();
                     }}
@@ -1432,7 +1430,7 @@ export function Table({
                   className={`tj-text-xsm ${tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed'}`}
                   style={{ minWidth: '32px' }}
                   leftIcon="plus"
-                  fill={darkMode ? '#ECEDEE' : '#11181C'}
+                  fill={`var(--slate12)`}
                   iconWidth="16"
                   onClick={() => {
                     if (!tableDetails.addNewRowsDetails.addingNewRows) {
@@ -1456,7 +1454,7 @@ export function Table({
                           minWidth: '32px',
                         }}
                         leftIcon="filedownload"
-                        fill={darkMode ? '#ECEDEE' : '#11181C'}
+                        fill={`var(--slate12)`}
                         iconWidth="16"
                         size="md"
                         data-tooltip-id="tooltip-for-download"
@@ -1475,7 +1473,7 @@ export function Table({
                       className="tj-text-xsm"
                       style={{ minWidth: '32px' }}
                       leftIcon="eye1"
-                      fill={darkMode ? '#ECEDEE' : '#11181C'}
+                      fill={`var(--slate12)`}
                       iconWidth="16"
                       size="md"
                       data-cy={`select-column-icon`}
