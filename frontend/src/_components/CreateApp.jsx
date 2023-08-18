@@ -31,7 +31,7 @@ export function CreateApp({ closeModal, createApp, show }) {
 
   const handleInputChange = (e) => {
     const newAppName = e.target.value;
-    const error = validateAppName(newAppName, 'App Name', true, false);
+    const error = validateAppName(newAppName);
     setErrorText(error?.errorMsg || '');
     setappName(newAppName);
   };

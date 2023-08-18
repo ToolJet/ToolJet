@@ -52,7 +52,7 @@ export function CloneApp({ closeModal, cloneApp, show, selectedAppId, selectedAp
 
   const handleInputChange = (e) => {
     const newAppName = e.target.value;
-    const error = validateAppName(newAppName, 'App name', true, false);
+    const error = validateAppName(newAppName);
     setErrorText(error?.errorMsg || '');
 
     if (clearInput) {
