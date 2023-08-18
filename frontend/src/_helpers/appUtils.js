@@ -1349,7 +1349,8 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
     updateAppDefinition(newDefinition);
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    if (newComponentObj.newComponents.length > 1) {
+    const successMessage = newComponentObj.newComponents.length > 1 ? "Components copied successfully" : "Component copied successfully";
+    toast.success(successMessage);
       toast.success("Components copied succesfully");
     } else {
       toast.success("Component copied succesfully");
