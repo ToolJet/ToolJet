@@ -204,7 +204,7 @@ jobs:
       - name: Wait for the server to be ready
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:3000/apps/tooljet"; do
+          until curl --silent --fail http://localhost:3000/apps/tooljet; do
             sleep 5
           done'
 
