@@ -98,7 +98,6 @@ export function AppModal({
 
   const handleInputChange = (e) => {
     const newAppName = e.target.value;
-    console.log(newAppName, newAppName.length);
     if (newAppName.length == 50) {
       setInfoText('Maximum length has been reached');
     } else {
@@ -115,6 +114,12 @@ export function AppModal({
     }
   };
 
+  const createBtnDisableState =
+    isLoading ||
+    errorText ||
+    (actionButton === 'Rename app' && (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
+    (actionButton !== 'Rename app' && (newAppName.length > 50 || newAppName.trim().length === 0));
+
   return (
     <Modal
       show={show}
@@ -125,17 +130,7 @@ export function AppModal({
           <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button" className="modal-footer-divider">
             Cancel
           </ButtonSolid>
-          <ButtonSolid
-            onClick={(e) => handleAction(e)}
-            data-cy={actionButton}
-            disabled={
-              isLoading ||
-              errorText ||
-              (actionButton === 'Rename app' &&
-                (!isNameChanged || newAppName.trim().length === 0 || newAppName.length > 50)) || // For rename case
-              (actionButton !== 'Rename app' && (newAppName.length > 50 || newAppName.trim().length === 0)) // For other cases
-            }
-          >
+          <ButtonSolid onClick={(e) => handleAction(e)} data-cy={actionButton} disabled={createBtnDisableState}>
             {isLoading ? 'Creating...' : actionButton}
           </ButtonSolid>
         </>

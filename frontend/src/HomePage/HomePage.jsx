@@ -194,20 +194,24 @@ class HomePageComponent extends React.Component {
   };
 
   readAndImport = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+    try {
+      const file = event.target.files[0];
+      if (!file) return;
 
-    const fileReader = new FileReader();
-    fileReader.readAsText(file, 'UTF-8');
-    fileReader.onload = (event) => {
-      const result = event.target.result;
-      const fileContent = JSON.parse(result);
-      this.setState({ fileContent, showImportAppModal: true });
-    };
-    fileReader.onerror = (error) => {
-      toast.error(`Could not import the app: ${error}`);
-    };
-    event.target.value = null;
+      const fileReader = new FileReader();
+      fileReader.readAsText(file, 'UTF-8');
+      fileReader.onload = (event) => {
+        const result = event.target.result;
+        const fileContent = JSON.parse(result);
+        this.setState({ fileContent, showImportAppModal: true });
+      };
+      fileReader.onerror = (error) => {
+        throw new Error(`Could not import the app: ${error}`);
+      };
+      event.target.value = null;
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   importFile = async (fileContent, appName) => {
@@ -241,9 +245,7 @@ class HomePageComponent extends React.Component {
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
     } catch (e) {
       this.setState({ deploying: false });
-      console.log(e, 'first');
       if (e.statusCode === 409) {
-        console.log(e, 'second');
         return false;
       } else {
         return e;
@@ -534,6 +536,7 @@ class HomePageComponent extends React.Component {
       showImportAppModal,
       fileContent,
       showRenameAppModal,
+      showCreateAppFromTemplateModal,
     } = this.state;
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
@@ -568,7 +571,7 @@ class HomePageComponent extends React.Component {
               actionButton={'+ Create app'}
             />
           )}
-          {this.state.showCreateAppFromTemplateModal && (
+          {showCreateAppFromTemplateModal && (
             <AppModal
               show={this.openCreateAppFromTemplateModal}
               templateDetails={this.state.selectedTemplate}
