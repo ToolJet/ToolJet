@@ -38,21 +38,23 @@ function MultiSelectUser({
   );
 
   function renderCustom(props, option) {
+    const selectOption = () => {
+      onSelect([...selectedValues, option]);
+    };
+
     return (
       <div className={`item-renderer`}>
         <div>
           <input
             type="checkbox"
             // eslint-disable-next-line no-unused-vars
-            onClick={(e) => {
-              onSelect([...selectedValues, option]);
-            }}
+            onClick={selectOption}
           />
           <div className="d-flex flex-column" style={{ marginLeft: '12px' }}>
-            <p style={{ marginBottom: '0px' }}>
+            <p style={{ marginBottom: '0px' }} onClick={selectOption}>
               {option?.first_name} {option?.last_name}
             </p>
-            <span>{option?.email}</span>
+            <span onClick={selectOption}>{option?.email}</span>
           </div>
         </div>
         <div className="avatar">
