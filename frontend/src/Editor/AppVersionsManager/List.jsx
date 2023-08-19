@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import cx from 'classnames';
-import { appVersionService, appEnvironmentService } from '@/_services';
+import { appVersionService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
@@ -12,7 +12,6 @@ export const AppVersionsManager = function ({
   setAppDefinitionFromVersion,
   onVersionDelete,
 }) {
-  const [appVersions, setAppVersions] = useState([]);
   const [appVersionStatus, setGetAppVersionStatus] = useState('');
   const [deleteVersion, setDeleteVersion] = useState({
     versionId: '',
@@ -20,28 +19,15 @@ export const AppVersionsManager = function ({
     showModal: false,
   });
 
-  const { editingVersion } = useAppVersionStore(
+  const { editingVersion, appVersions, setAppVersions } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
+      appVersions: state.appVersions,
+      setAppVersions: state.actions?.setAppVersions,
     }),
     shallow
   );
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
-  useEffect(() => {
-    setGetAppVersionStatus('loading');
-    appEnvironmentService
-      .getVersionsByEnvironment(appId)
-      .then((data) => {
-        setAppVersions(data.appVersions);
-        setGetAppVersionStatus('success');
-      })
-      .catch((error) => {
-        toast.error(error);
-        setGetAppVersionStatus('failure');
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const selectVersion = (id) => {
     appVersionService

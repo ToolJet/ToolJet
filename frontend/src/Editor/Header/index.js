@@ -14,7 +14,7 @@ import config from 'config';
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
+import { useAppDataActions, useCurrentUser } from '@/_stores/appDataStore';
 
 export default function EditorHeader({
   darkMode,
@@ -34,10 +34,12 @@ export default function EditorHeader({
   onVersionRelease,
   saveEditingVersion,
   onVersionDelete,
+  isMaintenanceOn,
+  appName,
+  appId,
+  slug,
 }) {
   const currentUser = useCurrentUser();
-
-  const { isMaintenanceOn, appName, appId, slug } = useAppInfo();
 
   const { updateState } = useAppDataActions();
 
@@ -54,6 +56,7 @@ export default function EditorHeader({
   );
 
   const updatePresence = useUpdatePresence();
+
   useEffect(() => {
     const initialPresence = {
       firstName: currentUser?.first_name ?? '',
