@@ -7,18 +7,32 @@ import config from 'config';
 import { safelyParseJSON, stripTrailingSlash, redirectToDashboard, getSubpath, getWorkspaceId } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
+import { useAppDataActions } from '@/_stores/appDataStore';
+import Spinner from '@/_ui/Spinner';
 
 const AppLoaderComponent = (props) => {
   const params = useParams();
   const appId = params.id;
 
+  const [shouldLoadApp, setShouldLoadApp] = React.useState(false);
+
+  const { updateState } = useAppDataActions();
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => loadAppDetails(), []);
 
   const loadAppDetails = () => {
-    appService.getApp(appId, 'edit').catch((error) => {
-      handleError(error);
-    });
+    appService
+      .getApp(appId, 'edit')
+      .then((data) => {
+        updateState({
+          app: data,
+        });
+        setShouldLoadApp(true);
+      })
+      .catch((error) => {
+        handleError(error);
+      });
   };
 
   const switchOrganization = (orgId) => {
@@ -63,7 +77,13 @@ const AppLoaderComponent = (props) => {
     }
   };
 
-  return config.ENABLE_MULTIPLAYER_EDITING ? <RealtimeEditor {...props} /> : <Editor {...props} />;
+  if (!shouldLoadApp) return <Spinner />;
+
+  return config.ENABLE_MULTIPLAYER_EDITING ? (
+    <RealtimeEditor {...props} shouldLoadApp={shouldLoadApp} />
+  ) : (
+    <Editor {...props} shouldLoadApp={shouldLoadApp} />
+  );
 };
 
 export const AppLoader = withTranslation()(AppLoaderComponent);

@@ -1,5 +1,11 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { appService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
+import {
+  appService,
+  authenticationService,
+  appVersionService,
+  orgEnvironmentVariableService,
+  appEnvironmentService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import _, {
@@ -55,19 +61,19 @@ import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useAppVersionStore, useAppVersionActions } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
 import { computeAppDiff, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { shallow } from 'zustand/shallow';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
-import { useAppDataActions, useAppDataStore, useAppInfo } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { camelizeKeys, decamelizeKeys } from 'humps';
+import { camelizeKeys } from 'humps';
 
 setAutoFreeze(false);
 enablePatches();
@@ -78,12 +84,88 @@ function setWindowTitle(name) {
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
+const buildComponentMetaDefinition = (components = {}, events = []) => {
+  for (const componentId in components) {
+    const currentComponentData = components[componentId];
+    const componentEvents = events
+      .filter((event) => event.sourceId === componentId)
+      ?.map((event) => ({ ...event.event, id: event.id }));
+    const componentMeta = componentTypes.find((comp) => currentComponentData.component.component === comp.component);
+
+    const mergedDefinition = {
+      ...componentMeta.definition,
+      events: componentEvents,
+      properties: {
+        ...componentMeta.definition.properties,
+        ...currentComponentData?.component.definition.properties,
+      },
+
+      styles: {
+        ...componentMeta.definition.styles,
+        ...currentComponentData?.component.definition.styles,
+      },
+      validations: {
+        ...componentMeta.definition.validations,
+        ...currentComponentData?.component.definition.validations,
+      },
+    };
+
+    const mergedComponent = {
+      component: {
+        ...componentMeta,
+        ...currentComponentData.component,
+      },
+      layouts: {
+        ...currentComponentData.layouts,
+      },
+      withDefaultChildren: componentMeta.withDefaultChildren ?? false,
+    };
+
+    mergedComponent.component.definition = mergedDefinition;
+
+    components[componentId] = mergedComponent;
+  }
+
+  return components;
+};
+
+const buildAppDefinition = (data) => {
+  const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
+
+  editingVersion['currentVersionId'] = editingVersion.id;
+  _.unset(editingVersion, 'id');
+
+  const eventsData = data?.events;
+
+  const pages = data.pages.reduce((acc, page) => {
+    const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components), eventsData);
+
+    page.components = currentComponents;
+
+    acc[page.id] = page;
+
+    return acc;
+  }, {});
+
+  const appJSON = {
+    globalSettings: editingVersion.globalSettings,
+    homePageId: editingVersion.homePageId,
+    showHideViewerNavigation: editingVersion.showHideViewerNavigation ?? true,
+    pages: pages,
+  };
+
+  return appJSON;
+};
+
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
   const { updateState, updateAppDefinitionDiff, updateAppVersion } = useAppDataActions();
   const { updateEditorState, updateQueryConfirmationList } = useEditorActions();
+
+  const { setAppVersions } = useAppVersionActions();
+
   const {
     noOfVersionsSupported,
     appDefinition,
@@ -104,8 +186,18 @@ const EditorComponent = (props) => {
 
   const dataQueries = useDataQueries();
 
-  const { isMaintenanceOn, appId, app, currentUser, currentVersionId, appDefinitionDiff, appDiffOptions, events } =
-    useAppInfo();
+  const {
+    isMaintenanceOn,
+    appId,
+    app,
+    appName,
+    slug,
+    currentUser,
+    currentVersionId,
+    appDefinitionDiff,
+    appDiffOptions,
+    events,
+  } = useAppInfo();
 
   const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -299,8 +391,9 @@ const EditorComponent = (props) => {
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
 
+    await fetchApp(props.params.pageHandle, true);
+
     await fetchApps(0);
-    await fetchApp(props.params.pageHandle);
     await fetchOrgEnvironmentVariables();
     initComponentVersioning();
     initRealtimeSave();
@@ -323,6 +416,9 @@ const EditorComponent = (props) => {
 
     updateState({ appId: props?.params?.id });
     useCurrentStateStore.getState().actions.setCurrentState({ globals });
+
+    getCanvasWidth();
+    initEditorWalkThrough();
   };
 
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
@@ -604,94 +700,36 @@ const EditorComponent = (props) => {
 
   //!--------
 
-  const buildComponentMetaDefinition = (components = {}, events = []) => {
-    for (const componentId in components) {
-      const currentComponentData = components[componentId];
-      const componentEvents = events
-        .filter((event) => event.sourceId === componentId)
-        ?.map((event) => ({ ...event.event, id: event.id }));
-      const componentMeta = componentTypes.find((comp) => currentComponentData.component.component === comp.component);
-
-      const mergedDefinition = {
-        ...componentMeta.definition,
-        events: componentEvents,
-        properties: {
-          ...componentMeta.definition.properties,
-          ...currentComponentData?.component.definition.properties,
-        },
-
-        styles: {
-          ...componentMeta.definition.styles,
-          ...currentComponentData?.component.definition.styles,
-        },
-        validations: {
-          ...componentMeta.definition.validations,
-          ...currentComponentData?.component.definition.validations,
-        },
-      };
-
-      const mergedComponent = {
-        component: {
-          ...componentMeta,
-          ...currentComponentData.component,
-        },
-        layouts: {
-          ...currentComponentData.layouts,
-        },
-        withDefaultChildren: componentMeta.withDefaultChildren ?? false,
-      };
-
-      mergedComponent.component.definition = mergedDefinition;
-
-      components[componentId] = mergedComponent;
-    }
-
-    return components;
-  };
-
-  const buildAppDefinition = (data) => {
-    const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
-
-    editingVersion['currentVersionId'] = editingVersion.id;
-    _.unset(editingVersion, 'id');
-
-    const eventsData = data?.events;
-
-    const pages = data.pages.reduce((acc, page) => {
-      const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components), eventsData);
-
-      page.components = currentComponents;
-
-      acc[page.id] = page;
-
-      return acc;
-    }, {});
-
-    const appJSON = {
-      globalSettings: editingVersion.globalSettings,
-      homePageId: editingVersion.homePageId,
-      showHideViewerNavigation: editingVersion.showHideViewerNavigation ?? true,
-      pages: pages,
-    };
-
-    return appJSON;
-  };
-
   //****** */
 
-  const fetchApp = async (startingPageHandle) => {
+  const fetchApp = async (startingPageHandle, onMount = false) => {
     const _appId = props?.params?.id;
 
     const callBack = async (data) => {
       useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
       useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
+
+      const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
+      setAppVersions(appVersions.appVersions);
+
+      updateState({
+        slug: data.slug,
+        isMaintenanceOn: data?.is_maintenance_on,
+        organizationId: data?.organization_id,
+        isPublic: data?.is_public,
+        appName: data?.name,
+        userId: data?.user_id,
+        appId: data?.id,
+        events: data.events,
+      });
+
       await fetchDataSources(data.editing_version?.id);
       await fetchDataQueries(data.editing_version?.id, true, true);
+
       const appDefData = buildAppDefinition(data);
 
       const appJson = appDefData;
       const pages = data.pages;
-      const events = data.events;
 
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = !startingPageId || startingPageId === 'null' ? appJson.homePageId : startingPageId;
@@ -705,18 +743,6 @@ const EditorComponent = (props) => {
 
       setCurrentPageId(homePageId);
 
-      updateState({
-        app: data,
-        slug: data.slug,
-        isMaintenanceOn: data?.is_maintenance_on,
-        organizationId: data?.organization_id,
-        isPublic: data?.is_public,
-        appName: data?.name,
-        userId: data?.user_id,
-        appId: data?.id,
-        events: events,
-      });
-
       useCurrentStateStore.getState().actions.setCurrentState({
         page: currentpageData,
       });
@@ -729,17 +755,13 @@ const EditorComponent = (props) => {
       for (const event of appJson.pages[homePageId]?.events ?? []) {
         await handleEvent(event.eventId, event);
       }
-      getCanvasWidth();
     };
 
-    updateState({
-      isLoading: true,
-    });
-
-    await appService
-      .getApp(_appId)
-      .then(callBack)
-      .finally(() => initEditorWalkThrough());
+    if (!onMount) {
+      await appService.getApp(_appId).then(callBack);
+    } else {
+      callBack(app);
+    }
   };
 
   // !--------
@@ -1498,12 +1520,27 @@ const EditorComponent = (props) => {
     : '';
   const deviceWindowWidth = 450;
 
-  if (!appDefinition?.homePageId) {
+  if (isLoading) {
     return (
-      <div className="editor wrapper">
-        <div className="editor__loading">
-          <div className="editor__loading__spinner">{/* <Spinner /> */}</div>
-          <div className="editor__loading__text">Loading...</div>
+      <div className="apploader">
+        <div className="col col-* editor-center-wrapper">
+          <div className="editor-center">
+            <div className="canvas">
+              <div className="mt-5 d-flex flex-column">
+                <div className="mb-1">
+                  <Skeleton width={'150px'} height={15} className="skeleton" />
+                </div>
+                {Array.from(Array(4)).map((_item, index) => (
+                  <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
+                ))}
+                <div className="align-self-end">
+                  <Skeleton width={'100px'} className="skeleton" />
+                </div>
+                <Skeleton className="skeleton mt-4" />
+                <Skeleton height={'150px'} className="skeleton mt-2" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -1541,6 +1578,10 @@ const EditorComponent = (props) => {
           onVersionRelease={onVersionRelease}
           saveEditingVersion={saveEditingVersion}
           onVersionDelete={onVersionDelete}
+          isMaintenanceOn={isMaintenanceOn}
+          appName={appName}
+          appId={appId}
+          slug={slug}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
@@ -1558,9 +1599,9 @@ const EditorComponent = (props) => {
               appDefinition={{
                 components: appDefinition?.pages[currentPageId]?.components ?? {},
                 selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
-                pages: appDefinition?.pages,
-                homePageId: appDefinition.homePageId,
-                showViewerNavigation: appDefinition.showViewerNavigation,
+                pages: appDefinition?.pages ?? {},
+                homePageId: appDefinition?.homePageId ?? null,
+                showViewerNavigation: appDefinition?.showViewerNavigation,
               }}
               setSelectedComponent={setSelectedComponent}
               removeComponent={removeComponent}
