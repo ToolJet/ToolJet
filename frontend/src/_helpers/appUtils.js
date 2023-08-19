@@ -33,6 +33,7 @@ import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { camelizeKeys } from 'humps';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1652,4 +1653,77 @@ export const computeQueryState = (queries) => {
       },
     });
   }
+};
+
+export const buildComponentMetaDefinition = (components = {}, events = []) => {
+  for (const componentId in components) {
+    const currentComponentData = components[componentId];
+    const componentEvents = events
+      .filter((event) => event.sourceId === componentId)
+      ?.map((event) => ({ ...event.event, id: event.id }));
+    const componentMeta = componentTypes.find((comp) => currentComponentData.component.component === comp.component);
+
+    const mergedDefinition = {
+      ...componentMeta.definition,
+      events: componentEvents,
+      properties: {
+        ...componentMeta.definition.properties,
+        ...currentComponentData?.component.definition.properties,
+      },
+
+      styles: {
+        ...componentMeta.definition.styles,
+        ...currentComponentData?.component.definition.styles,
+      },
+      validations: {
+        ...componentMeta.definition.validations,
+        ...currentComponentData?.component.definition.validations,
+      },
+    };
+
+    const mergedComponent = {
+      component: {
+        ...componentMeta,
+        ...currentComponentData.component,
+      },
+      layouts: {
+        ...currentComponentData.layouts,
+      },
+      withDefaultChildren: componentMeta.withDefaultChildren ?? false,
+    };
+
+    mergedComponent.component.definition = mergedDefinition;
+
+    components[componentId] = mergedComponent;
+  }
+
+  return components;
+};
+
+export const buildAppDefinition = (data) => {
+  const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
+
+  editingVersion['currentVersionId'] = editingVersion.id;
+  _.unset(editingVersion, 'id');
+
+  const eventsData = data?.events;
+
+  const pages = data.pages.reduce((acc, page) => {
+    const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components), eventsData);
+
+    page.components = currentComponents;
+
+    acc[page.id] = page;
+
+    return acc;
+  }, {});
+
+  const appJSON = {
+    globalSettings: editingVersion.globalSettings,
+    homePageId: editingVersion.homePageId,
+    showHideViewerNavigation: editingVersion.showHideViewerNavigation ?? true,
+    pages: pages,
+  };
+
+  return appJSON;
 };

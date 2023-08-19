@@ -37,6 +37,8 @@ import {
   debuggerActions,
   cloneComponents,
   removeSelectedComponent,
+  buildAppDefinition,
+  buildComponentMetaDefinition,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
@@ -73,7 +75,6 @@ import { useMounted } from '@/_hooks/use-mount';
 
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { camelizeKeys } from 'humps';
 
 setAutoFreeze(false);
 enablePatches();
@@ -83,79 +84,6 @@ function setWindowTitle(name) {
 }
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
-
-const buildComponentMetaDefinition = (components = {}, events = []) => {
-  for (const componentId in components) {
-    const currentComponentData = components[componentId];
-    const componentEvents = events
-      .filter((event) => event.sourceId === componentId)
-      ?.map((event) => ({ ...event.event, id: event.id }));
-    const componentMeta = componentTypes.find((comp) => currentComponentData.component.component === comp.component);
-
-    const mergedDefinition = {
-      ...componentMeta.definition,
-      events: componentEvents,
-      properties: {
-        ...componentMeta.definition.properties,
-        ...currentComponentData?.component.definition.properties,
-      },
-
-      styles: {
-        ...componentMeta.definition.styles,
-        ...currentComponentData?.component.definition.styles,
-      },
-      validations: {
-        ...componentMeta.definition.validations,
-        ...currentComponentData?.component.definition.validations,
-      },
-    };
-
-    const mergedComponent = {
-      component: {
-        ...componentMeta,
-        ...currentComponentData.component,
-      },
-      layouts: {
-        ...currentComponentData.layouts,
-      },
-      withDefaultChildren: componentMeta.withDefaultChildren ?? false,
-    };
-
-    mergedComponent.component.definition = mergedDefinition;
-
-    components[componentId] = mergedComponent;
-  }
-
-  return components;
-};
-
-const buildAppDefinition = (data) => {
-  const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
-
-  editingVersion['currentVersionId'] = editingVersion.id;
-  _.unset(editingVersion, 'id');
-
-  const eventsData = data?.events;
-
-  const pages = data.pages.reduce((acc, page) => {
-    const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components), eventsData);
-
-    page.components = currentComponents;
-
-    acc[page.id] = page;
-
-    return acc;
-  }, {});
-
-  const appJSON = {
-    globalSettings: editingVersion.globalSettings,
-    homePageId: editingVersion.homePageId,
-    showHideViewerNavigation: editingVersion.showHideViewerNavigation ?? true,
-    pages: pages,
-  };
-
-  return appJSON;
-};
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
