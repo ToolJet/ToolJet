@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ToolTip } from '@/_components';
 import { appService } from '@/_services';
-You can use `@` instead.
 import { handleHttpErrorMessages, validateAppName } from '@/_helpers/utils';
 import InfoOrErrorBox from './InfoOrErrorBox';
 import { toast } from 'react-hot-toast';
@@ -13,6 +12,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [warningText, setWarningText] = useState('');
 
   const inputRef = useRef(null);
 
@@ -51,6 +51,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
       onNameChanged(trimmedName);
       setIsValid(true);
       setIsEditing(false);
+      toast.success('App name successfully updated!');
     } catch (error) {
       if (error.statusCode === 409) {
         setError('App name already exists');
@@ -73,9 +74,8 @@ function EditAppName({ appId, appName, onNameChanged }) {
     const newValue = e.target.value;
     setIsValid(true);
     setName(newValue);
-
-    if (newValue.length > 50) {
-      setError('Maximum length has been reached');
+    if (newValue.length == 50) {
+      setWarningText('Maximum length has been reached');
     } else {
       clearError();
     }
@@ -111,13 +111,14 @@ function EditAppName({ appId, appName, onNameChanged }) {
           } ${isError ? 'error' : ''}`} // Add the 'error' class when there's an error
           style={{ border: `1px solid ${borderColor}` }}
           value={name}
-          maxLength={51}
+          maxLength={50}
           data-cy="app-name-input"
         />
       </ToolTip>
       <InfoOrErrorBox
         active={isError || isEditing}
-        message={errorMessage || 'App name should be unique and max 50 characters'}
+        message={errorMessage || warningText || 'App name should be unique and max 50 characters'}
+        isWarning={warningText}
         isError={isError}
         darkMode={darkMode}
         additionalClassName={isError ? 'error' : ''}

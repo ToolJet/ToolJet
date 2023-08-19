@@ -10212,6 +10212,9 @@ tbody {
       border: 1px solid var(--indigo9) !important;
       box-shadow: none !important;
     }
+    &.input-error-border {
+      border-color: #DB4324 !important;
+    }
 
   }
 
@@ -10956,5 +10959,10 @@ tbody {
 
 .modal-divider {
   border-top: 1px solid #dee2e6;
+  padding: 10px;
+}
+
+.dark-theme-modal-divider {
+  border-top: 1px solid var(--slate5) !important;
   padding: 10px;
 }

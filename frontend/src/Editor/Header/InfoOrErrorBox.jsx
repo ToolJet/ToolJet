@@ -1,6 +1,7 @@
 import React from 'react';
 
-function InfoOrErrorBox({ active, message, isError, darkMode, additionalClassName }) {
+function InfoOrErrorBox({ active, message, isError, isWarning, darkMode, additionalClassName }) {
+  const color = isError ? 'var(--light-tomato-10, #DB4324)' : isWarning ? '#ED5F00' : 'var(--slate-light-10, #7E868C)';
   const boxStyle = {
     display: active ? 'flex' : 'none',
     flexDirection: 'column',
@@ -13,7 +14,7 @@ function InfoOrErrorBox({ active, message, isError, darkMode, additionalClassNam
     border: `1px solid ${darkMode ? 'var(--dark-border-color, #2D3748)' : 'var(--light-border-color, #FFF0EE)'}`,
     background: darkMode ? 'var(--dark-bg-01, #1E293B)' : 'var(--base-white-00, #FFF)',
     boxShadow: '0px 1px 2px 0px rgba(16, 24, 40, 0.05)',
-    color: isError ? 'var(--light-tomato-10, #DB4324)' : 'var(--slate-light-10, #7E868C)',
+    color: color,
     zIndex: 10000,
     position: 'absolute',
     fontFamily: 'IBM Plex Sans',

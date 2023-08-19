@@ -28,6 +28,7 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
+import { AppCloneDto } from '@dto/app-clone.dto';
 
 @Controller('apps')
 export class AppsController {
@@ -158,14 +159,14 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/clone')
-  async clone(@User() user, @AppDecorator() app: App) {
+  async clone(@User() user, @AppDecorator() app: App, @Body() appCloneDto: AppCloneDto) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('cloneApp', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-
-    const result = await this.appsService.clone(app, user);
+    const appName = appCloneDto.name;
+    const result = await this.appsService.clone(app, user, appName);
     const response = decamelizeKeys(result);
 
     return response;

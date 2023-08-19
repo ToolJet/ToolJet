@@ -9,9 +9,9 @@ import { Logger } from 'nestjs-pino';
 export class LibraryAppCreationService {
   constructor(private readonly appImportExportService: AppImportExportService, private readonly logger: Logger) {}
 
-  async perform(currentUser: User, identifier: string): Promise<App> {
-    const newApp = await this.appImportExportService.import(currentUser, this.findAppDefinition(identifier));
-
+  async perform(currentUser: User, identifier: string, appName: string): Promise<App> {
+    const appDefinition = this.findAppDefinition(identifier);
+    const newApp = await this.appImportExportService.import(currentUser, appDefinition, appName);
     return newApp;
   }
 

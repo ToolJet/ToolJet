@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Container, Row, Col } from 'react-bootstrap';
 import Categories from './Categories';
 import AppList from './AppList';
@@ -25,6 +25,7 @@ export default function TemplateLibraryModal(props) {
     (app) => selectedCategory.id === 'all' || app.category === selectedCategory.id
   );
   const [selectedApp, selectApp] = useState(undefined);
+  const [showCreateAppFromTemplateModal, setShowCreateAppFromTemplateModal] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -51,31 +52,10 @@ export default function TemplateLibraryModal(props) {
 
   const [deploying, setDeploying] = useState(false);
 
-  function deployApp(event) {
-    event.preventDefault();
-    const id = selectedApp.id;
-    setDeploying(true);
-    libraryAppService
-      .deploy(id)
-      .then((data) => {
-        setDeploying(false);
-        props.onCloseButtonClick();
-        toast.success('App created.', {
-          position: 'top-center',
-        });
-        navigate(`/${getWorkspaceId()}/apps/${data.id}`);
-      })
-      .catch((e) => {
-        toast.error(e.error, {
-          position: 'top-center',
-        });
-        setDeploying(false);
-      });
-  }
-
   return (
     <Modal
-      {...props}
+      show={props.show}
+      onHide={props.onCloseButtonClick}
       className={`template-library-modal ${props.darkMode ? 'dark-mode dark-theme' : ''}`}
       aria-labelledby="contained-modal-title-vcenter"
       centered
@@ -114,11 +94,13 @@ export default function TemplateLibraryModal(props) {
                         {t('globals.cancel', 'Cancel')}
                       </ButtonSolid>
                       <ButtonSolid
-                        onClick={(e) => {
-                          deployApp(e);
+                        onClick={() => {
+                          props.openCreateAppFromTemplateModal(selectedApp);
+                          setShowCreateAppFromTemplateModal(false);
+                          props.onCloseButtonClick();
                         }}
                         isLoading={deploying}
-                        className=" ms-2 "
+                        className="ms-2"
                       >
                         {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
                       </ButtonSolid>
