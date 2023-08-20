@@ -49,7 +49,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     clonePage,
     setEditorMarginLeft,
+    globalSettingsChanged,
+    toggleAppMaintenance,
+    app,
   } = props;
+  const { is_maintenance_on } = app;
 
   const dataSources = useDataSources();
   const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
@@ -200,15 +204,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
     ),
     settings: (
-      // <GlobalSettings
-      //   darkMode={darkMode}
-      //   errors={errorLogs}
-      //   clearErrorLogs={clearErrorLogs}
-      //   setPinned={handlePin}
-      //   pinned={pinned}
-      //   allLog={allLog}
-      // />
-      <></>
+      <GlobalSettings
+        globalSettingsChanged={globalSettingsChanged}
+        globalSettings={appDefinition.globalSettings}
+        darkMode={darkMode}
+        toggleAppMaintenance={toggleAppMaintenance}
+        is_maintenance_on={is_maintenance_on}
+      />
     ),
   };
 
@@ -242,17 +244,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         ref={setSideBarBtnRefs('settings')}
       />
 
-      {/* <LeftSidebarItem
-        icon="comments"
-        selectedSidebarItem={selectedSidebarItem}
-        // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem('comments')}
-        className={`left-sidebar-item  left-sidebar-layout`}
-        badge={true}
-        count={unReadErrorCount.unread}
-        tip="Comments"
-        ref={setSideBarBtnRefs('comments')}
-      /> */}
       <LeftSidebarItem
         icon="debugger"
         selectedSidebarItem={selectedSidebarItem}

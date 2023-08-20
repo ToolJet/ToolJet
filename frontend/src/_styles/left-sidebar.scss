@@ -60,7 +60,11 @@
     cursor: pointer;
   }
 
-
+  #global-settings-popover {
+    .card-body {
+      background-color: var(--base) !important;
+    }
+  }
 
   .global-settings-popover {
     top: 260px;

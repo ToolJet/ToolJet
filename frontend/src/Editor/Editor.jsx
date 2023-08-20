@@ -1524,6 +1524,9 @@ class EditorComponent extends React.Component {
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
               <LeftSidebar
+                globalSettingsChanged={this.globalSettingsChanged}
+                toggleAppMaintenance={this.toggleAppMaintenance}
+                app={app}
                 errorLogs={currentState.errors}
                 components={currentState.components}
                 appId={appId}
@@ -1540,6 +1543,7 @@ class EditorComponent extends React.Component {
                   pages: this.state.appDefinition.pages,
                   homePageId: this.state.appDefinition.homePageId,
                   showViewerNavigation: this.state.appDefinition.showViewerNavigation,
+                  globalSettings: this.state.appDefinition.globalSettings,
                 }}
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}
@@ -1562,6 +1566,7 @@ class EditorComponent extends React.Component {
                 apps={apps}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
               />
+
               {!this.props.showComments && (
                 <Selecto
                   dragContainer={'.canvas-container'}
