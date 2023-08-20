@@ -75,55 +75,32 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
         </div>
       </div>
       <div className="undo-redo-container">
-        <svg
-          onClick={handleUndo}
-          xmlns="http://www.w3.org/2000/svg"
-          data-cy={`editor-undo-button`}
-          className={cx('undo-button cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
-            disabled: !canUndo,
-          })}
-          width="44"
-          height="44"
-          viewBox="0 0 24 24"
-          strokeWidth="1.5"
-          stroke={darkMode ? '#fff' : '#2c3e50'}
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          data-tooltip-id="tooltip-for-undo"
-          data-tooltip-content="Undo"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none">
-            <title>undo</title>
-          </path>
-          <path d="M9 13l-4 -4l4 -4m-4 4h11a4 4 0 0 1 0 8h-1" fill="none">
-            <title>undo</title>
-          </path>
-        </svg>
-        <svg
-          title="redo"
-          onClick={handleRedo}
-          xmlns="http://www.w3.org/2000/svg"
-          data-cy={`editor-redo-button`}
-          className={cx('redo-button cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
-            disabled: !canRedo,
-          })}
-          width="44"
-          height="44"
-          viewBox="0 0 24 24"
-          strokeWidth="1.5"
-          stroke={darkMode ? '#fff' : '#2c3e50'}
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          data-tooltip-id="tooltip-for-redo"
-          data-tooltip-content="Redo"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none">
-            <title>redo</title>
-          </path>
-          <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
-        </svg>
+        <div onClick={handleUndo} style={{ height: '28px', width: '28px' }}>
+          <SolidIcon
+            width="16"
+            data-tooltip-id="tooltip-for-undo"
+            data-tooltip-content="Undo"
+            fill={darkMode ? '#fff' : '#2c3e50'}
+            name="arrowback"
+            data-cy={`editor-undo-button`}
+            className={cx('undo-button cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
+              disabled: !canUndo,
+            })}
+          />
+        </div>
+        <divn onClick={handleRedo} style={{ height: '28px', width: '28px' }}>
+          <SolidIcon
+            width="16"
+            data-tooltip-id="tooltip-for-redo"
+            data-tooltip-content="Redo"
+            fill={darkMode ? '#fff' : '#2c3e50'}
+            name="arrowreturn"
+            data-cy={`editor-redo-button`}
+            className={cx('redo-button cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
+              disabled: !canRedo,
+            })}
+          />
+        </divn>
       </div>
       <Tooltip id="tooltip-for-undo" className="tooltip" />
       <Tooltip id="tooltip-for-redo" className="tooltip" />

@@ -1,3 +1,4 @@
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import React, { forwardRef } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';

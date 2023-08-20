@@ -18,6 +18,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
+import { GlobalSettings } from '../Header/GlobalSettings';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -198,6 +199,17 @@ export const LeftSidebar = forwardRef((props, ref) => {
         allLog={allLog}
       />
     ),
+    settings: (
+      // <GlobalSettings
+      //   darkMode={darkMode}
+      //   errors={errorLogs}
+      //   clearErrorLogs={clearErrorLogs}
+      //   setPinned={handlePin}
+      //   pinned={pinned}
+      //   allLog={allLog}
+      // />
+      <></>
+    ),
   };
 
   return (
@@ -226,10 +238,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
         onClick={(e) => handleSelectedSidebarItem('settings')}
         className={`left-sidebar-item  left-sidebar-layout`}
         badge={true}
-        count={unReadErrorCount.unread}
         tip="Settings"
         ref={setSideBarBtnRefs('settings')}
       />
+
       {/* <LeftSidebarItem
         icon="comments"
         selectedSidebarItem={selectedSidebarItem}
@@ -263,14 +275,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
           ref={setSideBarBtnRefs('database')}
         />
       )}
-      <Popover
-        onInteractOutside={handleInteractOutside}
-        open={pinned || !!selectedSidebarItem}
-        popoverContentClassName={`p-0 sidebar-h-100-popover ${selectedSidebarItem}`}
-        side="right"
-        popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
-        popoverContentHeight={popoverContentHeight}
-      />
 
       {config.COMMENT_FEATURE_ENABLE && (
         <div className={`${isVersionReleased && 'disabled'}`}>
@@ -281,6 +285,14 @@ export const LeftSidebar = forwardRef((props, ref) => {
           />
         </div>
       )}
+      <Popover
+        onInteractOutside={handleInteractOutside}
+        open={pinned || !!selectedSidebarItem}
+        popoverContentClassName={`p-0 sidebar-h-100-popover ${selectedSidebarItem}`}
+        side="right"
+        popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
+        popoverContentHeight={popoverContentHeight}
+      />
       <ConfirmDialog
         show={showLeaveDialog}
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}

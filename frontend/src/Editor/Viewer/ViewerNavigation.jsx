@@ -158,7 +158,7 @@ const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, cu
   return (
     <Header
       styles={{
-        height: '45px',
+        height: '48px',
       }}
     >
       {showHeader && (

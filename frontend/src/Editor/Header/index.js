@@ -66,10 +66,10 @@ export default function EditorHeader({
 
   return (
     <div className="header">
-      <header className="navbar navbar-expand-md  d-print-none">
+      <header className="navbar navbar-expand-md  d-print-none p-0">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
-            <h1 className="navbar-brand d-none-navbar-horizontal">
+            <h1 className="navbar-brand d-none-navbar-horizontal p-0">
               <Link to={'/'} data-cy="editor-page-logo">
                 <AppLogo isLoadingFromHeader={true} />
               </Link>
@@ -77,23 +77,28 @@ export default function EditorHeader({
             <div
               style={{
                 maxHeight: '48px',
+                margin: '0px',
+                padding: '0px',
+
+                width: 'calc(100% - 348px)',
               }}
-              className="flex-grow-1 row"
+              // className="flex-grow-1 row"
+              className=" row"
             >
-              <div className="col">
-                <div className="row p-2">
-                  <div className="col global-settings-app-wrapper">
+              <div className="col p-0 d-flex align-items-center">
+                <div className="row p-0 m-0">
+                  <div className="col global-settings-app-wrapper p-0 m-0">
                     <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
                   </div>
 
-                  <div className="col d-flex">
+                  <div className="col d-flex align-items-center" style={{ marginLeft: '214px' }}>
                     <HeaderActions
                       canUndo={canUndo}
                       canRedo={canRedo}
                       handleUndo={handleUndo}
                       handleRedo={handleRedo}
                     />
-                    <div className="my-1 mx-3">
+                    <div style={{ marginLeft: '214px', width: '86px', marginRight: '20px' }}>
                       <span
                         className={cx('autosave-indicator', {
                           'autosave-indicator-saving': isSaving,
@@ -117,11 +122,12 @@ export default function EditorHeader({
                         )}
                       </span>
                     </div>
+                    {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
                   </div>
                 </div>
               </div>
-              <div className="col-auto d-flex align-items-center ">
-                <div className="d-flex version-manager-container">
+              <div className="col-auto d-flex align-items-center p-0" style={{ marginRight: '12px' }}>
+                <div className="d-flex version-manager-container p-0">
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
@@ -131,15 +137,13 @@ export default function EditorHeader({
                     />
                   )}
                 </div>
-                {config.ENABLE_MULTIPLAYER_EDITING && (
-                  <div>
-                    <RealtimeAvatars />
-                  </div>
-                )}
               </div>
-              <div className="col-1"></div>
+              {/* <div className="col-1"></div> */}
             </div>
-            <div className="d-flex">
+            <div
+              className="d-flex justify-content-end navbar-right-section"
+              style={{ width: '300px', paddingRight: '12px' }}
+            >
               <div className="navbar-nav flex-row order-md-last release-buttons ">
                 <div className="nav-item">
                   {app.id && <ManageAppUsers app={app} slug={slug} M={M} handleSlugChange={handleSlugChange} />}

@@ -208,7 +208,7 @@ button {
 }
 
 .navbar {
-  max-height: 45px;
+  max-height: 48px;
   min-height: auto;
 
   .nav-item.active:after {
@@ -295,10 +295,16 @@ button {
 }
 
 .editor {
+  header {
+    position: fixed;
+    width: 100%;
+    top: 0px;
+    left: 0px;
+  }
+
   .header-container {
     max-width: 100%;
-    padding: 8px 12px 8px 0px;
-    min-height: 45px;
+    padding: 0px;
   }
 
   .resizer-select,
@@ -446,7 +452,7 @@ button {
     flex: 1 1 auto;
     background-color: var(--base) !important;
     background-clip: border-box;
-    margin-top: 0px;
+    margin-top: 48px;
     padding-top: 0px;
 
     .accordion-item {
@@ -514,13 +520,13 @@ button {
   }
 
   .editor-sidebar {
-    height: calc(100% - 45px);
+    height: calc(100% - 48px);
     position: fixed;
     right: 0;
     overflow-x: hidden;
     width: 300px;
     flex: 1 1 auto;
-    top: 45px;
+    top: 48px;
     border-left: 1px solid var(--slate5);
     background-color: var(--base);
     background-clip: border-box;
@@ -681,7 +687,7 @@ button {
 
     .canvas-container {
       height: 100%;
-      top: 45px;
+      top: 48px;
       position: fixed;
       right: 300px;
       left: 48px;
@@ -3046,6 +3052,10 @@ input:focus-visible {
 
 .column-sort-row {
   border-radius: 4px;
+
+  .card-body {
+    color: var(--slate12);
+  }
 }
 
 .jet-button {
@@ -3161,13 +3171,13 @@ input:focus-visible {
     color: #ffffff !important;
   }
 
-  .form-control {
-    border: 1px solid #324156;
-  }
+  // .form-control {
+  //   border: 1px solid #324156;
+  // }
 
-  .card {
-    background-color: #324156;
-  }
+  // .card {
+  //   background-color: #324156;
+  // }
 
   .card .table tbody td a {
     color: inherit;
@@ -3726,14 +3736,6 @@ input[type="text"] {
 
 .cursor-none {
   cursor: none;
-}
-
-.theme-dark .event-action {
-  filter: brightness(0) invert(1);
-}
-
-.event-action {
-  filter: brightness(0) invert(0);
 }
 
 .disabled {
@@ -4391,10 +4393,13 @@ input[type="text"] {
 }
 
 .app-name {
-  width: 200px;
-  left: 84px;
-  top: 6px;
-  position: absolute;
+  width: 190px;
+  margin-left: 12px;
+
+  .form-control-plaintext {
+    background-color: var(--base)
+  }
+
 }
 
 .app-name:hover {
@@ -4692,6 +4697,7 @@ input[type="text"] {
   input {
     border-radius: 5px !important;
     background: var(--base);
+    color: var(--slate12);
   }
 
   .modal-main {
@@ -5049,8 +5055,13 @@ input[type="text"] {
 }
 
 .comment-card-wrapper {
-  border-top: 0.5px solid #e1e1e1 !important;
+  border-top: 0.5px solid var(--slate5) !important;
   margin-top: -1px !important;
+
+  .card {
+    background-color: var(--base);
+
+  }
 }
 
 div#driver-highlighted-element-stage,
@@ -5739,7 +5750,8 @@ div#driver-page-overlay {
 }
 
 .realtime-avatars {
-  padding: 0px
+  padding: 0px;
+  margin-left: 8px;
 }
 
 .widget-style-field-header {
@@ -5810,16 +5822,14 @@ div#driver-page-overlay {
 }
 
 .autosave-indicator {
-  color: #868aa5;
-  white-space: nowrap;
+  color: var(--slate10, #7E868C);
+  font-family: IBM Plex Sans;
+  font-size: 10px;
+  font-style: normal;
   font-weight: 400;
-  font-size: 12px;
-  letter-spacing: 0.5px;
+  line-height: 16px;
 }
 
-.autosave-indicator-saving {
-  left: 44%;
-}
 
 .zoom-buttons {
   width: 20px !important;
@@ -7697,6 +7707,10 @@ tbody {
   // position: absolute;
   // left: 58%;
   border-radius: 6px;
+
+  .react-select__control {
+    border: none !important;
+  }
 }
 
 .app-version-list-item {
@@ -7721,18 +7735,12 @@ tbody {
 }
 
 .editor .navbar-brand {
-  padding-bottom: 1rem;
   border-right: 1px solid var(--slate5);
   width: 48px;
   display: flex;
   justify-content: center;
 }
 
-.theme-dark {
-  .realtime-avatars {
-    border-right: 1px solid #333c48;
-  }
-}
 
 .modal-backdrop {
   opacity: 0.5;
@@ -7959,12 +7967,12 @@ tbody {
 }
 
 .release-buttons {
-  height: 45px;
+  height: 48px;
   gap: 4px;
 }
 
 .global-settings-app-wrapper {
-  max-width: 300px;
+  max-width: 190px;
 }
 
 .version-manager-container {
@@ -10981,6 +10989,7 @@ tbody {
     flex: 1 0 0;
     width: 84px;
     height: 28px;
+    cursor: pointer;
   }
 
   .released-button {
@@ -11100,13 +11109,17 @@ tbody {
   gap: 10px;
   flex-shrink: 0;
   margin-bottom: 0px !important;
+  border-radius: 100% !important;
+  margin-left: -8px;
+  background-color: var(--slate5) !important;
+  color: var(--slate10) !important
 }
 
 .undo-redo-container {
   position: absolute;
-  top: 0px;
+  top: 10px;
   display: flex;
-  right: 218px;
+  right: 222px;
 }
 
 .sidebar-panel-header {
@@ -11154,5 +11167,32 @@ tbody {
 .copilot-codehinter-wrap {
   .CodeMirror.cm-s-monokai.CodeMirror-wrap {
     border-radius: 0px;
+  }
+}
+
+.avatar-list-stacked {
+  display: flex;
+}
+
+.avatar-list-stacked .avatar {
+  margin-right: 0px !important;
+}
+
+.navbar-right-section {
+  border-left: 1px solid var(--slate5);
+}
+
+.modal-header {
+  background-color: var(--base);
+  border-bottom: 1px solid var(--slate5);
+}
+
+.sidebar-debugger {
+  .nav-item {
+    button:hover {
+      border-top-color: transparent;
+      border-left-color: transparent;
+      border-right-color: transparent;
+    }
   }
 }

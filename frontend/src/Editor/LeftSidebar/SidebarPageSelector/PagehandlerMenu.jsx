@@ -28,7 +28,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
       rootClose={false}
       show={showMenu}
       overlay={
-        <Popover key={page.id} id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
+        <Popover key={page.id} id="page-handler-menu" className={darkMode && 'dark-theme'}>
           <Popover.Body key={page.id} bsPrefix="popover-body">
             <div className="card-body">
               <PageHandleField page={page} updatePageHandle={handlePageCallback} />

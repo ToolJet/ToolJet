@@ -576,7 +576,7 @@
   position: relative;
   height: 100vh;
   margin-top: 0px;
-  border-radius: 0px;
+  border-radius: 0px !important;
 
   .add-datasource-btn {
     position: absolute;
@@ -686,5 +686,11 @@
 
   p {
     color: var(-—slate9) !important;
+  }
+}
+
+.sidebar-debugger {
+  .tab-content {
+    background: var(--base);
   }
 }

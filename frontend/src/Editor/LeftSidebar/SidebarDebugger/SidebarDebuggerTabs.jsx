@@ -19,7 +19,7 @@ const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
 
       <div
         className={cx('tab-content', {
-          'theme-dark dark-theme': darkMode,
+          'dark-theme': darkMode,
         })}
       >
         {logs.map((error, index) => (
@@ -36,7 +36,7 @@ const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
       defaultActiveKey="allLog"
       id="sidebar-debugger"
       className={cx('mb-3 sidebar-debugger', {
-        'theme-dark dark-theme': darkMode,
+        'dark-theme': darkMode,
       })}
       justify
     >

@@ -150,8 +150,8 @@ class ManageAppUsersComponent extends React.Component {
           keyboard={true}
           animation={false}
           onEscapeKeyDown={this.hideModal}
-          className="app-sharing-modal animation-fade"
-          contentClassName={this.props.darkMode ? 'theme-dark' : ''}
+          className={`app-sharing-modal animation-fade ${this.props.darkMode ? 'dark-theme' : ''}`}
+          contentClassName={this.props.darkMode ? 'dark-theme' : ''}
         >
           <Modal.Header>
             <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>

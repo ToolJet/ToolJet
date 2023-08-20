@@ -86,7 +86,7 @@ const LeftSidebarPageSelector = ({
               />
             }
           >
-            <div className="d-flex justify-content-end">
+            <div className="d-flex justify-content-end" style={{ gap: '2px' }}>
               <Button
                 title={'Add Page'}
                 onClick={() => {
@@ -98,7 +98,12 @@ const LeftSidebarPageSelector = ({
                 }}
                 darkMode={darkMode}
                 size="sm"
-                styles={{ width: '28px', padding: 0 }}
+                styles={{
+                  width: '28px',
+                  padding: 0,
+                  border: darkMode && '1px solid #3A3F42',
+                  backgroundColor: darkMode && ' #121212',
+                }}
               >
                 <Button.Content dataCy={`add-page`} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
               </Button>
@@ -107,7 +112,12 @@ const LeftSidebarPageSelector = ({
                 onClick={() => setShowSearch(!showSearch)}
                 darkMode={darkMode}
                 size="sm"
-                styles={{ width: '28px', padding: 0 }}
+                styles={{
+                  width: '28px',
+                  padding: 0,
+                  border: darkMode && '1px solid #3A3F42',
+                  backgroundColor: darkMode && ' #121212',
+                }}
               >
                 <Button.Content dataCy={'search-page'} iconSrc={'assets/images/icons/search.svg'} direction="left" />
               </Button>
@@ -119,7 +129,12 @@ const LeftSidebarPageSelector = ({
                 }}
                 darkMode={darkMode}
                 size="sm"
-                styles={{ width: '28px', padding: 0 }}
+                styles={{
+                  width: '28px',
+                  padding: 0,
+                  border: darkMode && '1px solid #3A3F42',
+                  backgroundColor: darkMode && ' #121212',
+                }}
               >
                 <Button.Content
                   dataCy={'pin-panel'}

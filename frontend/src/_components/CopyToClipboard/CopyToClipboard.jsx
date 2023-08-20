@@ -2,6 +2,7 @@ import React from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components/ToolTip';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const CopyToClipboardComponent = ({ data, callback }) => {
   const [copied, setCopied] = React.useState(false);
@@ -31,7 +32,7 @@ export const CopyToClipboardComponent = ({ data, callback }) => {
         }}
       >
         <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="mx-1 copy-to-clipboard">
-          <img src={`assets/images/icons/copy.svg`} width="12" height="12" />
+          <SolidIcon width="12" height="12" name="copy" />
         </span>
       </CopyToClipboard>
     </ToolTip>
