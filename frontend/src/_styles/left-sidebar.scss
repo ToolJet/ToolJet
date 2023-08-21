@@ -7,6 +7,13 @@
   gap: 16px;
 
   .sidebar-svg-icon {
+    height: 32px;
+    width: 32px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
     &:hover {
       background: var(--slate5);
       border-radius: 6px;
@@ -15,13 +22,16 @@
 
   .left-sidebar-item:first-child {
     margin-top: 8px !important;
-
   }
 
   .left-sidebar-item {
     text-align: center;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
+    max-height: 32px;
+    width: 32px;
+    display: flex;
+    align-items: center;
 
     &:hover {
       .debugger-badge {
@@ -697,4 +707,14 @@
   .tab-content {
     background: var(--base);
   }
+}
+
+.sidebar-item {
+  height: 32px;
+  width: 32px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--indigo4);
 }

@@ -268,7 +268,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       )}
 
       {config.COMMENT_FEATURE_ENABLE && (
-        <div className={`${isVersionReleased && 'disabled'}`}>
+        <div className={`${isVersionReleased && 'disabled'} left-sidebar-item`}>
           <LeftSidebarComment
             selectedSidebarItem={showComments ? 'comments' : ''}
             currentPageId={currentPageId}
@@ -292,7 +292,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
       />
       <div className="left-sidebar-stack-bottom">
-        <div className="left-sidebar-item no-border">
+        <div className="">
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}

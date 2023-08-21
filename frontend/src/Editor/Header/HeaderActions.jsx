@@ -77,11 +77,11 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
       <div className="undo-redo-container">
         <div onClick={handleUndo} style={{ height: '28px', width: '28px' }}>
           <SolidIcon
-            width="16"
+            width="24"
             data-tooltip-id="tooltip-for-undo"
             data-tooltip-content="Undo"
             fill={darkMode ? '#fff' : '#2c3e50'}
-            name="arrowback"
+            name="arrowforwardup"
             data-cy={`editor-undo-button`}
             className={cx('undo-button cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
               disabled: !canUndo,
@@ -90,11 +90,11 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
         </div>
         <divn onClick={handleRedo} style={{ height: '28px', width: '28px' }}>
           <SolidIcon
-            width="16"
+            width="24"
             data-tooltip-id="tooltip-for-redo"
             data-tooltip-content="Redo"
             fill={darkMode ? '#fff' : '#2c3e50'}
-            name="arrowreturn"
+            name="arrowbackup"
             data-cy={`editor-redo-button`}
             className={cx('redo-button cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
               disabled: !canRedo,
