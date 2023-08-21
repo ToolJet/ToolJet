@@ -104,6 +104,9 @@ body {
   input{
     text-align: left;
   }
+  textarea{
+    text-align: left;
+  }
   .tags.row,.radio-row{
     justify-content: left;
   }
@@ -119,6 +122,9 @@ body {
 }
 .table-text-align-right{
   input{
+    text-align: right;
+  }
+  textarea{
     text-align: right;
   }
   .tags.row,.radio.row{
@@ -140,6 +146,9 @@ body {
   }
   .tags.row,.radio.row{
     justify-content: center;
+  }
+  textarea{
+    text-align: center;
   }
   &.has-datepicker{
     .td-container{
