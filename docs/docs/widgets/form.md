@@ -861,9 +861,18 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 ## Exposed Variables
 
+<div style={{textAlign:'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/form/exposedform.png" alt="Form" />
+
+</div>
+
+<br/>
+
 | Variables      | Description |
 | ----------- | ----------- |
 | data | This variable holds the data of all the components that are nested inside the form components. You can access the value dynamically using JS: `{{components.form1.data.numberinput1.value}}`|
+| **children** | This variable stores the data of the components within the form component. The purpose of exposing the child components of the form is to enable the child components to be [controlled using component specific actions](#controlling-child-components). |
 
 ## Component specific actions (CSA)
 
@@ -874,3 +883,26 @@ Following actions of form component can be controlled using the component specif
 | submitForm | You can submit the form data via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.form1.resetForm()` |
 | resetForm | You can reset the form data via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.form1.submitForm()` |
 
+## Controlling child components
+
+All the child components of the form component are exposed through the `children` variable. This variable holds the data of all the components that are nested inside the form components.
+
+<div style={{textAlign:'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/form/children.png" alt="Form" />
+
+</div>
+
+<br/>
+
+The components inside the form can be controlled using the javascipt queries. For example, if you want to disable the `button1` component in the form, you can use the following expression:
+
+```js
+components.form1.children.button1.disable(true) // true to disable the button
+```
+
+<br/>
+
+:::caution
+Currently, only those child components can be controlled using the javascript queries that have component specific actions implemented. To check if a component has component specific actions implemented, refer to the document of that **[specific component](/docs/widgets/overview)**.
+:::

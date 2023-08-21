@@ -174,7 +174,7 @@ Use `{{listItem.key}}` to display data on the nested widgets. Example: For displ
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/exposedvars.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/exposed2.png" alt="ToolJet - List view widget" />
 
 </div>
 
@@ -184,8 +184,33 @@ Use `{{listItem.key}}` to display data on the nested widgets. Example: For displ
 | **selectedRowId** (deprecated) | This variable holds the ID of the clicked row in the list view. The row ID starts from `0`. You can access the selectedRowId using `{{components.listview1.selectedRowId}}` |
 | **selectedRow** (deprecated) | This variable contains the data of the components within the selected row. You can access the data using `{{components.listview1.selectedRow.text1}}` |
 | **selectedRecordId** | This variable holds the ID of the clicked record in the list view. The record ID starts from `0`. You can access the selectedRecordId using `{{components.listview1.selectedRecordId}}` |
-| **selectedRow** | This variable stores the data of the components within the selected record. You can access the data using `{{components.listview1.selectedRecord.text1}}` |
+| **selectedRecord** | This variable stores the data of the components within the selected record. You can access the data using `{{components.listview1.selectedRecord.text1}}` |
+| **children** | This variable stores the data of the components within all the records in listview component. The purpose of exposing children is to enable the child components to be [controlled using component specific actions](#controlling-child-components). |
 
 ## Component specific actions (CSA)
 
 There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+
+## Controlling child components
+
+All the child components of the list view component are exposed through the `children` variable. This variable is an array of objects, where each object represents a record in the listview and contains the data of the child components.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/list-view/children.png" alt="ToolJet - List view widget" />
+
+</div>
+
+<br/>
+
+The components inside the list view can be controlled using the javascipt queries. For example, if you want to disable the `button1` component in the first record, you can use the following expression:
+
+```js
+components.listview1.children[0].button1.disable(true) // disables the button1 component in the first record
+```
+
+<br/>
+
+:::caution
+Currently, only those child components can be controlled using the javascript queries that have component specific actions implemented. To check if a component has component specific actions implemented, refer to the document of that **[specific component](/docs/widgets/overview)**.
+:::
