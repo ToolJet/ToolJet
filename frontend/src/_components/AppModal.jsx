@@ -62,22 +62,24 @@ export function AppModal({
 
   const handleAction = async (e) => {
     setDeploying(true);
+    const trimmedAppName = newAppName.trim();
+    setNewAppName(trimmedAppName);
     if (!errorText) {
       setIsLoading(true);
       try {
         let success = true;
         //create app from template
         if (templateDetails) {
-          success = await processApp(e, newAppName, templateDetails);
+          success = await processApp(e, trimmedAppName, templateDetails);
           //import app
         } else if (fileContent) {
-          success = await processApp(fileContent, newAppName);
+          success = await processApp(fileContent, trimmedAppName);
           //rename app/clone existing app
         } else if (selectedAppId) {
-          success = await processApp(newAppName, selectedAppId);
+          success = await processApp(trimmedAppName, selectedAppId);
           //create app from scratch
         } else {
-          success = await processApp(newAppName);
+          success = await processApp(trimmedAppName);
         }
         if (success === false) {
           setErrorText('App name already exists');
@@ -98,11 +100,12 @@ export function AppModal({
 
   const handleInputChange = (e) => {
     const newAppName = e.target.value;
-    if (newAppName.length == 50) {
+    const trimmedName = newAppName.trim();
+    if (trimmedName.length === 50) {
       setInfoText('Maximum length has been reached');
     } else {
       setInfoText('');
-      const error = validateAppName(newAppName);
+      const error = validateAppName(trimmedName);
       setErrorText(error?.errorMsg || '');
 
       if (clearInput) {
