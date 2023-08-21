@@ -568,7 +568,7 @@ class HomePageComponent extends React.Component {
               fileContent={fileContent}
               show={() => this.setState({ showImportAppModal: true })}
               title={'Import app'}
-              actionButton={'+ Create app'}
+              actionButton={'Import app'}
             />
           )}
           {showCreateAppFromTemplateModal && (

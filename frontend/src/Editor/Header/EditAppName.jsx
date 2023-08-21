@@ -43,6 +43,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
     if (trimmedName === appName) {
       setIsValid(true);
       setIsEditing(false);
+      setName(appName);
       return;
     }
 
@@ -56,6 +57,9 @@ function EditAppName({ appId, appName, onNameChanged }) {
       if (error.statusCode === 409) {
         setError('App name already exists');
       } else {
+        clearError();
+        setName(appName);
+        setIsEditing(false);
         handleHttpErrorMessages(error, 'app');
       }
     }
@@ -72,9 +76,9 @@ function EditAppName({ appId, appName, onNameChanged }) {
 
   const handleInput = (e) => {
     const newValue = e.target.value;
-    setIsValid(true);
+    const trimmedValue = newValue.trim();
     setName(newValue);
-    if (newValue.length == 50) {
+    if (trimmedValue.length === 50) {
       setWarningText('Maximum length has been reached');
     } else {
       clearError();
