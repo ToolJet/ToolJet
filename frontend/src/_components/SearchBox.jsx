@@ -75,13 +75,13 @@ export const SearchBox = forwardRef(
             autoFocus={autoFocus}
             ref={ref}
           />
-          {(isFocused || showClearButton) && (
+          {searchText.length > 0 ? (
             <span className="input-icon-addon end" onMouseDown={clearSearchText}>
               <div className="d-flex tj-common-search-input-clear-icon" title="clear">
                 <SolidIcon name="remove" />
               </div>
             </span>
-          )}
+          ) : ('')}
         </div>
       </div>
     );
