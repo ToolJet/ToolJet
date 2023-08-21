@@ -3,11 +3,15 @@ import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
 import { enableSignUp } from "Support/utils/manageSSO";
 import { usersText } from "Texts/manageUsers";
+import { fake } from "Fixtures/fake";
 import {
     logout,
     navigateToManageSSO,
     navigateToManageUsers,
     searchUser,
+    pinInspector,
+    navigateToAppEditor,
+    navigateToManageGroups
 } from "Support/utils/common";
 import { ssoText } from "Texts/manageSSO";
 import {
@@ -17,8 +21,12 @@ import {
     VerifyWorkspaceInvitePageElements,
 } from "Support/utils/eeCommon";
 
+import { addAppToGroup, addUserToGroup } from "Support/utils/manageGroups";
+
 describe("LDAP flow", () => {
     const data = {};
+    data.appName = `${fake.companyName} App`;
+
     beforeEach(() => {
         cy.appUILogin();
     });
@@ -123,6 +131,37 @@ describe("LDAP flow", () => {
         cy.clearAndType(commonSelectors.passwordInputField, "password");
         cy.get(commonSelectors.acceptInviteButton).click();
     });
+    it("Verify the LDAP SSO user info on inspector", () => {
+        cy.intercept("GET", "api/library_apps").as("apps");
+
+        cy.createApp();
+        cy.renameApp(data.appName);
+        cy.dragAndDropWidget("Table", 250, 250);
+        cy.get(commonSelectors.editorPageLogo).click();
+        navigateToManageGroups()
+        addAppToGroup(data.appName);
+        cy.get(commonSelectors.dashboardIcon).click();
+        cy.wait("@apps");
+        logout()
+
+        cy.get(ssoEeSelector.ldapSSOText).click();
+        cy.clearAndType(commonSelectors.nameInputField, "Hubert J. Farnsworth");
+        cy.clearAndType(commonSelectors.passwordInputField, "professor");
+        cy.get(commonSelectors.signUpButton).click();
+
+        cy.wait("@apps");
+        cy.wait(1000);
+        navigateToAppEditor(data.appName);
+        pinInspector()
+        cy.get('[data-cy="inspector-node-globals"] > .node-key').click()
+        cy.get('[data-cy="inspector-node-currentuser"] > .node-key').click()
+        cy.get('[data-cy="inspector-node-ssouserinfo"] > .node-key').click();
+        cy.get('[data-cy="inspector-node-mail"] > .node-key').click();
+        cy.get('[data-cy="inspector-node-0"] > .mx-2').verifyVisibleElement("have.text", `"professor@planetexpress.com"`)
+
+
+
+    })
     it("Verify archive and unarchive functionality", () => {
         navigateToManageUsers();
         searchUser("professor@planetexpress.com");
