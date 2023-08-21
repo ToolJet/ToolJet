@@ -33,7 +33,7 @@ describe("User permissions", () => {
   });
   beforeEach(() => {
     cy.appUILogin();
-    cy.visitTheWorkspace('My workspace')
+    cy.visitTheWorkspace("My workspace");
   });
 
   it("Should verify the create new app permission", () => {
@@ -88,7 +88,10 @@ describe("User permissions", () => {
       .within(() => {
         cy.get("td input").eq(1).check();
       });
-    cy.verifyToastMessage(commonSelectors.toastMessage, "App permissions updated")
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "App permissions updated"
+    );
 
     common.logout();
     cy.login(data.email, usersText.password);
@@ -205,56 +208,23 @@ describe("User permissions", () => {
 
   it("Should verify Create/Update/Delete workspace variable permission", () => {
     common.navigateToWorkspaceVariable();
-    cy.get(workspaceVarSelectors.addNewVariableButton).should("exist");
-
-    common.logout();
-    cy.login(data.email, usersText.password);
-    common.navigateToWorkspaceVariable();
-    cy.get(workspaceVarSelectors.addNewVariableButton).should("not.exist");
-
-    permissions.adminLogin();
-    cy.get(groupsSelector.permissionsLink).click();
-    cy.get(groupsSelector.workspaceVarCheckbox).check();
+    cy.get('[data-cy="alert-info-text"]>>.text-muted').verifyVisibleElement(
+      "have.text",
+      "There are no Workspace variables. Workspace variables are being deprecated soon, so please use Workspace constants instead."
+    );
+    cy.get(
+      '[data-cy="go-to-workspace-constants-option-button"]'
+    ).verifyVisibleElement("have.text", "Go to workspace constants");
     common.logout();
 
     cy.login(data.email, usersText.password);
     common.navigateToWorkspaceVariable();
-    cy.get(workspaceVarSelectors.addNewVariableButton).should("exist").click();
-    cy.clearAndType(
-      workspaceVarSelectors.workspaceVarNameInput,
-      data.firstName
-    );
-    cy.clearAndType(
-      workspaceVarSelectors.workspaceVarValueInput,
-      common.randomValue()
-    );
-    cy.get(workspaceVarSelectors.addVariableButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      workspaceVarText.workspaceVarCreatedToast
-    );
-    cy.get(workspaceVarSelectors.workspaceVarName(data.firstName)).should(
-      "be.visible"
+    cy.get('[data-cy="alert-info-text"]>>.text-muted').verifyVisibleElement(
+      "have.text",
+      "There are no Workspace variables. Workspace variables are being deprecated soon, so please use Workspace constants instead."
     );
     cy.get(
-      workspaceVarSelectors.workspaceVarEditButton(data.firstName)
-    ).click();
-    cy.clearAndType(workspaceVarSelectors.workspaceVarNameInput, data.lastName);
-    cy.get(workspaceVarSelectors.addVariableButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      workspaceVarText.workspaceVarUpdatedToast
-    );
-    cy.get(workspaceVarSelectors.workspaceVarName(data.lastName)).should(
-      "be.visible"
-    );
-    cy.get(
-      workspaceVarSelectors.workspaceVarDeleteButton(data.lastName)
-    ).click();
-    cy.get(commonSelectors.buttonSelector("Yes")).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      workspaceVarText.workspaceVarDeletedToast
-    );
+      '[data-cy="go-to-workspace-constants-option-button"]'
+    ).verifyVisibleElement("have.text", "Go to workspace constants");
   });
 });

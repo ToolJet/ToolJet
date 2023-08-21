@@ -10,6 +10,7 @@ import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
+import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
 export function findProp(obj, prop, defval) {
@@ -65,6 +66,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'page',
           'client',
           'server',
+          'constants',
           'moment',
           '_',
           ...Object.keys(customObjects),
@@ -80,6 +82,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? state?.page : undefined,
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
+        state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
         moment,
         _,
         ...Object.values(customObjects),
@@ -162,14 +165,33 @@ export function resolveReferences(
       }
 
       if (object.startsWith('{{') && object.endsWith('}}')) {
-        const code = object.replace('{{', '').replace('}}', '');
+        if ((object.match(/{{/g) || []).length === 1) {
+          const code = object.replace('{{', '').replace('}}', '');
 
-        if (reservedKeyword.includes(code)) {
-          error = `${code} is a reserved keyword`;
-          return [{}, error];
+          if (reservedKeyword.includes(code)) {
+            error = `${code} is a reserved keyword`;
+            return [{}, error];
+          }
+
+          return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
+        } else {
+          const dynamicVariables = getDynamicVariables(object);
+
+          for (const dynamicVariable of dynamicVariables) {
+            const value = resolveString(
+              dynamicVariable,
+              state,
+              customObjects,
+              reservedKeyword,
+              withError,
+              forPreviewBox
+            );
+
+            if (typeof value !== 'function') {
+              object = object.replace(dynamicVariable, value);
+            }
+          }
         }
-
-        return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
       } else if (object.startsWith('%%') && object.endsWith('%%')) {
         const code = object.replaceAll('%%', '');
 
@@ -469,6 +491,7 @@ export async function executeMultilineJS(
       'actions',
       'client',
       'server',
+      'constants',
       ...(hasParamSupport ? ['parameters'] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
       code,
     ];
@@ -486,6 +509,7 @@ export async function executeMultilineJS(
       actions,
       currentState?.client,
       currentState?.server,
+      currentState?.constants,
       ...(hasParamSupport ? [formattedParams] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
     ];
     result = {
@@ -1032,6 +1056,18 @@ export const executeWorkflow = async (self, workflowId, _blocking = false, param
   const resolvedParams = resolveReferences(params, self.state.currentState, {}, {});
   const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId);
   return { data: executionResponse.result };
+};
+
+export function eraseRedirectUrl() {
+  const redirectPath = getCookie('redirectPath');
+  redirectPath && eraseCookie('redirectPath');
+  return redirectPath;
+}
+
+export const redirectToWorkspace = () => {
+  const path = eraseRedirectUrl();
+  const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
+  window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
 };
 
 /** Check if the query is connected to a DS. */

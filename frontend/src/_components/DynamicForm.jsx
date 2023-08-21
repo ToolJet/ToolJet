@@ -13,7 +13,7 @@ import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
-import { orgEnvironmentVariableService } from '../_services';
+import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
@@ -43,6 +43,8 @@ const DynamicForm = ({
   const isHorizontalLayout = layout === 'horizontal';
   const currentState = useCurrentState();
 
+  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
+  const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
   const { isEditorActive } = useEditorStore(
     (state) => ({
       isEditorActive: state?.isEditorActive,
@@ -50,7 +52,6 @@ const DynamicForm = ({
     shallow
   );
 
-  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
@@ -63,6 +64,15 @@ const DynamicForm = ({
 
   React.useEffect(() => {
     if (isGDS) {
+      orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
+        const constants = {};
+        data.constants.map((constant) => {
+          constants[constant.name] = constant.value;
+        });
+
+        setCurrentOrgEnvironmentConstants(constants);
+      });
+
       orgEnvironmentVariableService.getVariables().then((data) => {
         const client_variables = {};
         const server_variables = {};
@@ -80,9 +90,10 @@ const DynamicForm = ({
 
     return () => {
       setWorkspaceVariables([]);
+      setCurrentOrgEnvironmentConstants([]);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentAppEnvironmentId]);
 
   React.useEffect(() => {
     const { properties } = schema;
@@ -195,6 +206,7 @@ const DynamicForm = ({
           onblur: () => onBlur(),
           isGDS,
           workspaceVariables,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       case 'toggle':
         return {
@@ -238,6 +250,7 @@ const DynamicForm = ({
           optionchanged,
           currentState,
           isRenderedAsQueryEditor,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       }
       case 'react-component-oauth-authentication':
@@ -264,6 +277,7 @@ const DynamicForm = ({
           custom_query_params: options?.custom_query_params?.value,
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           optionchanged,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
@@ -275,6 +289,7 @@ const DynamicForm = ({
           isSaving,
           selectedDataSource,
           currentAppEnvironmentId,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       case 'tooljetdb-operations':
         return {
@@ -330,6 +345,7 @@ const DynamicForm = ({
           custom_auth_params: options.custom_auth_params?.value,
           custom_query_params: options.custom_query_params?.value,
           spec: options.spec?.value,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       default:
         return {};

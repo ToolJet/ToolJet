@@ -12,6 +12,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 
 import { getPrivateRoute } from '@/_helpers/routes';
+import { getSubpath } from '@/_helpers/utils';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -182,6 +183,50 @@ export default function AppCard({
               </ToolTip>
             </div>
           )}
+          <div>
+            <ToolTip
+              message={
+                app?.current_version_id === null
+                  ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+                  : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+              }
+            >
+              <button
+                type="button"
+                className={cx(
+                  ` launch-button tj-text-xsm ${
+                    app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+                  }`
+                )}
+                onClick={() => {
+                  if (app?.current_version_id) {
+                    window.open(
+                      urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`)
+                    );
+                  } else {
+                    navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
+                  }
+                }}
+                data-cy="launch-button"
+              >
+                <SolidIcon
+                  name="rightarrrow"
+                  width="14"
+                  fill={
+                    app?.current_version_id === null || app?.is_maintenance_on
+                      ? '#4C5155'
+                      : darkMode
+                      ? '#FDFDFE'
+                      : '#11181C'
+                  }
+                />
+
+                {app?.is_maintenance_on
+                  ? t('homePage.appCard.maintenance', 'Maintenance')
+                  : t('homePage.appCard.launch', 'Launch')}
+              </button>
+            </ToolTip>
+          </div>
           {appType !== 'workflow' && LaunchButton}
         </div>
       </div>

@@ -13,6 +13,7 @@ const Zendesk = ({
   isSaving,
   selectedDataSource,
   currentAppEnvironmentId,
+  workspaceConstants,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
@@ -55,6 +56,7 @@ const Zendesk = ({
             onChange={(e) => optionchanged('subdomain', e.target.value)}
             value={options?.subdomain?.value ?? ''}
             placeholder="e.g. tooljet"
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -66,6 +68,7 @@ const Zendesk = ({
             onChange={(e) => optionchanged('client_id', e.target.value)}
             value={options?.client_id?.value}
             placeholder="e.g. tj-zendesk"
+            workspaceConstants={workspaceConstants}
           />
         </div>
         <div className="col-md-12 mb-2">
@@ -81,6 +84,7 @@ const Zendesk = ({
             className="form-control"
             onChange={(e) => optionchanged('client_secret', e.target.value)}
             value={options?.client_secret?.value}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 

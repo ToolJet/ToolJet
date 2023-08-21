@@ -5,6 +5,7 @@ import {
   appVersionService,
   orgEnvironmentVariableService,
   customStylesService,
+  orgEnvironmentConstantService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -187,13 +188,14 @@ class EditorComponent extends React.Component {
 
   async componentDidMount() {
     window.addEventListener('message', this.handleMessage);
-    this.getCurrentOrganizationDetails();
+    await this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.setCurrentAppEnvironmentId();
     this.fetchApp(this.props.params.pageHandle);
     await this.fetchOrgEnvironmentVariables();
     this.fetchAndInjectCustomStyles();
+    this.fetchOrgEnvironmentConstants(); // for ce
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -211,6 +213,7 @@ class EditorComponent extends React.Component {
       ...this.props.currentState.globals,
       theme: { name: this.props.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+      /* Constant value.it will only change for viewer */
       mode: {
         value: 'edit',
       },
@@ -281,6 +284,21 @@ class EditorComponent extends React.Component {
         head.appendChild(styleTag);
       }
       styleTag.innerHTML = data.css;
+    });
+  };
+
+  fetchOrgEnvironmentConstants = () => {
+    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
+    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+      const orgConstants = {};
+      constants.map((constant) => {
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
+      });
+
+      useCurrentStateStore.getState().actions.setCurrentState({
+        constants: orgConstants,
+      });
     });
   };
 

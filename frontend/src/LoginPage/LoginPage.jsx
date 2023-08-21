@@ -7,7 +7,14 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import LdapSSOLoginButton from '@ee/components/LoginPage/LdapSSOLoginButton';
-import { getSubpath, getWorkspaceId, validateEmail, retrieveWhiteLabelText, eraseRedirectUrl } from '@/_helpers/utils';
+import {
+  getSubpath,
+  validateEmail,
+  retrieveWhiteLabelText,
+  eraseRedirectUrl,
+  redirectToWorkspace,
+  returnWorkspaceIdIfNeed,
+} from '@/_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -33,15 +40,6 @@ class LoginPageComponent extends React.Component {
     this.organizationId = props.params.organizationId;
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
-
-  returnWorkspaceIdIfNeed = (path) => {
-    if (path) {
-      return !['applications', 'integrations', 'instance-settings'].find((subpath) => path.includes(subpath))
-        ? `/${getWorkspaceId()}`
-        : '';
-    }
-    return `/${getWorkspaceId()}`;
-  };
 
   componentDidMount() {
     // Page is loaded inside an iframe
@@ -75,22 +73,19 @@ class LoginPageComponent extends React.Component {
           // redirect to home if already logged in
           // set redirect path for sso login
           // redirect to instance settings if license expired
-          const path = eraseRedirectUrl();
-          const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
           if (newSession?.super_admin) {
-            authenticationService
-              .validateLicense()
-              .then(() => {
-                window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
-              })
-              .catch((e) => {
-                window.location = getSubpath()
-                  ? `${getSubpath()}/instance-settings?error=license`
-                  : '/instance-settings?error=license';
-              });
-          } else {
-            window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+            return redirectToWorkspace();
           }
+          authenticationService
+            .validateLicense()
+            .then(() => {
+              return redirectToWorkspace();
+            })
+            .catch((e) => {
+              window.location = getSubpath()
+                ? `${getSubpath()}/instance-settings?error=license`
+                : '/instance-settings?error=license';
+            });
         }
       }
     });
@@ -201,10 +196,11 @@ class LoginPageComponent extends React.Component {
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
     if (from.pathname !== '/confirm')
       // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
-      from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
+      from.pathname = `${returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
     const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
     this.setState({ isLoading: false });
     eraseRedirectUrl();
+    window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
   };
 
   authFailureHandler = (res) => {
