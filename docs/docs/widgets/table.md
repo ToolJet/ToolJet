@@ -162,6 +162,7 @@ This column type is automatically selected by default when a column is added or 
 | Column name | Specify the name to be displayed on the table column header |
 | Overflow | Manage the handling of content that exceeds the cell dimensions. `Wrap` wraps the content onto the next line within the cell, `Scroll` enables scrolling for content that exceeds the cell, and `Hide` conceals content that goes beyond the cell boundary. |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Text color | Modify the color of the text in the column. You can use a hex color code or color name. The value can be dynamically assigned using JS. Refer to the [how-to guide](/docs/how-to/access-cellvalue-rowdata). |
 | Cell background color | Adjust the background color of the cell in the column. You can utilize a hex color code or color name. The value can be dynamically assigned using JS. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -175,6 +176,7 @@ Selecting the column type as **Number** will only load numerical data in the col
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
 
@@ -192,6 +194,7 @@ The **Badge** column type is utilized to exhibit labels on the columns using the
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the badge as an array |
 | Labels | Provide the labels for the values in the badge as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -211,6 +214,7 @@ Similar to the **Badge** column type, the **Multiple Badges** type is used to di
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the multiple badges as an array |
 | Labels | Provide the labels for the values in the multiple badges as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -230,6 +234,7 @@ The **Tags** column type is utilized to display tags within the column cells usi
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
 
@@ -247,6 +252,7 @@ The **Dropdown** column type is used to display a dropdown in the column cells u
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the dropdown as an array |
 | Labels | Provide the labels for the values in the dropdown as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -266,6 +272,7 @@ The **Radio** column type is used to show radio buttons in the column cells usin
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the radio as an array |
 | Labels | Provide the labels for the values in the radio as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -285,6 +292,7 @@ The **Multiselect** column type is used to show a multiselect dropdown in the co
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Values | Provide the values for the multiselect as an array |
 | Labels | Provide the labels for the values in the multiselect as an array |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -304,6 +312,7 @@ The **Toggle Switch** column type is used to display a toggle switch in the colu
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Active color | Set the color of the toggle switch when it is active using this property. |
 | + Add Event Handler | Add an event handler to perform actions whenever the toggle switch is turned on or off. |
 | Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
@@ -323,6 +332,7 @@ The **Date Picker** column type is used to display a date picker in the column c
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. The provided **key** should hold a date value. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Date Display Format | Determines how the date should be displayed in the table |
 | Date Parse Format | Specifies the format in which the date is stored in the database. |
 | Parse in timezone | The timezone of the time stored in the database. Only required if the **Show time** option is enabled. |
@@ -345,6 +355,7 @@ The **Image** column type is used to display images in the column cells using th
 | ----------- | ----------- |
 | Column name | Specify the name to be displayed on the table column header |
 | Key | Specify the key name associated with the loaded data in the table. The provided **key** should hold a URL for the image to be loaded in the column cells. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Border radius | Set a border radius for the image loaded in the column cell. The field accepts a numerical value from `0` to `100`. |
 | Width | Set a width for the image loaded in the column cell. The field accepts a numerical value from `0` to `100`. |
 | Height | Set a height for the image loaded in the column cell. The field accepts a numerical value from `0` to `100`. |
@@ -365,6 +376,7 @@ The **Link** column type enables cells to become clickable links that can be loa
 | ----------- | ----------- |
 | Column name | Specifies the name displayed on the table column header. |
 | Key | Specifies the key name associated with the loaded data in the table. The provided **key** can hold either a `string` or a `URL`. |
+| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
 | Href | Specifies the key that holds the URL. By default, it is set to `{{cellValue}}`, which sets the href to the data loaded from the specified key. |
 | Link Target | Specifies whether the link should be loaded on the same window or a new window. The values can also be set dynamically to `_set` for same window and `_blank` for new window. |
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |

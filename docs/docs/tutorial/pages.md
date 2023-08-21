@@ -78,11 +78,12 @@ There are several options available for a Page. To use these options, click on t
 
 - **[Page Handle](#page-handle)**
 - **[Rename](#rename)**
-- **[Duplicate](#duplicate)**
 - **[Mark Home](#mark-home)**
-- **[Hide Page](#hide-page)**
-- **[Delete Page](#delete-page)**
+- **[Hide Page on app menu](#hide-page-on-app-menu)**
+- **[Duplicate](#duplicate)**
 - **[Event Handlers](#event-handlers)**
+- **[Disable Page](#disable-page)**
+- **[Delete Page](#delete-page)**
 
 <div style={{textAlign: 'center'}}>
 
@@ -129,7 +130,7 @@ The page which is marked home will have a **Home** icon on the left of the Page 
 </div>
 :::
 
-### Hide Page
+### Hide Page on app menu
 
 Hide Page option can be used to hide a page from the **page navigation sidebar** in viewer mode.
 
@@ -186,6 +187,18 @@ Currently, there is **On page load** event available. You can use all the availa
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/v2-beta/pages/event.png" alt="Pages Panel" width="300" />
+
+</div>
+
+### Disable Page
+
+Disable page option can be used to disable a page. A disabled page won't be accessible in the viewer mode. 
+
+**Note:** Page marked as **home** can't be disabled.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/pages/disable.png" alt="Pages Panel" width="300" />
 
 </div>
 
