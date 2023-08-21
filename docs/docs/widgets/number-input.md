@@ -4,119 +4,73 @@ title: Number Input
 ---
 # Number Input
 
-The Number Input component allows users to input and modify numerical values.
+The Number Input component allows users to enter numbers. It can be used as a standalone component or in form fields. In this document, we'll go through all the configuration options for the **Number Input** component. 
 
-:::info
-Numbers can be adjusted using the arrow keys.
-:::
 
 ## Properties
 
-### Default Value
+| Property       | Description                         | Expected Value |
+|:----------------|:-----------------------------------| :--------------|
+| Default Value  | Default Value is the initial value in the Number Input field when the application is loaded. It is a pre-established value that will be retrieved from the number input component if no modifications are made to it. | Any numeric value|
+| Minimum value  | Sets the minimum value that can be entered in the input field.| Any numerical value|
+| Maximum value  | Sets the maximum value that can be entered in the input field.| Any numerical value|
+| Placeholder    | The placeholder value is displayed when no user input has been made yet. It disappears once the user interacts with the control, such as typing a number or using the arrow keys on the right side of the component. |Enter some instructional text as the value (example: "Type number here")| 
+| Loading state  | The loading state can be enabled to show a spinner as the content of the number input. This is commonly used with the `isLoading` property of queries to indicate a loading status while a query is being executed. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
+| Decimal places | This controls decimal places in the number input. You pick how many decimals you want. If you choose `{{2}}`, any decimals will be rounded to two places. Use `{{0}}` for whole numbers or increase for more precision.| Any numeric value|
 
-Specify a default value for the number input component when the application is loaded. A default value is a pre-established value that can be retrieved from the number input widget if no modifications are made to it.
-
-Example values:
-
-```js
-10 // integer type
-3.54 // decimal type
-10.00 // decimal type, but displayed as 10 on the number input component
-```
-
-### Minimum value
-
-This field sets the minimum value that can be entered in the number input. Any numerical value is accepted.
-
-### Maximum value
-
-This field sets the maximum value that can be entered in the number input. Any numerical value is accepted.
-
-### Placeholder
-
-The placeholder value is displayed when no user input has been made yet. It disappears once the user interacts with the control, such as typing a number or using the arrow keys on the right side of the component. Any numerical value can be used as a placeholder.
-
-### Loading state
-
-The loading state can be enabled to show a spinner as the content of the number input. This is commonly used with the `isLoading` property of queries to indicate a loading status while a query is being executed. You can toggle the state to "On" or use the "fx" option to programmatically set the value to `{{true}}` or `{{false}}`.
-
-### Decimal places
-
-This property determines the number of decimal places displayed in the number input component. It allows you to specify the level of precision for decimal values.
-
-For example, if you set the decimal places to **{{2}}**, any decimal value entered or displayed in the number input will be rounded to two decimal places. This ensures consistent formatting and helps users input and visualize decimal values accurately. It can be set to **{{0}}** for whole numbers or increased to display more precise decimal values.
 
 ## Events
+To add an event to the Number Input component, go to the **Events** section and click on **Add handler**.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/number-input/event.png" alt="Events-Number Input" />
-
-</div>
-
-### On change
-This event fires whenever the value of the number input widget is changed.
+| Event     | Description                                                                 |
+|-----------|-----------------------------------------------------------------------------|
+| On change | This event fires whenever the value of the number input component is changed. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 ## General
-### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget. Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+<font size="4"><b>Tooltip</b></font>
+
+A **Tooltip** is commonly used to provide additional information about an element. This information becomes visible when the user hovers the mouse pointer over the respective component.
+
+In the input field under **Tooltip**, you can enter some text and the component will show the specified text as a tooltip when it is hovered over.
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/tooltip.png" alt="Events-Number Input" />
-
+    <img className="screenshot-full" src="/img/widgets/number-input/tooltip.png" alt="Tooltip Example" />
 </div>
 
 ## Layout
+<font size="4"><b>Show on desktop</b></font>
 
-### Show on desktop
+Use this toggle to show or hide the component in the desktop view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`.
 
-Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
-### Show on mobile
+<font size="4"><b>Show on mobile</b></font>
 
-Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Use this toggle to show or hide the component in the mobile view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`. 
+
+--- 
 
 ## Styles
 
-### Visibility
+| Style | Description | Expected Value|
+|:-------------|:--------------------|:---------------------|
+| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed.| Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`.|
+| Disable | Makes the component non-functional when set to true. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`.|
+| Border radius | Adjusts the roundness of the component's corners.  | Numeric value|
+| Background color    | Changes the background color of the number-input component. | Hex color code/choose a color using the color picker |
+| Border color |  Changes the border color of the component.| Hex color code/choose a color using the color picker|
+| Text Color |  Sets the color of the input value. |Hex color code/choose a color using the color picker |
 
-Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`.
 
-### Disable
-
-This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
-
-### Border radius
-
-Add a border radius to the number input widget using this property. It accepts any numerical value from `0` to `100`.
-
-### Border color
-
-Change the border color number-input component by entering the Hex color code or choosing a color of your choice from the color picker.
-
-### Background color
-
-Change the background color of the number-input component by entering the Hex color code or choosing a color of your choice from the color picker.
-
-### Text color
-
-Change the color of the number in number-input component by entering the Hex color code or choosing a color of your choice from the color picker. 
-
-:::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
-:::
-
-## Exposed variables
+## Exposed Variables
 
 | Variables    | Description |
 | ----------- | ----------- |
 | value | This variable updates whenever a user selects a number on the number input. You can access the value dynamically using JS: `{{components.numberinput1.value}}`|
 
-## Component specific actions (CSA)
+## Component Specific Actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+There are currently no Component-Specific Actions (CSA) implemented to regulate or control the component.

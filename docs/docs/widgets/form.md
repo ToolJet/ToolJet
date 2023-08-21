@@ -3,73 +3,127 @@ id: form
 title: Form
 ---
 
-Form component can be used to get input from the user and store it in the connected datasource. Form component serves as a parent widget that can store different widgets like texts, input box, dropdown to allow selection, and a button for triggering the event.
+The **Form** component is designed to capture user input. It can act as a parent component to various components such as **Text**, **Text Input**, **Dropdown** and **Buttons** to initiate specific events. In this document, we'll go through all the configuration options for the **Form** component. 
 
 <div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/form2.png" alt="Form" />
-
+  <img className="screenshot-full" src="/img/widgets/form/form-preview.png" alt="Form" />
 </div>
+<br/>
 
 :::caution Restricted components
-In order to avoid excessively complex situations, certain components, namely **Kanban**, **calendar**, **modal**, **container**, **ListView**, **Tabs**, and **Form**, are restricted from being placed within the Form component using drag-and-drop functionality.
-
-If the builder attempts to add any of the aforementioned components inside the Form, an error message will be displayed:
+To prevent complexity, components like **Kanban**, **Calendar**, **Modal**, **Container**, **ListView**, **Tabs**, and **Form** can't be dragged and dropped inside the Form component. If tried, an error appears: 
 
 `<Restricted component> cannot be used as a child component within the Form.`
 :::
 
 ## Properties
 
-| Properties  | description | Expected value |
-| ----------- | ----------- | -------------- |
-| Button To Submit Form | The dropdown can be used to select the button that will be used as the submit button for the form | Any button that will be added as a child component inside the form component can be selected from the dropdown |
-| Loading state | Loading state can be used to show a spinner as the form content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Switch the toggle **On** or click on `fx` to programmatically set the value `{{true}}` or `{{false}}`  |
-| Use Custom Schema | Enabling this property allows you to provide a schema for the Form component in the JSON format | Switch the toggle **On** or click on `fx` to programmatically enable the **JSON schema** |
+| Properties | Description | Expected Value |
+| :---------- | :--------------------------- | :------------- |
+| Button To Submit Form | This dropdown can be used to select a **Button** that will be used to submit the form. | Any button that is a child component inside the **Form** component
+| Loading State | Loading state can be used to show a spinner while the content is loaded. Loading state is commonly used with the **isLoading** property of queries. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
+| Use Custom Schema | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on `Fx` to programmatically enable the **JSON schema**|
 
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/newprop.png" alt="Form" />
-
-</div>
+:::info
+If you need a step-by-step guide on using a **Form** component, you can checkout **[this](/docs/how-to/use-form-component)** guide.  
+:::
 
 ## Using Custom Schema
 
-It is mandatory to provide the Form schema in the following format:
+To provide the form schema in JSON format, we'll pass a JavaScript object with **title**, **properties** and **submitButton**.
+
+| Key  | Description |
+| :----------- | :----------- | 
+| title | The **title** key specifies the title of the form. | 
+| properties | The **properties** key holds an object that defines the properties of the components that will be inside the form. | 
+| submitButton | The **submitButton** key holds an object that defines the properties of the Submit Button of the form. | 
+
+This **[list](/docs/widgets/form#custom-schema-examples)** provides examples of Custom Schema for all components that can be used in a Form component.  
 
 ```js
-{{{title:"<FormTitle>", properties: {<ProvideSchemaForComponents>}, submitButton: {<PropertiesOfSubmitButton>}}}}
+{{
+  {
+    title: // Provide A Title for the Form
+    properties: // Provide Schema for Components
+    submitButton: // Properties of Submit Button
+  }
+}}
 ```
 
-| Key  | description | 
-| ----------- | ----------- |
-| title | The title key specifies the title of the form. |
-| properties | The properties key holds an object that defines the properties of the components that will be inside the form. The **Custom Schema** for all the components is available below. |
-| submitButton | This key key holds an object that defines the properties of the Submit Button of the form. |
+## Events
 
-**Submit button schema:**
-```js
-submitButton: {
-    "value": "Submit",
-    "styles": {
-      "backgroundColor": "blue",
-      "textColor": "white",
-      "borderRadius": "40",
-      "borderColor": "black",
-      "loaderColor": "gray",
-      "visibility": true,
-      "disabledState": false
-    },
-```
+To add an event to the **Form** component, go to the **Events** section and click on **Add handler**.
 
-<div style={{textAlign:'center'}}>
+| Event      | Description  |
+|:------------|:-----------------|
+| On submit  | **On submit** event is triggered when the submit button on the form component is clicked. |
+| On invalid | **On invalid** event is triggered when the input on the form is invalid.                  |
 
-<img className="screenshot-full" src="/img/widgets/form/submitbuttonschema.png" alt="Form custom schema" />
 
+:::info
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+:::
+
+## General
+<font size="4"><b>Tooltip</b></font>
+
+A Tooltip is commonly used to provide additional information about an element. This information becomes visible when the user hovers the mouse pointer over the respective component.
+
+In the input field under Tooltip, you can enter some text and the component will show the specified text as a tooltip when it is hovered over.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/form/tooltip.png" alt="Tooltip Example" />
 </div>
 
-Custom Schema is available for all the components available under the form category in the components manager:
+## Layout
 
+<font size="4"><b>Show on desktop</b></font>
+
+Use this toggle to show or hide the component in the desktop view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`.
+
+<font size="4"><b>Show on mobile</b></font>
+
+Use this toggle to show or hide the component in the mobile view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`. 
+
+--- 
+
+## Styles
+
+| Style      | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| Background color |  Changes the background color of the form. | Hex color code/choose a color using the color picker|
+| Border radius | Adjusts the roundness of the component's corners. | Numeric value|
+| Border color |  Changes the border color of the component.| Hex color code/choose a color using the color picker|
+| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible.| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+
+
+## General
+<font size="4"><b>Box Shadow</b></font>
+
+
+The **Box Shadow** property is used to add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/form/box-shadow.png" alt="Box Shadow Example" />
+</div>
+
+## Exposed Variables
+
+| Variables      | Description | Expected Value
+| :----------- | :----------- | :-------- |
+| data | This variable holds the data of all the components that are nested inside the form component. | You can access the value dynamically using JS. For example, `{{components.form1.data.numberinput1.value}}`
+
+## Component Specific Actions (CSA)
+
+Following actions of form component can be controlled using the Component Specific Actions(CSA):
+
+| Actions     | Description |
+| :----------- | :----------- |
+| submitForm | Submits the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.submitForm()` |
+| resetForm | Resets the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.resetForm()` |
+
+## Custom Schema Examples
 - **[Datepicker](#datepicker)**
 - **[Number Input](#number-input)**
 - **[Password](#password)**
@@ -91,21 +145,21 @@ Custom Schema is available for all the components available under the form categ
 Properties that can be used in Datepicker schema are:
 
 ```js
-datepicker:{
-  type: 'datepicker',
-  styles: {
-    borderRadius: '',
-    disabledState: false,
-    visibility: true
-  },
-  validation: {
-    customRule: ''
-  },
-  defaultValue: '',
-  disabledDates: '',
-  enableDate: '',
-  enableTime: '',
-  format: ''
+datepicker: {
+    type: 'datepicker',
+    styles: {
+        borderRadius: '',
+        disabledState: false,
+        visibility: true
+    },
+    validation: {
+        customRule: ''
+    },
+    defaultValue: '',
+    disabledDates: '',
+    enableDate: '',
+    enableTime: '',
+    format: ''
 }
 ```
 
@@ -113,30 +167,43 @@ datepicker:{
 
 ```js
 {{{
-         "title":"User registration form",
-         "properties":{
-            "Select the date":{
-               "type":"datepicker"
-            }
-         },
-         "submitButton":{
-            "value":"Submit"
-         }}}}
+    title: "User registration form",
+    properties: {
+      "Select the date": {
+        type: "datepicker",
+        styles: {
+            borderRadius: 5,
+            disabledState: false,
+            visibility: true
+        },
+      }
+    },
+    submitButton: {
+      value: "Submit"
+    }
+}}}
 ```
 
 <div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/datepickerschema.png" alt="Form custom schema" />
-
+  <img className="screenshot-full" src="/img/widgets/form/datepickerschema.png" alt="Form custom schema" />
 </div>
+
+Not that the "Select the date" key in the above example is passed with double-quotes. In JavaScript, any key with space needs to be wrapped in double-quotes.
+```js
+let employee = {
+  name: "Paul",
+  age: 50,
+  "likes birds": true  // property names with space must be quoted
+}
+```
 
 ### Number Input
 
 **Properties**
 
 ```js
-numberinput:{
-    type:'number',
+numberinput: {
+    type: 'number',
     styles: {
         backgroundColor: '#f6f5ff',
         borderRadius: '80',
@@ -144,41 +211,40 @@ numberinput:{
         borderColor: 'blue',
         disabled: false,
         visibility: false
-        },
+    },
     value: 10,
     maxValue: 12,
     minValue: 6,
     placeholder: 'test'
-    }
+}
 ```
 
 **Example**
 
 ```js
-{{{title:"User registration form",
-         properties:{
-            'Select the date':{
-               type:"datepicker",
-            },
-            'Choose the date':{
-    type:'number',
-    styles: {
-        backgroundColor: '#f6f5ff',
-        borderRadius: '5',
-        textColor: 'red',
-        borderColor: 'black',
-        disabled: false,
-        visibility: false
+{{{
+    title: "User registration form",
+        properties: {
+            'Choose the date': {
+                type: 'number',
+                styles: {
+                    backgroundColor: '#f6f5ff',
+                    borderRadius: '5',
+                    textColor: 'red',
+                    borderColor: 'black',
+                    disabled: false,
+                    visibility: false
+                },
+                value: 50,
+                maxValue: 100,
+                minValue: 6,
+                placeholder: 'Select the quantity'
+            }
         },
-    value: 50,
-    maxValue: 100,
-    minValue: 6,
-    placeholder: 'Select the quantity'
-    }
-         },
-         "submitButton":{
-            "value":"Submit"
-         }}}}
+        "submitButton": {
+            "value": "Submit"
+        }
+}}}
 ```
 
 <div style={{textAlign:'center'}}>
@@ -808,69 +874,3 @@ radio: {
 <img className="screenshot-full" src="/img/widgets/form/radio.png" alt="Form custom schema" />
 
 </div>
-
-## Events
-
-To add an event to a button group, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
-
-### On submit
-
-**On submit** event is triggered when the button on the form component is clicked. Just like any other event on ToolJet, you can set multiple handlers for on submit event.
-
-### On invalid
-
-**On invalid** event is triggered when the input on the form is invalid.
-
-:::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
-:::
-
-## General
-### Tooltip
-
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget. Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
-
-## Layout
-
-| Layout  | description | Expected value |
-| ----------- | ----------- | ------------ |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display mobile view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-
-## Styles
-
-<div style={{textAlign:'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/form/styles.png" alt="Form" />
-
-</div>
-
-| Style      | Description |
-| ----------- | ----------- | 
-| Background color |  You can change the background color of the form by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Border radius | Use this property to modify the border radius of the form component. |
-| Border color |  You can change the color of the border of the form by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Visibility | Toggle on or off to control the visibility of the form. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Disable | Toggle on to lock the widget. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
-| Box shadow | This property adds a shadow to the widget. | You can use different values for box shadow property like offsets, blur, spread, and the color code. |
-
-:::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
-:::
-
-
-## Exposed Variables
-
-| Variables      | Description |
-| ----------- | ----------- |
-| data | This variable holds the data of all the components that are nested inside the form components. You can access the value dynamically using JS: `{{components.form1.data.numberinput1.value}}`|
-
-## Component specific actions (CSA)
-
-Following actions of form component can be controlled using the component specific actions(CSA):
-
-| Actions     | Description |
-| ----------- | ----------- |
-| submitForm | You can submit the form data via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.form1.resetForm()` |
-| resetForm | You can reset the form data via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.form1.submitForm()` |
-
