@@ -6,6 +6,7 @@ import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { ImportExportResourcesService } from '@services/import_export_resources.service';
 import { App } from 'src/entities/app.entity';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
+import { CloneResourcesDto } from '@dto/clone-resources.dto';
 
 @Controller({
   path: 'resources',
@@ -42,6 +43,19 @@ export class ImportExportResourcesController {
     }
 
     const imports = await this.importExportResourcesService.import(user, importResourcesDto);
+    return { imports, success: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/clone')
+  async clone(@User() user, @Body() cloneResourcesDto: CloneResourcesDto) {
+    const ability = await this.appsAbilityFactory.appsActions(user);
+
+    if (!ability.can('cloneApp', App)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const imports = await this.importExportResourcesService.clone(user, cloneResourcesDto);
     return { imports, success: true };
   }
 }

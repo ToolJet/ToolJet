@@ -27,34 +27,24 @@ export class TooljetDbImportExportService {
     };
   }
 
-  async import(organizationId: string, tjDbDto: ImportTooljetDatabaseDto) {
-    const internalTableWithSameIdExists = async (tjDbDto: ImportTooljetDatabaseDto) => {
-      return await this.manager.findOne(InternalTable, {
-        where: {
-          id: tjDbDto.id,
-          tableName: tjDbDto.table_name,
-          organizationId,
-        },
-      });
-    };
-    const internalTableWithSameNameExists = async (tjDbDto: ImportTooljetDatabaseDto) => {
-      return await this.manager.findOne(InternalTable, {
-        where: {
-          tableName: tjDbDto.table_name,
-          organizationId,
-        },
-      });
-    };
-    const internalTable =
-      (await internalTableWithSameIdExists(tjDbDto)) || (await internalTableWithSameNameExists(tjDbDto));
+  async import(organizationId: string, tjDbDto: ImportTooljetDatabaseDto, cloning = false) {
+    const internalTableWithSameNameExists = await this.manager.findOne(InternalTable, {
+      where: {
+        tableName: tjDbDto.table_name,
+        organizationId,
+      },
+    });
 
-    if (internalTable && (await this.isTableColumnsSubset(internalTable, tjDbDto)))
-      return { id: internalTable.id, name: internalTable.tableName };
+    if (
+      cloning &&
+      internalTableWithSameNameExists &&
+      (await this.isTableColumnsSubset(internalTableWithSameNameExists, tjDbDto))
+    )
+      return { id: internalTableWithSameNameExists.id, name: internalTableWithSameNameExists.tableName };
 
-    const tableWithSameNameExists = !!(await this.manager.findOne(InternalTable, {
-      where: { tableName: tjDbDto.table_name, organizationId },
-    }));
-    const tableName = tableWithSameNameExists ? `${tjDbDto.table_name}_${new Date().getTime()}` : tjDbDto.table_name;
+    const tableName = internalTableWithSameNameExists
+      ? `${tjDbDto.table_name}_${new Date().getTime()}`
+      : tjDbDto.table_name;
 
     return await this.tooljetDbService.perform(organizationId, 'create_table', {
       table_name: tableName,

@@ -655,7 +655,7 @@ export class AppsService {
     });
   }
 
-  async findTooljetDbTables(appId: string) {
+  async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const tooljetDbDataQueries = await manager
         .createQueryBuilder(DataQuery, 'data_queries')

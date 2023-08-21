@@ -10,6 +10,7 @@ export const appService = {
   importApp,
   exportResource,
   importResource,
+  cloneResource,
   changeIcon,
   deleteApp,
   getApp,
@@ -78,6 +79,17 @@ function importResource(body) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/v2/resources/import`, requestOptions).then(handleResponse);
+}
+
+function cloneResource(body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  };
+
+  return fetch(`${config.apiUrl}/v2/resources/clone`, requestOptions).then(handleResponse);
 }
 
 function getVersions(id) {

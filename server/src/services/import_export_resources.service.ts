@@ -1,16 +1,17 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { AppImportExportService } from './app_import_export.service';
 import { TooljetDbImportExportService } from './tooljet_db_import_export_service';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
+import { AppsService } from './apps.service';
+import { CloneResourcesDto } from '@dto/clone-resources.dto';
 
 @Injectable()
 export class ImportExportResourcesService {
   constructor(
     private readonly appImportExportService: AppImportExportService,
-    @Optional()
-    @Inject(TooljetDbImportExportService)
+    private readonly appsService: AppsService,
     private readonly tooljetDbImportExportService: TooljetDbImportExportService
   ) {}
 
@@ -39,7 +40,7 @@ export class ImportExportResourcesService {
     return resourcesExport;
   }
 
-  async import(user: User, importResourcesDto: ImportResourcesDto) {
+  async import(user: User, importResourcesDto: ImportResourcesDto, cloning = false) {
     const tableNameMapping = {};
     const imports = { app: [], tooljet_database: [] };
 
@@ -47,7 +48,8 @@ export class ImportExportResourcesService {
       for (const tjdbImportDto of importResourcesDto.tooljet_database) {
         const createdTable = await this.tooljetDbImportExportService.import(
           importResourcesDto.organization_id,
-          tjdbImportDto
+          tjdbImportDto,
+          cloning
         );
         tableNameMapping[tjdbImportDto.id] = createdTable;
         imports.tooljet_database.push(createdTable);
@@ -65,5 +67,20 @@ export class ImportExportResourcesService {
     }
 
     return imports;
+  }
+
+  async clone(user: User, cloneResourcesDto: CloneResourcesDto) {
+    const tablesForApp = await this.appsService.findTooljetDbTables(cloneResourcesDto.app[0].id);
+
+    const exportResourcesDto = new ExportResourcesDto();
+    exportResourcesDto.organization_id = cloneResourcesDto.organization_id;
+    exportResourcesDto.app = [{ id: cloneResourcesDto.app[0].id, search_params: null }];
+    exportResourcesDto.tooljet_database = tablesForApp;
+
+    const resourceExport = await this.export(user, exportResourcesDto);
+    resourceExport['organization_id'] = cloneResourcesDto.organization_id;
+    const clonedResource = await this.import(user, resourceExport as ImportResourcesDto, true);
+
+    return clonedResource;
   }
 }

@@ -16,8 +16,16 @@ import { PluginsModule } from '../plugins/plugins.module';
 import { EncryptionService } from '@services/encryption.service';
 import { Credential } from '../../../src/entities/credential.entity';
 import { CaslModule } from '../casl/casl.module';
+import { AppsService } from '@services/apps.service';
+import { App } from 'src/entities/app.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
+import { AppUser } from 'src/entities/app_user.entity';
 
-const imports = [PluginsModule, CaslModule, TypeOrmModule.forFeature([DataSource, Plugin, Credential])];
+const imports = [
+  PluginsModule,
+  CaslModule,
+  TypeOrmModule.forFeature([AppUser, AppVersion, App, Credential, Plugin, DataSource]),
+];
 
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
   imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
@@ -35,6 +43,7 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
     AppEnvironmentService,
     TooljetDbService,
     PluginsHelper,
+    AppsService,
     CredentialsService,
   ],
 })
