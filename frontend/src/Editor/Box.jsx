@@ -270,23 +270,6 @@ export const Box = function Box({
       ...{ validationObject: component.definition.validation, currentState },
       customResolveObjects: customResolvables,
     });
-  const checkParent = () => {
-    let isListView = false,
-      isForm = false;
-    try {
-      isListView =
-        containerProps.appDefinition.pages[containerProps.currentPageId].components[parentKey]?.component?.component ===
-        'Listview';
-      isForm =
-        containerProps.appDefinition.pages[containerProps.currentPageId].components[parentKey]?.component?.component ===
-        'Form';
-    } catch {
-      console.log('error');
-    }
-
-    if (!isListView && !isForm) return true;
-    else return false;
-  };
 
   return (
     <OverlayTrigger
@@ -331,13 +314,7 @@ export const Box = function Box({
               exposedVariables={exposedVariables}
               styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
               setExposedVariable={(variable, value) => {
-                if (component?.parent) {
-                  if (checkParent()) {
-                    onComponentOptionChanged(component, variable, value, id);
-                  }
-                } else {
-                  onComponentOptionChanged(component, variable, value, id);
-                }
+                onComponentOptionChanged(component, variable, value, id);
               }}
               setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
               fireEvent={fireEvent}
