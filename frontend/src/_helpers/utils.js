@@ -10,7 +10,6 @@ import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
-import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
 export function findProp(obj, prop, defval) {
@@ -1057,12 +1056,6 @@ export const executeWorkflow = async (self, workflowId, _blocking = false, param
   const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId);
   return { data: executionResponse.result };
 };
-
-export function eraseRedirectUrl() {
-  const redirectPath = getCookie('redirectPath');
-  redirectPath && eraseCookie('redirectPath');
-  return redirectPath;
-}
 
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
