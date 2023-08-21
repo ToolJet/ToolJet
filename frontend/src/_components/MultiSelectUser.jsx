@@ -50,11 +50,11 @@ function MultiSelectUser({
             // eslint-disable-next-line no-unused-vars
             onClick={selectOption}
           />
-          <div className="d-flex flex-column" style={{ marginLeft: '12px' }}>
-            <p style={{ marginBottom: '0px' }} onClick={selectOption}>
+          <div className="d-flex flex-column" style={{ marginLeft: '12px' }} onClick={selectOption}>
+            <p style={{ marginBottom: '0px' }}>
               {option?.first_name} {option?.last_name}
             </p>
-            <span onClick={selectOption}>{option?.email}</span>
+            <span>{option?.email}</span>
           </div>
         </div>
         <div className="avatar">
