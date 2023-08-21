@@ -11,7 +11,7 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
-  Cypress-App-Builder:
+  Cypress-subpath-App-Builder:
     runs-on: ubuntu-22.04
 
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-app-builder-subpath' }}
@@ -61,8 +61,8 @@ jobs:
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "NODE_ENV=production" >> .env
-          echo "SUB_PATH=/apps/tooljet" >> .env
-          echo "SERVE_CLIENT=true" >> .env
+          echo "SUB_PATH=/apps/tooljet/" >> .env
+          echo "SERVE_CLIENT=false" >> .env
 
       - name: Set up database
         run: |
@@ -91,7 +91,7 @@ jobs:
       - name: Wait for the server to be ready
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:3000/apps/tooljet; do
+          until curl --silent --fail http://localhost:3000/apps/tooljet/; do
             sleep 5
           done'
 
@@ -110,7 +110,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000/apps/tooljet"
+          config: "baseUrl=http://localhost:3000/apps/tooljet/"
           config-file: cypress-app-builder.config.js
 
       - name: Capture Screenshots
@@ -120,7 +120,7 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-  Cypress-Platform:
+  Cypress-subpath-Platform:
     runs-on: ubuntu-22.04
 
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-workspace-subpath' }}
@@ -174,8 +174,8 @@ jobs:
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "NODE_ENV=production" >> .env
-          echo "SUB_PATH=/apps/tooljet" >> .env
-          echo "SERVE_CLIENT=true" >> .env
+          echo "SUB_PATH=/apps/tooljet/" >> .env
+          echo "SERVE_CLIENT=false" >> .env
 
       - name: Set up database
         run: |
@@ -204,7 +204,7 @@ jobs:
       - name: Wait for the server to be ready
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:3000/apps/tooljet; do
+          until curl --silent --fail http://localhost:3000/apps/tooljet/; do
             sleep 5
           done'
 
@@ -223,7 +223,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000/apps/tooljet"
+          config: "baseUrl=http://localhost:3000/apps/tooljet/"
           config-file: cypress-workspace.config.js
 
       - name: Capture Screenshots
