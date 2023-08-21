@@ -193,7 +193,7 @@ jobs:
           postgrest/postgrest:v10.1.1.20221215
 
       - name: Run the client
-        run: cd frontend && npm run build &
+        run: cd frontend && NODE_ENV=production npm run build &
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
