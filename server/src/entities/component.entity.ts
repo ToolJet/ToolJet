@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
 import { Page } from './page.entity';
 import { Layout } from './layout.entity';
 
 @Entity({ name: 'components' })
+@Index('idx_component_page_id', ['pageId'])
 export class Component {
   @PrimaryGeneratedColumn('uuid')
   id: string;

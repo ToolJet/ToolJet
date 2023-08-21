@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
 export class CreateComponentTable1691006952074 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -46,7 +46,6 @@ export class CreateComponentTable1691006952074 implements MigrationInterface {
       })
     );
 
-    // Add foreign key to relate Component with Page
     await queryRunner.createForeignKey(
       'components',
       new TableForeignKey({
@@ -56,9 +55,22 @@ export class CreateComponentTable1691006952074 implements MigrationInterface {
         onDelete: 'CASCADE',
       })
     );
+
+    await queryRunner.createIndex('components', new TableIndex({ columnNames: ['name'] }));
+    await queryRunner.createIndex('components', new TableIndex({ columnNames: ['type'] }));
+    await queryRunner.createIndex('components', new TableIndex({ columnNames: ['page_id'] }));
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    // Drop indexes
+    await queryRunner.dropIndex('components', 'IDX_COMPONENT_NAME');
+    await queryRunner.dropIndex('components', 'IDX_COMPONENT_TYPE');
+    await queryRunner.dropIndex('components', 'IDX_COMPONENT_PAGE');
+
+    // Drop foreign key
+    await queryRunner.dropForeignKey('components', 'FK_COMPONENT_PAGE');
+
+    // Drop table
     await queryRunner.dropTable('components');
   }
 }
