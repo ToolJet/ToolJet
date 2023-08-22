@@ -14,6 +14,7 @@ import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
 const data = {};
 data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+data.customText = fake.randomSentence;
 
 describe("Data source Azure Blob Storage", () => {
   beforeEach(() => {
@@ -102,6 +103,28 @@ describe("Data source Azure Blob Storage", () => {
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
       `cypress-${data.lastName}-azure-blob-storage`
+    );
+
+    fillDataSourceTextField(
+      mongoDbText.labelConnectionString,
+      azureBlobStorageText.connectionStringPlaceholder,
+      data.customText,
+      "contain",
+      { parseSpecialCharSequences: false, delay: 0 }
+    );
+    cy.get(postgreSqlSelector.buttonTestConnection)
+      .verifyVisibleElement(
+        "have.text",
+        postgreSqlText.buttonTextTestConnection
+      )
+      .click();
+    cy.get(postgreSqlSelector.connectionFailedText).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.couldNotConnect
+    );
+    cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
+      "have.text",
+      azureBlobStorageText.unableExtractAccountNameText
     );
 
     fillDataSourceTextField(
