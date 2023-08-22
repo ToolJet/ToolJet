@@ -314,7 +314,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           <div>
             <div className="page-header workspace-constant-header">
               <div className="tj-text-sm font-weight-500" data-cy="constants-count-title">
-                {constants.length} constants
+                {currentTableData.length} constants
               </div>
               <div className="mt-3">
                 <Alert svg="tj-info">

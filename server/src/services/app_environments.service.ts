@@ -263,7 +263,16 @@ export class AppEnvironmentService {
         throw new Error('Constant not found');
       }
 
-      if (constantToDelete.orgEnvironmentConstantValues.length === 1) {
+      const environmentValues = constantToDelete.orgEnvironmentConstantValues.filter(
+        (value) => value.environmentId !== environmentId
+      );
+
+      const emptyValues = environmentValues.filter((value) => value.value === '');
+
+      if (
+        constantToDelete.orgEnvironmentConstantValues.length === 1 ||
+        emptyValues.length === environmentValues.length
+      ) {
         return await manager.delete(OrganizationConstant, { id: constantId });
       } else {
         const environmentValueToDelete = constantToDelete.orgEnvironmentConstantValues.find(

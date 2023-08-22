@@ -757,7 +757,7 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      if (options.match(/\{\{(.*?)\}\}/g)?.length > 1 && options.includes('{{constants.')) {
+      if (options.match(/\{\{(.*?)\}\}/g)?.length >= 1 && options.includes('{{constants.')) {
         const constantVariables = options.match(/\{\{(constants.*?)\}\}/g);
 
         constantVariables.forEach((constant) => {

@@ -195,7 +195,6 @@ class EditorComponent extends React.Component {
     this.fetchApp(this.props.params.pageHandle);
     await this.fetchOrgEnvironmentVariables();
     this.fetchAndInjectCustomStyles();
-    this.fetchOrgEnvironmentConstants(); // for ce
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -287,13 +286,12 @@ class EditorComponent extends React.Component {
     });
   };
 
-  fetchOrgEnvironmentConstants = () => {
-    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
-    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+  fetchOrgEnvironmentConstants = (environmentId) => {
+    orgEnvironmentConstantService.getConstantsFromEnvironment(environmentId).then(({ constants }) => {
       const orgConstants = {};
+
       constants.map((constant) => {
-        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        orgConstants[constant.name] = constantValue;
+        orgConstants[constant.name] = constant.value;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({
@@ -1080,6 +1078,7 @@ class EditorComponent extends React.Component {
         currentAppEnvironmentId: currentAppEnvironment?.id,
       },
       () => {
+        this.fetchOrgEnvironmentConstants(currentAppEnvironment?.id);
         !isEnvIdNotAvailableYet && this.getStoreData(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
       }
     );
