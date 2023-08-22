@@ -7,7 +7,7 @@ import _, { omit } from 'lodash';
 import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-
+import { removeFunctionObjects } from '@/_helpers/appUtils';
 export const Form = function Form(props) {
   const {
     id,
@@ -200,17 +200,6 @@ export const Form = function Form(props) {
     childDataRef.current = { ...childDataRef.current, [componentId]: optionData };
     setChildrenData(childDataRef.current);
   };
-
-  function removeFunctionObjects(obj) {
-    for (const key in obj) {
-      if (typeof obj[key] === 'function') {
-        delete obj[key];
-      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-        removeFunctionObjects(obj[key]);
-      }
-    }
-    return obj;
-  }
 
   return (
     <form

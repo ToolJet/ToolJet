@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
 import { Pagination } from '@/_components/Pagination';
+import { removeFunctionObjects } from '@/_helpers/appUtils';
 
 export const Listview = function Listview({
   id,
@@ -71,7 +72,8 @@ export const Listview = function Listview({
   }, [columns]);
 
   useEffect(() => {
-    setExposedVariable('data', childrenData);
+    const childrenDataClone = _.cloneDeep(childrenData);
+    setExposedVariable('data', removeFunctionObjects(childrenDataClone));
     setExposedVariable('children', childrenData);
     if (selectedRowIndex != undefined) {
       setExposedVariable('selectedRowId', selectedRowIndex);

@@ -1639,3 +1639,14 @@ export const computeQueryState = (queries, _ref) => {
     });
   }
 };
+
+export const removeFunctionObjects = (obj) => {
+  for (const key in obj) {
+    if (typeof obj[key] === 'function') {
+      delete obj[key];
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      removeFunctionObjects(obj[key]);
+    }
+  }
+  return obj;
+};
