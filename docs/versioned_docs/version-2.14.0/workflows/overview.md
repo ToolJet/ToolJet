@@ -75,7 +75,7 @@ Create an outgoing flow from the *fetchSalesData* node that we just created by c
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/new-js-node.gif" alt="Create New JavaScript Node" />
 </div>
 
-The **JavaScript** node lets you run JavaScript code to transform data and perform other tasks. In our example, we are using it to convert the result from the previous node into a string. 
+The **JavaScript** node lets you run JavaScript code to transform data and perform other tasks. The JavaScript code executes on the server side to protect sensitive logic and data from exposure to the client. In our example, we are using it to convert the result from the previous node into a string. 
     
 <div style={{display: 'flex', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
@@ -135,9 +135,9 @@ Click on the *sendSMS* node and look at the **Results**. Under the **data** prop
 </div>
 <br/>
 
-Referring to the **errorMessage** identifier of the *sendSMS* node, we'll use the **If condition** node to end the workflow with a success or failure message. 
+Referring to the **errorMessage** identifier of the *sendSMS* node, we'll use the **If condition** node to end the workflow with a success or failure message. Create an outgoing flow from the *sendSMS* node and select **If condition**. The If condition node can have one or two incoming flows and two outgoing flows. For our use-case we need just one incoming flow. 
 
-Create an outgoing flow from the *sendSMS* node and select **If condition**. The If condition node will have one incoming flow and two outgoing flows. This node accepts a logical expression and evaluates it. The outgoing flow connected to the green circle will execute if the logical expression is evaluated to `true`, and the one with the red circle will execute if the logical expression is evaluated to `false`.
+The **If condition** node accepts a logical expression and evaluates it. The outgoing flow connected to the green circle will execute if the logical expression is evaluated to `true`, and the one with the red circle will execute if the logical expression is evaluated to `false`.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/if-condition.png" alt="If condition flow" />

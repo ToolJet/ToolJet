@@ -3,20 +3,22 @@ id: nodes
 title: Types of Nodes
 ---
 
-Nodes are a graphical representation of each process in a workflow. Each node in the workflow passes over the result to the next node. Every new instance of a workflow will have two nodes - **Start Trigger** and **Result**. The **Start Trigger** node triggers the workflow to run. Once the workflow execution is completed, the resulting data is stored in the **Result** node.
+Nodes are a graphical representation of each process in a workflow. Each node in the workflow passes over the result to the next node. Every new instance of a workflow will have two nodes - **Start Trigger** and **Result**. The **Start Trigger** node triggers the workflow to run. Once the workflow execution is completed, the resulting data is stored in the **Result** node type.
 
 Apart from the default **Start Trigger** and **Result** nodes, there are an array of nodes that you can add to the canvas. They can be broadly divided into four types - **JavaScript**, **If condition**, **Data sources** and **REST API**. Let's take a closer look at each node.
 
 ## JavaScript
 
-The **JavaScript** node lets you write custom JavaScript code. You can write the code to transform data, create alert messages and more. The code you enter in each JavaScript node needs a **return** statement to ensure that the result is sent to the next node. 
+The **JavaScript** node lets you write custom JavaScript code than runs on the server side. Server-side execution of code protects sensitive logic and data from exposure to the client and improves performance by offloading complex computations from the client. You can use the JavaScript code to transform data, create alert messages and more. The code you enter in each JavaScript node needs a **return** statement to ensure that the result is sent to the next node. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/nodes/js-node.png" alt="JavaScript Node" />
 </div>
 
 ## If condition
-The **If condition** node has one incoming flow and two outgoing flows. It executes one of the outgoing flows based on the provided logical expression. If the expression evaluates to **true**, the outgoing flow connected to the green circle gets executed. In case it is **false**, the flow connected to the red circle will get executed.
+The **If condition** node can have one or two incoming flows and two outgoing flows. If it has two incoming flows, it'll only trigger after the execution of both the incoming flows is completed. 
+
+The **If condition** node triggers one of the outgoing flows depending on the given logical expression. If the expression evaluates to true, it activates the flow connected to the green circle. Conversely, if it's false, the flow linked to the red circle will be activated.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/nodes/if-condition-node.png" alt="If Condition Node" />
@@ -38,7 +40,7 @@ The **If condition** node has one incoming flow and two outgoing flows. It execu
 <br/>
 
 ## Data Sources 
-All the data sources that you have configured in ToolJet will be available in the workflow. You can use them to run complex queries on your database tables, connect with APIs, send emails and messages, etc.
+In the flow builder of ToolJet, all the data sources you've set up will appear as nodes. These nodes can be utilised to perform intricate queries on your data sources, establish connections with APIs, send emails and messages, and more.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/nodes/datasources-nodes.png" alt="Datasources and Other Services" />

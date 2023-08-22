@@ -13,7 +13,7 @@ Permissions in **ToolJet Workflows** provide a structured approach to access con
 
 
 ## Admins
-**Admins** can create, edit, and manage workflows, access the dashboard, and use them in ToolJet's **App Builder**. They also have the option to use the **Enable** toggle on the top-right to enable or disable the execution of workflows in ToolJet applications.
+**Admins** can create, edit, and manage workflows, access the workflow dashboard and flow builder, and use them in ToolJet's **App Builder**. They also have the option to use the **Enable** toggle on the top-right to enable or disable the execution of workflows in ToolJet applications.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/permissions/enable-checkmark.png" alt="Workflows Disable" />
