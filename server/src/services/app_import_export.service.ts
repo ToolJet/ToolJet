@@ -321,9 +321,14 @@ export class AppImportExportService {
         appResourceMappings
       );
       appResourceMappings.appEnvironmentMapping = appEnvironmentMapping;
-      const importingDataQueriesForAppVersion = this.fetchDataQueriesForTheAppVersion(
-        importingAppVersion,
-        importingDataQueries
+
+      const importingDataSourcesForAppVersion = await this.rejectMarketplacePluginsNotInstalled(
+        manager,
+        importingDataSources
+      );
+
+      const importingDataQueriesForAppVersion = importingDataQueries.filter(
+        (dq: { dataSourceId: string; appVersionId: string }) => dq.appVersionId === importingAppVersion.id
       );
 
       const { defaultDataSourceIdMapping } = await this.createDefaultDatasourcesForAppVersion(
@@ -335,7 +340,7 @@ export class AppImportExportService {
       appResourceMappings.defaultDataSourceIdMapping = defaultDataSourceIdMapping;
 
       // associate data sources and queries for each of the app versions
-      for (const importingDataSource of importingDataSources) {
+      for (const importingDataSource of importingDataSourcesForAppVersion) {
         const dataSourceForAppVersion = await this.findOrCreateDataSourceForAppVersion(
           manager,
           importingDataSource,
@@ -393,6 +398,34 @@ export class AppImportExportService {
     }
 
     return appResourceMappings;
+  }
+
+  async rejectMarketplacePluginsNotInstalled(
+    manager: EntityManager,
+    importingDataSources: DataSource[]
+  ): Promise<DataSource[]> {
+    const dsKindsFound = new Set<string>();
+
+    const hasOneDataSourceOfKind = async (kind: string) => {
+      if (dsKindsFound.has(kind)) return true;
+
+      const dsOfKindExists = !!(await manager.findOne(DataSource, { where: { kind } }));
+
+      if (dsOfKindExists) dsKindsFound.add(kind);
+
+      return dsOfKindExists;
+    };
+
+    const filteredDataSources: DataSource[] = [];
+
+    for (const ds of importingDataSources) {
+      const isPlugin = !!ds.pluginId;
+      if (!isPlugin || (isPlugin && (await hasOneDataSourceOfKind(ds.kind)))) {
+        filteredDataSources.push(ds);
+      }
+    }
+
+    return filteredDataSources;
   }
 
   async createDataQueriesForAppVersion(
@@ -575,13 +608,6 @@ export class AppImportExportService {
     await manager.save(newDataSource);
 
     return newDataSource;
-  }
-
-  fetchDataQueriesForTheAppVersion(appVersion: AppVersion, dataQueries: DataQuery[]): DataQuery[] {
-    // v1 - Data queries without dataSourceId present
-    return dataQueries.filter(
-      (dq: { dataSourceId: string; appVersionId: string }) => dq.appVersionId === appVersion.id
-    );
   }
 
   async associateAppEnvironmentsToAppVersion(
