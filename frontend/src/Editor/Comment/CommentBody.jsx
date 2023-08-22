@@ -7,7 +7,7 @@ import moment from 'moment';
 import CommentActions from './CommentActions';
 import { hightlightMentionedUserInComment } from '@/_helpers/utils';
 
-moment.updateLocale('en', {
+moment.updateLocale('es', {
   relativeTime: {
     past: '%s',
     s: 'just now',
@@ -81,7 +81,10 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
     <>
       <div className={cx('comment-body card-body card-body-scrollable card-body-scrollable-shadow')}>
         {getContent()}
-        <div ref={bottomRef} className="list-bottom"></div>
+        <div
+          ref={bottomRef}
+          className="list-bottom"
+        ></div>
       </div>
     </>
   );

@@ -9,6 +9,7 @@ import { Box } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { DateRangePicker as DateRangePickerMUI } from '@mui/x-date-pickers-pro/DateRangePicker';
+import { useTranslation } from 'react-i18next';
 
 export const DaterangePicker = function DaterangePicker({
   height,
@@ -72,6 +73,7 @@ export const DaterangePicker = function DaterangePicker({
   function focusChanged(focus) {
     setFocusedInput(focus);
   }
+  const { t } = useTranslation();
 
   return (
     <>
@@ -113,7 +115,10 @@ export const DaterangePicker = function DaterangePicker({
                 format={formatProp}
                 value={value}
                 onChange={(newValue) => setValue(newValue)}
-                localeText={{ start: 'Fecha Inicial', end: 'Fecha Final' }}
+                localeText={{
+                  start: t('widget.DateRangePicker.description', 'Start'),
+                  end: '',
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     height,

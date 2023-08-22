@@ -1,917 +1,919 @@
 {
-    "globals": {
-        "readDocumentation": "Leer la documentación",
-        "cancel": "Cancelar",
-        "save": "Guardar",
-        "back": "Atrás",
-        "edit": "Editar",
-        "search": "Buscar",
-        "update": "Actualizar",
-        "delete": "Borrar",
-        "add": "Añadir",
-        "view": "Ver",
-        "create": "Crear",
-        "enabled": "Activado",
-        "disabled": "Desactivado",
-        "yes": "Si",
-        "submit": "Enviar",
-        "select": "Seleccionar",
-        "environmentVar": "Variables de entorno",
-        "saving": "Guardando...",
-        "saveDatasource": "Guardar fuente de datos",
-        "authorize": "Autorizar",
-        "connect": "Conectar",
-        "reconnect": "Reconectar",
-        "components": "componentes",
-        "send": "Enviar",
-        "noConnection": "no se puede conectar",
-        "connectionVerifeid": "conexión verificada",
-        "left": "Izquierda",
-        "center": "Centro",
-        "right": "Derecha",
-        "justified": "Justificado",
-        "host": "Host",
-        "operation": "Operación",
-        "header": "HEADER",
-        "path": "PATH",
-        "query": "QUERY",
-        "requestBody": "REQUEST BODY"
+  "globals": {
+    "readDocumentation": "Leer la documentación",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "back": "Atrás",
+    "edit": "Editar",
+    "search": "Buscar",
+    "update": "Actualizar",
+    "delete": "Borrar",
+    "add": "Añadir",
+    "view": "Ver",
+    "create": "Crear",
+    "enabled": "Activado",
+    "disabled": "Desactivado",
+    "yes": "Si",
+    "submit": "Enviar",
+    "select": "Seleccionar",
+    "environmentVar": "Variables de entorno",
+    "saving": "Guardando...",
+    "saveDatasource": "Guardar fuente de datos",
+    "authorize": "Autorizar",
+    "connect": "Conectar",
+    "reconnect": "Reconectar",
+    "components": "componentes",
+    "send": "Enviar",
+    "noConnection": "no se puede conectar",
+    "connectionVerifeid": "conexión verificada",
+    "left": "Izquierda",
+    "center": "Centro",
+    "right": "Derecha",
+    "justified": "Justificado",
+    "host": "Host",
+    "operation": "Operación",
+    "header": "HEADER",
+    "path": "PATH",
+    "query": "QUERY",
+    "requestBody": "REQUEST BODY"
+  },
+  "errorBoundary": "Algo salió mal. Por favor, inténtelo de nuevo.",
+  "viewer": "¡Lo sentimos!. Esta aplicación está bajo mantenimiento.",
+  "app": {
+    "updateAvailable": "Actualización disponible",
+    "newVersionReleased": "Una nueva versión de Tooljet ha sido desplegada.",
+    "readReleaseNotes": "Leer las notas del lanzamiento & actualizar.",
+    "skipVersion": "Saltar esta versión."
+  },
+  "stripe": "Por favor espere mientras cargamos la especificación de OpenAPI para Stripe",
+  "openApi": {
+    "noValidOpenApi": "Una especificación válida de OpenAPI no está disponible.",
+    "selectHost": "Seleccione un host",
+    "selectOperation": "Selecciona una operación"
+  },
+  "slack": {
+    "authorize": "Autorizar",
+    "connectToolJetToSlack": "ToolJet puede conectarse a Slack, listar usuarios, enviar mensajes, etc. Por favor seleccione los permisos apropiados.",
+    "chatWrite": "chat:escribir",
+    "listUsersAndSendMessage": "Tu aplicación de Tooljet será capaz de listar usuarios y enviar mensajes a ellos y a los canales.",
+    "connectSlack": "Conectar a Slack"
+  },
+  "googleSheets": {
+    "readOnly": "Solo lectura",
+    "enableReadAndWrite": "Si deseas que ToolJet pueda modificar tus hojas de Google Sheet, asegurate de seleccionar permisos de lectura y escritura.",
+    "readDataFromSheets": "Tus aplicaciones de ToolJet sólo pueden leer datos de tus hojas de Google Sheets.",
+    "readWrite": "Lectura y escritura",
+    "readModifySheets": "Tus aplicaciones de ToolJet pueden leer, modificar y más en tus hojas de Google Sheets.",
+    "toGoogleSheets": "a Google Sheets"
+  },
+  "profile": {
+    "profileSettings": "Preferencias de perfil"
+  },
+  "loginSignupPage": {
+    "forgotPassword": "Olvidaste la contraseña",
+    "emailAddress": "Dirección de correo electrónico",
+    "enterEmail": "Ingrese correo electrónico",
+    "resetPassword": "Restaurar contraseña",
+    "dontHaveAccount": "¿Aún no tienes una cuenta?",
+    "signIn": "Acceder",
+    "signUp": "Registrarte",
+    "createToolJetAccount": "Crear una cuenta de ToolJet",
+    "enterBusinessEmail": "Ingrese el correo electrónico de su empresa",
+    "alreadyHaveAnAccount": "¿Ya tiene una cuenta?",
+    "password": "Contraseña",
+    "showPassword": "Mostrar contraseña",
+    "loginTo": "Acceder a",
+    "yourAccount": "Su cuenta",
+    "noLoginMethodsEnabled": "No hay métodos de inicio de sesión habilitados para este espacio de trabajo",
+    "emailConfirmLink": "Compruebe su correo electrónico para ver el enlace de confirmación por favor",
+    "newPassword": "Nueva Contraseña",
+    "passwordConfirmation": "Confirmación de contraseña"
+  },
+  "editor": {
+    "preview": "Prevista",
+    "share": "Compartir",
+    "shareModal": {
+      "makeApplicationPublic": "¿Hacer aplicación pública?",
+      "shareableLink": "Obtener enlace compartible para esta aplicación",
+      "copy": "copiar",
+      "embeddableLink": "Obtener link embebible para esta aplicación",
+      "manageUsers": "Administrar usuarios"
     },
-    "errorBoundary": "Algo salió mal. Por favor, inténtelo de nuevo.",
-    "viewer": "¡Lo sentimos!. Esta aplicación está bajo mantenimiento.",
-    "app": {
-        "updateAvailable": "Actualización disponible",
-        "newVersionReleased": "Una nueva versión de Tooljet ha sido desplegada.",
-        "readReleaseNotes": "Leer las notas del lanzamiento & actualizar.",
-        "skipVersion": "Saltar esta versión."
+    "appVersionManager": {
+      "version": "Versión",
+      "currentlyReleased": "Actualmente desplegado",
+      "createVersion": "Crear versión",
+      "versionName": "Nombre de la versión",
+      "createVersionFrom": "Crear versión desde",
+      "save": "Guardar",
+      "create": "Crear versión",
+      "editVersion": "Editar versión",
+      "deleteVersion": "¿Quieres eliminar esta versión?",
+      "enterVersionName": "Introducir nombre de la versión",
+      "versionAlreadyReleased": "La versión ya fue creada anteriormente, por favor crea una nueva versión o cambia a una versión diferente para seguir realizando cambios."
     },
-    "stripe": "Por favor espere mientras cargamos la especificación de OpenAPI para Stripe",
-    "openApi": {
-        "noValidOpenApi": "Una especificación válida de OpenAPI no está disponible.",
-        "selectHost": "Seleccione un host",
-        "selectOperation": "Selecciona una operación"
-    },
-    "slack": {
-        "authorize": "Autorizar",
-        "connectToolJetToSlack": "ToolJet puede conectarse a Slack, listar usuarios, enviar mensajes, etc. Por favor seleccione los permisos apropiados.",
-        "chatWrite": "chat:escribir",
-        "listUsersAndSendMessage": "Tu aplicación de Tooljet será capaz de listar usuarios y enviar mensajes a ellos y a los canales.",
-        "connectSlack": "Conectar a Slack"
-    },
-    "googleSheets": {
-        "readOnly": "Solo lectura",
-        "enableReadAndWrite": "Si deseas que ToolJet pueda modificar tus hojas de Google Sheet, asegurate de seleccionar permisos de lectura y escritura.",
-        "readDataFromSheets": "Tus aplicaciones de ToolJet sólo pueden leer datos de tus hojas de Google Sheets.",
-        "readWrite": "Lectura y escritura",
-        "readModifySheets": "Tus aplicaciones de ToolJet pueden leer, modificar y más en tus hojas de Google Sheets.",
-        "toGoogleSheets": "a Google Sheets"
-    },
-    "profile": {
-        "profileSettings": "Preferencias de perfil"
-    },
-    "loginSignupPage": {
-        "forgotPassword": "Olvidaste la contraseña",
-        "emailAddress": "Dirección de correo electrónico",
-        "enterEmail": "Ingrese correo electrónico",
-        "resetPassword": "Restaurar contraseña",
-        "dontHaveAccount": "¿Aún no tienes una cuenta?",
-        "signIn": "Acceder",
-        "signUp": "Registrarte",
-        "createToolJetAccount": "Crear una cuenta de ToolJet",
-        "enterBusinessEmail": "Ingrese el correo electrónico de su empresa",
-        "alreadyHaveAnAccount": "¿Ya tiene una cuenta?",
-        "password": "Contraseña",
-        "showPassword": "Mostrar contraseña",
-        "loginTo": "Acceder a",
-        "yourAccount": "Su cuenta",
-        "noLoginMethodsEnabled": "No hay métodos de inicio de sesión habilitados para este espacio de trabajo",
-        "emailConfirmLink": "Compruebe su correo electrónico para ver el enlace de confirmación por favor",
-        "newPassword": "Nueva Contraseña",
-        "passwordConfirmation": "Confirmación de contraseña"
-    },
-    "editor": {
-        "preview": "Prevista",
-        "share": "Compartir",
-        "shareModal": {
-            "makeApplicationPublic": "¿Hacer aplicación pública?",
-            "shareableLink": "Obtener enlace compartible para esta aplicación",
-            "copy": "copiar",
-            "embeddableLink": "Obtener link embebible para esta aplicación",
-            "manageUsers": "Administrar usuarios"
+    "queries": "Consultas",
+    "inspectComponent": "Por favor seleccione un componente para inspeccionar.",
+    "release": "Desplegar",
+    "searchQueries": "Buscar consultas",
+    "createQuery": "Crear consulta",
+    "queryManager": {
+      "general": "General",
+      "advanced": "Avanzado",
+      "preview": "Prevista",
+      "Save": "Guardar",
+      "selectDatasource": "Seleccionar fuente de datos",
+      "addDatasource": "Añadir fuente de datos",
+      "dataSourceManager": {
+        "toast": {
+          "success": {
+            "dataSourceAdded": "Fuente de datos agregada",
+            "dataSourceSaved": "Fuente de datos guardada"
+          },
+          "error": {
+            "noEmptyDsName": "El nombre de la fuenta de datos no puede estar vacío"
+          }
         },
-        "appVersionManager": {
-            "version": "Versión",
-            "currentlyReleased": "Actualmente desplegado",
-            "createVersion": "Crear versión",
-            "versionName": "Nombre de la versión",
-            "createVersionFrom": "Crear versión desde",
-            "save": "Guardar",
-            "create": "Crear versión",
-            "editVersion": "Editar versión",
-            "deleteVersion": "¿Quieres eliminar esta versión?",
-            "enterVersionName": "Introducir nombre de la versión",
-            "versionAlreadyReleased": "La versión ya fue creada anteriormente, por favor crea una nueva versión o cambia a una versión diferente para seguir realizando cambios."
+        "suggestDataSource": "Sugerir fuente de datos",
+        "suggestAnIntegration": "Sugerir una integración",
+        "whatLookingFor": "¿Cuéntanos que estabas buscando?",
+        "noResultFound": "¿No encontraste lo que estabas buscando?",
+        "suggest": "Sugerir",
+        "addNewDataSource": "Añadir nueva fuente de datos",
+        "whiteListIP": "Por favor agrega nuestra dirección IP a la lista blanca si tu fuente de datos no es públicamente accessible.",
+        "copied": "Copiado",
+        "copy": "Copiar",
+        "saving": "Guardando",
+        "noResultsFor": "No se encontraron resultados para",
+        "noteTaken": "Gracias, ¡hemos tomado nota de esto!",
+        "goToAllDatasources": "Ir a todas las fuentes de datos",
+        "send": "Enviar"
+      },
+      "runQueryOnPageLoad": "Ejecutar consulta al cargar la página",
+      "confirmBeforeQueryRun": "¿Solicitar confirmación antes de ejecutar la consulta?",
+      "notificationOnSuccess": "¿Mostrar notificación satisfactoria?",
+      "successMessage": "Mensaje satisfactorio",
+      "queryRanSuccessfully": "La consulta fue ejecutada satisfactoriamente",
+      "notificationDuration": "Duración de la notificación (s)",
+      "events": "Eventos",
+      "transformation": {
+        "transformationToolTip": "Las transformaciones se pueden usar para transformar los resultados de las consultas. Todas las variables de la aplicación son accesibles desde los transformadores y admiten librerías JS como Lodash y Moment.",
+        "transformations": "Transformaciones"
+      }
+    },
+    "inspector": {
+      "eventManager": {
+        "event": "Evento",
+        "action": "Acción",
+        "actionOptions": "Opción de acciones",
+        "message": "Mensaje",
+        "alertType": "Tipo de alerta",
+        "url": "URL",
+        "modal": "Modal",
+        "text": "Texto",
+        "query": "Consulta",
+        "key": "Llave",
+        "value": "Valor",
+        "type": "Tipo",
+        "fileName": "Nombre del archivo",
+        "data": "Datos",
+        "table": "Tabla",
+        "pageIndex": "Índice de página",
+        "component": "Componente",
+        "addHandler": "+ Añadir manejador",
+        "addEventHandler": "+ Añadir manejador de eventos",
+        "emptyMessage": "Este {{componentName}} no tiene manejadores de eventos."
+      }
+    }
+  },
+  "header": {
+    "darkModeToggle": {
+      "activateLightMode": "Activar modo claro",
+      "activateDarkMode": "Activar modo oscuro"
+    },
+    "languageSelection": {
+      "changeLanguage": "Cambiar idioma",
+      "searchLanguage": "Buscar idioma"
+    },
+    "notificationCenter": {
+      "notifications": "Notificaciones",
+      "markAllAs": "Marcar todo como",
+      "read": "Leído",
+      "un": "un",
+      "youDontHaveany": "No tienes ningún/a",
+      "youAreCaughtUp": "¡Estás al día!",
+      "view": "Ver"
+    },
+    "organization": {
+      "loadOrganizations": "Cargar organizaciones",
+      "createWorkspace": "Crear espacio de trabajo",
+      "workspaceName": "Nombre del espacio de trabajo",
+      "editWorkspace": "Editar espacio de trabajo",
+      "menus": {
+        "addWorkspace": "Añadir espacio de trabajo",
+        "menusList": {
+          "manageUsers": "Administrar usuarios",
+          "manageGroups": "Administrar grupos",
+          "manageSso": "Administrar SSO",
+          "manageEnv": "Administrar variables de entorno"
         },
-        "queries": "Consultas",
-        "inspectComponent": "Por favor seleccione un componente para inspeccionar.",
-        "release": "Desplegar",
-        "searchQueries": "Buscar consultas",
-        "createQuery": "Crear consulta",
-        "queryManager": {
-            "general": "General",
-            "advanced": "Avanzado",
-            "preview": "Prevista",
-            "Save": "Guardar",
-            "selectDatasource": "Seleccionar fuente de datos",
-            "addDatasource": "Añadir fuente de datos",
-            "dataSourceManager": {
-                "toast": {
-                    "success": {
-                        "dataSourceAdded": "Fuente de datos agregada",
-                        "dataSourceSaved": "Fuente de datos guardada"
-                    },
-                    "error": {
-                        "noEmptyDsName": "El nombre de la fuenta de datos no puede estar vacío"
-                    }
-                },
-                "suggestDataSource": "Sugerir fuente de datos",
-                "suggestAnIntegration": "Sugerir una integración",
-                "whatLookingFor": "¿Cuéntanos que estabas buscando?",
-                "noResultFound": "¿No encontraste lo que estabas buscando?",
-                "suggest": "Sugerir",
-                "addNewDataSource": "Añadir nueva fuente de datos",
-                "whiteListIP": "Por favor agrega nuestra dirección IP a la lista blanca si tu fuente de datos no es públicamente accessible.",
-                "copied": "Copiado",
-                "copy": "Copiar",
-                "saving": "Guardando",
-                "noResultsFor": "No se encontraron resultados para",
-                "noteTaken": "Gracias, ¡hemos tomado nota de esto!",
-                "goToAllDatasources": "Ir a todas las fuentes de datos",
-                "send": "Enviar"
+        "manageUsers": {
+          "usersAndPermission": "Usuarios y Permisos",
+          "inviteNewUser": "Invitar un nuevo usuario",
+          "name": "NOMBRE",
+          "email": "CORREO ELECTRÓNICO",
+          "status": "ESTADO",
+          "archive": "Archivar",
+          "unarchive": "Desarchivar",
+          "addNewUser": "Añadir un nuevo usuario",
+          "emailAddress": "Dirección de correo electrónico",
+          "createUser": "Crear usuario",
+          "enterFirstName": "Ingrese su Nombre",
+          "enterLastName": "Ingrese su Apellido",
+          "enterEmail": "Ingrese correo electrónico"
+        },
+        "manageGroups": {
+          "permissions": {
+            "userGroups": "Grupos de usuarios",
+            "createNewGroup": "Crear un nuevo grupo",
+            "udpateGroup": "Actualizar grupo",
+            "addNewGroup": "Añadir un nuevo grupo",
+            "enterName": "Ingresar nombre",
+            "createGroup": "Crear grupo",
+            "name": "Nombre"
+          },
+          "permissionResources": {
+            "userGroup": "Grupo de usuarios",
+            "apps": "Aplicaciones",
+            "users": "Usuarios",
+            "permissions": "Permisos",
+            "addAppsToGroup": "Seleccionar applicaciones para añadir al grupo.",
+            "name": "Nombre",
+            "addUsersToGroup": "Seleccionar usuarios para añadir al grupo.",
+            "email": "Correo electrónico",
+            "resource": "Recurso",
+            "createUpdateDelete": "Crear/Actualizar/Eliminar",
+            "folder": "Carpeta"
+          }
+        },
+        "manageSSO": {
+          "manageSso": "Administrar SSO",
+          "generalSettings": {
+            "title": "Ajustes Generales",
+            "enableSignup": "Habilitar registro",
+            "newAccountWillBeCreated": "Una nueva cuenta será creada para el primer inicio de sesión SSO del usuario",
+            "allowedDomains": "Dominios permitidos",
+            "enterDomains": "Ingresar los dominios",
+            "supportMultiDomains": "Soporta múltiples dominios. Ingrese los nombres de dominio separados por coma. ejemplo: tooljet.com,tooljet.io,suorganizacion.com",
+            "loginUrl": "URL de inicio de sesión",
+            "workspaceLogin": "Use esta URL para iniciar sesión en el espacio de trabajo",
+            "allowDefaultSso": "Permitir SSO por defecto",
+            "ssoAuth": "Permitir a los usuarios autenticarse a través de SSO por defecto. Las configuraciones de SSO por defecto pueden ser anuladas por el SSO de nivel de espacio de trabajo."
+          },
+          "google": {
+            "title": "Google",
+            "enabled": "Activado",
+            "disabled": "Desactivado",
+            "clientId": "ID de cliente",
+            "enterClientId": "Ingrese el ID de cliente",
+            "redirectUrl": "URL de redirección"
+          },
+          "github": {
+            "title": "Github",
+            "hostName": "Nombre de host",
+            "enterHostName": "Ingrese el nombre de host",
+            "requiredGithub": "Requiere Github alojado en su propio servidor",
+            "clientId": "ID de cliente",
+            "enterClientId": "Ingrese el ID de cliente",
+            "clientSecret": "Secreto de cliente",
+            "enterClientSecret": "Ingrese el secreto de cliente",
+            "encrypted": "Encriptado",
+            "redirectUrl": "URL de redirección"
+          },
+          "passwordLogin": "Inicio de sesión con contraseña",
+          "environmentVar": {
+            "noEnvConfig": "No haz configurado ninguna variable de entorno, presiona el botón 'Añadir nueva variable' para crear una",
+            "envWillBeDeleted": "La variable será eliminada, ¿desea continuar?",
+            "addNewVariable": "Añadir nueva variable",
+            "variableForm": {
+              "addNewVariable": "Añadir nueva variable",
+              "updatevariable": "Actualizar variable",
+              "name": "Nombre",
+              "value": "Valor",
+              "enterVariableName": "Ingresar nombre de variable",
+              "enterValue": "Ingresar valor",
+              "type": "Tipo",
+              "enableEncryption": "Habilitar encriptación",
+              "addVariable": "Añadir variable"
             },
-            "runQueryOnPageLoad": "Ejecutar consulta al cargar la página",
-            "confirmBeforeQueryRun": "¿Solicitar confirmación antes de ejecutar la consulta?",
-            "notificationOnSuccess": "¿Mostrar notificación satisfactoria?",
-            "successMessage": "Mensaje satisfactorio",
-            "queryRanSuccessfully": "La consulta fue ejecutada satisfactoriamente",
-            "notificationDuration": "Duración de la notificación (s)",
-            "events": "Eventos",
-            "transformation": {
-                "transformationToolTip": "Las transformaciones se pueden usar para transformar los resultados de las consultas. Todas las variables de la aplicación son accesibles desde los transformadores y admiten librerías JS como Lodash y Moment.",
-                "transformations": "Transformaciones"
+            "variableTable": {
+              "name": "nombre",
+              "value": "valor",
+              "type": "tipo",
+              "secret": "secreto"
             }
-        },
-        "inspector": {
-            "eventManager": {
-                "event": "Evento",
-                "action": "Acción",
-                "actionOptions": "Opción de acciones",
-                "message": "Mensaje",
-                "alertType": "Tipo de alerta",
-                "url": "URL",
-                "modal": "Modal",
-                "text": "Texto",
-                "query": "Consulta",
-                "key": "Llave",
-                "value": "Valor",
-                "type": "Tipo",
-                "fileName": "Nombre del archivo",
-                "data": "Datos",
-                "table": "Tabla",
-                "pageIndex": "Índice de página",
-                "component": "Componente",
-                "addHandler": "+ Añadir manejador",
-                "addEventHandler": "+ Añadir manejador de eventos",
-                "emptyMessage": "Este {{componentName}} no tiene manejadores de eventos."
-            }
+          }
         }
+      }
+    },
+    "profileSettingPage": {
+      "profileSettings": "Configuración de Perfil",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "enterFirstName": "Ingrese su Nombre",
+      "enterLastName": "Ingrese su Apellido",
+      "email": "Correo electrónico",
+      "avatar": "Avatar",
+      "update": "Actualizar",
+      "profile": "Perfil",
+      "changePassword": "Cambiar contraseña",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Nueva contraseña",
+      "confirmNewPassword": "Confirmar nueva contraseña",
+      "enterCurrentPassword": "Introduzca contraseña actual",
+      "enterNewPassword": "Ingrese nueva contraseña"
+    },
+    "profile": "Perfil",
+    "logout": "Cerrar Sesión"
+  },
+  "homePage": {
+    "appCard": {
+      "changeIcon": "Cambiar ícono",
+      "addToFolder": "Añadir a la carpeta",
+      "move": "Mover",
+      "to": "hacia",
+      "selectFolder": "Seleccionar carpeta",
+      "deleteApp": "Borrar aplicación",
+      "exportApp": "Exportar aplicación",
+      "cloneApp": "Clonar aplicación",
+      "launch": "Lanzar",
+      "maintenance": "Mantenimiento",
+      "noDeployedVersion": "La aplicación no tiene una versión implementada",
+      "openInAppViewer": "Abrir en el visor de aplicaciones",
+      "removeFromFolder": "Borrar de la carpeta"
+    },
+    "blankPage": {
+      "welcomeToToolJet": "¡Bienvenido a ToolJet!",
+      "getStartedCreateNewApp": "Puedes empezar creando una nueva aplicación o creando una aplicación usando una plantilla en la biblioteca de ToolJet.",
+      "importApplication": "Importar una aplicación"
+    },
+    "foldersSection": {
+      "allApplications": "Todas las aplicaciones",
+      "folders": "Carpetas",
+      "createNewFolder": "+ Crear nueva carpeta",
+      "noFolders": "No haz creado ninguna carpeta, usa carpetas para organizar tus aplicaciones",
+      "createFolder": "Crear carpeta",
+      "updateFolder": "Actualizar carpeta",
+      "editFolder": "Editar carpeta",
+      "deleteFolder": "Borrar carpeta",
+      "folderName": "Nombre de la carpeta",
+      "wishToDeleteFolder": "¿Estás seguro de que deseas eliminar la carpeta {{folderName}}? Las aplicaciones dentro de la carpeta no se eliminarán."
     },
     "header": {
-        "darkModeToggle": {
-            "activateLightMode": "Activar modo claro",
-            "activateDarkMode": "Activar modo oscuro"
-        },
-        "languageSelection": {
-            "changeLanguage": "Cambiar idioma",
-            "searchLanguage": "Buscar idioma"
-        },
-        "notificationCenter": {
-            "notifications": "Notificaciones",
-            "markAllAs": "Marcar todo como",
-            "read": "Leído",
-            "un": "un",
-            "youDontHaveany": "No tienes ningún/a",
-            "youAreCaughtUp": "¡Estás al día!",
-            "view": "Ver"
-        },
-        "organization": {
-            "loadOrganizations": "Cargar organizaciones",
-            "createWorkspace": "Crear espacio de trabajo",
-            "workspaceName": "Nombre del espacio de trabajo",
-            "editWorkspace": "Editar espacio de trabajo",
-            "menus": {
-                "addWorkspace": "Añadir espacio de trabajo",
-                "menusList": {
-                    "manageUsers": "Administrar usuarios",
-                    "manageGroups": "Administrar grupos",
-                    "manageSso": "Administrar SSO",
-                    "manageEnv": "Administrar variables de entorno"
-                },
-                "manageUsers": {
-                    "usersAndPermission": "Usuarios y Permisos",
-                    "inviteNewUser": "Invitar un nuevo usuario",
-                    "name": "NOMBRE",
-                    "email": "CORREO ELECTRÓNICO",
-                    "status": "ESTADO",
-                    "archive": "Archivar",
-                    "unarchive": "Desarchivar",
-                    "addNewUser": "Añadir un nuevo usuario",
-                    "emailAddress": "Dirección de correo electrónico",
-                    "createUser": "Crear usuario",
-                    "enterFirstName": "Ingrese su Nombre",
-                    "enterLastName": "Ingrese su Apellido",
-                    "enterEmail": "Ingrese correo electrónico"
-                },
-                "manageGroups": {
-                    "permissions": {
-                        "userGroups": "Grupos de usuarios",
-                        "createNewGroup": "Crear un nuevo grupo",
-                        "udpateGroup": "Actualizar grupo",
-                        "addNewGroup": "Añadir un nuevo grupo",
-                        "enterName": "Ingresar nombre",
-                        "createGroup": "Crear grupo",
-                        "name": "Nombre"
-                    },
-                    "permissionResources": {
-                        "userGroup": "Grupo de usuarios",
-                        "apps": "Aplicaciones",
-                        "users": "Usuarios",
-                        "permissions": "Permisos",
-                        "addAppsToGroup": "Seleccionar applicaciones para añadir al grupo.",
-                        "name": "Nombre",
-                        "addUsersToGroup": "Seleccionar usuarios para añadir al grupo.",
-                        "email": "Correo electrónico",
-                        "resource": "Recurso",
-                        "createUpdateDelete": "Crear/Actualizar/Eliminar",
-                        "folder": "Carpeta"
-                    }
-                },
-                "manageSSO": {
-                    "manageSso": "Administrar SSO",
-                    "generalSettings": {
-                        "title": "Ajustes Generales",
-                        "enableSignup": "Habilitar registro",
-                        "newAccountWillBeCreated": "Una nueva cuenta será creada para el primer inicio de sesión SSO del usuario",
-                        "allowedDomains": "Dominios permitidos",
-                        "enterDomains": "Ingresar los dominios",
-                        "supportMultiDomains": "Soporta múltiples dominios. Ingrese los nombres de dominio separados por coma. ejemplo: tooljet.com,tooljet.io,suorganizacion.com",
-                        "loginUrl": "URL de inicio de sesión",
-                        "workspaceLogin": "Use esta URL para iniciar sesión en el espacio de trabajo",
-                        "allowDefaultSso": "Permitir SSO por defecto",
-                        "ssoAuth": "Permitir a los usuarios autenticarse a través de SSO por defecto. Las configuraciones de SSO por defecto pueden ser anuladas por el SSO de nivel de espacio de trabajo."
-                    },
-                    "google": {
-                        "title": "Google",
-                        "enabled": "Activado",
-                        "disabled": "Desactivado",
-                        "clientId": "ID de cliente",
-                        "enterClientId": "Ingrese el ID de cliente",
-                        "redirectUrl": "URL de redirección"
-                    },
-                    "github": {
-                        "title": "Github",
-                        "hostName": "Nombre de host",
-                        "enterHostName": "Ingrese el nombre de host",
-                        "requiredGithub": "Requiere Github alojado en su propio servidor",
-                        "clientId": "ID de cliente",
-                        "enterClientId": "Ingrese el ID de cliente",
-                        "clientSecret": "Secreto de cliente",
-                        "enterClientSecret": "Ingrese el secreto de cliente",
-                        "encrypted": "Encriptado",
-                        "redirectUrl": "URL de redirección"
-                    },
-                    "passwordLogin": "Inicio de sesión con contraseña",
-                    "environmentVar": {
-                        "noEnvConfig": "No haz configurado ninguna variable de entorno, presiona el botón 'Añadir nueva variable' para crear una",
-                        "envWillBeDeleted": "La variable será eliminada, ¿desea continuar?",
-                        "addNewVariable": "Añadir nueva variable",
-                        "variableForm": {
-                            "addNewVariable": "Añadir nueva variable",
-                            "updatevariable": "Actualizar variable",
-                            "name": "Nombre",
-                            "value": "Valor",
-                            "enterVariableName": "Ingresar nombre de variable",
-                            "enterValue": "Ingresar valor",
-                            "type": "Tipo",
-                            "enableEncryption": "Habilitar encriptación",
-                            "addVariable": "Añadir variable"
-                        },
-                        "variableTable": {
-                            "name": "nombre",
-                            "value": "valor",
-                            "type": "tipo",
-                            "secret": "secreto"
-                        }
-                    }
-                }
-            }
-        },
-        "profileSettingPage": {
-            "profileSettings": "Configuración de Perfil",
-            "firstName": "Nombre",
-            "lastName": "Apellido",
-            "enterFirstName": "Ingrese su Nombre",
-            "enterLastName": "Ingrese su Apellido",
-            "email": "Correo electrónico",
-            "avatar": "Avatar",
-            "update": "Actualizar",
-            "profile": "Perfil",
-            "changePassword": "Cambiar contraseña",
-            "currentPassword": "Contraseña actual",
-            "newPassword": "Nueva contraseña",
-            "confirmNewPassword": "Confirmar nueva contraseña",
-            "enterCurrentPassword": "Introduzca contraseña actual",
-            "enterNewPassword": "Ingrese nueva contraseña"
-        },
-        "profile": "Perfil",
-        "logout": "Cerrar Sesión"
+      "createNewApplication": "Crear nueva aplicación",
+      "import": "Importar",
+      "chooseFromTemplate": "Elegir desde plantillas"
     },
-    "homePage": {
-        "appCard": {
-            "changeIcon": "Cambiar ícono",
-            "addToFolder": "Añadir a la carpeta",
-            "move": "Mover",
-            "to": "hacia",
-            "selectFolder": "Seleccionar carpeta",
-            "deleteApp": "Borrar aplicación",
-            "exportApp": "Exportar aplicación",
-            "cloneApp": "Clonar aplicación",
-            "launch": "Lanzar",
-            "maintenance": "Mantenimiento",
-            "noDeployedVersion": "La aplicación no tiene una versión implementada",
-            "openInAppViewer": "Abrir en el visor de aplicaciones",
-            "removeFromFolder": "Borrar de la carpeta"
-        },
-        "blankPage": {
-            "welcomeToToolJet": "¡Bienvenido a ToolJet!",
-            "getStartedCreateNewApp": "Puedes empezar creando una nueva aplicación o creando una aplicación usando una plantilla en la biblioteca de ToolJet.",
-            "importApplication": "Importar una aplicación",
-        },
-        "foldersSection": {
-            "allApplications": "Todas las aplicaciones",
-            "folders": "Carpetas",
-            "createNewFolder": "+ Crear nueva carpeta",
-            "noFolders": "No haz creado ninguna carpeta, usa carpetas para organizar tus aplicaciones",
-            "createFolder": "Crear carpeta",
-            "updateFolder": "Actualizar carpeta",
-            "editFolder": "Editar carpeta",
-            "deleteFolder": "Borrar carpeta",
-            "folderName": "Nombre de la carpeta",
-            "wishToDeleteFolder": "¿Estás seguro de que deseas eliminar la carpeta {{folderName}}? Las aplicaciones dentro de la carpeta no se eliminarán."
-        },
-        "header": {
-            "createNewApplication": "Crear nueva aplicación",
-            "import": "Importar",
-            "chooseFromTemplate": "Elegir desde plantillas"
-        },
-        "pagination": {
-            "showing": "Mostrando",
-            "of": "de",
-            "to": "para"
-        },
-        "noApplicationFound": "No se encontraron aplicaciones",
-        "thisFolderIsEmpty": "Esta carpeta está vacía",
-        "deleteAppAndData": "La aplicación y los datos asociados se eliminarán permanentemente, ¿desea continuar?",
-        "removeAppFromFolder": "La aplicación se eliminará de esta carpeta, ¿desea continuar?",
-        "change": "Cambiar",
-        "templateCard": {
-            "use": "Usar",
-            "preview": "Prevista",
-            "leadGeneretion": "Generación de líderes",
-        },
-        "templateLibraryModal": {
-            "select": "Seleccionar plantilla",
-            "createAppfromTemplate": "Crear aplicación desde plantilla",
-        }
+    "pagination": {
+      "showing": "Mostrando",
+      "of": "de",
+      "to": "para"
     },
-    "confirmationPage": {
-        "setupAccount": "Configurar cuenta",
-        "signupWithGoogle": "Registrarse con Google",
-        "signupWithGitHub": "Registrarse con GitHub",
-        "or": "ó",
-        "firstName": "Primer nombre",
-        "lastName": "Apellido",
-        "company": "Compañía",
-        "role": "Rol",
-        "pleaseSelect": "Por favor seleccionar",
-        "password": "Contraseña",
-        "confirmPassword": "Confirmar contraseña",
-        "clickAndAgree": "Al hacer clic en el siguiente botón, acepta nuestros",
-        "termsAndConditions": "Términos y Condiciones",
-        "finishAccountSetup": "Finalizar configuración de cuenta",
-        "acceptInvite": "Aceptar invitación",
-        "accountExists": "¿Ya tienes una cuenta?",
-        "and": "y"
+    "noApplicationFound": "No se encontraron aplicaciones",
+    "thisFolderIsEmpty": "Esta carpeta está vacía",
+    "deleteAppAndData": "La aplicación y los datos asociados se eliminarán permanentemente, ¿desea continuar?",
+    "removeAppFromFolder": "La aplicación se eliminará de esta carpeta, ¿desea continuar?",
+    "change": "Cambiar",
+    "templateCard": {
+      "use": "Usar",
+      "preview": "Prevista",
+      "leadGeneretion": "Generación de líderes"
     },
-    "onBoarding": {
-        "finishToolJetInstallation": "Finalizar instalación de ToolJet",
-        "organization": "Organización",
-        "name": "Nombre",
-        "email": "Email",
-        "receiveUpdatesFromToolJet": "Recibirás actualizaciones de parte del equipo de ToolJet (1-2 correos electrónicos al mes, no hacemos spam)",
-        "finishSetup": "Finalizar configuración",
-        "skip": "Saltar"
-    },
-    "redirectSso": {
-        "upgradingTov1.13.0": "Actualizando a v1.13.0 y más",
-        "fromV1.13.0": "Desde la versión 1.13.0 hemos introducido...",
-        "multiWorkspace": "Multi-Workspace",
-        "singleSignOnConfig": "La configuración relacionada con SSO se ha movido de las variables de entorno a la base de datos. Por favor, consulte este",
-        "link": "Enlace",
-        "toConfigureSSO": "para configurar SSO.",
-        "haveGoogleGithubSSo": "Si tiene configuraciones de SSO de Google o GitHub antes de la actualización y deshabilitó el Multi-Workspace, entonces las configuraciones de SSO se migrarán durante la actualización, pero debe volver a configurar la URL de redireccionamiento en el lado del proveedor de SSO. Las URL de redireccionamiento para cada SSO se indican a continuación.",
-        "isMultiWorkspaceEnabled": "Si tiene Multi-Workspace habilitado, entonces debe configurar SSO en cada espacio de trabajo. Puede hacerlo desde la página de configuración de SSO en cada espacio de trabajo.",
-        "youHaveEnabled": "Has habilitado",
-        "setupSsoWorkspace": "Por favor ingresar con su contraseña para configurar SSO en este espacio de trabajo.",
-        "manageSsoMenu": "Administrar menú de SSO.",
-        "youHaveDisabled": "Has deshabilitado",
-        "configureRedirectUrl": "Por favor configure la URL de redireccionamiento en el proveedor de SSO.",
-        "google": "Google",
-        "redirectUrl": "URL de redirección",
-        "gitHub": "GitHub"
-    },
-    "oAuth2": {
-        "pleaseWait": "Por favor espere...",
-        "authSuccess": "Autenticación satisfactoria, puede cerrar esta ventana.",
-        "authFailed": "Autenticación fallida."
-    },
-    "widgetManager": {
-        "commonlyUsed": "Comúnmente utilizado",
-        "layouts": "Diseños",
-        "forms": "Formularios",
-        "intregrations": "Integraciones",
-        "others": "Otros",
-        "noResults": "No se han encontrado resultados",
-        "tryAdjustingFilterMessage": "Intenta modificar tu búsqueda o los filtros para encontrar lo que estás buscando",
-        "clearQuery": "Limpiar búsqueda"
-    },
-    "widget": {
-        "common": {
-            "properties": "Propiedades",
-            "events": "Eventos",
-            "layout": "Diseño",
-            "styles": "Estilos",
-            "general": "General",
-            "validation": "Validación",
-            "documentation": "{{componentMeta}} documentación",
-            "widgetNameEmptyError": "El nombre del widget no puede estar vacío",
-            "componentNameExistsError": "El nombre del componente ya existe",
-            "invalidWidgetName": "Nombre de widget no válido. Debe ser único e incluir solo letras, números y guión bajo."
-        },
-        "commonProperties": {
-            "visibility": "Visibilidad",
-            "disable": "Inutilizar",
-            "borderRadius": "Radio del borde",
-            "boxShadow": "Sombra de caja",
-            "tooltip": "Información sobre herramientas",
-            "showOnDesktop": "Mostrar en el escritorio",
-            "showOnMobile": "Mostrar en el móvil",
-            "showLoadingState": "Mostrar estado de carga",
-            "backgroundColor": "Color de fondo",
-            "textColor": "Color del texto",
-            "loaderColor": "Color del cargador",
-            "defaultValue": "Valor predeterminado",
-            "placeholder": "Marcador",
-            "label": "Etiqueta",
-            "title": "Título",
-            "code": "Código",
-            "data": "Data",
-            "tableData": "Datos de la tabla",
-            "tableColumns": "Columnas de la tabla",
-            "searverSideSearch": "Búsqueda del lado del servidor",
-            "loadingState": "Estado de carga",
-            "serverSidePagination": "Paginación del lado del servidor",
-            "clientSidePagination": "Paginación del lado del cliente",
-            "serverSideSearch": "Búsqueda del lado del servidor",
-            "showSearchBox": "Mostrar cuadro de búsqueda",
-            "showDownloadButton": "Mostrar botón de descarga",
-            "showFilterButton": "Mostrar botón de filtro",
-            "showBulkUpdateActions": "Mostrar acciones de actualización masiva",
-            "bulkSelection": "Selección masiva",
-            "highlightSelectedRow": "Resaltar fila seleccionada",
-            "actionButtonRadius": "Radio del botón de acción",
-            "tableType": "Tipo de tabla",
-            "cellSize": "Tamaño de la celda",
-            "setPage": "Establecer página",
-            "page": "Página",
-            "buttonText": "Texto del botón",
-            "click": "Click",
-            "setText": "Establecer texto",
-            "text": "Texto",
-            "markerColor": "Color del marcador",
-            "showAxes": "Mostrar ejes",
-            "showGridLines": "Mostrar líneas de cuadrícula",
-            "chartType": "Tipo de gráfico",
-            "jsonDescription": "Descripción JSON",
-            "usePlotlyJsonSchema": "Usar esquema JSON de Plotly",
-            "padding": "Relleno",
-            "hideTitleBar": "Ocultar barra de título",
-            "hideCloseButton": "Ocultar botón de cierre",
-            "hideOnEscape": "Ocultar en Escape",
-            "modalSize": "Tamaño modal",
-            "open": "Abrir",
-            "close": "Cerrar",
-            "regex": "Expresión regular",
-            "minLength": "Longitud mínima",
-            "maxLength": "Longitud máxima",
-            "customValidation": "Validación personalizada",
-            "clear": "Limpiar",
-            "minimumValue": "Valor mínimo",
-            "maximumValue": "Valor máximo",
-            "format": "Formato",
-            "enableTimeSelection": "Habilitar selección de tiempo",
-            "enableDateSelection": "Habilitar selección de fecha",
-            "disabledDates": "Fechas deshabilitadas",
-            "setChecked": "Establecer marcado",
-            "status": "Estado",
-            "defaultStatus": "Estado predeterminado",
-            "checkboxColor": "Color de la casilla de verificación",
-            "optionValues": "Valores de opción",
-            "optionLabels": "Etiquetas de opción",
-            "activeColor": "Color activo",
-            "selectOption": "Seleccionar opción",
-            "option": "Opción",
-            "toggleSwitchColor": "Cambiar color de interruptor",
-            "defaultStartDate": "Fecha de inicio predeterminada",
-            "defaultEndDate": "Fecha de finalización predeterminada",
-            "textSize": "Tamaño del texto",
-            "alignText": "Alinear texto",
-            "url": "URL",
-            "alternativeText": "Texto alternativo",
-            "zoomButton": "Botón de zoom",
-            "borderType": "Tipo de borde",
-            "imageFit": "Ajuste de imagen",
-            "optionsLoadingState": "Estado de carga de opciones",
-            "selectedTextColor": "Color de texto seleccionado",
-            "select": "Seleccionar",
-            "deselectOption": "Deseleccionar opción",
-            "clearSelections": "Borrar selecciones",
-            "enableSelectAllOption": "Habilitar opción Seleccionar todo",
-            "initialLocation": "Ubicación inicial",
-            "defaultMarkers": "Marcadores predeterminados",
-            "addNewMarkers": "Agregar nuevos marcadores",
-            "searchForPlaces": "Buscar lugares",
-            "setLocation": "Establecer ubicación",
-            "latitude": "Latitud",
-            "longitude": "Longitud",
-            "numberOfStars": "Número de estrellas",
-            "defaultNoOfSelectedStars": "Número predeterminado de estrellas seleccionadas",
-            "enableHalfStar": "Habilitar media estrella",
-            "tooltips": "Información sobre herramientas",
-            "starColor": "Color de la estrella",
-            "labelColor": "Color de la etiqueta",
-            "dividerColor": "Color del divisor",
-            "clearFiles": "Borrar archivos",
-            "instructionText": "Texto de instrucción",
-            "useDropZone": "Usar zona de descarga",
-            "useFilePicker": "Usar selector de archivos",
-            "pickMultipleFiles": "Seleccionar varios archivos",
-            "maxFileCount": "Conteo máximo de archivos",
-            "acceptFileTypes": "Aceptar tipos de archivos",
-            "maxSizeLimitBytes": "Límite máximo de tamaño en bytes",
-            "minSizeLimitBytes": "Límite mínimo de tamaño en bytes",
-            "parseContent": "Analizar contenido",
-            "fileType": "Tipo de archivo",
-            "dateFormat": "Formato de fecha",
-            "defaultDate": "Fecha predeterminada",
-            "events": "Eventos",
-            "resources": "Recursos",
-            "defaultView": "Vista predeterminada",
-            "startTimeOnWeekAndDayView": "Hora de inicio en vista de semana y día",
-            "endTimeOnWeekAndDayView": "Hora de finalización en vista de semana y día",
-            "showToolbar": "Mostrar barra de herramientas",
-            "showViewSwitcher": "Mostrar conmutador de vista",
-            "highlightToday": "Resaltar hoy",
-            "showPopoverWhenEventIsClicked": "Mostrar popover cuando se hace clic en el evento",
-            "cellSizeInViewsClassifiedByResource": "Tamaño de la celda en vistas clasificadas por recurso",
-            "headerDateFormatOnWeekView": "Formato de fecha de encabezado en vista de semana",
-            "showLineNumber": "Mostrar número de línea",
-            "mode": "Modo",
-            "tabs": "Pestañas",
-            "defaultTab": "Pestaña predeterminada",
-            "hideTabs": "Ocultar pestañas",
-            "highlightColor": "Color de resaltado",
-            "tabWidth": "Ancho de pestaña",
-            "setCurrentTab": "Establecer pestaña actual",
-            "id": "Id",
-            "timerType": "Tipo de temporizador",
-            "listData": "Datos de lista",
-            "rowHeight": "Altura de fila",
-            "showBottomBorder": "Mostrar borde inferior",
-            "tags": "Etiquetas",
-            "numberOfPages": "Número de páginas",
-            "defaultPageIndex": "Índice de página predeterminado",
-            "progress": "Progreso",
-            "color": "Color",
-            "strokeWidth": "Ancho de línea",
-            "counterClockwise": "En sentido contrario a las agujas del reloj",
-            "circleRatio": "Relación de círculo",
-            "colour": "Color",
-            "size": "Tamaño",
-            "primaryValueLabel": "Etiqueta de valor primario",
-            "primaryValue": "Valor primario",
-            "hideSecondaryValue": "Ocultar valor secundario",
-            "secondaryValueLabel": "Etiqueta de valor secundario",
-            "secondaryValue": "Valor secundario",
-            "secondarySignDisplay": "Mostrar signo secundario",
-            "primaryLabelColour": "Color de etiqueta primaria",
-            "primaryTextColour": "Color de texto primario",
-            "secondaryLabelColour": "Color de etiqueta secundaria",
-            "secondaryTextColour": "Color de texto secundario",
-            "min": "Mínimo",
-            "max": "Máximo",
-            "value": "Valor",
-            "twoHandles": "Dos controladores",
-            "lineColor": "Color de línea",
-            "handleColor": "Color de controlador",
-            "trackColor": "Color de pista",
-            "timelineData": "Datos de línea de tiempo",
-            "hideDate": "Ocultar fecha",
-            "svgData": "Datos SVG",
-            "rawHtml": "HTML sin procesar",
-            "values": "Valores",
-            "labels": "Etiquetas",
-            "defaultSelected": "Seleccionado predeterminado",
-            "enableMutipleSelection": "Habilitar selección múltiple",
-            "selectedTextColour": "Color de texto seleccionado",
-            "selectedBackgroundColor": "Color de fondo seleccionado",
-            "fileUrl": "URL de archivo",
-            "scalePageToWidth": "Escalar página a ancho",
-            "showPageControls": "Mostrar controles de página",
-            "steps": "Pasos",
-            "currentStep": "Paso actual",
-            "stepsSelectable": "Pasos seleccionables",
-            "theme": "Tema",
-            "columns": "Columnas",
-            "cardData": "Datos de tarjeta",
-            "enableAddCard": "Habilitar agregar tarjeta",
-            "width": "Ancho",
-            "minWidth": "Ancho mínimo",
-            "accentColor": "Color de acento",
-            "defaultColor": "Color predeterminado",
-            "setColor": "Establecer color",
-            "structure": "Estructura",
-            "checkedValues": "Valores marcados",
-            "expandedValues": "Valores expandidos",
-        },
-        "Table": {
-            "displayName": "Tabla",
-            "description": "Tabla",
-            "columnType": "Tipo de columna",
-            "columnName": "Nombre de columna",
-            "overflow": "Desbordamiento",
-            "key": "Llave",
-            "textColor": "Color de texto",
-            "validation": "Validación",
-            "regex": "Expresión regular",
-            "minLength": "Longitud mínima",
-            "maxLength": "Longitud máxima",
-            "customRule": "Regla personalizada",
-            "values": "Valores",
-            "labels": "Etiquetas",
-            "cellBgColor": "Color de fondo de celda",
-            "dateDisplayformat": "Formato de visualización de fecha",
-            "dateParseformat": "Formato de análisis de fecha",
-            "showTime": "Mostrar hora",
-            "makeEditable": "Hacer editable",
-            "buttonText": "Texto de botón",
-            "buttonPosition": "Posición del botón",
-            "remove": "Eliminar",
-            "addButton": "+ Agregar botón",
-            "addColumn": "+ Agregar columna",
-            "noActionMessage": "Esta tabla no tiene botones de acción",
-        },
-        "Button": {
-            "displayName": "Botón",
-            "description": "Invocar acciones: consultas, alertas, etc."
-        },
-        "Chart": {
-            "displayName": "Gráfico",
-            "description": "Desplegar gráficos"
-        },
-        "Modal": {
-            "displayName": "Modal",
-            "description": "Modal invocado por eventos"
-        },
-        "TextInput": {
-            "displayName": "Entrada de texto",
-            "description": "Campo de texto para formularios"
-        },
-        "NumberInput": {
-            "displayName": "Entrada numérica",
-            "description": "Campo numérico para formularios"
-        },
-        "PasswordInput": {
-            "displayName": "Entrada de contraseña",
-            "description": "Campo de contraseña para formularios"
-        },
-        "Datepicker": {
-            "displayName": "Selector de fecha",
-            "description": "Seleccionar fecha y hora"
-        },
-        "Checkbox": {
-            "displayName": "Casilla de verificación",
-            "description": "Una sola casilla de verificación"
-        },
-        "Radio-button": {
-            "displayName": "Botón de radio",
-            "description": "Botones de tipo radio"
-        },
-        "ToggleSwitch": {
-            "displayName": "Interruptor de conmutación",
-            "description": "Interruptor de conmutación"
-        },
-        "Textarea": {
-            "displayName": "Área de texto",
-            "description": "Área de texto para formularios"
-        },
-        "DateRangePicker": {
-            "displayName": "Selector de rango de fechas",
-            "description": "Seleccione un rango de fechas"
-        },
-        "Text": {
-            "displayName": "Texto",
-            "description": "Desplegar HTML o Markdown"
-        },
-        "Image": {
-            "displayName": "Imagen",
-            "description": "Desplegar imágenes"
-        },
-        "Container": {
-            "displayName": "Contenedor",
-            "description": "Contenedor para agrupar componentes"
-        },
-        "Dropdown": {
-            "displayName": "Menú desplegable",
-            "description": "Seleccione una opción de un menú desplegable"
-        },
-        "Multiselect": {
-            "displayName": "Selección múltiple",
-            "description": "Seleccione una o más opciones de un menú desplegable"
-        },
-        "RichTextEditor": {
-            "displayName": "Editor de texto",
-            "description": "Editor de texto enriquecido"
-        },
-        "Map": {
-            "displayName": "Mapa",
-            "description": "Desplegar Google Maps"
-        },
-        "QrScanner": {
-            "displayName": "Escaner de QR",
-            "description": "Escanea QR y guarda el resultado"
-        },
-        "StarRating": {
-            "displayName": "Calificación de estrellas",
-            "description": "Calificación de estrellas"
-        },
-        "Divider": {
-            "displayName": "Divisor",
-            "description": "Separador entre componentes"
-        },
-        "FilePicker": {
-            "displayName": "Selector de archivos",
-            "description": "Selector de archivos"
-        },
-        "Calendar": {
-            "displayName": "Calendario",
-            "description": "Calendario"
-        },
-        "Iframe": {
-            "displayName": "Iframe",
-            "description": "Desplegar un Iframe"
-        },
-        "CodeEditor": {
-            "displayName": "Editor de código",
-            "description": "Editor de código"
-        },
-        "Tabs": {
-            "displayName": "Pestañas",
-            "description": "Componente de pestañas"
-        },
-        "Timer": {
-            "displayName": "Temporarizador",
-            "description": "Temporarizador"
-        },
-        "Listview": {
-            "displayName": "Lista de vistas",
-            "description": "Agrupador para múltiples componentes"
-        },
-        "Tags": {
-            "displayName": "Etiquetas",
-            "description": "Contenido puede ser mostrado como etiquetas"
-        },
-        "Pagination": {
-            "displayName": "Paginación",
-            "description": "Paginación"
-        },
-        "CircularProgressbar": {
-            "displayName": "Barra de progreso circular",
-            "description": "Mostrar el progreso usando una barra de progreso circular"
-        },
-        "Spinner": {
-            "displayName": "Spinner",
-            "description": "Spinner de carga puede ser utilizado para mostrar el progreso de una tarea"
-        },
-        "Statistics": {
-            "displayName": "Estadísticas",
-            "description": "Las estadísticas pueden ser usadas para mostrar datos numéricos"
-        },
-        "RangeSlider": {
-            "displayName": "Control deslizante de rango",
-            "description": "Puede ser utilizado para seleccionar un rango de valores"
-        },
-        "Timeline": {
-            "displayName": "Línea de tiempo",
-            "description": "Representación visual de una serie de eventos"
-        },
-        "SvgImage": {
-            "displayName": "Imagen SVG",
-            "description": "Desplegar imágenes SVG"
-        },
-        "Html": {
-            "displayName": "Visor HTML",
-            "description": "Visor HTML"
-        },
-        "VerticalDivider": {
-            "displayName": "Divisor vertical",
-            "description": "Divisor vertical, entre componentes"
-        },
-        "CustomComponent": {
-            "displayName": "Componente personalizado",
-            "description": "Añadir un componente personalizado"
-        },
-        "ButtonGroup": {
-            "displayName": "Grupo de botones",
-            "description": "Agrupar botones"
-        },
-        "PDF": {
-            "displayName": "PDF",
-            "description": "Embedir archivos PDF"
-        },
-        "Steps": {
-            "displayName": "Pasos",
-            "description": "Pasos"
-        },
-        "KanbanBoard": {
-            "displayName": "Tablero Kanban",
-            "description": "Tablero Kanban"
-        },
-        "ColorPicker": {
-            "displayName": "Selector de color",
-            "description": "Paleta de colores"
-        },
-        "TreeSelect": {
-            "displayName": "Selección de árbol",
-            "description": "Selección de valores de un árbol"
-        }
-    },
-    "leftSidebar": {
-        "Inspector": {
-            "text": "Inspector",
-            "tip": "Inspector"
-        },
-        "Sources": {
-            "text": "Fuentes",
-            "tip": "Añadir o editar fuentes de datos",
-            "dataSources": "Fuentes de datos",
-            "addDataSource": "+ añadir fuentes de datos"
-        },
-        "Debugger": {
-            "text": "Debugear",
-            "tip": "Debugear",
-            "errors": "Errores",
-            "noErrors": "No se encontraron errores",
-            "clear": "limpiar"
-        },
-        "Comments": {
-            "text": "Comentarios",
-            "tip": "Habilitar comentarios",
-            "commentBody": "No hay comentarios para desplegar",
-            "typeComment": "Escriba su comentario aquí",
-        },
-        "Settings": {
-            "text": "Ajustes",
-            "tip": "Ajustes globales",
-            "hideHeader": "Ocultar encabezado para aplicaciones desplegadas",
-            "maintenanceMode": "Modo de mantenimiento",
-            "maxWidthOfCanvas": "Ancho máximo del lienzo",
-            "maxHeightOfCanvas": "Altura máxima del lienzo",
-            "backgroundColorOfCanvas": "Color de fondo del lienzo",
-        },
-        "Back": {
-            "text": "Atrás",
-            "tip": "Atrás a la vista anterior (página principal)"
-        }
+    "templateLibraryModal": {
+      "select": "Seleccionar plantilla",
+      "createAppfromTemplate": "Crear aplicación desde plantilla"
     }
+  },
+  "confirmationPage": {
+    "setupAccount": "Configurar cuenta",
+    "signupWithGoogle": "Registrarse con Google",
+    "signupWithGitHub": "Registrarse con GitHub",
+    "or": "ó",
+    "firstName": "Primer nombre",
+    "lastName": "Apellido",
+    "company": "Compañía",
+    "role": "Rol",
+    "pleaseSelect": "Por favor seleccionar",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "clickAndAgree": "Al hacer clic en el siguiente botón, acepta nuestros",
+    "termsAndConditions": "Términos y Condiciones",
+    "finishAccountSetup": "Finalizar configuración de cuenta",
+    "acceptInvite": "Aceptar invitación",
+    "accountExists": "¿Ya tienes una cuenta?",
+    "and": "y"
+  },
+  "onBoarding": {
+    "finishToolJetInstallation": "Finalizar instalación de ToolJet",
+    "organization": "Organización",
+    "name": "Nombre",
+    "email": "Email",
+    "receiveUpdatesFromToolJet": "Recibirás actualizaciones de parte del equipo de ToolJet (1-2 correos electrónicos al mes, no hacemos spam)",
+    "finishSetup": "Finalizar configuración",
+    "skip": "Saltar"
+  },
+  "redirectSso": {
+    "upgradingTov1.13.0": "Actualizando a v1.13.0 y más",
+    "fromV1.13.0": "Desde la versión 1.13.0 hemos introducido...",
+    "multiWorkspace": "Multi-Workspace",
+    "singleSignOnConfig": "La configuración relacionada con SSO se ha movido de las variables de entorno a la base de datos. Por favor, consulte este",
+    "link": "Enlace",
+    "toConfigureSSO": "para configurar SSO.",
+    "haveGoogleGithubSSo": "Si tiene configuraciones de SSO de Google o GitHub antes de la actualización y deshabilitó el Multi-Workspace, entonces las configuraciones de SSO se migrarán durante la actualización, pero debe volver a configurar la URL de redireccionamiento en el lado del proveedor de SSO. Las URL de redireccionamiento para cada SSO se indican a continuación.",
+    "isMultiWorkspaceEnabled": "Si tiene Multi-Workspace habilitado, entonces debe configurar SSO en cada espacio de trabajo. Puede hacerlo desde la página de configuración de SSO en cada espacio de trabajo.",
+    "youHaveEnabled": "Has habilitado",
+    "setupSsoWorkspace": "Por favor ingresar con su contraseña para configurar SSO en este espacio de trabajo.",
+    "manageSsoMenu": "Administrar menú de SSO.",
+    "youHaveDisabled": "Has deshabilitado",
+    "configureRedirectUrl": "Por favor configure la URL de redireccionamiento en el proveedor de SSO.",
+    "google": "Google",
+    "redirectUrl": "URL de redirección",
+    "gitHub": "GitHub"
+  },
+  "oAuth2": {
+    "pleaseWait": "Por favor espere...",
+    "authSuccess": "Autenticación satisfactoria, puede cerrar esta ventana.",
+    "authFailed": "Autenticación fallida."
+  },
+  "widgetManager": {
+    "commonlyUsed": "Comúnmente utilizado",
+    "layouts": "Diseños",
+    "forms": "Formularios",
+    "intregrations": "Integraciones",
+    "others": "Otros",
+    "noResults": "No se han encontrado resultados",
+    "tryAdjustingFilterMessage": "Intenta modificar tu búsqueda o los filtros para encontrar lo que estás buscando",
+    "clearQuery": "Limpiar búsqueda"
+  },
+  "widget": {
+    "common": {
+      "properties": "Propiedades",
+      "events": "Eventos",
+      "layout": "Diseño",
+      "styles": "Estilos",
+      "general": "General",
+      "validation": "Validación",
+      "documentation": "{{componentMeta}} documentación",
+      "widgetNameEmptyError": "El nombre del widget no puede estar vacío",
+      "componentNameExistsError": "El nombre del componente ya existe",
+      "invalidWidgetName": "Nombre de widget no válido. Debe ser único e incluir solo letras, números y guión bajo."
+    },
+    "commonProperties": {
+      "visibility": "Visibilidad",
+      "disable": "Inutilizar",
+      "borderRadius": "Radio del borde",
+      "boxShadow": "Sombra de caja",
+      "tooltip": "Información sobre herramientas",
+      "showOnDesktop": "Mostrar en el escritorio",
+      "showOnMobile": "Mostrar en el móvil",
+      "showLoadingState": "Mostrar estado de carga",
+      "backgroundColor": "Color de fondo",
+      "textColor": "Color del texto",
+      "loaderColor": "Color del cargador",
+      "defaultValue": "Valor predeterminado",
+      "placeholder": "Marcador",
+      "label": "Etiqueta",
+      "title": "Título",
+      "code": "Código",
+      "data": "Data",
+      "tableData": "Datos de la tabla",
+      "tableColumns": "Columnas de la tabla",
+      "searverSideSearch": "Búsqueda del lado del servidor",
+      "loadingState": "Estado de carga",
+      "serverSidePagination": "Paginación del lado del servidor",
+      "clientSidePagination": "Paginación del lado del cliente",
+      "serverSideSearch": "Búsqueda del lado del servidor",
+      "showSearchBox": "Mostrar cuadro de búsqueda",
+      "showDownloadButton": "Mostrar botón de descarga",
+      "showFilterButton": "Mostrar botón de filtro",
+      "showBulkUpdateActions": "Mostrar acciones de actualización masiva",
+      "bulkSelection": "Selección masiva",
+      "highlightSelectedRow": "Resaltar fila seleccionada",
+      "actionButtonRadius": "Radio del botón de acción",
+      "tableType": "Tipo de tabla",
+      "cellSize": "Tamaño de la celda",
+      "setPage": "Establecer página",
+      "page": "Página",
+      "buttonText": "Texto del botón",
+      "click": "Click",
+      "setText": "Establecer texto",
+      "text": "Texto",
+      "markerColor": "Color del marcador",
+      "showAxes": "Mostrar ejes",
+      "showGridLines": "Mostrar líneas de cuadrícula",
+      "chartType": "Tipo de gráfico",
+      "jsonDescription": "Descripción JSON",
+      "usePlotlyJsonSchema": "Usar esquema JSON de Plotly",
+      "padding": "Relleno",
+      "hideTitleBar": "Ocultar barra de título",
+      "hideCloseButton": "Ocultar botón de cierre",
+      "hideOnEscape": "Ocultar en Escape",
+      "modalSize": "Tamaño modal",
+      "open": "Abrir",
+      "close": "Cerrar",
+      "regex": "Expresión regular",
+      "minLength": "Longitud mínima",
+      "maxLength": "Longitud máxima",
+      "customValidation": "Validación personalizada",
+      "clear": "Limpiar",
+      "minimumValue": "Valor mínimo",
+      "maximumValue": "Valor máximo",
+      "format": "Formato",
+      "enableTimeSelection": "Habilitar selección de tiempo",
+      "enableDateSelection": "Habilitar selección de fecha",
+      "disabledDates": "Fechas deshabilitadas",
+      "setChecked": "Establecer marcado",
+      "status": "Estado",
+      "defaultStatus": "Estado predeterminado",
+      "checkboxColor": "Color de la casilla de verificación",
+      "optionValues": "Valores de opción",
+      "optionLabels": "Etiquetas de opción",
+      "activeColor": "Color activo",
+      "selectOption": "Seleccionar opción",
+      "option": "Opción",
+      "toggleSwitchColor": "Cambiar color de interruptor",
+      "defaultStartDate": "Fecha de inicio predeterminada",
+      "defaultEndDate": "Fecha de finalización predeterminada",
+      "textSize": "Tamaño del texto",
+      "alignText": "Alinear texto",
+      "url": "URL",
+      "alternativeText": "Texto alternativo",
+      "zoomButton": "Botón de zoom",
+      "borderType": "Tipo de borde",
+      "imageFit": "Ajuste de imagen",
+      "optionsLoadingState": "Estado de carga de opciones",
+      "selectedTextColor": "Color de texto seleccionado",
+      "select": "Seleccionar",
+      "deselectOption": "Deseleccionar opción",
+      "clearSelections": "Borrar selecciones",
+      "enableSelectAllOption": "Habilitar opción Seleccionar todo",
+      "initialLocation": "Ubicación inicial",
+      "defaultMarkers": "Marcadores predeterminados",
+      "addNewMarkers": "Agregar nuevos marcadores",
+      "searchForPlaces": "Buscar lugares",
+      "setLocation": "Establecer ubicación",
+      "latitude": "Latitud",
+      "longitude": "Longitud",
+      "numberOfStars": "Número de estrellas",
+      "defaultNoOfSelectedStars": "Número predeterminado de estrellas seleccionadas",
+      "enableHalfStar": "Habilitar media estrella",
+      "tooltips": "Información sobre herramientas",
+      "starColor": "Color de la estrella",
+      "labelColor": "Color de la etiqueta",
+      "dividerColor": "Color del divisor",
+      "clearFiles": "Borrar archivos",
+      "instructionText": "Texto de instrucción",
+      "useDropZone": "Usar zona de descarga",
+      "useFilePicker": "Usar selector de archivos",
+      "pickMultipleFiles": "Seleccionar varios archivos",
+      "maxFileCount": "Conteo máximo de archivos",
+      "acceptFileTypes": "Aceptar tipos de archivos",
+      "maxSizeLimitBytes": "Límite máximo de tamaño en bytes",
+      "minSizeLimitBytes": "Límite mínimo de tamaño en bytes",
+      "parseContent": "Analizar contenido",
+      "fileType": "Tipo de archivo",
+      "dateFormat": "Formato de fecha",
+      "defaultDate": "Fecha predeterminada",
+      "events": "Eventos",
+      "resources": "Recursos",
+      "defaultView": "Vista predeterminada",
+      "startTimeOnWeekAndDayView": "Hora de inicio en vista de semana y día",
+      "endTimeOnWeekAndDayView": "Hora de finalización en vista de semana y día",
+      "showToolbar": "Mostrar barra de herramientas",
+      "showViewSwitcher": "Mostrar conmutador de vista",
+      "highlightToday": "Resaltar hoy",
+      "showPopoverWhenEventIsClicked": "Mostrar popover cuando se hace clic en el evento",
+      "cellSizeInViewsClassifiedByResource": "Tamaño de la celda en vistas clasificadas por recurso",
+      "headerDateFormatOnWeekView": "Formato de fecha de encabezado en vista de semana",
+      "showLineNumber": "Mostrar número de línea",
+      "mode": "Modo",
+      "tabs": "Pestañas",
+      "defaultTab": "Pestaña predeterminada",
+      "hideTabs": "Ocultar pestañas",
+      "highlightColor": "Color de resaltado",
+      "tabWidth": "Ancho de pestaña",
+      "setCurrentTab": "Establecer pestaña actual",
+      "id": "Id",
+      "timerType": "Tipo de temporizador",
+      "listData": "Datos de lista",
+      "rowHeight": "Altura de fila",
+      "showBottomBorder": "Mostrar borde inferior",
+      "tags": "Etiquetas",
+      "numberOfPages": "Número de páginas",
+      "defaultPageIndex": "Índice de página predeterminado",
+      "progress": "Progreso",
+      "color": "Color",
+      "strokeWidth": "Ancho de línea",
+      "counterClockwise": "En sentido contrario a las agujas del reloj",
+      "circleRatio": "Relación de círculo",
+      "colour": "Color",
+      "size": "Tamaño",
+      "primaryValueLabel": "Etiqueta de valor primario",
+      "primaryValue": "Valor primario",
+      "hideSecondaryValue": "Ocultar valor secundario",
+      "secondaryValueLabel": "Etiqueta de valor secundario",
+      "secondaryValue": "Valor secundario",
+      "secondarySignDisplay": "Mostrar signo secundario",
+      "primaryLabelColour": "Color de etiqueta primaria",
+      "primaryTextColour": "Color de texto primario",
+      "secondaryLabelColour": "Color de etiqueta secundaria",
+      "secondaryTextColour": "Color de texto secundario",
+      "min": "Mínimo",
+      "max": "Máximo",
+      "value": "Valor",
+      "twoHandles": "Dos controladores",
+      "lineColor": "Color de línea",
+      "handleColor": "Color de controlador",
+      "trackColor": "Color de pista",
+      "timelineData": "Datos de línea de tiempo",
+      "hideDate": "Ocultar fecha",
+      "svgData": "Datos SVG",
+      "rawHtml": "HTML sin procesar",
+      "values": "Valores",
+      "labels": "Etiquetas",
+      "defaultSelected": "Seleccionado predeterminado",
+      "enableMutipleSelection": "Habilitar selección múltiple",
+      "selectedTextColour": "Color de texto seleccionado",
+      "selectedBackgroundColor": "Color de fondo seleccionado",
+      "fileUrl": "URL de archivo",
+      "scalePageToWidth": "Escalar página a ancho",
+      "showPageControls": "Mostrar controles de página",
+      "steps": "Pasos",
+      "currentStep": "Paso actual",
+      "stepsSelectable": "Pasos seleccionables",
+      "theme": "Tema",
+      "columns": "Columnas",
+      "cardData": "Datos de tarjeta",
+      "enableAddCard": "Habilitar agregar tarjeta",
+      "width": "Ancho",
+      "minWidth": "Ancho mínimo",
+      "accentColor": "Color de acento",
+      "defaultColor": "Color predeterminado",
+      "setColor": "Establecer color",
+      "structure": "Estructura",
+      "checkedValues": "Valores marcados",
+      "expandedValues": "Valores expandidos"
+    },
+    "Table": {
+      "displayName": "Tabla",
+      "description": "Tabla",
+      "columnType": "Tipo de columna",
+      "columnName": "Nombre de columna",
+      "overflow": "Desbordamiento",
+      "key": "Llave",
+      "textColor": "Color de texto",
+      "validation": "Validación",
+      "regex": "Expresión regular",
+      "minLength": "Longitud mínima",
+      "maxLength": "Longitud máxima",
+      "customRule": "Regla personalizada",
+      "values": "Valores",
+      "labels": "Etiquetas",
+      "cellBgColor": "Color de fondo de celda",
+      "dateDisplayformat": "Formato de visualización de fecha",
+      "dateParseformat": "Formato de análisis de fecha",
+      "showTime": "Mostrar hora",
+      "makeEditable": "Hacer editable",
+      "buttonText": "Texto de botón",
+      "buttonPosition": "Posición del botón",
+      "remove": "Eliminar",
+      "addButton": "+ Agregar botón",
+      "addColumn": "+ Agregar columna",
+      "noActionMessage": "Esta tabla no tiene botones de acción",
+      "records": "Filas",
+      "noData": "Sin datos"
+    },
+    "Button": {
+      "displayName": "Botón",
+      "description": "Invocar acciones: consultas, alertas, etc."
+    },
+    "Chart": {
+      "displayName": "Gráfico",
+      "description": "Desplegar gráficos"
+    },
+    "Modal": {
+      "displayName": "Modal",
+      "description": "Modal invocado por eventos"
+    },
+    "TextInput": {
+      "displayName": "Entrada de texto",
+      "description": "Campo de texto para formularios"
+    },
+    "NumberInput": {
+      "displayName": "Entrada numérica",
+      "description": "Campo numérico para formularios"
+    },
+    "PasswordInput": {
+      "displayName": "Entrada de contraseña",
+      "description": "Campo de contraseña para formularios"
+    },
+    "Datepicker": {
+      "displayName": "Selector de fecha",
+      "description": "Seleccionar fecha y hora"
+    },
+    "Checkbox": {
+      "displayName": "Casilla de verificación",
+      "description": "Una sola casilla de verificación"
+    },
+    "Radio-button": {
+      "displayName": "Botón de radio",
+      "description": "Botones de tipo radio"
+    },
+    "ToggleSwitch": {
+      "displayName": "Interruptor de conmutación",
+      "description": "Interruptor de conmutación"
+    },
+    "Textarea": {
+      "displayName": "Área de texto",
+      "description": "Área de texto para formularios"
+    },
+    "DateRangePicker": {
+      "displayName": "Selector de rango de fechas",
+      "description": "Seleccione un rango de fechas"
+    },
+    "Text": {
+      "displayName": "Texto",
+      "description": "Desplegar HTML o Markdown"
+    },
+    "Image": {
+      "displayName": "Imagen",
+      "description": "Desplegar imágenes"
+    },
+    "Container": {
+      "displayName": "Contenedor",
+      "description": "Contenedor para agrupar componentes"
+    },
+    "Dropdown": {
+      "displayName": "Menú desplegable",
+      "description": "Seleccione una opción de un menú desplegable"
+    },
+    "Multiselect": {
+      "displayName": "Selección múltiple",
+      "description": "Seleccione una o más opciones de un menú desplegable"
+    },
+    "RichTextEditor": {
+      "displayName": "Editor de texto",
+      "description": "Editor de texto enriquecido"
+    },
+    "Map": {
+      "displayName": "Mapa",
+      "description": "Desplegar Google Maps"
+    },
+    "QrScanner": {
+      "displayName": "Escaner de QR",
+      "description": "Escanea QR y guarda el resultado"
+    },
+    "StarRating": {
+      "displayName": "Calificación de estrellas",
+      "description": "Calificación de estrellas"
+    },
+    "Divider": {
+      "displayName": "Divisor",
+      "description": "Separador entre componentes"
+    },
+    "FilePicker": {
+      "displayName": "Selector de archivos",
+      "description": "Selector de archivos"
+    },
+    "Calendar": {
+      "displayName": "Calendario",
+      "description": "Calendario"
+    },
+    "Iframe": {
+      "displayName": "Iframe",
+      "description": "Desplegar un Iframe"
+    },
+    "CodeEditor": {
+      "displayName": "Editor de código",
+      "description": "Editor de código"
+    },
+    "Tabs": {
+      "displayName": "Pestañas",
+      "description": "Componente de pestañas"
+    },
+    "Timer": {
+      "displayName": "Temporarizador",
+      "description": "Temporarizador"
+    },
+    "Listview": {
+      "displayName": "Lista de vistas",
+      "description": "Agrupador para múltiples componentes"
+    },
+    "Tags": {
+      "displayName": "Etiquetas",
+      "description": "Contenido puede ser mostrado como etiquetas"
+    },
+    "Pagination": {
+      "displayName": "Paginación",
+      "description": "Paginación"
+    },
+    "CircularProgressbar": {
+      "displayName": "Barra de progreso circular",
+      "description": "Mostrar el progreso usando una barra de progreso circular"
+    },
+    "Spinner": {
+      "displayName": "Spinner",
+      "description": "Spinner de carga puede ser utilizado para mostrar el progreso de una tarea"
+    },
+    "Statistics": {
+      "displayName": "Estadísticas",
+      "description": "Las estadísticas pueden ser usadas para mostrar datos numéricos"
+    },
+    "RangeSlider": {
+      "displayName": "Control deslizante de rango",
+      "description": "Puede ser utilizado para seleccionar un rango de valores"
+    },
+    "Timeline": {
+      "displayName": "Línea de tiempo",
+      "description": "Representación visual de una serie de eventos"
+    },
+    "SvgImage": {
+      "displayName": "Imagen SVG",
+      "description": "Desplegar imágenes SVG"
+    },
+    "Html": {
+      "displayName": "Visor HTML",
+      "description": "Visor HTML"
+    },
+    "VerticalDivider": {
+      "displayName": "Divisor vertical",
+      "description": "Divisor vertical, entre componentes"
+    },
+    "CustomComponent": {
+      "displayName": "Componente personalizado",
+      "description": "Añadir un componente personalizado"
+    },
+    "ButtonGroup": {
+      "displayName": "Grupo de botones",
+      "description": "Agrupar botones"
+    },
+    "PDF": {
+      "displayName": "PDF",
+      "description": "Embedir archivos PDF"
+    },
+    "Steps": {
+      "displayName": "Pasos",
+      "description": "Pasos"
+    },
+    "KanbanBoard": {
+      "displayName": "Tablero Kanban",
+      "description": "Tablero Kanban"
+    },
+    "ColorPicker": {
+      "displayName": "Selector de color",
+      "description": "Paleta de colores"
+    },
+    "TreeSelect": {
+      "displayName": "Selección de árbol",
+      "description": "Selección de valores de un árbol"
+    }
+  },
+  "leftSidebar": {
+    "Inspector": {
+      "text": "Inspector",
+      "tip": "Inspector"
+    },
+    "Sources": {
+      "text": "Fuentes",
+      "tip": "Añadir o editar fuentes de datos",
+      "dataSources": "Fuentes de datos",
+      "addDataSource": "+ añadir fuentes de datos"
+    },
+    "Debugger": {
+      "text": "Debugear",
+      "tip": "Debugear",
+      "errors": "Errores",
+      "noErrors": "No se encontraron errores",
+      "clear": "limpiar"
+    },
+    "Comments": {
+      "text": "Comentarios",
+      "tip": "Habilitar comentarios",
+      "commentBody": "No hay comentarios para desplegar",
+      "typeComment": "Escriba su comentario aquí"
+    },
+    "Settings": {
+      "text": "Ajustes",
+      "tip": "Ajustes globales",
+      "hideHeader": "Ocultar encabezado para aplicaciones desplegadas",
+      "maintenanceMode": "Modo de mantenimiento",
+      "maxWidthOfCanvas": "Ancho máximo del lienzo",
+      "maxHeightOfCanvas": "Altura máxima del lienzo",
+      "backgroundColorOfCanvas": "Color de fondo del lienzo"
+    },
+    "Back": {
+      "text": "Atrás",
+      "tip": "Atrás a la vista anterior (página principal)"
+    }
+  }
 }
