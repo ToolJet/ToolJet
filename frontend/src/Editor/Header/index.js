@@ -154,7 +154,7 @@ export default function EditorHeader({
                     target="_blank"
                     rel="noreferrer"
                     data-cy="preview-link-button"
-                    className="editor-header-icon"
+                    className="editor-header-icon tj-secondary-btn"
                   >
                     <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
                   </Link>

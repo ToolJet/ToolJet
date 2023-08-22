@@ -140,7 +140,11 @@ class ManageAppUsersComponent extends React.Component {
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     return (
-      <div title="Share" className="editor-header-icon" onClick={() => this.setState({ showModal: true })}>
+      <div
+        title="Share"
+        className="editor-header-icon tj-secondary-btn"
+        onClick={() => this.setState({ showModal: true })}
+      >
         <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
         <Modal
           show={this.state.showModal}

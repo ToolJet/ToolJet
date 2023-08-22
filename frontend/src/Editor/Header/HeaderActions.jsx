@@ -58,7 +58,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
         </div>
       </div>
       <div className="undo-redo-container">
-        <div onClick={handleUndo}>
+        <div onClick={handleUndo} className="tj-ghost-black-btn">
           <SolidIcon
             width="16"
             height="16"
@@ -73,7 +73,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
             })}
           />
         </div>
-        <div onClick={handleRedo}>
+        <div onClick={handleRedo} className="tj-ghost-black-btn">
           <SolidIcon
             width="16"
             height="16"

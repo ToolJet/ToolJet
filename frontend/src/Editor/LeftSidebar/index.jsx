@@ -233,16 +233,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         tip="Inspector"
         ref={setSideBarBtnRefs('inspect')}
       />
-      <LeftSidebarItem
-        icon="settings"
-        selectedSidebarItem={selectedSidebarItem}
-        // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem('settings')}
-        className={`left-sidebar-item  left-sidebar-layout`}
-        badge={true}
-        tip="Settings"
-        ref={setSideBarBtnRefs('settings')}
-      />
 
       <LeftSidebarItem
         icon="debugger"
@@ -254,6 +244,16 @@ export const LeftSidebar = forwardRef((props, ref) => {
         count={unReadErrorCount.unread}
         tip="Debugger"
         ref={setSideBarBtnRefs('debugger')}
+      />
+      <LeftSidebarItem
+        icon="settings"
+        selectedSidebarItem={selectedSidebarItem}
+        // eslint-disable-next-line no-unused-vars
+        onClick={(e) => handleSelectedSidebarItem('settings')}
+        className={`left-sidebar-item  left-sidebar-layout`}
+        badge={true}
+        tip="Settings"
+        ref={setSideBarBtnRefs('settings')}
       />
 
       {dataSources?.length > 0 && (
@@ -267,15 +267,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         />
       )}
 
-      {config.COMMENT_FEATURE_ENABLE && (
-        <div className={`${isVersionReleased && 'disabled'}`} style={{ maxHeight: '32px', maxWidth: '32px' }}>
-          <LeftSidebarComment
-            selectedSidebarItem={showComments ? 'comments' : ''}
-            currentPageId={currentPageId}
-            ref={setSideBarBtnRefs('comments')}
-          />
-        </div>
-      )}
       <Popover
         onInteractOutside={handleInteractOutside}
         open={pinned || !!selectedSidebarItem}
@@ -293,6 +284,15 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <div className="left-sidebar-stack-bottom">
         <div className="">
+          {config.COMMENT_FEATURE_ENABLE && (
+            <div className={`${isVersionReleased && 'disabled'}`} style={{ maxHeight: '32px', maxWidth: '32px' }}>
+              <LeftSidebarComment
+                selectedSidebarItem={showComments ? 'comments' : ''}
+                currentPageId={currentPageId}
+                ref={setSideBarBtnRefs('comments')}
+              />
+            </div>
+          )}
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}

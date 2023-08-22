@@ -41,6 +41,8 @@
     position: fixed;
     bottom: 5px;
     text-align: center;
+    display: flex;
+    justify-content: center;
   }
 
   .popover {

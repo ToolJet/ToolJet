@@ -11063,6 +11063,7 @@ tbody {
 
 .tj-header-avatar {
   display: flex;
+  font-weight: 500;
   width: 27px;
   height: 26px;
   padding: 4px 6px;
@@ -11095,6 +11096,7 @@ tbody {
     align-items: center;
     height: 28px;
     width: 28px;
+    border-radius: 6px;
   }
 }
 
@@ -11170,4 +11172,14 @@ tbody {
       border-right-color: transparent;
     }
   }
+}
+
+.tj-app-version-text {
+  color: var(--pink9);
+}
+
+.left-sidebar-comments {
+  position: absolute;
+  left: 0;
+  bottom: 48px;
 }
