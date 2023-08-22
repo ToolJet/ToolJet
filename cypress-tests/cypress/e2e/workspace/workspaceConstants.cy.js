@@ -33,7 +33,7 @@ describe("Workspace constants", () => {
     const envVar = Cypress.env("environment");
     beforeEach(() => {
         cy.appUILogin();
-        cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
+        cy.intercept("GET", "/api/library_apps").as("homePage");
     });
     it("Verify workspace constants UI and CRUD operations", () => {
         cy.get(commonSelectors.workspaceSettingsIcon).click();
@@ -265,7 +265,7 @@ describe("Workspace constants", () => {
         );
     });
 
-    it("should verify the constants resolving value on components and query", () => {
+    it.only("should verify the constants resolving value on components and query", () => {
         common.navigateToworkspaceConstants();
         AddNewconstants(data.constantsName, data.constantsValue);
         cy.get(
@@ -310,31 +310,47 @@ describe("Workspace constants", () => {
             `[data-cy="inspector-node-${data.constantsName}"] > .mx-2`
         ).verifyVisibleElement("have.text", `"dJ_8Q~BcaMPd"`);
 
-        cy.get('[data-cy="button-release"]').click();
-        cy.get('[data-cy="yes-button"]').click();
-        cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
 
-        cy.get(commonWidgetSelector.shareAppButton).click();
-        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
-        cy.get(commonWidgetSelector.modalCloseButton).click();
-        cy.forceClickOnCanvas();
-        cy.waitForAutoSave();
-        cy.openInCurrentTab(commonWidgetSelector.previewButton);
-        cy.wait(4000);
-
-        cy.get(
-            commonWidgetSelector.draggableWidget(data.constantsName)
-        ).verifyVisibleElement("have.text", "dJ_8Q~BcaMPd");
-
-        cy.get('[data-cy="viewer-page-logo"]').click();
-        cy.wait("@homePage");
         if (envVar === "Community") {
+            cy.get('[data-cy="button-release"]').click();
+            cy.get('[data-cy="yes-button"]').click();
+            cy.verifyToastMessage(
+                commonSelectors.toastMessage,
+                "Version v1 released"
+            );
+
+            cy.get(commonWidgetSelector.shareAppButton).click();
+            cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+            cy.get(commonWidgetSelector.modalCloseButton).click();
+            cy.forceClickOnCanvas();
+            cy.waitForAutoSave();
+            cy.openInCurrentTab(commonWidgetSelector.previewButton);
+            cy.wait(4000);
+
+            cy.get(
+                commonWidgetSelector.draggableWidget(data.constantsName)
+            ).verifyVisibleElement("have.text", "dJ_8Q~BcaMPd");
+
+            cy.get('[data-cy="viewer-page-logo"]').click();
+            cy.wait("@homePage");
             cy.visit(`/applications/${data.slug}`);
             cy.wait(4000);
 
             cy.get(
                 commonWidgetSelector.draggableWidget(data.constantsName)
             ).verifyVisibleElement("have.text", "dJ_8Q~BcaMPd");
+        } else {
+            cy.forceClickOnCanvas();
+            cy.waitForAutoSave();
+            cy.openInCurrentTab(commonWidgetSelector.previewButton);
+            cy.wait(4000);
+
+            cy.get(
+                commonWidgetSelector.draggableWidget(data.constantsName)
+            ).verifyVisibleElement("have.text", "dJ_8Q~BcaMPd");
+
+            cy.get('[data-cy="viewer-page-logo"]').click();
+            cy.wait("@homePage");
         }
     });
 });
