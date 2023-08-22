@@ -9,7 +9,7 @@ Apart from the default **Start Trigger** and **Result** nodes, there are an arra
 
 ## JavaScript
 
-The **JavaScript** node lets you write custom JavaScript code. You can write the code to transform data, create alert messages and use other capabilities of JavaScript. The code you enter in each JavaScript node needs a **return** statement to ensure that the result is sent to the next node. 
+The **JavaScript** node lets you write custom JavaScript code. You can write the code to transform data, create alert messages and more. The code you enter in each JavaScript node needs a **return** statement to ensure that the result is sent to the next node. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/nodes/js-node.png" alt="JavaScript Node" />

@@ -229,5 +229,3 @@ Continue learning about the different elements of ToolJet Workflows using the be
 **[Overview of Logs](/docs/workflows/logs)** <br/>
 **[Permissions in Workflows](/docs/workflows/permissions)**
 
-
-
