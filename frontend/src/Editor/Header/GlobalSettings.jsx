@@ -71,7 +71,7 @@ export const GlobalSettings = ({
           <HeaderSection darkMode={darkMode}>
             <HeaderSection.PanelHeader title="Global settings" />
           </HeaderSection>
-          <div className="card-body">
+          <div style={{ padding: '12px 16px' }}>
             <div className="tj-text-xsm color-slate12 ">
               <div className="d-flex mb-3">
                 <span data-cy={`label-hide-header-for-launched-apps`}>

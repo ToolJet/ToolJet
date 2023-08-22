@@ -695,6 +695,10 @@
 }
 
 .sidebar-debugger {
+  button {
+    border-radius: 0px;
+  }
+
   .tab-content {
     background: var(--base);
   }

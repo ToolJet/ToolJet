@@ -186,7 +186,7 @@ const LeftSidebarPageSelector = ({
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
                 <div>
                   <EmptyIllustration />
-                  <p data-cy={`label-no-pages-found`} className="mt-3">
+                  <p data-cy={`label-no-pages-found`} className="mt-3  color-slate12">
                     No pages found
                   </p>
                 </div>

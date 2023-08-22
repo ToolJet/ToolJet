@@ -8,6 +8,7 @@ import SortableList from '@/_components/SortableList';
 import { toast } from 'react-hot-toast';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const PageHandler = ({
   darkMode,
@@ -122,10 +123,11 @@ export const PageHandler = ({
       onMouseLeave={() => setIsHovered(false)}
       className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
       onClick={() => page.id != currentPageId && switchPage(page.id)}
+      style={{ display: 'flex', justifyContent: 'center' }}
     >
-      <div className="card-body">
+      <div>
         <div className="row" role="button">
-          <div className="col-auto">
+          <div className="col-auto d-flex align-items-center">
             {!isHovered && isHomePage && (
               <img
                 className="animation-fade"
@@ -140,22 +142,14 @@ export const PageHandler = ({
             <SortableList.DragHandle show={isHovered} />
           </div>
           <div
-            className="col text-truncate font-weight-400 page-name"
+            className="col text-truncate font-weight-400 page-name tj-text-xsm"
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
           >
             {page.name}
           </div>
           <div className="col-auto page-icons">
             {isHidden && (
-              <img
-                data-toggle="tooltip"
-                title="hidden"
-                className="mx-2"
-                src="assets/images/icons/eye-off.svg"
-                height={14}
-                width={14}
-                data-cy={'hide-page-icon'}
-              />
+              <SolidIcon data-cy={'hide-page-icon'} width={14} title="hidden" data-toggle="tooltip" name="eyedisable" />
             )}
           </div>
           <div className="col-auto">
@@ -214,11 +208,11 @@ export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode
   };
 
   return (
-    <div className="row" role="button">
+    <div className="row" role="button" style={{ marginTop: '2px' }}>
       <div className="col-12">
         <input
           type="text"
-          className={`form-control page-name-input ${darkMode && 'bg-transparent'}`}
+          className={`form-control page-name-input color-slate12 ${darkMode && 'bg-transparent'}`}
           autoFocus
           onBlur={(event) => {
             const name = event.target.value;

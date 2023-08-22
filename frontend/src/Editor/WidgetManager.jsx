@@ -132,7 +132,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
         {/* <SolidIcon name="search" /> */}
         <input
           type="text"
-          className={`form-control tj-input tj-widgets-search-input`}
+          className={`form-control tj-input tj-widgets-search-input tj-text-xsm`}
           placeholder={t('globals.searchComponents', 'Search widgets')}
           value={searchQuery}
           onChange={(e) => handleSearchQueryChange(e)}

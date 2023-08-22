@@ -614,6 +614,11 @@ button {
       overflow-x: hidden;
       padding-bottom: 20%;
 
+      ::placeholder {
+        color: var(--slate9);
+
+      }
+
       .component-image-holder {
         border-radius: 0;
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -3238,7 +3243,7 @@ input:focus-visible {
     background-color: #1f2936;
 
     .text-muted {
-      color: var(--slate09) !important;
+      color: var(--slate9) !important;
     }
   }
 
@@ -10975,6 +10980,7 @@ tbody {
     .header>.navbar {
       background-color: var(--base) !important;
       border-bottom: 1px solid var(--slate5);
+      z-index: 10;
     }
   }
 }
@@ -11102,6 +11108,7 @@ tbody {
 
 .sidebar-panel-header {
   color: var(--slate12);
+  padding-left: 4px;
 }
 
 .modal-content {

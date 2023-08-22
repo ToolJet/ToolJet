@@ -1,27 +1,32 @@
 import React from 'react';
-import { Button, HeaderSection } from '@/_ui/LeftSidebar';
+import { HeaderSection } from '@/_ui/LeftSidebar';
 import _ from 'lodash';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, setPinned, pinned }) => {
   return (
     <HeaderSection darkMode={darkMode}>
       <HeaderSection.PanelHeader title="Debugger">
-        <div className="d-flex justify-content-end">
-          <Button onClick={clearErrorLogs} darkMode={darkMode} size="sm" styles={{ width: '76px' }}>
-            <Button.Content title={'Clear'} iconSrc={'assets/images/icons/clear.svg'} direction="left" />
-          </Button>
-          <Button
+        <div className="d-flex justify-content-end" style={{ gap: '2px' }}>
+          <ButtonSolid
+            onClick={clearErrorLogs}
+            leftIcon="remove"
+            variant="tertiary"
+            className="tj-text-sm"
+            style={{ width: '76px', height: '28px' }}
+            iconWidth="20"
+            title={'Clear'}
+          >
+            Clear
+          </ButtonSolid>
+          <ButtonSolid
             title={`${pinned ? 'Unpin' : 'Pin'}`}
             onClick={() => setPinned(!pinned)}
-            darkMode={darkMode}
-            size="sm"
-            styles={{ width: '28px', padding: 0 }}
-          >
-            <Button.Content
-              iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
-              direction="left"
-            />
-          </Button>
+            variant="tertiary"
+            style={{ width: '28px', height: '28px', padding: 0 }}
+            leftIcon={pinned ? 'pin' : 'unpin'}
+            iconWidth="20"
+          ></ButtonSolid>
         </div>
       </HeaderSection.PanelHeader>
     </HeaderSection>

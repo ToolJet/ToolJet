@@ -1,6 +1,7 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu, isHome, isHidden }) => {
   const closeMenu = () => {
@@ -104,9 +105,8 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
             event.stopPropagation();
             setShowMenu(true);
           }}
-          styles={{ height: '20px', marginTop: '2px' }}
         >
-          <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
+          <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
         </Button.UnstyledButton>
       </span>
     </OverlayTrigger>

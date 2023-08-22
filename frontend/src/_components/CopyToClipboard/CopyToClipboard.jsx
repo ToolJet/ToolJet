@@ -19,7 +19,7 @@ export const CopyToClipboardComponent = ({ data, callback }) => {
   }, [copied]);
 
   if (copied) {
-    return <center>Copied</center>;
+    return <center className="color-slate12">Copied</center>;
   }
 
   return (

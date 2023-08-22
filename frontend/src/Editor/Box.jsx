@@ -161,7 +161,6 @@ export const Box = function Box({
       ...styles,
     };
   }
-  console.log('darkMode----', darkMode);
 
   const componentMeta = useMemo(() => {
     return componentTypes.find((comp) => component.component === comp.component);

@@ -1,5 +1,4 @@
 import React from 'react';
-
 import BoundedBox from './boundedbox.jsx';
 import Button from './button.jsx';
 import ButtonGroup from './buttongroup.jsx';
@@ -38,12 +37,9 @@ import Passwordinput from './passwordinput.jsx';
 import Pdf from './pdf.jsx';
 import Qrscanner from './qrscanner.jsx';
 import RadioButton from './radio-button.jsx';
-import RangePicker from './rangepicker.jsx';
 import Rangeslider from './rangeslider.jsx';
 import Rating from './rating.jsx';
-import Richtexteditor from './richtexteditor.jsx';
 import Spinner from './spinner.jsx';
-import Starrating from './starrating.jsx';
 import Statistics from './statistics.jsx';
 import Steps from './steps.jsx';
 import Svgimage from './svgimage.jsx';
@@ -62,7 +58,6 @@ import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 
 const WidgetIcon = (props) => {
-  console.log('props', props);
   switch (props.name) {
     case 'boundedbox':
       return <BoundedBox {...props} />;
@@ -166,8 +161,6 @@ const WidgetIcon = (props) => {
       return <Text {...props} />;
     case 'textarea':
       return <TextArea {...props} />;
-    // case 'texteditor':
-    //   return <Texteditor {...props} />;
     case 'textinput':
       return <Textinput {...props} />;
     case 'timeline':

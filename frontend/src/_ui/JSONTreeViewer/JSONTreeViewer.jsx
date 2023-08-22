@@ -2,6 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import { JSONNode } from './JSONNode';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
+import WidgetIcon from '@/../assets/images/icons/widgets';
 
 export class JSONTreeViewer extends React.Component {
   constructor(props) {
@@ -81,10 +82,10 @@ export class JSONTreeViewer extends React.Component {
 
     if (icon && icon.iconPath) {
       return (
-        <img
-          style={{ maxWidth: 'none', padding: '2px' }}
-          className={`json-tree-svg-icon ${icon.className}`}
-          src={icon.iconPath}
+        <WidgetIcon
+          name={icon.iconName.substring(0, icon.iconName.length - 1)}
+          fill={this.props.darkMode ? '#3A3F42' : '#D7DBDF'}
+          width="16"
         />
       );
     }
