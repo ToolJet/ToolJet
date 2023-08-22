@@ -321,13 +321,10 @@ export class AppImportExportService {
         appResourceMappings
       );
       appResourceMappings.appEnvironmentMapping = appEnvironmentMapping;
-
-      const [importingDataSourcesForAppVersion, importingDataQueriesForAppVersion] =
-        this.fetchDataSourcesAndQueriesForTheAppVersion(
-          importingAppVersion,
-          importingDataSources,
-          importingDataQueries
-        );
+      const importingDataQueriesForAppVersion = this.fetchDataQueriesForTheAppVersion(
+        importingAppVersion,
+        importingDataQueries
+      );
 
       const { defaultDataSourceIdMapping } = await this.createDefaultDatasourcesForAppVersion(
         manager,
@@ -338,7 +335,7 @@ export class AppImportExportService {
       appResourceMappings.defaultDataSourceIdMapping = defaultDataSourceIdMapping;
 
       // associate data sources and queries for each of the app versions
-      for (const importingDataSource of importingDataSourcesForAppVersion) {
+      for (const importingDataSource of importingDataSources) {
         const dataSourceForAppVersion = await this.findOrCreateDataSourceForAppVersion(
           manager,
           importingDataSource,
@@ -371,7 +368,7 @@ export class AppImportExportService {
           );
         }
 
-        await this.createDataSourceOptionsForExistingAppEnvironmentsIfNotPresent(
+        await this.createDataSourceOptionsForExistingAppEnvs(
           manager,
           importingAppVersion,
           dataSourceForAppVersion,
@@ -445,7 +442,7 @@ export class AppImportExportService {
     return !!dataSourceForAppVersion.createdAt;
   }
 
-  async createDataSourceOptionsForExistingAppEnvironmentsIfNotPresent(
+  async createDataSourceOptionsForExistingAppEnvs(
     manager: EntityManager,
     appVersion: AppVersion,
     dataSourceForAppVersion: DataSource,
@@ -567,29 +564,24 @@ export class AppImportExportService {
     if (existingDatasource) return existingDatasource;
 
     const newDataSource = manager.create(DataSource, {
-      organizationId: user.organizationId, // confirm if this is null only for local ds?
+      organizationId: user.organizationId,
       name: dataSource.name,
       kind: dataSource.kind,
       type: DataSourceTypes.DEFAULT,
       appVersionId,
       scope: 'global',
-      pluginId: dataSource?.pluginId || null,
+      pluginId: null,
     });
     await manager.save(newDataSource);
 
     return newDataSource;
   }
 
-  fetchDataSourcesAndQueriesForTheAppVersion(
-    appVersion: AppVersion,
-    dataSources: DataSource[],
-    dataQueries: DataQuery[]
-  ): [DataSource[], DataQuery[]] {
-    return [
-      dataSources.filter((ds: { appVersionId: string }) => ds.appVersionId === appVersion.id),
-      // v1 - Data queries without dataSourceId present
-      dataQueries.filter((dq: { dataSourceId: string; appVersionId: string }) => dq.appVersionId === appVersion.id),
-    ];
+  fetchDataQueriesForTheAppVersion(appVersion: AppVersion, dataQueries: DataQuery[]): DataQuery[] {
+    // v1 - Data queries without dataSourceId present
+    return dataQueries.filter(
+      (dq: { dataSourceId: string; appVersionId: string }) => dq.appVersionId === appVersion.id
+    );
   }
 
   async associateAppEnvironmentsToAppVersion(
@@ -975,26 +967,3 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   };
   return appParamsWithMultipageSchema;
 }
-
-// TODO: need to handle imports on the basis of the app version
-// handle import logic on the basis of app versions. This logic
-// can then be used within dataMigrations as well.
-//
-// function isLessThanExportVersion(version1: string, version2: string) {
-//   // Considering only the CE version
-//   const segments1 = version1.split('-')[0].split('.').map(Number);
-//   const segments2 = version2.split('-')[0].split('.').map(Number);
-
-//   for (let i = 0; i < Math.max(segments1.length, segments2.length); i++) {
-//     const value1 = segments1[i] || 0;
-//     const value2 = segments2[i] || 0;
-
-//     if (value1 > value2) {
-//       return false;
-//     } else if (value1 < value2) {
-//       return true;
-//     }
-//   }
-
-//   return false;
-// }
