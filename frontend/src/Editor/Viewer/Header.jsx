@@ -5,6 +5,8 @@ const Header = ({ children, className }) => {
     <div
       style={{
         minHeight: 45,
+        position: 'fixed',
+        width: '100%',
       }}
       className={`header ${className}`}
     >
