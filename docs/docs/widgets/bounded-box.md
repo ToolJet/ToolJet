@@ -5,7 +5,7 @@ title: Bounded Box
 
 # Bounded box
 
-A **bounded box** is an infinitely customizable image annotation component that can be used to select and tag areas of an image. It supports selection using specific points (landmarking) or draw rectangular areas (bounding boxes). It can be used to create datasets for machine learning models or to annotate images for other purposes.
+A **bounded box** is an infinitely customizable image annotation component that can be used to select and tag areas within an image. It supports selection using specific points (landmarking) or drawing rectangular areas (bounding boxes). It can be used to create datasets for machine learning models or to annotate images for other purposes.
 
 <div style={{textAlign: 'center'}}>
 
@@ -28,11 +28,11 @@ A **bounded box** is an infinitely customizable image annotation component that 
 | **Image URL** | The URL or image data to show it on the component. | Get the image URL dynamically from database: **{{queries.queryname.data[0].url}}** or use [image's base64 data](/docs/how-to/loading-image-pdf-from-db/) |
 | **Default value** | The data that will load the default bounded boxes over the image when the app is loaded. | Array of objects. Check the [Default value](#default-value) data properties |
 | **Selector** | The bounded box support selection using rectangle or point. | Click **Fx** to set the value `RECTANGLE` or `POINT` |
-| **List of labels** | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format `{{['Tree', 'Car', 'Stree light']}}` |
+| **List of labels** | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}` |
 
 #### Default value
 
-Provide the data that will load the default bounded boxes over the image when the app is loaded. The data is expected to be an array of objects format.
+Provide the data that will load the default bounding boxes over the image when the app is loaded. The data is expected to be an array of objects format.
 
 | **Property** | **Description** | **Expected value** |
 | :-------- | :------ | :-------- |
@@ -119,13 +119,13 @@ Use this toggle to show or hide the component in the mobile view. You can dynami
 | variable    | Description |
 | :----------- | :----------- | 
 | **annotations** | This variable is an array of objects, where each object represents an annotation added to an image. The object contains the following keys: type, x, y, width, height, text, and id |
-| **annotations.`type`** | There are two types of annotations: Rectangle and Point |
-| **annotations.`x`** | coordinates on x axis  |
-| **annotations.`y`** | coordinates on y axis |
-| **annotations.`width`** | width of annotation |
-| **annotations.`height`** | height of annotation |
+| **annotations.`type`** | There are two types of annotations: `RECTANGLE` and `POINT` |
+| **annotations.`x`** | coordinates on the x axis  |
+| **annotations.`y`** | coordinates on the y axis |
+| **annotations.`width`** | width of the annotation |
+| **annotations.`height`** | height of the annotation |
 | **annotations.`text`** | label selected for the annotation |
-| **annotations.`id`** | unique id of the annotation (system generated) |
+| **annotations.`id`** | unique ID of the annotation (system generated) |
 
 The values can be accessed dynamically using `{{components.boundedbox1.annotations[0].text}}` or `{{components.boundedbox1.annotations[1].width}}`
 
