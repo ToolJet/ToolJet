@@ -14,7 +14,7 @@ ToolJet Workflows is a visual, node-based platform tailored for data-centric aut
 Whether you're delving into data integration, generating detailed reports, or ensuring rigorous validation, ToolJet Workflows is your go-to solution. 
 
 :::danger
-You're currently exploring the beta version of ToolJet Workflows. Please be aware that this mode might contain bugs or unexpected behavior. Currently, Workflows is available with limited functionality in development enviroment and does not have multi-environment support.
+You're currently exploring the beta version of ToolJet Workflows. Please be aware that this version is experimental, and is not recommended for production use at the moment.
 :::
 
 ## Quickstart Guide
