@@ -106,10 +106,7 @@ export const DaterangePicker = function DaterangePicker({
           data-cy={dataCy}
         >
           {value && formatProp && (
-            <LocalizationProvider
-              dateAdapter={AdapterMoment}
-              adapterLocale="es"
-            >
+            <LocalizationProvider dateAdapter={AdapterMoment}>
               <DateRangePickerMUI
                 disabled={disabledState}
                 format={formatProp}
