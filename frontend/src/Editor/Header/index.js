@@ -138,7 +138,6 @@ export default function EditorHeader({
                   )}
                 </div>
               </div>
-              {/* <div className="col-1"></div> */}
             </div>
             <div
               className="d-flex justify-content-end navbar-right-section"

@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
@@ -54,9 +55,6 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     if (filteredComponents.length === 0) {
       return (
         <div className="empty">
-          {/* <div class="empty-img">
-            <img src="./static/illustrations/undraw_printing_invoices_5r4r.svg" height="128" alt="" />
-          </div> */}
           <p className="empty-title">{t('widgetManager.noResults', 'No results found')}</p>
           <p className={`empty-subtitle ${darkMode ? 'text-white-50' : 'text-secondary'}`}>
             {t(
@@ -131,6 +129,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     <div className={`components-container ${isVersionReleased && 'disabled'}`}>
       <p className="widgets-manager-header">Components</p>
       <div className="input-icon">
+        {/* <SolidIcon name="search" /> */}
         <input
           type="text"
           className={`form-control tj-input tj-widgets-search-input`}

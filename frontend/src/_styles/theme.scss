@@ -453,7 +453,7 @@ button {
     background-color: var(--base) !important;
     background-clip: border-box;
     margin-top: 48px;
-    padding-top: 0px;
+    padding-top: 8px;
 
     .accordion-item {
       border: solid rgba(101, 109, 119, 0.16);
@@ -660,8 +660,6 @@ button {
   }
 
   .main {
-    // margin-left: 3%;
-    // width: 82%;
     top: 0;
     height: calc(100vh - 84px);
 
@@ -674,7 +672,6 @@ button {
     .canvas-container::-webkit-scrollbar {
       width: 0;
       background: transparent;
-      // height: 0;
     }
 
     .canvas-container::-webkit-scrollbar-track {
@@ -1746,7 +1743,6 @@ button {
 .select-search-dark__input {
   display: block;
   width: 100%;
-  // padding: 0.4375rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.4285714;
@@ -3171,14 +3167,6 @@ input:focus-visible {
     color: #ffffff !important;
   }
 
-  // .form-control {
-  //   border: 1px solid #324156;
-  // }
-
-  // .card {
-  //   background-color: #324156;
-  // }
-
   .card .table tbody td a {
     color: inherit;
   }
@@ -3519,29 +3507,14 @@ input:focus-visible {
     background-color: transparent !important;
   }
 
-  // .codehinter-default-input {
-  //   background-color: transparent;
-  //   border: 1px solid #333c48;
-  // }
-
   .color-picker-input {
     border: solid 1px #333c48;
     height: 36px;
   }
 
-  // .codehinter-query-editor-input {
-  //   background-color: #272822;
-  //   border: 1px solid #2c3a4c;
-  //   border-radius: 0;
-  // }
-
   .codehinter-query-editor-input .CodeMirror {
     height: 31px !important;
   }
-
-  // .codehinter-query-editor-input .CodeMirror {
-  //   color: #c3c3c3 !important;
-  // }
 
   .select-search:not(.is-loading):not(.select-search--multiple) .select-search__value::after {
     transform: rotate(45deg);
@@ -5687,10 +5660,6 @@ div#driver-page-overlay {
     }
   }
 
-  // .action-icons-group {
-  //   margin-right: 4rem !important;
-  //   margin-left: 2rem !important;
-  // }
 
   .action-icons-group {
     cursor: pointer;
@@ -7704,8 +7673,6 @@ tbody {
   align-items: center;
   width: 176px;
   height: 28px;
-  // position: absolute;
-  // left: 58%;
   border-radius: 6px;
 
   .react-select__control {
@@ -11032,7 +10999,6 @@ tbody {
   display: flex;
   flex-wrap: wrap;
   column-gap: 22px;
-  // gap: 12px;
 }
 
 .component-card-group-container {
@@ -11063,10 +11029,7 @@ tbody {
 .tj-widgets-search-input {
   width: 266px;
   height: 32px;
-  // padding: 6px 10px 6px 10px;
   border-radius: 6px;
-  // border: 1px;
-  // gap: 16px;
   background-color: var(--base) !important;
 }
 
@@ -11120,6 +11083,19 @@ tbody {
   top: 10px;
   display: flex;
   right: 222px;
+  justify-content: center;
+  align-items: center;
+  height: 28px;
+  // width: 58px;
+  gap: 2px;
+
+  div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 28px;
+    width: 28px;
+  }
 }
 
 .sidebar-panel-header {
@@ -11127,7 +11103,7 @@ tbody {
 }
 
 .modal-content {
-  background-color: var(--base);
+  background: var(--base);
   color: var(--slate12);
 }
 
@@ -11137,7 +11113,6 @@ tbody {
 
 .event-manager-popover {
   border: none;
-  // background: var(--slate1, #FBFCFD);
   /* Shadow/03 */
   box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08);
 

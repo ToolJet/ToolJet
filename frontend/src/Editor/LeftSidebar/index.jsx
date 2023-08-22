@@ -268,7 +268,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       )}
 
       {config.COMMENT_FEATURE_ENABLE && (
-        <div className={`${isVersionReleased && 'disabled'} left-sidebar-item`}>
+        <div className={`${isVersionReleased && 'disabled'}`} style={{ maxHeight: '32px', maxWidth: '32px' }}>
           <LeftSidebarComment
             selectedSidebarItem={showComments ? 'comments' : ''}
             currentPageId={currentPageId}

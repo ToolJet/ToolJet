@@ -367,11 +367,9 @@ export const Box = function Box({
                     width: '24px',
                     height: '24px',
                     backgroundSize: 'contain',
-                    // backgroundImage: `url(assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
                     backgroundRepeat: 'no-repeat',
                   }}
                 >
-                  {/* <img src={`assets/images/icons/widgets/${component.name.toLowerCase()}.svg`}></img> */}
                   <WidgetIcon name={component.name.toLowerCase()} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
                 </div>
               </center>
