@@ -8,7 +8,8 @@ import config from 'config';
 import Box from '@mui/material/Box';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
+import { useTranslation } from 'react-i18next';
+import { localizeMessage } from '@/_helpers/localize';
 
 export const FilePicker = ({
   id,
@@ -22,10 +23,12 @@ export const FilePicker = ({
   registerAction,
   dataCy,
 }) => {
+  const { t } = useTranslation();
   const currentState = useCurrentState();
   //* properties definitions
   const instructionText =
-    component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
+    component.definition.properties.instructionText?.value ||
+    t('widget.FilePicker.dragAndDropHelp', 'Drag and Drop some files here, or click to select files');
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -132,7 +135,7 @@ export const FilePicker = ({
     if (selectedFilesCount === parsedMaxFileCount) {
       return {
         code: 'max_file_count_reached',
-        message: `Max file count reached`,
+        message: localizeMessage(`Max file count reached`),
       };
     }
 
@@ -226,10 +229,10 @@ export const FilePicker = ({
     const fileSize = formatFileSize(rejectedFileSize);
 
     if (code === errorType.MIN_SIZE) {
-      return `File size ${fileSize} is too small. Minimum size is ${formatFileSize(parsedMinSize)}`;
+      return localizeMessage(`File size ${fileSize} is too small. Minimum size is ${formatFileSize(parsedMinSize)}`);
     }
     if (code === errorType.MAX_SIZE) {
-      return `File size ${fileSize} is too large. Maximum size is ${formatFileSize(parsedMaxSize)}`;
+      return localizeMessage(`File size ${fileSize} is too large. Maximum size is ${formatFileSize(parsedMaxSize)}`);
     }
 
     return message;
@@ -445,18 +448,18 @@ export const FilePicker = ({
 
             <FilePicker.Signifiers
               signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
-              feedback={'All files will be accepted'}
+              feedback={localizeMessage('All files will be accepted')}
               cls="text-lime mt-3"
             />
             <FilePicker.Signifiers
               signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
-              feedback={'Max file reached!'}
+              feedback={localizeMessage('Max file reached!')}
               cls="text-red mt-3"
             />
 
             <FilePicker.Signifiers
               signifier={isDragReject}
-              feedback={'Files will be rejected!'}
+              feedback={localizeMessage('Files will be rejected!')}
               cls="text-red mt-3"
             />
           </Box>
@@ -493,7 +496,7 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
           variant="subtitle1"
           color="blue"
         >
-          Files
+          {localizeMessage('Files', 'Archivos')}
         </Typography>
       )}
       <div className="row accepted-files">{children}</div>
