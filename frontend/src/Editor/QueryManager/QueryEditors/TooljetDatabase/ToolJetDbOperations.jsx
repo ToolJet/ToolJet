@@ -11,6 +11,7 @@ import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import { JoinTable } from './JoinTable';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
@@ -171,6 +172,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         return UpdateRows;
       case 'delete_rows':
         return DeleteRows;
+      case 'join_tables':
+        return JoinTable;
     }
   };
 
@@ -210,6 +213,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
                 { name: 'Create row', value: 'create_row' },
                 { name: 'Update rows', value: 'update_rows' },
                 { name: 'Delete rows', value: 'delete_rows' },
+                { name: 'Join tables', value: 'join_tables' },
               ]}
               value={operation}
               onChange={(value) => setOperation(value)}
