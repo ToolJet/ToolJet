@@ -62,29 +62,44 @@
 
 /* Variants */
 .tj-primary-btn {
-    background: #3E63DD;
-    border: none;
-    color: #FDFDFE;
-
+    border-radius: 6px;
+    border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
+    background: var(--indigo9);
+    box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.04);
+    color: var(--indigo1);
     &:hover {
-        background: #3A5CCC;
-        color: #FDFDFE;
-
+        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
+        background: var(--indigo8);
+        svg{
+            path{
+                fill: var(--indigo1) !important;
+            }
+        }
     }
 
     &:focus-visible {
-        box-shadow: 0px 0px 0px 4px var(--indigo6);
-        background: #3A5CCC;
+        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
         outline: none;
-        color: #FDFDFE;
+        background: var(--indigo10);
+        svg{
+            path{
+                fill: var(--indigo1) !important;
+            }
+        }
 
     }
 
 
     &:active {
-        background: #3451B2;
-        box-shadow: none;
-        color: #F0F4FF;
+        background: var(--slate1, #FBFCFD);
+        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
+        box-shadow: 0px 0px 0px 4px #C6D4F9;
+        color: var(--indigo9);
+        svg{
+            path{
+                fill:var(--indigo9) !important;
+            }
+        }
     }
 
 }
