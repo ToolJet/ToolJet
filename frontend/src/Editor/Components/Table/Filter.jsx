@@ -209,7 +209,7 @@ export function Filter(props) {
       </div>
       <div className="card-footer d-flex custom-gap-8">
         <ButtonSolid
-          variant="secondary"
+          variant="primary"
           className={`tj-text-xsm`}
           onClick={addFilter}
           size="sm"
