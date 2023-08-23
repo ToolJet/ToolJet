@@ -156,7 +156,7 @@ export function AddNewRowComponent({
       </div>
       <div className="card-footer d-flex custom-gap-4">
         <ButtonSolid
-          variant="secondary"
+          variant="primary"
           className={`tj-text-xsm`}
           onClick={() => {
             onEvent('onNewRowsAdded', { component }).then(() => {

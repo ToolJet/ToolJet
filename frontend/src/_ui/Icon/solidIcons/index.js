@@ -123,6 +123,8 @@ import CheveronRightDouble from './CheveronRightDouble.jsx';
 import Dot from './Dot.jsx';
 import Check from './Check.jsx';
 import Editable from './Editable.jsx';
+import Save from './Save.jsx';
+import X from './X.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -372,6 +374,10 @@ const Icon = (props) => {
       return <Minimize {...props} />;
     case 'maximize':
       return <Maximize {...props} />;
+    case 'save':
+      return <Save {...props} />;
+    case 'x':
+      return <X {...props} />;
     default:
       return <Apps {...props} />;
   }

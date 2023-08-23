@@ -1356,7 +1356,7 @@ export function Table({
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
                   <ButtonSolid
-                    variant="secondary"
+                    variant="primary"
                     className={`tj-text-xsm`}
                     onClick={() => {
                       onEvent('onBulkUpdate', { component }).then(() => {
@@ -1366,9 +1366,13 @@ export function Table({
                     data-cy={`table-button-save-changes`}
                     size="md"
                     isLoading={tableDetails.isSavingChanges ? true : false}
-                    style={{ padding: '10px 20px' }}
+                    style={{ padding: '5px 8px' }}
+                    leftIcon={width > 650 ? '' : 'save'}
+                    fill={'var(--indigo1)'}
+                    iconViewBox="0 0 16 16"
+                    iconWidth="16"
                   >
-                    <span>Save changes</span>
+                    {width > 650 ? <span>Save changes</span> : ''}
                   </ButtonSolid>
                   <ButtonSolid
                     variant="tertiary"
@@ -1378,9 +1382,13 @@ export function Table({
                     }}
                     data-cy={`table-button-discard-changes`}
                     size="md"
-                    style={{ padding: '10px 20px' }}
+                    style={{ padding: '5px 8px' }}
+                    leftIcon={width > 650 ? '' : 'x'}
+                    fill={'var(--slate12)'}
+                    iconViewBox="0 0 16 16"
+                    iconWidth="16"
                   >
-                    <span>Discard changes</span>
+                    {width > 650 ? <span>Discard</span> : ''}
                   </ButtonSolid>
                 </>
               ) : (
@@ -1405,6 +1413,7 @@ export function Table({
                   enableNextButton={enableNextButton}
                   enablePrevButton={enablePrevButton}
                   darkMode={darkMode}
+                  tableWidth={width}
                 />
               )}
             </div>

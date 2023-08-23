@@ -15,6 +15,7 @@ export const Pagination = function Pagination({
   enableNextButton,
   // eslint-disable-next-line no-unused-vars
   darkMode,
+  tableWidth,
 }) {
   const [pageCount, setPageCount] = useState(autoPageCount);
 
@@ -52,7 +53,7 @@ export const Pagination = function Pagination({
   return (
     <div className="pagination-container d-flex h-100 align-items-center custom-gap-4" data-cy="pagination-section">
       <div className="d-flex">
-        {!serverSide && (
+        {!serverSide && tableWidth > 460 && (
           <ButtonSolid
             variant="ghostBlack"
             className="tj-text-xsm"
@@ -154,7 +155,7 @@ export const Pagination = function Pagination({
           }}
           data-cy={`pagination-button-to-next`}
         ></ButtonSolid>
-        {!serverSide && (
+        {!serverSide && tableWidth > 460 && (
           <ButtonSolid
             variant="ghostBlack"
             className="tj-text-xsm"
