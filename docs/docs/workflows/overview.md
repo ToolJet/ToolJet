@@ -25,13 +25,13 @@ This introductory guide will help you understand the basics of ToolJet Workflows
 All data sources that are configured in **Global Datasources** will be available in Workflows.
 :::
 
-To create a new workflow, click on the workflow icon in the left sidebar and click on the **Create New Workflow** button. You'll be taken to the flow builder with a fresh instance of a workflow. Let's start by renaming the workflow to *Quickstart Guide*. 
+To create a new workflow, click on the workflow icon in the left sidebar and click on the **Create New Workflow** button. You'll be taken to the flow builder with a new workflow. Let's start by renaming the workflow to *Quickstart Guide*. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/create-new-workflow.gif" alt="Create New Workflow" />
 </div>
 
-The new instance of the workflow will have two nodes on the canvas - **Start Trigger** and **Result**. Nodes are a graphical representation of each process in a workflow.  
+The new workflow will have two nodes on the canvas - **Start Trigger** and **Result**. Nodes are a graphical representation of each process in a workflow.  
 
 Click on the blue circle on the **Start trigger** node and drag it to create a new node. Then select **PostgreSQL** node. 
 
