@@ -1,10 +1,8 @@
 import '@/_styles/widgets/star-rating.scss';
-import config from 'config';
 import React from 'react';
 import { useTrail } from 'react-spring';
 
 import Star from './star';
-import { Box, Rating, Tooltip, Typography } from '@mui/material';
 
 export const StarRating = function StarRating({ properties, styles, fireEvent, setExposedVariable, darkMode, dataCy }) {
   const label = properties.label;
@@ -69,75 +67,39 @@ export const StarRating = function StarRating({ properties, styles, fireEvent, s
   };
 
   return (
-    <>
-      {config.UI_LIB === 'tooljet' && (
-        <div
-          data-disabled={disabledState}
-          className="star-rating"
-          style={{ display: visibility ? '' : 'none', boxShadow }}
-          data-cy={dataCy}
-        >
-          <span
-            className={label && `label form-check-label col-auto`}
-            style={{ color: labelColorStyle }}
-          >
-            {label}
-          </span>
-          <div className="col px-1 py-0 mt-0">
-            {animatedStars.map((props, index) => (
-              <Star
-                tooltip={getTooltip(index)}
-                active={getActive(index)}
-                isHalfStar={isHalfStar(index)}
-                maxRating={maxRating}
-                onClick={(e, idx) => {
-                  e.stopPropagation();
-                  setRatingIndex(idx);
-                  handleClick(idx);
-                }}
-                allowHalfStar={allowHalfStar}
-                key={index}
-                index={index}
-                color={color}
-                style={{ ...props }}
-                setHoverIndex={setHoverIndex}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-      {config.UI_LIB === 'mui' && (
-        <Box
-          style={{ display: visibility ? '' : 'none', boxShadow }}
-          sx={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <Typography sx={{ color: labelColorStyle }}>{label}</Typography>
-          <Tooltip
-            arrow
-            title={getTooltip(hoverIndex)}
-          >
-            <Rating
-              name="simple-controlled"
-              disabled={disabledState}
-              max={parseInt(maxRating)}
-              defaultValue={defaultSelected}
-              value={currentRatingIndex}
-              sx={{ color: textColor }}
-              precision={allowHalfStar === true ? 0.5 : 1}
-              onChange={(event, currentRatingIndex) => {
-                setRatingIndex(currentRatingIndex);
-              }}
-              onChangeActive={(event, hoverIndex) => {
-                setHoverIndex([hoverIndex - 1]);
-              }}
-            />
-          </Tooltip>
-        </Box>
-      )}
-    </>
+    <div
+      data-disabled={disabledState}
+      className="star-rating"
+      style={{ display: visibility ? '' : 'none', boxShadow }}
+      data-cy={dataCy}
+    >
+      <span
+        className={label && `label form-check-label col-auto`}
+        style={{ color: labelColorStyle }}
+      >
+        {label}
+      </span>
+      <div className="col px-1 py-0 mt-0">
+        {animatedStars.map((props, index) => (
+          <Star
+            tooltip={getTooltip(index)}
+            active={getActive(index)}
+            isHalfStar={isHalfStar(index)}
+            maxRating={maxRating}
+            onClick={(e, idx) => {
+              e.stopPropagation();
+              setRatingIndex(idx);
+              handleClick(idx);
+            }}
+            allowHalfStar={allowHalfStar}
+            key={index}
+            index={index}
+            color={color}
+            style={{ ...props }}
+            setHoverIndex={setHoverIndex}
+          />
+        ))}
+      </div>
+    </div>
   );
 };

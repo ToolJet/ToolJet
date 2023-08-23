@@ -46,27 +46,6 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
-import config from 'config';
-import {
-  Badge,
-  Box,
-  Button,
-  Checkbox,
-  CircularProgress,
-  FormControlLabel,
-  FormGroup,
-  IconButton,
-  Menu,
-  MenuItem,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material';
-import MUITable from '@mui/material/Table';
-import { AddCircleOutline, Download, FilterList, ViewWeek } from '@mui/icons-material';
-import MUITooltip from '@mui/material/Tooltip';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -87,43 +66,6 @@ const utilityForNestedNewRow = (row) => {
     }
   });
   return obj;
-};
-
-const MenuCustom = ({ children, Icon, titleTooltip }) => {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  return (
-    <>
-      <MUITooltip title={titleTooltip}>
-        <IconButton onClick={handleClick}>{Icon}</IconButton>
-      </MUITooltip>
-      <Menu
-        id="basic-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        MenuListProps={{
-          'aria-labelledby': 'basic-button',
-        }}
-      >
-        {children}
-      </Menu>
-    </>
-  );
 };
 
 export function Table({
@@ -973,1032 +915,537 @@ export function Table({
   }
 
   return (
-    <>
-      {config.UI_LIB === 'mui' && (
-        <Box
-          className="card jet-table"
-          sx={{
-            width: `100%`,
-            height: `${height}px`,
-            display: parsedWidgetVisibility ? '' : 'none',
-            overflow: 'hidden',
-            borderRadius: Number.parseFloat(borderRadius),
-            boxShadow: styles.boxShadow,
-            backgroundColor: 'white',
-          }}
-          onClick={(event) => {
-            onComponentClick(id, component, event);
-          }}
-          ref={tableRef}
-        >
-          {/* Show top bar unless search box is disabled and server pagination is enabled */}
-          {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
-            <Box
-              display={width > 470 ? 'flex' : 'block'}
-              justifyContent="space-between"
-              padding="10px"
-            >
-              {displaySearchBox && (
-                <GlobalFilter
-                  globalFilter={state.globalFilter}
-                  useAsyncDebounce={useAsyncDebounce}
-                  setGlobalFilter={setGlobalFilter}
-                  onComponentOptionChanged={onComponentOptionChanged}
-                  component={component}
-                  onEvent={onEvent}
-                  darkMode={darkMode}
-                />
-              )}
-              <Box
-                display={width < 470 ? 'flex' : ''}
-                justifyContent="center"
-              >
-                {showAddNewRowButton && (
-                  <MUITooltip title={tableDetails.addNewRowsDetails.addingNewRows ? '' : 'Add new row'}>
-                    <IconButton
-                      onClick={(e) => {
-                        showAddNewRowPopup();
-                      }}
-                      disabled={tableDetails.addNewRowsDetails.addingNewRows}
-                    >
-                      <Badge
-                        color="primary"
-                        variant="dot"
-                        invisible={
-                          !tableDetails.addNewRowsDetails.addingNewRows &&
-                          _.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates)
-                        }
-                      >
-                        <AddCircleOutline color="primary" />
-                      </Badge>
-                    </IconButton>
-                  </MUITooltip>
-                )}
-
-                {showFilterButton && (
-                  <MUITooltip title="Filter data">
-                    <IconButton onClick={() => showFilters()}>
-                      <Badge
-                        color="primary"
-                        variant="dot"
-                        invisible={!tableDetails.filterDetails.filters.length > 0}
-                      >
-                        <FilterList color="primary" />
-                      </Badge>
-                    </IconButton>
-                  </MUITooltip>
-                )}
-                {showDownloadButton && (
-                  <MenuCustom
-                    titleTooltip="Download"
-                    Icon={<Download color="primary" />}
-                  >
-                    <MenuItem
-                      onClick={() => {
-                        exportData('csv', true);
-                      }}
-                    >
-                      Download as CSV
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        exportData('xlsx', true);
-                      }}
-                    >
-                      Download as Excel
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        exportData('pdf', true);
-                      }}
-                    >
-                      Download as PDF
-                    </MenuItem>
-                  </MenuCustom>
-                )}
-                {!hideColumnSelectorButton && (
-                  <MenuCustom
-                    titleTooltip="Columns"
-                    Icon={<ViewWeek color="primary" />}
-                  >
-                    <FormGroup sx={{ minWidth: '150px' }}>
-                      <IndeterminateCheckbox
-                        {...getToggleHideAllColumnsProps()}
-                        label="Select All"
-                      />
-
-                      {allColumns.map(
-                        (column, index) =>
-                          typeof column.Header === 'string' && (
-                            <FormControlLabel
-                              defaultChecked
-                              key={index}
-                              {...column.getToggleHiddenProps()}
-                              control={<Checkbox />}
-                              label={` ${column.Header}`}
-                              sx={{ minWidth: '100%', mx: '5px', pl: '5px' }}
-                            />
-                          )
-                      )}
-                    </FormGroup>
-                  </MenuCustom>
-                )}
-              </Box>
-            </Box>
-          )}
-          <Box className="table-responsive jet-data-table">
-            <MUITable {...getTableProps()}>
-              <TableHead sx={{ backgroundColor: '#E7E7E7' }}>
-                {headerGroups.map((headerGroup, index) => (
-                  <DragDropContext
-                    key={index}
-                    onDragStart={() => {
-                      currentColOrder.current = allColumns?.map((o) => o.id);
-                    }}
-                    onDragUpdate={(dragUpdateObj) => {
-                      const colOrder = [...currentColOrder.current];
-                      const sIndex = dragUpdateObj.source.index;
-                      const dIndex = dragUpdateObj.destination && dragUpdateObj.destination.index;
-
-                      if (typeof sIndex === 'number' && typeof dIndex === 'number') {
-                        colOrder.splice(sIndex, 1);
-                        colOrder.splice(dIndex, 0, dragUpdateObj.draggableId);
-                        setColumnOrder(colOrder);
-                      }
-                    }}
-                  >
-                    <Droppable
-                      droppableId="droppable"
-                      direction="horizontal"
-                    >
-                      {(droppableProvided, snapshot) => (
-                        <TableRow
-                          ref={droppableProvided.innerRef}
-                          key={index}
-                          {...headerGroup.getHeaderGroupProps()}
-                          tabIndex="0"
-                          sx={{ height: 'auto' }}
-                        >
-                          {headerGroup.headers.map((column, index) => (
-                            <Draggable
-                              key={column.id}
-                              draggableId={column.id}
-                              index={index}
-                              isDragDisabled={!column.accessor}
-                            >
-                              {(provided, snapshot) => {
-                                return (
-                                  <TableCell
-                                    key={index}
-                                    {...column.getHeaderProps()}
-                                    className={
-                                      column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
-                                    }
-                                  >
-                                    <Box
-                                      data-cy={`column-header-${String(column.exportValue)
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '-')}`}
-                                      {...column.getSortByToggleProps()}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      ref={provided.innerRef}
-                                      style={{
-                                        ...getItemStyle(snapshot, provided.draggableProps.style),
-                                      }}
-                                    >
-                                      {column.render('Header')}
-                                    </Box>
-                                    <Box
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                      }}
-                                      draggable="true"
-                                      {...column.getResizerProps()}
-                                      className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
-                                    />
-                                  </TableCell>
-                                );
-                              }}
-                            </Draggable>
-                          ))}
-                        </TableRow>
-                      )}
-                    </Droppable>
-                  </DragDropContext>
-                ))}
-              </TableHead>
-
-              {!loadingState && page.length === 0 && (
-                <Box
-                  width="100%"
-                  height="100%"
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  {t('widget.Table.noData', 'no data')}
-                </Box>
-              )}
-
-              {!loadingState && (
-                <TableBody {...getTableBodyProps()}>
-                  {page.map((row, index) => {
-                    prepareRow(row);
-                    return (
-                      <TableRow
-                        key={index}
-                        className={`table-row table-editor-component-row ${
-                          allowSelection &&
-                          highlightSelectedRow &&
-                          ((row.isSelected && row.id === tableDetails.selectedRowId) ||
-                            (showBulkSelector &&
-                              row.isSelected &&
-                              tableDetails?.selectedRowsDetails?.some(
-                                (singleRow) => singleRow.selectedRowId === row.id
-                              )))
-                            ? 'selected'
-                            : ''
-                        }`}
-                        {...row.getRowProps()}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
-                          if (allowSelection) {
-                            await toggleRowSelected(row.id);
-                          }
-                          const selectedRow = row.original;
-                          const selectedRowId = row.id;
-                          setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-                            mergeToTableDetails({ selectedRow, selectedRowId });
-                            fireEvent('onRowClicked');
-                          });
-                        }}
-                        onMouseOver={(e) => {
-                          if (hoverAdded) {
-                            const hoveredRowDetails = {
-                              hoveredRowId: row.id,
-                              hoveredRow: row.original,
-                            };
-                            setRowDetails(hoveredRowDetails);
-                            hoverRef.current = rowDetails?.hoveredRowId;
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          hoverAdded && setRowDetails({ hoveredRowId: '', hoveredRow: '' });
-                        }}
-                      >
-                        {row.cells.map((cell, index) => {
-                          let cellProps = cell.getCellProps();
-                          if (tableDetails.changeSet) {
-                            if (tableDetails.changeSet[cell.row.index]) {
-                              const currentColumn = columnData.find((column) => column.id === cell.column.id);
-                              if (
-                                _.get(tableDetails.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
-                                undefined
-                              ) {
-                                cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
-                                cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
-                              }
-                            }
-                          }
-                          const wrapAction = textWrapActions(cell.column.id);
-                          const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-                          const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
-                          const rowData = tableData[cell.row.index];
-                          const cellBackgroundColor = resolveReferences(
-                            cell.column?.cellBackgroundColor,
-                            currentState,
-                            '',
-                            {
-                              cellValue,
-                              rowData,
-                            }
-                          );
-                          const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
-                            cellValue,
-                            rowData,
-                          });
-                          const actionButtonsArray = actions.map((action) => {
-                            return {
-                              ...action,
-                              isDisabled: resolveReferences(action?.disableActionButton ?? false, currentState, '', {
-                                cellValue,
-                                rowData,
-                              }),
-                            };
-                          });
-                          const isEditable = resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
-                            cellValue,
-                            rowData,
-                          });
-                          return (
-                            // Does not require key as its already being passed by react-table via cellProps
-                            // eslint-disable-next-line react/jsx-key
-                            <TableCell
-                              data-cy={`${cell.column.columnType ?? ''}${String(
-                                cell.column.id === 'rightActions' || cell.column.id === 'leftActions'
-                                  ? cell.column.id
-                                  : ''
-                              )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
-                              {...cellProps}
-                              onClick={(e) => {
-                                setExposedVariable('selectedCell', {
-                                  columnName: cell.column.exportValue,
-                                  columnKey: cell.column.key,
-                                  value: cellValue,
-                                });
-                              }}
-                            >
-                              <Box
-                                className={`td-container ${
-                                  cell.column.columnType === 'image' && 'jet-table-image-column'
-                                } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
-                              >
-                                <GenerateEachCellValue
-                                  cellValue={cellValue}
-                                  globalFilter={state.globalFilter}
-                                  cellRender={cell.render('Cell', {
-                                    cell,
-                                    actionButtonsArray,
-                                    isEditable,
-                                  })}
-                                  rowChangeSet={rowChangeSet}
-                                  isEditable={isEditable}
-                                  columnType={cell.column.columnType}
-                                  isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
-                                  cellTextColor={cellTextColor}
-                                  cell={cell}
-                                  currentState={currentState}
-                                />
-                              </Box>
-                            </TableCell>
-                          );
-                        })}
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              )}
-            </MUITable>
-            {loadingState === true && (
-              <Box
-                height="100%"
-                width="100%"
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <CircularProgress size={50} />
-              </Box>
+    <div
+      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+      data-disabled={parsedDisabledState}
+      className="card jet-table"
+      style={{
+        width: `100%`,
+        height: `${height}px`,
+        display: parsedWidgetVisibility ? '' : 'none',
+        overflow: 'hidden',
+        borderRadius: Number.parseFloat(borderRadius),
+        boxShadow: styles.boxShadow,
+      }}
+      onClick={(event) => {
+        onComponentClick(id, component, event);
+      }}
+      ref={tableRef}
+    >
+      {/* Show top bar unless search box is disabled and server pagination is enabled */}
+      {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
+        <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
+          <div
+            className={`d-flex align-items-center ms-auto text-muted ${
+              displaySearchBox ? 'justify-content-between' : 'justify-content-end'
+            }`}
+          >
+            {displaySearchBox && (
+              <GlobalFilter
+                globalFilter={state.globalFilter}
+                useAsyncDebounce={useAsyncDebounce}
+                setGlobalFilter={setGlobalFilter}
+                onComponentOptionChanged={onComponentOptionChanged}
+                component={component}
+                onEvent={onEvent}
+                darkMode={darkMode}
+              />
             )}
-          </Box>
-
-          {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              height="70px"
-              alignItems="center"
-            >
-              <Box>
-                {(clientSidePagination || serverSidePagination) && (
-                  <Pagination
-                    lastActivePageIndex={pageIndex}
-                    serverSide={serverSidePagination}
-                    autoGotoPage={gotoPage}
-                    autoCanNextPage={canNextPage}
-                    autoPageCount={pageCount}
-                    autoPageOptions={pageOptions}
-                    onPageIndexChanged={onPageIndexChanged}
-                    pageIndex={paginationInternalPageIndex}
-                    setPageIndex={setPaginationInternalPageIndex}
-                    enableNextButton={enableNextButton}
-                    enablePrevButton={enablePrevButton}
+            <div>
+              {showAddNewRowButton && (
+                <button
+                  className="btn btn-light btn-sm p-1 mx-1"
+                  onClick={(e) => {
+                    showAddNewRowPopup();
+                  }}
+                  data-tooltip-id="tooltip-for-add-new-row"
+                  data-tooltip-content="Add new row"
+                  disabled={tableDetails.addNewRowsDetails.addingNewRows}
+                >
+                  <img
+                    src="assets/images/icons/plus.svg"
+                    width="15"
+                    height="15"
                   />
-                )}
-              </Box>
-              <Box margin="0px 10px">
-                {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
-                  <Box
-                    display="flex"
-                    gap="10px"
+                  {!tableDetails.addNewRowsDetails.addingNewRows &&
+                    !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
+                      <a
+                        className="badge bg-azure"
+                        style={{ width: '4px', height: '4px', marginTop: '5px' }}
+                      ></a>
+                    )}
+                </button>
+              )}
+              <Tooltip
+                id="tooltip-for-add-new-row"
+                className="tooltip"
+              />
+              {showFilterButton && (
+                <>
+                  <span
+                    className="btn btn-light btn-sm p-1 mx-1"
+                    onClick={() => showFilters()}
+                    data-tooltip-id="tooltip-for-filter-data"
+                    data-tooltip-content="Filter data"
                   >
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() =>
-                        onEvent('onBulkUpdate', { component }).then(() => {
-                          handleChangesSaved();
-                        })
-                      }
-                      data-cy={`table-button-save-changes`}
-                    >
-                      Save Changes
-                    </Button>
-
-                    <Button
-                      variant="contained"
-                      size="small"
-                      color="error"
-                      onClick={() => handleChangesDiscarded()}
-                      data-cy={`table-button-discard-changes`}
-                    >
-                      Discard changes
-                    </Button>
-                  </Box>
-                ) : (
-                  <Typography
-                    data-cy={`footer-number-of-records`}
-                    variant="body1"
-                  >
-                    {clientSidePagination &&
-                      !serverSidePagination &&
-                      `${globalFilteredRows.length} ${t('widget.Table.records', 'Records')}`}
-                    {serverSidePagination && totalRecords
-                      ? `${totalRecords} ${t('widget.Table.records', 'Records')}`
-                      : ''}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          )}
-
-          {tableDetails.filterDetails.filtersVisible && (
-            <Filter
-              openFilter={tableDetails.filterDetails.filtersVisible}
-              hideFilters={hideFilters}
-              filters={tableDetails.filterDetails.filters}
-              columns={columnData.map((column) => {
-                return { name: column.Header, value: column.id };
-              })}
-              mergeToFilterDetails={mergeToFilterDetails}
-              filterDetails={tableDetails.filterDetails}
-              darkMode={darkMode}
-              setAllFilters={setAllFilters}
-              fireEvent={fireEvent}
-            />
-          )}
-          {tableDetails.addNewRowsDetails.addingNewRows && (
-            <AddNewRowComponent
-              openAddRow={tableDetails.addNewRowsDetails.addingNewRows}
-              hideAddNewRowPopup={hideAddNewRowPopup}
-              tableType={tableType}
-              darkMode={darkMode}
-              mergeToAddNewRowsDetails={mergeToAddNewRowsDetails}
-              onEvent={onEvent}
-              component={component}
-              setExposedVariable={setExposedVariable}
-              allColumns={allColumns}
-              defaultColumn={defaultColumn}
-              columns={columnsForAddNewRow}
-              addNewRowsDetails={tableDetails.addNewRowsDetails}
-              utilityForNestedNewRow={utilityForNestedNewRow}
-            />
-          )}
-        </Box>
-      )}
-      {config.UI_LIB === 'tooljet' && (
-        <div
-          data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
-          data-disabled={parsedDisabledState}
-          className="card jet-table"
-          style={{
-            width: `100%`,
-            height: `${height}px`,
-            display: parsedWidgetVisibility ? '' : 'none',
-            overflow: 'hidden',
-            borderRadius: Number.parseFloat(borderRadius),
-            boxShadow: styles.boxShadow,
-          }}
-          onClick={(event) => {
-            onComponentClick(id, component, event);
-          }}
-          ref={tableRef}
-        >
-          {/* Show top bar unless search box is disabled and server pagination is enabled */}
-          {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
-            <div
-              className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}
-            >
-              <div
-                className={`d-flex align-items-center ms-auto text-muted ${
-                  displaySearchBox ? 'justify-content-between' : 'justify-content-end'
-                }`}
-              >
-                {displaySearchBox && (
-                  <GlobalFilter
-                    globalFilter={state.globalFilter}
-                    useAsyncDebounce={useAsyncDebounce}
-                    setGlobalFilter={setGlobalFilter}
-                    onComponentOptionChanged={onComponentOptionChanged}
-                    component={component}
-                    onEvent={onEvent}
-                    darkMode={darkMode}
+                    <img
+                      src="assets/images/icons/filter.svg"
+                      width="15"
+                      height="15"
+                    />
+                    {tableDetails.filterDetails.filters.length > 0 && (
+                      <a
+                        className="badge bg-azure"
+                        style={{ width: '4px', height: '4px', marginTop: '5px' }}
+                      ></a>
+                    )}
+                  </span>
+                  <Tooltip
+                    id="tooltip-for-filter-data"
+                    className="tooltip"
                   />
-                )}
-                <div>
-                  {showAddNewRowButton && (
-                    <button
-                      className="btn btn-light btn-sm p-1 mx-1"
-                      onClick={(e) => {
-                        showAddNewRowPopup();
-                      }}
-                      data-tooltip-id="tooltip-for-add-new-row"
-                      data-tooltip-content="Add new row"
-                      disabled={tableDetails.addNewRowsDetails.addingNewRows}
+                </>
+              )}
+              {showDownloadButton && (
+                <>
+                  <OverlayTrigger
+                    trigger="click"
+                    overlay={downlaodPopover()}
+                    rootClose={true}
+                    placement={'bottom-end'}
+                  >
+                    <span
+                      className="btn btn-light btn-sm p-1"
+                      data-tooltip-id="tooltip-for-download"
+                      data-tooltip-content="Download"
                     >
                       <img
-                        src="assets/images/icons/plus.svg"
+                        src="assets/images/icons/download.svg"
                         width="15"
                         height="15"
                       />
-                      {!tableDetails.addNewRowsDetails.addingNewRows &&
-                        !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
-                          <a
-                            className="badge bg-azure"
-                            style={{ width: '4px', height: '4px', marginTop: '5px' }}
-                          ></a>
-                        )}
-                    </button>
-                  )}
+                    </span>
+                  </OverlayTrigger>
                   <Tooltip
-                    id="tooltip-for-add-new-row"
+                    id="tooltip-for-download"
                     className="tooltip"
                   />
-                  {showFilterButton && (
-                    <>
-                      <span
-                        className="btn btn-light btn-sm p-1 mx-1"
-                        onClick={() => showFilters()}
-                        data-tooltip-id="tooltip-for-filter-data"
-                        data-tooltip-content="Filter data"
+                </>
+              )}
+              {!hideColumnSelectorButton && (
+                <OverlayTrigger
+                  trigger="click"
+                  rootClose={true}
+                  overlay={
+                    <Popover>
+                      <div
+                        data-cy={`dropdown-hide-column`}
+                        className={`dropdown-table-column-hide-common ${
+                          darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
+                        } `}
                       >
-                        <img
-                          src="assets/images/icons/filter.svg"
-                          width="15"
-                          height="15"
-                        />
-                        {tableDetails.filterDetails.filters.length > 0 && (
-                          <a
-                            className="badge bg-azure"
-                            style={{ width: '4px', height: '4px', marginTop: '5px' }}
-                          ></a>
-                        )}
-                      </span>
-                      <Tooltip
-                        id="tooltip-for-filter-data"
-                        className="tooltip"
-                      />
-                    </>
-                  )}
-                  {showDownloadButton && (
-                    <>
-                      <OverlayTrigger
-                        trigger="click"
-                        overlay={downlaodPopover()}
-                        rootClose={true}
-                        placement={'bottom-end'}
-                      >
-                        <span
-                          className="btn btn-light btn-sm p-1"
-                          data-tooltip-id="tooltip-for-download"
-                          data-tooltip-content="Download"
-                        >
-                          <img
-                            src="assets/images/icons/download.svg"
-                            width="15"
-                            height="15"
-                          />
-                        </span>
-                      </OverlayTrigger>
-                      <Tooltip
-                        id="tooltip-for-download"
-                        className="tooltip"
-                      />
-                    </>
-                  )}
-                  {!hideColumnSelectorButton && (
-                    <OverlayTrigger
-                      trigger="click"
-                      rootClose={true}
-                      overlay={
-                        <Popover>
-                          <div
-                            data-cy={`dropdown-hide-column`}
-                            className={`dropdown-table-column-hide-common ${
-                              darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
-                            } `}
+                        <div className="dropdown-item">
+                          <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+                          <span
+                            className="hide-column-name"
+                            data-cy={`options-select-all-coloumn`}
                           >
-                            <div className="dropdown-item">
-                              <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                              <span
-                                className="hide-column-name"
-                                data-cy={`options-select-all-coloumn`}
-                              >
-                                Select All
-                              </span>
-                            </div>
-                            {allColumns.map(
-                              (column) =>
-                                typeof column.Header === 'string' && (
-                                  <div key={column.id}>
-                                    <div>
-                                      <label className="dropdown-item">
-                                        <input
-                                          type="checkbox"
-                                          data-cy={`checkbox-coloumn-${String(column.Header)
-                                            .toLowerCase()
-                                            .replace(/\s+/g, '-')}`}
-                                          {...column.getToggleHiddenProps()}
-                                        />
-                                        <span
-                                          className="hide-column-name"
-                                          data-cy={`options-coloumn-${String(column.Header)
-                                            .toLowerCase()
-                                            .replace(/\s+/g, '-')}`}
-                                        >
-                                          {` ${column.Header}`}
-                                        </span>
-                                      </label>
-                                    </div>
-                                  </div>
-                                )
-                            )}
-                          </div>
-                        </Popover>
-                      }
-                      placement={'bottom-end'}
-                    >
-                      <span
-                        data-cy={`select-column-icon`}
-                        className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}
-                      >
-                        <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
-                      </span>
-                    </OverlayTrigger>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="table-responsive jet-data-table">
-            <table
-              {...getTableProps()}
-              className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
-                tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
-              }`}
-              style={computedStyles}
-            >
-              <thead>
-                {headerGroups.map((headerGroup, index) => (
-                  <DragDropContext
-                    key={index}
-                    onDragStart={() => {
-                      currentColOrder.current = allColumns?.map((o) => o.id);
-                    }}
-                    onDragUpdate={(dragUpdateObj) => {
-                      const colOrder = [...currentColOrder.current];
-                      const sIndex = dragUpdateObj.source.index;
-                      const dIndex = dragUpdateObj.destination && dragUpdateObj.destination.index;
-
-                      if (typeof sIndex === 'number' && typeof dIndex === 'number') {
-                        colOrder.splice(sIndex, 1);
-                        colOrder.splice(dIndex, 0, dragUpdateObj.draggableId);
-                        setColumnOrder(colOrder);
-                      }
-                    }}
-                  >
-                    <Droppable
-                      droppableId="droppable"
-                      direction="horizontal"
-                    >
-                      {(droppableProvided, snapshot) => (
-                        <tr
-                          ref={droppableProvided.innerRef}
-                          key={index}
-                          {...headerGroup.getHeaderGroupProps()}
-                          tabIndex="0"
-                          className="tr"
-                        >
-                          {headerGroup.headers.map((column, index) => (
-                            <Draggable
-                              key={column.id}
-                              draggableId={column.id}
-                              index={index}
-                              isDragDisabled={!column.accessor}
-                            >
-                              {(provided, snapshot) => {
-                                return (
-                                  <th
-                                    key={index}
-                                    {...column.getHeaderProps()}
-                                    className={
-                                      column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
-                                    }
-                                  >
-                                    <div
-                                      data-cy={`column-header-${String(column.exportValue)
+                            Select All
+                          </span>
+                        </div>
+                        {allColumns.map(
+                          (column) =>
+                            typeof column.Header === 'string' && (
+                              <div key={column.id}>
+                                <div>
+                                  <label className="dropdown-item">
+                                    <input
+                                      type="checkbox"
+                                      data-cy={`checkbox-coloumn-${String(column.Header)
                                         .toLowerCase()
                                         .replace(/\s+/g, '-')}`}
-                                      {...column.getSortByToggleProps()}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      // {...extraProps}
-                                      ref={provided.innerRef}
-                                      style={{
-                                        ...getItemStyle(snapshot, provided.draggableProps.style),
-                                      }}
-                                    >
-                                      {column.render('Header')}
-                                    </div>
-                                    <div
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                      }}
-                                      draggable="true"
-                                      {...column.getResizerProps()}
-                                      className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+                                      {...column.getToggleHiddenProps()}
                                     />
-                                  </th>
-                                );
-                              }}
-                            </Draggable>
-                          ))}
-                        </tr>
-                      )}
-                    </Droppable>
-                  </DragDropContext>
-                ))}
-              </thead>
-
-              {!loadingState && page.length === 0 && (
-                <center className="w-100">
-                  <div className="py-5"> {t('widget.Table.noData', 'no data')} </div>
-                </center>
-              )}
-
-              {!loadingState && (
-                <tbody
-                  {...getTableBodyProps()}
-                  style={{ color: computeFontColor() }}
-                >
-                  {page.map((row, index) => {
-                    prepareRow(row);
-                    return (
-                      <tr
-                        key={index}
-                        className={`table-row table-editor-component-row ${
-                          allowSelection &&
-                          highlightSelectedRow &&
-                          ((row.isSelected && row.id === tableDetails.selectedRowId) ||
-                            (showBulkSelector &&
-                              row.isSelected &&
-                              tableDetails?.selectedRowsDetails?.some(
-                                (singleRow) => singleRow.selectedRowId === row.id
-                              )))
-                            ? 'selected'
-                            : ''
-                        }`}
-                        {...row.getRowProps()}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
-                          if (allowSelection) {
-                            await toggleRowSelected(row.id);
-                          }
-                          const selectedRow = row.original;
-                          const selectedRowId = row.id;
-                          setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-                            mergeToTableDetails({ selectedRow, selectedRowId });
-                            fireEvent('onRowClicked');
-                          });
-                        }}
-                        onMouseOver={(e) => {
-                          if (hoverAdded) {
-                            const hoveredRowDetails = {
-                              hoveredRowId: row.id,
-                              hoveredRow: row.original,
-                            };
-                            setRowDetails(hoveredRowDetails);
-                            hoverRef.current = rowDetails?.hoveredRowId;
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          hoverAdded && setRowDetails({ hoveredRowId: '', hoveredRow: '' });
-                        }}
-                      >
-                        {row.cells.map((cell, index) => {
-                          let cellProps = cell.getCellProps();
-                          if (tableDetails.changeSet) {
-                            if (tableDetails.changeSet[cell.row.index]) {
-                              const currentColumn = columnData.find((column) => column.id === cell.column.id);
-                              if (
-                                _.get(tableDetails.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
-                                undefined
-                              ) {
-                                cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
-                                cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
-                              }
-                            }
-                          }
-                          const wrapAction = textWrapActions(cell.column.id);
-                          const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-                          const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
-                          const rowData = tableData[cell.row.index];
-                          const cellBackgroundColor = resolveReferences(
-                            cell.column?.cellBackgroundColor,
-                            currentState,
-                            '',
-                            {
-                              cellValue,
-                              rowData,
-                            }
-                          );
-                          const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
-                            cellValue,
-                            rowData,
-                          });
-                          const actionButtonsArray = actions.map((action) => {
-                            return {
-                              ...action,
-                              isDisabled: resolveReferences(action?.disableActionButton ?? false, currentState, '', {
-                                cellValue,
-                                rowData,
-                              }),
-                            };
-                          });
-                          const isEditable = resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
-                            cellValue,
-                            rowData,
-                          });
-                          return (
-                            // Does not require key as its already being passed by react-table via cellProps
-                            // eslint-disable-next-line react/jsx-key
-                            <td
-                              data-cy={`${cell.column.columnType ?? ''}${String(
-                                cell.column.id === 'rightActions' || cell.column.id === 'leftActions'
-                                  ? cell.column.id
-                                  : ''
-                              )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
-                              className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
-                                'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
-                                'has-text': cell.column.columnType === 'text' || isEditable,
-                                'has-dropdown': cell.column.columnType === 'dropdown',
-                                'has-multiselect': cell.column.columnType === 'multiselect',
-                                'has-datepicker': cell.column.columnType === 'datepicker',
-                                'align-items-center flex-column': cell.column.columnType === 'selector',
-                                [cellSize]: true,
-                              })}
-                              {...cellProps}
-                              style={{
-                                ...cellProps.style,
-                                backgroundColor: cellBackgroundColor ?? 'inherit',
-                              }}
-                              onClick={(e) => {
-                                setExposedVariable('selectedCell', {
-                                  columnName: cell.column.exportValue,
-                                  columnKey: cell.column.key,
-                                  value: cellValue,
-                                });
-                              }}
-                            >
-                              <div
-                                className={`td-container ${
-                                  cell.column.columnType === 'image' && 'jet-table-image-column'
-                                } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
-                              >
-                                <GenerateEachCellValue
-                                  cellValue={cellValue}
-                                  globalFilter={state.globalFilter}
-                                  cellRender={cell.render('Cell', {
-                                    cell,
-                                    actionButtonsArray,
-                                    isEditable,
-                                  })}
-                                  rowChangeSet={rowChangeSet}
-                                  isEditable={isEditable}
-                                  columnType={cell.column.columnType}
-                                  isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
-                                  cellTextColor={cellTextColor}
-                                  cell={cell}
-                                  currentState={currentState}
-                                />
+                                    <span
+                                      className="hide-column-name"
+                                      data-cy={`options-coloumn-${String(column.Header)
+                                        .toLowerCase()
+                                        .replace(/\s+/g, '-')}`}
+                                    >
+                                      {` ${column.Header}`}
+                                    </span>
+                                  </label>
+                                </div>
                               </div>
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
+                            )
+                        )}
+                      </div>
+                    </Popover>
+                  }
+                  placement={'bottom-end'}
+                >
+                  <span
+                    data-cy={`select-column-icon`}
+                    className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}
+                  >
+                    <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
+                  </span>
+                </OverlayTrigger>
               )}
-            </table>
-            {loadingState === true && (
-              <div
-                style={{ width: '100%' }}
-                className="p-2"
-              >
-                <center>
-                  <div
-                    className="spinner-border mt-5"
-                    role="status"
-                  ></div>
-                </center>
-              </div>
-            )}
-          </div>
-          {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
-            <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
-              <div className="table-footer row gx-0">
-                <div className="col">
-                  {(clientSidePagination || serverSidePagination) && (
-                    <Pagination
-                      lastActivePageIndex={pageIndex}
-                      serverSide={serverSidePagination}
-                      autoGotoPage={gotoPage}
-                      autoCanNextPage={canNextPage}
-                      autoPageCount={pageCount}
-                      autoPageOptions={pageOptions}
-                      onPageIndexChanged={onPageIndexChanged}
-                      pageIndex={paginationInternalPageIndex}
-                      setPageIndex={setPaginationInternalPageIndex}
-                      enableNextButton={enableNextButton}
-                      enablePrevButton={enablePrevButton}
-                    />
-                  )}
-                </div>
-                <div className="col d-flex justify-content-end">
-                  {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
-                    <>
-                      <button
-                        className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
-                        onClick={() =>
-                          onEvent('onBulkUpdate', { component }).then(() => {
-                            handleChangesSaved();
-                          })
-                        }
-                        data-cy={`table-button-save-changes`}
-                      >
-                        Save Changes
-                      </button>
-                      <button
-                        className="btn btn-light btn-sm"
-                        onClick={() => handleChangesDiscarded()}
-                        data-cy={`table-button-discard-changes`}
-                      >
-                        Discard changes
-                      </button>
-                    </>
-                  ) : (
-                    <span data-cy={`footer-number-of-records`}>
-                      {clientSidePagination &&
-                        !serverSidePagination &&
-                        `${globalFilteredRows.length} ${t('widget.Table.records', 'Records')}`}
-                      {serverSidePagination && totalRecords
-                        ? `${totalRecords} ${t('widget.Table.records', 'Records')}`
-                        : ''}
-                    </span>
-                  )}
-                </div>
-              </div>
             </div>
-          )}
-          {tableDetails.filterDetails.filtersVisible && (
-            <Filter
-              hideFilters={hideFilters}
-              filters={tableDetails.filterDetails.filters}
-              columns={columnData.map((column) => {
-                return { name: column.Header, value: column.id };
-              })}
-              mergeToFilterDetails={mergeToFilterDetails}
-              filterDetails={tableDetails.filterDetails}
-              darkMode={darkMode}
-              setAllFilters={setAllFilters}
-              fireEvent={fireEvent}
-            />
-          )}
-          {tableDetails.addNewRowsDetails.addingNewRows && (
-            <AddNewRowComponent
-              hideAddNewRowPopup={hideAddNewRowPopup}
-              tableType={tableType}
-              darkMode={darkMode}
-              mergeToAddNewRowsDetails={mergeToAddNewRowsDetails}
-              onEvent={onEvent}
-              component={component}
-              setExposedVariable={setExposedVariable}
-              allColumns={allColumns}
-              defaultColumn={defaultColumn}
-              columns={columnsForAddNewRow}
-              addNewRowsDetails={tableDetails.addNewRowsDetails}
-              utilityForNestedNewRow={utilityForNestedNewRow}
-            />
-          )}
+          </div>
         </div>
       )}
-    </>
+
+      <div className="table-responsive jet-data-table">
+        <table
+          {...getTableProps()}
+          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
+            tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
+          }`}
+          style={computedStyles}
+        >
+          <thead>
+            {headerGroups.map((headerGroup, index) => (
+              <DragDropContext
+                key={index}
+                onDragStart={() => {
+                  currentColOrder.current = allColumns?.map((o) => o.id);
+                }}
+                onDragUpdate={(dragUpdateObj) => {
+                  const colOrder = [...currentColOrder.current];
+                  const sIndex = dragUpdateObj.source.index;
+                  const dIndex = dragUpdateObj.destination && dragUpdateObj.destination.index;
+
+                  if (typeof sIndex === 'number' && typeof dIndex === 'number') {
+                    colOrder.splice(sIndex, 1);
+                    colOrder.splice(dIndex, 0, dragUpdateObj.draggableId);
+                    setColumnOrder(colOrder);
+                  }
+                }}
+              >
+                <Droppable
+                  droppableId="droppable"
+                  direction="horizontal"
+                >
+                  {(droppableProvided, snapshot) => (
+                    <tr
+                      ref={droppableProvided.innerRef}
+                      key={index}
+                      {...headerGroup.getHeaderGroupProps()}
+                      tabIndex="0"
+                      className="tr"
+                    >
+                      {headerGroup.headers.map((column, index) => (
+                        <Draggable
+                          key={column.id}
+                          draggableId={column.id}
+                          index={index}
+                          isDragDisabled={!column.accessor}
+                        >
+                          {(provided, snapshot) => {
+                            return (
+                              <th
+                                key={index}
+                                {...column.getHeaderProps()}
+                                className={
+                                  column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
+                                }
+                              >
+                                <div
+                                  data-cy={`column-header-${String(column.exportValue)
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '-')}`}
+                                  {...column.getSortByToggleProps()}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  // {...extraProps}
+                                  ref={provided.innerRef}
+                                  style={{
+                                    ...getItemStyle(snapshot, provided.draggableProps.style),
+                                  }}
+                                >
+                                  {column.render('Header')}
+                                </div>
+                                <div
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                  draggable="true"
+                                  {...column.getResizerProps()}
+                                  className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+                                />
+                              </th>
+                            );
+                          }}
+                        </Draggable>
+                      ))}
+                    </tr>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            ))}
+          </thead>
+
+          {!loadingState && page.length === 0 && (
+            <center className="w-100">
+              <div className="py-5"> {t('widget.Table.noData', 'no data')} </div>
+            </center>
+          )}
+
+          {!loadingState && (
+            <tbody
+              {...getTableBodyProps()}
+              style={{ color: computeFontColor() }}
+            >
+              {page.map((row, index) => {
+                prepareRow(row);
+                return (
+                  <tr
+                    key={index}
+                    className={`table-row table-editor-component-row ${
+                      allowSelection &&
+                      highlightSelectedRow &&
+                      ((row.isSelected && row.id === tableDetails.selectedRowId) ||
+                        (showBulkSelector &&
+                          row.isSelected &&
+                          tableDetails?.selectedRowsDetails?.some((singleRow) => singleRow.selectedRowId === row.id)))
+                        ? 'selected'
+                        : ''
+                    }`}
+                    {...row.getRowProps()}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
+                      if (allowSelection) {
+                        await toggleRowSelected(row.id);
+                      }
+                      const selectedRow = row.original;
+                      const selectedRowId = row.id;
+                      setExposedVariables({ selectedRow, selectedRowId }).then(() => {
+                        mergeToTableDetails({ selectedRow, selectedRowId });
+                        fireEvent('onRowClicked');
+                      });
+                    }}
+                    onMouseOver={(e) => {
+                      if (hoverAdded) {
+                        const hoveredRowDetails = {
+                          hoveredRowId: row.id,
+                          hoveredRow: row.original,
+                        };
+                        setRowDetails(hoveredRowDetails);
+                        hoverRef.current = rowDetails?.hoveredRowId;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      hoverAdded && setRowDetails({ hoveredRowId: '', hoveredRow: '' });
+                    }}
+                  >
+                    {row.cells.map((cell, index) => {
+                      let cellProps = cell.getCellProps();
+                      if (tableDetails.changeSet) {
+                        if (tableDetails.changeSet[cell.row.index]) {
+                          const currentColumn = columnData.find((column) => column.id === cell.column.id);
+                          if (
+                            _.get(tableDetails.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
+                            undefined
+                          ) {
+                            cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
+                            cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
+                          }
+                        }
+                      }
+                      const wrapAction = textWrapActions(cell.column.id);
+                      const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
+                      const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
+                      const rowData = tableData[cell.row.index];
+                      const cellBackgroundColor = resolveReferences(
+                        cell.column?.cellBackgroundColor,
+                        currentState,
+                        '',
+                        {
+                          cellValue,
+                          rowData,
+                        }
+                      );
+                      const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
+                        cellValue,
+                        rowData,
+                      });
+                      const actionButtonsArray = actions.map((action) => {
+                        return {
+                          ...action,
+                          isDisabled: resolveReferences(action?.disableActionButton ?? false, currentState, '', {
+                            cellValue,
+                            rowData,
+                          }),
+                        };
+                      });
+                      const isEditable = resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
+                        cellValue,
+                        rowData,
+                      });
+                      return (
+                        // Does not require key as its already being passed by react-table via cellProps
+                        // eslint-disable-next-line react/jsx-key
+                        <td
+                          data-cy={`${cell.column.columnType ?? ''}${String(
+                            cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
+                          )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
+                          className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
+                            'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+                            'has-text': cell.column.columnType === 'text' || isEditable,
+                            'has-dropdown': cell.column.columnType === 'dropdown',
+                            'has-multiselect': cell.column.columnType === 'multiselect',
+                            'has-datepicker': cell.column.columnType === 'datepicker',
+                            'align-items-center flex-column': cell.column.columnType === 'selector',
+                            [cellSize]: true,
+                          })}
+                          {...cellProps}
+                          style={{
+                            ...cellProps.style,
+                            backgroundColor: cellBackgroundColor ?? 'inherit',
+                          }}
+                          onClick={(e) => {
+                            setExposedVariable('selectedCell', {
+                              columnName: cell.column.exportValue,
+                              columnKey: cell.column.key,
+                              value: cellValue,
+                            });
+                          }}
+                        >
+                          <div
+                            className={`td-container ${
+                              cell.column.columnType === 'image' && 'jet-table-image-column'
+                            } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
+                          >
+                            <GenerateEachCellValue
+                              cellValue={cellValue}
+                              globalFilter={state.globalFilter}
+                              cellRender={cell.render('Cell', {
+                                cell,
+                                actionButtonsArray,
+                                isEditable,
+                              })}
+                              rowChangeSet={rowChangeSet}
+                              isEditable={isEditable}
+                              columnType={cell.column.columnType}
+                              isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
+                              cellTextColor={cellTextColor}
+                              cell={cell}
+                              currentState={currentState}
+                            />
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          )}
+        </table>
+        {loadingState === true && (
+          <div
+            style={{ width: '100%' }}
+            className="p-2"
+          >
+            <center>
+              <div
+                className="spinner-border mt-5"
+                role="status"
+              ></div>
+            </center>
+          </div>
+        )}
+      </div>
+      {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
+        <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
+          <div className="table-footer row gx-0">
+            <div className="col">
+              {(clientSidePagination || serverSidePagination) && (
+                <Pagination
+                  lastActivePageIndex={pageIndex}
+                  serverSide={serverSidePagination}
+                  autoGotoPage={gotoPage}
+                  autoCanNextPage={canNextPage}
+                  autoPageCount={pageCount}
+                  autoPageOptions={pageOptions}
+                  onPageIndexChanged={onPageIndexChanged}
+                  pageIndex={paginationInternalPageIndex}
+                  setPageIndex={setPaginationInternalPageIndex}
+                  enableNextButton={enableNextButton}
+                  enablePrevButton={enablePrevButton}
+                />
+              )}
+            </div>
+            <div className="col d-flex justify-content-end">
+              {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
+                <>
+                  <button
+                    className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
+                    onClick={() =>
+                      onEvent('onBulkUpdate', { component }).then(() => {
+                        handleChangesSaved();
+                      })
+                    }
+                    data-cy={`table-button-save-changes`}
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    className="btn btn-light btn-sm"
+                    onClick={() => handleChangesDiscarded()}
+                    data-cy={`table-button-discard-changes`}
+                  >
+                    Discard changes
+                  </button>
+                </>
+              ) : (
+                <span data-cy={`footer-number-of-records`}>
+                  {clientSidePagination &&
+                    !serverSidePagination &&
+                    `${globalFilteredRows.length} ${t('widget.Table.records', 'Records')}`}
+                  {serverSidePagination && totalRecords
+                    ? `${totalRecords} ${t('widget.Table.records', 'Records')}`
+                    : ''}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {tableDetails.filterDetails.filtersVisible && (
+        <Filter
+          hideFilters={hideFilters}
+          filters={tableDetails.filterDetails.filters}
+          columns={columnData.map((column) => {
+            return { name: column.Header, value: column.id };
+          })}
+          mergeToFilterDetails={mergeToFilterDetails}
+          filterDetails={tableDetails.filterDetails}
+          darkMode={darkMode}
+          setAllFilters={setAllFilters}
+          fireEvent={fireEvent}
+        />
+      )}
+      {tableDetails.addNewRowsDetails.addingNewRows && (
+        <AddNewRowComponent
+          hideAddNewRowPopup={hideAddNewRowPopup}
+          tableType={tableType}
+          darkMode={darkMode}
+          mergeToAddNewRowsDetails={mergeToAddNewRowsDetails}
+          onEvent={onEvent}
+          component={component}
+          setExposedVariable={setExposedVariable}
+          allColumns={allColumns}
+          defaultColumn={defaultColumn}
+          columns={columnsForAddNewRow}
+          addNewRowsDetails={tableDetails.addNewRowsDetails}
+          utilityForNestedNewRow={utilityForNestedNewRow}
+        />
+      )}
+    </div>
   );
 }

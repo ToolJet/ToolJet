@@ -5,20 +5,6 @@ import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
 var tinycolor = require('tinycolor2');
 
-import config from 'config';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  Typography,
-} from '@mui/material';
-import { IconX } from '@tabler/icons-react';
-
 export const Modal = function Modal({
   id,
   component,
@@ -189,192 +175,80 @@ export const Modal = function Modal({
   }, [closeOnClickingOutside, parentRef]);
 
   return (
-    <>
-      {config.UI_LIB === 'tooljet' && (
-        <div
-          className="container"
-          data-disabled={disabledState}
-          data-cy={dataCy}
+    <div
+      className="container"
+      data-disabled={disabledState}
+      data-cy={dataCy}
+    >
+      {useDefaultButton && (
+        <button
+          disabled={disabledState}
+          className="jet-button btn btn-primary p-1 overflow-hidden"
+          style={customStyles.buttonStyles}
+          onClick={(event) => {
+            event.stopPropagation();
+            setShowModal(true);
+            setExposedVariable('show', true);
+          }}
+          data-cy={`${dataCy}-launch-button`}
         >
-          {useDefaultButton && (
-            <button
-              disabled={disabledState}
-              className="jet-button btn btn-primary p-1 overflow-hidden"
-              style={customStyles.buttonStyles}
-              onClick={(event) => {
-                event.stopPropagation();
-                setShowModal(true);
-                setExposedVariable('show', true);
-              }}
-              data-cy={`${dataCy}-launch-button`}
-            >
-              {triggerButtonLabel ?? 'Show Modal'}
-            </button>
-          )}
-
-          <Modal.Component
-            show={showModal}
-            contentClassName="modal-component"
-            container={document.getElementsByClassName('canvas-area')[0]}
-            size={size}
-            keyboard={true}
-            enforceFocus={false}
-            animation={false}
-            onEscapeKeyDown={() => hideOnEsc && hideModal()}
-            id="modal-container"
-            backdrop={'static'}
-            scrollable={true}
-            modalProps={{
-              customStyles,
-              parentRef,
-              id,
-              title,
-              hideTitleBar,
-              hideCloseButton,
-              hideModal,
-              component,
-              showConfigHandler: containerProps.mode === 'edit',
-              removeComponent: containerProps.removeComponent,
-              setSelected: containerProps.setSelectedComponent,
-            }}
-          >
-            {!loadingState ? (
-              <>
-                <SubContainer
-                  parent={id}
-                  {...containerProps}
-                  parentRef={parentRef}
-                  parentComponent={component}
-                />
-                <SubCustomDragLayer
-                  snapToGrid={true}
-                  parentRef={parentRef}
-                  parent={id}
-                  currentLayout={containerProps.currentLayout}
-                />
-              </>
-            ) : (
-              <div className="p-2">
-                <center>
-                  <div
-                    className="spinner-border mt-5"
-                    role="status"
-                  ></div>
-                </center>
-              </div>
-            )}
-          </Modal.Component>
-        </div>
+          {triggerButtonLabel ?? 'Show Modal'}
+        </button>
       )}
 
-      {config.UI_LIB === 'mui' && (
-        <>
-          {useDefaultButton && (
-            <Button
-              variant="contained"
-              disabled={disabledState}
-              size="small"
-              onClick={(event) => {
-                event.stopPropagation();
-                setShowModal(true);
-                setExposedVariable('show', true);
-              }}
-              sx={{
-                backgroundColor: triggerButtonBackgroundColor,
-                color: triggerButtonTextColor,
-                width: '100%',
-                display: visibility ? '' : 'none',
-                '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
-                boxShadow,
-              }}
-            >
-              {triggerButtonLabel ?? 'Show Modal'}
-            </Button>
-          )}
-
-          <Dialog
-            open={showModal}
-            fullWidth
-            maxWidth={size}
-            disableEnforceFocus
-            disableEscapeKeyDown={!hideOnEsc}
-            onClose={(e, reason) => {
-              if (reason === 'backdropClick') {
-                if (closeOnClickingOutside) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  hideModal();
-                }
-              } else {
-                e.preventDefault();
-                e.stopPropagation();
-                hideModal();
-              }
-            }}
-            container={document.getElementsByClassName('canvas-area')[0]}
-          >
-            {!hideTitleBar && (
-              <DialogTitle
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  backgroundColor:
-                    ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode
-                      ? '#1F2837'
-                      : headerBackgroundColor,
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  sx={{
-                    color:
-                      ['#000', '#000000', '#000000ff'].includes(headerTextColor) && darkMode ? '#fff' : headerTextColor,
-                  }}
-                >
-                  {title}
-                </Typography>
-                {!hideCloseButton && (
-                  <IconButton
-                    color="primary"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      hideModal();
-                    }}
-                  >
-                    <IconX />
-                  </IconButton>
-                )}
-              </DialogTitle>
-            )}
-            <Divider color="secondary" />
-            <DialogContent
-              sx={{
-                height: backwardCompatibilityCheck ? modalHeight : height,
-                backgroundColor:
-                  ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
-                overflowX: 'hidden',
-                overflowY: 'auto',
-              }}
-            >
-              <Box>
-                {loadingState && (
-                  <Box
-                    width="100%"
-                    height="100%"
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <CircularProgress size={50} />
-                  </Box>
-                )}
-              </Box>
-            </DialogContent>
-          </Dialog>
-        </>
-      )}
-    </>
+      <Modal.Component
+        show={showModal}
+        contentClassName="modal-component"
+        container={document.getElementsByClassName('canvas-area')[0]}
+        size={size}
+        keyboard={true}
+        enforceFocus={false}
+        animation={false}
+        onEscapeKeyDown={() => hideOnEsc && hideModal()}
+        id="modal-container"
+        backdrop={'static'}
+        scrollable={true}
+        modalProps={{
+          customStyles,
+          parentRef,
+          id,
+          title,
+          hideTitleBar,
+          hideCloseButton,
+          hideModal,
+          component,
+          showConfigHandler: containerProps.mode === 'edit',
+          removeComponent: containerProps.removeComponent,
+          setSelected: containerProps.setSelectedComponent,
+        }}
+      >
+        {!loadingState ? (
+          <>
+            <SubContainer
+              parent={id}
+              {...containerProps}
+              parentRef={parentRef}
+              parentComponent={component}
+            />
+            <SubCustomDragLayer
+              snapToGrid={true}
+              parentRef={parentRef}
+              parent={id}
+              currentLayout={containerProps.currentLayout}
+            />
+          </>
+        ) : (
+          <div className="p-2">
+            <center>
+              <div
+                className="spinner-border mt-5"
+                role="status"
+              ></div>
+            </center>
+          </div>
+        )}
+      </Modal.Component>
+    </div>
   );
 };
 

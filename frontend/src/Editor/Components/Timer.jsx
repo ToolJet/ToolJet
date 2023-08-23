@@ -1,9 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import config from 'config';
-import { Button } from '@mui/material';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import PauseIcon from '@mui/icons-material/Pause';
 
 export const Timer = function Timer({ height, properties = {}, styles, setExposedVariable, fireEvent, dataCy }) {
   const getTimeObj = ({ HH, MM, SS, MS }) => {
@@ -150,111 +145,51 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   };
 
   return (
-    <>
-      {config.UI_LIB === 'tooljet' && (
-        <div
-          className="card"
-          style={{ height, display: styles.visibility ? '' : 'none', boxShadow: styles.boxShadow }}
-          data-cy={dataCy}
-        >
-          <div className="timer-wrapper">
-            <div className="counter-container">
-              {`${prependZero(time.hour)}:${prependZero(time.minute)}:${prependZero(time.second)}:${prependZero(
-                time.mSecond,
-                2
-              )}`}
-            </div>
-            <div className="btn-list justify-content-end">
-              {state === 'initial' && (
-                <a
-                  className={`btn btn-primary${styles.disabledState || isStartDisabled() ? ' disabled' : ''}`}
-                  onClick={() => onStart()}
-                >
-                  Start
-                </a>
-              )}
-              {state === 'running' && (
-                <a
-                  className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`}
-                  onClick={onPause}
-                >
-                  Pause
-                </a>
-              )}
-              {state === 'paused' && (
-                <a
-                  className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`}
-                  onClick={onResume}
-                >
-                  Resume
-                </a>
-              )}
-              <a
-                className={`btn${styles.disabledState ? ' disabled' : ''}`}
-                onClick={onReset}
-              >
-                Reset
-              </a>
-            </div>
-          </div>
+    <div
+      className="card"
+      style={{ height, display: styles.visibility ? '' : 'none', boxShadow: styles.boxShadow }}
+      data-cy={dataCy}
+    >
+      <div className="timer-wrapper">
+        <div className="counter-container">
+          {`${prependZero(time.hour)}:${prependZero(time.minute)}:${prependZero(time.second)}:${prependZero(
+            time.mSecond,
+            2
+          )}`}
         </div>
-      )}
-      {config.UI_LIB === 'mui' && (
-        <div
-          className="card"
-          style={{ height, display: styles.visibility ? '' : 'none', boxShadow: styles.boxShadow }}
-          data-cy={dataCy}
-        >
-          <div className="timer-wrapper">
-            <div className="counter-container">
-              {`${prependZero(time.hour)}:${prependZero(time.minute)}:${prependZero(time.second)}:${prependZero(
-                time.mSecond,
-                2
-              )}`}
-            </div>
-            <div className="btn-list justify-content-end">
-              {state === 'initial' && (
-                <Button
-                  disabled={styles.disabledState}
-                  variant="contained"
-                  onClick={() => onStart()}
-                  startIcon={<PlayCircleOutlineIcon />}
-                >
-                  Start
-                </Button>
-              )}
-              {state === 'running' && (
-                <Button
-                  disabled={styles.disabledState}
-                  variant="contained"
-                  onClick={onPause}
-                  startIcon={<PauseIcon />}
-                >
-                  Pause
-                </Button>
-              )}
-              {state === 'paused' && (
-                <Button
-                  disabled={styles.disabledState}
-                  variant="contained"
-                  onClick={onResume}
-                  startIcon={<PlayCircleOutlineIcon />}
-                >
-                  Resume
-                </Button>
-              )}
-              <Button
-                disabled={styles.disabledState}
-                variant="outlined"
-                onClick={onReset}
-                startIcon={<RestartAltIcon />}
-              >
-                Reset
-              </Button>
-            </div>
-          </div>
+        <div className="btn-list justify-content-end">
+          {state === 'initial' && (
+            <a
+              className={`btn btn-primary${styles.disabledState || isStartDisabled() ? ' disabled' : ''}`}
+              onClick={() => onStart()}
+            >
+              Start
+            </a>
+          )}
+          {state === 'running' && (
+            <a
+              className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`}
+              onClick={onPause}
+            >
+              Pause
+            </a>
+          )}
+          {state === 'paused' && (
+            <a
+              className={`btn btn-outline-primary${styles.disabledState ? ' disabled' : ''}`}
+              onClick={onResume}
+            >
+              Resume
+            </a>
+          )}
+          <a
+            className={`btn${styles.disabledState ? ' disabled' : ''}`}
+            onClick={onReset}
+          >
+            Reset
+          </a>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 };

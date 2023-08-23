@@ -1,7 +1,4 @@
 import React, { useEffect } from 'react';
-import config from 'config';
-import { FormControlLabel } from '@mui/material';
-import SwitchMUI from '@mui/material/Switch';
 
 class Switch extends React.Component {
   render() {
@@ -51,61 +48,26 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
   const toggle = () => setOn(!on);
 
   return (
-    <>
-      {config.UI_LIB === 'tooljet' && (
-        <div
-          className="row py-1"
-          style={{ height, display: visibility ? '' : 'none', boxShadow }}
-          data-cy={dataCy}
-        >
-          <span
-            className="form-check-label form-check-label col-auto my-auto"
-            style={{ color: textColor }}
-          >
-            {label}
-          </span>
-          <div className="col px-1 py-0 mt-0">
-            <Switch
-              disabledState={disabledState}
-              on={on}
-              onClick={toggle}
-              onChange={toggleValue}
-              color={toggleSwitchColor}
-            />
-          </div>
-        </div>
-      )}
-      {config.UI_LIB === 'mui' && (
-        <FormControlLabel
-          className="form-check-label form-check-label col-auto my-auto"
-          sx={{ width: '100%' }}
-          control={
-            <SwitchMUI
-              checked={on}
-              onClick={toggle}
-              onChange={toggleValue}
-              disabled={disabledState}
-              sx={{
-                '& .MuiSwitch-switchBase': {
-                  '&.Mui-checked': {
-                    color: 'white',
-                    '& + .MuiSwitch-track': {
-                      backgroundColor: toggleSwitchColor,
-                      opacity: 1,
-                      border: 0,
-                    },
-                    '&.Mui-disabled + .MuiSwitch-track': {
-                      opacity: 0.5,
-                    },
-                  },
-                },
-              }}
-            />
-          }
-          label={label}
-          style={{ color: textColor, height, display: visibility ? '' : 'none', boxShadow }}
+    <div
+      className="row py-1"
+      style={{ height, display: visibility ? '' : 'none', boxShadow }}
+      data-cy={dataCy}
+    >
+      <span
+        className="form-check-label form-check-label col-auto my-auto"
+        style={{ color: textColor }}
+      >
+        {label}
+      </span>
+      <div className="col px-1 py-0 mt-0">
+        <Switch
+          disabledState={disabledState}
+          on={on}
+          onClick={toggle}
+          onChange={toggleValue}
+          color={toggleSwitchColor}
         />
-      )}
-    </>
+      </div>
+    </div>
   );
 };

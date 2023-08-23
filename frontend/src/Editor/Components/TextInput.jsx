@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import config from 'config';
-import { TextField } from '@mui/material';
 
 export const TextInput = function TextInput({
   height,
@@ -81,109 +79,49 @@ export const TextInput = function TextInput({
   );
 
   return (
-    <>
-      {config.UI_LIB === 'tooljet' && (
-        <div
-          data-disabled={disable}
-          className={`text-input ${visibility || 'invisible'}`}
-        >
-          <input
-            ref={textInputRef}
-            onKeyUp={(e) => {
-              if (e.key == 'Enter') {
-                setValue(e.target.value);
-                setExposedVariable('value', e.target.value).then(() => {
-                  fireEvent('onEnterPressed');
-                });
-              }
-            }}
-            onChange={(e) => {
-              setValue(e.target.value);
-              setExposedVariable('value', e.target.value);
-              fireEvent('onChange');
-            }}
-            onBlur={(e) => {
-              e.stopPropagation();
-              fireEvent('onBlur');
-            }}
-            onFocus={(e) => {
-              e.stopPropagation();
-              fireEvent('onFocus');
-            }}
-            type="text"
-            className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-              darkMode && 'dark-theme-placeholder'
-            }`}
-            placeholder={properties.placeholder}
-            style={computedStyles}
-            value={value}
-            data-cy={dataCy}
-          />
-          <div
-            className="invalid-feedback"
-            data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-            style={{ color: styles.errTextColor }}
-          >
-            {validationError}
-          </div>
-        </div>
-      )}
-      {config.UI_LIB === 'mui' && (
-        <TextField
-          multiline
-          size="small"
-          helperText={validationError}
-          className={`text-input ${visibility || 'invisible'}`}
-          sx={{
-            width: '100%',
-            minWidth: '38px',
-            '& .MuiFormHelperText-root': {
-              color: styles.errTextColor,
-            },
-            '& .MuiInputLabel-root': {
-              color: styles.borderColor,
-            },
-            '& .MuiOutlinedInput-root': {
-              height,
-              minHeight: '38px',
-              borderRadius: `${styles.borderRadius}px`,
-              color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
-              backgroundColor:
-                darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
-              boxShadow: styles.boxShadow,
-            },
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: styles.borderColor,
-            },
-          }}
-          id={textInputRef}
-          onKeyUp={(e) => {
-            if (e.key == 'Enter') {
-              setValue(e.target.value);
-              setExposedVariable('value', e.target.value).then(() => {
-                fireEvent('onEnterPressed');
-              });
-            }
-          }}
-          onChange={(e) => {
+    <div
+      data-disabled={disable}
+      className={`text-input ${visibility || 'invisible'}`}
+    >
+      <input
+        ref={textInputRef}
+        onKeyUp={(e) => {
+          if (e.key == 'Enter') {
             setValue(e.target.value);
-            setExposedVariable('value', e.target.value);
-            fireEvent('onChange');
-          }}
-          onBlur={(e) => {
-            e.stopPropagation();
-            fireEvent('onBlur');
-          }}
-          onFocus={(e) => {
-            e.stopPropagation();
-            fireEvent('onFocus');
-          }}
-          type="text"
-          value={value}
-          label={properties.placeholder}
-          variant="outlined"
-        />
-      )}
-    </>
+            setExposedVariable('value', e.target.value).then(() => {
+              fireEvent('onEnterPressed');
+            });
+          }
+        }}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setExposedVariable('value', e.target.value);
+          fireEvent('onChange');
+        }}
+        onBlur={(e) => {
+          e.stopPropagation();
+          fireEvent('onBlur');
+        }}
+        onFocus={(e) => {
+          e.stopPropagation();
+          fireEvent('onFocus');
+        }}
+        type="text"
+        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+          darkMode && 'dark-theme-placeholder'
+        }`}
+        placeholder={properties.placeholder}
+        style={computedStyles}
+        value={value}
+        data-cy={dataCy}
+      />
+      <div
+        className="invalid-feedback"
+        data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+        style={{ color: styles.errTextColor }}
+      >
+        {validationError}
+      </div>
+    </div>
   );
 };
