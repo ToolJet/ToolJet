@@ -43,7 +43,9 @@ let localizeMessage = (message) => {
   if (!config.LANGUAGE || config.LANGUAGE == 'en') return message;
   const replaceMessage = MESSAGES.find((m) => new RegExp(m.en).test(message));
   if (!replaceMessage) return message;
-  return message.replace(new RegExp(replaceMessage.en), replaceMessage[config.LANGUAGE]);
+  const language = config.LANGUAGE.split(':');
+  const lang = language[language.length - 1];
+  return message.replace(new RegExp(replaceMessage.en), replaceMessage[lang]);
 };
 
 export { localizeMessage };

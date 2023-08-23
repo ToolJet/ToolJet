@@ -97,7 +97,6 @@ export const Datepicker = function Datepicker({
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
       <DateTimePicker
-        label="Seleccione Fecha"
         format={selectedDateFormat}
         views={!enableTime ? ['year', 'month', 'day'] : undefined}
         disableOpenPicker={!enableDate}

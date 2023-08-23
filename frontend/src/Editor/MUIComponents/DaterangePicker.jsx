@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import moment from 'moment';
-import config from 'config';
 import { Box } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers-pro';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
@@ -49,8 +48,8 @@ export const DaterangePicker = function DaterangePicker({
             value={value}
             onChange={(newValue) => setValue(newValue)}
             localeText={{
-              start: t('widget.DateRangePicker.description', 'Start'),
-              end: '',
+              start: t('globals.start', 'Start'),
+              end: 'Fin',
             }}
             sx={{
               '& .MuiOutlinedInput-root': {

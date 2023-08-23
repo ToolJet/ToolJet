@@ -8,7 +8,7 @@ import { CodeEditor } from '../Components/CodeEditor';
 import { ColorPicker } from '../Components/ColorPicker';
 import { Container } from '../Components/Container';
 import { Datepicker } from './Datepicker';
-import { DaterangePicker } from '../Components/DaterangePicker';
+import { DaterangePicker } from './DaterangePicker';
 import { Divider } from './Divider';
 import { DropDown } from './DropDown';
 import { FilePicker } from './FilePicker';

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 import _ from 'lodash';
-import config from 'config';
 import MUIButton from '@mui/material/Button';
 import MUIButtonGroup from '@mui/material/ButtonGroup';
 
