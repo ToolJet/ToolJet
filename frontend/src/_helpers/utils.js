@@ -899,7 +899,7 @@ export const validateAppName = (name, showError = false) => {
       });
   }
   return {
-    status: errorMsg.length > 0,
+    status: !(errorMsg.length > 0),
     errorMsg,
   };
 };

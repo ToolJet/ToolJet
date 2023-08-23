@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ToolTip } from '@/_components';
 import { appService } from '@/_services';
-import { handleHttpErrorMessages, validateAppName } from '@/_helpers/utils';
+import { handleHttpErrorMessages, validateAppName, validateName } from '@/_helpers/utils';
 import InfoOrErrorBox from './InfoOrErrorBox';
 import { toast } from 'react-hot-toast';
 
@@ -32,10 +32,9 @@ function EditAppName({ appId, appName, onNameChanged }) {
 
   const saveAppName = async (newName) => {
     const trimmedName = newName.trim();
-    if (validateAppName(trimmedName).errorMsg) {
+    if (validateName(trimmedName, 'App name', true)?.errorMsg) {
       setName(appName);
       clearError();
-      toast.error('App name could not be updated. Please try again!');
       setIsEditing(false);
       return;
     }

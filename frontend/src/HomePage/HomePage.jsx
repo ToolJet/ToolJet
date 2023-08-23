@@ -548,6 +548,7 @@ class HomePageComponent extends React.Component {
               show={() => this.setState({ showCreateAppModal: true })}
               title={'Create app'}
               actionButton={'+ Create app'}
+              actionLoadingButton={'Creating'}
             />
           )}
           {showCloneAppModal && (
@@ -559,6 +560,7 @@ class HomePageComponent extends React.Component {
               selectedAppName={appOperations?.selectedApp?.name}
               title={'Clone app'}
               actionButton={'Clone app'}
+              actionLoadingButton={'Cloning'}
             />
           )}
           {showImportAppModal && (
@@ -569,6 +571,7 @@ class HomePageComponent extends React.Component {
               show={() => this.setState({ showImportAppModal: true })}
               title={'Import app'}
               actionButton={'Import app'}
+              actionLoadingButton={'Importing'}
             />
           )}
           {showCreateAppFromTemplateModal && (
@@ -579,6 +582,7 @@ class HomePageComponent extends React.Component {
               closeModal={this.closeCreateAppFromTemplateModal}
               title={'Create new app from template'}
               actionButton={'+ Create app'}
+              actionLoadingButton={'Creating'}
             />
           )}
           {showRenameAppModal && (
@@ -590,6 +594,7 @@ class HomePageComponent extends React.Component {
               selectedAppName={appOperations.selectedApp.name}
               title={'Rename app'}
               actionButton={'Rename app'}
+              actionLoadingButton={'Renaming'}
             />
           )}
           <ConfirmDialog

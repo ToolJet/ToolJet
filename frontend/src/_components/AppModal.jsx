@@ -15,6 +15,7 @@ export function AppModal({
   selectedAppName = null,
   title,
   actionButton,
+  actionLoadingButton,
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
@@ -134,7 +135,7 @@ export function AppModal({
             Cancel
           </ButtonSolid>
           <ButtonSolid onClick={(e) => handleAction(e)} data-cy={actionButton} disabled={createBtnDisableState}>
-            {isLoading ? 'Creating...' : actionButton}
+            {isLoading ? actionLoadingButton : actionButton}
           </ButtonSolid>
         </>
       }
