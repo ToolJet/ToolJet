@@ -25,7 +25,7 @@ This introductory guide will help you understand the basics of ToolJet Workflows
 All data sources that are configured in **Global Datasources** will be available in Workflows.
 :::
 
-To create a new workflow, click on the workflow icon in the left sidebar and click on the **Create New Workflow** button. You'll be taken to a fresh instance of a workflow. Let's start by renaming the workflow to *Quickstart Guide*. 
+To create a new workflow, click on the workflow icon in the left sidebar and click on the **Create New Workflow** button. You'll be taken to the flow builder with a fresh instance of a workflow. Let's start by renaming the workflow to *Quickstart Guide*. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/create-new-workflow.gif" alt="Create New Workflow" />
