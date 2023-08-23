@@ -17,7 +17,7 @@ export class AppConfigService {
     const publicConfigVars = { ...instanceConfigs, ...Object.fromEntries(mapEntries) };
 
     if (publicConfigVars?.ENABLE_WORKFLOWS_FEATURE === undefined) {
-      publicConfigVars.ENABLE_WORKFLOWS_FEATURE = 'false';
+      publicConfigVars.ENABLE_WORKFLOWS_FEATURE = 'true';
     }
     return publicConfigVars;
   }
