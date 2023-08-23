@@ -26,7 +26,7 @@ const initialState = {
 
 export const useAppDataStore = create(
   zustandDevTools(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       actions: {
         updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
@@ -44,6 +44,54 @@ export const useAppDataStore = create(
             isUserSwitchedVersion
           );
         },
+        updateAppVersionEventHandlers: async (events) => {
+          const appId = get().appId;
+          const versionId = get().currentVersionId;
+
+          const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events);
+
+          const updatedEvents = get().events;
+
+          updatedEvents.forEach((e, index) => {
+            if (e.id === response[index].id) {
+              updatedEvents[index] = response[index];
+            }
+          });
+
+          console.log('----arpit should update events store', { updatedEvents, response });
+
+          set(() => ({ events: updatedEvents }));
+        },
+
+        createAppVersionEventHandlers: async (event) => {
+          const appId = get().appId;
+          const versionId = get().currentVersionId;
+
+          const updatedEvents = get().events;
+          const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
+          updatedEvents.push(response);
+
+          set(() => ({ events: updatedEvents }));
+        },
+
+        deleteAppVersionEventHandler: async (eventId) => {
+          const appId = get().appId;
+          const versionId = get().currentVersionId;
+
+          const updatedEvents = get().events;
+
+          const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
+
+          if (response?.affected === 1) {
+            updatedEvents.splice(
+              updatedEvents.findIndex((e) => e.id === eventId),
+              1
+            );
+
+            set(() => ({ events: updatedEvents }));
+          }
+        },
+
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
       },
@@ -58,3 +106,9 @@ export const useUpdateEditingVersion = () => useAppDataStore((state) => state.ac
 export const useCurrentUser = () => useAppDataStore((state) => state.currentUser);
 export const useAppInfo = () => useAppDataStore((state) => state);
 export const useAppDataActions = () => useAppDataStore((state) => state.actions);
+
+// if (operation === 'delete') {
+//   const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
+//   const updatedEvents = get().events.filter((e) => e.id !== response.id);
+//   set(() => ({ events: updatedEvents }));
+// }

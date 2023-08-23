@@ -327,7 +327,9 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return this.eventService.createEvent(body, versionId);
+    const { event } = body;
+
+    return this.eventService.createEvent(event, versionId);
   }
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
@@ -345,8 +347,25 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    console.log('-----arpit update events', { body });
+    return await this.eventService.updateEvent(body?.events);
+  }
 
-    // return await this.eventService.updateEvent(body, versionId);
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Delete(':id/versions/:versionId/events/:eventId')
+  async deleteEvents(@User() user, @Param('id') id, @Param('versionId') versionId, @Param('eventId') eventId) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return await this.eventService.deleteEvent(eventId);
   }
 }

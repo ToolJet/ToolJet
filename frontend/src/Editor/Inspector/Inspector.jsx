@@ -196,49 +196,49 @@ export const Inspector = ({
     }
   }
 
-  function eventUpdated(event, actionId) {
-    let newDefinition = JSON.parse(JSON.stringify(component.component.definition));
-    newDefinition.events[event.name] = { actionId };
+  // function eventUpdated(event, actionId) {
+  //   let newDefinition = JSON.parse(JSON.stringify(component.component.definition));
+  //   newDefinition.events[event.name] = { actionId };
 
-    let newComponent = {
-      ...component,
-    };
+  //   let newComponent = {
+  //     ...component,
+  //   };
 
-    componentDefinitionChanged(newComponent, { eventUpdated: true });
-  }
+  //   // componentDefinitionChanged(newComponent, { eventUpdated: true });
+  // }
 
-  function eventsChanged(newEvents, isReordered = false, isNew = false) {
-    let newComponent = JSON.parse(JSON.stringify(component));
-    let newDefinition = JSON.parse(JSON.stringify(newComponent.component.definition));
+  // function eventsChanged(newEvents, isReordered = false, isNew = false) {
+  //   let newComponent = JSON.parse(JSON.stringify(component));
+  //   let newDefinition = JSON.parse(JSON.stringify(newComponent.component.definition));
 
-    newDefinition.events = newEvents;
+  //   newDefinition.events = newEvents;
 
-    newComponent.component.definition = newDefinition;
+  //   newComponent.component.definition = newDefinition;
 
-    const opts = {
-      componentsEventsChanged: true,
-    };
+  //   // const opts = {
+  //   //   componentsEventsChanged: true,
+  //   // };
 
-    if (isReordered) opts.eventsReOrdered = true;
-    if (isNew) opts.newEvent = true;
+  //   // if (isReordered) opts.eventsReOrdered = true;
+  //   // if (isNew) opts.newEvent = true;
 
-    componentDefinitionChanged(newComponent, opts);
-  }
+  //   // componentDefinitionChanged(newComponent, opts);
+  // }
 
-  function eventOptionUpdated(event, option, value) {
-    console.log('eventOptionUpdated', event, option, value);
+  // function eventOptionUpdated(event, option, value) {
+  //   console.log('eventOptionUpdated--moh', event, option, value);
 
-    let newDefinition = JSON.parse(JSON.stringify(component.component.definition));
-    let eventDefinition = newDefinition.events[event.name] || { options: {} };
+  //   let newDefinition = JSON.parse(JSON.stringify(component.component.definition));
+  //   let eventDefinition = newDefinition.events[event.name] || { options: {} };
 
-    newDefinition.events[event.name] = { ...eventDefinition, options: { ...eventDefinition.options, [option]: value } };
+  //   newDefinition.events[event.name] = { ...eventDefinition, options: { ...eventDefinition.options, [option]: value } };
 
-    let newComponent = {
-      ...component,
-    };
+  //   let newComponent = {
+  //     ...component,
+  //   };
 
-    componentDefinitionChanged(newComponent, { eventOptionUpdated: true });
-  }
+  //   componentDefinitionChanged(newComponent, { eventOptionUpdated: true });
+  // }
 
   const buildGeneralStyle = () => {
     const items = [];
@@ -273,12 +273,12 @@ export const Inspector = ({
       paramUpdated={paramUpdated}
       dataQueries={dataQueries}
       componentMeta={componentMeta}
-      eventUpdated={eventUpdated}
-      eventOptionUpdated={eventOptionUpdated}
+      // eventUpdated={eventUpdated}
+      // eventOptionUpdated={eventOptionUpdated}
       components={allComponents}
       currentState={currentState}
       darkMode={darkMode}
-      eventsChanged={eventsChanged}
+      // eventsChanged={eventsChanged}
       pages={pages}
       allComponents={allComponents}
     />

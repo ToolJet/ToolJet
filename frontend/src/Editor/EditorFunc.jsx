@@ -494,7 +494,7 @@ const EditorComponent = (props) => {
   };
 
   //! Needs attention
-  const handleEvent = (eventName, options) => onEvent(editorRef, eventName, options, 'edit');
+  const handleEvent = (eventName, event, options) => onEvent(editorRef, eventName, event, options, 'edit');
 
   const handleRunQuery = (queryId, queryName) => runQuery(editorRef, queryId, queryName);
 
@@ -649,6 +649,7 @@ const EditorComponent = (props) => {
         userId: data?.user_id,
         appId: data?.id,
         events: data.events,
+        currentVersionId: data?.editing_version?.id,
       });
 
       await fetchDataSources(data.editing_version?.id);

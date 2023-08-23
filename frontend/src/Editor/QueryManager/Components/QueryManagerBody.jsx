@@ -186,9 +186,12 @@ export const QueryManagerBody = ({
         <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
         <div className="query-manager-events pb-4 flex-grow-1">
           <EventManager
+            //!Query events
             eventsChanged={eventsChanged}
             component={queryComponent.component}
-            componentMeta={queryComponent.componentMeta}
+            sourceId={selectedQuery?.id}
+            eventSourceType="data_query"
+            eventMetaDefinition={queryComponent.componentMeta}
             currentState={currentState}
             components={allComponents}
             callerQueryId={selectedQueryId}

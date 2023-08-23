@@ -314,12 +314,11 @@ export async function runTransformation(
   }
 }
 
-export async function executeActionsForEventId(_ref, eventId, component, mode, customVariables) {
-  const events = component?.definition?.events || [];
-  const filteredEvents = events.filter((event) => event.eventId === eventId);
+export async function executeActionsForEventId(_ref, eventId, events = [], mode, customVariables) {
+  const filteredEvents = events.filter((event) => event?.event.eventId === eventId);
 
   for (const event of filteredEvents) {
-    await executeAction(_ref, event, mode, customVariables); // skipcq: JS-0032
+    await executeAction(_ref, event.event, mode, customVariables); // skipcq: JS-0032
   }
 }
 
@@ -584,12 +583,12 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
   }
 }
 
-export async function onEvent(_ref, eventName, options, mode = 'edit') {
+export async function onEvent(_ref, eventName, events, options = {}, mode = 'edit') {
   let _self = _ref;
 
   const { customVariables } = options;
   if (eventName === 'onPageLoad') {
-    await executeActionsForEventId(_ref, 'onPageLoad', { definition: { events: [options] } }, mode, customVariables);
+    await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
   }
 
   if (eventName === 'onTrigger') {
@@ -616,7 +615,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
     });
-    executeActionsForEventId(_ref, 'onCalendarEventSelect', component, mode, customVariables);
+    executeActionsForEventId(_ref, 'onCalendarEventSelect', events, mode, customVariables);
   }
 
   if (eventName === 'onCalendarSlotSelect') {
@@ -630,7 +629,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
     });
-    executeActionsForEventId(_ref, 'onCalendarSlotSelect', component, mode, customVariables);
+    executeActionsForEventId(_ref, 'onCalendarSlotSelect', events, mode, customVariables);
   }
 
   if (eventName === 'onTableActionButtonClicked') {
@@ -734,18 +733,15 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onNewRowsAdded',
     ].includes(eventName)
   ) {
-    const { component } = options;
-    executeActionsForEventId(_ref, eventName, component, mode, customVariables);
+    executeActionsForEventId(_ref, eventName, events, mode, customVariables);
   }
 
   if (eventName === 'onBulkUpdate') {
-    onComponentOptionChanged(options.component, 'isSavingChanges', true);
-    await executeActionsForEventId(_self, eventName, options.component, mode, customVariables);
-    onComponentOptionChanged(options.component, 'isSavingChanges', false);
+    await executeActionsForEventId(_self, eventName, events, mode, customVariables);
   }
 
   if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
-    await executeActionsForEventId(_self, eventName, options, mode, customVariables);
+    await executeActionsForEventId(_self, eventName, events, mode, customVariables);
   }
 }
 
@@ -1007,9 +1003,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             },
           });
           resolve(data);
-          onEvent(_self, 'onDataQueryFailure', {
-            definition: { events: dataQuery.options.events },
-          });
+          onEvent(_self, 'onDataQueryFailure', dataQuery.options.events);
           if (mode !== 'view') {
             const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
             toast.error(err?.message);
@@ -1047,9 +1041,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 },
               });
               resolve(finalData);
-              onEvent(_self, 'onDataQueryFailure', {
-                definition: { events: dataQuery.options.events },
-              });
+              onEvent(_self, 'onDataQueryFailure', dataQuery.options.events);
               return;
             }
           }
@@ -1088,7 +1080,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             },
           });
           resolve({ status: 'ok', data: finalData });
-          onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+          onEvent(_self, 'onDataQuerySuccess', dataQuery.options.events, mode);
         }
       })
       .catch(({ error }) => {

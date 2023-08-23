@@ -67,6 +67,7 @@ import _ from 'lodash';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import { useAppInfo } from '@/_stores/appDataStore';
 
 const AllComponents = {
   Button,
@@ -163,6 +164,8 @@ export const Box = function Box({
     };
   }
 
+  const { events } = useAppInfo();
+
   const componentMeta = useMemo(() => {
     return componentTypes.find((comp) => component.component === comp.component);
   }, [component]);
@@ -258,7 +261,10 @@ export const Box = function Box({
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
-    onEvent(eventName, { ...options, customVariables: { ...customResolvables }, component });
+
+    const componentEvents = events.filter((event) => event.sourceId === id);
+
+    onEvent(eventName, componentEvents, { ...options, customVariables: { ...customResolvables } });
   };
   const validate = (value) =>
     validateWidget({

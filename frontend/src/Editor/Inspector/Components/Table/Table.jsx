@@ -430,6 +430,7 @@ class TableComponent extends React.Component {
                 />
               </div>
               <EventManager
+                //!have to check
                 component={{
                   component: {
                     definition: {
@@ -437,8 +438,10 @@ class TableComponent extends React.Component {
                     },
                   },
                 }}
+                sourceId={this.props?.component?.id}
+                eventSourceType="component"
                 hideEmptyEventsAlert={true}
-                componentMeta={{ events: { onChange: { displayName: 'On change' } } }}
+                eventMetaDefinition={{ events: { onChange: { displayName: 'On change' } } }}
                 currentState={this.props.currentState}
                 dataQueries={this.props.dataQueries}
                 components={this.props.components}
@@ -796,8 +799,11 @@ class TableComponent extends React.Component {
             paramType="properties"
           />
           <EventManager
+            //!have to check
             component={dummyComponentForActionButton}
-            componentMeta={{ events: { onClick: { displayName: 'On click' } } }}
+            sourceId={this.props?.component?.id}
+            eventSourceType="component"
+            eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
             currentState={this.state.currentState}
             dataQueries={this.props.dataQueries}
             components={this.props.components}
@@ -1143,8 +1149,11 @@ class TableComponent extends React.Component {
       isOpen: true,
       children: (
         <EventManager
+          //!have to check
           component={component}
-          componentMeta={componentMeta}
+          sourceId={this.props?.component?.id}
+          eventSourceType="component"
+          eventMetaDefinition={componentMeta}
           currentState={currentState}
           dataQueries={dataQueries}
           components={components}
