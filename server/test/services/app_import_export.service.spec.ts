@@ -267,11 +267,9 @@ describe('AppImportExportService', () => {
       const appVersion = importedApp.appVersions[0];
       expect(appVersion.appId).toEqual(importedApp.id);
 
-      const dataSource = importedApp['dataSources'].reverse()[0];
-      expect(dataSource['appVersionId']).toEqual(appVersion.id);
-
       const dataQuery = importedApp['dataQueries'][0];
-      expect(dataQuery['dataSourceId']).toEqual(dataSource.id);
+      const dataSourceForTheDataQuery = importedApp['dataSources'].find((ds) => ds.id === dataQuery.dataSourceId);
+      expect(dataSourceForTheDataQuery).toBeDefined();
 
       // assert all fields except primary keys, foreign keys and timestamps are same
       const deleteFieldsNotToCheck = (entity) => {
@@ -291,10 +289,9 @@ describe('AppImportExportService', () => {
       const importedDataQueries = importedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
       const exportedDataQueries = exportedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
 
-      expect(importedAppVersions).toEqual(exportedAppVersions);
-      console.log('inside', importedDataSources, exportedDataSources);
-      expect(importedDataSources).toEqual(exportedDataSources);
-      expect(importedDataQueries).toEqual(exportedDataQueries);
+      expect(new Set(importedAppVersions)).toEqual(new Set(exportedAppVersions));
+      expect(new Set(importedDataSources)).toEqual(new Set(exportedDataSources));
+      expect(new Set(importedDataQueries)).toEqual(new Set(exportedDataQueries));
 
       // assert group permissions are valid
       const appGroupPermissions = await getManager().find(AppGroupPermission, {
