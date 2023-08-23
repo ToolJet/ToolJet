@@ -2,6 +2,8 @@ import React from 'react';
 import SelectComponent from '@/_ui/Select';
 import FxButton from './FxButton';
 
+const selectCustomStyles = () => {};
+
 export const Select = ({ value, onChange, forceCodeBox, meta }) => {
   return (
     <div
@@ -19,13 +21,6 @@ export const Select = ({ value, onChange, forceCodeBox, meta }) => {
             height={32}
           />
         </div>
-      </div>
-      <div className="col-auto pt-0 style-fx fx-common">
-        <FxButton
-          active={false}
-          onPress={forceCodeBox}
-          dataCy={`${meta.displayName ? String(meta.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'}`}
-        />
       </div>
     </div>
   );

@@ -1,12 +1,19 @@
-.list-group {
 
-}
 
 .list-group-item {
+  font-size:12px;
+  line-height: 20px;
 padding: 6px 8px !important; 
 color: var(--slate12) !important;
 border: unset !important;
 border-radius: 6px !important;
+ .DragHandle {
+  margin-top: 1px !important;
+ }
+ .list-item-secondary-text {
+  margin-left: 8px;
+  color: var(--slate9)
+ }
 }
 
 .list-group-item-action:hover {
@@ -17,8 +24,47 @@ border-radius: 6px !important;
     color: var(--slate9) !important;
 }
 
+.list-group-item-action:focus {
+  background-color: unset !important ;
+}
+
+button:focus:not(:focus-visible) {
+  // outline: unset !important;
+  outline : 1px solid rgba(255, 255, 255, 0.00) !important;
+}
+
+.list-group-item-action:focus-visible {
+  border-radius: 6px !important;
+  border: 1px solid var(--bases-transparent, rgba(255, 255, 255, 0.00)) !important;  
+  /* Focus rings/Gray/light */
+  box-shadow: 0px 0px 0px 4px #DFE3E6;
+  outline-color: rgba(255, 255, 255, 0.00) !important;
+}
+
 .list-group-item.active {
  background-color: var(--slate5) !important;
  color: var(--slate12) !important
-//  border: unset;
+}
+
+.list-item-popover-body {
+padding: 4px;
+min-width: 10.625rem; // 170px
+
+.list-item-popover-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  &:hover {
+    background-color: var(--slate3);
+    border-radius: 6px;
+  }
+  .list-item-option-menu-label {
+    margin-top: 2px;
+    margin-left : 6px
+  }
+  .color-tomato9 {
+    color : var(--tomato9)
+  }
+
+}
 }

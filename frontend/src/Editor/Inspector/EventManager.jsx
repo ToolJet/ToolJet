@@ -981,10 +981,11 @@ export const EventManager = ({
     <>
       <div className="mb-3">
         {renderHandlers(events)}
-        <AddNewButton onClick={addHandler} data-cy="add-more-event-handler">
-          {/* {t('editor.inspector.eventManager.addHandler', 'New event handler')} */}
-          New event handler
-        </AddNewButton>
+        {renderAddHandlerBtn()}
+        {/* <AddNewButton onClick={addHandler} data-cy="add-more-event-handler"> */}
+        {/* {t('editor.inspector.eventManager.addHandler', 'New event handler')} */}
+        {/* New event handler */}
+        {/* </AddNewButton> */}
       </div>
     </>
   );

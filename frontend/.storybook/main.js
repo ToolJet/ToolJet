@@ -1,5 +1,7 @@
 /** @type { import('@storybook/react-webpack5').StorybookConfig } */
 import custom from '../webpack.config'
+const path = require('path');
+
 const config = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
   addons: [
@@ -19,6 +21,11 @@ const config = {
     return {
       ...config,
       module: { ...config.module, rules: [...config.module.rules, ...custom.module.rules] },
+      resolve : {
+        alias : {
+          '@': path.resolve(__dirname, 'src/')
+        }
+      }
     };
   },
 };

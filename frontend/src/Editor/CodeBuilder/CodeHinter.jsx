@@ -33,6 +33,7 @@ import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import ClientServerSwitch from './Elements/ClientServerSwitch';
 
 const AllElements = {
   Color,
@@ -42,6 +43,7 @@ const AllElements = {
   AlignButtons,
   Number,
   BoxShadow,
+  ClientServerSwitch,
 };
 
 export function CodeHinter({
@@ -102,7 +104,6 @@ export function CodeHinter({
   });
   const { t } = useTranslation();
   const { variablesExposedForPreview } = useContext(EditorContext);
-  // console.log(paramLabel, 'codeShow');
   const prevCountRef = useRef(false);
 
   useEffect(() => {
@@ -278,26 +279,56 @@ export function CodeHinter({
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div
+        className={cx('d-flex align-items-center justify-content-between', { 'mb-2': codeShow && type === 'toggle' })}
+      >
         {paramLabel && (
-          <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+          <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`form-label ${darkMode && 'color-whitish-darkmode'}`}
+              labelClass={`form-label ${type === 'toggle' && 'mb-0'} ${darkMode && 'color-whitish-darkmode'}`}
             />
           </div>
         )}
-        <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
-          <div style={{ width: width, display: codeShow ? 'flex' : 'none', marginTop: '-1px' }}>
-            <FxButton
-              active={true}
-              onPress={() => {
-                setForceCodeBox(false);
-                onFxPress(false);
-              }}
-              dataCy={cyLabel}
-            />
+        <div className={`${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
+          <div style={{ width: width }} className="d-flex align-items-center">
+            <div className="col-auto pt-0 fx-common">
+              {paramLabel !== 'Type' && (
+                <FxButton
+                  active={codeShow}
+                  onPress={() => {
+                    if (codeShow) {
+                      setForceCodeBox(false);
+                      onFxPress(false);
+                    } else {
+                      setForceCodeBox(true);
+                      onFxPress(true);
+                    }
+                  }}
+                  dataCy={cyLabel}
+                />
+              )}
+            </div>
+            {!codeShow && (
+              <ElementToRender
+                value={resolveReferences(initialValue, realState)}
+                onChange={(value) => {
+                  if (value !== currentValue) {
+                    onChange(value);
+                    setCurrentValue(value);
+                  }
+                }}
+                paramName={paramName}
+                paramLabel={paramLabel}
+                forceCodeBox={() => {
+                  setForceCodeBox(true);
+                  onFxPress(true);
+                }}
+                meta={fieldMeta}
+                cyLabel={cyLabel}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -369,29 +400,12 @@ export function CodeHinter({
           </div>
         </div>
       </div>
-      {!codeShow && (
-        <div style={{ display: !codeShow ? 'block' : 'none' }}>
-          <ElementToRender
-            value={resolveReferences(initialValue, realState)}
-            onChange={(value) => {
-              if (value !== currentValue) {
-                onChange(value);
-                setCurrentValue(value);
-              }
-            }}
-            paramName={paramName}
-            paramLabel={paramLabel}
-            forceCodeBox={() => {
-              setForceCodeBox(true);
-              onFxPress(true);
-            }}
-            meta={fieldMeta}
-            cyLabel={cyLabel}
-          />
-        </div>
-      )}
     </div>
   );
+}
+
+function CodeHinterInputField() {
+  return <></>;
 }
 
 const PopupIcon = ({ callback, icon, tip, transformation = false }) => {

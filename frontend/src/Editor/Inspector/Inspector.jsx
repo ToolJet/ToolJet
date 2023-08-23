@@ -24,7 +24,7 @@ import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
-import { Tab } from 'react-bootstrap';
+import Tab from '@/ToolJetUI/Tabs/Tab';
 
 export const Inspector = ({
   selectedComponentId,

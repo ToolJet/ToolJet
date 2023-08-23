@@ -62,11 +62,6 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
           </div>
         </div>
       </div>
-      {!hideFx && (
-        <div className="col-auto pt-0 style-fx fx-common">
-          <FxButton active={false} onPress={forceCodeBox} dataCy={String(cyLabel)} />
-        </div>
-      )}
     </div>
   );
 };

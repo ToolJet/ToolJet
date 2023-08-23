@@ -3,7 +3,7 @@ import BootstrapTab from 'react-bootstrap/Tab';
 import cx from 'classnames';
 import './tabs.scss';
 
-const Tabs = ({ darkMode, eventKey, title, className, children, ...restProps }) => {
+const Tab = ({ darkMode, eventKey, title, className, children, ...restProps }) => {
   return (
     <BootstrapTab
       eventKey={eventKey}
@@ -18,4 +18,4 @@ const Tabs = ({ darkMode, eventKey, title, className, children, ...restProps }) 
   );
 };
 
-export default Tabs;
+export default Tab;

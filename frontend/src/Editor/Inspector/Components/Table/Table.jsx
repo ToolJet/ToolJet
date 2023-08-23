@@ -16,6 +16,8 @@ import { withTranslation } from 'react-i18next';
 import { ProgramaticallyHandleToggleSwitch } from './ProgramaticallyHandleToggleSwitch';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import List from '@/ToolJetUI/List/List';
+import { capitalize } from 'lodash';
+import NoListItem from './NoListItem';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -43,6 +45,7 @@ class TableComponent extends React.Component {
       actionPopOverRootClose: true,
       showPopOver: false,
       popOverRootCloseBlockers: [],
+      showActionMenu: false,
     };
   }
   componentDidMount() {
@@ -834,9 +837,8 @@ class TableComponent extends React.Component {
               data-cy={`action-button-${String(action.buttonText ?? '')
                 .toLowerCase()
                 .replace(/\s+/g, '-')}-${String(index ?? '')}`}
-            >
-              {action.buttonText}
-            </List.Item>
+              primaryText={action.buttonText}
+            />
           </List>
         </div>
       </OverlayTrigger>
@@ -944,8 +946,8 @@ class TableComponent extends React.Component {
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
-    const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
-      ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
+    const enablePagination = component.component.definition.properties.enablePagination?.value
+      ? resolveReferences(component.component.definition.properties.enablePagination?.value, currentState)
       : false;
     const enabledSort = component.component.definition.properties.enabledSort?.value
       ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
@@ -1013,7 +1015,23 @@ class TableComponent extends React.Component {
                                 >
                                   <div>
                                     <List>
-                                      <List.Item data-cy={`column-${resolvedItemName}`}>{resolvedItemName}</List.Item>
+                                      <List.Item
+                                        primaryText={resolvedItemName}
+                                        secondaryText={capitalize(item?.columnType)}
+                                        isDraggable
+                                        data-cy={`column-${resolvedItemName}`}
+                                        enableActionsMenu
+                                        isEditable={item.isEditable === '{{true}}'}
+                                        onMenuOptionClick={(listItem, menuOptionLabel) => {
+                                          if (menuOptionLabel === 'Delete') this.removeColumn(index);
+                                        }}
+                                        menuActions={[
+                                          {
+                                            label: 'Delete',
+                                            icon: '',
+                                          },
+                                        ]}
+                                      />
                                     </List>
                                   </div>
                                 </OverlayTrigger>
@@ -1027,10 +1045,15 @@ class TableComponent extends React.Component {
                   )}
                 </Droppable>
               </DragDropContext>
-              <AddNewButton data-cy={`button-add-column`} onClick={this.addNewColumn}>
-                {/* {this.props.t('widget.Table.addColumn', '+ Add column')} */}
-                New list item
-              </AddNewButton>
+              <div style={{ paddingTop: '8px' }}>
+                {columns?.value?.length === 0 && <NoListItem text={'There are no columns'} />}
+                <div style={{ marginTop: '8px' }}>
+                  <AddNewButton data-cy={`button-add-column`} onClick={this.addNewColumn}>
+                    {/* {this.props.t('widget.Table.addColumn', '+ Add column')} */}
+                    New list item
+                  </AddNewButton>
+                </div>
+              </div>
             </>
           )}
           <div style={{ marginTop: useDynamicColumn ? '0px' : '30px' }}>{renderCustomElement('useDynamicColumn')}</div>
@@ -1045,77 +1068,38 @@ class TableComponent extends React.Component {
         <div className="field mb-2 mt-2">
           <div className="row g-2">
             <div>{actions.value.map((action, index) => this.renderActionButton(action, index))}</div>
+            {actions.value.length === 0 && <NoListItem text={'There are no action buttons'} />}
             <AddNewButton data-cy="button-add-new-action-button" onClick={this.addNewAction}>
               {/* {this.props.t('widget.Table.addButton', 'New list item')} */}
               New list item
             </AddNewButton>
           </div>
-          {actions.value.length === 0 && (
-            <div className="text-center">
-              <small data-cy="message-no-action-button" className="color-disabled">
-                {this.props.t('widget.Table.noActionMessage', "This table doesn't have any action buttons")}
-              </small>
-            </div>
-          )}
         </div>
       ),
     });
 
-    const options = [
-      'serverSidePagination',
-      ...(serverSidePagination ? ['enablePrevButton'] : []),
-      ...(serverSidePagination ? ['enableNextButton'] : []),
-      ...(serverSidePagination ? ['totalRecords'] : []),
-      ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
-      'enabledSort',
-      ...(enabledSort ? ['serverSideSort'] : []),
-      'showDownloadButton',
-      'showFilterButton',
-      'showAddNewRowButton',
-      ...(displayServerSideFilter ? ['serverSideFilter'] : []),
-      'showBulkUpdateActions',
-      'allowSelection',
-      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
-      'hideColumnSelectorButton',
-    ];
     const rowSelectionsOptions = [
       'allowSelection',
       ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
     ];
     const searchSortFIlterOptions = [
+      ...(displaySearchBox ? ['displaySearchBox'] : []),
+      ...(displayServerSideSearch ? ['serverSideSearch'] : []),
       'enabledSort',
       ...(enabledSort ? ['serverSideSort'] : []),
+      'showFilterButton',
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
     ];
     const paginationOptions = [
-      'serverSidePagination',
-      ...(serverSidePagination ? ['enablePrevButton'] : []),
-      ...(serverSidePagination ? ['enableNextButton'] : []),
-      ...(serverSidePagination ? ['totalRecords'] : []),
-      ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
+      'enablePagination',
+      ...(enablePagination ? ['serverSidePagination'] : []),
+      ...(enablePagination && !serverSidePagination ? ['rowsPerPage'] : []),
+      ...(enablePagination && serverSidePagination ? ['enablePrevButton'] : []),
+      ...(enablePagination && serverSidePagination ? ['enableNextButton'] : []),
+      ...(enablePagination && serverSidePagination ? ['totalRecords'] : []),
     ];
 
-    const additionalActions = [
-      'showAddNewRowButton',
-      'showDownloadButton',
-      'showFilterButton',
-      'hideColumnSelectorButton',
-    ];
-    let renderOptions = [];
-
-    !serverSidePagination && options.splice(1, 0, 'clientSidePagination');
-
-    options.map((option) => renderOptions.push(renderCustomElement(option)));
-    console.log({ renderOptions });
-    const conditionalOptions = [
-      { name: 'displaySearchBox', condition: displaySearchBox },
-      { name: 'serverSideSearch', condition: displayServerSideSearch },
-      { name: 'loadingState', condition: true },
-    ];
-
-    conditionalOptions.map(({ name, condition }) => {
-      if (condition) renderOptions.push(renderCustomElement(name));
-    });
+    const additionalActions = ['showAddNewRowButton', 'showDownloadButton', 'hideColumnSelectorButton', 'loadingState'];
 
     items.push({
       title: 'Events',

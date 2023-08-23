@@ -136,7 +136,7 @@ export const widgets = [
       },
       useDynamicColumn: {
         type: 'toggle',
-        displayName: 'Use dynamic column',
+        displayName: 'Connect code',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -152,13 +152,7 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      serverSidePagination: {
-        type: 'toggle',
-        displayName: 'Server-side pagination',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
+
       enableNextButton: {
         type: 'toggle',
         displayName: 'Enable next page button',
@@ -168,7 +162,7 @@ export const widgets = [
       },
       enabledSort: {
         type: 'toggle',
-        displayName: 'Enable sorting',
+        displayName: 'Enable column sorting',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -194,33 +188,67 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      clientSidePagination: {
+      // clientSidePagination: {
+      //   type: 'toggle',
+      //   displayName: 'Enable pagination',
+      //   validation: {
+      //     schema: { type: 'boolean' },
+      //   },
+      // },
+      enablePagination: {
         type: 'toggle',
-        displayName: 'Client-side pagination',
+        displayName: 'Enable pagination',
         validation: {
           schema: { type: 'boolean' },
         },
       },
+      serverSidePagination: {
+        type: 'clientServerSwitch',
+        displayName: 'Type',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        // defaultValue: 'clientSide',
+      },
       serverSideSearch: {
-        type: 'toggle',
-        displayName: 'Server-side search',
+        type: 'clientServerSwitch',
+        displayName: 'Type',
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        // defaultValue: 'clientSide',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       serverSideSort: {
-        type: 'toggle',
-        displayName: 'Server-side sort',
+        type: 'clientServerSwitch',
+        displayName: 'Type',
         validation: {
           schema: { type: 'boolean' },
         },
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        // defaultValue: 'clientSide',
       },
       serverSideFilter: {
-        type: 'toggle',
-        displayName: 'Server-side filter',
+        type: 'clientServerSwitch',
+        displayName: 'Type',
         validation: {
           schema: { type: 'boolean' },
         },
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        defaultValue: 'clientSide',
       },
       actionButtonBackgroundColor: {
         type: 'color',
@@ -238,7 +266,7 @@ export const widgets = [
       },
       displaySearchBox: {
         type: 'toggle',
-        displayName: 'Show search box',
+        displayName: 'Show search',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -252,7 +280,7 @@ export const widgets = [
       },
       showFilterButton: {
         type: 'toggle',
-        displayName: 'Show filter button',
+        displayName: 'Enable filtering',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -466,7 +494,7 @@ export const widgets = [
         enableNextButton: { value: '{{true}}' },
         enablePrevButton: { value: '{{true}}' },
         totalRecords: { value: '' },
-        clientSidePagination: { value: '{{true}}' },
+        enablePagination: { value: '{{true}}' },
         serverSideSort: { value: '{{false}}' },
         serverSideFilter: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
