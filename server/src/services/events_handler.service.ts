@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
@@ -42,20 +42,18 @@ export class EventsService {
     });
   }
 
-  async createEvent(options, versionId) {
-    if (Object.keys(options).length === 0) {
+  async createEvent(eventObj, versionId) {
+    if (Object.keys(eventObj).length === 0) {
       return new BadRequestException('No event found');
     }
 
     const newEvent = {
-      name: options.event.eventId,
-      sourceId: options.attachedTo,
-      target: options.eventType,
-      event: options.event,
+      name: eventObj.event.eventId,
+      sourceId: eventObj.attachedTo,
+      target: eventObj.eventType,
+      event: eventObj.event,
       appVersionId: versionId,
     };
-
-    console.log('---arpit || create events', { newEvent });
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const event = await manager.save(EventHandler, newEvent);
@@ -63,25 +61,51 @@ export class EventsService {
     });
   }
 
-  async updateEvent(options = [], versionId: string) {
-    const eventHandlers = [];
+  async updateEvent(events: []) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await Promise.all(
+        events.map(async (event) => {
+          const { event_id, diff } = event as any;
 
-    options.forEach((option) => {
-      eventHandlers.push({
-        event: option.event,
-        name: option.event.eventId,
-        sourceId: option.attachedTo,
-        target: option.eventType,
-      });
+          const eventDiff = diff?.event;
+          const eventToUpdate = await manager.findOne(EventHandler, {
+            where: { id: event_id },
+          });
+
+          if (!eventToUpdate) {
+            return new BadRequestException('No event found');
+          }
+
+          const updatedEvent = {
+            ...eventToUpdate,
+            event: {
+              ...eventToUpdate.event,
+              ...eventDiff,
+            },
+          };
+
+          return await manager.save(EventHandler, updatedEvent);
+        })
+      );
     });
-
-    console.log('---arpit || createOrUpdateEvent', { eventHandlers });
-
-    return {
-      status: 'success',
-      data: eventHandlers,
-    };
   }
 
-  //   utitlity functions
+  async deleteEvent(eventId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const event = await manager.findOne(EventHandler, {
+        where: { id: eventId },
+      });
+
+      if (!event) {
+        return new BadRequestException('No event found');
+      }
+
+      const deleteResponse = await manager.delete(EventHandler, event.id);
+
+      if (!deleteResponse?.affected) {
+        throw new NotFoundException();
+      }
+      return deleteResponse;
+    });
+  }
 }

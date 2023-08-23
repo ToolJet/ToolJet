@@ -8,6 +8,9 @@ export const appVersionService = {
   del,
   save,
   autoSaveApp,
+  saveAppVersionEventHandlers,
+  createAppVersionEventHandler,
+  deleteAppVersionEventHandler,
 };
 
 function getAll(appId) {
@@ -98,4 +101,43 @@ function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwit
   const url = `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/${type ?? ''}`;
 
   return fetch(url, requestOptions).then(handleResponse);
+}
+
+function saveAppVersionEventHandlers(appId, versionId, events) {
+  const body = {
+    events,
+  };
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events`, requestOptions).then(handleResponse);
+}
+
+function createAppVersionEventHandler(appId, versionId, event) {
+  const body = {
+    event,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events`, requestOptions).then(handleResponse);
+}
+
+function deleteAppVersionEventHandler(appId, versionId, eventId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events/${eventId}`, requestOptions).then(
+    handleResponse
+  );
 }

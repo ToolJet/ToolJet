@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -18,13 +18,16 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
-import { useAppInfo } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 export const EventManager = ({
-  component,
-  componentMeta,
+  sourceId,
+  eventSourceType,
+  eventMetaDefinition,
   components,
   eventsChanged,
   excludeEvents,
@@ -41,15 +44,25 @@ export const EventManager = ({
     }
     return dataQueries;
   }, shallow);
-  const { apps, appId } = useAppInfo();
+  const { apps, appId, events: allAppEvents } = useAppInfo();
 
-  const [events, setEvents] = useState(() => component.component.definition.events || []);
+  const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
+    useAppDataActions();
+
+  const currentEvents = allAppEvents.filter((event) => event.sourceId === sourceId);
+  console.log('----arpit currentEvents ', { currentEvents });
+
+  const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
 
   useEffect(() => {
-    setEvents(component.component.definition.events || []);
-  }, [component?.component?.definition?.events]);
+    console.log('----arpit current events changed ', { currentEvents, events });
+    if (_.isEqual(currentEvents, events)) return;
+
+    setEvents(currentEvents || []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(currentEvents)]);
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
@@ -102,11 +115,11 @@ export const EventManager = ({
   excludeEvents = excludeEvents || [];
 
   /* Filter events based on excludesEvents ( a list of event ids to exclude ) */
-  let possibleEvents = Object.keys(componentMeta.events)
+  let possibleEvents = Object.keys(eventMetaDefinition.events)
     .filter((eventId) => !excludeEvents.includes(eventId))
     .map((eventId) => {
       return {
-        name: componentMeta.events[eventId].displayName,
+        name: eventMetaDefinition?.events[eventId]?.displayName,
         value: eventId,
       };
     });
@@ -153,7 +166,7 @@ export const EventManager = ({
     const actions = targetComponentMeta.actions;
 
     const options = actions.map((action) => ({
-      name: action.displayName,
+      name: action?.displayName,
       value: action.handle,
     }));
 
@@ -202,36 +215,53 @@ export const EventManager = ({
   }
 
   function handlerChanged(index, param, value) {
-    let newEvents = [...events];
+    let newEvents = _.cloneDeep(events);
 
     let updatedEvent = newEvents[index];
-    updatedEvent[param] = value;
+    updatedEvent.event[param] = value;
 
     newEvents[index] = updatedEvent;
 
+    const diffPatches = diff(currentEvents[index], updatedEvent);
+    const isDeepEqual = _.isEqual(currentEvents[index], updatedEvent);
     setEvents(newEvents);
-    eventsChanged(newEvents);
+
+    console.log('----moh handler changed-arpit ', { diffPatches, isDeepEqual });
+
+    updateAppVersionEventHandlers(
+      [
+        {
+          event_id: updatedEvent.id,
+          diff: diffPatches,
+        },
+      ],
+      'update'
+    );
   }
 
   function removeHandler(index) {
-    let newEvents = component.component.definition.events;
-    newEvents.splice(index, 1);
-    setEvents(newEvents);
-    eventsChanged(newEvents);
+    const eventsHandler = _.cloneDeep(events);
+
+    const eventId = eventsHandler[index].id;
+
+    deleteAppVersionEventHandler(eventId);
   }
 
   function addHandler() {
-    let newEvents = component.component.definition.events;
+    let newEvents = events;
     const eventIndex = newEvents.length;
-    newEvents.push({
-      eventId: Object.keys(componentMeta.events)[0],
-      actionId: 'show-alert',
-      message: 'Hello world!',
-      alertType: 'info',
-      eventIndex: eventIndex,
+
+    createAppVersionEventHandlers({
+      event: {
+        eventId: Object.keys(eventMetaDefinition?.events)[0],
+        actionId: 'show-alert',
+        message: 'Hello world!',
+        alertType: 'info',
+        eventIndex: eventIndex,
+      },
+      eventType: eventSourceType,
+      attachedTo: sourceId,
     });
-    setEvents(newEvents);
-    eventsChanged(newEvents, false, true);
   }
 
   //following two are functions responsible for on change and value for the control specific actions
@@ -722,8 +752,8 @@ export const EventManager = ({
                   event?.componentSpecificActionHandle &&
                   (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
                     <div className="row mt-2" key={param.handle}>
-                      <div className="col-3 p-1" data-cy={`action-options-${param.displayName}-field-label`}>
-                        {param.displayName}
+                      <div className="col-3 p-1" data-cy={`action-options-${param?.displayName}-field-label`}>
+                        {param?.displayName}
                       </div>
                       {param.type === 'select' ? (
                         <div className="col-9" data-cy="action-options-action-selection-field">
@@ -758,7 +788,7 @@ export const EventManager = ({
                             enablePreview={true}
                             type={param?.type}
                             fieldMeta={{ options: param?.options }}
-                            cyLabel={param.displayName}
+                            cyLabel={param?.displayName}
                           />
                         </div>
                       )}
@@ -784,7 +814,7 @@ export const EventManager = ({
   }
 
   const reorderEvents = (startIndex, endIndex) => {
-    const result = [...component.component.definition.events];
+    const result = _.cloneDeep(events);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
     setEvents(result);
@@ -812,7 +842,8 @@ export const EventManager = ({
           {({ innerRef, droppableProps, placeholder }) => (
             <div {...droppableProps} ref={innerRef}>
               {events.map((event, index) => {
-                const actionMeta = ActionTypes.find((action) => action.id === event.actionId);
+                const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
+
                 const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                 return (
                   <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
@@ -826,7 +857,7 @@ export const EventManager = ({
                           trigger="click"
                           placement={popoverPlacement || 'left'}
                           rootClose={true}
-                          overlay={eventPopover(event, index)}
+                          overlay={eventPopover(event.event, index)}
                           onHide={() => setFocusedEventIndex(null)}
                           onToggle={(showing) => {
                             if (showing) {
@@ -888,7 +919,7 @@ export const EventManager = ({
                                     </svg>
                                   </div>
                                   <div className="col text-truncate" data-cy="event-handler">
-                                    {componentMeta.events[event.eventId]['displayName']}
+                                    {eventMetaDefinition?.events[event.event.eventId]?.displayName}
                                   </div>
                                   <div className="col text-truncate color-slate11" data-cy="event-name">
                                     <small className="event-action font-weight-light text-truncate">
@@ -956,7 +987,7 @@ export const EventManager = ({
     );
   };
 
-  const componentName = componentMeta.name ? componentMeta.name : 'query';
+  const componentName = eventMetaDefinition?.name ? eventMetaDefinition.name : 'query';
 
   if (events.length === 0) {
     return (

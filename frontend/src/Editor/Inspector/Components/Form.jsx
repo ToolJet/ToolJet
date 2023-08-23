@@ -94,8 +94,9 @@ export const baseComponentProperties = (
       isOpen: true,
       children: (
         <EventManager
-          component={component}
-          componentMeta={componentMeta}
+          sourceId={component?.id}
+          eventSourceType="component"
+          eventMetaDefinition={componentMeta}
           currentState={currentState}
           dataQueries={dataQueries}
           components={allComponents}
