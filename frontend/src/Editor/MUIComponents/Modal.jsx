@@ -15,6 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 import { IconX } from '@tabler/icons-react';
+import { useTranslation } from 'react-i18next';
 
 export const Modal = function Modal({
   id,
@@ -184,6 +185,7 @@ export const Modal = function Modal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [closeOnClickingOutside, parentRef]);
+  const { t } = useTranslation();
 
   return (
     <>
@@ -206,7 +208,7 @@ export const Modal = function Modal({
             boxShadow,
           }}
         >
-          {triggerButtonLabel ?? 'Show Modal'}
+          {triggerButtonLabel !== '' ? triggerButtonLabel : t('widget.Modal.showModal', 'Show Modal')}
         </Button>
       )}
 

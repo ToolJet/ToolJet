@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import { Autocomplete, Box, Checkbox, FormControlLabel, TextField } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 export const Multiselect = function Multiselect({
   id,
@@ -129,7 +130,7 @@ export const Multiselect = function Multiselect({
     },
     [selected, setSelected]
   );
-
+  const { t } = useTranslation();
   return (
     <Autocomplete
       id={id}
@@ -137,13 +138,16 @@ export const Multiselect = function Multiselect({
       fullWidth
       size="small"
       value={selected}
-      options={[{ label: 'Select All', value: 'Select All', isShow: showAllOption }, ...selectOptions]}
+      options={[
+        { label: t('globals.selectAll', 'Select All'), value: 'Select All', isShow: showAllOption },
+        ...selectOptions,
+      ]}
       getOptionLabel={(option) => option.label}
       isOptionEqualToValue={(option, value) => option.value === value.value}
       disabled={disabledState}
       disableCloseOnSelect
       renderOption={(props, option, state, ownerState) => {
-        if (option.label === 'Select All') {
+        if (option.value === 'Select All') {
           return (
             <>
               {showAllOption ? (

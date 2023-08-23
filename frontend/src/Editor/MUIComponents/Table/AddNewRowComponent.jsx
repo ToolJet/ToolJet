@@ -16,9 +16,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { AddCircleOutline, CloseOutlined } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 
 export function AddNewRowComponent({
   openAddRow,
@@ -75,7 +77,7 @@ export function AddNewRowComponent({
   }, []);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = newRowData;
-
+  const { t } = useTranslation();
   return (
     <Dialog
       open={openAddRow}
@@ -91,7 +93,7 @@ export function AddNewRowComponent({
           variant="h5"
           color="primary"
         >
-          Add new rows
+          {t('widget.Table.addRow', 'Add new row')}
         </Typography>
         <IconButton
           color="primary"
@@ -151,29 +153,31 @@ export function AddNewRowComponent({
             </TableBody>
           </Table>
         </TableContainer>
-        <IconButton
-          onClick={() => {
-            const rowData = _.cloneDeep(newRowsState);
-            const index = rowData.length;
-            let newRow = getNewRowObject();
-            newRow = utilityForNestedNewRow(newRow);
-            rowData.push(newRow);
-            let newRowDataUpdates = addNewRowsDetails.newRowsDataUpdates;
-            newRowDataUpdates[index] = newRow;
-            let newRowAddedExposedVar = Object.keys(newRowDataUpdates).reduce((accumulator, row) => {
-              accumulator.push(newRowDataUpdates[row]);
-              return accumulator;
-            }, []);
-            setExposedVariable('newRows', newRowAddedExposedVar).then(() => {
-              mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
-              setNewRowsState(rowData);
-            });
-          }}
-          data-tooltip-id="tooltip-for-add-new-row"
-          data-tooltip-content="Add another row"
-        >
-          <AddCircleOutline />
-        </IconButton>
+        <Tooltip title={t('widget.Table.addAnotherRow', 'Add another row')}>
+          <IconButton
+            onClick={() => {
+              const rowData = _.cloneDeep(newRowsState);
+              const index = rowData.length;
+              let newRow = getNewRowObject();
+              newRow = utilityForNestedNewRow(newRow);
+              rowData.push(newRow);
+              let newRowDataUpdates = addNewRowsDetails.newRowsDataUpdates;
+              newRowDataUpdates[index] = newRow;
+              let newRowAddedExposedVar = Object.keys(newRowDataUpdates).reduce((accumulator, row) => {
+                accumulator.push(newRowDataUpdates[row]);
+                return accumulator;
+              }, []);
+              setExposedVariable('newRows', newRowAddedExposedVar).then(() => {
+                mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
+                setNewRowsState(rowData);
+              });
+            }}
+            data-tooltip-id="tooltip-for-add-new-row"
+            data-tooltip-content="Add another row"
+          >
+            <AddCircleOutline />
+          </IconButton>
+        </Tooltip>
       </DialogContent>
       <DialogActions>
         <Button
@@ -190,7 +194,7 @@ export function AddNewRowComponent({
             });
           }}
         >
-          Save
+          {t('globals.save', 'Save')}
         </Button>
         <Button
           variant="contained"
@@ -207,7 +211,7 @@ export function AddNewRowComponent({
             });
           }}
         >
-          Discard
+          {t('widget.Table.discard', 'Discard')}
         </Button>
       </DialogActions>
     </Dialog>

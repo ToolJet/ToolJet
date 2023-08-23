@@ -16,6 +16,7 @@ import {
   Divider,
   IconButton,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { CloseOutlined, DeleteOutline } from '@mui/icons-material';
@@ -141,7 +142,7 @@ export function Filter(props) {
             variant="h5"
             data-cy={`header-filters`}
           >
-            Filters
+            {t('widget.Table.filter', 'Filters')}
           </Typography>
           <IconButton
             data-cy={`button-close-filters`}
@@ -174,7 +175,7 @@ export function Filter(props) {
                     sx={{ maxWidth: '70px', minWidth: '70px' }}
                     variant="body1"
                   >
-                    {index > 0 ? 'and' : 'column'}
+                    {index > 0 ? t('widget.Table.and', 'And') : t('widget.Table.column', 'Column')}
                   </Typography>
                   <Box data-cy={`select-coloumn-dropdown-${index ?? ''}`}>
                     <Autocomplete
@@ -207,18 +208,27 @@ export function Filter(props) {
                       fullWidth
                       sx={{ minWidth: '280px' }}
                       options={[
-                        { label: 'contains', value: 'contains' },
-                        { label: 'does not contains', value: 'doesNotContains' },
-                        { label: 'matches', value: 'matches' },
-                        { label: 'does not match', value: 'nl' },
-                        { label: 'equals', value: 'equals' },
-                        { label: 'does not equal', value: 'ne' },
-                        { label: 'is empty', value: 'isEmpty' },
-                        { label: 'is not empty', value: 'isNotEmpty' },
-                        { label: 'greater than', value: 'gt' },
-                        { label: 'less than', value: 'lt' },
-                        { label: 'greater than or equals', value: 'gte' },
-                        { label: 'less than or equals', value: 'lte' },
+                        { label: t('widget.Table.filterOperatorContains', 'Contains'), value: 'contains' },
+                        {
+                          label: t('widget.Table.filterOperatorNoContains', 'Does not contains'),
+                          value: 'doesNotContains',
+                        },
+                        { label: t('widget.Table.filterOperatorMatches', 'Matches'), value: 'matches' },
+                        { label: t('widget.Table.filterOperatorNoMatch', 'Does not match'), value: 'nl' },
+                        { label: t('widget.Table.filterOperatorEquals', 'Equals'), value: 'equals' },
+                        { label: t('widget.Table.filterOperatorNoEquals', 'Does not equal'), value: 'ne' },
+                        { label: t('widget.Table.filterOperatorIsEmpty', 'Is empty'), value: 'isEmpty' },
+                        { label: t('widget.Table.filterOperatorIsNotEmpty', 'Is not empty'), value: 'isNotEmpty' },
+                        { label: t('widget.Table.filterOperatorGreaterThan', 'Greater than'), value: 'gt' },
+                        { label: t('widget.Table.filterOperatorLessThan', 'Less than'), value: 'lt' },
+                        {
+                          label: t('widget.Table.filterOperatorGreaterThanOrEqual', 'greater than or equals'),
+                          value: 'gte',
+                        },
+                        {
+                          label: t('widget.Table.filterOperatorLessThanOrEqual', 'less than or equals'),
+                          value: 'lte',
+                        },
                       ]}
                       value={filter.value.condition}
                       isOptionEqualToValue={(option, value) => option.value === value}
@@ -248,13 +258,14 @@ export function Filter(props) {
                       />
                     )}
                   </Box>
-
-                  <IconButton
-                    data-cy={`button-close-filter-${index ?? ''}`}
-                    onClick={() => removeFilter(index)}
-                  >
-                    <DeleteOutline color="error" />
-                  </IconButton>
+                  <Tooltip title={t('globals.delete', 'Delete')}>
+                    <IconButton
+                      data-cy={`button-close-filter-${index ?? ''}`}
+                      onClick={() => removeFilter(index)}
+                    >
+                      <DeleteOutline color="error" />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               );
             })}
@@ -267,7 +278,7 @@ export function Filter(props) {
                 alignItems="center"
                 data-cy={`label-no-filters`}
               >
-                No filters yet.
+                {t('widget.Table.noFilters', 'No filters yet.')}
               </Box>
             )}
           </Box>
@@ -279,7 +290,7 @@ export function Filter(props) {
             size="small"
             onClick={addFilter}
           >
-            Add filter
+            {t('widget.Table.addFilter', 'Add filter')}
           </Button>
           <Button
             data-cy={`button-clear-filters`}
@@ -288,7 +299,7 @@ export function Filter(props) {
             size="small"
             onClick={() => clearFilters()}
           >
-            Clear filters
+            {t('widget.Table.clearFilter', 'Clear filters')}
           </Button>
         </DialogActions>
       </Dialog>

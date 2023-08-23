@@ -655,15 +655,31 @@ export function Table({
         hooks.visibleColumns.push((columns) => [
           {
             id: 'selection',
-            Header: ({ getToggleAllPageRowsSelectedProps }) => (
-              <div className="d-flex flex-column align-items-center">
-                {showBulkSelector && <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />}
-              </div>
-            ),
-            Cell: ({ row }) => {
+            Header: ({ getToggleAllPageRowsSelectedProps }) => {
+              const { title, ...rest } = { ...getToggleAllPageRowsSelectedProps() };
+
               return (
                 <div className="d-flex flex-column align-items-center">
-                  <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+                  {showBulkSelector && (
+                    <IndeterminateCheckbox
+                      title={t(
+                        'widget.Table.toggleAllCurrentPageRowsSelected',
+                        'Toggle All Current Page Rows Selected'
+                      )}
+                      {...rest}
+                    />
+                  )}
+                </div>
+              );
+            },
+            Cell: ({ row }) => {
+              const { title, ...rest } = { ...row.getToggleRowSelectedProps() };
+              return (
+                <div className="d-flex flex-column align-items-center">
+                  <IndeterminateCheckbox
+                    title={t('widget.Table.toggleRowSelected', 'Toggle Row Selected')}
+                    {...rest}
+                  />
                 </div>
               );
             },
@@ -949,21 +965,21 @@ export function Table({
               className="cursor-pointer"
               onClick={() => exportData('csv', true)}
             >
-              Download as CSV
+              {t('widget.Table.download', 'Download As')} CSV
             </span>
             <span
               data-cy={`option-download-execel`}
               className="pt-2 cursor-pointer"
               onClick={() => exportData('xlsx', true)}
             >
-              Download as Excel
+              {t('widget.Table.download', 'Download As')} Excel
             </span>
             <span
               data-cy={`option-download-pdf`}
               className="pt-2 cursor-pointer"
               onClick={() => exportData('pdf', true)}
             >
-              Download as PDF
+              {t('widget.Table.download', 'Download As')} PDF
             </span>
           </div>
         </Popover.Body>
@@ -1011,7 +1027,9 @@ export function Table({
             justifyContent="center"
           >
             {showAddNewRowButton && (
-              <MUITooltip title={tableDetails.addNewRowsDetails.addingNewRows ? '' : 'Add new row'}>
+              <MUITooltip
+                title={tableDetails.addNewRowsDetails.addingNewRows ? '' : t('widget.Table.addRow', 'Add new row')}
+              >
                 <IconButton
                   onClick={(e) => {
                     showAddNewRowPopup();
@@ -1033,7 +1051,7 @@ export function Table({
             )}
 
             {showFilterButton && (
-              <MUITooltip title="Filter data">
+              <MUITooltip title={t('widget.Table.filterData', 'Filter Data')}>
                 <IconButton onClick={() => showFilters()}>
                   <Badge
                     color="primary"
@@ -1047,7 +1065,7 @@ export function Table({
             )}
             {showDownloadButton && (
               <MenuCustom
-                titleTooltip="Download"
+                titleTooltip={t('globals.download', 'Download')}
                 Icon={<Download color="primary" />}
               >
                 <MenuItem
@@ -1055,33 +1073,33 @@ export function Table({
                     exportData('csv', true);
                   }}
                 >
-                  Download as CSV
+                  {t('widget.Table.download', 'Download')} CSV
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
                     exportData('xlsx', true);
                   }}
                 >
-                  Download as Excel
+                  {t('widget.Table.download', 'Download')} Excel
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
                     exportData('pdf', true);
                   }}
                 >
-                  Download as PDF
+                  {t('widget.Table.download', 'Download')} PDF
                 </MenuItem>
               </MenuCustom>
             )}
             {!hideColumnSelectorButton && (
               <MenuCustom
-                titleTooltip="Columns"
+                titleTooltip={t('widget.Table.column', 'Column')}
                 Icon={<ViewWeek color="primary" />}
               >
                 <FormGroup sx={{ minWidth: '150px' }}>
                   <IndeterminateCheckbox
                     {...getToggleHideAllColumnsProps()}
-                    label="Select All"
+                    label={t('globals.selectAll', 'SelectAll')}
                   />
 
                   {allColumns.map(
