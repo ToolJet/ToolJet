@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
-import config from 'config';
-import { CircularProgress, Typography } from '@mui/material';
 
 export const Text = function Text({
   height,
@@ -87,51 +85,28 @@ export const Text = function Text({
   };
 
   return (
-    <>
-      {config.UI_LIB === 'tooljet' && (
+    <div
+      data-disabled={disabledState}
+      className="text-widget"
+      style={computedStyles}
+      data-cy={dataCy}
+    >
+      {!loadingState && (
         <div
-          data-disabled={disabledState}
-          className="text-widget"
-          style={computedStyles}
-          data-cy={dataCy}
-        >
-          {!loadingState && (
+          style={{ width: '100%', fontSize: textSize }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
+        />
+      )}
+      {loadingState === true && (
+        <div style={{ width: '100%' }}>
+          <center>
             <div
-              style={{ width: '100%', fontSize: textSize }}
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
-            />
-          )}
-          {loadingState === true && (
-            <div style={{ width: '100%' }}>
-              <center>
-                <div
-                  className="spinner-border"
-                  role="status"
-                ></div>
-              </center>
-            </div>
-          )}
+              className="spinner-border"
+              role="status"
+            ></div>
+          </center>
         </div>
       )}
-      {config.UI_LIB === 'mui' && (
-        <div data-cy={dataCy}>
-          {!loadingState && (
-            <Typography
-              className="text-widget"
-              style={computedStyles}
-              sx={{
-                width: '100%',
-                fontSize: textSize,
-                opacity: disabledState ? 0.5 : 1,
-                wordBreak: 'break-word',
-              }}
-            >
-              {DOMPurify.sanitize(text)}
-            </Typography>
-          )}
-          {loadingState && <CircularProgress sx={{ display: 'flex', justifySelf: 'center' }} />}
-        </div>
-      )}
-    </>
+    </div>
   );
 };

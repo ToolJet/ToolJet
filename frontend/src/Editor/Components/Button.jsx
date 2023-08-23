@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
-import { Button as AntButton } from 'antd';
-import { CircularProgress } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import config from 'config';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, registerAction, id, dataCy, setExposedVariable } = props;
@@ -103,65 +99,24 @@ export const Button = function Button(props) {
     fireEvent('onClick');
   };
 
-  // console.log("process.env.UI_LIB", process.env.UI_LIB);
   return (
     <div className="widget-button">
-      {config.UI_LIB === 'tooljet' && (
-        <button
-          disabled={disable}
-          className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
-            'btn-loading': loading,
-            'btn-custom': hasCustomBackground,
-          })}
-          style={computedStyles}
-          onClick={handleClick}
-          onMouseOver={() => {
-            fireEvent('onHover');
-          }}
-          data-cy={dataCy}
-          type="default"
-        >
-          {label}
-        </button>
-      )}
-      {config.UI_LIB === 'ant' && (
-        <AntButton
-          disabled={disable}
-          className={cx('jet-button btn btn-primary p-1 overflow-hidden')}
-          style={computedStyles}
-          onClick={handleClick}
-          onMouseOver={() => {
-            fireEvent('onHover');
-          }}
-          data-cy={dataCy}
-          type="default"
-          loading={loading}
-        >
-          {label}
-        </AntButton>
-      )}
-      {config.UI_LIB === 'mui' && (
-        <LoadingButton
-          disabled={disable}
-          className={cx('jet-button btn btn-primary p-1 overflow-hidden')}
-          style={computedStyles}
-          onClick={handleClick}
-          onMouseOver={() => {
-            fireEvent('onHover');
-          }}
-          data-cy={dataCy}
-          type="default"
-          loading={loading}
-          loadingIndicator={
-            <CircularProgress
-              style={{ color: loaderColor }}
-              size={16}
-            />
-          }
-        >
-          {label}
-        </LoadingButton>
-      )}
+      <button
+        disabled={disable}
+        className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
+          'btn-loading': loading,
+          'btn-custom': hasCustomBackground,
+        })}
+        style={computedStyles}
+        onClick={handleClick}
+        onMouseOver={() => {
+          fireEvent('onHover');
+        }}
+        data-cy={dataCy}
+        type="default"
+      >
+        {label}
+      </button>
     </div>
   );
 };

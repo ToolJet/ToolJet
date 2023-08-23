@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useContext, useRef } from 'react';
+import MUIComponents from './MUIComponents';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -67,6 +68,7 @@ import _ from 'lodash';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import config from 'config';
 
 const AllComponents = {
   Button,
@@ -167,7 +169,8 @@ export const Box = function Box({
     return componentTypes.find((comp) => component.component === comp.component);
   }, [component]);
 
-  const ComponentToRender = AllComponents[component.component];
+  const ComponentToRender =
+    config.UI_LIB === 'mui' ? MUIComponents[component.component] : AllComponents[component.component];
   const [renderCount, setRenderCount] = useState(0);
   const [renderStartTime, setRenderStartTime] = useState(new Date());
   const [resetComponent, setResetStatus] = useState(false);
@@ -350,7 +353,10 @@ export const Box = function Box({
             <></>
           )
         ) : (
-          <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
+          <div
+            className="m-1"
+            style={{ height: '76px', width: '76px', marginLeft: '18px' }}
+          >
             <div
               className="component-image-holder p-2 d-flex flex-column justify-content-center"
               style={{ height: '100%' }}

@@ -2,8 +2,6 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-import config from 'config';
-import { TextField, MenuItem, CircularProgress } from '@mui/material';
 
 export const DropDown = function DropDown({
   height,
@@ -231,88 +229,44 @@ export const DropDown = function DropDown({
 
   return (
     <>
-      {config.UI_LIB === 'tooljet' && (
-        <>
-          <div
-            className="dropdown-widget row g-0"
-            style={{ height, display: visibility ? '' : 'none' }}
-            onMouseDown={(event) => {
-              onComponentClick(id, component, event);
-            }}
-            data-cy={dataCy}
+      <div
+        className="dropdown-widget row g-0"
+        style={{ height, display: visibility ? '' : 'none' }}
+        onMouseDown={(event) => {
+          onComponentClick(id, component, event);
+        }}
+        data-cy={dataCy}
+      >
+        <div className="col-auto my-auto">
+          <label
+            style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }}
+            className="form-label py-0 my-0"
           >
-            <div className="col-auto my-auto">
-              <label
-                style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }}
-                className="form-label py-0 my-0"
-              >
-                {label}
-              </label>
-            </div>
-            <div className="col px-0 h-100">
-              <Select
-                isDisabled={disabledState}
-                value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
-                onChange={(selectedOption, actionProps) => {
-                  if (actionProps.action === 'select-option') {
-                    setCurrentValue(selectedOption.value);
-                    setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
-                    setExposedVariable('selectedOptionLabel', selectedOption.label);
-                  }
-                }}
-                options={selectOptions}
-                styles={customStyles}
-                isLoading={properties.loadingState}
-                onInputChange={onSearchTextChange}
-                onFocus={(event) => onComponentClick(event, component, id)}
-                menuPortalTarget={document.body}
-                placeholder={placeholder}
-              />
-            </div>
-          </div>
-          <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>{validationError}</div>
-        </>
-      )}
-      {config.UI_LIB === 'mui' && (
-        <div
-          className="dropdown-widget row g-0"
-          style={{ height, display: visibility ? '' : 'none' }}
-          data-cy={dataCy}
-        >
-          <TextField
-            select
-            label={label}
-            defaultValue={value}
-            disabled={disabledState}
-            placeholder={placeholder}
-            value={currentValue ? `${currentValue}` : ''}
-            onChange={(event) => {
-              const { value } = event.target;
-              setCurrentValue(value);
-              setExposedVariable('value', value).then(() => fireEvent('onSelect'));
-              setExposedVariable('selectedOptionLabel', selectOptions.find((option) => option.value === value)?.label);
-            }}
-            style={customStyles.control({}, {})}
-            sx={{ '& .MuiOutlinedInput-root': { height } }}
-          >
-            {properties.loadingState && (
-              <CircularProgress
-                size={20}
-                sx={{ display: 'flex', justifySelf: 'center' }}
-              />
-            )}
-            {!properties.loadingState &&
-              selectOptions.map((option) => (
-                <MenuItem
-                  key={option.value}
-                  value={option.value}
-                >
-                  <span>{option.label}</span>
-                </MenuItem>
-              ))}
-          </TextField>
+            {label}
+          </label>
         </div>
-      )}
+        <div className="col px-0 h-100">
+          <Select
+            isDisabled={disabledState}
+            value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
+            onChange={(selectedOption, actionProps) => {
+              if (actionProps.action === 'select-option') {
+                setCurrentValue(selectedOption.value);
+                setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+                setExposedVariable('selectedOptionLabel', selectedOption.label);
+              }
+            }}
+            options={selectOptions}
+            styles={customStyles}
+            isLoading={properties.loadingState}
+            onInputChange={onSearchTextChange}
+            onFocus={(event) => onComponentClick(event, component, id)}
+            menuPortalTarget={document.body}
+            placeholder={placeholder}
+          />
+        </div>
+      </div>
+      <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>{validationError}</div>
     </>
   );
 };

@@ -4,11 +4,6 @@ import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
 import moment from 'moment';
-import config from 'config';
-import { Box } from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers-pro';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { DateRangePicker as DateRangePickerMUI } from '@mui/x-date-pickers-pro/DateRangePicker';
 import { useTranslation } from 'react-i18next';
 
 export const DaterangePicker = function DaterangePicker({
@@ -41,16 +36,14 @@ export const DaterangePicker = function DaterangePicker({
   }, [defaultEndDate, defaultStartDate, formatProp]);
 
   useEffect(() => {
-    if (config.UI_LIB === 'tooljet') {
-      dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.borderRadius = `${Number.parseFloat(
-        borderRadius
-      )}px`;
-      dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.height = `${height}px`;
-      dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.width = `${width - 3}px`;
-      dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.boxShadow = boxShadow;
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.borderRadius = `${Number.parseFloat(
+      borderRadius
+    )}px`;
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.height = `${height}px`;
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.width = `${width - 3}px`;
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.boxShadow = boxShadow;
 
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRangeRef.current, borderRadius, height, width, boxShadow]);
 
   function onDateChange(dates) {
@@ -76,58 +69,25 @@ export const DaterangePicker = function DaterangePicker({
   const { t } = useTranslation();
 
   return (
-    <>
-      {config.UI_LIB === 'tooljet' && (
-        <div
-          className={`daterange-picker-widget ${darkMode && 'theme-dark'} p-0`}
-          style={{ height, display: visibility ? '' : 'none', borderRadius, background: 'transparent' }}
-          data-cy={dataCy}
-        >
-          <DateRangePicker
-            disabled={disabledState}
-            startDate={startDate}
-            startDateId="startDate"
-            isOutsideRange={() => false}
-            endDate={endDate}
-            endDateId="endDate"
-            onDatesChange={(dates) => onDateChange(dates)}
-            onFocusChange={(focus) => focusChanged(focus)}
-            focusedInput={focusedInput}
-            hideKeyboardShortcutsPanel={true}
-            displayFormat={formatProp}
-            ref={dateRangeRef}
-          />
-        </div>
-      )}
-      {config.UI_LIB === 'mui' && (
-        <Box
-          className={`daterange-picker-widget ${darkMode && 'theme-dark'} p-0`}
-          style={{ height, display: visibility ? '' : 'none', borderRadius, background: 'transparent' }}
-          data-cy={dataCy}
-        >
-          {value && formatProp && (
-            <LocalizationProvider dateAdapter={AdapterMoment}>
-              <DateRangePickerMUI
-                disabled={disabledState}
-                format={formatProp}
-                value={value}
-                onChange={(newValue) => setValue(newValue)}
-                localeText={{
-                  start: t('widget.DateRangePicker.description', 'Start'),
-                  end: '',
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    height,
-                    minHeight: '36px',
-                    borderRadius: `${borderRadius}px`,
-                  },
-                }}
-              />
-            </LocalizationProvider>
-          )}
-        </Box>
-      )}
-    </>
+    <div
+      className={`daterange-picker-widget ${darkMode && 'theme-dark'} p-0`}
+      style={{ height, display: visibility ? '' : 'none', borderRadius, background: 'transparent' }}
+      data-cy={dataCy}
+    >
+      <DateRangePicker
+        disabled={disabledState}
+        startDate={startDate}
+        startDateId="startDate"
+        isOutsideRange={() => false}
+        endDate={endDate}
+        endDateId="endDate"
+        onDatesChange={(dates) => onDateChange(dates)}
+        onFocusChange={(focus) => focusChanged(focus)}
+        focusedInput={focusedInput}
+        hideKeyboardShortcutsPanel={true}
+        displayFormat={formatProp}
+        ref={dateRangeRef}
+      />
+    </div>
   );
 };

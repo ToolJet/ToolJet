@@ -4,10 +4,6 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import config from 'config';
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { localizeMessage } from '@/_helpers/localize';
 
@@ -315,156 +311,81 @@ export const FilePicker = ({
 
   return (
     <React.Fragment>
-      {config.UI_LIB === 'tooljet' && (
-        <section>
-          <div
-            className="container"
-            {...getRootProps({ style, className: 'dropzone' })}
-            data-cy={dataCy}
-          >
-            <input {...getInputProps()} />
-            <FilePicker.Signifiers
-              signifier={accepted}
-              feedback={null}
-              cls="spinner-border text-azure p-0"
-            />
+      <section>
+        <div
+          className="container"
+          {...getRootProps({ style, className: 'dropzone' })}
+          data-cy={dataCy}
+        >
+          <input {...getInputProps()} />
+          <FilePicker.Signifiers
+            signifier={accepted}
+            feedback={null}
+            cls="spinner-border text-azure p-0"
+          />
 
-            {showSelectedFiles && !accepted ? (
-              <FilePicker.AcceptedFiles
-                width={width - 10}
-                height={height}
-              >
-                {selectedFiles.map((acceptedFile, index) => (
-                  <>
-                    <div
-                      key={index}
-                      className="col-10"
+          {showSelectedFiles && !accepted ? (
+            <FilePicker.AcceptedFiles
+              width={width - 10}
+              height={height}
+            >
+              {selectedFiles.map((acceptedFile, index) => (
+                <>
+                  <div
+                    key={index}
+                    className="col-10"
+                  >
+                    <FilePicker.Signifiers
+                      signifier={selectedFiles.length > 0}
+                      feedback={acceptedFile.name}
+                      cls={`${darkMode ? 'text-light' : 'text-secondary'} d-flex justify-content-start file-list mb-2`}
+                    />
+                  </div>
+                  <div className="col-2 mt-0">
+                    <button
+                      className="btn badge bg-azure-lt"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearSelectedFiles(index);
+                      }}
                     >
-                      <FilePicker.Signifiers
-                        signifier={selectedFiles.length > 0}
-                        feedback={acceptedFile.name}
-                        cls={`${
-                          darkMode ? 'text-light' : 'text-secondary'
-                        } d-flex justify-content-start file-list mb-2`}
+                      <img
+                        src="assets/images/icons/trash.svg"
+                        width="12"
+                        height="12"
+                        className="mx-1"
                       />
-                    </div>
-                    <div className="col-2 mt-0">
-                      <button
-                        className="btn badge bg-azure-lt"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          clearSelectedFiles(index);
-                        }}
-                      >
-                        <img
-                          src="assets/images/icons/trash.svg"
-                          width="12"
-                          height="12"
-                          className="mx-1"
-                        />
-                      </button>
-                    </div>
-                  </>
-                ))}
-              </FilePicker.AcceptedFiles>
-            ) : (
-              <FilePicker.Signifiers
-                signifier={!isDragAccept && !accepted & !isDragReject}
-                feedback={instructionText}
-                cls={`${darkMode ? 'text-light' : 'text-dark'} mt-3`}
-              />
-            )}
+                    </button>
+                  </div>
+                </>
+              ))}
+            </FilePicker.AcceptedFiles>
+          ) : (
+            <FilePicker.Signifiers
+              signifier={!isDragAccept && !accepted & !isDragReject}
+              feedback={instructionText}
+              cls={`${darkMode ? 'text-light' : 'text-dark'} mt-3`}
+            />
+          )}
 
-            <FilePicker.Signifiers
-              signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
-              feedback={'All files will be accepted'}
-              cls="text-lime mt-3"
-            />
-            <FilePicker.Signifiers
-              signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
-              feedback={'Max file reached!'}
-              cls="text-red mt-3"
-            />
+          <FilePicker.Signifiers
+            signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
+            feedback={'All files will be accepted'}
+            cls="text-lime mt-3"
+          />
+          <FilePicker.Signifiers
+            signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
+            feedback={'Max file reached!'}
+            cls="text-red mt-3"
+          />
 
-            <FilePicker.Signifiers
-              signifier={isDragReject}
-              feedback={'Files will be rejected!'}
-              cls="text-red mt-3"
-            />
-          </div>
-        </section>
-      )}
-      {config.UI_LIB === 'mui' && (
-        <section>
-          <Box
-            className="container"
-            {...getRootProps({ style, className: 'dropzone' })}
-            data-cy={dataCy}
-          >
-            <input {...getInputProps()} />
-            <FilePicker.Signifiers
-              signifier={accepted}
-              feedback={null}
-              cls="spinner-border text-azure p-0"
-            />
-
-            {showSelectedFiles && !accepted ? (
-              <FilePicker.AcceptedFiles
-                width={width - 10}
-                height={height}
-                style={{ display: 'flex' }}
-              >
-                {selectedFiles.map((acceptedFile, index) => (
-                  <>
-                    <div
-                      key={index}
-                      style={{ width: '90%', display: 'flex', justifyContent: 'left' }}
-                    >
-                      <FilePicker.Signifiers
-                        signifier={selectedFiles.length > 0}
-                        feedback={acceptedFile.name}
-                        cls={`${darkMode ? 'text-light' : 'text-secondary'} file-list mb-2`}
-                      />
-                    </div>
-                    <div style={{ width: '10%', display: 'flex', justifyContent: 'center' }}>
-                      <DeleteIcon
-                        color="error"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          clearSelectedFiles(index);
-                        }}
-                      />
-                    </div>
-                  </>
-                ))}
-              </FilePicker.AcceptedFiles>
-            ) : (
-              <FilePicker.Signifiers
-                signifier={!isDragAccept && !accepted & !isDragReject}
-                feedback={instructionText}
-                cls={`${darkMode ? 'text-light' : 'text-dark'} mt-3`}
-              />
-            )}
-
-            <FilePicker.Signifiers
-              signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
-              feedback={localizeMessage('All files will be accepted')}
-              cls="text-lime mt-3"
-            />
-            <FilePicker.Signifiers
-              signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
-              feedback={localizeMessage('Max file reached!')}
-              cls="text-red mt-3"
-            />
-
-            <FilePicker.Signifiers
-              signifier={isDragReject}
-              feedback={localizeMessage('Files will be rejected!')}
-              cls="text-red mt-3"
-            />
-          </Box>
-        </section>
-      )}
+          <FilePicker.Signifiers
+            signifier={isDragReject}
+            feedback={'Files will be rejected!'}
+            cls="text-red mt-3"
+          />
+        </div>
+      </section>
     </React.Fragment>
   );
 };
@@ -490,15 +411,7 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
   };
   return (
     <aside style={styles}>
-      {config.UI_LIB === 'tooljet' && <span className="text-info">Files</span>}
-      {config.UI_LIB === 'mui' && (
-        <Typography
-          variant="subtitle1"
-          color="blue"
-        >
-          {localizeMessage('Files', 'Archivos')}
-        </Typography>
-      )}
+      <span className="text-info">Files</span>
       <div className="row accepted-files">{children}</div>
     </aside>
   );

@@ -2,12 +2,6 @@ import React, { useEffect, useState } from 'react';
 import DatePickerComponent from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
-import config from 'config';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { DateTimePicker } from '@mui/x-date-pickers';
-import 'dayjs/locale/es';
-import 'moment/locale/es';
 
 export const Datepicker = function Datepicker({
   height,
@@ -23,7 +17,6 @@ export const Datepicker = function Datepicker({
   fireEvent,
   dataCy,
 }) {
-  moment.locale(config.LANGUAGE);
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius, boxShadow } = styles;
@@ -84,83 +77,43 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  const isDateDisabled = (date) => {
-    return excludedDates.some((disabledDate) => moment(disabledDate).isSame(date, 'day'));
-  };
-
-  const fromPickerToMoment = (value) => {
-    return moment(value);
-  };
-
-  const fromMomentToPicker = (value) => {
-    return value.toDate();
-  };
   return (
-    <>
-      {config.UI_LIB === 'tooljet' && (
-        <div
-          data-disabled={disabledState}
-          className={`datepicker-widget ${darkMode && 'theme-dark'}`}
-          data-cy={dataCy}
-          style={{
-            height,
-            display: visibility ? '' : 'none',
-            background: 'none',
-          }}
-        >
-          <DatePickerComponent
-            className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
-              darkMode ? 'bg-dark color-white' : 'bg-light'
-            }`}
-            selected={date}
-            value={date !== null ? computeDateString(date) : 'select date'}
-            onChange={(date) => onDateChange(date)}
-            showTimeInput={enableTime ? true : false}
-            showTimeSelectOnly={enableDate ? false : true}
-            onFocus={(event) => {
-              onComponentClick(id, component, event);
-            }}
-            showMonthDropdown
-            showYearDropdown
-            dropdownMode="select"
-            excludeDates={excludedDates}
-            customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
-            timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
-          />
+    <div
+      data-disabled={disabledState}
+      className={`datepicker-widget ${darkMode && 'theme-dark'}`}
+      data-cy={dataCy}
+      style={{
+        height,
+        display: visibility ? '' : 'none',
+        background: 'none',
+      }}
+    >
+      <DatePickerComponent
+        className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
+          darkMode ? 'bg-dark color-white' : 'bg-light'
+        }`}
+        selected={date}
+        value={date !== null ? computeDateString(date) : 'select date'}
+        onChange={(date) => onDateChange(date)}
+        showTimeInput={enableTime ? true : false}
+        showTimeSelectOnly={enableDate ? false : true}
+        onFocus={(event) => {
+          onComponentClick(id, component, event);
+        }}
+        showMonthDropdown
+        showYearDropdown
+        dropdownMode="select"
+        excludeDates={excludedDates}
+        customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
+        timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
+      />
 
-          <div
-            data-cy="date-picker-invalid-feedback"
-            className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}
-          >
-            {validationError}
-          </div>
-        </div>
-      )}
-      {config.UI_LIB === 'mui' && (
-        <LocalizationProvider dateAdapter={AdapterMoment}>
-          <DateTimePicker
-            label="Seleccione Fecha"
-            format={selectedDateFormat}
-            views={!enableTime ? ['year', 'month', 'day'] : undefined}
-            disableOpenPicker={!enableDate}
-            disabled={disabledState}
-            shouldDisableDate={(date) => isDateDisabled(date)}
-            value={date ? fromPickerToMoment(date) : null}
-            onChange={(newValue) => onDateChange(fromMomentToPicker(newValue))}
-            sx={{
-              width: '100%',
-              display: visibility ? '' : 'none',
-              '& .MuiOutlinedInput-root': {
-                height,
-                minWidth: '176px',
-                minHeight: '36px',
-                borderRadius: `${borderRadius}px`,
-                boxShadow: boxShadow,
-              },
-            }}
-          />
-        </LocalizationProvider>
-      )}
-    </>
+      <div
+        data-cy="date-picker-invalid-feedback"
+        className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}
+      >
+        {validationError}
+      </div>
+    </div>
   );
 };

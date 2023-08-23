@@ -1,8 +1,6 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import { MultiSelect } from 'react-multi-select-component';
-import config from 'config';
-import { Autocomplete, Box, Checkbox, FormControlLabel, TextField } from '@mui/material';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
@@ -154,122 +152,38 @@ export const Multiselect = function Multiselect({
   );
 
   return (
-    <>
-      {config.UI_LIB === 'tooljet' && (
-        <div
-          className="multiselect-widget row g-0"
-          data-cy={dataCy}
-          style={{ height, display: visibility ? '' : 'none' }}
-          onFocus={() => {
-            onComponentClick(this, id, component);
-          }}
+    <div
+      className="multiselect-widget row g-0"
+      data-cy={dataCy}
+      style={{ height, display: visibility ? '' : 'none' }}
+      onFocus={() => {
+        onComponentClick(this, id, component);
+      }}
+    >
+      <div className="col-auto my-auto d-flex align-items-center">
+        <label
+          style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
+          className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
+          data-cy={`multiselect-label-${component.name.toLowerCase()}`}
         >
-          <div className="col-auto my-auto d-flex align-items-center">
-            <label
-              style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
-              className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
-              data-cy={`multiselect-label-${component.name.toLowerCase()}`}
-            >
-              {label}
-            </label>
-          </div>
-          <div
-            className="col px-0 h-100"
-            style={{ borderRadius: parseInt(borderRadius), boxShadow }}
-          >
-            <MultiSelect
-              hasSelectAll={showAllOption ?? false}
-              options={selectOptions}
-              value={selected}
-              onChange={onChangeHandler}
-              labelledBy={'Select'}
-              disabled={disabledState}
-              className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
-              ItemRenderer={ItemRenderer}
-            />
-          </div>
-        </div>
-      )}
-
-      {config.UI_LIB === 'mui' && (
-        <Autocomplete
-          id={id}
-          multiple
-          fullWidth
-          size="small"
+          {label}
+        </label>
+      </div>
+      <div
+        className="col px-0 h-100"
+        style={{ borderRadius: parseInt(borderRadius), boxShadow }}
+      >
+        <MultiSelect
+          hasSelectAll={showAllOption ?? false}
+          options={selectOptions}
           value={selected}
-          options={[{ label: 'Select All', value: 'Select All', isShow: showAllOption }, ...selectOptions]}
-          getOptionLabel={(option) => option.label}
-          isOptionEqualToValue={(option, value) => option.value === value.value}
+          onChange={onChangeHandler}
+          labelledBy={'Select'}
           disabled={disabledState}
-          disableCloseOnSelect
-          renderOption={(props, option, state, ownerState) => {
-            if (option.label === 'Select All') {
-              return (
-                <>
-                  {showAllOption ? (
-                    <Box
-                      {...props}
-                      onClick={onClickAll}
-                      sx={{
-                        borderRadius: '8px',
-                        margin: '5px',
-                        padding: '8px',
-                      }}
-                    >
-                      <FormControlLabel
-                        control={<Checkbox checked={checked} />}
-                        label={option.label}
-                        component="li"
-                      />
-                    </Box>
-                  ) : (
-                    <></>
-                  )}
-                </>
-              );
-            } else {
-              return (
-                <Box
-                  {...props}
-                  sx={{
-                    borderRadius: '8px',
-                    margin: '5px',
-                    padding: '8px',
-                  }}
-                >
-                  <FormControlLabel
-                    control={<Checkbox checked={props['aria-selected']} />}
-                    label={ownerState.getOptionLabel(option)}
-                    component="li"
-                  />
-                </Box>
-              );
-            }
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label={label}
-              sx={{ display: visibility ? '' : 'none' }}
-            />
-          )}
-          onChange={(event, newValue) => {
-            setSelected(newValue);
-          }}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              minHeight: '36px',
-              height,
-              borderRadius: `${styles.borderRadius}px`,
-              color: styles.textColor,
-              backgroundColor:
-                darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
-              boxShadow: styles.boxShadow,
-            },
-          }}
+          className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
+          ItemRenderer={ItemRenderer}
         />
-      )}
-    </>
+      </div>
+    </div>
   );
 };
