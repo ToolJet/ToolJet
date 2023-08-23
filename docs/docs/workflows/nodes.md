@@ -24,7 +24,7 @@ The **If condition** node triggers one of the outgoing flows depending on the gi
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/nodes/if-condition-node.png" alt="If Condition Node" />
 </div>
 <br/>
-<div style={{display: 'flex', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
+<div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
         - If you click on the <b>If condition</b> node, a dialog box will appear on the right that accepts a logical expression. 

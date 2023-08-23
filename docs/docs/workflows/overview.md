@@ -43,7 +43,7 @@ For this guide, we've created a MonthlySales table in PostgreSQL with 5 columns 
 
 We can now see a node named *postgresql1* connected to the outgoing flow of the **Start trigger** node on the canvas. Click on the *postgresql1* node, a dialog box will show up on the right.   
 
-<div style={{display: 'flex', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
+<div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
         - Click on the input field next to the PostgreSQL logo and rename the node to <i>fetchSalesData</i>. 
@@ -77,7 +77,7 @@ Create an outgoing flow from the *fetchSalesData* node that we just created by c
 
 The **JavaScript** node lets you run JavaScript code to transform data and perform other tasks. The JavaScript code executes on the server side to protect sensitive logic and data from exposure to the client. In our example, we are using it to convert the result from the previous node into a string. 
     
-<div style={{display: 'flex', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
+<div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
         - In the JavaScript node, the data retrieved from the <i>fetchSalesData</i> node can be accessed using the property - <b>fetchSalesData.data</b>. 
@@ -146,7 +146,7 @@ The **If condition** node accepts a logical expression and evaluates it. The out
 
 Click on the **If condition** node, a dialog box will appear on the right. 
 
-<div style={{display: 'flex', paddingTop:'10px', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
+<div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
         - Enter the below logical expression in the input area: <br/>
@@ -228,6 +228,4 @@ Continue learning about the different elements of ToolJet Workflows using the be
 **[Types Of Nodes](/docs/workflows/nodes)** <br/>
 **[Overview of Logs](/docs/workflows/logs)** <br/>
 **[Permissions in Workflows](/docs/workflows/permissions)**
-
-
 
