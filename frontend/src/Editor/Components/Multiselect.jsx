@@ -38,6 +38,22 @@ export const Multiselect = function Multiselect({
   }
 
   useEffect(() => {
+    let newValues = [];
+
+    if (_.intersection(values, value)?.length === value?.length) newValues = value;
+
+    setExposedVariable('values', newValues);
+    setSelected(selectOptions.filter((option) => newValues.includes(option.value)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(values), JSON.stringify(display_values)]);
+
+  useEffect(() => {
+    setExposedVariable('values', value);
+    setSelected(selectOptions.filter((option) => value.includes(option.value)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(value), JSON.stringify(display_values)]);
+
+  useEffect(() => {
     if (value && !selected) {
       setSelected(selectOptions.filter((option) => properties.value.includes(option.value)));
     }
@@ -53,21 +69,10 @@ export const Multiselect = function Multiselect({
     setExposedVariable(
       'values',
       items.map((item) => item.value)
-    );
-    fireEvent('onSelect');
+    ).then(() => fireEvent('onSelect'));
   };
 
   useEffect(() => {
-    let newValues = [];
-
-    if (_.intersection(values, value)?.length === value?.length) newValues = value;
-
-    setExposedVariable('values', newValues);
-    setSelected(selectOptions.filter((option) => newValues.includes(option.value)));
-
-    setExposedVariable('values', value);
-    setSelected(selectOptions.filter((option) => value.includes(option.value)));
-
     setExposedVariable('selectOption', async function (value) {
       if (
         selectOptions.some((option) => option.value === value) &&
@@ -84,11 +89,13 @@ export const Multiselect = function Multiselect({
         setExposedVariable(
           'values',
           newSelected.map((item) => item.value)
-        );
-        fireEvent('onSelect');
+        ).then(() => fireEvent('onSelect'));
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  useEffect(() => {
     setExposedVariable('deselectOption', async function (value) {
       if (selectOptions.some((option) => option.value === value) && selected.some((option) => option.value === value)) {
         const newSelected = [
@@ -100,20 +107,21 @@ export const Multiselect = function Multiselect({
         setExposedVariable(
           'values',
           newSelected.map((item) => item.value)
-        );
-        fireEvent('onSelect');
-      }
-    });
-
-    setExposedVariable('clearSelections', async function () {
-      if (selected.length >= 1) {
-        setSelected([]);
-        setExposedVariable('values', []);
-        fireEvent('onSelect');
+        ).then(() => fireEvent('onSelect'));
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values), JSON.stringify(display_values), selected, setSelected]);
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('clearSelections', async function () {
+      if (selected.length >= 1) {
+        setSelected([]);
+        setExposedVariable('values', []).then(() => fireEvent('onSelect'));
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
