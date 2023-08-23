@@ -33,13 +33,27 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
     >
       <div className="form-group mb-3 ">
         <div>
-          <div className="csv-upload-icon-wrap" onClick={handleClick} data-cy="icon-bulk-upload">
-            <BulkIcon name="fileupload" width="27" fill="#3E63DD" />
+          <div
+            className="csv-upload-icon-wrap"
+            onClick={handleClick}
+            data-cy="icon-bulk-upload"
+          >
+            <BulkIcon
+              name="fileupload"
+              width="27"
+              fill="#3E63DD"
+            />
           </div>
-          <p className="tj-text tj-text-md font-weight-500 select-csv-text" data-cy="helper-text-select-file">
+          <p
+            className="tj-text tj-text-md font-weight-500 select-csv-text"
+            data-cy="helper-text-select-file"
+          >
             Select a CSV file to upload
           </p>
-          <span className="tj-text tj-text-sm drag-and-drop-text" data-cy="helper-text-drop-file">
+          <span
+            className="tj-text tj-text-sm drag-and-drop-text"
+            data-cy="helper-text-drop-file"
+          >
             {!isDragActive ? 'Or drag and drop it here' : ''}
           </span>
           <input
@@ -61,7 +75,10 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
             className="form-control"
             data-cy="input-field-bulk-upload"
           />
-          <span className="file-upload-error" data-cy="file-error">
+          <span
+            className="file-upload-error"
+            data-cy="file-error"
+          >
             {errors['file']}
           </span>
           <ul>{acceptedFiles}</ul>

@@ -4,7 +4,13 @@ import { MultiSelect } from 'react-multi-select-component';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
-    <input type="checkbox" onClick={onClick} checked={checked} tabIndex={-1} disabled={disabled} />
+    <input
+      type="checkbox"
+      onClick={onClick}
+      checked={checked}
+      tabIndex={-1}
+      disabled={disabled}
+    />
     <span>{option.label}</span>
   </div>
 );
@@ -26,6 +32,26 @@ export const Multiselect = function Multiselect({
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const [selected, setSelected] = useState([]);
+
+  const [checked, setChecked] = useState(false);
+  React.useEffect(() => {
+    if (selected.length === selectOptions.length) {
+      setChecked(true);
+    } else {
+      setChecked(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected]);
+
+  const onClickAll = () => {
+    if (selected.length !== 0 && selected.length !== selectOptions.length) {
+      setSelected([...selectOptions]);
+    } else if (selected.length === 0) {
+      setSelected([...selectOptions]);
+    } else {
+      setSelected([]);
+    }
+  };
 
   let selectOptions = [];
   try {
@@ -143,7 +169,10 @@ export const Multiselect = function Multiselect({
           {label}
         </label>
       </div>
-      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius), boxShadow }}>
+      <div
+        className="col px-0 h-100"
+        style={{ borderRadius: parseInt(borderRadius), boxShadow }}
+      >
         <MultiSelect
           hasSelectAll={showAllOption ?? false}
           options={selectOptions}

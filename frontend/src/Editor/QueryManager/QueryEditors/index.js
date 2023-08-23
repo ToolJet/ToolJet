@@ -32,7 +32,13 @@ export const allSources = {
     );
     return accumulator;
   }, {}),
-  Tooljetdb: (props) => <DynamicForm schema={tooljetDbOperations} {...props} layout="horizontal" />,
+  Tooljetdb: (props) => (
+    <DynamicForm
+      schema={tooljetDbOperations}
+      {...props}
+      layout="horizontal"
+    />
+  ),
   Restapi,
   Runjs,
   Runpy,
@@ -43,6 +49,11 @@ export const allSources = {
 
 export const source = (props) => (
   <div className="query-editor-dynamic-form-container">
-    <DynamicForm schema={props.pluginSchema} {...props} computeSelectStyles={computeSelectStyles} layout="horizontal" />
+    <DynamicForm
+      schema={props.pluginSchema}
+      {...props}
+      computeSelectStyles={computeSelectStyles}
+      layout="horizontal"
+    />
   </div>
 );

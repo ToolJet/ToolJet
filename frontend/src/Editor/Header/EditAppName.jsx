@@ -32,7 +32,10 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
   };
 
   return (
-    <ToolTip message={name} placement="bottom">
+    <ToolTip
+      message={name}
+      placement="bottom"
+    >
       <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
         <input
           type="text"

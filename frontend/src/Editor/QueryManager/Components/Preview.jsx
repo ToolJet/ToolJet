@@ -46,13 +46,23 @@ const Preview = ({ darkMode }) => {
   };
 
   return (
-    <div className="preview-header preview-section d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
+    <div
+      className="preview-header preview-section d-flex align-items-baseline font-weight-500"
+      ref={previewPanelRef}
+    >
       <div className="w-100 border rounded-top">
-        <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
+        <Tab.Container
+          activeKey={key}
+          onSelect={(k) => setKey(k)}
+          defaultActiveKey="raw"
+        >
           <div className="position-relative">
             {previewLoading && (
               <center className="position-absolute w-100">
-                <div className="spinner-border text-azure mt-5" role="status"></div>
+                <div
+                  className="spinner-border text-azure mt-5"
+                  role="status"
+                ></div>
               </center>
             )}
             <Row className="py-2 border-bottom preview-section-header m-0">
@@ -84,21 +94,47 @@ const Preview = ({ darkMode }) => {
               </Col>
               <Col className="text-right d-flex align-items-center justify-content-end">
                 {queryPreviewData && (
-                  <ButtonSolid variant="ghostBlack" size="sm" onClick={() => setPreviewData()}>
-                    <RemoveRectangle width={17} viewBox="0 0 28 28" fill="var(--slate8)" /> Clear
+                  <ButtonSolid
+                    variant="ghostBlack"
+                    size="sm"
+                    onClick={() => setPreviewData()}
+                  >
+                    <RemoveRectangle
+                      width={17}
+                      viewBox="0 0 28 28"
+                      fill="var(--slate8)"
+                    />{' '}
+                    Clear
                   </ButtonSolid>
                 )}
               </Col>
             </Row>
             <Row className="m-0">
               <Tab.Content style={{ overflowWrap: 'anywhere', padding: 0 }}>
-                <Tab.Pane eventKey="json" transition={false}>
-                  <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
-                    <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
+                <Tab.Pane
+                  eventKey="json"
+                  transition={false}
+                >
+                  <div
+                    className="w-100 preview-data-container"
+                    data-cy="preview-json-data-container"
+                  >
+                    <JSONTree
+                      theme={theme}
+                      data={queryPreviewData}
+                      invertTheme={!darkMode}
+                      collectionLimit={100}
+                    />
                   </div>
                 </Tab.Pane>
-                <Tab.Pane eventKey="raw" transition={false}>
-                  <div className={`p-3 raw-container preview-data-container`} data-cy="preview-raw-data-container">
+                <Tab.Pane
+                  eventKey="raw"
+                  transition={false}
+                >
+                  <div
+                    className={`p-3 raw-container preview-data-container`}
+                    data-cy="preview-raw-data-container"
+                  >
                     {renderRawData()}
                   </div>
                 </Tab.Pane>

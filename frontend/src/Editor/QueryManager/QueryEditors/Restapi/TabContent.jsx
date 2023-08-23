@@ -27,7 +27,10 @@ export default ({
         options.map((option, index) => {
           return (
             <>
-              <div className="row-container query-manager-border-color" key={index}>
+              <div
+                className="row-container query-manager-border-color"
+                key={index}
+              >
                 <div className="fields-container mb-2">
                   <div className="field col-4 overflow-hidden border-top border-bottom border-start rounded-start">
                     <CodeHinter
@@ -58,7 +61,10 @@ export default ({
                       removeKeyValuePair(paramType, index);
                     }}
                   >
-                    <Trash fill="var(--slate9)" style={{ height: '16px' }} />
+                    <Trash
+                      fill="var(--slate9)"
+                      style={{ height: '16px' }}
+                    />
                   </button>
                 </div>
               </div>
@@ -79,9 +85,21 @@ export default ({
           />
         </div>
       ) : (
-        <div className="d-flex mb-2" style={{ maxHeight: '32px' }}>
-          <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(paramType)}>
-            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+        <div
+          className="d-flex mb-2"
+          style={{ maxHeight: '32px' }}
+        >
+          <ButtonSolid
+            variant="ghostBlue"
+            size="sm"
+            onClick={() => addNewKeyValuePair(paramType)}
+          >
+            <AddRectangle
+              width="15"
+              fill="#3E63DD"
+              opacity="1"
+              secondaryFill="#ffffff"
+            />
             &nbsp;&nbsp;{t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}
           </ButtonSolid>
         </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { localizeMessage } from '@/_helpers/localize';
 
 export const PasswordInput = ({
   height,
@@ -16,7 +17,7 @@ export const PasswordInput = ({
   const placeholder = properties.placeholder;
 
   const [passwordValue, setPasswordValue] = React.useState('');
-  const { isValid, validationError } = validate(passwordValue);
+  let { isValid, validationError } = validate(passwordValue);
 
   const computedStyles = {
     height,
@@ -50,8 +51,11 @@ export const PasswordInput = ({
         style={computedStyles}
         data-cy={dataCy}
       />
-      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
-        {validationError}
+      <div
+        className="invalid-feedback"
+        data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+      >
+        {localizeMessage(validationError)}
       </div>
     </div>
   );

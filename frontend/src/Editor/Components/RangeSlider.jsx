@@ -63,7 +63,11 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   };
 
   return (
-    <div style={computedStyles} className="range-slider" data-cy={dataCy}>
+    <div
+      style={computedStyles}
+      className="range-slider"
+      data-cy={dataCy}
+    >
       {enableTwoHandle ? (
         <Slider
           range

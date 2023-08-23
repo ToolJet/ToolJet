@@ -120,14 +120,20 @@ function SettingsPage(props) {
   };
 
   return (
-    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
+    <Layout
+      switchDarkMode={props.switchDarkMode}
+      darkMode={props.darkMode}
+    >
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
           <div style={{ height: `calc(100vh - 2.5rem - 64px)` }}>
             <div className="container-xl">
               <div className="profile-page-card">
                 <div className="card-header">
-                  <h3 className="card-title" data-cy="card-title-profile">
+                  <h3
+                    className="card-title"
+                    data-cy="card-title-profile"
+                  >
                     {t('header.profileSettingPage.profile', 'Profile')}
                   </h3>
                 </div>
@@ -135,7 +141,10 @@ function SettingsPage(props) {
                   <div className="row">
                     <div className="col">
                       <div className="mb-3 tj-app-input">
-                        <label className="form-label" data-cy="first-name-label">
+                        <label
+                          className="form-label"
+                          data-cy="first-name-label"
+                        >
                           {t('header.profileSettingPage.firstName', 'First name')}
                         </label>
                         <input
@@ -152,7 +161,10 @@ function SettingsPage(props) {
                     </div>
                     <div className="col">
                       <div className="mb-3 tj-app-input">
-                        <label className="form-label" data-cy="last-name-label">
+                        <label
+                          className="form-label"
+                          data-cy="last-name-label"
+                        >
                           {t('header.profileSettingPage.lastName', 'Last name')}
                         </label>
                         <input
@@ -171,7 +183,10 @@ function SettingsPage(props) {
                   <div className="row">
                     <div className="col">
                       <div className="mb-3 tj-app-input">
-                        <label className="form-label" data-cy="email-label">
+                        <label
+                          className="form-label"
+                          data-cy="email-label"
+                        >
                           {t('header.profileSettingPage.email', 'Email')}
                         </label>
                         <input
@@ -188,7 +203,10 @@ function SettingsPage(props) {
                     </div>
                     <div className="col">
                       <div className="mb-3 tj-app-input">
-                        <label className="form-label" data-cy="avatar-label">
+                        <label
+                          className="form-label"
+                          data-cy="avatar-label"
+                        >
                           {t('header.profileSettingPage.avatar', 'Avatar')}
                         </label>
                         <input
@@ -209,7 +227,11 @@ function SettingsPage(props) {
                       </div>
                     </div>
                   </div>
-                  <ButtonSolid isLoading={updateInProgress} onClick={updateDetails} data-cy="update-button">
+                  <ButtonSolid
+                    isLoading={updateInProgress}
+                    onClick={updateDetails}
+                    data-cy="update-button"
+                  >
                     {t('header.profileSettingPage.update', 'Update')}
                   </ButtonSolid>
                   {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
@@ -220,7 +242,10 @@ function SettingsPage(props) {
               <br />
               <div className="profile-page-card">
                 <div className="card-header">
-                  <h3 className="card-title" data-cy="card-title-change-password">
+                  <h3
+                    className="card-title"
+                    data-cy="card-title-change-password"
+                  >
                     {t('header.profileSettingPage.changePassword', 'Change password')}
                   </h3>
                 </div>
@@ -228,7 +253,10 @@ function SettingsPage(props) {
                   <div className="row">
                     <div className="col">
                       <div className="mb-3 tj-app-input">
-                        <label className="form-label" data-cy="current-password-label">
+                        <label
+                          className="form-label"
+                          data-cy="current-password-label"
+                        >
                           {t('header.profileSettingPage.currentPassword', 'Current password')}
                         </label>
                         <input
@@ -244,7 +272,10 @@ function SettingsPage(props) {
                     </div>
                     <div className="col">
                       <div className="mb-3 tj-app-input">
-                        <label className="form-label" data-cy="new-password-label">
+                        <label
+                          className="form-label"
+                          data-cy="new-password-label"
+                        >
                           {t('header.profileSettingPage.newPassword', 'New password')}
                         </label>
                         <input
@@ -262,7 +293,10 @@ function SettingsPage(props) {
                   </div>
                   <div className="w-50 confirm-input">
                     <div className="mb-3 tj-app-input">
-                      <label className="form-label" data-cy="confirm-password-label">
+                      <label
+                        className="form-label"
+                        data-cy="confirm-password-label"
+                      >
                         {t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                       </label>
                       <input

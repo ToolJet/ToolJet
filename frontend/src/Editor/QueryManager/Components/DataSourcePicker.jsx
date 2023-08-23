@@ -47,18 +47,32 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
 
   return (
     <>
-      <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
+      <h4
+        className="w-100 text-center"
+        data-cy={'label-select-datasource'}
+        style={{ fontWeight: 500 }}
+      >
         Connect to a datasource
       </h4>
-      <p className="mb-3" style={{ textAlign: 'center' }}>
+      <p
+        className="mb-3"
+        style={{ textAlign: 'center' }}
+      >
         Select a datasource to start creating a new query. To know more about queries in ToolJet, you can read our
         &nbsp;
-        <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
+        <a
+          target="_blank"
+          href="https://docs.tooljet.com/docs/app-builder/query-panel"
+          rel="noreferrer"
+        >
           documentation
         </a>
       </p>
       <div>
-        <label className="form-label" data-cy={`landing-page-label-default`}>
+        <label
+          className="form-label"
+          data-cy={`landing-page-label-default`}
+        >
           Default
         </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
@@ -74,13 +88,21 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                 className="text-truncate"
                 data-cy={`${source.kind.toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
               >
-                <DataSourceIcon source={source} height={14} /> {source.shortName}
+                <DataSourceIcon
+                  source={source}
+                  height={14}
+                />{' '}
+                {source.shortName}
               </ButtonSolid>
             );
           })}
         </div>
         <div className="d-flex d-flex justify-content-between">
-          <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
+          <label
+            className="form-label py-1"
+            style={{ width: 'auto' }}
+            data-cy={`label-avilable-ds`}
+          >
             {`Available Datasources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
           <ButtonSolid
@@ -89,7 +111,10 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
             onClick={handleAddClick}
             data-cy={`landing-page-add-new-ds-button`}
           >
-            <Plus style={{ height: '16px' }} fill="var(--indigo9)" />
+            <Plus
+              style={{ height: '16px' }}
+              fill="var(--indigo9)"
+            />
             Add new
           </ButtonSolid>
         </div>
@@ -107,7 +132,11 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
             )}
             <Row className="mt-2">
               {filteredUserDefinedDataSources.map((source) => (
-                <Col sm="6" key={source.id} className="ps-1">
+                <Col
+                  sm="6"
+                  key={source.id}
+                  className="ps-1"
+                >
                   <ButtonSolid
                     key={`${source.id}-${source.kind}`}
                     variant="ghostBlack"
@@ -120,9 +149,16 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                     data-tooltip-content={source.name}
                     data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
                   >
-                    <DataSourceIcon source={source} height={14} styles={{ minWidth: 14 }} />
+                    <DataSourceIcon
+                      source={source}
+                      height={14}
+                      styles={{ minWidth: 14 }}
+                    />
                     <span className="text-truncate">{source.name}</span>
-                    <Tooltip id="tooltip-for-query-panel-ds-picker-btn" className="tooltip" />
+                    <Tooltip
+                      id="tooltip-for-query-panel-ds-picker-btn"
+                      className="tooltip"
+                    />
                   </ButtonSolid>
                 </Col>
               ))}
@@ -135,7 +171,10 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
 }
 
 const EmptyDataSourceBanner = () => (
-  <div className="bg-slate3 p-3 d-flex align-items-center lh-lg mt-2" style={{ borderRadius: '6px' }}>
+  <div
+    className="bg-slate3 p-3 d-flex align-items-center lh-lg mt-2"
+    style={{ borderRadius: '6px' }}
+  >
     <div className="me-2">
       <Information fill="var(--slate9)" />
     </div>

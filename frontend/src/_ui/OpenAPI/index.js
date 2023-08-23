@@ -205,7 +205,10 @@ const OpenApi = ({
         <div className="p-3">
           {!validationError ? (
             <>
-              <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
+              <div
+                className="spinner-border spinner-border-sm text-azure mx-2"
+                role="status"
+              ></div>
               Please wait while we are validating the OpenAPI specification.
             </>
           ) : (

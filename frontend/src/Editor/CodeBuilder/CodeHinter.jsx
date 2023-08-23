@@ -193,8 +193,14 @@ export function CodeHinter({
       const err = String(error);
       const errorMessage = err.includes('.run()') ? `${err} in ${componentName.split('::')[0]}'s field` : err;
       return (
-        <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
-          <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
+        <animated.div
+          className={isOpen ? themeCls : null}
+          style={{ ...slideInStyles, overflow: 'hidden' }}
+        >
+          <div
+            ref={heightRef}
+            className="dynamic-variable-preview bg-red-lt px-1 py-1"
+          >
             <div>
               <div className="heading my-1">
                 <span>Error</span>
@@ -222,15 +228,25 @@ export function CodeHinter({
         onMouseEnter={() => focusPreview()}
         onMouseLeave={() => unFocusPreview()}
       >
-        <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
+        <div
+          ref={heightRef}
+          className="dynamic-variable-preview bg-green-lt px-1 py-1"
+        >
           <div>
             <div className="d-flex my-1">
-              <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
+              <div
+                className="flex-grow-1"
+                style={{ fontWeight: 700, textTransform: 'capitalize' }}
+              >
                 {previewType}
               </div>
               {isFocused && (
                 <div className="preview-icons position-relative">
-                  <CodeHinter.PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="Copy to clipboard" />
+                  <CodeHinter.PopupIcon
+                    callback={() => copyToClipboard(content)}
+                    icon="copy"
+                    tip="Copy to clipboard"
+                  />
                 </div>
               )}
             </div>
@@ -288,10 +304,16 @@ export function CodeHinter({
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
   return (
-    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
+    <div
+      ref={wrapperRef}
+      className={cx({ 'codeShow-active': codeShow })}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
-          <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+          <div
+            className={`mb-2 field ${options.className}`}
+            data-cy={`${cyLabel}-widget-parameter-label`}
+          >
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
@@ -409,7 +431,10 @@ const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
   const size = transformation ? 20 : 12;
 
   return (
-    <div className="d-flex justify-content-end w-100 position-absolute" style={{ top: 0 }}>
+    <div
+      className="d-flex justify-content-end w-100 position-absolute"
+      style={{ top: 0 }}
+    >
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"

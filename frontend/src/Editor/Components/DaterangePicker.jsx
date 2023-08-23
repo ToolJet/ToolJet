@@ -4,6 +4,7 @@ import { DateRangePicker } from 'react-dates';
 import 'react-dates/lib/css/_datepicker.css';
 import 'react-dates/initialize';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 export const DaterangePicker = function DaterangePicker({
   height,
@@ -22,6 +23,7 @@ export const DaterangePicker = function DaterangePicker({
   const [focusedInput, setFocusedInput] = useState(null);
   const [startDate, setStartDate] = useState(moment(defaultStartDate, formatProp));
   const [endDate, setEndDate] = useState(moment(defaultEndDate, formatProp));
+  const [value, setValue] = React.useState([moment(startDate, formatProp), moment(endDate, formatProp)]);
 
   const dateRangeRef = useRef(null);
 
@@ -64,6 +66,7 @@ export const DaterangePicker = function DaterangePicker({
   function focusChanged(focus) {
     setFocusedInput(focus);
   }
+  const { t } = useTranslation();
 
   return (
     <div

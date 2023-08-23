@@ -104,7 +104,11 @@ export const CustomComponent = (props) => {
   };
 
   return (
-    <div className="card" style={{ display: visibility ? '' : 'none', height, boxShadow }} data-cy={dataCy}>
+    <div
+      className="card"
+      style={{ display: visibility ? '' : 'none', height, boxShadow }}
+      data-cy={dataCy}
+    >
       <iframe
         srcDoc={iframeContent}
         style={{ width: '100%', height: '100%', border: 'none' }}

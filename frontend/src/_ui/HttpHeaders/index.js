@@ -38,8 +38,14 @@ export default ({
   };
 
   return isRenderedAsQueryEditor ? (
-    <QueryEditor {...commonProps} currentState={currentState} />
+    <QueryEditor
+      {...commonProps}
+      currentState={currentState}
+    />
   ) : (
-    <SourceEditor {...commonProps} workspaceConstants={workspaceConstants} />
+    <SourceEditor
+      {...commonProps}
+      workspaceConstants={workspaceConstants}
+    />
   );
 };

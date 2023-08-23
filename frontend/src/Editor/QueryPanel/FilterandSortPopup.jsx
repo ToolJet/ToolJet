@@ -188,7 +188,11 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
           id="query-sort-filter-popover"
           className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
         >
-          <Popover.Body key={'1'} bsPrefix="popover-body" className="pt-1 p-0">
+          <Popover.Body
+            key={'1'}
+            bsPrefix="popover-body"
+            className="pt-1 p-0"
+          >
             {renderPopupComponent(action)}
           </Popover.Body>
         </Popover>
@@ -209,10 +213,17 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
           data-tooltip-content="Show sort/filter"
           data-cy={`query-filter-button`}
         >
-          <Filter width="13" height="13" fill="var(--slate12)" />
+          <Filter
+            width="13"
+            height="13"
+            fill="var(--slate12)"
+          />
           {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
         </button>
-        <Tooltip id="tooltip-for-open-filter" className="tooltip" />
+        <Tooltip
+          id="tooltip-for-open-filter"
+          className="tooltip"
+        />
       </span>
     </OverlayTrigger>
   );
@@ -248,8 +259,14 @@ const DataSourceSelector = ({
     <div className="card-body p-0 mt-1">
       <div className="border-bottom d-flex px-2">
         <div className="d-flex align-items-center mb-1">
-          <button className="border-0 bg-transparent rounded-0 p-0" onClick={onBackBtnClick}>
-            <Arrowleft fill="#3E63DD" tailOpacity={1} />
+          <button
+            className="border-0 bg-transparent rounded-0 p-0"
+            onClick={onBackBtnClick}
+          >
+            <Arrowleft
+              fill="#3E63DD"
+              tailOpacity={1}
+            />
           </button>
         </div>
         <div>
@@ -262,7 +279,10 @@ const DataSourceSelector = ({
           />
         </div>
       </div>
-      <div className="tj-scrollbar py-2" style={{ height: '281px', overflowY: 'auto' }}>
+      <div
+        className="tj-scrollbar py-2"
+        style={{ height: '281px', overflowY: 'auto' }}
+      >
         {sources.map((source) => (
           <label
             className={cx('px-2 py-2 tj-list-btn d-block mx-1')}
@@ -278,7 +298,11 @@ const DataSourceSelector = ({
               checked={selectedDataSources.some((item) => item.id === source.id && item.kind === source.kind)}
               label={
                 <div className="d-flex align-items-center">
-                  <DataSourceIcon source={source} height={12} styles={{ minWidth: 12 }} />
+                  <DataSourceIcon
+                    source={source}
+                    height={12}
+                    styles={{ minWidth: 12 }}
+                  />
                   &nbsp;<span className="ms-1 text-truncate">{source.name}</span>
                 </div>
               }
@@ -307,9 +331,24 @@ const MenuButton = ({
 
   return (
     <div className={`field p-2 ${noMargin ? '' : 'mx-1'} tj-list-btn`}>
-      <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between">
-        <Button.Content title={text} iconSrc={iconSrc} direction="left" />
-        {active && <Tick width="20" height="20" viewBox="0 0 22 22" fill="var(--indigo9)" />}
+      <Button.UnstyledButton
+        onClick={handleOnClick}
+        disabled={disabled}
+        classNames="d-flex justify-content-between"
+      >
+        <Button.Content
+          title={text}
+          iconSrc={iconSrc}
+          direction="left"
+        />
+        {active && (
+          <Tick
+            width="20"
+            height="20"
+            viewBox="0 0 22 22"
+            fill="var(--indigo9)"
+          />
+        )}
       </Button.UnstyledButton>
     </div>
   );

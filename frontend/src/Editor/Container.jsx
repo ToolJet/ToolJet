@@ -520,7 +520,12 @@ export const Container = ({
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
-          <Comments socket={socket} newThread={newThread} canvasWidth={canvasWidth} currentPageId={currentPageId} />
+          <Comments
+            socket={socket}
+            newThread={newThread}
+            canvasWidth={canvasWidth}
+            currentPageId={currentPageId}
+          />
           {commentsPreviewList.map((previewComment, index) => (
             <div
               key={index}
@@ -618,7 +623,11 @@ export const Container = ({
             <center className="text-muted">
               You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
               our&nbsp;
-              <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
+              <a
+                href="https://docs.tooljet.com/docs#the-very-quick-quickstart"
+                target="_blank"
+                rel="noreferrer"
+              >
                 guide
               </a>{' '}
               on adding components.

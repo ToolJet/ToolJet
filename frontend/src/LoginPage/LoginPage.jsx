@@ -216,7 +216,11 @@ class LoginPageComponent extends React.Component {
                     <ShowLoading />
                   </div>
                 )}
-                <form action="." method="get" autoComplete="off">
+                <form
+                  action="."
+                  method="get"
+                  autoComplete="off"
+                >
                   {isGettingConfigs ? (
                     <div className="loader-wrapper">
                       <ShowLoading />
@@ -238,7 +242,10 @@ class LoginPageComponent extends React.Component {
                           this.state?.configs?.git?.enabled ||
                           configs?.form?.enabled) && (
                           <>
-                            <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
+                            <h2
+                              className="common-auth-section-header sign-in-header"
+                              data-cy="sign-in-header"
+                            >
                               {this.props.t('loginSignupPage.signIn', `Sign in`)}
                             </h2>
                             {this.organizationId && (
@@ -251,7 +258,10 @@ class LoginPageComponent extends React.Component {
                             )}
                             <div className="tj-text-input-label">
                               {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
-                                <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
+                                <div
+                                  className="common-auth-sub-header sign-in-sub-header"
+                                  data-cy="sign-in-sub-header"
+                                >
                                   {this.props.t('newToTooljet', 'New to ToolJet?')}
                                   <Link
                                     to={'/signup'}
@@ -282,7 +292,10 @@ class LoginPageComponent extends React.Component {
                         {(this.state?.configs?.google?.enabled || this.state?.configs?.git?.enabled) &&
                           configs?.form?.enabled && (
                             <div className="separator-onboarding ">
-                              <div className="mt-2 separator" data-cy="onboarding-separator">
+                              <div
+                                className="mt-2 separator"
+                                data-cy="onboarding-separator"
+                              >
                                 <h2>
                                   <span>OR</span>
                                 </h2>
@@ -292,7 +305,10 @@ class LoginPageComponent extends React.Component {
                         {configs?.form?.enabled && (
                           <>
                             <div className="signin-email-wrap">
-                              <label className="tj-text-input-label" data-cy="work-email-label">
+                              <label
+                                className="tj-text-input-label"
+                                data-cy="work-email-label"
+                              >
                                 {this.props.t('loginSignupPage.workEmail', 'Email?')}
                               </label>
                               <input
@@ -307,13 +323,19 @@ class LoginPageComponent extends React.Component {
                                 autoComplete="off"
                               />
                               {this.state?.emailError && (
-                                <span className="tj-text-input-error-state" data-cy="email-error-message">
+                                <span
+                                  className="tj-text-input-error-state"
+                                  data-cy="email-error-message"
+                                >
                                   {this.state?.emailError}
                                 </span>
                               )}
                             </div>
                             <div>
-                              <label className="tj-text-input-label" data-cy="password-label">
+                              <label
+                                className="tj-text-input-label"
+                                data-cy="password-label"
+                              >
                                 {this.props.t('loginSignupPage.password', 'Password')}
                                 <span style={{ marginLeft: '4px' }}>
                                   <Link

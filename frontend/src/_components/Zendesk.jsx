@@ -63,7 +63,12 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
           <label className="form-label text-muted mt-3">
             Client Secret
             <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
+              <img
+                className="mx-2 encrypted-icon"
+                src="assets/images/icons/padlock.svg"
+                width="12"
+                height="12"
+              />
               Encrypted
             </small>
           </label>

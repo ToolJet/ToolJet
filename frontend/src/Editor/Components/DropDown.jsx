@@ -1,6 +1,8 @@
+/* eslint-disable prettier/prettier */
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
+
 export const DropDown = function DropDown({
   height,
   validate,
@@ -224,6 +226,7 @@ export const DropDown = function DropDown({
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
   };
+
   return (
     <>
       <div
@@ -235,7 +238,10 @@ export const DropDown = function DropDown({
         data-cy={dataCy}
       >
         <div className="col-auto my-auto">
-          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-0 my-0">
+          <label
+            style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }}
+            className="form-label py-0 my-0"
+          >
             {label}
           </label>
         </div>

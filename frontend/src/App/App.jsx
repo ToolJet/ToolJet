@@ -36,6 +36,9 @@ import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
+import { LicenseInfo } from '@mui/x-license-pro';
+
+LicenseInfo.setLicenseKey(`${config.MUI_LICENSE_KEY}`);
 
 const AppWrapper = (props) => {
   return (
@@ -241,9 +244,15 @@ class AppComponent extends React.Component {
     const { updateSidebarNAV } = this;
     return (
       <>
-        <div className={`main-wrapper ${darkMode ? 'theme-dark dark-theme' : ''}`} data-cy="main-wrapper">
+        <div
+          className={`main-wrapper ${darkMode ? 'theme-dark dark-theme' : ''}`}
+          data-cy="main-wrapper"
+        >
           {updateAvailable && (
-            <div className="alert alert-info alert-dismissible" role="alert">
+            <div
+              className="alert alert-info alert-dismissible"
+              role="alert"
+            >
               <h3 className="mb-1">Update available</h3>
               <p>A new version of ToolJet has been released.</p>
               <div className="btn-list">
@@ -269,35 +278,91 @@ class AppComponent extends React.Component {
           )}
           <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
             <Routes>
-              <Route path="/login/:organizationId" exact element={<LoginPage />} />
-              <Route path="/login" exact element={<LoginPage />} />
-              <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
-              <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
-              <Route path="/sso/:origin" exact element={<Oauth />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password/:token" element={<ResetPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
+              <Route
+                path="/login/:organizationId"
+                exact
+                element={<LoginPage />}
+              />
+              <Route
+                path="/login"
+                exact
+                element={<LoginPage />}
+              />
+              <Route
+                path="/setup"
+                exact
+                element={
+                  <SetupScreenSelfHost
+                    {...this.props}
+                    darkMode={darkMode}
+                  />
+                }
+              />
+              <Route
+                path="/sso/:origin/:configId"
+                exact
+                element={<Oauth />}
+              />
+              <Route
+                path="/sso/:origin"
+                exact
+                element={<Oauth />}
+              />
+              <Route
+                path="/signup"
+                element={<SignupPage />}
+              />
+              <Route
+                path="/forgot-password"
+                element={<ForgotPassword />}
+              />
+              <Route
+                path="/reset-password/:token"
+                element={<ResetPassword />}
+              />
+              <Route
+                path="/reset-password"
+                element={<ResetPassword />}
+              />
+              <Route
+                path="/invitations/:token"
+                element={<VerificationSuccessInfoScreen />}
+              />
               <Route
                 path="/invitations/:token/workspaces/:organizationToken"
                 element={<VerificationSuccessInfoScreen />}
               />
-              <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
+              <Route
+                path="/confirm"
+                element={<VerificationSuccessInfoScreen />}
+              />
               <Route
                 path="/organization-invitations/:token"
-                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
+                element={
+                  <OrganizationInvitationPage
+                    {...this.props}
+                    darkMode={darkMode}
+                  />
+                }
               />
               <Route
                 path="/confirm-invite"
-                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
+                element={
+                  <OrganizationInvitationPage
+                    {...this.props}
+                    darkMode={darkMode}
+                  />
+                }
               />
               <Route
                 exact
                 path="/:workspaceId/apps/:id/:pageHandle?/*"
                 element={
                   <PrivateRoute>
-                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <AppLoader
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -306,7 +371,10 @@ class AppComponent extends React.Component {
                 path="/applications/:id/versions/:versionId/:pageHandle?"
                 element={
                   <PrivateRoute>
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <Viewer
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -315,7 +383,10 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/:pageHandle?"
                 element={
                   <PrivateRoute>
-                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <Viewer
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -324,7 +395,10 @@ class AppComponent extends React.Component {
                 path="/oauth2/authorize"
                 element={
                   <PrivateRoute>
-                    <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <Authorize
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -333,7 +407,10 @@ class AppComponent extends React.Component {
                 path="/:workspaceId/workspace-settings"
                 element={
                   <PrivateRoute>
-                    <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <OrganizationSettings
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -342,7 +419,10 @@ class AppComponent extends React.Component {
                 path="/:workspaceId/settings"
                 element={
                   <PrivateRoute>
-                    <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <SettingsPage
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -351,7 +431,10 @@ class AppComponent extends React.Component {
                 path="/:workspaceId/global-datasources"
                 element={
                   <PrivateRoute>
-                    <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <GlobalDatasources
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -361,7 +444,10 @@ class AppComponent extends React.Component {
                   path="/:workspaceId/database"
                   element={
                     <PrivateRoute>
-                      <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <TooljetDatabase
+                        switchDarkMode={this.switchDarkMode}
+                        darkMode={darkMode}
+                      />
                     </PrivateRoute>
                   }
                 />
@@ -373,18 +459,28 @@ class AppComponent extends React.Component {
                   path="/integrations"
                   element={
                     <AdminRoute>
-                      <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <MarketplacePage
+                        switchDarkMode={this.switchDarkMode}
+                        darkMode={darkMode}
+                      />
                     </AdminRoute>
                   }
                 />
               )}
-              <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
+              <Route
+                exact
+                path="/"
+                element={<Navigate to="/:workspaceId" />}
+              />
               <Route
                 exact
                 path="/switch-workspace"
                 element={
                   <PrivateRoute>
-                    <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <SwitchWorkspacePage
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </PrivateRoute>
                 }
               />
@@ -393,7 +489,10 @@ class AppComponent extends React.Component {
                 path="/:workspaceId"
                 element={
                   <PrivateRoute>
-                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <HomePage
+                      switchDarkMode={this.switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </PrivateRoute>
                 }
               />

@@ -48,13 +48,19 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
   return (
     <div>
       {connectionStatus === 'failed' && (
-        <span className="badge bg-red-lt" data-cy={`test-connection-failed-text`}>
+        <span
+          className="badge bg-red-lt"
+          data-cy={`test-connection-failed-text`}
+        >
           {t('globals.noConnection', 'could not connect')}
         </span>
       )}
 
       {connectionStatus === 'success' && (
-        <span className="badge bg-green-lt" data-cy={`test-connection-verified-text`}>
+        <span
+          className="badge bg-green-lt"
+          data-cy={`test-connection-verified-text`}
+        >
           {t('globals.connectionVerified', 'connection verified')}
         </span>
       )}

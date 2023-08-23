@@ -52,11 +52,17 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         label: (
           <div>
             {index === 0 && (
-              <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
+              <div
+                className="color-slate9 mb-2 pb-1"
+                style={{ fontWeight: 500, marginTop: '-8px' }}
+              >
                 Global datasources
               </div>
             )}
-            <DataSourceIcon source={sources?.[0]} height={16} />
+            <DataSourceIcon
+              source={sources?.[0]}
+              height={16}
+            />
             <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
           </div>
         ),
@@ -68,7 +74,10 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
               data-tooltip-content={source.name}
             >
               {source.name}
-              <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
+              <Tooltip
+                id="tooltip-for-add-query-dd-option"
+                className="tooltip query-manager-ds-select-tooltip"
+              />
             </div>
           ),
           value: source.id,
@@ -82,7 +91,10 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
   const DataSourceOptions = [
     {
       label: (
-        <span className="color-slate9" style={{ fontWeight: 500 }}>
+        <span
+          className="color-slate9"
+          style={{ fontWeight: 500 }}
+        >
           Defaults
         </span>
       ),
@@ -91,7 +103,11 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         ...staticDataSources.map((source) => ({
           label: (
             <div>
-              <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.name}</span>
+              <DataSourceIcon
+                source={source}
+                height={16}
+              />{' '}
+              <span className="ms-1 small">{source.name}</span>
             </div>
           ),
           value: source.id,
@@ -239,12 +255,21 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
 
   return (
     <>
-      <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu">
+      <div
+        ref={innerRef}
+        style={menuListStyles}
+        id="query-ds-select-menu"
+      >
         {children}
       </div>
       {admin && (
         <div className="p-2 mt-2 border-slate3-top">
-          <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
+          <ButtonSolid
+            variant="secondary"
+            size="md"
+            className="w-100"
+            onClick={handleAddClick}
+          >
             + Add new datasource
           </ButtonSolid>
         </div>

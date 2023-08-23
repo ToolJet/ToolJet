@@ -1,5 +1,4 @@
 import '@/_styles/widgets/star-rating.scss';
-
 import React from 'react';
 import { useTrail } from 'react-spring';
 
@@ -74,7 +73,10 @@ export const StarRating = function StarRating({ properties, styles, fireEvent, s
       style={{ display: visibility ? '' : 'none', boxShadow }}
       data-cy={dataCy}
     >
-      <span className={label && `label form-check-label col-auto`} style={{ color: labelColorStyle }}>
+      <span
+        className={label && `label form-check-label col-auto`}
+        style={{ color: labelColorStyle }}
+      >
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">

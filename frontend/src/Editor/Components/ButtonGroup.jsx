@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
-import _ from 'lodash';
 
 export const ButtonGroup = function Button({
   height,
@@ -78,7 +77,11 @@ export const ButtonGroup = function Button({
     }
   };
   return (
-    <div className="widget-buttongroup" style={{ height }} data-cy={dataCy}>
+    <div
+      className="widget-buttongroup"
+      style={{ height }}
+      data-cy={dataCy}
+    >
       {label && (
         <p
           style={{ display: computedStyles.display }}

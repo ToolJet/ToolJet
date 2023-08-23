@@ -88,7 +88,10 @@ export const NumberInput = function NumberInput({
       {properties.loadingState === true && (
         <div style={{ width: '100%' }}>
           <center>
-            <div className="spinner-border" role="status"></div>
+            <div
+              className="spinner-border"
+              role="status"
+            ></div>
           </center>
         </div>
       )}

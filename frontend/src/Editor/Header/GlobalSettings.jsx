@@ -56,7 +56,10 @@ export const GlobalSettings = ({
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
   const popoverContent = (
-    <div id="global-settings-popover" className={cx({ 'theme-dark': darkMode, disabled: isVersionReleased })}>
+    <div
+      id="global-settings-popover"
+      className={cx({ 'theme-dark': darkMode, disabled: isVersionReleased })}
+    >
       <div bsPrefix="global-settings-popover">
         <HeaderSection darkMode={darkMode}>
           <HeaderSection.PanelHeader title="Global settings" />
@@ -92,7 +95,10 @@ export const GlobalSettings = ({
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
+              <span
+                data-cy={`label-max-canvas-width`}
+                className="w-full m-auto"
+              >
                 {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
               </span>
               <div className="position-relative">
@@ -122,10 +128,16 @@ export const GlobalSettings = ({
                       }
                     }}
                   >
-                    <option value="%" selected={canvasMaxWidthType === '%'}>
+                    <option
+                      value="%"
+                      selected={canvasMaxWidthType === '%'}
+                    >
                       %
                     </option>
-                    <option value="px" selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}>
+                    <option
+                      value="px"
+                      selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}
+                    >
                       px
                     </option>
                   </select>
@@ -154,13 +166,19 @@ export const GlobalSettings = ({
               </div>
             </div> */}
             <div className="d-flex align-items-center">
-              <span className="w-full" data-cy={`label-bg-canvas`}>
+              <span
+                className="w-full"
+                data-cy={`label-bg-canvas`}
+              >
                 {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
               </span>
               <div className="canvas-codehinter-container">
                 {showPicker && (
                   <div>
-                    <div style={coverStyles} onClick={() => setShowPicker(false)} />
+                    <div
+                      style={coverStyles}
+                      onClick={() => setShowPicker(false)}
+                    />
                     <SketchPicker
                       data-cy={`color-picker-canvas`}
                       className="canvas-background-picker"

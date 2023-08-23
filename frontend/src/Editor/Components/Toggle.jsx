@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+
 class Switch extends React.Component {
   render() {
     const { on, onClick, onChange, disabledState, color } = this.props;
@@ -21,7 +22,6 @@ class Switch extends React.Component {
     );
   }
 }
-
 export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposedVariable, darkMode, dataCy }) => {
   // definition props
   const defaultValue = properties.defaultValue ?? false;
@@ -48,8 +48,15 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
   const toggle = () => setOn(!on);
 
   return (
-    <div className="row py-1" style={{ height, display: visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
-      <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
+    <div
+      className="row py-1"
+      style={{ height, display: visibility ? '' : 'none', boxShadow }}
+      data-cy={dataCy}
+    >
+      <span
+        className="form-check-label form-check-label col-auto my-auto"
+        style={{ color: textColor }}
+      >
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">

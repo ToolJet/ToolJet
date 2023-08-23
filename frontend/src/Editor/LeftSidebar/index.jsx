@@ -201,7 +201,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
   };
 
   return (
-    <div className="left-sidebar" data-cy="left-sidebar-inspector">
+    <div
+      className="left-sidebar"
+      data-cy="left-sidebar-inspector"
+    >
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => handleSelectedSidebarItem('page')}
@@ -268,7 +271,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <div className="left-sidebar-stack-bottom">
         <div className="left-sidebar-item no-border">
-          <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
+          <DarkModeToggle
+            switchDarkMode={switchDarkMode}
+            darkMode={darkMode}
+            tooltipPlacement="right"
+          />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
       </div>

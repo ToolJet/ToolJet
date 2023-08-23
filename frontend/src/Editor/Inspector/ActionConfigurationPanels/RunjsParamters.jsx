@@ -19,7 +19,10 @@ function RunjsParameters({ event, darkMode, index, handlerChanged }) {
 
   return (
     <div className="row mt-3">
-      <label className="form-label mt-2" data-cy="label-run-js-parameters">
+      <label
+        className="form-label mt-2"
+        data-cy="label-run-js-parameters"
+      >
         Parameters
       </label>
       {dataQuery?.options?.parameters.map((param) => (

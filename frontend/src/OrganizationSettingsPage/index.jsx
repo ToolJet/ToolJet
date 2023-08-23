@@ -50,7 +50,10 @@ export function OrganizationSettings(props) {
   };
 
   return (
-    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
+    <Layout
+      switchDarkMode={props.switchDarkMode}
+      darkMode={props.darkMode}
+    >
       <div className="wrapper organization-settings-page">
         <div className="row gx-0">
           <div className="organization-page-sidebar col ">
@@ -89,13 +92,19 @@ export function OrganizationSettings(props) {
             <OrganizationList />
           </div>
 
-          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
+          <div
+            className={cx('col workspace-content-wrapper')}
+            style={{ paddingTop: '40px' }}
+          >
             <div className="w-100">
               {selectedTab === 'Users & permissions' && <ManageOrgUsers darkMode={props.darkMode} />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
               {selectedTab === 'manageSSO' && <ManageSSO />}
               {selectedTab === 'manageEnvVars' && (
-                <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
+                <ManageOrgVars
+                  darkMode={props.darkMode}
+                  goTooOrgConstantsDashboard={goTooOrgConstantsDashboard}
+                />
               )}
               {selectedTab === 'manageCopilot' && <CopilotSetting />}
               {selectedTab === 'manageOrgConstants' && <ManageOrgConstants darkMode={props.darkMode} />}

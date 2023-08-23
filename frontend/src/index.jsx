@@ -18,7 +18,7 @@ appService
   .getConfig()
   .then((config) => {
     window.public_config = config;
-    const language = config.LANGUAGE || 'en';
+    const language = config.LANGUAGE || 'es';
     const path = config?.SUB_PATH || '/';
     i18n
       .use(Backend)
@@ -26,7 +26,7 @@ appService
       .use(initReactI18next)
       .init({
         load: 'languageOnly',
-        fallbackLng: 'en',
+        fallbackLng: 'es',
         lng: language,
         backend: {
           loadPath: `${path}assets/translations/{{lng}}.json`,

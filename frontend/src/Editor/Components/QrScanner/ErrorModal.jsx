@@ -10,7 +10,10 @@ export default function ErrorModal() {
   return (
     <div>
       {show ? (
-        <div className="modal-dialog" role="document">
+        <div
+          className="modal-dialog"
+          role="document"
+        >
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">QR Scanner is not working</h5>
@@ -27,7 +30,12 @@ export default function ErrorModal() {
               it doesn&apos;t work, please contact support.
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn" data-bs-dismiss="modal" onClick={close}>
+              <button
+                type="button"
+                className="btn"
+                data-bs-dismiss="modal"
+                onClick={close}
+              >
                 Close
               </button>
             </div>

@@ -1664,16 +1664,31 @@ class EditorComponent extends React.Component {
                               <div className="canvas">
                                 <div className="mt-5 d-flex flex-column">
                                   <div className="mb-1">
-                                    <Skeleton width={'150px'} height={15} className="skeleton" />
+                                    <Skeleton
+                                      width={'150px'}
+                                      height={15}
+                                      className="skeleton"
+                                    />
                                   </div>
                                   {Array.from(Array(4)).map((_item, index) => (
-                                    <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
+                                    <Skeleton
+                                      key={index}
+                                      width={'300px'}
+                                      height={10}
+                                      className="skeleton"
+                                    />
                                   ))}
                                   <div className="align-self-end">
-                                    <Skeleton width={'100px'} className="skeleton" />
+                                    <Skeleton
+                                      width={'100px'}
+                                      className="skeleton"
+                                    />
                                   </div>
                                   <Skeleton className="skeleton mt-4" />
-                                  <Skeleton height={'150px'} className="skeleton mt-2" />
+                                  <Skeleton
+                                    height={'150px'}
+                                    className="skeleton mt-2"
+                                  />
                                 </div>
                               </div>
                             </div>
@@ -1729,7 +1744,10 @@ class EditorComponent extends React.Component {
                   appDefinition={appDefinition}
                   editorRef={this}
                 />
-                <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
+                <ReactTooltip
+                  id="tooltip-for-add-query"
+                  className="tooltip"
+                />
               </div>
               <div className="editor-sidebar">
                 <EditorKeyHooks
@@ -1776,7 +1794,10 @@ class EditorComponent extends React.Component {
                 )}
               </div>
               {config.COMMENT_FEATURE_ENABLE && this.props.showComments && (
-                <CommentNotifications socket={this.socket} pageId={this.state.currentPageId} />
+                <CommentNotifications
+                  socket={this.socket}
+                  pageId={this.state.currentPageId}
+                />
               )}
             </div>
           </DndProvider>

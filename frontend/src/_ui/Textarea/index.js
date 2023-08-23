@@ -7,14 +7,23 @@ const Textarea = ({ helpText, ...props }) => {
 
   return (
     <div className="tj-app-input">
-      <textarea {...props} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} />
+      <textarea
+        {...props}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
       <OrgConstantVariablesPreviewBox
         workspaceVariables={workspaceVariables}
         workspaceConstants={workspaceConstants}
         isFocused={isFocused}
         value={value}
       />
-      {helpText && <small className="text-muted" dangerouslySetInnerHTML={{ __html: helpText }} />}
+      {helpText && (
+        <small
+          className="text-muted"
+          dangerouslySetInnerHTML={{ __html: helpText }}
+        />
+      )}
     </div>
   );
 };

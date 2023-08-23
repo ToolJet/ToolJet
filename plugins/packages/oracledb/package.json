@@ -1,6 +1,5 @@
 {
   "name": "@tooljet-plugins/oracledb",
-  "private": true,
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +19,7 @@
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
     "knex": "^0.95.14",
-    "oracledb": "^6.0.0",
+    "oracledb": "^6.0.3",
     "react": "^17.0.2"
   },
   "devDependencies": {

@@ -208,7 +208,11 @@ export const Folders = function Folders({
         darkMode={darkMode}
       />
 
-      <div className="d-flex justify-content-between" data-cy="folder-info" style={{ marginBottom: '8px' }}>
+      <div
+        className="d-flex justify-content-between"
+        data-cy="folder-info"
+        style={{ marginBottom: '8px' }}
+      >
         {!showInput ? (
           <>
             <div className="folder-info tj-text-xsm">
@@ -226,7 +230,11 @@ export const Folders = function Folders({
                     }}
                     data-cy="create-new-folder-button"
                   >
-                    <SolidIcon name="plus" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
+                    <SolidIcon
+                      name="plus"
+                      width="14"
+                      fill={darkMode ? '#ECEDEE' : '#11181C'}
+                    />
                   </div>
                   <div
                     className="folder-create-btn"
@@ -234,7 +242,11 @@ export const Folders = function Folders({
                       setShowInput(true);
                     }}
                   >
-                    <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
+                    <SolidIcon
+                      name="search"
+                      width="14"
+                      fill={darkMode ? '#ECEDEE' : '#11181C'}
+                    />
                   </div>
                 </>
               )}
@@ -254,7 +266,10 @@ export const Folders = function Folders({
       </div>
 
       {!isLoading && (
-        <div data-testid="applicationFoldersList" className={cx(`mb-1 all-apps-link-cotainer`)}>
+        <div
+          data-testid="applicationFoldersList"
+          className={cx(`mb-1 all-apps-link-cotainer`)}
+        >
           <a
             className={cx(
               `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
@@ -271,7 +286,13 @@ export const Folders = function Folders({
           </a>
         </div>
       )}
-      {isLoading && <Skeleton count={3} height={22} className="mb-1" />}
+      {isLoading && (
+        <Skeleton
+          count={3}
+          height={22}
+          className="mb-1"
+        />
+      )}
       {!isLoading &&
         filteredData &&
         filteredData.length > 0 &&
@@ -337,7 +358,11 @@ export const Folders = function Folders({
         </div>
         <div className="row">
           <div className="col d-flex modal-footer-btn">
-            <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
+            <ButtonSolid
+              variant="tertiary"
+              onClick={closeModal}
+              data-cy="cancel-button"
+            >
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
             <ButtonSolid

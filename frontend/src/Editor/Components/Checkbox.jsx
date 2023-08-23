@@ -60,9 +60,15 @@ export const Checkbox = function Checkbox({
             }}
             defaultChecked={defaultValue}
             checked={checked}
-            style={{ backgroundColor: checked ? `${checkboxColor}` : 'white', marginTop: '1px' }}
+            style={{
+              backgroundColor: checked ? `${checkboxColor}` : 'white',
+              marginTop: '1px',
+            }}
           />
-          <span className="form-check-label" style={{ color: textColor }}>
+          <span
+            className="form-check-label"
+            style={{ color: textColor }}
+          >
             {label}
           </span>
         </label>

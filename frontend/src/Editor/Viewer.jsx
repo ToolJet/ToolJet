@@ -319,7 +319,12 @@ class ViewerComponent extends React.Component {
           }
           /* router dom Navigate is not working now. so hard reloading */
           redirectToDashboard();
-          return <Navigate replace to={'/'} />;
+          return (
+            <Navigate
+              replace
+              to={'/'}
+            />
+          );
         } else if (statusCode === 401) {
           window.location = `${getSubpath() ?? ''}/login${
             !_.isEmpty(getWorkspaceId()) ? `/${getWorkspaceId()}` : ''
@@ -330,12 +335,22 @@ class ViewerComponent extends React.Component {
           });
         } else {
           redirectToDashboard();
-          return <Navigate replace to={'/'} />;
+          return (
+            <Navigate
+              replace
+              to={'/'}
+            />
+          );
         }
       }
     } catch (err) {
       redirectToDashboard();
-      return <Navigate replace to={'/'} />;
+      return (
+        <Navigate
+          replace
+          to={'/'}
+        />
+      );
     }
   };
 
@@ -409,7 +424,10 @@ class ViewerComponent extends React.Component {
 
     if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
     if (this.state.homepage !== prevState.homepage && !this.state.isLoading) {
-      <Navigate to={`${this.state.homepage}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
+      <Navigate
+        to={`${this.state.homepage}${this.props.params.pageHandle ? '' : window.location.search}`}
+        replace
+      />;
     }
   }
 
@@ -578,7 +596,10 @@ class ViewerComponent extends React.Component {
         return (
           <div className="maintenance_container">
             <div className="card">
-              <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div
+                className="card-body"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
                 <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
               </div>
             </div>
@@ -639,7 +660,10 @@ class ViewerComponent extends React.Component {
                             {isLoading ? (
                               <div className="mx-auto mt-5 w-50 p-5">
                                 <center>
-                                  <div className="spinner-border text-azure" role="status"></div>
+                                  <div
+                                    className="spinner-border text-azure"
+                                    role="status"
+                                  ></div>
                                 </center>
                               </div>
                             ) : (

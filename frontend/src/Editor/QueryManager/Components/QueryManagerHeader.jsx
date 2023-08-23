@@ -118,11 +118,20 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
               invisible: isLoading,
             })}
           >
-            <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
+            <Play
+              width={14}
+              fill="var(--indigo9)"
+              viewBox="0 0 14 14"
+            />
           </span>
           <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
         </button>
-        {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
+        {isInDraft && (
+          <Tooltip
+            id="query-header-btn-run"
+            className="tooltip"
+          />
+        )}
       </span>
     );
   };
@@ -131,7 +140,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
     if (selectedQuery === null || showCreateQuery) return;
     return (
       <>
-        <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
+        <PreviewButton
+          onClick={previewButtonOnClick}
+          buttonLoadingState={buttonLoadingState}
+        />
         {renderRunButton()}
       </>
     );
@@ -140,7 +152,13 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
   return (
     <div className="row header">
       <div className="col font-weight-500">
-        {selectedQuery && <NameInput onInput={executeQueryNameUpdation} value={queryName} darkMode={darkMode} />}
+        {selectedQuery && (
+          <NameInput
+            onInput={executeQueryNameUpdation}
+            value={queryName}
+            darkMode={darkMode}
+          />
+        )}
       </div>
       <div className="query-header-buttons me-3">{renderButtons()}</div>
     </div>
@@ -158,7 +176,10 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
       data-cy={'query-preview-button'}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
-        <Eye1 width={14} fill="var(--slate9)" />
+        <Eye1
+          width={14}
+          fill="var(--slate9)"
+        />
       </span>
       <span>{t('editor.queryManager.preview', 'Preview')}</span>
     </button>

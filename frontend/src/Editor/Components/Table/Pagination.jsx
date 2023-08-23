@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
+import config from 'config';
+import { Box, IconButton, Typography } from '@mui/material';
+import {
+  KeyboardArrowLeft,
+  KeyboardArrowRight,
+  KeyboardDoubleArrowLeft,
+  KeyboardDoubleArrowRight,
+} from '@mui/icons-material';
+
 export const Pagination = function Pagination({
   onPageIndexChanged,
   serverSide,
@@ -66,7 +75,10 @@ export const Pagination = function Pagination({
       >
         {'<'}
       </button>{' '}
-      <small className="p-1 mx-2" data-cy={`page-index-details`}>
+      <small
+        className="p-1 mx-2"
+        data-cy={`page-index-details`}
+      >
         {serverSide && <strong>{pageIndex}</strong>}
         {!serverSide && (
           <strong>

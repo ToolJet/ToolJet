@@ -120,7 +120,10 @@ class StripeComponent extends React.Component {
     if (path && operation) {
       return (
         <div className="row">
-          <div className="col-auto" style={{ width: '60px' }}>
+          <div
+            className="col-auto"
+            style={{ width: '60px' }}
+          >
             <span className={`badge bg-${operationColorMapping[operation]}`}>{operation}</span>
           </div>
 
@@ -179,7 +182,10 @@ class StripeComponent extends React.Component {
       <div>
         {loadingSpec && (
           <div className="p-3">
-            <div className="spinner-border spinner-border-sm text-azure mx-2" role="status"></div>
+            <div
+              className="spinner-border spinner-border-sm text-azure mx-2"
+              role="status"
+            ></div>
             {this.props.t('stripe', 'Please wait while we load the OpenAPI specification for Stripe.')}
           </div>
         )}
@@ -190,7 +196,10 @@ class StripeComponent extends React.Component {
               <div className="col-12 form-label">
                 <label className="form-label">{this.props.t('globals.operation', 'Operation')}</label>
               </div>
-              <div className="col stripe-operation-options flex-grow-1" style={{ width: '90px', marginTop: 0 }}>
+              <div
+                className="col stripe-operation-options flex-grow-1"
+                style={{ width: '90px', marginTop: 0 }}
+              >
                 <Select
                   options={this.computeOperationSelectionOptions(specJson)}
                   value={currentValue}
@@ -219,7 +228,10 @@ class StripeComponent extends React.Component {
                     <h5 className="text-heading">{this.props.t('globals.path', 'PATH')}</h5>
                     <div className="input-group-parent-container">
                       {pathParams.map((param) => (
-                        <div className="input-group-wrapper" key={param.name}>
+                        <div
+                          className="input-group-wrapper"
+                          key={param.name}
+                        >
                           <div className="input-group">
                             <div className="col-auto field field-width-179">
                               <input
@@ -274,7 +286,10 @@ class StripeComponent extends React.Component {
                     <h5 className="text-heading">{this.props.t('globals.query'.toUpperCase(), 'QUERY')}</h5>
                     <div className="input-group-parent-container">
                       {queryParams.map((param) => (
-                        <div className="input-group-wrapper" key={param.name}>
+                        <div
+                          className="input-group-wrapper"
+                          key={param.name}
+                        >
                           <div className="input-group">
                             <div className="col-auto field field-width-179">
                               <input
@@ -336,10 +351,19 @@ class StripeComponent extends React.Component {
                       }`}
                     >
                       {Object.keys(requestBody.schema.properties).map((param) => (
-                        <div className="input-group-wrapper" key={param.name}>
+                        <div
+                          className="input-group-wrapper"
+                          key={param.name}
+                        >
                           <div className="input-group">
                             <div className="col-auto field field-width-179">
-                              <input type="text" value={param} className="form-control" placeholder="key" disabled />
+                              <input
+                                type="text"
+                                value={param}
+                                className="form-control"
+                                placeholder="key"
+                                disabled
+                              />
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter

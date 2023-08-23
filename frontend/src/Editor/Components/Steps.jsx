@@ -25,6 +25,10 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
+  const handleStepClick = (stepIndex) => {
+    setActiveStep(stepIndex);
+  };
+
   return (
     visibility && (
       <div

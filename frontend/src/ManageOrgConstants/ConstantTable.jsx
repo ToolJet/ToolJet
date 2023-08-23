@@ -18,13 +18,19 @@ const ConstantTable = ({
 
   return (
     <div className="container-xl">
-      <div className="card constant-table-card" style={{ border: 'none' }}>
+      <div
+        className="card constant-table-card"
+        style={{ border: 'none' }}
+      >
         <div
           className="fixedHeader table-responsive px-2"
           ref={tableRef}
           style={{ maxHeight: tableRef.current && calculateOffset() }}
         >
-          <table className="table table-vcenter constant-table-wrapper mt-2" disabled={true}>
+          <table
+            className="table table-vcenter constant-table-wrapper mt-2"
+            disabled={true}
+          >
             <thead>
               <tr>
                 <th data-cy="workspace-variable-table-name-header">Name</th>
@@ -33,7 +39,10 @@ const ConstantTable = ({
               </tr>
             </thead>
             {isLoading ? (
-              <tbody className="w-100" style={{ minHeight: '300px' }}>
+              <tbody
+                className="w-100"
+                style={{ minHeight: '300px' }}
+              >
                 {Array.from(Array(4)).map((_item, index) => (
                   <tr key={index}>
                     <td className="col-4 p-3">

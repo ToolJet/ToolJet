@@ -73,7 +73,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
         role="button"
       >
         <div className="col-auto query-icon d-flex">
-          <DataSourceIcon source={dataQuery} height={16} />
+          <DataSourceIcon
+            source={dataQuery}
+            height={16}
+          />
         </div>
         <div className="col query-row-query-name">
           {renamingQuery ? (
@@ -101,7 +104,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
               delay={{ show: 800, hide: 100 }}
               overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
             >
-              <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
+              <div
+                className="query-name"
+                data-cy={`list-query-${dataQuery.name.toLowerCase()}`}
+              >
                 <span
                   className="text-truncate"
                   data-tooltip-id="query-card-name-tooltip"
@@ -109,7 +115,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                 >
                   {dataQuery.name}
                 </span>{' '}
-                <Tooltip id="query-card-name-tooltip" className="tooltip query-manager-tooltip" />
+                <Tooltip
+                  id="query-card-name-tooltip"
+                  className="tooltip query-manager-tooltip"
+                />
                 {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
               </div>
             </OverlayTrigger>
@@ -122,7 +131,11 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
               className={`col-auto ${renamingQuery && 'display-none'} rename-query`}
               onClick={() => setRenamingQuery(true)}
             >
-              <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Rename query">
+              <span
+                className="d-flex"
+                data-tooltip-id="query-card-btn-tooltip"
+                data-tooltip-content="Rename query"
+              >
                 <svg
                   data-cy={`edit-query-${dataQuery.name.toLowerCase()}`}
                   width="auto"
@@ -140,15 +153,29 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                 </svg>
               </span>
             </div>
-            <div className={`col-auto rename-query`} onClick={() => duplicateQuery(dataQuery?.id, appId)}>
-              <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Duplicate query">
-                <Copy height={16} width={16} viewBox="0 5 20 20" />
+            <div
+              className={`col-auto rename-query`}
+              onClick={() => duplicateQuery(dataQuery?.id, appId)}
+            >
+              <span
+                className="d-flex"
+                data-tooltip-id="query-card-btn-tooltip"
+                data-tooltip-content="Duplicate query"
+              >
+                <Copy
+                  height={16}
+                  width={16}
+                  viewBox="0 5 20 20"
+                />
               </span>
             </div>
             <div className="col-auto">
               {isDeletingQueryInProcess ? (
                 <div className="px-2">
-                  <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+                  <div
+                    className="text-center spinner-border spinner-border-sm"
+                    role="status"
+                  ></div>
                 </div>
               ) : (
                 <span
@@ -177,7 +204,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                 </span>
               )}
             </div>
-            <Tooltip id="query-card-btn-tooltip" className="tooltip" />
+            <Tooltip
+              id="query-card-btn-tooltip"
+              className="tooltip"
+            />
           </div>
         )}
       </div>

@@ -25,7 +25,10 @@ const Pagination = ({
   }, [currentPage]);
 
   return (
-    <div className="pagination-container d-flex" data-cy="pagination-section">
+    <div
+      className="pagination-container d-flex"
+      data-cy="pagination-section"
+    >
       <Button.UnstyledButton
         onClick={(event) => {
           event.stopPropagation();
@@ -57,7 +60,10 @@ const Pagination = ({
             setCurrentPageNumber(event.target.value);
           }}
         />
-        <span className="mx-1" data-cy={`total-page-number-${totalPage}`}>
+        <span
+          className="mx-1"
+          data-cy={`total-page-number-${totalPage}`}
+        >
           / {totalPage}
         </span>
       </div>

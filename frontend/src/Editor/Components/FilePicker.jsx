@@ -4,6 +4,8 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import { useTranslation } from 'react-i18next';
+import { localizeMessage } from '@/_helpers/localize';
 
 export const FilePicker = ({
   id,
@@ -17,10 +19,12 @@ export const FilePicker = ({
   registerAction,
   dataCy,
 }) => {
+  const { t } = useTranslation();
   const currentState = useCurrentState();
   //* properties definitions
   const instructionText =
-    component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
+    component.definition.properties.instructionText?.value ||
+    t('widget.FilePicker.dragAndDropHelp', 'Drag and Drop some files here, or click to select files');
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -127,7 +131,7 @@ export const FilePicker = ({
     if (selectedFilesCount === parsedMaxFileCount) {
       return {
         code: 'max_file_count_reached',
-        message: `Max file count reached`,
+        message: localizeMessage(`Max file count reached`),
       };
     }
 
@@ -221,10 +225,10 @@ export const FilePicker = ({
     const fileSize = formatFileSize(rejectedFileSize);
 
     if (code === errorType.MIN_SIZE) {
-      return `File size ${fileSize} is too small. Minimum size is ${formatFileSize(parsedMinSize)}`;
+      return localizeMessage(`File size ${fileSize} is too small. Minimum size is ${formatFileSize(parsedMinSize)}`);
     }
     if (code === errorType.MAX_SIZE) {
-      return `File size ${fileSize} is too large. Maximum size is ${formatFileSize(parsedMaxSize)}`;
+      return localizeMessage(`File size ${fileSize} is too large. Maximum size is ${formatFileSize(parsedMaxSize)}`);
     }
 
     return message;
@@ -306,58 +310,83 @@ export const FilePicker = ({
   );
 
   return (
-    <section>
-      <div className="container" {...getRootProps({ style, className: 'dropzone' })} data-cy={dataCy}>
-        <input {...getInputProps()} />
-        <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
-
-        {showSelectedFiles && !accepted ? (
-          <FilePicker.AcceptedFiles width={width - 10} height={height}>
-            {selectedFiles.map((acceptedFile, index) => (
-              <>
-                <div key={index} className="col-10">
-                  <FilePicker.Signifiers
-                    signifier={selectedFiles.length > 0}
-                    feedback={acceptedFile.name}
-                    cls={`${darkMode ? 'text-light' : 'text-secondary'} d-flex justify-content-start file-list mb-2`}
-                  />
-                </div>
-                <div className="col-2 mt-0">
-                  <button
-                    className="btn badge bg-azure-lt"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      clearSelectedFiles(index);
-                    }}
-                  >
-                    <img src="assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
-                  </button>
-                </div>
-              </>
-            ))}
-          </FilePicker.AcceptedFiles>
-        ) : (
+    <React.Fragment>
+      <section>
+        <div
+          className="container"
+          {...getRootProps({ style, className: 'dropzone' })}
+          data-cy={dataCy}
+        >
+          <input {...getInputProps()} />
           <FilePicker.Signifiers
-            signifier={!isDragAccept && !accepted & !isDragReject}
-            feedback={instructionText}
-            cls={`${darkMode ? 'text-light' : 'text-dark'} mt-3`}
+            signifier={accepted}
+            feedback={null}
+            cls="spinner-border text-azure p-0"
           />
-        )}
 
-        <FilePicker.Signifiers
-          signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
-          feedback={'All files will be accepted'}
-          cls="text-lime mt-3"
-        />
-        <FilePicker.Signifiers
-          signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
-          feedback={'Max file reached!'}
-          cls="text-red mt-3"
-        />
+          {showSelectedFiles && !accepted ? (
+            <FilePicker.AcceptedFiles
+              width={width - 10}
+              height={height}
+            >
+              {selectedFiles.map((acceptedFile, index) => (
+                <>
+                  <div
+                    key={index}
+                    className="col-10"
+                  >
+                    <FilePicker.Signifiers
+                      signifier={selectedFiles.length > 0}
+                      feedback={acceptedFile.name}
+                      cls={`${darkMode ? 'text-light' : 'text-secondary'} d-flex justify-content-start file-list mb-2`}
+                    />
+                  </div>
+                  <div className="col-2 mt-0">
+                    <button
+                      className="btn badge bg-azure-lt"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearSelectedFiles(index);
+                      }}
+                    >
+                      <img
+                        src="assets/images/icons/trash.svg"
+                        width="12"
+                        height="12"
+                        className="mx-1"
+                      />
+                    </button>
+                  </div>
+                </>
+              ))}
+            </FilePicker.AcceptedFiles>
+          ) : (
+            <FilePicker.Signifiers
+              signifier={!isDragAccept && !accepted & !isDragReject}
+              feedback={instructionText}
+              cls={`${darkMode ? 'text-light' : 'text-dark'} mt-3`}
+            />
+          )}
 
-        <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
-      </div>
-    </section>
+          <FilePicker.Signifiers
+            signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
+            feedback={'All files will be accepted'}
+            cls="text-lime mt-3"
+          />
+          <FilePicker.Signifiers
+            signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
+            feedback={'Max file reached!'}
+            cls="text-red mt-3"
+          />
+
+          <FilePicker.Signifiers
+            signifier={isDragReject}
+            feedback={'Files will be rejected!'}
+            cls="text-red mt-3"
+          />
+        </div>
+      </section>
+    </React.Fragment>
   );
 };
 

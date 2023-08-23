@@ -67,7 +67,12 @@ const QueryManager = ({ mode, dataQueriesChanged, appId, darkMode, apps, allComp
         'd-none': loadingDataSources,
       })}
     >
-      <QueryManagerHeader darkMode={darkMode} options={options} editorRef={editorRef} appId={appId} />
+      <QueryManagerHeader
+        darkMode={darkMode}
+        options={options}
+        editorRef={editorRef}
+        appId={appId}
+      />
       <QueryManagerBody
         darkMode={darkMode}
         options={options}

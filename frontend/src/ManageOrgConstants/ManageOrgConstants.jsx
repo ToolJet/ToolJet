@@ -295,7 +295,12 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       />
 
       {isManageVarDrawerOpen && (
-        <Drawer disableFocus={true} isOpen={isManageVarDrawerOpen} onClose={onCancelBtnClicked} position="right">
+        <Drawer
+          disableFocus={true}
+          isOpen={isManageVarDrawerOpen}
+          onClose={onCancelBtnClicked}
+          position="right"
+        >
           <ConstantForm
             errors={errors}
             selectedConstant={selectedConstant}
@@ -313,7 +318,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         <div className="container-xl">
           <div>
             <div className="page-header workspace-constant-header">
-              <div className="tj-text-sm font-weight-500" data-cy="constants-count-title">
+              <div
+                className="tj-text-sm font-weight-500"
+                data-cy="constants-count-title"
+              >
                 {constants.length} constants
               </div>
               <div className="mt-3">
@@ -326,7 +334,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                       width: '100%',
                     }}
                   >
-                    <div class="text-muted" data-cy="workspace-constant-helper-text">
+                    <div
+                      class="text-muted"
+                      data-cy="workspace-constant-helper-text"
+                    >
                       To resolve a Workspace constant use{' '}
                       <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
                     </div>
@@ -347,7 +358,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                           fontWeight: 500,
                         }}
                       >
-                        <Button.Content title={'Read Documentation'} iconSrc="assets/images/icons/student.svg" />
+                        <Button.Content
+                          title={'Read Documentation'}
+                          iconSrc="assets/images/icons/student.svg"
+                        />
                       </Button>
                     </div>
                   </div>
@@ -372,7 +386,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                   {constants.length > 0 ? (
                     <div className="w-100 workspace-constant-card-body">
                       <div className="align-items-center d-flex p-3 justify-content-between">
-                        <div className="tj-text-sm font-weight-500" data-cy="env-name">
+                        <div
+                          className="tj-text-sm font-weight-500"
+                          data-cy="env-name"
+                        >
                           {capitalize(activeTabEnvironment?.name)}
                         </div>
                         <div className="workspace-setting-buttons-wrap">
@@ -490,7 +507,10 @@ const Footer = ({ darkMode, totalPage, pageCount, dataLoading, gotoNextPage, got
       }}
       className={`card-footer d-flex align-items-center jet-table-footer justify-content-center`}
     >
-      <div className="row gx-0" data-cy="table-footer-section">
+      <div
+        className="row gx-0"
+        data-cy="table-footer-section"
+      >
         <Pagination
           darkMode={darkMode}
           gotoNextPage={gotoNextPage}

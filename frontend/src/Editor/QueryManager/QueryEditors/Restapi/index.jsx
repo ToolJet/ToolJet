@@ -137,7 +137,10 @@ class Restapi extends React.Component {
         <div className="form-label">Request</div>
         <div className="flex-grow-1">
           <div className="rest-api-methods-select-element-container">
-            <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
+            <div
+              className={`me-2`}
+              style={{ width: '90px', height: '32px' }}
+            >
               <label className="font-weight-bold color-slate12">Method</label>
               <Select
                 options={[
@@ -164,7 +167,10 @@ class Restapi extends React.Component {
               <div className="font-weight-bold color-slate12">URL</div>
               <div className="d-flex">
                 {dataSourceURL && (
-                  <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
+                  <BaseUrl
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    dataSourceURL={dataSourceURL}
+                  />
                 )}
                 <div className={`flex-grow-1 ${dataSourceURL ? 'url-input-group' : ''}`}>
                   <CodeHinter

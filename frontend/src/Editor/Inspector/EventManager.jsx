@@ -259,7 +259,10 @@ export const EventManager = ({
             <div className="col-3 p-2">
               <span data-cy="event-label">{t('editor.inspector.eventManager.event', 'Event')}</span>
             </div>
-            <div className="col-9" data-cy="event-selection">
+            <div
+              className="col-9"
+              data-cy="event-selection"
+            >
               <Select
                 className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                 options={possibleEvents}
@@ -277,7 +280,10 @@ export const EventManager = ({
             <div className="col-3 p-2">
               <span data-cy="action-label">{t('editor.inspector.eventManager.action', 'Action')}</span>
             </div>
-            <div className="col-9 popover-action-select-search" data-cy="action-selection">
+            <div
+              className="col-9 popover-action-select-search"
+              data-cy="action-selection"
+            >
               <Select
                 className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                 options={actionOptions}
@@ -293,10 +299,16 @@ export const EventManager = ({
           </div>
 
           <div className="row mt-3">
-            <div className="col-3 p-2" data-cy="alert-type-label">
+            <div
+              className="col-3 p-2"
+              data-cy="alert-type-label"
+            >
               {t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
             </div>
-            <div className="col-9" data-cy="alert-message-type">
+            <div
+              className="col-9"
+              data-cy="alert-message-type"
+            >
               <CodeHinter
                 theme={darkMode ? 'monokai' : 'default'}
                 initialValue={event.runOnlyIf}
@@ -307,7 +319,10 @@ export const EventManager = ({
           </div>
 
           {actionLookup[event.actionId]?.options?.length > 0 && (
-            <div className="hr-text" data-cy="action-option">
+            <div
+              className="hr-text"
+              data-cy="action-option"
+            >
               {t('editor.inspector.eventManager.actionOptions', 'Action options')}
             </div>
           )}
@@ -315,10 +330,16 @@ export const EventManager = ({
             {event.actionId === 'show-alert' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-2" data-cy="message-label">
+                  <div
+                    className="col-3 p-2"
+                    data-cy="message-label"
+                  >
                     {t('editor.inspector.eventManager.message', 'Message')}
                   </div>
-                  <div className="col-9" data-cy="alert-message-input-field">
+                  <div
+                    className="col-9"
+                    data-cy="alert-message-input-field"
+                  >
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
                       initialValue={event.message}
@@ -328,10 +349,16 @@ export const EventManager = ({
                   </div>
                 </div>
                 <div className="row mt-3">
-                  <div className="col-3 p-2" data-cy="alert-type-label">
+                  <div
+                    className="col-3 p-2"
+                    data-cy="alert-type-label"
+                  >
                     {t('editor.inspector.eventManager.alertType', 'Alert Type')}
                   </div>
-                  <div className="col-9" data-cy="alert-message-type">
+                  <div
+                    className="col-9"
+                    data-cy="alert-message-type"
+                  >
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100 w-100`}
                       options={alertOptions}
@@ -428,7 +455,10 @@ export const EventManager = ({
               <>
                 <div className="row">
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
-                  <div className="col-9" data-cy="query-selection-field">
+                  <div
+                    className="col-9"
+                    data-cy="query-selection-field"
+                  >
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                       options={dataQueries
@@ -456,7 +486,12 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
+                <RunjsParameters
+                  event={event}
+                  darkMode={darkMode}
+                  index={index}
+                  handlerChanged={handlerChanged}
+                />
               </>
             )}
 
@@ -669,10 +704,16 @@ export const EventManager = ({
             {event.actionId === 'control-component' && (
               <>
                 <div className="row">
-                  <div className="col-3 p-1" data-cy="action-options-component-field-label">
+                  <div
+                    className="col-3 p-1"
+                    data-cy="action-options-component-field-label"
+                  >
                     {t('editor.inspector.eventManager.component', 'Component')}
                   </div>
-                  <div className="col-9" data-cy="action-options-component-selection-field">
+                  <div
+                    className="col-9"
+                    data-cy="action-options-component-selection-field"
+                  >
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                       options={getComponentOptionsOfComponentsWithActions()}
@@ -690,10 +731,16 @@ export const EventManager = ({
                   </div>
                 </div>
                 <div className="row mt-2">
-                  <div className="col-3 p-1" data-cy="action-options-action-field-label">
+                  <div
+                    className="col-3 p-1"
+                    data-cy="action-options-action-field-label"
+                  >
                     {t('editor.inspector.eventManager.action', 'Action')}
                   </div>
-                  <div className="col-9" data-cy="action-options-action-selection-field">
+                  <div
+                    className="col-9"
+                    data-cy="action-options-action-selection-field"
+                  >
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                       options={getComponentActionOptions(event?.componentId)}
@@ -717,12 +764,21 @@ export const EventManager = ({
                 {event?.componentId &&
                   event?.componentSpecificActionHandle &&
                   (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
-                    <div className="row mt-2" key={param.handle}>
-                      <div className="col-3 p-1" data-cy={`action-options-${param.displayName}-field-label`}>
+                    <div
+                      className="row mt-2"
+                      key={param.handle}
+                    >
+                      <div
+                        className="col-3 p-1"
+                        data-cy={`action-options-${param.displayName}-field-label`}
+                      >
                         {param.displayName}
                       </div>
                       {param.type === 'select' ? (
-                        <div className="col-9" data-cy="action-options-action-selection-field">
+                        <div
+                          className="col-9"
+                          data-cy="action-options-action-selection-field"
+                        >
                           <Select
                             className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                             options={param.options}
@@ -764,7 +820,10 @@ export const EventManager = ({
             )}
             <div className="row mt-3">
               <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
-              <div className="col-9" data-cy="debounce-input-field">
+              <div
+                className="col-9"
+                data-cy="debounce-input-field"
+              >
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
                   initialValue={event.debounce}
@@ -806,12 +865,19 @@ export const EventManager = ({
       >
         <Droppable droppableId="droppable">
           {({ innerRef, droppableProps, placeholder }) => (
-            <div {...droppableProps} ref={innerRef}>
+            <div
+              {...droppableProps}
+              ref={innerRef}
+            >
               {events.map((event, index) => {
                 const actionMeta = ActionTypes.find((action) => action.id === event.actionId);
                 const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                 return (
-                  <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
+                  <Draggable
+                    key={index}
+                    draggableId={`${event.eventId}-${index}`}
+                    index={index}
+                  >
                     {renderDraggable((provided, snapshot) => {
                       if (snapshot.isDragging && focusedEventIndex !== null) {
                         setFocusedEventIndex(null);
@@ -841,9 +907,18 @@ export const EventManager = ({
                             className="mb-1"
                           >
                             <div className="card column-sort-row border-0 bg-slate2">
-                              <div className={rowClassName} data-cy="event-handler-card">
-                                <div className="row p-2" role="button">
-                                  <div className="col-auto" style={{ cursor: 'grab' }}>
+                              <div
+                                className={rowClassName}
+                                data-cy="event-handler-card"
+                              >
+                                <div
+                                  className="row p-2"
+                                  role="button"
+                                >
+                                  <div
+                                    className="col-auto"
+                                    style={{ cursor: 'grab' }}
+                                  >
                                     <svg
                                       width="8"
                                       height="14"
@@ -883,10 +958,16 @@ export const EventManager = ({
                                       />
                                     </svg>
                                   </div>
-                                  <div className="col text-truncate" data-cy="event-handler">
+                                  <div
+                                    className="col text-truncate"
+                                    data-cy="event-handler"
+                                  >
                                     {componentMeta.events[event.eventId]['displayName']}
                                   </div>
-                                  <div className="col text-truncate color-slate11" data-cy="event-name">
+                                  <div
+                                    className="col text-truncate color-slate11"
+                                    data-cy="event-name"
+                                  >
                                     <small className="event-action font-weight-light text-truncate">
                                       {actionMeta.name}
                                     </small>
@@ -915,7 +996,10 @@ export const EventManager = ({
                                         />
                                       </svg>
                                     </span>
-                                    <Tooltip id="event-delete-btn-icon" className="tooltip" />
+                                    <Tooltip
+                                      id="event-delete-btn-icon"
+                                      className="tooltip"
+                                    />
                                   </div>
                                 </div>
                               </div>
@@ -944,7 +1028,12 @@ export const EventManager = ({
           onClick={addHandler}
           data-cy={events.length === 0 ? 'add-event-handler' : 'add-more-event-handler'}
         >
-          <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+          <AddRectangle
+            width="15"
+            fill="#3E63DD"
+            opacity="1"
+            secondaryFill="#ffffff"
+          />
           &nbsp;&nbsp;
           {t('editor.inspector.eventManager.addHandler', 'Add handler')}
         </ButtonSolid>
@@ -960,7 +1049,10 @@ export const EventManager = ({
         {renderAddHandlerBtn()}
         {!hideEmptyEventsAlert ? (
           <div className="text-left">
-            <small className="color-disabled" data-cy="no-event-handler-message">
+            <small
+              className="color-disabled"
+              data-cy="no-event-handler-message"
+            >
               {t(
                 'editor.inspector.eventManager.emptyMessage',
                 "This {{componentName}} doesn't have any event handlers",

@@ -9,6 +9,9 @@ import { SearchBox } from '@/_components/SearchBox';
 import * as Icons from '@tabler/icons-react';
 import { VirtuosoGrid } from 'react-virtuoso';
 
+import config from 'config';
+import * as IconsMUI from '@mui/icons-material';
+
 export function Icon({ componentMeta, darkMode, ...restProps }) {
   const {
     layoutPropertyChanged,
@@ -24,7 +27,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
 
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
-  const iconList = useRef(Object.keys(Icons));
+  const iconList = useRef(Object.keys(config.UI_LIB === 'mui' ? IconsMUI : Icons));
 
   const searchIcon = (text) => {
     if (searchText === text) return;
@@ -40,6 +43,8 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     paramUpdated({ name: 'icon' }, 'value', icon, 'properties');
   };
 
+  const IconLib = config.UI_LIB === 'mui' ? IconsMUI : Icons;
+
   const eventPopover = () => {
     return (
       <Popover
@@ -48,7 +53,10 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow icon-widget-popover`}
       >
         <Popover.Header>
-          <SearchBox onSubmit={searchIcon} width="100%" />
+          <SearchBox
+            onSubmit={searchIcon}
+            width="100%"
+          />
         </Popover.Header>
         <Popover.Body>
           <div className="row">
@@ -62,7 +70,8 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                   if (filteredIcons[index] === undefined || filteredIcons[index] === 'createReactComponent')
                     return null;
                   // eslint-disable-next-line import/namespace
-                  const IconElement = Icons[filteredIcons[index]];
+                  const IconElement = IconLib[filteredIcons[index]];
+
                   return (
                     <div
                       className="icon-element p-2"
@@ -91,7 +100,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
   function renderIconPicker() {
     const icon = component.component.definition.properties.icon;
     // eslint-disable-next-line import/namespace
-    const IconElement = Icons[icon.value];
+    const IconElement = config.UI_LIB === 'mui' ? IconsMUI[icon.value] : Icons[icon.value];
     return (
       <>
         <div className="mb-2 field">
@@ -108,7 +117,10 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                 rootClose={true}
                 overlay={eventPopover()}
               >
-                <div className="row p-2" role="button">
+                <div
+                  className="row p-2"
+                  role="button"
+                >
                   <div className="col-auto">
                     <IconElement
                       color={`${darkMode ? '#fff' : '#000'}`}

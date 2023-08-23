@@ -135,12 +135,18 @@ const ConstantForm = ({
   return (
     <div className="variable-form-wrap">
       <div className="card-header">
-        <h3 className="card-title" data-cy="constant-form-title">
+        <h3
+          className="card-title"
+          data-cy="constant-form-title"
+        >
           {!selectedConstant ? 'Add new constant' : 'Update constant'} in {currentEnvironment?.name}{' '}
         </h3>
       </div>
       <div className="card-body org-constant-form">
-        <form noValidate onSubmit={(e) => e.preventDefault()}>
+        <form
+          noValidate
+          onSubmit={(e) => e.preventDefault()}
+        >
           <div className="form-group mb-3 ">
             <div className="d-flex mb-3">
               <div
@@ -151,7 +157,10 @@ const ConstantForm = ({
                 onMouseEnter={() => setIsOpen(true)}
                 onMouseLeave={() => setIsOpen(false)}
               >
-                <label className="form-label" data-cy="name-label">
+                <label
+                  className="form-label"
+                  data-cy="name-label"
+                >
                   Name
                 </label>
                 <input
@@ -167,14 +176,24 @@ const ConstantForm = ({
                   data-tooltip-offset={5}
                   data-cy="name-input-field"
                 />
-                <Tooltip id="tooltip-for-org-input-disabled" isOpen={!!selectedConstant && isOpen} place={'bottom'} />
-                <span className="text-danger" data-cy="name-error-text">
+                <Tooltip
+                  id="tooltip-for-org-input-disabled"
+                  isOpen={!!selectedConstant && isOpen}
+                  place={'bottom'}
+                />
+                <span
+                  className="text-danger"
+                  data-cy="name-error-text"
+                >
                   {error['name']}
                 </span>
               </div>
             </div>
             <div className="col tj-app-input">
-              <label className="form-label" data-cy="value-label">
+              <label
+                className="form-label"
+                data-cy="value-label"
+              >
                 Value
               </label>
               <textarea
@@ -198,7 +217,10 @@ const ConstantForm = ({
                 data-cy="value-input-field"
               />
 
-              <span className="text-danger" data-cy="value-error-text">
+              <span
+                className="text-danger"
+                data-cy="value-error-text"
+              >
                 {error['value']}
               </span>
             </div>
@@ -206,7 +228,11 @@ const ConstantForm = ({
         </form>
       </div>
       <div className="form-footer gap-2 variable-form-footer">
-        <ButtonSolid onClick={onCancelBtnClicked} data-cy="cancel-button" variant="tertiary">
+        <ButtonSolid
+          onClick={onCancelBtnClicked}
+          data-cy="cancel-button"
+          variant="tertiary"
+        >
           Cancel
         </ButtonSolid>
         <ButtonSolid

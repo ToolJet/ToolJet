@@ -86,10 +86,16 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       </div>
       <div className="row">
         <div className="col d-flex justify-content-end gap-2">
-          <ButtonSolid variant="tertiary" onClick={closeModal}>
+          <ButtonSolid
+            variant="tertiary"
+            onClick={closeModal}
+          >
             {t('globals.cancel', 'Cancel')}
           </ButtonSolid>
-          <ButtonSolid isLoading={isCreating} onClick={editOrganization}>
+          <ButtonSolid
+            isLoading={isCreating}
+            onClick={editOrganization}
+          >
             {t('globals.save', 'Save')}
           </ButtonSolid>
         </div>

@@ -56,7 +56,10 @@ export const SearchBox = forwardRef(
         <div className="input-icon">
           {!isFocused && (
             <span className="input-icon-addon">
-              <SolidIcon name="search" width="14" />
+              <SolidIcon
+                name="search"
+                width="14"
+              />
             </span>
           )}
           <input
@@ -76,8 +79,14 @@ export const SearchBox = forwardRef(
             ref={ref}
           />
           {(isFocused || showClearButton) && (
-            <span className="input-icon-addon end" onMouseDown={clearSearchText}>
-              <div className="d-flex tj-common-search-input-clear-icon" title="clear">
+            <span
+              className="input-icon-addon end"
+              onMouseDown={clearSearchText}
+            >
+              <div
+                className="d-flex tj-common-search-input-clear-icon"
+                title="clear"
+              >
                 <SolidIcon name="remove" />
               </div>
             </span>

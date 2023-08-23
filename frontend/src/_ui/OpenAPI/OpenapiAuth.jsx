@@ -70,7 +70,10 @@ const OpenapiAuth = ({
     if (auth) {
       const value = getCurrentKey(auth.key);
       return (
-        <div className="col-md-12" key={index ?? auth.key}>
+        <div
+          className="col-md-12"
+          key={index ?? auth.key}
+        >
           <label className="form-label text-muted mt-3">{auth.key}</label>
           <Input
             type="text"

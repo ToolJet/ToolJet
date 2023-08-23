@@ -92,7 +92,12 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
               data-tooltip-id="tooltip-for-query-panel-header-btn"
               data-tooltip-content="Hide query panel"
             >
-              <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--slate12)" />
+              <Minimize
+                width="14"
+                height="14"
+                viewBox="0 0 18 20"
+                stroke="var(--slate12)"
+              />
             </button>
             <button
               onClick={() => {
@@ -106,7 +111,11 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
               data-tooltip-content="Open quick search"
               data-cy="query-search-button"
             >
-              <Search width="14" height="14" fill="var(--slate12)" />
+              <Search
+                width="14"
+                height="14"
+                fill="var(--slate12)"
+              />
             </button>
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
@@ -114,9 +123,15 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
               clearSelectedDataSources={() => setDataSourcesForFilters([])}
               darkMode={darkMode}
             />
-            <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
+            <Tooltip
+              id="tooltip-for-query-panel-header-btn"
+              className="tooltip"
+            />
           </div>
-          <AddDataSourceButton darkMode={darkMode} disabled={isEmpty(dataQueries)} />
+          <AddDataSourceButton
+            darkMode={darkMode}
+            disabled={isEmpty(dataQueries)}
+          />
         </div>
         <div
           className={cx('queries-header row d-flex align-items-center justify-content-between', {
@@ -156,8 +171,14 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
 
         {loadingDataQueries ? (
           <div className="p-2">
-            <Skeleton height={'36px'} className="skeleton mb-2" />
-            <Skeleton height={'36px'} className="skeleton" />
+            <Skeleton
+              height={'36px'}
+              className="skeleton mb-2"
+            />
+            <Skeleton
+              height={'36px'}
+              className="skeleton"
+            />
           </div>
         ) : (
           <div
@@ -227,11 +248,17 @@ const AddDataSourceButton = ({ darkMode, disabled }) => {
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
           style={{ width: '244px', maxWidth: '246px' }}
         >
-          <DataSourceSelect selectRef={selectRef} closePopup={() => setShowMenu(false)} />
+          <DataSourceSelect
+            selectRef={selectRef}
+            closePopup={() => setShowMenu(false)}
+          />
         </Popover>
       }
     >
-      <span className="col-auto" id="query-add-ds-popover-btn">
+      <span
+        className="col-auto"
+        id="query-add-ds-popover-btn"
+      >
         <ButtonSolid
           size="sm"
           variant="tertiary"

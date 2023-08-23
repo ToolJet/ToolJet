@@ -1130,7 +1130,10 @@ export function setTablePageIndex(_ref, tableId, index) {
 export function renderTooltip({ props, text }) {
   if (text === '') return <></>;
   return (
-    <Tooltip id="button-tooltip" {...props}>
+    <Tooltip
+      id="button-tooltip"
+      {...props}
+    >
       {text}
     </Tooltip>
   );
@@ -1184,7 +1187,13 @@ export function computeComponentState(_ref, components = {}) {
 }
 
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
-  if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
+  if (iconFile)
+    return (
+      <img
+        src={`data:image/svg+xml;base64,${iconFile}`}
+        style={{ height, width }}
+      />
+    );
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   if (key === 'tooljetdb') return <RunTooljetDbIcon />;
   if (key === 'runpy') return <RunPyIcon />;

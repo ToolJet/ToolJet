@@ -93,21 +93,30 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
 
   return (
     <React.Fragment>
-      <animated.div className={themeCls} style={{ ...slideInStyles, overflow: 'hidden' }}>
+      <animated.div
+        className={themeCls}
+        style={{ ...slideInStyles, overflow: 'hidden' }}
+      >
         <div
           ref={heightRef}
           className={`dynamic-variable-preview px-1 py-1 ${isValidError ? 'bg-red-lt' : 'bg-green-lt'}`}
         >
           <div className="alert-banner-type-text">
             <div className="d-flex my-1">
-              <div className="flex-grow-1" style={{ fontWeight: 800, textTransform: 'capitalize' }}>
+              <div
+                className="flex-grow-1"
+                style={{ fontWeight: 800, textTransform: 'capitalize' }}
+              >
                 {isValidError ? 'Error' : ` ${type} - ${previewType}`}
               </div>
             </div>
             {getPreviewContent(resolvedValue, previewType)}
           </div>
         </div>
-        <DepericatedAlerForWorkspaceVariable text="Workspace variables deprecating soon" shouldShow={!isConstant} />
+        <DepericatedAlerForWorkspaceVariable
+          text="Workspace variables deprecating soon"
+          shouldShow={!isConstant}
+        />
       </animated.div>
     </React.Fragment>
   );

@@ -125,13 +125,20 @@ return [row for row in data if row['amount'] > 1000]
       id="transformation-popover-container"
       className={`${darkMode && 'popover-dark-themed theme-dark dark-theme tj-dark-mode'} p-0`}
     >
-      <p className={`transformation-popover`} data-cy={`transformation-popover`}>
+      <p
+        className={`transformation-popover`}
+        data-cy={`transformation-popover`}
+      >
         {t(
           'editor.queryManager.transformation.transformationToolTip',
           'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
         )}
         <br />
-        <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
+        <a
+          href="https://docs.tooljet.io/docs/tutorial/transformations"
+          target="_blank"
+          rel="noreferrer"
+        >
           {t('globals.readDocumentation', 'Read documentation')}
         </a>
         .
@@ -141,7 +148,10 @@ return [row for row in data if row['amount'] > 1000]
 
   return (
     <div className="field  transformation-editor">
-      <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
+      <div
+        className="align-items-center gap-2"
+        style={{ display: 'flex', position: 'relative', height: '20px' }}
+      >
         <div className="d-flex flex-fill">
           <OverlayTrigger
             trigger="click"
@@ -240,7 +250,12 @@ const EducativeLabel = ({ darkMode }) => {
       className={`${darkMode && 'popover-dark-themed theme-dark dark-theme'} p-0`}
     >
       <div className={`transformation-popover card text-center ${darkMode && 'tj-dark-mode'}`}>
-        <img src="/assets/images/icons/copilot.svg" alt="AI copilot" height={64} width={64} />
+        <img
+          src="/assets/images/icons/copilot.svg"
+          alt="AI copilot"
+          height={64}
+          width={64}
+        />
         <div className="d-flex flex-column card-body">
           <h4 className="mb-2">ToolJet x OpenAI</h4>
           <p className="mb-2">
@@ -272,8 +287,16 @@ const EducativeLabel = ({ darkMode }) => {
 
   return (
     <div className="d-flex">
-      <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1">
-        <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
+      <Button.UnstyledButton
+        styles={{ height: '28px' }}
+        darkMode={darkMode}
+        classNames="mx-1"
+      >
+        <Button.Content
+          title={title}
+          iconSrc={'assets/images/icons/flash.svg'}
+          direction="left"
+        />
       </Button.UnstyledButton>
       <OverlayTrigger
         overlay={popoverContent}
@@ -282,8 +305,15 @@ const EducativeLabel = ({ darkMode }) => {
         placement="right"
         container={document.getElementsByClassName('query-details')[0]}
       >
-        <span style={{ cursor: 'pointer' }} data-cy={`transformation-info-icon`} className="lh-1">
-          <Information width={18} fill={'var(--indigo9)'} />
+        <span
+          style={{ cursor: 'pointer' }}
+          data-cy={`transformation-info-icon`}
+          className="lh-1"
+        >
+          <Information
+            width={18}
+            fill={'var(--indigo9)'}
+          />
         </span>
       </OverlayTrigger>
     </div>

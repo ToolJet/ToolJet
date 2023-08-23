@@ -39,7 +39,10 @@ class StyleButton extends React.Component {
     }
 
     return (
-      <span className={className} onMouseDown={this.onToggle}>
+      <span
+        className={className}
+        onMouseDown={this.onToggle}
+      >
         {this.props.label}
       </span>
     );
@@ -57,19 +60,39 @@ const HEADINGS = [
 
 const BLOCK_TYPES = [
   {
-    label: <img src="assets/images/icons/rich-text-editor/blockquote.svg" style={{ height: '16px' }} />,
+    label: (
+      <img
+        src="assets/images/icons/rich-text-editor/blockquote.svg"
+        style={{ height: '16px' }}
+      />
+    ),
     style: 'blockquote',
   },
   {
-    label: <img src="assets/images/icons/rich-text-editor/ul.svg" style={{ height: '16px' }} />,
+    label: (
+      <img
+        src="assets/images/icons/rich-text-editor/ul.svg"
+        style={{ height: '16px' }}
+      />
+    ),
     style: 'unordered-list-item',
   },
   {
-    label: <img src="assets/images/icons/rich-text-editor/ol.svg" style={{ height: '16px' }} />,
+    label: (
+      <img
+        src="assets/images/icons/rich-text-editor/ol.svg"
+        style={{ height: '16px' }}
+      />
+    ),
     style: 'ordered-list-item',
   },
   {
-    label: <img src="assets/images/icons/rich-text-editor/codeblock.svg" style={{ height: '16px' }} />,
+    label: (
+      <img
+        src="assets/images/icons/rich-text-editor/codeblock.svg"
+        style={{ height: '16px' }}
+      />
+    ),
     style: 'code-block',
   },
 ];
@@ -82,12 +105,18 @@ const BlockStyleControls = (props) => {
   return (
     <>
       <div className="dropmenu">
-        <button className="dropdownbtn px-2" type="button">
+        <button
+          className="dropdownbtn px-2"
+          type="button"
+        >
           Heading
         </button>
         <div className="dropdown-content bg-white">
           {HEADINGS.map((type) => (
-            <a className="dropitem m-0 p-0" key={type.label}>
+            <a
+              className="dropitem m-0 p-0"
+              key={type.label}
+            >
               <StyleButton
                 key={type.label}
                 active={type.style === blockType}
@@ -114,15 +143,30 @@ const BlockStyleControls = (props) => {
 
 var INLINE_STYLES = [
   {
-    label: <img src="assets/images/icons/rich-text-editor/bold.svg" style={{ height: '16px' }} />,
+    label: (
+      <img
+        src="assets/images/icons/rich-text-editor/bold.svg"
+        style={{ height: '16px' }}
+      />
+    ),
     style: 'BOLD',
   },
   {
-    label: <img src="assets/images/icons/rich-text-editor/italic.svg" style={{ height: '16px' }} />,
+    label: (
+      <img
+        src="assets/images/icons/rich-text-editor/italic.svg"
+        style={{ height: '16px' }}
+      />
+    ),
     style: 'ITALIC',
   },
   {
-    label: <img src="assets/images/icons/rich-text-editor/underline.svg" style={{ height: '16px' }} />,
+    label: (
+      <img
+        src="assets/images/icons/rich-text-editor/underline.svg"
+        style={{ height: '16px' }}
+      />
+    ),
     style: 'UNDERLINE',
   },
 ];
@@ -221,10 +265,20 @@ class DraftEditor extends React.Component {
     return (
       <div className="RichEditor-root">
         <div className="RichEditor-controls">
-          <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
-          <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
+          <BlockStyleControls
+            editorState={editorState}
+            onToggle={this.toggleBlockType}
+          />
+          <InlineStyleControls
+            editorState={editorState}
+            onToggle={this.toggleInlineStyle}
+          />
         </div>
-        <div className={className} style={{ height: `${this.props.height - 60}px` }} onClick={this.focus}>
+        <div
+          className={className}
+          style={{ height: `${this.props.height - 60}px` }}
+          onClick={this.focus}
+        >
           <Editor
             blockStyleFn={getBlockStyle}
             customStyleMap={styleMap}

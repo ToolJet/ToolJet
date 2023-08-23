@@ -108,7 +108,10 @@ export const Datepicker = function Datepicker({
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
       />
 
-      <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
+      <div
+        data-cy="date-picker-invalid-feedback"
+        className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}
+      >
         {validationError}
       </div>
     </div>

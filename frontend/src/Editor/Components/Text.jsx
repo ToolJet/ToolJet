@@ -85,7 +85,12 @@ export const Text = function Text({
   };
 
   return (
-    <div data-disabled={disabledState} className="text-widget" style={computedStyles} data-cy={dataCy}>
+    <div
+      data-disabled={disabledState}
+      className="text-widget"
+      style={computedStyles}
+      data-cy={dataCy}
+    >
       {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}
@@ -95,7 +100,10 @@ export const Text = function Text({
       {loadingState === true && (
         <div style={{ width: '100%' }}>
           <center>
-            <div className="spinner-border" role="status"></div>
+            <div
+              className="spinner-border"
+              role="status"
+            ></div>
           </center>
         </div>
       )}

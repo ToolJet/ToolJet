@@ -279,7 +279,11 @@ class ManageOrgVarsComponent extends React.Component {
             <div>
               <div className="row align-items-center ">
                 <div className="workspace-variable-header mb-3">
-                  <Alert svg="tj-info-warning" cls="workspace-variables-alert-banner" useDarkMode={false}>
+                  <Alert
+                    svg="tj-info-warning"
+                    cls="workspace-variables-alert-banner"
+                    useDarkMode={false}
+                  >
                     <div className="d-flex align-items-center">
                       {renderDeprecationText}
                       <div>

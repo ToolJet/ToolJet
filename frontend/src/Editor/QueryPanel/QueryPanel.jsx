@@ -170,9 +170,16 @@ const QueryPanel = ({
             data-tooltip-id="tooltip-for-query-panel-footer-btn"
             data-tooltip-content="Show query panel"
           >
-            <Maximize stroke="var(--slate9)" style={{ height: '14px', width: '14px' }} viewBox={null} />
+            <Maximize
+              stroke="var(--slate9)"
+              style={{ height: '14px', width: '14px' }}
+              viewBox={null}
+            />
           </ButtonSolid>
-          <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={toggleQueryEditor}>
+          <h5
+            className="mb-0 font-weight-500 cursor-pointer"
+            onClick={toggleQueryEditor}
+          >
             Query Manager
           </h5>
         </div>
@@ -214,7 +221,10 @@ const QueryPanel = ({
           </div>
         </div>
       </div>
-      <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />
+      <Tooltip
+        id="tooltip-for-query-panel-footer-btn"
+        className="tooltip"
+      />
     </>
   );
 };
