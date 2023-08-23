@@ -4,11 +4,18 @@ export const Alert = ({ children, svg, cls = '', imgHeight = null, imgWidth = nu
   const imgStyles = imgHeight && imgWidth ? { height: imgHeight, width: imgWidth } : {};
   const darkMode = useDarkMode ? localStorage.getItem('darkMode') === 'true' : false;
   return (
-    <Alert.Container cls={cls} useDarkMode={darkMode}>
+    <Alert.Container
+      cls={cls}
+      useDarkMode={darkMode}
+    >
       <div className="d-flex align-items-center">
         {svg && (
           <span>
-            <img style={imgStyles} src={`assets/images/icons/${svg}.svg`} alt="alert" />
+            <img
+              style={imgStyles}
+              src={`assets/images/icons/${svg}.svg`}
+              alt="alert"
+            />
           </span>
         )}
         <Alert.Message>{children}</Alert.Message>
@@ -17,13 +24,17 @@ export const Alert = ({ children, svg, cls = '', imgHeight = null, imgWidth = nu
   );
 };
 
-const Container = ({ children, cls = '', darkMode }) => {
-  return <div className={`alert alert-component ${darkMode && 'dark'} ${cls}`}>{children}</div>;
+const Container = ({ children, cls = '', useDarkMode }) => {
+  return <div className={`alert alert-component ${useDarkMode && 'dark'} ${cls}`}>{children}</div>;
 };
 
 const Message = ({ children }) => {
   return (
-    <div data-cy={`alert-info-text`} style={{ fontWeight: 400, width: '100%' }} className="mx-2">
+    <div
+      data-cy={`alert-info-text`}
+      style={{ fontWeight: 400, width: '100%' }}
+      className="mx-2"
+    >
       {children}
     </div>
   );

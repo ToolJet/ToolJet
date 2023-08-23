@@ -21,6 +21,7 @@ const OpenapiAuth = ({
   scopes,
   auth_url,
   auth_type,
+  access_token_custom_headers,
 }) => {
   const apiKeyChanges = (key, value) => {
     const apiKeys = api_keys ?? [];
@@ -69,7 +70,10 @@ const OpenapiAuth = ({
     if (auth) {
       const value = getCurrentKey(auth.key);
       return (
-        <div className="col-md-12" key={index ?? auth.key}>
+        <div
+          className="col-md-12"
+          key={index ?? auth.key}
+        >
           <label className="form-label text-muted mt-3">{auth.key}</label>
           <Input
             type="text"
@@ -150,6 +154,7 @@ const OpenapiAuth = ({
           client_auth={client_auth}
           scopes={scopes}
           auth_url={auth_url}
+          access_token_custom_headers={access_token_custom_headers}
           authObject={authObject}
         />
       );

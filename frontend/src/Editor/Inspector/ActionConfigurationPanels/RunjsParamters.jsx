@@ -19,7 +19,12 @@ function RunjsParameters({ event, darkMode, index, handlerChanged }) {
 
   return (
     <div className="row mt-3">
-      <label className="form-label mt-2">Parameters</label>
+      <label
+        className="form-label mt-2"
+        data-cy="label-run-js-parameters"
+      >
+        Parameters
+      </label>
       {dataQuery?.options?.parameters.map((param) => (
         <React.Fragment key={param.name}>
           <div className="col-3 p-2">{param.name}</div>

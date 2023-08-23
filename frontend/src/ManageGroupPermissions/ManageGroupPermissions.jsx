@@ -203,7 +203,10 @@ class ManageGroupPermissionsComponent extends React.Component {
               darkMode={this.props.darkMode}
             />
             <div className="d-flex groups-btn-container">
-              <p className="tj-text" data-cy="page-title">
+              <p
+                className="tj-text"
+                data-cy="page-title"
+              >
                 {groups?.length} Groups
               </p>
               {!showNewGroupForm && !showGroupNameUpdateForm && (
@@ -262,7 +265,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                         className="form-control"
                         placeholder={this.props.t(
                           'header.organization.menus.manageGroups.permissions.enterName',
-                          'Enter Name'
+                          'Enter group name'
                         )}
                         onChange={(e) => {
                           this.changeNewGroupName(e.target.value);

@@ -180,7 +180,7 @@
         "table": "Tabla",
         "pageIndex": "Índice de página",
         "component": "Componente",
-        "addHandler": "+ Añadir manejador",
+        "addHandler": "Añadir manejador",
         "addEventHandler": "+ Añadir manejador de eventos",
         "emptyMessage": "Este {{componentName}} no tiene manejadores de eventos."
       }
@@ -689,9 +689,7 @@
       "remove": "Eliminar",
       "addButton": "+ Agregar botón",
       "addColumn": "+ Agregar columna",
-      "noActionMessage": "Esta tabla no tiene botones de acción",
-      "records": "Filas",
-      "noData": "Sin datos"
+      "noActionMessage": "Esta tabla no tiene botones de acción"
     },
     "Button": {
       "displayName": "Botón",
@@ -783,8 +781,7 @@
     },
     "FilePicker": {
       "displayName": "Selector de archivos",
-      "description": "Selector de archivos",
-      "dragAndDropHelp": "Arrastre y suelte los archivos aquí, o haga clic para seleccionar los archivos"
+      "description": "Selector de archivos"
     },
     "Calendar": {
       "displayName": "Calendario",

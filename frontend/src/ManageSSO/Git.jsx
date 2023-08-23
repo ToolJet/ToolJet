@@ -84,16 +84,25 @@ export function Git({ settings, updateData }) {
             />
           </div>
           <div className="card-title">
-            <span className={` tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
+            <span
+              className={` tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`}
+              data-cy="status-label"
+            >
               {enabled ? t('globals.enabled', 'Enabled') : t('globals.disabled', 'Disabled')}
             </span>
           </div>
         </div>
       </div>
       <div className="card-body">
-        <form noValidate className="sso-form-wrap">
+        <form
+          noValidate
+          className="sso-form-wrap"
+        >
           <div className="form-group mb-3">
-            <label className="form-label" data-cy="host-name-label">
+            <label
+              className="form-label"
+              data-cy="host-name-label"
+            >
               {t('header.organization.menus.manageSSO.github.hostName', 'Host Name')}
             </label>
             <div className="tj-app-input">
@@ -107,13 +116,19 @@ export function Git({ settings, updateData }) {
               />
             </div>
             <div>
-              <div data-cy="git-sso-help-text" className=" tj-text-xxsm git-sso-help-text">
+              <div
+                data-cy="git-sso-help-text"
+                className=" tj-text-xxsm git-sso-help-text"
+              >
                 {t('header.organization.menus.manageSSO.github.requiredGithub', 'Required if GitHub is self hosted')}
               </div>
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label" data-cy="client-id-label">
+            <label
+              className="form-label"
+              data-cy="client-id-label"
+            >
               {t('header.organization.menus.manageSSO.github.clientId', ' Client Id')}
             </label>
             <div className="tj-app-input">
@@ -128,10 +143,19 @@ export function Git({ settings, updateData }) {
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label" data-cy="client-secret-label">
+            <label
+              className="form-label"
+              data-cy="client-secret-label"
+            >
               {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
-              <small className="git- mx-2" data-cy="encripted-label">
-                <SolidIcon name="lock" width="16" />
+              <small
+                className="git- mx-2"
+                data-cy="encripted-label"
+              >
+                <SolidIcon
+                  name="lock"
+                  width="16"
+                />
                 {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
               </small>
             </label>
@@ -148,22 +172,36 @@ export function Git({ settings, updateData }) {
           </div>
           {configId && (
             <div className="form-group mb-3">
-              <label className="form-label" data-cy="redirect-url-label">
+              <label
+                className="form-label"
+                data-cy="redirect-url-label"
+              >
                 {t('header.organization.menus.manageSSO.github.redirectUrl', 'Redirect URL')}
               </label>
               <div className="d-flex justify-content-between form-control align-items-center">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
-                >{`${window.public_config?.TOOLJET_HOST}/sso/git/${configId}`}</p>
-                <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
+                >{`${window.public_config?.TOOLJET_HOST}${
+                  window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                }sso/git/${configId}`}</p>
+                <SolidIcon
+                  name="copy"
+                  width="16"
+                  onClick={() => copyFunction('redirect-url')}
+                />
               </div>
             </div>
           )}
         </form>
       </div>
       <div className="form-footer sso-card-footer">
-        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+        <ButtonSolid
+          onClick={reset}
+          data-cy="cancel-button"
+          variant="tertiary"
+          className="sso-footer-cancel-btn"
+        >
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
 

@@ -114,26 +114,25 @@
 }
 
 .tj-tertiary-btn {
-    background: var(--base);
+    background: transparent;
     border: 1px solid var(--slate7);
     color: var(--slate12);
 
     &:hover {
-        background: var(--slate8);
+        background: var(--slate4);
         color: var(--slate11);
-        border: 1px solid var(--slate8);
-        background: var(--base);
+        border: 1px solid var(--slate7);
     }
 
     &:active {
-        background: var(--base);
+        background: transparent;
         box-shadow: none;
         border: 1px solid var(--slate12);
         color: var(--slate12);
     }
 
     &:focus-visible {
-        background: var(--base);
+        background: transparent;
         color: var(--slate11);
         outline: 1px solid var(--slate8);
         box-shadow: 0px 0px 0px 4px var(--slate6);
@@ -149,6 +148,7 @@
 
     &:hover {
         color: var(--indigo10);
+        background-color: var(--indigo4);
     }
 
     &:active {
@@ -162,6 +162,9 @@
         box-shadow: 0px 0px 0px 4px var(--indigo6);
         outline: none;
     }
+    &:focus {
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
+    }
 }
 
 .tj-ghost-black-btn {
@@ -171,6 +174,7 @@
 
     &:hover {
         color: var(--slate11);
+        background: var(--slate4, #ECEEF0);
     }
 
     &:active {

@@ -181,7 +181,7 @@
       "events": "Events",
       "transformation": {
         "transformationToolTip": "Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python",
-        "transformations": "Enable Transformations"
+        "transformations": "Transformations"
       }
     },
     "inspector": {
@@ -204,7 +204,7 @@
         "table": "Table",
         "pageIndex": "Page index",
         "component": "Component",
-        "addHandler": "+ Add handler",
+        "addHandler": "Add handler",
         "addEventHandler": "+ Add event handler",
         "emptyMessage": "This {{componentName}} doesn't have any event handlers",
         "page": "Page"
@@ -258,7 +258,7 @@
           "enterFirstName": "Enter First Name",
           "enterLastName": "Enter Last Name",
           "enterEmail": "Enter email id",
-          "enterFulltName": "Enter full name",
+          "enterFullName": "Enter full name",
           "inviteNewUsers": "Invite new users"
         },
         "manageGroups": {
@@ -267,7 +267,7 @@
             "createNewGroup": "Create new group",
             "updateGroup": "Update group",
             "addNewGroup": "Add new group",
-            "enterName": "Enter Name",
+            "enterName": "Enter group name",
             "createGroup": "Create Group",
             "name": "Name"
           },
@@ -765,16 +765,12 @@
       "description": "Text area form field"
     },
     "DateRangePicker": {
-      "displayName": "Range Picker (Pendiente)",
+      "displayName": "Range Picker",
       "description": "Select a date range"
     },
     "Text": {
       "displayName": "Text",
       "description": "Display markdown or HTML"
-    },
-    "Icon": {
-      "displayName": "Icon (Pendiente)",
-      "description": "Icon"
     },
     "Image": {
       "displayName": "Image",
@@ -813,7 +809,7 @@
       "description": "Separator between components"
     },
     "FilePicker": {
-      "displayName": "File Picker (Pendiente)",
+      "displayName": "File Picker",
       "description": "File Picker"
     },
     "Calendar": {
@@ -833,7 +829,7 @@
       "description": "Tabs component"
     },
     "Timer": {
-      "displayName": "Timer (pendiente)",
+      "displayName": "Timer",
       "description": "timer"
     },
     "Listview": {
@@ -887,10 +883,6 @@
     "ButtonGroup": {
       "displayName": "Button Group",
       "description": "ButtonGroup"
-    },
-    "Link": {
-      "displayName": "Link",
-      "description": "Add link to the text"
     },
     "PDF": {
       "displayName": "PDF",

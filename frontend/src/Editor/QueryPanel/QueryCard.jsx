@@ -1,48 +1,32 @@
 import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
-import { getSvgIcon, checkExistingQueryName } from '@/_helpers/appUtils';
-import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
+import { Tooltip } from 'react-tooltip';
+import { checkExistingQueryName } from '@/_helpers/appUtils';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import Copy from '@/_ui/Icon/solidIcons/Copy';
+import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
+import { isQueryRunnable } from '@/_helpers/utils';
 
-export const QueryCard = ({
-  dataQuery,
-  setSaveConfirmation,
-  setCancelData,
-  setDraftQuery,
-  darkMode = false,
-  editorRef,
-}) => {
+export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
   const selectedQuery = useSelectedQuery();
-  const isUnsavedChangesAvailable = useUnsavedChanges();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
-  const { deleteDataQueries, renameQuery } = useDataQueriesActions();
-  const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges } = useQueryPanelActions();
+  const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
+  const { setSelectedQuery, setPreviewData } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
     }),
     shallow
   );
+
   const [renamingQuery, setRenamingQuery] = useState(false);
-
-  const getSourceMetaData = (dataSource) => {
-    if (dataSource?.plugin_id) {
-      return dataSource.plugin?.manifest_file?.data.source;
-    }
-
-    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
-  };
-
-  const sourceMeta = getSourceMetaData(dataQuery);
-  const iconFile = dataQuery?.plugin?.iconFile?.data || dataQuery?.plugin?.icon_file?.data;
-  const icon = getSvgIcon(sourceMeta?.kind.toLowerCase(), 20, 20, iconFile);
 
   let isSeletedQuery = false;
   if (selectedQuery) {
@@ -54,24 +38,14 @@ export const QueryCard = ({
     setShowDeleteConfirmation(true);
   };
 
-  const cancelDeleteDataQuery = () => {
-    setShowDeleteConfirmation(false);
-  };
-
   const updateQueryName = (selectedQuery, newName) => {
-    const { id, name } = selectedQuery;
+    const { name } = selectedQuery;
     if (name === newName) {
       return setRenamingQuery(false);
     }
     const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
     if (newName && !isNewQueryNameAlreadyExists) {
-      if (id === 'draftQuery') {
-        toast.success('Query Name Updated');
-        setDraftQuery((query) => ({ ...query, name: newName }));
-        setSelectedQuery('draftQuery', { ...dataQuery, name: newName });
-      } else {
-        renameQuery(dataQuery?.id, newName, editorRef);
-      }
+      renameQuery(dataQuery?.id, newName, editorRef);
       setRenamingQuery(false);
     } else {
       if (isNewQueryNameAlreadyExists) {
@@ -83,36 +57,27 @@ export const QueryCard = ({
 
   const executeDataQueryDeletion = () => {
     setShowDeleteConfirmation(false);
-    if (dataQuery?.id === 'draftQuery') {
-      toast.success('Query Deleted');
-      setDraftQuery(null);
-      setSelectedQuery(null);
-      setUnSavedChanges(false);
-      setSelectedDataSource(null);
-      return;
-    }
     deleteDataQueries(dataQuery?.id, editorRef);
   };
 
   return (
     <>
       <div
-        className={'row query-row' + (isSeletedQuery ? ' query-row-selected' : '')}
+        className={'row query-row pe-2' + (isSeletedQuery ? ' query-row-selected' : '')}
         key={dataQuery.id}
         onClick={() => {
           if (selectedQuery?.id === dataQuery?.id) return;
-          const stateToBeUpdated = { editingQuery: true, selectedQuery: dataQuery, draftQuery: null };
-          if (isUnsavedChangesAvailable) {
-            setSaveConfirmation(true);
-            setCancelData(stateToBeUpdated);
-          } else {
-            setSelectedQuery(dataQuery?.id);
-            setDraftQuery(null);
-          }
+          setSelectedQuery(dataQuery?.id);
+          setPreviewData(null);
         }}
         role="button"
       >
-        <div className="col-auto query-icon d-flex">{icon}</div>
+        <div className="col-auto query-icon d-flex">
+          <DataSourceIcon
+            source={dataQuery}
+            height={16}
+          />
+        </div>
         <div className="col query-row-query-name">
           {renamingQuery ? (
             <input
@@ -123,6 +88,11 @@ export const QueryCard = ({
               type="text"
               defaultValue={dataQuery.name}
               autoFocus={true}
+              onKeyDown={({ target, key }) => {
+                if (key === 'Enter') {
+                  updateQueryName(selectedQuery, target.value);
+                }
+              }}
               onBlur={({ target }) => {
                 updateQueryName(selectedQuery, target.value);
               }}
@@ -134,8 +104,22 @@ export const QueryCard = ({
               delay={{ show: 800, hide: 100 }}
               overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
             >
-              <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-                {dataQuery.name}
+              <div
+                className="query-name"
+                data-cy={`list-query-${dataQuery.name.toLowerCase()}`}
+              >
+                <span
+                  className="text-truncate"
+                  data-tooltip-id="query-card-name-tooltip"
+                  data-tooltip-content={dataQuery.name}
+                >
+                  {dataQuery.name}
+                </span>{' '}
+                <Tooltip
+                  id="query-card-name-tooltip"
+                  className="tooltip query-manager-tooltip"
+                />
+                {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
               </div>
             </OverlayTrigger>
           )}
@@ -147,7 +131,11 @@ export const QueryCard = ({
               className={`col-auto ${renamingQuery && 'display-none'} rename-query`}
               onClick={() => setRenamingQuery(true)}
             >
-              <span className="d-flex">
+              <span
+                className="d-flex"
+                data-tooltip-id="query-card-btn-tooltip"
+                data-tooltip-content="Rename query"
+              >
                 <svg
                   data-cy={`edit-query-${dataQuery.name.toLowerCase()}`}
                   width="auto"
@@ -165,13 +153,37 @@ export const QueryCard = ({
                 </svg>
               </span>
             </div>
+            <div
+              className={`col-auto rename-query`}
+              onClick={() => duplicateQuery(dataQuery?.id, appId)}
+            >
+              <span
+                className="d-flex"
+                data-tooltip-id="query-card-btn-tooltip"
+                data-tooltip-content="Duplicate query"
+              >
+                <Copy
+                  height={16}
+                  width={16}
+                  viewBox="0 5 20 20"
+                />
+              </span>
+            </div>
             <div className="col-auto">
               {isDeletingQueryInProcess ? (
                 <div className="px-2">
-                  <div className="text-center spinner-border spinner-border-sm" role="status"></div>
+                  <div
+                    className="text-center spinner-border spinner-border-sm"
+                    role="status"
+                  ></div>
                 </div>
               ) : (
-                <span className="delete-query" onClick={deleteDataQuery} disabled={dataQuery?.id === 'draftQuery'}>
+                <span
+                  className="delete-query"
+                  onClick={deleteDataQuery}
+                  data-tooltip-id="query-card-btn-tooltip"
+                  data-tooltip-content="Delete query"
+                >
                   <span className="d-flex">
                     <svg
                       data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
@@ -192,19 +204,21 @@ export const QueryCard = ({
                 </span>
               )}
             </div>
+            <Tooltip
+              id="query-card-btn-tooltip"
+              className="tooltip"
+            />
           </div>
         )}
       </div>
-      {showDeleteConfirmation ? (
-        <Confirm
-          show={showDeleteConfirmation}
-          message={'Do you really want to delete this query?'}
-          confirmButtonLoading={isDeletingQueryInProcess}
-          onConfirm={executeDataQueryDeletion}
-          onCancel={cancelDeleteDataQuery}
-          darkMode={darkMode}
-        />
-      ) : null}
+      <Confirm
+        show={showDeleteConfirmation}
+        message={'Do you really want to delete this query?'}
+        confirmButtonLoading={isDeletingQueryInProcess}
+        onConfirm={executeDataQueryDeletion}
+        onCancel={() => setShowDeleteConfirmation(false)}
+        darkMode={darkMode}
+      />
     </>
   );
 };

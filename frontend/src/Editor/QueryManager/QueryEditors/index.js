@@ -22,12 +22,23 @@ export const allSources = {
   ...Object.keys(allOperations).reduce((accumulator, currentValue) => {
     accumulator[currentValue] = (props) => (
       <div className="query-editor-dynamic-form-container">
-        <DynamicForm schema={allOperations[currentValue]} {...props} computeSelectStyles={computeSelectStyles} />
+        <DynamicForm
+          schema={allOperations[currentValue]}
+          {...props}
+          computeSelectStyles={computeSelectStyles}
+          layout="horizontal"
+        />
       </div>
     );
     return accumulator;
   }, {}),
-  Tooljetdb: (props) => <DynamicForm schema={tooljetDbOperations} {...props} />,
+  Tooljetdb: (props) => (
+    <DynamicForm
+      schema={tooljetDbOperations}
+      {...props}
+      layout="horizontal"
+    />
+  ),
   Restapi,
   Runjs,
   Runpy,
@@ -38,6 +49,11 @@ export const allSources = {
 
 export const source = (props) => (
   <div className="query-editor-dynamic-form-container">
-    <DynamicForm schema={props.pluginSchema} {...props} computeSelectStyles={computeSelectStyles} />
+    <DynamicForm
+      schema={props.pluginSchema}
+      {...props}
+      computeSelectStyles={computeSelectStyles}
+      layout="horizontal"
+    />
   </div>
 );

@@ -65,7 +65,7 @@ export const LeftSidebarDataSources = ({
         setSelectedDataSource(null);
         dataSourcesChanged();
         globalDataSourcesChanged();
-        dataQueriesChanged();
+        dataQueriesChanged({ isReloadSelf: true });
       })
       .catch(({ error }) => {
         setDeletingDatasource(false);
@@ -129,10 +129,19 @@ export const LeftSidebarDataSources = ({
     }, [JSON.stringify({ dataSource, isConversionVisible })]);
 
     const popover = (
-      <PopoverBS key={dataSource.id} id="popover-change-scope">
-        <PopoverBS.Body key={dataSource.id} className={`${darkMode && 'theme-dark popover-dark-themed'}`}>
+      <PopoverBS
+        key={dataSource.id}
+        id="popover-change-scope"
+      >
+        <PopoverBS.Body
+          key={dataSource.id}
+          className={`${darkMode && 'theme-dark popover-dark-themed'}`}
+        >
           <div className={`row cursor-pointer`}>
-            <div className="col text-truncate cursor-pointer" onClick={() => convertToGlobalDataSource(dataSource)}>
+            <div
+              className="col text-truncate cursor-pointer"
+              onClick={() => convertToGlobalDataSource(dataSource)}
+            >
               Change scope
             </div>
           </div>
@@ -141,7 +150,10 @@ export const LeftSidebarDataSources = ({
     );
 
     return (
-      <div className="row mb-3 ds-list-item" key={idx}>
+      <div
+        className="row mb-3 ds-list-item"
+        key={idx}
+      >
         <div
           role="button"
           onClick={
@@ -155,15 +167,24 @@ export const LeftSidebarDataSources = ({
           className="col d-flex align-items-center"
         >
           {icon}
-          <span className="font-400" style={{ paddingLeft: 5 }}>
+          <span
+            className="font-400"
+            style={{ paddingLeft: 5 }}
+          >
             {dataSource.name}
           </span>
         </div>
         {showDeleteIcon && !isVersionReleased && (
           <div className="col-auto">
-            <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
+            <button
+              className="btn btn-sm p-1 ds-delete-btn"
+              onClick={() => deleteDataSource(dataSource)}
+            >
               <div>
-                <TrashIcon width="14" height="14" />
+                <TrashIcon
+                  width="14"
+                  height="14"
+                />
               </div>
             </button>
           </div>
@@ -258,7 +279,10 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
             {dataSources.length ? (
               <>
                 <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
-                <div className="mt-2 w-100" data-cy="datasource-Label">
+                <div
+                  className="mt-2 w-100"
+                  data-cy="datasource-Label"
+                >
                   {dataSources?.map((source, idx) => (
                     <RenderDataSource
                       key={idx}

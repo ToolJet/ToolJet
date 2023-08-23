@@ -65,7 +65,10 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
   const ssoButtons = (type) => {
     return (
       <div className={`d-flex`}>
-        <img width="35px" src={`assets/images/sso-buttons/${type}.svg`} />
+        <img
+          width="35px"
+          src={`assets/images/sso-buttons/${type}.svg`}
+        />
       </div>
     );
   };
@@ -73,12 +76,18 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
   return (
     <div className="sso-card-wrapper">
       <div className="card-header">
-        <div className="card-title" data-cy="card-title">
+        <div
+          className="card-title"
+          data-cy="card-title"
+        >
           {t('header.organization.menus.manageSSO.generalSettings.title', 'General Settings')}
         </div>
       </div>
       <div className="card-body">
-        <form noValidate className="sso-form-wrap">
+        <form
+          noValidate
+          className="sso-form-wrap"
+        >
           <div className="form-group mb-3">
             <label className="form-check form-switch">
               <input
@@ -88,7 +97,10 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                 checked={enableSignUp}
                 data-cy="enable-sign-up-toggle"
               />
-              <span className="form-check-label" data-cy="enable-sign-up-label">
+              <span
+                className="form-check-label"
+                data-cy="enable-sign-up-label"
+              >
                 {t('header.organization.menus.manageSSO.generalSettings.enableSignup', 'Enable signup')}
               </span>
             </label>
@@ -111,19 +123,28 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                   checked={inheritSSO}
                   data-cy="allow-default-sso-toggle"
                 />
-                <span className="form-check-label" data-cy="allow-default-sso-label">
+                <span
+                  className="form-check-label"
+                  data-cy="allow-default-sso-label"
+                >
                   {t('header.organization.menus.manageSSO.generalSettings.allowDefaultSso', `Allow default SSO`)}
                 </span>
               </label>
               <div className="help-text tj-text-xsm mt-1">
-                <div data-cy="allow-default-sso-helper-text" className="allow-default-sso-helper-text tj-text-xsm mt">
+                <div
+                  data-cy="allow-default-sso-helper-text"
+                  className="allow-default-sso-helper-text tj-text-xsm mt"
+                >
                   {t(
                     'header.organization.menus.manageSSO.generalSettings.ssoAuth',
                     `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
                   )}
                 </div>
               </div>
-              <div className="d-flex sso-icon-wrapper mb-2" data-cy="default-sso-status-image">
+              <div
+                className="d-flex sso-icon-wrapper mb-2"
+                data-cy="default-sso-status-image"
+              >
                 <SolidIcon
                   fill={inheritSSO ? '#fff' : '#889096'}
                   name={inheritSSO ? 'tick' : 'removerectangle'}
@@ -138,7 +159,10 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
             </div>
           )}
           <div className="form-group tj-app-input">
-            <label className="form-label" data-cy="allowed-domains-label">
+            <label
+              className="form-label"
+              data-cy="allowed-domains-label"
+            >
               {t('header.organization.menus.manageSSO.generalSettings.allowedDomains', `Allowed domains`)}
             </label>
             <input
@@ -160,15 +184,27 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label" data-cy="workspace-login-url-label">
+            <label
+              className="form-label"
+              data-cy="workspace-login-url-label"
+            >
               {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
             </label>
 
             <div className="d-flex justify-content-between form-control align-items-center">
-              <p id="login-url" data-cy="workspace-login-url">
-                {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentSessionValue?.current_organization_id}`}
+              <p
+                id="login-url"
+                data-cy="workspace-login-url"
+              >
+                {`${window.public_config?.TOOLJET_HOST}${
+                  window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                }login/${authenticationService?.currentSessionValue?.current_organization_id}`}
               </p>
-              <SolidIcon name="copy" width="16" onClick={() => copyFunction('login-url')} />
+              <SolidIcon
+                name="copy"
+                width="16"
+                onClick={() => copyFunction('login-url')}
+              />
             </div>
             <div className="mt-1 tj-text-xxsm">
               <div data-cy="workspace-login-help-text">
@@ -192,8 +228,15 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
           />
           <div className="password-disable-danger-wrap">
             <div className="default-danger-tag-wrap">
-              <SolidIcon name="information" fill="#E54D2E" width="13" />
-              <p className="font-weight-500 tj-text-xsm" data-cy="alert-text">
+              <SolidIcon
+                name="information"
+                fill="#E54D2E"
+                width="13"
+              />
+              <p
+                className="font-weight-500 tj-text-xsm"
+                data-cy="alert-text"
+              >
                 Danger zone
               </p>
             </div>
@@ -206,7 +249,10 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                   data-cy="password-enable-toggle"
                   checked={enabled}
                 />
-                <span className="form-check-label" data-cy="label-password-login">
+                <span
+                  className="form-check-label"
+                  data-cy="label-password-login"
+                >
                   Password login{' '}
                 </span>
               </label>
@@ -221,7 +267,12 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
       </div>
       <ConfirmDialog />
       <div className="form-footer sso-card-footer">
-        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+        <ButtonSolid
+          onClick={reset}
+          data-cy="cancel-button"
+          variant="tertiary"
+          className="sso-footer-cancel-btn"
+        >
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
 

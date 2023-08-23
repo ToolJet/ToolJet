@@ -75,14 +75,20 @@ export function Google({ settings, updateData }) {
                 onChange={changeStatus}
                 data-cy="google-enable-toggle"
               />
-              <span className="sso-type-header" data-cy="card-title">
+              <span
+                className="sso-type-header"
+                data-cy="card-title"
+              >
                 {t('header.organization.menus.manageSSO.google.title', 'Google')}
               </span>
             </label>
           </div>
 
           <div className="card-title">
-            <span className={`tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
+            <span
+              className={`tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`}
+              data-cy="status-label"
+            >
               {enabled
                 ? t('header.organization.menus.manageSSO.google.enabled', 'Enabled')
                 : t('header.organization.menus.manageSSO.google.disabled', 'Disabled')}
@@ -91,9 +97,15 @@ export function Google({ settings, updateData }) {
         </div>
       </div>
       <div className="card-body">
-        <form noValidate className="sso-form-wrap">
+        <form
+          noValidate
+          className="sso-form-wrap"
+        >
           <div className="form-group mb-3">
-            <label className="form-label" data-cy="client-id-label">
+            <label
+              className="form-label"
+              data-cy="client-id-label"
+            >
               {t('header.organization.menus.manageSSO.google.clientId', 'Client Id')}
             </label>
             <div className="tj-app-input">
@@ -109,22 +121,36 @@ export function Google({ settings, updateData }) {
           </div>
           {configId && (
             <div className="form-group mb-3">
-              <label className="form-label" data-cy="redirect-url-label">
+              <label
+                className="form-label"
+                data-cy="redirect-url-label"
+              >
                 {t('header.organization.menus.manageSSO.google.redirectUrl', 'Redirect URL')}
               </label>
               <div className="d-flex justify-content-between form-control align-items-center">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
-                >{`${window.public_config?.TOOLJET_HOST}/sso/google/${configId}`}</p>
-                <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
+                >{`${window.public_config?.TOOLJET_HOST}${
+                  window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                }sso/google/${configId}`}</p>
+                <SolidIcon
+                  name="copy"
+                  width="16"
+                  onClick={() => copyFunction('redirect-url')}
+                />
               </div>
             </div>
           )}
         </form>
       </div>
       <div className="form-footer sso-card-footer">
-        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+        <ButtonSolid
+          onClick={reset}
+          data-cy="cancel-button"
+          variant="tertiary"
+          className="sso-footer-cancel-btn"
+        >
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
 

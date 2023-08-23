@@ -1,7 +1,15 @@
 import React, { useEffect } from 'react';
 import { Button } from '@/_ui/LeftSidebar';
 
-const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, totalPage, isDisabled }) => {
+const Pagination = ({
+  darkMode,
+  gotoNextPage,
+  gotoPreviousPage,
+  currentPage,
+  totalPage,
+  isDisabled,
+  disableInput = false,
+}) => {
   const [currentPageNumber, setCurrentPageNumber] = React.useState(currentPage);
 
   const handleOnChange = (value) => {
@@ -17,7 +25,10 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
   }, [currentPage]);
 
   return (
-    <div className="pagination-container d-flex" data-cy="pagination-section">
+    <div
+      className="pagination-container d-flex"
+      data-cy="pagination-section"
+    >
       <Button.UnstyledButton
         onClick={(event) => {
           event.stopPropagation();
@@ -32,7 +43,7 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
 
       <div className="d-flex">
         <input
-          disabled={isDisabled}
+          disabled={isDisabled || disableInput}
           type="text"
           className="form-control mx-1"
           data-cy={`current-page-number-${currentPageNumber}`}
@@ -49,7 +60,10 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
             setCurrentPageNumber(event.target.value);
           }}
         />
-        <span className="mx-1" data-cy={`total-page-number-${totalPage}`}>
+        <span
+          className="mx-1"
+          data-cy={`total-page-number-${totalPage}`}
+        >
           / {totalPage}
         </span>
       </div>

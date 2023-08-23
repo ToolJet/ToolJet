@@ -22,6 +22,7 @@ const Authentication = ({
   auth_url,
   multiple_auth_enabled,
   optionchanged,
+  workspaceConstants,
 }) => {
   if (auth_type === 'oauth2') {
     return (
@@ -54,6 +55,7 @@ const Authentication = ({
                 className="form-control"
                 onChange={(e) => optionchanged('header_prefix', e.target.value)}
                 value={header_prefix}
+                workspaceConstants={workspaceConstants}
               />
             </div>
           )}
@@ -67,6 +69,7 @@ const Authentication = ({
             className="form-control"
             onChange={(e) => optionchanged('access_token_url', e.target.value)}
             value={access_token_url}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -79,6 +82,7 @@ const Authentication = ({
           getter={'access_token_custom_headers'}
           options={access_token_custom_headers}
           optionchanged={optionchanged}
+          workspaceConstants={workspaceConstants}
         />
 
         <div className="col-md-12">
@@ -88,6 +92,7 @@ const Authentication = ({
             className="form-control"
             onChange={(e) => optionchanged('client_id', e.target.value)}
             value={client_id}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -95,15 +100,21 @@ const Authentication = ({
           <label className="form-label text-muted mt-3">
             Client Secret
             <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
+              <img
+                className="mx-2 encrypted-icon"
+                src="assets/images/icons/padlock.svg"
+                width="12"
+                height="12"
+              />
               Encrypted
             </small>
           </label>
           <Input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => optionchanged('client_secret', e.target.value)}
             value={client_secret}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -114,6 +125,7 @@ const Authentication = ({
             className="form-control"
             onChange={(e) => optionchanged('scopes', e.target.value)}
             value={scopes}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -122,7 +134,12 @@ const Authentication = ({
             <label className="form-label pt-2">Custom Query Parameters</label>
           </div>
         </div>
-        <Headers getter={'custom_query_params'} options={custom_query_params} optionchanged={optionchanged} />
+        <Headers
+          getter={'custom_query_params'}
+          options={custom_query_params}
+          optionchanged={optionchanged}
+          workspaceConstants={workspaceConstants}
+        />
 
         {grant_type === 'authorization_code' && (
           <div>
@@ -134,6 +151,7 @@ const Authentication = ({
                 className="form-control"
                 onChange={(e) => optionchanged('auth_url', e.target.value)}
                 value={auth_url}
+                workspaceConstants={workspaceConstants}
               />
             </div>
 
@@ -142,7 +160,12 @@ const Authentication = ({
                 <label className="form-label pt-2">Custom Authentication Parameters</label>
               </div>
             </div>
-            <Headers getter={'custom_auth_params'} options={custom_auth_params} optionchanged={optionchanged} />
+            <Headers
+              getter={'custom_auth_params'}
+              options={custom_auth_params}
+              optionchanged={optionchanged}
+              workspaceConstants={workspaceConstants}
+            />
             <label className="form-label text-muted mt-3">Client Authentication</label>
             <Select
               options={[
@@ -177,21 +200,28 @@ const Authentication = ({
             className="form-control"
             onChange={(e) => optionchanged('username', e.target.value)}
             value={username}
+            workspaceConstants={workspaceConstants}
           />
         </div>
         <div className="col-md-12">
           <label className="form-label text-muted mt-3">
             Password
             <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
+              <img
+                className="mx-2 encrypted-icon"
+                src="assets/images/icons/padlock.svg"
+                width="12"
+                height="12"
+              />
               Encrypted
             </small>
           </label>
           <Input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => optionchanged('password', e.target.value)}
             value={password}
+            workspaceConstants={workspaceConstants}
           />
         </div>
       </div>
@@ -203,15 +233,21 @@ const Authentication = ({
           <label className="form-label text-muted mt-3">
             Token
             <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
+              <img
+                className="mx-2 encrypted-icon"
+                src="assets/images/icons/padlock.svg"
+                width="12"
+                height="12"
+              />
               Encrypted
             </small>
           </label>
           <Input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => optionchanged('bearer_token', e.target.value)}
             value={bearer_token}
+            workspaceConstants={workspaceConstants}
           />
         </div>
       </div>

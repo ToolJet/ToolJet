@@ -285,6 +285,7 @@ class DataSourceManagerComponent extends React.Component {
         hideModal={this.hideModal}
         selectedDataSource={this.state.selectedDataSource}
         isEditMode={!isEmpty(this.state.selectedDataSource)}
+        currentAppEnvironmentId={this.props.currentEnvironment?.id}
       />
     );
   };
@@ -334,10 +335,17 @@ class DataSourceManagerComponent extends React.Component {
         defaultActiveKey={this.state.activeDatasourceList}
       >
         <Row>
-          <Col sm={6} md={4} className={`modal-sidebar ${darkMode ? 'dark' : ''}`}>
+          <Col
+            sm={6}
+            md={4}
+            className={`modal-sidebar ${darkMode ? 'dark' : ''}`}
+          >
             {this.renderSidebarList()}
           </Col>
-          <Col style={{ left: '25%' }} className={`modal-body-content ${darkMode ? 'dark' : ''}`}>
+          <Col
+            style={{ left: '25%' }}
+            className={`modal-body-content ${darkMode ? 'dark' : ''}`}
+          >
             <div className="selected-datasource-list-content">
               <Tab.Content>
                 {suggestingDatasources ? (
@@ -458,9 +466,15 @@ class DataSourceManagerComponent extends React.Component {
 
     return (
       <>
-        <ListGroup className="datasource-lists-modal" variant="flush">
+        <ListGroup
+          className="datasource-lists-modal"
+          variant="flush"
+        >
           {dataSourceList.map((datasource) => (
-            <ListGroup.Item key={datasource.key} eventKey={datasource.key}>
+            <ListGroup.Item
+              key={datasource.key}
+              eventKey={datasource.key}
+            >
               {`${datasource.type} (${datasource.list.length})`}
             </ListGroup.Item>
           ))}
@@ -474,7 +488,10 @@ class DataSourceManagerComponent extends React.Component {
               )}
             </span>
             <br />
-            <span className="link-span" onClick={updateSuggestionState}>
+            <span
+              className="link-span"
+              onClick={updateSuggestionState}
+            >
               {this.props.t('editor.queryManager.dataSourceManager.suggest', 'Suggest')}
             </span>
           </p>
@@ -693,7 +710,10 @@ class DataSourceManagerComponent extends React.Component {
                 {selectedDataSource && (
                   <div className="row selected-ds">
                     {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
-                    <div className="input-icon" style={{ width: '160px' }}>
+                    <div
+                      className="input-icon"
+                      style={{ width: '160px' }}
+                    >
                       <input
                         type="text"
                         onChange={(e) => this.onNameChanged(e.target.value)}
@@ -705,14 +725,21 @@ class DataSourceManagerComponent extends React.Component {
                       />
                       {!this.props.isEditing && (
                         <span className="input-icon-addon">
-                          <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
+                          <img
+                            src="assets/images/icons/edit-source.svg"
+                            width="12"
+                            height="12"
+                          />
                         </span>
                       )}
                     </div>
                   </div>
                 )}
                 {!selectedDataSource && (
-                  <span className="" data-cy="title-add-new-datasource">
+                  <span
+                    className=""
+                    data-cy="title-add-new-datasource"
+                  >
                     {this.props.t('editor.queryManager.dataSourceManager.addNewDataSource', 'Add new datasource')}
                   </span>
                 )}
@@ -723,7 +750,11 @@ class DataSourceManagerComponent extends React.Component {
                   className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
                   onClick={() => this.hideModal()}
                 >
-                  <img src="assets/images/icons/close.svg" width="12" height="12" />
+                  <img
+                    src="assets/images/icons/close.svg"
+                    width="12"
+                    height="12"
+                  />
                 </span>
               )}
             </div>
@@ -740,10 +771,19 @@ class DataSourceManagerComponent extends React.Component {
                 <div className="card-body datasource-footer-info">
                   <div className="row">
                     <div className="col-1">
-                      <SolidIcon name="information" fill="#3E63DD" />
+                      <SolidIcon
+                        name="information"
+                        fill="#3E63DD"
+                      />
                     </div>
-                    <div className="col" style={{ maxWidth: '480px' }}>
-                      <p data-cy="white-list-ip-text" className="tj-text">
+                    <div
+                      className="col"
+                      style={{ maxWidth: '480px' }}
+                    >
+                      <p
+                        data-cy="white-list-ip-text"
+                        className="tj-text"
+                      >
                         {this.props.t(
                           'editor.queryManager.dataSourceManager.whiteListIP',
                           'Please white-list our IP address if the data source is not publicly accessible.'
@@ -753,7 +793,10 @@ class DataSourceManagerComponent extends React.Component {
                     <div className="col-auto">
                       {isCopied ? (
                         <center className="my-2">
-                          <span className="copied" data-cy="label-ip-copied">
+                          <span
+                            className="copied"
+                            data-cy="label-ip-copied"
+                          >
                             {this.props.t('editor.queryManager.dataSourceManager.copied', 'Copied')}
                           </span>
                         </center>
@@ -783,8 +826,14 @@ class DataSourceManagerComponent extends React.Component {
 
               {connectionTestError && (
                 <div className="row w-100">
-                  <div className="alert alert-danger" role="alert">
-                    <div className="text-muted" data-cy="connection-alert-text">
+                  <div
+                    className="alert alert-danger"
+                    role="alert"
+                  >
+                    <div
+                      className="text-muted"
+                      data-cy="connection-alert-text"
+                    >
                       {connectionTestError.message}
                     </div>
                   </div>
@@ -792,7 +841,12 @@ class DataSourceManagerComponent extends React.Component {
               )}
 
               <div className="col">
-                <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
+                <SolidIcon
+                  name="logs"
+                  fill="#3E63DD"
+                  width="20"
+                  style={{ marginRight: '8px' }}
+                />
                 <a
                   className="color-primary tj-docs-link tj-text-sm"
                   href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
@@ -803,16 +857,23 @@ class DataSourceManagerComponent extends React.Component {
                   {this.props.t('globals.readDocumentation', 'Read documentation')}
                 </a>
               </div>
-              <div className="col-auto" data-cy="button-test-connection">
+              <div
+                className="col-auto"
+                data-cy="button-test-connection"
+              >
                 <TestConnection
                   kind={selectedDataSource.kind}
                   pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
                   options={options}
                   onConnectionTestFailed={this.onConnectionTestFailed}
                   darkMode={this.props.darkMode}
+                  environmentId={this.props.currentEnvironment?.id}
                 />
               </div>
-              <div className="col-auto" data-cy="db-connection-save-button">
+              <div
+                className="col-auto"
+                data-cy="db-connection-save-button"
+              >
                 <ButtonSolid
                   className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
                   isLoading={isSaving}
@@ -831,7 +892,12 @@ class DataSourceManagerComponent extends React.Component {
           {!dataSourceMeta?.hideSave && selectedDataSource && dataSourceMeta.customTesting && (
             <Modal.Footer>
               <div className="col">
-                <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
+                <SolidIcon
+                  name="logs"
+                  fill="#3E63DD"
+                  width="20"
+                  style={{ marginRight: '8px' }}
+                />
                 <a
                   className="color-primary tj-docs-link tj-text-sm"
                   href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
@@ -896,7 +962,11 @@ const EmptyStateContainer = ({
         </h3>
       )}
       <center className={`empty-results ${suggestionUI ? 'suggestionUI-results' : ''}`}>
-        <img src="assets/images/icons/no-results.svg" width="150" height="150" />
+        <img
+          src="assets/images/icons/no-results.svg"
+          width="150"
+          height="150"
+        />
         {status ? (
           <div>
             <p className="text-success mt-2">
@@ -919,11 +989,20 @@ const EmptyStateContainer = ({
                   value={inputValue}
                   placeholder={placeholder}
                   onChange={(e) => set(e.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      handleSend();
+                    }
+                  }}
                 />
               </div>
             </div>
             <div className="col-auto">
-              <Button className="mt-2" variant="primary" onClick={handleSend}>
+              <Button
+                className="mt-2"
+                variant="primary"
+                onClick={handleSend}
+              >
                 {t('editor.queryManager.dataSourceManager.send', 'Send')}
               </Button>
             </div>
@@ -983,7 +1062,10 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
 
   return (
     <div className="search-box-wrapper">
-      <div style={{ height: '36px' }} className="input-icon d-flex">
+      <div
+        style={{ height: '36px' }}
+        className="input-icon d-flex"
+      >
         {searchText.length === 0 && (
           <span className="search-icon mt-2 mx-2">
             <svg
@@ -998,9 +1080,22 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <circle cx="10" cy="10" r="7" />
-              <line x1="21" y1="21" x2="15" y2="15" />
+              <path
+                stroke="none"
+                d="M0 0h24v24H0z"
+                fill="none"
+              />
+              <circle
+                cx="10"
+                cy="10"
+                r="7"
+              />
+              <line
+                x1="21"
+                y1="21"
+                x2="15"
+                y2="15"
+              />
             </svg>
           </span>
         )}
@@ -1014,7 +1109,10 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
           data-cy={dataCy}
         />
         {searchText.length > 0 && (
-          <span className="clear-icon mt-2" onClick={clearSearch}>
+          <span
+            className="clear-icon mt-2"
+            onClick={clearSearch}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon icon-tabler icon-tabler-circle-x"
@@ -1027,8 +1125,16 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <circle cx="12" cy="12" r="9"></circle>
+              <path
+                stroke="none"
+                d="M0 0h24v24H0z"
+                fill="none"
+              ></path>
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+              ></circle>
               <path d="M10 10l4 4m0 -4l-4 4"></path>
             </svg>
           </span>

@@ -4,7 +4,7 @@ import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed }) => {
+export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed, environmentId }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [buttonText, setButtonText] = useState('Test Connection');
@@ -27,7 +27,7 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
   function testDataSource() {
     setTestingStatus(true);
 
-    datasourceService.test(kind, options, pluginId).then(
+    datasourceService.test(kind, options, pluginId, environmentId).then(
       (data) => {
         setTestingStatus(false);
         if (data.status === 'ok') {
@@ -48,13 +48,19 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
   return (
     <div>
       {connectionStatus === 'failed' && (
-        <span className="badge bg-red-lt" data-cy={`test-connection-failed-text`}>
+        <span
+          className="badge bg-red-lt"
+          data-cy={`test-connection-failed-text`}
+        >
           {t('globals.noConnection', 'could not connect')}
         </span>
       )}
 
       {connectionStatus === 'success' && (
-        <span className="badge bg-green-lt" data-cy={`test-connection-verified-text`}>
+        <span
+          className="badge bg-green-lt"
+          data-cy={`test-connection-verified-text`}
+        >
           {t('globals.connectionVerified', 'connection verified')}
         </span>
       )}

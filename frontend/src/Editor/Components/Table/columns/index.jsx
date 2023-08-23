@@ -99,10 +99,10 @@ export default function generateColumnsData({
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
 
-        const rowData = tableData[cell.row.index];
+        const rowData = tableData?.[cell?.row?.index];
         if (
           cell.row.index === 0 &&
-          variablesExposedForPreview &&
+          !_.isEmpty(variablesExposedForPreview) &&
           !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)
         ) {
           const customResolvables = {};
@@ -284,7 +284,7 @@ export default function generateColumnsData({
                 }}
                 onKeyDown={(e) => {
                   e.persist();
-                  if (e.key === 'Enter' && isEditable) {
+                  if (e.key === 'Enter' && !e.shiftKey && isEditable) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}

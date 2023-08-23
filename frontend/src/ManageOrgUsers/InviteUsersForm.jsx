@@ -54,7 +54,10 @@ function InviteUsersForm({
         <div className="drawer-card-wrap invite-user-drawer-wrap">
           <div className="card-header">
             <div className="card-header-inner-wrap">
-              <h3 className="tj-text-lg tj-text font-weight-500" data-cy="add-users-card-title">
+              <h3
+                className="tj-text-lg tj-text font-weight-500"
+                data-cy="add-users-card-title"
+              >
                 {t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
               </h3>
               <div
@@ -65,7 +68,10 @@ function InviteUsersForm({
                 style={{ cursor: 'pointer' }}
                 data-cy="close-button"
               >
-                <SolidIcon name="remove" width="16" />
+                <SolidIcon
+                  name="remove"
+                  width="16"
+                />
               </div>
             </div>
             <div className="tj-drawer-tabs-container-outer">
@@ -75,7 +81,11 @@ function InviteUsersForm({
                   onClick={() => setActiveTab(1)}
                   data-cy="button-invite-with-email"
                 >
-                  <SolidIcon name="mail" width="14" fill={activeTab == 1 ? '#11181C' : '#687076'} />
+                  <SolidIcon
+                    name="mail"
+                    width="14"
+                    fill={activeTab == 1 ? '#11181C' : '#687076'}
+                  />
                   <span> Invite with email</span>
                 </button>
                 <button
@@ -83,7 +93,11 @@ function InviteUsersForm({
                   onClick={() => setActiveTab(2)}
                   data-cy="button-upload-csv-file"
                 >
-                  <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#11181C' : '#687076'} />
+                  <SolidIcon
+                    name="fileupload"
+                    width="14"
+                    fill={activeTab == 2 ? '#11181C' : '#687076'}
+                  />
                   <span>Upload CSV file</span>
                 </button>
               </div>
@@ -92,8 +106,16 @@ function InviteUsersForm({
           {activeTab == 1 ? (
             <div className="manage-users-drawer-content">
               <div className="invite-user-by-email">
-                <form onSubmit={handleCreateUser} noValidate className="invite-email-body" id="inviteByEmail">
-                  <label className="form-label" data-cy="label-full-name-input-field">
+                <form
+                  onSubmit={handleCreateUser}
+                  noValidate
+                  className="invite-email-body"
+                  id="inviteByEmail"
+                >
+                  <label
+                    className="form-label"
+                    data-cy="label-full-name-input-field"
+                  >
                     {t('header.organization.menus.manageUsers.fullName', 'Enter full name')}
                   </label>
                   <div className="form-group mb-3 ">
@@ -101,19 +123,25 @@ function InviteUsersForm({
                       <input
                         type="text"
                         className="form-control"
-                        placeholder={t('header.organization.menus.manageUsers.enterFirstName', 'Enter full name')}
+                        placeholder={t('header.organization.menus.manageUsers.enterFullName', 'Enter full name')}
                         name="fullName"
                         onChange={changeNewUserOption.bind(this, 'fullName')}
                         value={fields['fullName']}
                         data-cy="input-field-full-name"
                       />
-                      <span className="text-danger" data-cy="error-message-fullname">
+                      <span
+                        className="text-danger"
+                        data-cy="error-message-fullname"
+                      >
                         {errors['fullName']}
                       </span>
                     </div>
                   </div>
                   <div className="form-group mb-3 ">
-                    <label className="form-label" data-cy="label-email-input-field">
+                    <label
+                      className="form-label"
+                      data-cy="label-email-input-field"
+                    >
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
                     <div className="tj-app-input">
@@ -127,7 +155,10 @@ function InviteUsersForm({
                         value={fields['email']}
                         data-cy="input-field-email"
                       />
-                      <span className="text-danger" data-cy="error-message-email">
+                      <span
+                        className="text-danger"
+                        data-cy="error-message-email"
+                      >
                         {errors['email']}
                       </span>
                     </div>
@@ -136,7 +167,10 @@ function InviteUsersForm({
                     className="form-group mb-3 manage-groups-invite-form manage-groups-app-dropdown"
                     data-cy="user-group-select"
                   >
-                    <label className="form-label" data-cy="label-group-input-field">
+                    <label
+                      className="form-label"
+                      data-cy="label-group-input-field"
+                    >
                       {t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
                     </label>
                     <Multiselect
@@ -156,10 +190,17 @@ function InviteUsersForm({
               <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">
                   <div>
-                    <SolidIcon name="information" fill="#F76808" width="26" />
+                    <SolidIcon
+                      name="information"
+                      fill="#F76808"
+                      width="26"
+                    />
                   </div>
                   <div>
-                    <p className="tj-text tj-text-sm" data-cy="helper-text-bulk-upload">
+                    <p
+                      className="tj-text tj-text-sm"
+                      data-cy="helper-text-bulk-upload"
+                    >
                       Download the ToolJet template to add user details or format your file in the same as the template.
                       ToolJet won’t be able to recognise files in any other format.{' '}
                     </p>

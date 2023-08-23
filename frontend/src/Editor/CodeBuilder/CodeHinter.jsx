@@ -32,6 +32,7 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
+import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 
 const AllElements = {
@@ -92,12 +93,17 @@ export function CodeHinter({
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
+
+  // Todo: Remove this when workspace variables are deprecated
+  const isWorkspaceVariable =
+    typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   const slideInStyles = useSpring({
     config: { ...config.stiff },
     from: { opacity: 0, height: 0 },
     to: {
       opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
+      height: isFocused ? currentHeight + (isWorkspaceVariable ? 30 : 0) : 0,
     },
   });
   const { t } = useTranslation();
@@ -187,8 +193,14 @@ export function CodeHinter({
       const err = String(error);
       const errorMessage = err.includes('.run()') ? `${err} in ${componentName.split('::')[0]}'s field` : err;
       return (
-        <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
-          <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
+        <animated.div
+          className={isOpen ? themeCls : null}
+          style={{ ...slideInStyles, overflow: 'hidden' }}
+        >
+          <div
+            ref={heightRef}
+            className="dynamic-variable-preview bg-red-lt px-1 py-1"
+          >
             <div>
               <div className="heading my-1">
                 <span>Error</span>
@@ -216,21 +228,35 @@ export function CodeHinter({
         onMouseEnter={() => focusPreview()}
         onMouseLeave={() => unFocusPreview()}
       >
-        <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
+        <div
+          ref={heightRef}
+          className="dynamic-variable-preview bg-green-lt px-1 py-1"
+        >
           <div>
             <div className="d-flex my-1">
-              <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
+              <div
+                className="flex-grow-1"
+                style={{ fontWeight: 700, textTransform: 'capitalize' }}
+              >
                 {previewType}
               </div>
               {isFocused && (
                 <div className="preview-icons position-relative">
-                  <CodeHinter.PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="Copy to clipboard" />
+                  <CodeHinter.PopupIcon
+                    callback={() => copyToClipboard(content)}
+                    icon="copy"
+                    tip="Copy to clipboard"
+                  />
                 </div>
               )}
             </div>
             {content}
           </div>
         </div>
+        {/* Todo: Remove this when workspace variables are deprecated */}
+        {enablePreview && isWorkspaceVariable && (
+          <CodeHinter.DepericatedAlertForWorkspaceVariable text={'Deprecating soon'} />
+        )}
       </animated.div>
     );
   };
@@ -276,11 +302,18 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
+
   return (
-    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
+    <div
+      ref={wrapperRef}
+      className={cx({ 'codeShow-active': codeShow })}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
-          <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+          <div
+            className={`mb-2 field ${options.className}`}
+            data-cy={`${cyLabel}-widget-parameter-label`}
+          >
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
@@ -305,7 +338,7 @@ export function CodeHinter({
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
-        <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
+        <div className={`col code-hinter-col`}>
           <div
             className="code-hinter-wrapper position-relative"
             style={{ width: '100%', backgroundColor: darkMode && '#272822' }}
@@ -398,7 +431,10 @@ const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
   const size = transformation ? 20 : 12;
 
   return (
-    <div className="d-flex justify-content-end w-100 position-absolute" style={{ top: 0 }}>
+    <div
+      className="d-flex justify-content-end w-100 position-absolute"
+      style={{ top: 0 }}
+    >
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"
@@ -426,5 +462,22 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
+const DepericatedAlertForWorkspaceVariable = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-warning"
+      cls="codehinter workspace-variables-alert-banner p-1 mb-0"
+      data-cy={``}
+      imgHeight={18}
+      imgWidth={18}
+    >
+      <div className="d-flex align-items-center">
+        <div class="">{text}</div>
+      </div>
+    </Alert>
+  );
+};
+
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;
+CodeHinter.DepericatedAlertForWorkspaceVariable = DepericatedAlertForWorkspaceVariable;

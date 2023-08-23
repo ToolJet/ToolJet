@@ -4,7 +4,7 @@ import Input from '@/_ui/Input';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
 
-const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource }) => {
+const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource, workspaceConstants }) => {
   const [authStatus, setAuthStatus] = useState(null);
 
   function authZendesk() {
@@ -44,6 +44,7 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
             onChange={(e) => optionchanged('subdomain', e.target.value)}
             value={options?.subdomain?.value ?? ''}
             placeholder="e.g. tooljet"
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -55,13 +56,19 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
             onChange={(e) => optionchanged('client_id', e.target.value)}
             value={options?.client_id?.value}
             placeholder="e.g. tj-zendesk"
+            workspaceConstants={workspaceConstants}
           />
         </div>
         <div className="col-md-12 mb-2">
           <label className="form-label text-muted mt-3">
             Client Secret
             <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
+              <img
+                className="mx-2 encrypted-icon"
+                src="assets/images/icons/padlock.svg"
+                width="12"
+                height="12"
+              />
               Encrypted
             </small>
           </label>
@@ -70,6 +77,7 @@ const Zendesk = ({ optionchanged, createDataSource, options, isSaving, selectedD
             className="form-control"
             onChange={(e) => optionchanged('client_secret', e.target.value)}
             value={options?.client_secret?.value}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 

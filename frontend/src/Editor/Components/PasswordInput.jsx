@@ -19,6 +19,16 @@ export const PasswordInput = ({
   const [passwordValue, setPasswordValue] = React.useState('');
   let { isValid, validationError } = validate(passwordValue);
 
+  const computedStyles = {
+    height,
+    display: visibility ? '' : 'none',
+    borderRadius: `${borderRadius}px`,
+    color: darkMode && '#fff',
+    borderColor: darkMode && '#DADCDE',
+    backgroundColor: darkMode && ['#ffffff'].includes(backgroundColor) ? '#232e3c' : backgroundColor,
+    boxShadow: boxShadow,
+  };
+
   React.useEffect(() => {
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -38,13 +48,7 @@ export const PasswordInput = ({
         }`}
         placeholder={placeholder}
         value={passwordValue}
-        style={{
-          height,
-          display: visibility ? '' : 'none',
-          borderRadius: `${borderRadius}px`,
-          backgroundColor,
-          boxShadow,
-        }}
+        style={computedStyles}
         data-cy={dataCy}
       />
       <div

@@ -12,6 +12,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 
 import { getPrivateRoute } from '@/_helpers/routes';
+import { getSubpath } from '@/_helpers/utils';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -58,19 +59,31 @@ export default function AppCard({
 
   let AppIcon;
   try {
-    AppIcon = <BulkIcon fill={'#3E63DD'} name={app?.icon || defaultIcon} />;
+    AppIcon = (
+      <BulkIcon
+        fill={'#3E63DD'}
+        name={app?.icon || defaultIcon}
+      />
+    );
   } catch (e) {
     console.error('App icon not found', app.icon);
   }
 
   return (
     <div className="card homepage-app-card animation-fade">
-      <div key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
+      <div
+        key={app.id}
+        ref={hoverRef}
+        data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}
+      >
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
             <div>
               <div className="app-icon-main">
-                <div className="app-icon d-flex" data-cy={`app-card-${app.icon}-icon`}>
+                <div
+                  className="app-icon d-flex"
+                  data-cy={`app-card-${app.icon}-icon`}
+                >
                   {AppIcon && AppIcon}
                 </div>
               </div>
@@ -104,9 +117,15 @@ export default function AppCard({
             </h3>
           </ToolTip>
         </div>
-        <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
+        <div
+          className="app-creation-time-container"
+          style={{ marginBottom: '12px' }}
+        >
           {canUpdate && (
-            <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
+            <div
+              className="app-creation-time tj-text-xsm"
+              data-cy="app-creation-details"
+            >
               <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                 <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
               </ToolTip>
@@ -124,8 +143,16 @@ export default function AppCard({
                     id: app.id,
                   })}
                 >
-                  <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">
-                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
+                  <button
+                    type="button"
+                    className="tj-primary-btn edit-button tj-text-xsm"
+                    data-cy="edit-button"
+                  >
+                    <SolidIcon
+                      name="editrectangle"
+                      width="14"
+                      fill={darkMode ? '#11181C' : '#FDFDFE'}
+                    />
                     &nbsp;{t('globals.edit', 'Edit')}
                   </button>
                 </Link>
@@ -149,7 +176,9 @@ export default function AppCard({
                 )}
                 onClick={() => {
                   if (app?.current_version_id) {
-                    window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
+                    window.open(
+                      urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`)
+                    );
                   } else {
                     navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
                   }

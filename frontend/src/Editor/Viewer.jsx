@@ -1,5 +1,11 @@
 import React from 'react';
-import { appService, authenticationService, orgEnvironmentVariableService, organizationService } from '@/_services';
+import {
+  appService,
+  authenticationService,
+  orgEnvironmentVariableService,
+  orgEnvironmentConstantService,
+  organizationService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -23,6 +29,9 @@ import {
   stripTrailingSlash,
   getSubpath,
   excludeWorkspaceIdFromURL,
+  isQueryRunnable,
+  redirectToDashboard,
+  getWorkspaceId,
 } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -123,6 +132,7 @@ class ViewerComponent extends React.Component {
     });
 
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
+    const constants = await this.fetchOrgEnvironmentConstants(data.slug, data.is_public);
 
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
     const homePageId = data.definition.homePageId;
@@ -138,6 +148,9 @@ class ViewerComponent extends React.Component {
         currentUser: userVars, // currentUser is updated in setupViewer function as well
         theme: { name: this.props.darkMode ? 'dark' : 'light' },
         urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+        mode: {
+          value: this.state.slug ? 'view' : 'preview',
+        },
       },
       variables: {},
       page: {
@@ -147,6 +160,7 @@ class ViewerComponent extends React.Component {
         variables: {},
       },
       ...variables,
+      ...constants,
     });
     useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.setState(
@@ -182,10 +196,41 @@ class ViewerComponent extends React.Component {
 
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
-      if (query.options.runOnPageLoad) {
+      if (query.options.runOnPageLoad && isQueryRunnable(query)) {
         runQuery(this, query.id, query.name, undefined, 'view');
       }
     });
+  };
+
+  fetchOrgEnvironmentConstants = async (slug, isPublic) => {
+    const orgConstants = {};
+
+    let variablesResult;
+    if (!isPublic) {
+      const { constants } = await orgEnvironmentConstantService.getAll();
+      variablesResult = constants;
+    } else {
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromPublicApp(slug);
+
+      variablesResult = constants;
+    }
+
+    console.log('--org constant 2.0', { variablesResult });
+
+    if (variablesResult && Array.isArray(variablesResult)) {
+      variablesResult.map((constant) => {
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
+      });
+
+      // console.log('--org constant 2.0', { orgConstants });
+
+      return {
+        constants: orgConstants,
+      };
+    }
+
+    return { constants: {} };
   };
 
   fetchOrgEnvironmentVariables = async (slug, isPublic) => {
@@ -272,18 +317,40 @@ class ViewerComponent extends React.Component {
             this.switchOrganization(errorObj?.organizationId, appId, versionId);
             return;
           }
-          return <Navigate replace to={'/'} />;
+          /* router dom Navigate is not working now. so hard reloading */
+          redirectToDashboard();
+          return (
+            <Navigate
+              replace
+              to={'/'}
+            />
+          );
         } else if (statusCode === 401) {
-          window.location = `${getSubpath() ?? ''}/login?redirectTo=${this.props.location.pathname}`;
+          window.location = `${getSubpath() ?? ''}/login${
+            !_.isEmpty(getWorkspaceId()) ? `/${getWorkspaceId()}` : ''
+          }?redirectTo=${this.props.location.pathname}`;
         } else if (statusCode === 404) {
           toast.error(errorDetails?.error ?? 'App not found', {
             position: 'top-center',
           });
+        } else {
+          redirectToDashboard();
+          return (
+            <Navigate
+              replace
+              to={'/'}
+            />
+          );
         }
-        return <Navigate replace to={'/'} />;
       }
     } catch (err) {
-      return <Navigate replace to={'/'} />;
+      redirectToDashboard();
+      return (
+        <Navigate
+          replace
+          to={'/'}
+        />
+      );
     }
   };
 
@@ -357,7 +424,10 @@ class ViewerComponent extends React.Component {
 
     if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
     if (this.state.homepage !== prevState.homepage && !this.state.isLoading) {
-      <Navigate to={`${this.state.homepage}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
+      <Navigate
+        to={`${this.state.homepage}${this.props.params.pageHandle ? '' : window.location.search}`}
+        replace
+      />;
     }
   }
 
@@ -526,7 +596,10 @@ class ViewerComponent extends React.Component {
         return (
           <div className="maintenance_container">
             <div className="card">
-              <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div
+                className="card-body"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
                 <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
               </div>
             </div>
@@ -587,7 +660,10 @@ class ViewerComponent extends React.Component {
                             {isLoading ? (
                               <div className="mx-auto mt-5 w-50 p-5">
                                 <center>
-                                  <div className="spinner-border text-azure" role="status"></div>
+                                  <div
+                                    className="spinner-border text-azure"
+                                    role="status"
+                                  ></div>
                                 </center>
                               </div>
                             ) : (

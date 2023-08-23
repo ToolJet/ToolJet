@@ -6,6 +6,7 @@ import cx from 'classnames';
 
 function Logs({ logProps, idx, darkMode }) {
   const [open, setOpen] = React.useState(false);
+  console.log('Debug debugger: open:', open);
 
   const title = ` [${capitalize(logProps?.type)} ${logProps?.key}]`;
   const message = logProps?.isQuerySuccessLog
@@ -23,14 +24,29 @@ function Logs({ logProps, idx, darkMode }) {
   };
 
   return (
-    <div className="tab-content debugger-content mb-1" key={`${logProps?.key}-${idx}`}>
+    <div
+      className="tab-content debugger-content mb-1"
+      key={`${logProps?.key}-${idx}`}
+    >
       <p
         className="m-0 d-flex"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={(e) => {
+          console.log('Debug debugger: setOpen:', e);
+          setOpen((prev) => !prev);
+        }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default' }}
       >
-        <span className={cx('mx-1 position-absolute')} style={defaultStyles}>
-          <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <span
+          className={cx('mx-1 position-absolute')}
+          style={defaultStyles}
+        >
+          <svg
+            width="6"
+            height="10"
+            viewBox="0 0 6 10"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               d="M1.02063 1L5.01032 5.01028L1.00003 8.99997"
               stroke={darkMode ? '#fff' : '#61656F'}

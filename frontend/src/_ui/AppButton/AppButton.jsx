@@ -25,6 +25,8 @@ export const ButtonBase = function ButtonBase(props) {
     fill,
     iconCustomClass,
     iconWidth,
+    customStyles = {},
+    iconViewBox,
     ...restProps
   } = props;
 
@@ -36,12 +38,23 @@ export const ButtonBase = function ButtonBase(props) {
       {...restProps}
       className={`tj-base-btn ${mapBaseSize[size]}  ${className}`}
       disabled={disabled}
-      style={backgroundColor && { backgroundColor }}
+      style={{
+        ...customStyles,
+        backgroundColor: backgroundColor && backgroundColor,
+      }}
       type={isAnchor ? undefined : type || 'button'}
     >
       {!isLoading && leftIcon && (
         <span className="tj-btn-left-icon">
-          {<SolidIcon fill={fill} className={iconCustomClass} name={leftIcon} width={iconWidth} />}
+          {
+            <SolidIcon
+              fill={fill}
+              className={iconCustomClass}
+              name={leftIcon}
+              width={iconWidth}
+              viewBox={iconViewBox}
+            />
+          }
         </span>
       )}
       {isLoading ? (
@@ -53,7 +66,13 @@ export const ButtonBase = function ButtonBase(props) {
       )}
       {!isLoading && rightIcon && (
         <span className="tj-btn-right-icon">
-          {<SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} />}
+          {
+            <SolidIcon
+              className={iconCustomClass}
+              fill={fill}
+              name={rightIcon}
+            />
+          }
         </span>
       )}
     </Element>
@@ -74,5 +93,10 @@ export const ButtonSolid = function ButtonSolid(props) {
   };
 
   const { variant = 'primary', className, ...restProps } = props;
-  return <ButtonBase {...restProps} className={`${mapVariant[variant]} ${className && className}`} />;
+  return (
+    <ButtonBase
+      {...restProps}
+      className={`${mapVariant[variant]} ${className && className}`}
+    />
+  );
 };
