@@ -215,6 +215,16 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'Workflows',
+      'items': [
+        'workflows/overview',
+        'workflows/nodes',
+        'workflows/permissions',
+        'workflows/logs',
+      ],
+    },
+    {
+      'type': 'category',
       'label': 'Org Management',
       'items': [
         {
