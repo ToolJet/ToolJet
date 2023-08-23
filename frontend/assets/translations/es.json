@@ -784,8 +784,7 @@
     "FilePicker": {
       "displayName": "Selector de archivos",
       "description": "Selector de archivos",
-      "dragAndDropHelp": "Arrastre y suelte los archivos aquí, o haga clic para seleccionar los archivos",
-      "files": "Archivos"
+      "dragAndDropHelp": "Arrastre y suelte los archivos aquí, o haga clic para seleccionar los archivos"
     },
     "Calendar": {
       "displayName": "Calendario",
