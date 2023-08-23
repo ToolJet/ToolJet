@@ -4,10 +4,10 @@ import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
 import config from 'config';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import 'dayjs/locale/es';
-import dayjs from 'dayjs';
+import 'moment/locale/es';
 
 export const Datepicker = function Datepicker({
   height,
@@ -23,6 +23,7 @@ export const Datepicker = function Datepicker({
   fireEvent,
   dataCy,
 }) {
+  moment.locale(config.LANGUAGE);
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius, boxShadow } = styles;
@@ -83,10 +84,16 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
-  const shouldDisableDate = (date) => {
-    if (date) {
-      return excludedDates.some((excludeDate) => excludeDate.getTime() === date.$d.getTime());
-    }
+  const isDateDisabled = (date) => {
+    return excludedDates.some((disabledDate) => moment(disabledDate).isSame(date, 'day'));
+  };
+
+  const fromPickerToMoment = (value) => {
+    return moment(value);
+  };
+
+  const fromMomentToPicker = (value) => {
+    return value.toDate();
   };
   return (
     <>
@@ -130,19 +137,16 @@ export const Datepicker = function Datepicker({
         </div>
       )}
       {config.UI_LIB === 'mui' && (
-        <LocalizationProvider
-          dateAdapter={AdapterDayjs}
-          adapterLocale="es"
-        >
+        <LocalizationProvider dateAdapter={AdapterMoment}>
           <DateTimePicker
             label="Seleccione Fecha"
             format={selectedDateFormat}
             views={!enableTime ? ['year', 'month', 'day'] : undefined}
             disableOpenPicker={!enableDate}
             disabled={disabledState}
-            shouldDisableDate={shouldDisableDate}
-            value={date ? dayjs(date.toISOString()) : ''}
-            onChange={(newValue) => setDate(newValue.$d)}
+            shouldDisableDate={(date) => isDateDisabled(date)}
+            value={date ? fromPickerToMoment(date) : null}
+            onChange={(newValue) => onDateChange(fromMomentToPicker(newValue))}
             sx={{
               width: '100%',
               display: visibility ? '' : 'none',
