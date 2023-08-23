@@ -46,6 +46,11 @@ export const Button = function Button(props) {
   };
 
   useEffect(() => {
+    setExposedVariable('click', async function () {
+      if (!disable) {
+        fireEvent('onClick');
+      }
+    });
     setExposedVariable('setText', async function (text) {
       setLabel(text);
       setExposedVariable('buttonText', text);
