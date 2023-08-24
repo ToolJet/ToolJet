@@ -42,7 +42,7 @@ class VariablesTable extends React.Component {
                   <th data-cy="workspace-variable-table-type-header">
                     {this.props.t('header.organization.menus.manageSSO.environmentVar.variableTable.type', 'Type')}
                   </th>
-                  {(this.props.canUpdateVariable || this.props.canDeleteVariable) && <th className="w-1"></th>}
+                  {this.props.canDeleteVariable && <th className="w-1"></th>}
                 </tr>
               </thead>
               {isLoading ? (
@@ -115,7 +115,7 @@ class VariablesTable extends React.Component {
                           {variable.variable_type}
                         </small>
                       </td>
-                      {(this.props.canUpdateVariable || this.props.canDeleteVariable) && (
+                      {this.props.canDeleteVariable && (
                         <td>
                           <div
                             style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}
@@ -123,24 +123,6 @@ class VariablesTable extends React.Component {
                               .toLowerCase()
                               .replace(/\s+/g, '-')}-workspace-variable-update`}
                           >
-                            {this.props.canUpdateVariable && (
-                              <>
-                                <button
-                                  className="btn btn-sm btn-org-env"
-                                  onClick={() => this.props.onEditBtnClicked(variable)}
-                                  data-cy={`${variable.variable_name
-                                    .toLowerCase()
-                                    .replace(/\s+/g, '-')}-workspace-variable-edit-button`}
-                                  data-tooltip-id="tooltip-for-update"
-                                  data-tooltip-content="Update"
-                                >
-                                  <div>
-                                    <SolidIcon name="editrectangle" width="14" />
-                                  </div>
-                                </button>
-                                <Tooltip id="tooltip-for-update" className="tooltip" />
-                              </>
-                            )}
                             {this.props.canDeleteVariable && (
                               <>
                                 <button
