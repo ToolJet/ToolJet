@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Select, { components } from 'react-select';
+import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import cx from 'classnames';
 import { Col, Container, OverlayTrigger, Popover, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import useShowPopover from '@/_hooks/useShowPopover';
 import LeftOuterJoinIcon from '../../Icons/LeftOuterJoinIcon';
 import RightOuterJoin from '../../Icons/RightOuterJoin';
@@ -11,37 +13,23 @@ import InnerJoinIcon from '../../Icons/InnerJoinIcon';
 import FullOuterJoin from '../../Icons/FullOuterJoin';
 import SelectBox from './SelectBox';
 
-// Common :-
+// Pending :-
+// - For StateManagement we can process with context
 // - Try to make it as : Re-usable component
-// - Style the Component
 // - Dark Theme
 // - Keydown Close the popup
 // - Translation if needed
-
-// Pending :- Join Drop Down
-// - Reduce the Width
 // - Different CSS Styles ( Active, Hover, Disabled )
-// - Same must be used for ( Join, Operator Symbol, Multiple condition operation )
-// - Selected Option Tick icon + Bg Color change
-// - Now it is Un-controlled component, Make it to controlled component
-// - Make the Icon component Dynamic - So that for Dark theme it might be useful
 
 // Pending :- Drop Down for Table
 // - For Join Scenario : Only on Table B - Add table button must come
 // -
 
-// Pending :- Drop Down for Table with CheckBox & Info
-
-// Pending :- Drop Down for Table - with Multiple Column
-
-// Customization
-// 1. To customize [ Select Drop Down Menu ] - with Search, or Buttons use `Menu List Component` from React Select
-
-export const JoinTable = React.memo(() => {
+export const JoinTable = React.memo(({ darkMode }) => {
   return (
     <div>
-      <JoinOperationMenu />
-      <SelectTableMenu />
+      {/* <JoinOperationMenu /> */}
+      <SelectTableMenu darkMode={darkMode} />
     </div>
   );
 });
@@ -115,7 +103,7 @@ const DropdownIndicator = (props) => {
   );
 };
 
-const SelectTableMenu = () => {
+const SelectTableMenu = ({ darkMode }) => {
   const { MenuList, Option } = components;
 
   const IconOptions = (props) => (
@@ -159,36 +147,63 @@ const SelectTableMenu = () => {
   ];
 
   return (
-    <div className="field-container d-flex">
-      <label className="form-label" data-cy="label-column-limit">
-        Limit
-      </label>
-      <div className="field flex-grow-1 mt-1">
-        <Container>
-          <Row>
-            <Col sm="6" className="text-center">
-              Selected Table
-            </Col>
-            <Col sm="6" className="text-center">
-              Joining Table
-            </Col>
-          </Row>
-          <Row className="border rounded">
-            <Col sm="2" className="p-0 border-end">
-              {/* <SelectBox /> */}
-            </Col>
-            <Col sm="4" className="p-0 border-end">
-              {/* <SelectBox /> */}
-            </Col>
-            <Col sm="2" className="p-0 border-end">
-              {/* <SelectBox /> */}
-              <DropDownSelect options={tableList} />
-            </Col>
-            <Col sm="4" className="p-0">
-              <DropDownSelect options={tableList} isMulti />
-            </Col>
-          </Row>
-        </Container>
+    <div>
+      {/* Join Section */}
+      <div className="field-container d-flex mb-2">
+        <label className="form-label">From</label>
+        <div className="field flex-grow-1 mt-1">
+          <Container className="p-0">
+            <Row>
+              <Col sm="6" className="text-center">
+                Selected Table
+              </Col>
+              <Col sm="6" className="text-center">
+                Joining Table
+              </Col>
+            </Row>
+            <Row className="border rounded mb-1">
+              <Col sm="2" className="p-0 border-end">
+                {/* <SelectBox /> */}
+              </Col>
+              <Col sm="4" className="p-0 border-end">
+                {/* <SelectBox /> */}
+              </Col>
+              <Col sm="2" className="p-0 border-end">
+                {/* <SelectBox /> */}
+                <DropDownSelect options={tableList} />
+              </Col>
+              <Col sm="4" className="p-0">
+                <DropDownSelect options={tableList} isMulti />
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col className="p-0">
+                <ButtonSolid variant="ghostBlue" size="sm">
+                  <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+                  &nbsp;&nbsp; Add more
+                </ButtonSolid>
+              </Col>
+            </Row>
+            <Row>
+              <ButtonSolid variant="secondary" size="sm">
+                <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+                &nbsp;&nbsp; Add another table
+              </ButtonSolid>
+            </Row>
+          </Container>
+        </div>
+      </div>
+      {/* Limit Section */}
+      <div className="field-container d-flex">
+        <label className="form-label">Limit</label>
+        <div className="field flex-grow-1">
+          <CodeHinter
+            className="codehinter-plugins"
+            theme={darkMode ? 'monokai' : 'default'}
+            height={'32px'}
+            placeholder="Enter limit"
+          />
+        </div>
       </div>
     </div>
   );
