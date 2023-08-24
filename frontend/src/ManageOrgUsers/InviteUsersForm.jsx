@@ -101,7 +101,7 @@ function InviteUsersForm({
                       <input
                         type="text"
                         className="form-control"
-                        placeholder={t('header.organization.menus.manageUsers.enterFirstName', 'Enter full name')}
+                        placeholder={t('header.organization.menus.manageUsers.enterFullName', 'Enter full name')}
                         name="fullName"
                         onChange={changeNewUserOption.bind(this, 'fullName')}
                         value={fields['fullName']}
@@ -132,8 +132,11 @@ function InviteUsersForm({
                       </span>
                     </div>
                   </div>
-                  <div className="form-group mb-3 manage-groups-invite-form manage-groups-app-dropdown">
-                    <label className="form-label" data-cy="label-email-input-field">
+                  <div
+                    className="form-group mb-3 manage-groups-invite-form manage-groups-app-dropdown"
+                    data-cy="user-group-select"
+                  >
+                    <label className="form-label" data-cy="label-group-input-field">
                       {t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
                     </label>
                     <Multiselect

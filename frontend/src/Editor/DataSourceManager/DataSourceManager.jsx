@@ -289,6 +289,7 @@ class DataSourceManagerComponent extends React.Component {
         hideModal={this.hideModal}
         selectedDataSource={this.state.selectedDataSource}
         isEditMode={!isEmpty(this.state.selectedDataSource)}
+        currentAppEnvironmentId={this.props.currentEnvironment?.id}
       />
     );
   };
@@ -797,42 +798,43 @@ class DataSourceManagerComponent extends React.Component {
                   </div>
                 )}
 
-                <div className="col">
-                  <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
-                  <a
-                    className="color-primary tj-docs-link tj-text-sm"
-                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource?.kind}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    data-cy="link-read-documentation"
-                  >
-                    {this.props.t('globals.readDocumentation', 'Read documentation')}
-                  </a>
-                </div>
-                <div className="col-auto" data-cy="button-test-connection">
-                  <TestConnection
-                    kind={selectedDataSource?.kind}
-                    pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
-                    options={options}
-                    onConnectionTestFailed={this.onConnectionTestFailed}
-                    darkMode={this.props.darkMode}
-                  />
-                </div>
-                <div className="col-auto" data-cy="db-connection-save-button">
-                  <ButtonSolid
-                    className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                    isLoading={isSaving}
-                    disabled={isSaving || this.props.isVersionReleased}
-                    variant="primary"
-                    onClick={this.createDataSource}
-                    leftIcon="floppydisk"
-                    fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
-                  >
-                    {this.props.t('globals.save', 'Save')}
-                  </ButtonSolid>
-                </div>
-              </Modal.Footer>
-            )}
+              <div className="col">
+                <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
+                <a
+                  className="color-primary tj-docs-link tj-text-sm"
+                  href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource?.kind}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-cy="link-read-documentation"
+                >
+                  {this.props.t('globals.readDocumentation', 'Read documentation')}
+                </a>
+              </div>
+              <div className="col-auto" data-cy="button-test-connection">
+                <TestConnection
+                  kind={selectedDataSource?.kind}
+                  pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
+                  options={options}
+                  onConnectionTestFailed={this.onConnectionTestFailed}
+                  darkMode={this.props.darkMode}
+                  environmentId={this.props.currentEnvironment?.id}
+                />
+              </div>
+              <div className="col-auto" data-cy="db-connection-save-button">
+                <ButtonSolid
+                  className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
+                  isLoading={isSaving}
+                  disabled={isSaving || this.props.isVersionReleased}
+                  variant="primary"
+                  onClick={this.createDataSource}
+                  leftIcon="floppydisk"
+                  fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
+                >
+                  {this.props.t('globals.save', 'Save')}
+                </ButtonSolid>
+              </div>
+            </Modal.Footer>
+          )}
 
             {!dataSourceMeta?.hideSave && selectedDataSource && dataSourceMeta.customTesting && (
               <Modal.Footer>
@@ -926,6 +928,11 @@ const EmptyStateContainer = ({
                   value={inputValue}
                   placeholder={placeholder}
                   onChange={(e) => set(e.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      handleSend();
+                    }
+                  }}
                 />
               </div>
             </div>

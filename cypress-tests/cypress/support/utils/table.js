@@ -67,8 +67,10 @@ export const verifyAndEnterColumnOptionInput = (label, value) => {
   cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`)
     .realClick()
     .realPress(["Meta", "A"])
+    .realType(`{backspace}{backspace}{backspace}{backspace}`)
+    .realPress(["Meta", "A"])
     .realType(
-      `{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}${value}`
+      `{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}${value}`
     );
 };
 

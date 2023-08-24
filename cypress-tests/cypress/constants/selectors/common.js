@@ -211,8 +211,17 @@ export const commonSelectors = {
   editFolderOption: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
-  inspectorPinIcon: '[data-cy="null-option-icon"]'
-
+  inspectorPinIcon: '[data-cy="null-option-icon"]',
+  groupInputFieldLabel: '[data-cy="label-group-input-field"]',
+  documentationLink: '[data-cy="read-documentation-option-button"]',
+  nameLabel: '[data-cy="name-label"]',
+  valueLabel: '[data-cy="value-label"]',
+  valueInputField: '[data-cy="value-input-field"]',
+  yesButton: '[data-cy="yes-button"]',
+  pagination: '[data-cy="pagination-section"]',
+  workspaceConstantsOption: '[data-cy="workspace-constants-list-item"]',
+  nameErrorText: '[data-cy="name-error-text"]',
+  valueErrorText: '[data-cy="value-error-text"]',
 };
 
 export const commonWidgetSelector = {
