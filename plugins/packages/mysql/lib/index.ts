@@ -75,7 +75,7 @@ export default class MysqlQueryService implements QueryService {
           ssl: sourceOptions.ssl_enabled ?? false, // Disabling by default for backward compatibility
         };
     const config: Knex.Config = {
-      client: 'mysql',
+      client: 'mysql2',
       connection: {
         ...props,
         user: sourceOptions.username,
