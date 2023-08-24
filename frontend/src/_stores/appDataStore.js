@@ -58,8 +58,6 @@ export const useAppDataStore = create(
             }
           });
 
-          console.log('----arpit should update events store', { updatedEvents, response });
-
           set(() => ({ events: updatedEvents }));
         },
 
@@ -106,9 +104,3 @@ export const useUpdateEditingVersion = () => useAppDataStore((state) => state.ac
 export const useCurrentUser = () => useAppDataStore((state) => state.currentUser);
 export const useAppInfo = () => useAppDataStore((state) => state);
 export const useAppDataActions = () => useAppDataStore((state) => state.actions);
-
-// if (operation === 'delete') {
-//   const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
-//   const updatedEvents = get().events.filter((e) => e.id !== response.id);
-//   set(() => ({ events: updatedEvents }));
-// }

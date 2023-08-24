@@ -34,6 +34,7 @@ import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { camelizeKeys } from 'humps';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -897,6 +898,10 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters = {}) {
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
+  const queryEvents = useAppDataStore
+    .getState()
+    .events.filter((event) => event.target === 'data_query' && event.sourceId === queryId);
+
   let dataQuery = {};
 
   if (query) {
@@ -1003,7 +1008,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             },
           });
           resolve(data);
-          onEvent(_self, 'onDataQueryFailure', dataQuery.options.events);
+          onEvent(_self, 'onDataQueryFailure', queryEvents);
           if (mode !== 'view') {
             const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
             toast.error(err?.message);
@@ -1041,7 +1046,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 },
               });
               resolve(finalData);
-              onEvent(_self, 'onDataQueryFailure', dataQuery.options.events);
+              onEvent(_self, 'onDataQueryFailure', queryEvents);
               return;
             }
           }
@@ -1080,7 +1085,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             },
           });
           resolve({ status: 'ok', data: finalData });
-          onEvent(_self, 'onDataQuerySuccess', dataQuery.options.events, mode);
+          onEvent(_self, 'onDataQuerySuccess', queryEvents, mode);
         }
       })
       .catch(({ error }) => {
