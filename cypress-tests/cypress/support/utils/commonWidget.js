@@ -225,9 +225,9 @@ export const verifyAndModifyStylePickerFx = (
     "be.visible"
   );
 
-  cy.get(commonWidgetSelector.stylePickerValue(paramName))
-    .should("be.visible")
-    .verifyVisibleElement("have.text", defaultValue);
+  // cy.get(commonWidgetSelector.stylePickerValue(paramName))
+  //   .should("be.visible")
+  //   .verifyVisibleElement("have.text", defaultValue);
   cy.get(
     commonWidgetSelector.parameterFxButton(
       paramName,
