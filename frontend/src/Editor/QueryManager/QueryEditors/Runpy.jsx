@@ -16,9 +16,8 @@ export class Runpy extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className="runps-editor">
         <CodeHinter
-          currentState={this.props.currentState}
           initialValue={this.props.options.code}
           mode="python"
           theme={this.props.darkMode ? 'monokai' : 'base16-light'}

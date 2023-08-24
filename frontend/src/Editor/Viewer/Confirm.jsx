@@ -22,7 +22,7 @@ export function Confirm({
   }, [show]);
 
   const handleClose = () => {
-    onCancel();
+    onCancel && onCancel();
     setShow(false);
   };
 

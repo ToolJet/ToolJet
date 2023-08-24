@@ -27,6 +27,7 @@ const OpenApi = ({
   auth_url,
   access_token_custom_headers,
   spec,
+  workspaceConstants,
 }) => {
   const [securities, setSecurities] = useState([]);
   const [loadingSpec, setLoadingSpec] = useState(false);
@@ -196,6 +197,7 @@ const OpenApi = ({
           rows="14"
           value={definition}
           onChange={(e) => optionchanged('definition', e.target.value)}
+          workspaceConstants={workspaceConstants}
         />
       </div>
 

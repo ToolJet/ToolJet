@@ -80,6 +80,7 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
 export async function catchDbException(
   operation: () => any,
   dbConstraint: DataBaseConstraints,
@@ -94,8 +95,6 @@ export async function catchDbException(
     throw err;
   }
 }
-
-export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
 
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
@@ -125,6 +124,35 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
+export class MigrationProgress {
+  private progress = 0;
+  constructor(private fileName: string, private totalCount: number) {}
+
+  show() {
+    this.progress++;
+    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
+  }
+}
+
+export const processDataInBatches = async <T>(
+  entityManager: EntityManager,
+  getData: (entityManager: EntityManager, skip: number, take: number) => Promise<T[]>,
+  processBatch: (entityManager: EntityManager, data: T[]) => Promise<void>,
+  batchSize = 1000
+): Promise<void> => {
+  let skip = 0;
+  let data: T[];
+
+  do {
+    data = await getData(entityManager, skip, batchSize);
+    skip += batchSize;
+
+    if (data.length > 0) {
+      await processBatch(entityManager, data);
+    }
+  } while (data.length === batchSize);
+};
+
 export const generateNextName = (firstWord: string) => {
   return `${firstWord} ${Date.now()}`;
 };
@@ -135,4 +163,26 @@ export const truncateAndReplace = (name) => {
     return name.replace(name.substring(35, 50), secondsSinceEpoch);
   }
   return name + secondsSinceEpoch;
+};
+
+export const generateInviteURL = (
+  invitationToken: string,
+  organizationToken?: string,
+  organizationId?: string,
+  source?: string
+) => {
+  const host = process.env.TOOLJET_HOST;
+  const subpath = process.env.SUB_PATH;
+
+  return `${host}${subpath ? subpath : '/'}invitations/${invitationToken}${
+    organizationToken ? `/workspaces/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''}` : ''
+  }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
+};
+
+export const generateOrgInviteURL = (organizationToken: string, organizationId?: string) => {
+  const host = process.env.TOOLJET_HOST;
+  const subpath = process.env.SUB_PATH;
+  return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
+    organizationId ? `?oid=${organizationId}` : ''
+  }`;
 };

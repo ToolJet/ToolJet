@@ -5,13 +5,20 @@ import { commentsService } from '@/_services';
 import TabContent from './Content';
 import useRouter from '@/_hooks/use-router';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
-const CommentNotifications = ({ socket, toggleComments, pageId }) => {
+const CommentNotifications = ({ socket, pageId }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { appVersionsId } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
+    }),
+    shallow
+  );
+  const { toggleComments } = useEditorStore(
+    (state) => ({
+      toggleComments: state?.actions.toggleComments,
     }),
     shallow
   );

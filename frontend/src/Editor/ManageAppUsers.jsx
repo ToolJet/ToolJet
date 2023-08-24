@@ -9,6 +9,7 @@ import Textarea from '@/_ui/Textarea';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { getSubpath } from '@/_helpers/utils';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -133,7 +134,7 @@ class ManageAppUsersComponent extends React.Component {
   render() {
     const { isLoading, app, slugError, isSlugVerificationInProgress } = this.state;
     const appId = app.id;
-    const appLink = `${window.public_config?.TOOLJET_HOST}/applications/`;
+    const appLink = `${window.public_config?.TOOLJET_HOST}${getSubpath() ? getSubpath() : ''}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = isSlugVerificationInProgress ? '' : slugError !== null ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
@@ -195,6 +196,7 @@ class ManageAppUsersComponent extends React.Component {
                     </span>
                   </div>
                 </div>
+
                 <div className="shareable-link mb-3">
                   <label className="form-label" data-cy="shareable-app-link-label">
                     <small>
@@ -234,32 +236,34 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                 </div>
                 <hr />
-                <div className="shareable-link mb-3">
-                  <label className="form-label" data-cy="iframe-link-label">
-                    <small>
-                      {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
-                    </small>
-                  </label>
-                  <div className="input-group">
-                    <Textarea
-                      disabled
-                      className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
-                      rows={5}
-                      value={embeddableLink}
-                      data-cy="iframe-link"
-                    />
-                    <span className="input-group-text">
-                      <CopyToClipboard
-                        text={embeddableLink}
-                        onCopy={() => toast.success('Embeddable link copied to clipboard')}
-                      >
-                        <button className="btn btn-secondary btn-sm" data-cy="iframe-link-copy-button">
-                          {this.props.t('editor.shareModal.copy', 'copy')}
-                        </button>
-                      </CopyToClipboard>
-                    </span>
+                {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                  <div className="shareable-link mb-3">
+                    <label className="form-label" data-cy="iframe-link-label">
+                      <small>
+                        {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
+                      </small>
+                    </label>
+                    <div className="input-group">
+                      <Textarea
+                        disabled
+                        className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
+                        rows={5}
+                        value={embeddableLink}
+                        data-cy="iframe-link"
+                      />
+                      <span className="input-group-text">
+                        <CopyToClipboard
+                          text={embeddableLink}
+                          onCopy={() => toast.success('Embeddable link copied to clipboard')}
+                        >
+                          <button className="btn btn-secondary btn-sm" data-cy="iframe-link-copy-button">
+                            {this.props.t('editor.shareModal.copy', 'copy')}
+                          </button>
+                        </CopyToClipboard>
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </Modal.Body>

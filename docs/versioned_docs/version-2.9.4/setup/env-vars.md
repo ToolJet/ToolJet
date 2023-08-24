@@ -7,6 +7,8 @@ title: Environment variables
 
 Both the ToolJet server and client requires some environment variables to start running.
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 ## ToolJet server
 
 ### ToolJet host ( required )
@@ -78,7 +80,7 @@ Use this environment variable to enable/disable the feature that allows users to
 ### Marketplace
 #### Marketplace feature enable ( optional )
 
-Use this environment variable to enable/disable the feature that allows users to use the [marketplace](/docs/marketplace).
+Use this environment variable to enable/disable the feature that allows users to use the marketplace.
 
 | variable                   | value             |
 | -------------------------- | ----------------- |
@@ -320,3 +322,7 @@ By default, only embedding of public apps is permitted. By setting this variable
 | Variable        | Description                           |
 | --------------- | ------------------------------------- |
 | ENABLE_PRIVATE_APP_EMBED | `true` or `false` |
+
+:::caution
+The option is only available starting from ToolJet Enterprise Edition `2.8.0` or higher, and `2.10.0` for the Community edition and cloud version.
+:::

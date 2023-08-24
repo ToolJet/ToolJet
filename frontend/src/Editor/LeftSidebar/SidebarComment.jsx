@@ -4,13 +4,20 @@ import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
-export const LeftSidebarComment = forwardRef(({ toggleComments, selectedSidebarItem, currentPageId }, ref) => {
+export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPageId }, ref) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { appVersionsId } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
+    }),
+    shallow
+  );
+  const { toggleComments } = useEditorStore(
+    (state) => ({
+      toggleComments: state?.actions.toggleComments,
     }),
     shallow
   );
@@ -20,13 +27,12 @@ export const LeftSidebarComment = forwardRef(({ toggleComments, selectedSidebarI
 
   React.useEffect(() => {
     if (appVersionsId) {
-      commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }, ref) => {
+      commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }) => {
         setNotifications(data);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appVersionsId, currentPageId]);
-
   return (
     <LeftSidebarItem
       commentBadge={notifications?.length > 0}
