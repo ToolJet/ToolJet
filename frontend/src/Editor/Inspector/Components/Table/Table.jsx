@@ -1051,8 +1051,7 @@ class TableComponent extends React.Component {
                 {columns?.value?.length === 0 && <NoListItem text={'There are no columns'} />}
                 <div style={{ marginTop: '8px' }}>
                   <AddNewButton data-cy={`button-add-column`} onClick={this.addNewColumn}>
-                    {/* {this.props.t('widget.Table.addColumn', '+ Add column')} */}
-                    New list item
+                    {this.props.t('widget.Table.addColumn', ' New column')}
                   </AddNewButton>
                 </div>
               </div>
@@ -1070,8 +1069,7 @@ class TableComponent extends React.Component {
             <div>{actions.value.map((action, index) => this.renderActionButton(action, index))}</div>
             {actions.value.length === 0 && <NoListItem text={'There are no action buttons'} />}
             <AddNewButton data-cy="button-add-new-action-button" onClick={this.addNewAction}>
-              {/* {this.props.t('widget.Table.addButton', 'New list item')} */}
-              New list item
+              New action button
             </AddNewButton>
           </div>
         </div>

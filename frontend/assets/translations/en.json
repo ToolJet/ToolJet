@@ -718,7 +718,7 @@
             "buttonPosition": "Button Position",
             "remove": "Remove",
             "addButton": "+ Add button",
-            "addColumn": "+ Add column",
+            "addColumn": "New column",
             "noActionMessage": "This table doesn't have any action buttons"
         },
         "Button": {

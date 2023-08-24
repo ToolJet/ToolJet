@@ -3080,6 +3080,7 @@ input:focus-visible {
   justify-content: space-between;
   .widget-documentation-link-text {
     margin-left: 13px;
+    font-weight: 500;
   }
 }
 
@@ -3103,7 +3104,7 @@ input:focus-visible {
     line-height: 20px;
     color: var(--slate11);
     font-weight: 400;
-  border-radius: 4px;
+    border-radius: 4px;
   }
   .card-body {
     color: var(--slate12);
