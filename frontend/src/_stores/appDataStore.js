@@ -33,23 +33,30 @@ export const useAppDataStore = create(
         updateApps: (apps) => set(() => ({ apps: apps })),
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
-        updateAppVersion: async (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
-          return await appVersionService.autoSaveApp(
-            appId,
-            versionId,
-            appDefinitionDiff.updateDiff,
-            appDefinitionDiff.type,
-            pageId,
-            appDefinitionDiff.operation,
-            isUserSwitchedVersion
-          );
+        updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
+          useAppDataStore.getState().actions.setIsSaving(true);
+          appVersionService
+            .autoSaveApp(
+              appId,
+              versionId,
+              appDefinitionDiff.updateDiff,
+              appDefinitionDiff.type,
+              pageId,
+              appDefinitionDiff.operation,
+              isUserSwitchedVersion
+            )
+            .then(() => {
+              useAppDataStore.getState().actions.setIsSaving(false);
+            });
         },
         updateAppVersionEventHandlers: async (events) => {
+          useAppDataStore.getState().actions.setIsSaving(true);
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
           const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events);
 
+          useAppDataStore.getState().actions.setIsSaving(false);
           const updatedEvents = get().events;
 
           updatedEvents.forEach((e, index) => {
@@ -62,24 +69,27 @@ export const useAppDataStore = create(
         },
 
         createAppVersionEventHandlers: async (event) => {
+          useAppDataStore.getState().actions.setIsSaving(true);
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
           const updatedEvents = get().events;
           const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
+          useAppDataStore.getState().actions.setIsSaving(false);
           updatedEvents.push(response);
 
           set(() => ({ events: updatedEvents }));
         },
 
         deleteAppVersionEventHandler: async (eventId) => {
+          useAppDataStore.getState().actions.setIsSaving(true);
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
           const updatedEvents = get().events;
 
           const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
-
+          useAppDataStore.getState().actions.setIsSaving(false);
           if (response?.affected === 1) {
             updatedEvents.splice(
               updatedEvents.findIndex((e) => e.id === eventId),

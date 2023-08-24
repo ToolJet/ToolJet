@@ -14,7 +14,7 @@ import config from 'config';
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-import { useAppDataActions, useCurrentUser } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 
 export default function EditorHeader({
   darkMode,
@@ -27,7 +27,6 @@ export default function EditorHeader({
   canRedo,
   handleUndo,
   handleRedo,
-  isSaving,
   saveError,
   onNameChanged,
   setAppDefinitionFromVersion,
@@ -42,6 +41,7 @@ export default function EditorHeader({
   const currentUser = useCurrentUser();
 
   const { updateState } = useAppDataActions();
+  const { isSaving } = useAppInfo();
 
   const handleSlugChange = (newSlug) => {
     updateState({ slug: newSlug });

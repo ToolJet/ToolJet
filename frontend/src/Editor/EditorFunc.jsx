@@ -101,7 +101,7 @@ const EditorComponent = (props) => {
     currentLayout,
     canUndo,
     canRedo,
-    isSaving,
+    isUpdatingEditorStateInProcess,
     saveError,
     scrollOptions,
     currentSidebarTab,
@@ -227,7 +227,7 @@ const EditorComponent = (props) => {
 
       computeComponentState(components);
 
-      if (isSaving) {
+      if (isUpdatingEditorStateInProcess) {
         autoSave();
       }
     }
@@ -612,7 +612,7 @@ const EditorComponent = (props) => {
     }
 
     updateEditorState({
-      isSaving: true,
+      isUpdatingEditorStateInProcess: true,
     });
 
     appDefinitionChanged(newAppDefinition, {
@@ -715,7 +715,7 @@ const EditorComponent = (props) => {
       useAppVersionStore.getState().actions.updateEditingVersion(version);
 
       updateEditorState({
-        isSaving: false,
+        isUpdatingEditorStateInProcess: false,
       });
 
       shouldWeEditVersion && saveEditingVersion(true);
@@ -745,7 +745,7 @@ const EditorComponent = (props) => {
 
       return new Promise((resolve) => {
         updateEditorState({
-          isSaving: true,
+          isUpdatingEditorStateInProcess: true,
         });
 
         resolve();
@@ -793,7 +793,7 @@ const EditorComponent = (props) => {
         appDiffOptions: opts,
       });
       updateEditorState({
-        isSaving: true,
+        isUpdatingEditorStateInProcess: true,
         appDefinition: updatedAppDefinition,
       });
 
@@ -808,7 +808,7 @@ const EditorComponent = (props) => {
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (props.isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
-        isSaving: false,
+        isUpdatingEditorStateInProcess: false,
       });
     } else if (!isEmpty(props?.editingVersion)) {
       const updateDiff = computeAppDiff(appDefinitionDiff, currentPageId, appDiffOptions);
@@ -835,13 +835,13 @@ const EditorComponent = (props) => {
 
           updateEditorState({
             saveError: false,
-            isSaving: false,
+            isUpdatingEditorStateInProcess: false,
           });
         })
         .catch(() => {
           updateEditorState({
             saveError: true,
-            isSaving: false,
+            isUpdatingEditorStateInProcess: false,
           });
           toast.error('App could not save.');
         });
@@ -849,7 +849,7 @@ const EditorComponent = (props) => {
 
     updateEditorState({
       saveError: false,
-      isSaving: false,
+      isUpdatingEditorStateInProcess: false,
     });
   };
 
@@ -897,10 +897,8 @@ const EditorComponent = (props) => {
       updateEditorState({
         appDefinition: updatedAppDefinition,
         currentSidebarTab: 2,
-        isSaving: true,
+        isUpdatingEditorStateInProcess: true,
       });
-
-      // autoSave();
     }
   };
 
@@ -919,10 +917,8 @@ const EditorComponent = (props) => {
 
       updateEditorState({
         appDefinition: updatedAppDefinition,
-        isSaving: true,
+        isUpdatingEditorStateInProcess: true,
       });
-
-      // autoSave();
     }
   };
 
@@ -949,7 +945,7 @@ const EditorComponent = (props) => {
         componentDefinition.component;
 
       updateEditorState({
-        isSaving: true,
+        isUpdatingEditorStateInProcess: true,
       });
 
       const diffPatches = diff(appDefinition, updatedAppDefinition);
@@ -1228,7 +1224,7 @@ const EditorComponent = (props) => {
 
     setCurrentPageId(newCurrentPageId);
     updateEditorState({
-      isSaving: true,
+      isUpdatingEditorStateInProcess: true,
     });
     setIsDeletingPage(false);
 
@@ -1244,7 +1240,7 @@ const EditorComponent = (props) => {
 
   const hidePage = (pageId) => {
     updateEditorState({
-      isSaving: true,
+      isUpdatingEditorStateInProcess: true,
     });
 
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
@@ -1260,7 +1256,7 @@ const EditorComponent = (props) => {
 
   const unHidePage = (pageId) => {
     updateEditorState({
-      isSaving: true,
+      isUpdatingEditorStateInProcess: true,
     });
 
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
@@ -1278,7 +1274,7 @@ const EditorComponent = (props) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     updateEditorState({
-      isSaving: true,
+      isUpdatingEditorStateInProcess: true,
     });
 
     const currentPage = copyOfAppDefinition.pages[pageId];
@@ -1347,7 +1343,7 @@ const EditorComponent = (props) => {
 
   const updateHomePage = (pageId) => {
     updateEditorState({
-      isSaving: true,
+      isUpdatingEditorStateInProcess: true,
     });
 
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
@@ -1365,7 +1361,7 @@ const EditorComponent = (props) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     updateEditorState({
-      isSaving: true,
+      isUpdatingEditorStateInProcess: true,
     });
 
     const pageExists = Object.values(copyOfAppDefinition.pages).some((page) => page.handle === newHandle);
@@ -1480,7 +1476,6 @@ const EditorComponent = (props) => {
           canRedo={canRedo}
           handleUndo={handleUndo}
           handleRedo={handleRedo}
-          isSaving={isSaving}
           saveError={saveError}
           onNameChanged={onNameChanged}
           setAppDefinitionFromVersion={setAppDefinitionFromVersion}
@@ -1516,7 +1511,7 @@ const EditorComponent = (props) => {
               removeComponent={removeComponent}
               runQuery={(queryId, queryName) => handleRunQuery(queryId, queryName)}
               ref={dataSourceModalRef}
-              isSaving={isSaving}
+              isSaving={isUpdatingEditorStateInProcess}
               currentPageId={currentPageId}
               addNewPage={addNewPage}
               switchPage={switchPage}
