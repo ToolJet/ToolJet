@@ -60,8 +60,9 @@ export const useAppDataStore = create(
           const updatedEvents = get().events;
 
           updatedEvents.forEach((e, index) => {
-            if (e.id === response[index].id) {
-              updatedEvents[index] = response[index];
+            const toUpdate = response.find((r) => r.id === e.id);
+            if (toUpdate) {
+              updatedEvents[index] = toUpdate;
             }
           });
 
