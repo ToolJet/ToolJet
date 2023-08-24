@@ -579,3 +579,12 @@
 .isResizing{
   cursor: ew-resize !important;
 }
+.loading-spinner-table-component{
+  transform-origin:center;
+  animation:spinner_AtaB .75s infinite linear;
+  @keyframes spinner_AtaB{100%{transform:rotate(360deg)}};
+  svg{
+    fill: var(--indigo6) !important;
+   
+  }
+}

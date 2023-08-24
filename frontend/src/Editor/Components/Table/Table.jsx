@@ -48,6 +48,7 @@ import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -968,7 +969,12 @@ export function Table({
           style={{ padding: '12px', height: 56 }}
         >
           <div>
-            {showFilterButton && (
+            {loadingState && (
+              <SkeletonTheme baseColor="var(--slate3)">
+                <Skeleton count={1} width={83} height={28} className="mb-1" />
+              </SkeletonTheme>
+            )}
+            {showFilterButton && !loadingState && (
               <>
                 <Tooltip id="tooltip-for-filter-data" className="tooltip" />
                 <ButtonSolid
@@ -989,7 +995,12 @@ export function Table({
             )}
           </div>
           <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
-            {displaySearchBox && (
+            {loadingState && (
+              <SkeletonTheme baseColor="var(--slate3)">
+                <Skeleton count={1} width={100} height={28} className="mb-1" />
+              </SkeletonTheme>
+            )}
+            {displaySearchBox && !loadingState && (
               <GlobalFilter
                 globalFilter={state.globalFilter}
                 useAsyncDebounce={useAsyncDebounce}
@@ -1003,7 +1014,7 @@ export function Table({
           </div>
         </div>
       )}
-      <div className="table-responsive jet-data-table">
+      <div className={`table-responsive jet-data-table ${loadingState && 'overflow-hidden'}`}>
         <table
           {...getTableProps()}
           className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
@@ -1038,110 +1049,119 @@ export function Table({
                       {...headerGroup.getHeaderGroupProps()}
                       className="tr"
                     >
-                      {headerGroup.headers.map((column, index) => {
-                        return (
-                          <Draggable
-                            key={column.id}
-                            draggableId={column.id}
-                            index={index}
-                            isDragDisabled={!column.accessor}
-                          >
-                            {(provided, snapshot) => {
-                              let headerProps = { ...column.getHeaderProps() };
-                              if (column.columnType === 'selector') {
-                                headerProps = {
-                                  ...headerProps,
-                                  style: {
-                                    ...headerProps.style,
-                                    width: 40,
-                                    padding: 0,
-                                    display: 'flex',
-                                    'align-items': 'center',
-                                    'justify-content': 'center',
-                                  },
-                                };
-                              }
-                              const isEditable = resolveReferences(column?.isEditable ?? false, currentState);
-                              return (
-                                <th
-                                  key={index}
-                                  {...headerProps}
-                                  className={`th tj-text-xsm font-weight-400 ${
-                                    column.isSorted && (column.isSortedDesc ? '' : '')
-                                  } ${column.isResizing && 'resizing-column'}`}
-                                >
-                                  <div
-                                    className={`${
-                                      column.columnType !== 'selector' && 'd-flex justify-content-between custom-gap-12'
-                                    }`}
-                                    {...column.getSortByToggleProps()}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    // {...extraProps}
-                                    ref={provided.innerRef}
-                                    style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                      {loadingState && (
+                        <div className="w-100">
+                          <SkeletonTheme baseColor="var(--slate3)" width="100%">
+                            <Skeleton count={1} width={'100%'} height={28} className="mb-1" />
+                          </SkeletonTheme>
+                        </div>
+                      )}
+                      {!loadingState &&
+                        headerGroup.headers.map((column, index) => {
+                          return (
+                            <Draggable
+                              key={column.id}
+                              draggableId={column.id}
+                              index={index}
+                              isDragDisabled={!column.accessor}
+                            >
+                              {(provided, snapshot) => {
+                                let headerProps = { ...column.getHeaderProps() };
+                                if (column.columnType === 'selector') {
+                                  headerProps = {
+                                    ...headerProps,
+                                    style: {
+                                      ...headerProps.style,
+                                      width: 40,
+                                      padding: 0,
+                                      display: 'flex',
+                                      'align-items': 'center',
+                                      'justify-content': 'center',
+                                    },
+                                  };
+                                }
+                                const isEditable = resolveReferences(column?.isEditable ?? false, currentState);
+                                return (
+                                  <th
+                                    key={index}
+                                    {...headerProps}
+                                    className={`th tj-text-xsm font-weight-400 ${
+                                      column.isSorted && (column.isSortedDesc ? '' : '')
+                                    } ${column.isResizing && 'resizing-column'}`}
                                   >
                                     <div
                                       className={`${
-                                        column.columnType !== 'selector' && isEditable && 'd-flex custom-gap-4'
+                                        column.columnType !== 'selector' &&
+                                        'd-flex justify-content-between custom-gap-12'
                                       }`}
+                                      {...column.getSortByToggleProps()}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      // {...extraProps}
+                                      ref={provided.innerRef}
+                                      style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
                                     >
-                                      <div>
-                                        {column.columnType !== 'selector' && isEditable && (
-                                          <SolidIcon
-                                            name="editable"
-                                            width="16px"
-                                            height="16px"
-                                            fill={darkMode ? '#4C5155' : '#C1C8CD'}
-                                            vievBox="0 0 16 16"
-                                          />
-                                        )}
-                                      </div>
                                       <div
-                                        data-cy={`column-header-${String(column.exportValue)
-                                          .toLowerCase()
-                                          .replace(/\s+/g, '-')}`}
-                                        className={`header-text ${
-                                          column.id === 'selection' &&
-                                          column.columnType === 'selector' &&
-                                          'selector-column'
+                                        className={`${
+                                          column.columnType !== 'selector' && isEditable && 'd-flex custom-gap-4'
                                         }`}
                                       >
-                                        {column.render('Header')}
+                                        <div>
+                                          {column.columnType !== 'selector' && isEditable && (
+                                            <SolidIcon
+                                              name="editable"
+                                              width="16px"
+                                              height="16px"
+                                              fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                                              vievBox="0 0 16 16"
+                                            />
+                                          )}
+                                        </div>
+                                        <div
+                                          data-cy={`column-header-${String(column.exportValue)
+                                            .toLowerCase()
+                                            .replace(/\s+/g, '-')}`}
+                                          className={`header-text ${
+                                            column.id === 'selection' &&
+                                            column.columnType === 'selector' &&
+                                            'selector-column'
+                                          }`}
+                                        >
+                                          {column.render('Header')}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        {column.columnType !== 'selector' &&
+                                          column.isSorted &&
+                                          (column.isSortedDesc ? (
+                                            <SolidIcon
+                                              name="arrowdown"
+                                              width="16"
+                                              height="16"
+                                              fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                            />
+                                          ) : (
+                                            <SolidIcon
+                                              name="arrowup"
+                                              width="16"
+                                              height="16"
+                                              fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                            />
+                                          ))}
                                       </div>
                                     </div>
-                                    <div>
-                                      {column.columnType !== 'selector' &&
-                                        column.isSorted &&
-                                        (column.isSortedDesc ? (
-                                          <SolidIcon
-                                            name="arrowdown"
-                                            width="16"
-                                            height="16"
-                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
-                                          />
-                                        ) : (
-                                          <SolidIcon
-                                            name="arrowup"
-                                            width="16"
-                                            height="16"
-                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
-                                          />
-                                        ))}
-                                    </div>
-                                  </div>
-                                  <div
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                    }}
-                                    draggable="true"
-                                    {...column.getResizerProps()}
-                                    className={`${
-                                      column.id === 'selection' && column.columnType === 'selector' ? '' : 'resizer'
-                                    }  ${column.isResizing ? 'isResizing' : ''}`}
-                                  >
-                                    {/* {column.isResizing && (
+                                    <div
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                      }}
+                                      draggable="true"
+                                      {...column.getResizerProps()}
+                                      className={`${
+                                        column.id === 'selection' && column.columnType === 'selector' ? '' : 'resizer'
+                                      }  ${column.isResizing ? 'isResizing' : ''}`}
+                                    >
+                                      {/* {column.isResizing && (
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="25"
@@ -1163,13 +1183,13 @@ export function Table({
                                         />
                                       </svg>
                                     )} */}
-                                  </div>
-                                </th>
-                              );
-                            }}
-                          </Draggable>
-                        );
-                      })}
+                                    </div>
+                                  </th>
+                                );
+                              }}
+                            </Draggable>
+                          );
+                        })}
                     </tr>
                   )}
                 </Droppable>
@@ -1334,10 +1354,25 @@ export function Table({
           )}
         </table>
         {loadingState === true && (
-          <div style={{ width: '100%' }} className="p-2">
-            <center>
-              <div className="spinner-border mt-5" role="status"></div>
-            </center>
+          <div style={{ width: '100%' }} className="p-2 h-100 ">
+            <div className="d-flex align-items-center justify-content-center h-100">
+              <svg
+                className="loading-spinner-table-component"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="var(--indigo6)"
+              >
+                <style>.spinner_ajPY{}</style>
+                <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" />
+                <path
+                  d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"
+                  class="spinner_ajPY"
+                  fill="var(--indigo9)"
+                />
+              </svg>
+            </div>
           </div>
         )}
       </div>
@@ -1353,51 +1388,67 @@ export function Table({
         >
           <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
             <div className="col d-flex justify-content-start custom-gap-4">
-              {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
-                <>
-                  <ButtonSolid
-                    variant="primary"
-                    className={`tj-text-xsm`}
-                    onClick={() => {
-                      onEvent('onBulkUpdate', { component }).then(() => {
-                        handleChangesSaved();
-                      });
-                    }}
-                    data-cy={`table-button-save-changes`}
-                    size="md"
-                    isLoading={tableDetails.isSavingChanges ? true : false}
-                    style={{ minWidth: '32px' }}
-                    leftIcon={width > 650 ? '' : 'save'}
-                    fill={'var(--indigo1)'}
-                    iconWidth="16"
-                  >
-                    {width > 650 ? <span>Save changes</span> : ''}
-                  </ButtonSolid>
-                  <ButtonSolid
-                    variant="tertiary"
-                    className={`tj-text-xsm`}
-                    onClick={() => {
-                      handleChangesDiscarded();
-                    }}
-                    data-cy={`table-button-discard-changes`}
-                    size="md"
-                    style={{ minWidth: '32px' }}
-                    leftIcon={width > 650 ? '' : 'cross'}
-                    fill={'var(--slate12)'}
-                    iconWidth="16"
-                  >
-                    {width > 650 ? <span>Discard</span> : ''}
-                  </ButtonSolid>
-                </>
-              ) : (
-                <span data-cy={`footer-number-of-records`} className="font-weight-500 text-black-000">
-                  {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
-                  {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
-                </span>
+              {loadingState && (
+                <SkeletonTheme baseColor="var(--slate3)" width="100%">
+                  <Skeleton count={1} width={83} height={28} className="mb-1" />
+                </SkeletonTheme>
               )}
+              {!loadingState &&
+                (showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
+                  <>
+                    <ButtonSolid
+                      variant="primary"
+                      className={`tj-text-xsm`}
+                      onClick={() => {
+                        onEvent('onBulkUpdate', { component }).then(() => {
+                          handleChangesSaved();
+                        });
+                      }}
+                      data-cy={`table-button-save-changes`}
+                      size="md"
+                      isLoading={tableDetails.isSavingChanges ? true : false}
+                      style={{ minWidth: '32px' }}
+                      leftIcon={width > 650 ? '' : 'save'}
+                      fill={'var(--indigo1)'}
+                      iconWidth="16"
+                    >
+                      {width > 650 ? <span>Save changes</span> : ''}
+                    </ButtonSolid>
+                    <ButtonSolid
+                      variant="tertiary"
+                      className={`tj-text-xsm`}
+                      onClick={() => {
+                        handleChangesDiscarded();
+                      }}
+                      data-cy={`table-button-discard-changes`}
+                      size="md"
+                      style={{ minWidth: '32px' }}
+                      leftIcon={width > 650 ? '' : 'cross'}
+                      fill={'var(--slate12)'}
+                      iconWidth="16"
+                    >
+                      {width > 650 ? <span>Discard</span> : ''}
+                    </ButtonSolid>
+                  </>
+                ) : (
+                  !loadingState && (
+                    <span data-cy={`footer-number-of-records`} className="font-weight-500 text-black-000">
+                      {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
+                      {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
+                    </span>
+                  )
+                ))}
             </div>
-            <div className="col d-flex justify-content-center h-100">
-              {(clientSidePagination || serverSidePagination) && (
+            <div className={`col d-flex justify-content-center h-100 ${loadingState && 'w-100'}`}>
+              {loadingState && (
+                <div className="w-100">
+                  <SkeletonTheme baseColor="var(--slate3)" width="100%">
+                    <Skeleton count={1} width={'100%'} height={28} className="mb-1" />
+                  </SkeletonTheme>
+                </div>
+              )}
+
+              {(clientSidePagination || serverSidePagination) && !loadingState && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}
@@ -1416,7 +1467,12 @@ export function Table({
               )}
             </div>
             <div className="col d-flex justify-content-end ">
-              {showAddNewRowButton && (
+              {loadingState && (
+                <SkeletonTheme baseColor="var(--slate3)" width="100%">
+                  <Skeleton count={1} width={83} height={28} className="mb-1" />
+                </SkeletonTheme>
+              )}
+              {!loadingState && showAddNewRowButton && (
                 <ButtonSolid
                   variant="ghostBlack"
                   className={`tj-text-xsm ${tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed'}`}
@@ -1434,7 +1490,7 @@ export function Table({
                   data-tooltip-content="Add new row"
                 ></ButtonSolid>
               )}
-              {showDownloadButton && (
+              {!loadingState && showDownloadButton && (
                 <div>
                   <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'top-end'}>
                     <span>
@@ -1456,7 +1512,7 @@ export function Table({
                   </OverlayTrigger>
                 </div>
               )}
-              {!hideColumnSelectorButton && (
+              {!loadingState && !hideColumnSelectorButton && (
                 <OverlayTrigger trigger="click" rootClose={true} overlay={hideColumnsPopover()} placement={'top-end'}>
                   <span>
                     {' '}
