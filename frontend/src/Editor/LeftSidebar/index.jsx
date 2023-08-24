@@ -43,7 +43,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     updatePageHandle,
     showHideViewerNavigationControls,
     updateOnSortingPages,
-    updateOnPageLoadEvents,
+
     apps,
     clonePage,
     setEditorMarginLeft,
@@ -152,7 +152,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         homePageId={appDefinition.homePageId}
         showHideViewerNavigationControls={showHideViewerNavigationControls}
         updateOnSortingPages={updateOnSortingPages}
-        updateOnPageLoadEvents={updateOnPageLoadEvents}
         apps={apps}
         setPinned={handlePin}
         pinned={pinned}

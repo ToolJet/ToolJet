@@ -8,7 +8,7 @@ export const SettingsModal = ({
   show,
   handleClose,
   darkMode,
-  updateOnPageLoadEvents,
+
   apps,
   pages,
   components,
@@ -69,7 +69,6 @@ export const SettingsModal = ({
             components={components}
             apps={apps}
             pages={allpages}
-            eventsChanged={(events) => updateOnPageLoadEvents(page.id, events)}
             popOverCallback={(showing) => showing}
           />
         </Modal.Body>
