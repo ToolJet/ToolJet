@@ -22,8 +22,7 @@ export const GlobalSettings = ({
   is_maintenance_on,
 }) => {
   const { t } = useTranslation();
-  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
-    globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
   const currentState = useCurrentState();
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
