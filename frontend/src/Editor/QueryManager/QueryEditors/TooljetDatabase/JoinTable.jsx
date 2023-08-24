@@ -153,6 +153,7 @@ const SelectTableMenu = () => {
     {
       label: 'Table F',
       value: 'Table F',
+      icon: 'search',
       id: '6',
     },
   ];
@@ -194,7 +195,9 @@ const SelectTableMenu = () => {
 };
 
 const DropDownSelect = ({ darkMode, disabled, options, isMulti }) => {
-  const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
+  const popoverId = useRef(`dd-select-${generateRandomId(10)}`);
+  const popoverBtnId = useRef(`dd-select-btn-${generateRandomId(10)}`);
+  const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
   const [selected, setSelected] = useState();
   const selectRef = useRef();
 
@@ -209,20 +212,20 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti }) => {
       show={showMenu && !disabled}
       placement="top-start"
       // placement="auto"
-      arrowOffsetTop={90}
-      arrowOffsetLeft={90}
+      // arrowOffsetTop={90}
+      // arrowOffsetLeft={90}
       overlay={
         <Popover
           key={'page.i'}
-          id="query-add-ds-popover"
+          id={popoverId.current}
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
           style={{ width: '244px', maxWidth: '246px' }}
         >
-          <SelectBox options={options} isMulti={isMulti} onSelect={setSelected} />
+          <SelectBox options={options} isMulti={isMulti} onSelect={setSelected} closePopup={() => setShowMenu(false)} />
         </Popover>
       }
     >
-      <span className="col-auto" id="query-add-ds-popover-btn">
+      <span className="col-auto" id={popoverBtnId.current}>
         <ButtonSolid
           size="sm"
           variant="tertiary"
@@ -234,10 +237,24 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti }) => {
             }
             setShowMenu((show) => !show);
           }}
-          className="px-1 pe-3 ps-2 gap-0"
+          className="px-1 pe-3 ps-2 gap-0 w-100 border-0"
           data-cy={`show-ds-popover-button`}
-        ></ButtonSolid>
+        >
+          {selected ? selected?.label : ' '}
+        </ButtonSolid>
       </span>
     </OverlayTrigger>
   );
 };
+
+function generateRandomId(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomId = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomId += characters.charAt(randomIndex);
+  }
+
+  return randomId;
+}

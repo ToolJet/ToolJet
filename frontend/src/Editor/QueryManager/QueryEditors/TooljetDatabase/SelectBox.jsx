@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, isValidElement } from 'react';
 import Select, { components } from 'react-select';
 import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
 import { Form } from 'react-bootstrap';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options, isMulti, onSelect }) {
   const dataSources = useDataSources();
@@ -23,9 +24,10 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options
   const [userDefinedSourcesOpts, setUserDefinedSourcesOpts] = useState([]);
   const { createDataQuery } = useDataQueriesActions();
   const { setPreviewData } = useQueryPanelActions();
+  const hasIcons = options.some((option) => option.icon);
   const handleChangeDataSource = (source) => {
-    console.log('source', source);
     onSelect && onSelect(source);
+    closePopup && !isMulti && closePopup();
     // createDataQuery(source);
     // setPreviewData(null);
     // closePopup();
@@ -95,42 +97,49 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options
         menuIsOpen
         hideSelectedOptions={false}
         components={{
-          ...(isMulti && {
-            Option: ({ children, ...props }) => {
-              return (
-                <components.Option {...props}>
+          // ...(isMulti && {
+          Option: ({ children, ...props }) => {
+            return (
+              <components.Option {...props}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    width: '100%',
+                  }}
+                >
                   <div
                     style={{
                       display: 'flex',
-                      justifyContent: 'flex-start',
-                      width: '100%',
+                      alignItems: 'center',
+                      // width: '20px',
                     }}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        width: '20px',
-                      }}
-                    >
-                      {props.isSelected && (
-                        <Form.Check // prettier-ignore
-                          type={'checkbox'}
-                          id={props.value}
-                          checked={props.isSelected}
-                          // label={`default ${type}`}
-                        />
-                      )}
-                    </div>
-                    {children}
+                    {isMulti && (
+                      <Form.Check // prettier-ignore
+                        type={'checkbox'}
+                        id={props.value}
+                        className="me-1"
+                        checked={props.isSelected}
+                        // label={`default ${type}`}
+                      />
+                    )}
                   </div>
-                </components.Option>
-              );
-            },
-          }),
+                  {props?.data?.icon &&
+                    (isValidElement(props.data.icon) ? (
+                      props.data.icon
+                    ) : (
+                      <SolidIcon name={props.data.icon} style={{ height: 16, width: 16 }} />
+                    ))}
+                  {children}
+                </div>
+              </components.Option>
+            );
+          },
+          // }),
           MenuList: MenuList,
-          // IndicatorSeparator: () => null,
-          // DropdownIndicator,
+          IndicatorSeparator: () => null,
+          DropdownIndicator,
         }}
         styles={{
           control: (style) => ({
@@ -161,7 +170,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options
             borderTopRightRadius: 0,
             borderTopLeftRadius: 0,
           }),
-          indicatorSeparator: () => ({ display: 'none' }),
+          // indicatorSeparator: () => ({ display: 'none' }),
           input: (style) => ({
             ...style,
             color: 'var(--slate12)',
@@ -208,8 +217,9 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options
         placeholder="Search"
         options={options}
         isDisabled={isDisabled}
+        isClearable={false}
         // menuIsOpen
-        isMulti
+        isMulti={isMulti}
         maxMenuHeight={400}
         minMenuHeight={300}
         // onKeyDown={handleKeyDown}
