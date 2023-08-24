@@ -95,7 +95,7 @@ export const Multiselect = function Multiselect({
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selected, setSelected]);
 
   useEffect(() => {
     setExposedVariable('deselectOption', async function (value) {
@@ -114,7 +114,7 @@ export const Multiselect = function Multiselect({
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selected, setSelected]);
 
   useEffect(() => {
     setExposedVariable('clearSelections', async function () {
@@ -125,7 +125,7 @@ export const Multiselect = function Multiselect({
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selected, setSelected]);
 
   return (
     <div
