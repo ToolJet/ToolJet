@@ -42,7 +42,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
 
   const handleAddClick = () => {
     const workspaceId = getWorkspaceId();
-    navigate(`/${workspaceId}/global-datasources`);
+    navigate(`/${workspaceId}/data-sources`);
   };
 
   return (
