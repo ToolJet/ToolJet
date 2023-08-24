@@ -9908,6 +9908,7 @@ tbody {
 
 .manage-groups-permission-apps,
 .apps-folder-permission-wrap,
+.datasource-permissions-wrap,
 .apps-variable-permission-wrap,
 .apps-constant-permission-wrap {
   display: flex;
@@ -9931,7 +9932,7 @@ tbody {
   border-top: 1px solid var(--slate5);
 }
 
-.apps-folder-permission-wrap, .apps-variable-permission-wrap {
+.apps-folder-permission-wrap {
   height: 44px;
   border-bottom: 1px solid var(--slate5);
 }
@@ -11107,16 +11108,17 @@ tbody {
   width: 880px;
   min-height: calc(100vh - 308px);
 
+  .manage-constant-wrapper-card {
+    max-height: calc(100vh - 260px);
+  }
+
   .empty-state-org-constants {
     padding-top: 5rem;
   }
 
-  .workspace-constant-card-body {
-    min-height: calc(100vh - 408px);
-  }
-
-  .constant-table-card {
-    min-height: 370px;
+  .constant-table-wrapper {
+    height: calc(100vh - 403px);
+    overflow-y: auto;
   }
 
   .card-footer {

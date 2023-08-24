@@ -232,7 +232,9 @@ class ViewerComponent extends React.Component {
 
     if (variablesResult && Array.isArray(variablesResult)) {
       variablesResult.map((constant) => {
-        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        const condition = (value) =>
+          this.state.environmentId ? value.id === this.state.environmentId : value.environmentName === 'production';
+        const constantValue = constant.values.find(condition)['value'];
         orgConstants[constant.name] = constantValue;
       });
 

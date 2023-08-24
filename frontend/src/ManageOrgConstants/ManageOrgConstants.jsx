@@ -182,7 +182,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
     let orgEnvironments = await fetchEnvironments();
     setEnvironments(orgEnvironments?.environments);
-    const currentEnvironment = orgEnvironments?.environments?.find((env) => env?.is_default === true);
+    const currentEnvironment = orgEnvironments?.environments?.find((env) => env?.priority === 1);
     updateActiveEnvironmentTab(currentEnvironment, orgConstants?.constants);
 
     setIsLoading(false);
@@ -361,7 +361,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           <div className="container-xl">
             <div className="workspace-constant-table-card">
               <div className="manage-sso-container h-100">
-                <div className="d-flex manage-sso-wrapper-card h-100">
+                <div className="d-flex manage-constant-wrapper-card">
                   <ManageOrgConstantsComponent.EnvironmentsTabs
                     allEnvironments={environments}
                     currentEnvironment={activeTabEnvironment}

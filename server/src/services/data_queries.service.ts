@@ -228,7 +228,6 @@ export class DataQueriesService {
             organizationId,
             environmentId
           ));
-
           result = await service.run(
             sourceOptions,
             parsedQueryOptions,
@@ -530,7 +529,7 @@ export class DataQueriesService {
   ): Promise<object> {
     if (typeof object === 'object' && object !== null) {
       for (const key of Object.keys(object)) {
-        object[key] = await this.parseQueryOptions(object[key], options, organization_id);
+        object[key] = await this.parseQueryOptions(object[key], options, organization_id, environmentId);
       }
       return object;
     } else if (typeof object === 'string') {
@@ -626,7 +625,7 @@ export class DataQueriesService {
       object.forEach((element) => {});
 
       for (const [index, element] of object) {
-        object[index] = await this.parseQueryOptions(element, options, organization_id);
+        object[index] = await this.parseQueryOptions(element, options, organization_id, environmentId);
       }
       return object;
     }
