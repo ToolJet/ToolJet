@@ -124,7 +124,7 @@ import Dot from './Dot.jsx';
 import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
-import Delete from './Delete.jsx';
+import Cross from './Cross.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -376,8 +376,8 @@ const Icon = (props) => {
       return <Maximize {...props} />;
     case 'save':
       return <Save {...props} />;
-    case 'x':
-      return <Delete {...props} />;
+    case 'cross':
+      return <Cross {...props} />;
     default:
       return <Apps {...props} />;
   }

@@ -1366,10 +1366,9 @@ export function Table({
                     data-cy={`table-button-save-changes`}
                     size="md"
                     isLoading={tableDetails.isSavingChanges ? true : false}
-                    style={{ padding: '5px 8px' }}
+                    style={{ minWidth: '32px' }}
                     leftIcon={width > 650 ? '' : 'save'}
                     fill={'var(--indigo1)'}
-                    iconViewBox="0 0 16 16"
                     iconWidth="16"
                   >
                     {width > 650 ? <span>Save changes</span> : ''}
@@ -1382,10 +1381,9 @@ export function Table({
                     }}
                     data-cy={`table-button-discard-changes`}
                     size="md"
-                    style={{ padding: '5px 8px' }}
-                    leftIcon={width > 650 ? '' : 'x'}
+                    style={{ minWidth: '32px' }}
+                    leftIcon={width > 650 ? '' : 'cross'}
                     fill={'var(--slate12)'}
-                    iconViewBox="0 0 16 16"
                     iconWidth="16"
                   >
                     {width > 650 ? <span>Discard</span> : ''}
