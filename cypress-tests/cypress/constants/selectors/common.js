@@ -216,6 +216,15 @@ export const commonSelectors = {
   pageSectionHeader: '[data-cy="dashboard-section-header"]',
   yesButton: '[data-cy="yes-button"]',
 
+  documentationLink: '[data-cy="read-documentation-option-button"]',
+  nameLabel: '[data-cy="name-label"]',
+  valueLabel: '[data-cy="value-label"]',
+  valueInputField: '[data-cy="value-input-field"]',
+  yesButton: '[data-cy="yes-button"]',
+  pagination: '[data-cy="pagination-section"]',
+  workspaceConstantsOption: '[data-cy="workspace-constants-list-item"]',
+  nameErrorText: '[data-cy="name-error-text"]',
+  valueErrorText: '[data-cy="value-error-text"]',
 };
 
 export const commonWidgetSelector = {

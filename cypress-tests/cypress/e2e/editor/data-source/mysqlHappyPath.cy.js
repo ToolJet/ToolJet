@@ -173,6 +173,12 @@ describe("Data sources MySql", () => {
     verifyCouldnotConnectWithAlert(
       "ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'103.171.99.42' (using password: YES)"
     );
+    cy.get('[data-cy="-toggle-input"]').then(($el) => {
+      if ($el.is(":checked")) {
+        cy.get('[data-cy="-toggle-input"]').uncheck();
+      }
+    });
+    cy.get(postgreSqlSelector.passwordTextField).should("be.visible");
     cy.get(postgreSqlSelector.passwordTextField).type(
       `{selectAll}{backspace}${Cypress.env("mysql_password")}`,
       { log: false }

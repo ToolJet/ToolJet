@@ -177,7 +177,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               className="border-0 homepage-search"
               darkMode={darkMode}
               placeholder={`Search ${searchPlaceholder?.type || 'datasources'}`}
-              query={queryString}
+              initialValue={queryString}
               width={'100%'}
               callBack={handleSearch}
               onClearCallback={() => setQueryString('')}
