@@ -51,6 +51,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     if (this.props.groupPermissionId && this.props.groupPermissionId !== prevProps.groupPermissionId) {
       this.fetchGroupAndResources(this.props.groupPermissionId);
     }
+
+    if (this.props.selectedGroup === 'Admin' && this.state.currentTab === 'datasources') {
+      this.setState({ currentTab: 'apps' });
+    }
   }
 
   fetchEditorLimits = () => {
