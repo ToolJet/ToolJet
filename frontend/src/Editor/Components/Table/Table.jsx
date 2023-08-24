@@ -1026,12 +1026,16 @@ export function Table({
           </div>
         </div>
       )}
-      <div className={`table-responsive jet-data-table ${loadingState && 'overflow-hidden'}`}>
+      <div
+        className={`table-responsive jet-data-table ${(loadingState || page.length === 0) && 'overflow-hidden'} ${
+          page.length === 0 && 'position-relative'
+        }`}
+      >
         <table
           {...getTableProps()}
           className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
             tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
-          } ${!loadingState && page.length === 0 && 'h-100'}`}
+          } ${!loadingState && page.length !== 0 && 'h-100'}`}
           style={computedStyles}
         >
           <thead>
@@ -1217,17 +1221,6 @@ export function Table({
             ))}
           </thead>
 
-          {!loadingState && page.length === 0 && (
-            <div className="d-flex flex-column align-items-center custom-gap-8 justify-content-center h-100">
-              <div className="warning-no-data">
-                <div className="warning-svg-wrapper">
-                  <SolidIcon name="warning" width="16" />
-                </div>
-              </div>
-              <div className="warning-no-data-text">No data</div>
-            </div>
-          )}
-
           {!loadingState && (
             <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
               {page.map((row, index) => {
@@ -1389,6 +1382,24 @@ export function Table({
             </tbody>
           )}
         </table>
+        {!loadingState && page.length === 0 && (
+          <div
+            className="d-flex flex-column align-items-center custom-gap-8 justify-content-center h-100"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translateY(-50%) translateX(-50%)',
+            }}
+          >
+            <div className="warning-no-data">
+              <div className="warning-svg-wrapper">
+                <SolidIcon name="warning" width="16" />
+              </div>
+            </div>
+            <div className="warning-no-data-text">No data</div>
+          </div>
+        )}
         {loadingState === true && (
           <div style={{ width: '100%' }} className="p-2 h-100 ">
             <div className="d-flex align-items-center justify-content-center h-100">
