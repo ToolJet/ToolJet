@@ -40,9 +40,13 @@ import {
 
 describe("Multiselect widget", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget(multiselectText.multiselect);
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the widget", () => {

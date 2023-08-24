@@ -14,8 +14,9 @@ import { multipageSelector } from "Selectors/multipage";
 
 describe("Editor- Inspector", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
   });
 
   it("should verify the values of inspector", () => {
@@ -152,5 +153,6 @@ describe("Editor- Inspector", () => {
     cy.get(`[data-cy="inspector-node-button1"] > .mx-1`).realHover();
     cy.get('[style="height: 13px; width: 13px;"] > img').click();
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+    cy.apiDeleteApp();
   });
 });

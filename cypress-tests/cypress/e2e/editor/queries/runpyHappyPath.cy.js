@@ -62,8 +62,9 @@ import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 
 describe("runpy", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
     resizeQueryPanel("80");
@@ -86,6 +87,7 @@ describe("runpy", () => {
     openNode("runpy1");
     verifyValue("data", "Boolean", "true");
     verifyValue("rawData", "Boolean", "true");
+    cy.apiDeleteApp();
   });
 
   it("should verify actions", () => {
@@ -262,6 +264,7 @@ actions.unsetPageVariable('pageVar')`
       // query("preview");
       // verifypreview("raw", `true`);
     }
+    cy.apiDeleteApp();
   });
 
   it("should verify action by button", () => {
@@ -287,6 +290,7 @@ actions.unsetPageVariable('pageVar')`
     cy.get('[data-cy="query-selection-field"]').should("have.text", "newrunpy");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
+    cy.apiDeleteApp();
   });
 
   it("should verify runpy toggle options", () => {
@@ -336,5 +340,6 @@ actions.unsetPageVariable('pageVar')`
       "alert from runpy",
       false
     );
+    cy.apiDeleteApp();
   });
 });

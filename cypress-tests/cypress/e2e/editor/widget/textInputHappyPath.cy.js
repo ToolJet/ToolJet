@@ -32,9 +32,13 @@ import {
 
 describe("Text Input", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget("Text Input");
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the text input widget", () => {
@@ -45,8 +49,6 @@ describe("Text Input", () => {
     data.minimumLength = randomNumber(1, 4);
     data.maximumLength = randomNumber(8, 10);
     data.customText = randomString(12);
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(textInputText.defaultWidgetName);
     closeAccordions(["Validation", "General", "Properties", "Layout"]);
@@ -191,9 +193,6 @@ describe("Text Input", () => {
     );
     data.customText = fake.firstName;
     verifyControlComponentAction(data.widgetName, data.customText);
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
   it("should verify the styles of the text input widget", () => {
     const data = {};
@@ -201,8 +200,6 @@ describe("Text Input", () => {
     data.colourHex = fake.randomRgbaHex;
     data.boxShadowColor = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(textInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -254,9 +251,6 @@ describe("Text Input", () => {
       data.boxShadowColor,
       4
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 
   it("should verify the app preview", () => {
@@ -272,8 +266,6 @@ describe("Text Input", () => {
     data.maximumLength = randomNumber(8, 10);
     data.customText = randomString(12);
     data.maxLengthText = randomString(data.maximumLength);
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(textInputText.defaultWidgetName);
     verifyAndModifyParameter(

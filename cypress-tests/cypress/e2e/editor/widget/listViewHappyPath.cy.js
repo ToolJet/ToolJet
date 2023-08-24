@@ -34,12 +34,16 @@ import {
 
 describe("List view widget", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.viewport(1200, 1200);
     cy.dragAndDropWidget("List View", 50, 500);
     cy.modifyCanvasSize(1200, 700);
     cy.intercept("PUT", "/api/apps/**").as("apps");
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the list view widget", () => {

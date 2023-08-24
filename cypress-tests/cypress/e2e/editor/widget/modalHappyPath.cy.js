@@ -40,9 +40,13 @@ import {
 
 describe("Modal", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget("Modal");
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the modal component", () => {
@@ -54,7 +58,6 @@ describe("Modal", () => {
     data.tooltipText = fake.randomSentence;
     data.buttonText = fake.companyName;
 
-    cy.renameApp(data.appName);
     launchModal("modal1");
     cy.get('[data-cy="modal-title"]').verifyVisibleElement(
       "have.text",
@@ -163,9 +166,6 @@ describe("Modal", () => {
       "have.text",
       "Modal documentation"
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 
   it("should verify the styles of the modal widget", () => {
@@ -176,7 +176,6 @@ describe("Modal", () => {
     data.boxShadowParam = fake.boxShadowParam;
     data.backgroundColor = fake.randomRgba;
 
-    cy.renameApp(data.appName);
     launchModal("modal1");
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -246,9 +245,6 @@ describe("Modal", () => {
       "have.text",
       "This title can be changed"
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 
   it("should verify the app preview", () => {
@@ -273,7 +269,6 @@ describe("Modal", () => {
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 250);
     cy.get(".close-svg > path").click();
 
-    cy.renameApp(data.appName);
     launchModal("modal1");
     verifyAndModifyParameter("Title", data.customTitle);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
