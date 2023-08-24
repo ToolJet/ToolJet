@@ -280,6 +280,14 @@ button {
   color: var(--slate-12);
 }
 
+.accordion-button::after {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.24174 8.49998H7.75967C8.53146 8.49998 9.01233 7.66277 8.62345 6.99612L6.86448 3.98075C6.4786 3.31924 5.5228 3.31924 5.13693 3.98075L3.37796 6.99611C2.98908 7.66277 3.46995 8.49998 4.24174 8.49998Z" fill="%2311181C"/></svg>');
+}
+
+.accordion-button:not(.collapsed)::after {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.24174 8.49998H7.75967C8.53146 8.49998 9.01233 7.66277 8.62345 6.99612L6.86448 3.98075C6.4786 3.31924 5.5228 3.31924 5.13693 3.98075L3.37796 6.99611C2.98908 7.66277 3.46995 8.49998 4.24174 8.49998Z" fill="%2311181C"/></svg>');
+}
+
 .accordion-button:not(.collapsed) {
   padding-bottom: 0 !important;
 }
@@ -1411,7 +1419,8 @@ button {
 
 .theme-dark {
   .accordion-button::after {
-    background-image: url("data:image/svg+xml,%3Csvg id='SvgjsSvg1001' width='288' height='288' xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.com/svgjs'%3E%3Cdefs id='SvgjsDefs1002'%3E%3C/defs%3E%3Cg id='SvgjsG1008' transform='matrix(1,0,0,1,0,0)'%3E%3Csvg xmlns='http://www.w3.org/2000/svg' fill='/fffff' viewBox='0 0 16 16' width='288' height='288'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z' fill='%23ffffff' class='color000 svgShape'%3E%3C/path%3E%3C/svg%3E%3C/g%3E%3C/svg%3E");
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.24174 8.49998H7.75967C8.53146 8.49998 9.01233 7.66277 8.62345 6.99612L6.86448 3.98075C6.4786 3.31924 5.5228 3.31924 5.13693 3.98075L3.37796 6.99611C2.98908 7.66277 3.46995 8.49998 4.24174 8.49998Z" fill="%2311181C"/></svg>');
+    // background-image: url("data:image/svg+xml,%3Csvg id='SvgjsSvg1001' width='288' height='288' xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.com/svgjs'%3E%3Cdefs id='SvgjsDefs1002'%3E%3C/defs%3E%3Cg id='SvgjsG1008' transform='matrix(1,0,0,1,0,0)'%3E%3Csvg xmlns='http://www.w3.org/2000/svg' fill='/fffff' viewBox='0 0 16 16' width='288' height='288'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z' fill='%23ffffff' class='color000 svgShape'%3E%3C/path%3E%3C/svg%3E%3C/g%3E%3C/svg%3E");
   }
 
   .inspector {
@@ -3041,9 +3050,17 @@ input:focus-visible {
 .widget-documentation-link {
   position: fixed;
   bottom: 0;
-  background: #ffffff;
-  width: 100%;
+  background: var(--indigo3);
+  width: 18.75rem; // 300px
   z-index: 1;
+  padding : 12px 18px;
+  color : var(--slate12);
+  text-decoration: none;
+  display: flex;
+  justify-content: space-between;
+  .widget-documentation-link-text {
+    margin-left: 13px;
+  }
 }
 
 .components-container {
@@ -3579,14 +3596,6 @@ input:focus-visible {
     transform: rotate(45deg);
     border-right: 1px solid #ffffff;
     border-bottom: 1px solid #ffffff;
-  }
-
-  .widget-documentation-link {
-    background-color: #1f2936;
-  }
-
-  .widget-documentation-link a {
-    color: rgb(66, 153, 225);
   }
 
   .app-version-name.form-select {

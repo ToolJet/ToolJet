@@ -985,6 +985,8 @@ class TableComponent extends React.Component {
       title: 'Columns',
       children: (
         <div>
+          <div>{renderCustomElement('useDynamicColumn')}</div>
+          {useDynamicColumn && <div>{renderCustomElement('columnData')}</div>}
           {!useDynamicColumn && (
             <>
               <DragDropContext
@@ -1056,8 +1058,6 @@ class TableComponent extends React.Component {
               </div>
             </>
           )}
-          <div style={{ marginTop: useDynamicColumn ? '0px' : '30px' }}>{renderCustomElement('useDynamicColumn')}</div>
-          {useDynamicColumn && <div>{renderCustomElement('columnData')}</div>}
         </div>
       ),
     });

@@ -25,6 +25,8 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
+import Student from '@/_ui/Icon/solidIcons/Student';
+import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
 
 export const Inspector = ({
   selectedComponentId,
@@ -376,18 +378,25 @@ export const Inspector = ({
         </div>
       </div>
 
-      <div className="widget-documentation-link p-2">
-        <a
-          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="widget-documentation-link"
-        >
-          <small>
-            {t('widget.common.documentation', '{{componentMeta}} documentation', { componentMeta: componentMeta.name })}
+      <a
+        href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
+        target="_blank"
+        rel="noreferrer"
+        className="widget-documentation-link"
+        data-cy="widget-documentation-link"
+      >
+        <span>
+          <Student width={13} fill={'#3E63DD'} />
+          <small className="widget-documentation-link-text">
+            {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
+              componentMeta: componentMeta.name,
+            })}
           </small>
-        </a>
-      </div>
+        </span>
+        <span>
+          <ArrowRight width={20} fill={'#3E63DD'} />
+        </span>
+      </a>
     </div>
   );
 };

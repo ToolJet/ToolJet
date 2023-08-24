@@ -279,15 +279,13 @@ export function CodeHinter({
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
-      <div
-        className={cx('d-flex align-items-center justify-content-between', { 'mb-2': codeShow && type === 'toggle' })}
-      >
+      <div className={cx('d-flex align-items-center justify-content-between')}>
         {paramLabel && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`form-label ${type === 'toggle' && 'mb-0'} ${darkMode && 'color-whitish-darkmode'}`}
+              labelClass={`form-label ${!codeShow && 'mb-0'} ${darkMode && 'color-whitish-darkmode'}`}
             />
           </div>
         )}

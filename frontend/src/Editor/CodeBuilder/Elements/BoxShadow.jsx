@@ -146,33 +146,34 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
       </Popover>
     );
   };
-
+  const _value = `#${value.split('#')[1]}`;
   return (
     <div className="row fx-container">
       <div className="col">
-        <div className="field mb-2">
+        <div className="field">
           <OverlayTrigger trigger="click" placement={'left'} rootClose={true} overlay={eventPopover()}>
-            <div className="row mx-0 form-control color-picker-input" data-cy={`${cyLabel}-picker`}>
+            <div
+              className="row mx-0 form-control color-picker-input d-flex align-items-center"
+              style={{ width: '144px', padding: '5px 8px' }}
+              data-cy={`${cyLabel}-picker`}
+            >
               <div
                 className="col-auto"
                 style={{
-                  float: 'right',
                   width: '20px',
                   height: '20px',
                   backgroundColor: boxShadow.Color,
                   border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(boxShadow.Color) && '#c5c8c9'}`,
+                  marginRight: '4px',
                 }}
                 data-cy={`${cyLabel}-picker-icon`}
               ></div>
               <small className="col p-0" data-cy={`${cyLabel}-value`}>
-                {value}
+                {_value}
               </small>
             </div>
           </OverlayTrigger>
         </div>
-      </div>
-      <div className="col-auto pt-0 style-fx fx-common">
-        <FxButton active={false} onPress={forceCodeBox} dataCy={'box-shadow'} />
       </div>
     </div>
   );
