@@ -31,6 +31,7 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
     if (!newState[keyIndex]['cards']) [(newState[keyIndex]['cards'] = [])];
     newState[keyIndex]['cards'].push(newItem);
     setState(newState);
+    setExposedVariable('lastAddedCard', newItem);
     fireEvent('onCardAdded');
   };
 
@@ -92,6 +93,7 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
     const newState = state.map((column, index) => (index === columnIndex ? updatedColumn : column));
     setState(newState);
 
+    setExposedVariable('lastUpdatedCard', updatedCard);
     fireEvent('onCardUpdated');
   };
 
