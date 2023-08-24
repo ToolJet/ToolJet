@@ -681,6 +681,7 @@ const EditorComponent = (props) => {
         appDefinition: appJson,
       });
 
+      //! need to handle
       for (const event of appJson.pages[homePageId]?.events ?? []) {
         await handleEvent(event.eventId, event);
       }
@@ -1427,6 +1428,7 @@ const EditorComponent = (props) => {
     });
   };
 
+  //!will remove this
   const updateOnPageLoadEvents = (pageId, events) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 

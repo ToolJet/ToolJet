@@ -1647,17 +1647,15 @@ export const computeQueryState = (queries) => {
   }
 };
 
-export const buildComponentMetaDefinition = (components = {}, events = []) => {
+export const buildComponentMetaDefinition = (components = {}) => {
   for (const componentId in components) {
     const currentComponentData = components[componentId];
-    const componentEvents = events
-      .filter((event) => event.sourceId === componentId)
-      ?.map((event) => ({ ...event.event, id: event.id }));
+
     const componentMeta = componentTypes.find((comp) => currentComponentData.component.component === comp.component);
 
     const mergedDefinition = {
       ...componentMeta.definition,
-      events: componentEvents,
+
       properties: {
         ...componentMeta.definition.properties,
         ...currentComponentData?.component.definition.properties,
@@ -1698,10 +1696,8 @@ export const buildAppDefinition = (data) => {
   editingVersion['currentVersionId'] = editingVersion.id;
   _.unset(editingVersion, 'id');
 
-  const eventsData = data?.events;
-
   const pages = data.pages.reduce((acc, page) => {
-    const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components), eventsData);
+    const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
 
     page.components = currentComponents;
 
