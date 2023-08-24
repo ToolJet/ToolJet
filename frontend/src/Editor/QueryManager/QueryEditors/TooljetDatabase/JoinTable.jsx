@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Select, { components } from 'react-select';
 import cx from 'classnames';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { Col, Container, OverlayTrigger, Popover, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useShowPopover from '@/_hooks/useShowPopover';
@@ -9,6 +9,7 @@ import LeftOuterJoinIcon from '../../Icons/LeftOuterJoinIcon';
 import RightOuterJoin from '../../Icons/RightOuterJoin';
 import InnerJoinIcon from '../../Icons/InnerJoinIcon';
 import FullOuterJoin from '../../Icons/FullOuterJoin';
+import SelectBox from './SelectBox';
 
 // Common :-
 // - Try to make it as : Re-usable component
@@ -157,72 +158,86 @@ const SelectTableMenu = () => {
   ];
 
   return (
-    <div>
-      <Select
-        classNames={{
-          menu: () => 'tj-scrollbar',
-        }}
-        menuPlacement="bottom"
-        isSearchable={false}
-        options={tableList}
-        components={{
-          IndicatorSeparator: () => null,
-          MenuList: MenuListComponent,
-        }}
-      />
+    <div className="field-container d-flex">
+      <label className="form-label" data-cy="label-column-limit">
+        Limit
+      </label>
+      <div className="field flex-grow-1 mt-1">
+        <Container>
+          <Row>
+            <Col sm="6" className="text-center">
+              Selected Table
+            </Col>
+            <Col sm="6" className="text-center">
+              Joining Table
+            </Col>
+          </Row>
+          <Row className="border rounded">
+            <Col sm="2" className="p-0 border-end">
+              {/* <SelectBox /> */}
+            </Col>
+            <Col sm="4" className="p-0 border-end">
+              {/* <SelectBox /> */}
+            </Col>
+            <Col sm="2" className="p-0 border-end">
+              {/* <SelectBox /> */}
+              <DropDownSelect options={tableList} />
+            </Col>
+            <Col sm="4" className="p-0">
+              <DropDownSelect options={tableList} isMulti />
+            </Col>
+          </Row>
+        </Container>
+      </div>
     </div>
   );
 };
 
-const MenuListComponent = ({ children, getStyles, innerRef, ...props }) => {
-  const menuListStyles = getStyles('menuList', props);
+const DropDownSelect = ({ darkMode, disabled, options, isMulti }) => {
+  const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
+  const [selected, setSelected] = useState();
+  const selectRef = useRef();
+
+  useEffect(() => {
+    if (showMenu) {
+      // selectRef.current.focus();
+    }
+  }, [showMenu]);
 
   return (
-    <>
-      <div className={`search-box-wrapper`}>
-        <div className="input-icon">
-          <span className="input-icon-addon">
-            <SolidIcon name="search" width="16" />
-          </span>
-
-          <input
-            style={{ width: '164px' }}
-            type="text"
-            className={cx('form-control', {
-              'dark-theme-placeholder': false,
-              // [className]: !!className,
-            })}
-            // placeholder={placeholder}
-            // onFocus={() => setFocussed(true)}
-            // onBlur={() => setFocussed(false)}
-            // data-cy={`${dataCy}-search-bar`}
-            // autoFocus={autoFocus}
-            // ref={ref}
-          />
-
-          <span className="input-icon-addon end">
-            <div className="d-flex tj-common-search-input-clear-icon" title="clear">
-              <SolidIcon name="remove" />
-            </div>
-          </span>
-        </div>
-      </div>
-      <div style={menuListStyles} ref={innerRef}>
-        {children}
-      </div>
-      <div>
-        <ButtonSolid variant="ghostBlue" size="sm">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M9 3C9.41421 3 9.75 3.33579 9.75 3.75V8.25H14.25C14.6642 8.25 15 8.58579 15 9C15 9.41421 14.6642 9.75 14.25 9.75H9.75V14.25C9.75 14.6642 9.41421 15 9 15C8.58579 15 8.25 14.6642 8.25 14.25V9.75H3.75C3.33579 9.75 3 9.41421 3 9C3 8.58579 3.33579 8.25 3.75 8.25H8.25V3.75C8.25 3.33579 8.58579 3 9 3Z"
-              fill="#3E63DD"
-            />
-          </svg>
-          &nbsp;Add Condition
-        </ButtonSolid>
-      </div>
-    </>
+    <OverlayTrigger
+      show={showMenu && !disabled}
+      placement="top-start"
+      // placement="auto"
+      arrowOffsetTop={90}
+      arrowOffsetLeft={90}
+      overlay={
+        <Popover
+          key={'page.i'}
+          id="query-add-ds-popover"
+          className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
+          style={{ width: '244px', maxWidth: '246px' }}
+        >
+          <SelectBox options={options} isMulti={isMulti} onSelect={setSelected} />
+        </Popover>
+      }
+    >
+      <span className="col-auto" id="query-add-ds-popover-btn">
+        <ButtonSolid
+          size="sm"
+          variant="tertiary"
+          disabled={disabled}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (disabled) {
+              return;
+            }
+            setShowMenu((show) => !show);
+          }}
+          className="px-1 pe-3 ps-2 gap-0"
+          data-cy={`show-ds-popover-button`}
+        ></ButtonSolid>
+      </span>
+    </OverlayTrigger>
   );
 };
