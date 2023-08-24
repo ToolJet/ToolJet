@@ -1203,30 +1203,7 @@ export function Table({
                                           ? ''
                                           : 'resizer'
                                       }  ${column.isResizing ? 'isResizing' : ''}`}
-                                    >
-                                      {/* {column.isResizing && (
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="25"
-                                        height="24"
-                                        viewBox="0 0 25 24"
-                                        fill="none"
-                                      >
-                                        <rect
-                                          width="24"
-                                          height="24"
-                                          transform="translate(0.00195312)"
-                                          fill=""
-                                          // style="mix-blend-mode:multiply"
-                                        />
-                                        <path
-                                          d="M12.498 13.5015H12.4981H14.5191V15.5875V16.7996L15.3737 15.94L18.9387 12.354L19.2892 12.0014L18.9387 11.6489L15.3737 8.06393L14.5191 7.20459V8.41649V10.5215H12.4981H9.49811V8.41449V7.20714L8.64451 8.06099L5.05851 11.648L4.70505 12.0015L5.05856 12.355L8.64456 15.941L9.49811 16.7946V15.5875V13.5006L12.498 13.5015Z"
-                                          fill="black"
-                                          stroke="white"
-                                        />
-                                      </svg>
-                                    )} */}
-                                    </div>
+                                    ></div>
                                   </th>
                                 );
                               }}
