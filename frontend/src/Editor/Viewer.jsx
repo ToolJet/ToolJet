@@ -228,12 +228,13 @@ class ViewerComponent extends React.Component {
       variablesResult = constants;
     }
 
-    console.log('--org constant 2.0', { variablesResult });
+    const environmentResult = await this.getEnvironmentDetails();
+    const { environment } = environmentResult;
 
     if (variablesResult && Array.isArray(variablesResult)) {
       variablesResult.map((constant) => {
         const condition = (value) =>
-          this.state.environmentId ? value.id === this.state.environmentId : value.environmentName === 'production';
+          this.state.environmentId ? value.id === this.state.environmentId : value.id === environment?.id;
         const constantValue = constant.values.find(condition)['value'];
         orgConstants[constant.name] = constantValue;
       });
