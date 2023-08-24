@@ -149,7 +149,7 @@ const SelectTableMenu = ({ darkMode }) => {
   return (
     <div>
       {/* Join Section */}
-      <div className="field-container d-flex mb-2">
+      <div className="field-container d-flex mb-3">
         <label className="form-label">From</label>
         <div className="field flex-grow-1 mt-1">
           <Container className="p-0">
@@ -161,7 +161,7 @@ const SelectTableMenu = ({ darkMode }) => {
                 Joining Table
               </Col>
             </Row>
-            <Row className="border rounded mb-1">
+            <Row className="border rounded mb-2">
               <Col sm="2" className="p-0 border-end">
                 {/* <SelectBox /> */}
               </Col>
@@ -189,6 +189,63 @@ const SelectTableMenu = ({ darkMode }) => {
                 <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
                 &nbsp;&nbsp; Add another table
               </ButtonSolid>
+            </Row>
+          </Container>
+        </div>
+      </div>
+      {/* Filter Section */}
+      <div className="field-container d-flex mb-3">
+        <label className="form-label">Filter</label>
+        <div className="field flex-grow-1 mt-2">
+          <Container className="p-0">
+            <Row className="border rounded mb-1">
+              <Col sm="2" className="p-0 border-end">
+                {/* <SelectBox /> */}
+              </Col>
+              <Col sm="4" className="p-0 border-end">
+                {/* <SelectBox /> */}
+              </Col>
+              <Col sm="2" className="p-0 border-end">
+                {/* <SelectBox /> */}
+                <DropDownSelect options={tableList} />
+              </Col>
+              <Col sm="4" className="p-0">
+                <DropDownSelect options={tableList} isMulti />
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col className="p-0">
+                <ButtonSolid variant="ghostBlue" size="sm">
+                  <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+                  &nbsp;&nbsp; Add more
+                </ButtonSolid>
+              </Col>
+            </Row>
+          </Container>
+        </div>
+      </div>
+      {/* Sort Section */}
+      <div className="field-container d-flex mb-3">
+        <label className="form-label">Filter</label>
+        <div className="field flex-grow-1 mt-2">
+          <Container className="p-0">
+            <Row className="mb-2">
+              <div
+                style={{
+                  border: '1px dashed var(--slate-08, #C1C8CD)',
+                }}
+                className="px-4 py-2 text-center rounded-1"
+              >
+                There are no conditions
+              </div>
+            </Row>
+            <Row className="mb-2">
+              <Col className="p-0">
+                <ButtonSolid variant="ghostBlue" size="sm">
+                  <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+                  &nbsp;&nbsp; Add more
+                </ButtonSolid>
+              </Col>
             </Row>
           </Container>
         </div>
