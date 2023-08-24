@@ -172,7 +172,12 @@ class ManageAppUsersComponent extends React.Component {
         >
           <Modal.Header>
             <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
-            <button className="btn-close" aria-label="Close" onClick={this.hideModal} data-cy="modal-close-button" />
+            <button
+              className={`btn-close ${this.props.darkMode ? 'btn-color-white' : ''}`}
+              aria-label="Close"
+              onClick={this.hideModal}
+              data-cy="modal-close-button"
+            />
           </Modal.Header>
           <Modal.Body>
             {isLoading ? (
