@@ -13,7 +13,7 @@ import ArrowTransfer from './ArrowTransfer.jsx';
 import ArrowUp from './ArrowUp.jsx';
 import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
-import Bug from './Bug.jsx';
+import Debugger from './Debugger.jsx';
 import Calender from './Calender.jsx';
 import CheckRectangle from './CheckRectangle.jsx';
 import CheveronDown from './CheveronDown.jsx';
@@ -86,7 +86,7 @@ import SearchPlus from './SearchPlus.jsx';
 import Sent from './Sent.jsx';
 import SentFast from './SentFast.jsx';
 import Server from './Server.jsx';
-import Setting from './Setting.jsx';
+import Settings from './Settings.jsx';
 import Share from './Share.jsx';
 import Shield from './Shield.jsx';
 import ShieldCheck from './ShieldCheck.jsx';
@@ -122,6 +122,10 @@ import EyeOpen from './EyeOpen.jsx';
 import CloudInvalid from './CloudInvalid.jsx';
 import CloudValid from './CloudValid.jsx';
 import LayersVersion from './LayersVersion.jsx';
+import Comments from './Comments';
+import Inspect from './Inspect.jsx';
+import ArrowForwardUp from './ArrowForwardUp.jsx';
+import ArrowBackUp from './ArrowBackUp.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -153,8 +157,8 @@ const Icon = (props) => {
       return <BookSearch {...props} />;
     case 'branch':
       return <Branch {...props} />;
-    case 'bug':
-      return <Bug {...props} />;
+    case 'debugger':
+      return <Debugger {...props} />;
     case 'calender':
       return <Calender {...props} />;
     case 'checkrectangle':
@@ -305,8 +309,10 @@ const Icon = (props) => {
       return <SentFast {...props} />;
     case 'server':
       return <Server {...props} />;
-    case 'setting':
-      return <Setting {...props} />;
+    case 'settings':
+      return <Settings {...props} />;
+    case 'comments':
+      return <Comments {...props} />;
     case 'share':
       return <Share {...props} />;
     case 'shield':
@@ -369,6 +375,12 @@ const Icon = (props) => {
       return <Minimize {...props} />;
     case 'maximize':
       return <Maximize {...props} />;
+    case 'inspect':
+      return <Inspect {...props} />;
+    case 'arrowbackup':
+      return <ArrowForwardUp {...props} />;
+    case 'arrowforwardup':
+      return <ArrowBackUp {...props} />;
     default:
       return <Apps {...props} />;
   }

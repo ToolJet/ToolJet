@@ -62,19 +62,19 @@ export const DarkModeToggle = function DarkModeToggle({
       <div className="unstyled-button dark-theme-toggle-btn" onClick={toggleDarkMode}>
         <animated.svg
           xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
+          width="16"
+          height="16"
           viewBox="0 0 24 24"
           fill="none"
-          color={darkMode ? '#fff' : '#808080'}
+          color={darkMode ? '#fff' : '#C1C8CD'}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
           stroke="currentColor"
           style={{
             cursor: 'pointer',
-            opacity: 0.6,
             ...svgContainerProps,
+            transform: 'rotate(315deg)',
           }}
         >
           <mask id="myMask2">
@@ -86,7 +86,7 @@ export const DarkModeToggle = function DarkModeToggle({
             cx="12"
             cy="12"
             style={centerCircleProps}
-            fill={darkMode ? 'white' : '#808080'}
+            fill={darkMode ? 'white' : '#C1C8CD'}
             mask="url(#myMask2)"
           />
           <animated.g stroke="currentColor" style={linesProps}>

@@ -10,6 +10,7 @@ import JSONNodeArray from './JSONNodeArray';
 import JSONNodeValue from './JSONNodeValue';
 import JSONNodeIndicator from './JSONNodeIndicator';
 import JSONNodeMap from './JSONNodeMap';
+import SolidIcon from '../Icon/SolidIcons';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -283,23 +284,7 @@ export const JSONNode = ({ data, ...restProps }) => {
           >
             <span>
               <ToolTip message={'More actions'}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="icon-tabler icon-tabler-dots-vertical"
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  stroke="#2c3e50"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <circle cx="12" cy="12" r="1" />
-                  <circle cx="12" cy="19" r="1" />
-                  <circle cx="12" cy="5" r="1" />
-                </svg>
+                <SolidIcon width="13" name="morevertical" />
               </ToolTip>
             </span>
           </OverlayTrigger>

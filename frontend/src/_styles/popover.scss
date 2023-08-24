@@ -43,15 +43,15 @@
 .PopoverContent.dark {
   background-color: #121212 !important;
 
-  .dark.leftsidebar-panel-header {
-    .text-muted {
-      color: #C0C8CC !important;
-    }
-  }
+  // .dark.leftsidebar-panel-header {
+  //   .text-muted {
+  //     color: #C0C8CC !important;
+  //   }
+  // }
 
-  .card-body {
-    color: #C0C8CC !important;
-  }
+  // .card-body {
+  //   color: #C0C8CC !important;
+  // }
 
   &::-webkit-scrollbar {
     width: 0;
@@ -60,7 +60,7 @@
 }
 
 div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
-  margin-top: 45px;
+  margin-top: 48px;
   margin-left: 47px !important;
   transform: none !important;
 }

@@ -30,9 +30,10 @@ const Portal = ({ children, ...restProps }) => {
 
   const portalStyles = {
     background: 'transparent',
-    backgroundColor: darkMode ? '#232E3C' : '#fff',
+    backgroundColor: darkMode ? '#151718' : '#FBFCFD',
     borderRadius: '0px',
     width: '500px',
+    border: `1px solid ${darkMode ? '#151718' : '#FBFCFD'}`,
   };
 
   return (
@@ -91,7 +92,7 @@ const Modal = ({
             style={{
               textTransform: 'none',
             }}
-            className="badge tj-badge"
+            className="color-indigo9"
             data-cy="codehinder-popup-badge"
           >
             {componentName ?? 'Editor'}

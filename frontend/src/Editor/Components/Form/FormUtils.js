@@ -72,7 +72,7 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.justifyContent)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['justifyContent']['value'] =
                 value?.styles?.justifyContent;
-            if (value?.customRule)
+            if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] = value?.customRule;
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
@@ -197,9 +197,15 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
               );
+            console.log('test--', value);
+            if (value?.validation?.customRule)
+              uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =
+                value?.validation?.customRule;
 
-            if (value?.customRule)
-              uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] = value?.customRule;
+            // if (value?.validation?.customRule)
+            //   // uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] = value?.customRule;
+            //   uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =
+            //     value?.validation?.customRule;
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
             if (value?.disabledDates)

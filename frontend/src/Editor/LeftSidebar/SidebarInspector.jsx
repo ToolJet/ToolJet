@@ -203,6 +203,7 @@ export const LeftSidebarInspector = ({
           expandWithLabels={true}
           selectedComponent={selectedComponent}
           treeType="inspector"
+          darkMode={darkMode}
         />
       </div>
     </div>

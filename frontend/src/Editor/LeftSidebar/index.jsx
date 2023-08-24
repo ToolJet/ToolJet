@@ -18,6 +18,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
+import { GlobalSettings } from '../Header/GlobalSettings';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -48,7 +49,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     clonePage,
     setEditorMarginLeft,
+    globalSettingsChanged,
+    toggleAppMaintenance,
+    app,
   } = props;
+  const { is_maintenance_on } = app;
 
   const dataSources = useDataSources();
   const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
@@ -198,6 +203,15 @@ export const LeftSidebar = forwardRef((props, ref) => {
         allLog={allLog}
       />
     ),
+    settings: (
+      <GlobalSettings
+        globalSettingsChanged={globalSettingsChanged}
+        globalSettings={appDefinition.globalSettings}
+        darkMode={darkMode}
+        toggleAppMaintenance={toggleAppMaintenance}
+        is_maintenance_on={is_maintenance_on}
+      />
+    ),
   };
 
   return (
@@ -219,28 +233,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         tip="Inspector"
         ref={setSideBarBtnRefs('inspect')}
       />
-      <LeftSidebarItem
-        icon="settings"
-        selectedSidebarItem={selectedSidebarItem}
-        // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem('settings')}
-        className={`left-sidebar-item  left-sidebar-layout`}
-        badge={true}
-        count={unReadErrorCount.unread}
-        tip="Settings"
-        ref={setSideBarBtnRefs('settings')}
-      />
-      {/* <LeftSidebarItem
-        icon="comments"
-        selectedSidebarItem={selectedSidebarItem}
-        // eslint-disable-next-line no-unused-vars
-        onClick={(e) => handleSelectedSidebarItem('comments')}
-        className={`left-sidebar-item  left-sidebar-layout`}
-        badge={true}
-        count={unReadErrorCount.unread}
-        tip="Comments"
-        ref={setSideBarBtnRefs('comments')}
-      /> */}
+
       <LeftSidebarItem
         icon="debugger"
         selectedSidebarItem={selectedSidebarItem}
@@ -251,6 +244,16 @@ export const LeftSidebar = forwardRef((props, ref) => {
         count={unReadErrorCount.unread}
         tip="Debugger"
         ref={setSideBarBtnRefs('debugger')}
+      />
+      <LeftSidebarItem
+        icon="settings"
+        selectedSidebarItem={selectedSidebarItem}
+        // eslint-disable-next-line no-unused-vars
+        onClick={(e) => handleSelectedSidebarItem('settings')}
+        className={`left-sidebar-item  left-sidebar-layout`}
+        badge={true}
+        tip="Settings"
+        ref={setSideBarBtnRefs('settings')}
       />
 
       {dataSources?.length > 0 && (
@@ -263,6 +266,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
           ref={setSideBarBtnRefs('database')}
         />
       )}
+
       <Popover
         onInteractOutside={handleInteractOutside}
         open={pinned || !!selectedSidebarItem}
@@ -271,16 +275,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}
       />
-
-      {config.COMMENT_FEATURE_ENABLE && (
-        <div className={`${isVersionReleased && 'disabled'}`}>
-          <LeftSidebarComment
-            selectedSidebarItem={showComments ? 'comments' : ''}
-            currentPageId={currentPageId}
-            ref={setSideBarBtnRefs('comments')}
-          />
-        </div>
-      )}
       <ConfirmDialog
         show={showLeaveDialog}
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
@@ -289,7 +283,16 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
       />
       <div className="left-sidebar-stack-bottom">
-        <div className="left-sidebar-item no-border">
+        <div className="">
+          {config.COMMENT_FEATURE_ENABLE && (
+            <div className={`${isVersionReleased && 'disabled'}`} style={{ maxHeight: '32px', maxWidth: '32px' }}>
+              <LeftSidebarComment
+                selectedSidebarItem={showComments ? 'comments' : ''}
+                currentPageId={currentPageId}
+                ref={setSideBarBtnRefs('comments')}
+              />
+            </div>
+          )}
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}
