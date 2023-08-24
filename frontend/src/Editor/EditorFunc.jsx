@@ -682,8 +682,11 @@ const EditorComponent = (props) => {
       });
 
       //! need to handle
-      for (const event of appJson.pages[homePageId]?.events ?? []) {
-        await handleEvent(event.eventId, event);
+
+      const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+
+      for (const currentEvent of currentPageEvents ?? []) {
+        await handleEvent(currentEvent.name, currentPageEvents);
       }
     };
 
@@ -811,7 +814,7 @@ const EditorComponent = (props) => {
       const updateDiff = computeAppDiff(appDefinitionDiff, currentPageId, appDiffOptions);
 
       updateAppVersion(appId, props.editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
-        .then((data) => {
+        .then(() => {
           const _editingVersion = {
             ...props.editingVersion,
             ...{ definition: appDefinition },
@@ -830,25 +833,12 @@ const EditorComponent = (props) => {
             });
           }
 
-          if (updateDiff?.type === 'events') {
-            const appEvents = JSON.parse(JSON.stringify(events));
-
-            if (updateDiff?.operation === 'create') {
-              appEvents.push(data);
-            }
-
-            updateState({
-              events: appEvents,
-            });
-          }
-
           updateEditorState({
             saveError: false,
             isSaving: false,
           });
         })
-        .catch((e) => {
-          console.log('--piku error', e);
+        .catch(() => {
           updateEditorState({
             saveError: true,
             isSaving: false,
@@ -1159,7 +1149,7 @@ const EditorComponent = (props) => {
     if (currentPageId === pageId && currentState.page.handle === appDefinition?.pages[pageId]?.handle) {
       return;
     }
-    const { name, handle, events } = appDefinition.pages[pageId];
+    const { name, handle } = appDefinition.pages[pageId];
 
     if (!name || !handle) return;
 
@@ -1186,9 +1176,11 @@ const EditorComponent = (props) => {
     setCurrentPageId(pageId);
     handleInspectorView();
 
+    const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === page.id);
+
     (async () => {
-      for (const event of events ?? []) {
-        await handleEvent(event.eventId, event);
+      for (const currentEvent of currentPageEvents ?? []) {
+        await handleEvent(currentEvent.name, currentPageEvents);
       }
     })();
   };
@@ -1428,20 +1420,6 @@ const EditorComponent = (props) => {
     });
   };
 
-  //!will remove this
-  const updateOnPageLoadEvents = (pageId, events) => {
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-
-    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
-
-    newAppDefinition.pages[pageId].events = events;
-
-    appDefinitionChanged(newAppDefinition, {
-      pageDefinitionChanged: true,
-      pageEventsChanged: true,
-    });
-  };
-
   // !-------
 
   const currentState = props?.currentState;
@@ -1549,7 +1527,6 @@ const EditorComponent = (props) => {
               unHidePage={unHidePage}
               updateHomePage={updateHomePage}
               updatePageHandle={updatePageHandle}
-              updateOnPageLoadEvents={updateOnPageLoadEvents}
               showHideViewerNavigationControls={showHideViewerNavigation}
               updateOnSortingPages={updateOnSortingPages}
               setEditorMarginLeft={handleEditorMarginLeftChange}

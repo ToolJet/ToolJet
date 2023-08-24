@@ -22,7 +22,7 @@ export const PageHandler = ({
   currentPageId,
   updateHomePage,
   updatePageHandle,
-  updateOnPageLoadEvents,
+
   apps,
   pages,
   components,
@@ -186,7 +186,6 @@ export const PageHandler = ({
                 !haveUserPinned && pinPagesPopover(false);
               }}
               darkMode={darkMode}
-              updateOnPageLoadEvents={updateOnPageLoadEvents}
               apps={apps}
               pages={pages}
               components={components}

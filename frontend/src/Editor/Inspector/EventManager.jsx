@@ -50,7 +50,8 @@ export const EventManager = ({
     useAppDataActions();
 
   const currentEvents = allAppEvents.filter((event) => event.sourceId === sourceId);
-  console.log('----arpit currentEvents ', { currentEvents });
+
+  // console.log('----arpit currentEvents ', { currentEvents, allAppEvents, sourceId, eventSourceType });
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);

@@ -28,7 +28,7 @@ const LeftSidebarPageSelector = ({
   homePageId,
   showHideViewerNavigationControls,
   updateOnSortingPages,
-  updateOnPageLoadEvents,
+
   apps,
   pinned,
   setPinned,
@@ -159,7 +159,6 @@ const LeftSidebarPageSelector = ({
                 updatePageHandle={updatePageHandle}
                 classNames="page-handler"
                 onSort={updateOnSortingPages}
-                updateOnPageLoadEvents={updateOnPageLoadEvents}
                 currentState={currentState}
                 apps={apps}
                 allpages={pages}
