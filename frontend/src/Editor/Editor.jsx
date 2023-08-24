@@ -5,6 +5,7 @@ import {
   appVersionService,
   orgEnvironmentVariableService,
   customStylesService,
+  orgEnvironmentConstantService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -187,7 +188,7 @@ class EditorComponent extends React.Component {
 
   async componentDidMount() {
     window.addEventListener('message', this.handleMessage);
-    this.getCurrentOrganizationDetails();
+    await this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.setCurrentAppEnvironmentId();
@@ -211,6 +212,7 @@ class EditorComponent extends React.Component {
       ...this.props.currentState.globals,
       theme: { name: this.props.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+      /* Constant value.it will only change for viewer */
       mode: {
         value: 'edit',
       },
@@ -281,6 +283,20 @@ class EditorComponent extends React.Component {
         head.appendChild(styleTag);
       }
       styleTag.innerHTML = data.css;
+    });
+  };
+
+  fetchOrgEnvironmentConstants = (environmentId) => {
+    orgEnvironmentConstantService.getConstantsFromEnvironment(environmentId).then(({ constants }) => {
+      const orgConstants = {};
+
+      constants.map((constant) => {
+        orgConstants[constant.name] = constant.value;
+      });
+
+      useCurrentStateStore.getState().actions.setCurrentState({
+        constants: orgConstants,
+      });
     });
   };
 
@@ -1062,6 +1078,7 @@ class EditorComponent extends React.Component {
         currentAppEnvironmentId: currentAppEnvironment?.id,
       },
       () => {
+        this.fetchOrgEnvironmentConstants(currentAppEnvironment?.id);
         !isEnvIdNotAvailableYet && this.getStoreData(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
       }
     );

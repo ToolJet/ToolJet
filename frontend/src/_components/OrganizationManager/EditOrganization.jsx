@@ -13,7 +13,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   const { t } = useTranslation();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setNewOrgName(currentValue?.name), currentValue);
+  useEffect(() => setNewOrgName(currentValue?.name), [currentValue]);
 
   const editOrganization = () => {
     const trimmedName = newOrgName?.trim();

@@ -51,6 +51,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     if (this.props.groupPermissionId && this.props.groupPermissionId !== prevProps.groupPermissionId) {
       this.fetchGroupAndResources(this.props.groupPermissionId);
     }
+
+    if (this.props.selectedGroup === 'Admin' && this.state.currentTab === 'datasources') {
+      this.setState({ currentTab: 'apps' });
+    }
   }
 
   fetchEditorLimits = () => {
@@ -580,7 +584,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   >
                     <SolidIcon
                       className="manage-group-tab-icons"
-                      fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
+                      fill={currentTab === 'datasources' ? '#3E63DD' : '#C1C8CD'}
                       name="datasource"
                       width="16"
                     ></SolidIcon>

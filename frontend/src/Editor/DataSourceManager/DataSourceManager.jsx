@@ -832,6 +832,7 @@ class DataSourceManagerComponent extends React.Component {
                   options={options}
                   onConnectionTestFailed={this.onConnectionTestFailed}
                   darkMode={this.props.darkMode}
+                  environmentId={this.props.currentEnvironment?.id}
                 />
               </div>
               <div className="col-auto" data-cy="db-connection-save-button">

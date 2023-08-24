@@ -43,6 +43,7 @@ import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
 import { CopilotModule } from './modules/copilot/copilot.module';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
+import { OrganizationConstantModule } from './modules/organization_constants/organization_constants.module';
 import { RequestContextModule } from './modules/request_context/request-context.module';
 import { WorkerModule } from './modules/worker.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -114,6 +115,7 @@ const imports = [
   CopilotModule,
   CustomStylesModule,
   WorkerModule,
+  OrganizationConstantModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {

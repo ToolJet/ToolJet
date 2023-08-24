@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { EntityManager, UpdateResult, FindOneOptions, In } from 'typeorm';
+import { EntityManager, UpdateResult, FindOneOptions, In, DeleteResult } from 'typeorm';
 import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
+import { OrganizationConstant } from 'src/entities/organization_constants.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 
 @Injectable()
@@ -189,5 +191,104 @@ export class AppEnvironmentService {
       );
       await manager.save(DataSourceOptions, allEnvOptions);
     }, manager);
+  }
+
+  async createOrgConstantsInAllEnvironments(organizationId: string, orgConstantId: string, manager?: EntityManager) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const allEnvs = await this.getAll(organizationId, manager);
+
+      const allEnvConstants = allEnvs.map((env) =>
+        manager.create(OrgEnvironmentConstantValue, {
+          organizationConstantId: orgConstantId,
+          environmentId: env.id,
+          value: '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
+      await manager.save(OrgEnvironmentConstantValue, allEnvConstants);
+    }, manager);
+  }
+
+  async updateOrgEnvironmentConstant(
+    constantValue: string,
+    environmentId: string,
+    orgConstantId: string,
+    manager?: EntityManager
+  ) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(
+        OrgEnvironmentConstantValue,
+        {
+          environmentId,
+          organizationConstantId: orgConstantId,
+        },
+        { value: constantValue, updatedAt: new Date() }
+      );
+    }, manager);
+  }
+
+  async getOrgEnvironmentConstant(
+    constantName: string,
+    organizationId: string,
+    environmentId: string,
+    manager?: EntityManager
+  ) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      let envId: string = environmentId;
+      if (!environmentId) {
+        envId = (await this.get(organizationId, environmentId, false, manager)).id;
+      }
+
+      const constantId = (await manager.findOne(OrganizationConstant, { where: { constantName, organizationId } })).id;
+
+      return await manager.findOneOrFail(OrgEnvironmentConstantValue, {
+        where: { organizationConstantId: constantId, environmentId: envId },
+      });
+    }, manager);
+  }
+
+  async deleteOrgEnvironmentConstant(
+    constantId: string,
+    organizationId: string,
+    environmentId: string
+  ): Promise<DeleteResult> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const constantToDelete = await manager.findOne(OrganizationConstant, {
+        where: { id: constantId, organizationId },
+        relations: ['orgEnvironmentConstantValues'],
+      });
+
+      if (!constantToDelete) {
+        throw new Error('Constant not found');
+      }
+
+      const environmentValues = constantToDelete.orgEnvironmentConstantValues.filter(
+        (value) => value.environmentId !== environmentId
+      );
+
+      const emptyValues = environmentValues.filter((value) => value.value === '');
+
+      if (
+        constantToDelete.orgEnvironmentConstantValues.length === 1 ||
+        emptyValues.length === environmentValues.length
+      ) {
+        return await manager.delete(OrganizationConstant, { id: constantId });
+      } else {
+        const environmentValueToDelete = constantToDelete.orgEnvironmentConstantValues.find(
+          (value) => value.environmentId === environmentId
+        );
+
+        if (!environmentValueToDelete) {
+          throw new Error('Environment value not found');
+        }
+
+        return await manager.update(
+          OrgEnvironmentConstantValue,
+          { id: environmentValueToDelete.id },
+          { value: '', updatedAt: new Date() }
+        );
+      }
+    });
   }
 }

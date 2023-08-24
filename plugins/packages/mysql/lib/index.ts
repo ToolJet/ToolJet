@@ -67,7 +67,7 @@ export default class MysqlQueryService implements QueryService {
 
   async buildConnection(sourceOptions: SourceOptions) {
     const config: Knex.Config = {
-      client: 'mysql',
+      client: 'mysql2',
       connection: {
         host: sourceOptions.host,
         user: sourceOptions.username,
