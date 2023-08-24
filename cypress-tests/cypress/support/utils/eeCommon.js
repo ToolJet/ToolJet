@@ -409,3 +409,20 @@ export const AddDataSourceToGroup = (groupName, dsName) => {
     "Datasources added to the group"
   );
 };
+
+
+export const enableToggle = (toggleSelector) => {
+  cy.get(toggleSelector).then(($el) => {
+    if (!$el.is(":checked")) {
+      cy.get(toggleSelector).check();
+    }
+  });
+}
+
+export const disableToggle = (toggleSelector) => {
+  cy.get(toggleSelector).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(toggleSelector).uncheck();
+    }
+  });
+}

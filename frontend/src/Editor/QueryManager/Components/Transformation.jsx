@@ -13,10 +13,11 @@ import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+
 import { Button } from '@/_ui/LeftSidebar';
+import Information from '@/_ui/Icon/solidIcons/Information';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
-import Information from '@/_ui/Icon/solidIcons/Information';
 import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
@@ -24,6 +25,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
   const { current_organization_name } = authenticationService.currentSessionValue;
   const currentOrgName = current_organization_name.replace(/\s/g, '').toLowerCase();
   const currentState = useCurrentState();
+
   const [lang, setLang] = React.useState(options?.transformationLanguage ?? 'javascript');
 
   const defaultValue = {
@@ -224,7 +226,6 @@ return [row for row in data if row['amount'] > 1000]
                     useCustomStyles={true}
                   />
                 </div>
-
                 <div
                   data-tooltip-id="tooltip-for-active-copilot"
                   data-tooltip-content="Activate Copilot in the workspace settings"

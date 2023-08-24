@@ -33,6 +33,24 @@ export const ssoEeSelector = {
   copyIcon: '[data-cy="copy-icon]',
   oidcSSOText: '[data-cy="oidc-sso-text"]',
   oidcSSOIcon: '[data-cy="oidc-so-icon"]',
+  ldapPageElements: {
+    ldapToggleLabel: '[data-cy="ldap-toggle-label"]',
+    nameLabel: '[data-cy="name-label"]',
+    hostLabel: '[data-cy="host-label"]',
+    portLabel: '[data-cy="port-label"]',
+    baseDnLabel: '[data-cy="base-dn-label"]',
+    baseDnHelperText: '[data-cy="base-dn-helper-text"]',
+    sslLabel: '[data-cy="ssl-label"]',
+  },
+  ldapToggle: '[data-cy="ldap-toggle-input"]',
+  hostInput: '[data-cy="host-input"]',
+  portInput: '[data-cy="port-input"]',
+  baseDnInput: '[data-cy="base-dn-input"]',
+  sslToggleInput: '[data-cy="ssl-toggle-input"]',
+  ldapSSOText: '[data-cy="ldap-sso-text"]',
+  userNameInputLabel: '[data-cy="user-name-input-label"]'
+
+
 };
 
 export const eeGroupsSelector = {

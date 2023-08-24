@@ -3,13 +3,13 @@ import useRouter from '@/_hooks/use-router';
 import { authenticationService } from '@/_services';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
-import { RedirectLoader } from '../_components';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
+import { RedirectLoader } from '@/_components';
+import { redirectToWorkspace } from '@/_helpers/utils';
 
 export function Authorize() {
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const router = useRouter();
 
   const organizationId = authenticationService.getLoginOrganizationId();
@@ -64,11 +64,7 @@ export function Authorize() {
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
       .then((response) => {
         const { redirect_url, organization_id, current_organization_id, email } = response;
-        if (redirect_url) {
-          localStorage.setItem('ph-sso-type', router.query.origin); //for posthog event
-          window.location.href = redirect_url;
-          return;
-        }
+
         const event = `${redirect_url ? 'signup' : 'signin'}_${
           router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
         }`;
@@ -77,7 +73,16 @@ export function Authorize() {
           email,
           workspace_id: organization_id || current_organization_id,
         });
-        setSuccess(true);
+
+        if (redirect_url) {
+          localStorage.setItem('ph-sso-type', router.query.origin); //for posthog event
+          window.location.href = redirect_url;
+          return;
+        }
+        /*for workspace login / normal login response will contain the next organization_id user want to login*/
+        if (current_organization_id) {
+          redirectToWorkspace();
+        }
       })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
   };
@@ -85,7 +90,7 @@ export function Authorize() {
   return (
     <div>
       <RedirectLoader origin={Configs[router.query.origin] ? router.query.origin : 'unknown'} />
-      {(success || error) && (
+      {error && (
         <Navigate
           replace
           to={`/login${error && organizationId ? `/${organizationId}` : ''}`}

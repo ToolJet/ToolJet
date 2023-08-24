@@ -94,21 +94,28 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
           <div className="common-auth-container-wrapper common-auth-signup-container-wrapper">
             <div className="signup-page-inputs-wrapper">
               <div className="d-flex flex-column align-items-center gap-1 ldap-login-header">
-                <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg
+                  width="60"
+                  height="60"
+                  viewBox="0 0 60 60"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  data-cy="key-logo"
+                >
                   <rect width="60" height="60" rx="6" fill="#F0F4FF" />
                   <path
                     d="M41.498 18H38.4983C38.4327 17.9992 38.3677 18.0122 38.3074 18.038C38.2471 18.0638 38.1929 18.102 38.1483 18.15L28.6192 27.68C27.0202 26.9483 25.2149 26.802 23.5189 27.2664C21.8229 27.7308 20.344 28.7764 19.3407 30.2206C18.3373 31.6648 17.8733 33.4157 18.0297 35.1673C18.1862 36.9189 18.9531 38.5598 20.1965 39.8033C21.4399 41.0468 23.0807 41.8138 24.8321 41.9702C26.5836 42.1267 28.3343 41.6627 29.7784 40.6592C31.2225 39.6558 32.268 38.1768 32.7324 36.4806C33.1968 34.7845 33.0504 32.9791 32.3188 31.3799L34.6386 29.0699L36.5685 29.7199C36.7369 29.7807 36.9185 29.7951 37.0944 29.7617C37.2703 29.7283 37.434 29.6482 37.5684 29.5299C37.6977 29.4197 37.7968 29.2782 37.8563 29.119C37.9157 28.9598 37.9337 28.788 37.9083 28.6199L37.5084 26.2L38.2283 25.47L39.6882 26.14C39.8581 26.2154 40.0456 26.242 40.2298 26.2168C40.414 26.1915 40.5875 26.1154 40.7308 25.997C40.8742 25.8786 40.9816 25.7226 41.0412 25.5464C41.1008 25.3703 41.1101 25.1811 41.068 25L40.5581 23.19L41.848 21.89C41.9013 21.841 41.9427 21.7802 41.9687 21.7126C41.9947 21.6449 42.0047 21.5722 41.9979 21.5V18.5C41.9979 18.3674 41.9453 18.2402 41.8515 18.1465C41.7578 18.0527 41.6306 18 41.498 18ZM24.9995 36.4999C24.9995 36.7965 24.9116 37.0866 24.7468 37.3332C24.5819 37.5799 24.3477 37.7722 24.0736 37.8857C23.7996 37.9992 23.498 38.0289 23.2071 37.971C22.9161 37.9132 22.6489 37.7703 22.4391 37.5605C22.2293 37.3507 22.0865 37.0835 22.0286 36.7925C21.9707 36.5015 22.0005 36.1999 22.114 35.9259C22.2275 35.6518 22.4197 35.4175 22.6664 35.2527C22.913 35.0879 23.203 34.9999 23.4997 34.9999C23.8975 34.9999 24.2789 35.1579 24.5602 35.4392C24.8415 35.7205 24.9995 36.1021 24.9995 36.4999Z"
                     fill="#3E63DD"
                   />
                 </svg>
-                <h2 className="common-auth-section-header text-center">{`Sign in with ${
+                <h2 className="common-auth-section-header text-center" data-cy="ldap-page-header">{`Sign in with ${
                   config?.configs?.name ?? 'LDAP'
                 }`}</h2>
               </div>
 
               <div className="ldap-form">
                 <div>
-                  <label className="tj-text-input-label" data-cy="username-input-label">
+                  <label className="tj-text-input-label" data-cy="user-name-input-label">
                     Username
                   </label>
                   <input
@@ -123,7 +130,7 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
                   />
                 </div>
                 <div>
-                  <label className="tj-text-input-label" data-cy="passwor-label">
+                  <label className="tj-text-input-label" data-cy="password-label">
                     Password
                   </label>
                   <div className="login-password signup-password-wrapper">

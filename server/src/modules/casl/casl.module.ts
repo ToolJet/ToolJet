@@ -20,6 +20,7 @@ import { FilesService } from '@services/files.service';
 import { OrgEnvironmentVariablesAbilityFactory } from './abilities/org-environment-variables-ability.factory';
 import { TooljetDbAbilityFactory } from './abilities/tooljet-db-ability.factory';
 import { GlobalDataSourceAbilityFactory } from './abilities/global-datasource-ability.factory';
+import { OrganizationConstantsAbilityFactory } from './abilities/organization-constants-ability.factory';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App, AuditLog])],
@@ -38,6 +39,7 @@ import { GlobalDataSourceAbilityFactory } from './abilities/global-datasource-ab
     OrgEnvironmentVariablesAbilityFactory,
     TooljetDbAbilityFactory,
     GlobalDataSourceAbilityFactory,
+    OrganizationConstantsAbilityFactory,
   ],
   exports: [
     CaslAbilityFactory,
@@ -49,6 +51,7 @@ import { GlobalDataSourceAbilityFactory } from './abilities/global-datasource-ab
     OrgEnvironmentVariablesAbilityFactory,
     TooljetDbAbilityFactory,
     GlobalDataSourceAbilityFactory,
+    OrganizationConstantsAbilityFactory,
   ],
 })
 export class CaslModule {}

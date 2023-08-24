@@ -20,7 +20,7 @@ describe("Editor- Inspector", () => {
 
   it("should verify the values of inspector", () => {
     const countGlobal =
-      Cypress.env("environment") === "Community" ? "3 entries " : "5 entries ";
+      Cypress.env("environment") === "Community" ? "4 entries " : "5 entries ";
     const countUser =
       Cypress.env("environment") === "Community" ? "4 entries " : "5 entries ";
     cy.get(commonWidgetSelector.sidebarinspector).click();
@@ -58,13 +58,14 @@ describe("Editor- Inspector", () => {
         "have.text",
         "id"
       );
-      openNode("mode");
-      verifyValue("value", "String", `"edit"`);
     }
+    openNode("mode");
+    verifyValue("value", "String", `"edit"`);
 
     openNode("groups");
     verifyValue("0", "String", `"all_users"`);
     verifyValue("1", "String", `"admin"`);
+    verifyNodeData("constants", "Object", "0 entry ");
 
     openNode("globals");
     openNode("page");
