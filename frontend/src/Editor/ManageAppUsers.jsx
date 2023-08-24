@@ -6,11 +6,10 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import { debounce } from 'lodash';
 import Textarea from '@/_ui/Textarea';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, getSubpath } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
-import { getSubpath } from '@/_helpers/utils';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {

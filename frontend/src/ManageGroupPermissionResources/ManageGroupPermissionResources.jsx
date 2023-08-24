@@ -580,7 +580,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   >
                     <SolidIcon
                       className="manage-group-tab-icons"
-                      fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
+                      fill={currentTab === 'datasources' ? '#3E63DD' : '#C1C8CD'}
                       name="datasource"
                       width="16"
                     ></SolidIcon>

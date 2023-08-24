@@ -49,8 +49,7 @@ export class DataSourcesService {
         .leftJoinAndSelect('data_source.plugin', 'plugin')
         .leftJoinAndSelect('plugin.iconFile', 'iconFile')
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
-        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
-        .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId });
+        .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
 
       if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
         if (!canPerformCreateOrDelete) {
@@ -89,7 +88,9 @@ export class DataSourcesService {
         query.andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
       }
 
-      const result = await query.getMany();
+      const result = await query
+        .andWhere('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
+        .getMany();
 
       //remove tokenData from restapi datasources
       const dataSources = result?.map((ds) => {
