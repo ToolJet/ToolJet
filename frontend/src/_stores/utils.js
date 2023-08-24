@@ -31,7 +31,6 @@ const defaultComponent = {
   properties: {},
   styles: {},
   validation: {},
-  events: [],
   type: '',
 };
 
@@ -41,73 +40,16 @@ const updateType = Object.freeze({
   componentAdded: 'components',
   componentDefinitionChanged: 'components',
   componentDeleted: 'components',
-  componentsEventsChanged: 'events',
-  pageEventsChanged: 'events',
-});
-
-const eventHandlerType = Object.freeze({
-  componentsEventsChanged: 'components',
-  pageEventsChanged: 'pages',
 });
 
 export const computeAppDiff = (appDiff, currentPageId, opts) => {
   const { updateDiff, type, operation } = updateFor(appDiff, currentPageId, opts);
 
-  // console.log('----arpit [updateFor]', { updateDiff, type, operation });
   return { updateDiff, type, operation };
 };
 
-function verifyIsEventUpdates(data, eventsObj) {
-  if (!data.pages || Object.keys(data.pages).length === 0) {
-    return false;
-  }
-
-  for (const pageId in data.pages) {
-    const components = data.pages[pageId].components;
-    for (const componentId in components) {
-      if (components[componentId].component.definition.events) {
-        eventsObj.components = Object.values(components[componentId].component.definition.events).map((e) => ({
-          event: e,
-          eventType: 'component',
-          attachedTo: componentId,
-        }));
-
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-function computeEventDiff(appDiff, currentPageId, opts = []) {
-  let type = 'events';
-  let updateDiff;
-  let operation = 'update';
-
-  const events = {
-    components: [],
-    pages: [],
-  };
-  verifyIsEventUpdates(appDiff, events);
-
-  updateDiff = events[eventHandlerType[opts[0]]];
-  console.log('----arpit [computeEventDiff]', { events, opts });
-
-  if (opts.includes('newEvent')) {
-    operation = 'create';
-    updateDiff = updateDiff[0];
-  }
-
-  return { updateDiff, type, operation };
-}
-
 const updateFor = (appDiff, currentPageId, opts) => {
   const updateTypeMappings = [
-    {
-      updateTypes: ['componentsEventsChanged', 'pageEventsChanged', 'eventsReOrdered', 'newEvent'],
-      processingFunction: computeEventDiff,
-    },
     {
       updateTypes: ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'],
       processingFunction: computeComponentDiff,
