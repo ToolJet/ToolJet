@@ -8,7 +8,6 @@ export const ColorPicker = function ({
   setExposedVariable,
   darkMode,
   height,
-  registerAction,
   fireEvent,
   dataCy,
 }) {

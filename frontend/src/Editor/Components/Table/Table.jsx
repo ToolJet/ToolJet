@@ -322,7 +322,7 @@ export function Table({
   }
 
   function onPageIndexChanged(page) {
-    onComponentOptionChanged(component, 'pageIndex', page)?.then(() => {
+    onComponentOptionChanged(component, 'pageIndex', page).then(() => {
       onEvent('onPageChanged', { component, data: {} });
     });
   }
@@ -339,17 +339,17 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    })?.then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
+    });
+    mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
   }
 
   function handleChangesDiscarded() {
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    })?.then(() => {
-      mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
-      fireEvent('onCancelChanges');
     });
+    mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+    fireEvent('onCancelChanges');
   }
 
   const changeSet = tableDetails?.changeSet ?? {};
@@ -477,9 +477,8 @@ export function Table({
         !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) ||
         tableDetails.addNewRowsDetails.addingNewRows
       ) {
-        setExposedVariable('newRows', [])?.then(() => {
-          mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
-        });
+        setExposedVariable('newRows', []);
+        mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
@@ -634,49 +633,56 @@ export function Table({
     if (!sortOptions) {
       setExposedVariable('sortApplied', []);
     }
-    if (mounted) setExposedVariable('sortApplied', sortOptions)?.then(() => fireEvent('onSort'));
+    if (mounted) setExposedVariable('sortApplied', sortOptions);
+    fireEvent('onSort');
+  }, [sortOptions]);
 
+  useEffect(() => {
     setExposedVariable('setPage', async function (targetPageIndex) {
       setPaginationInternalPageIndex(targetPageIndex);
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
     });
+  }, [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]);
 
+  useEffect(() => {
     setExposedVariable('selectRow', async function (key, value) {
       const item = tableData.filter((item) => item[key] == value);
       const row = rows.find((item, index) => item.original[key] == value);
       if (row != undefined) {
         const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
-        setExposedVariables(selectedRowDetails)?.then(() => {
-          toggleRowSelected(row.id);
-          mergeToTableDetails(selectedRowDetails);
-          fireEvent('onRowClicked');
-        });
+        setExposedVariables(selectedRowDetails);
+        toggleRowSelected(row.id);
+        mergeToTableDetails(selectedRowDetails);
+        fireEvent('onRowClicked');
       }
     });
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
 
+  useEffect(() => {
     setExposedVariable('deselectRow', async function () {
       if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
-        setExposedVariables(selectedRowDetails)?.then(() => {
-          if (allowSelection && !showBulkSelector) toggleRowSelected(tableDetails.selectedRowId, false);
-          mergeToTableDetails(selectedRowDetails);
-        });
+        setExposedVariables(selectedRowDetails);
+        if (allowSelection && !showBulkSelector) toggleRowSelected(tableDetails.selectedRowId, false);
+        mergeToTableDetails(selectedRowDetails);
       }
       return;
     });
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
 
+  useEffect(() => {
     setExposedVariable('discardChanges', async function () {
       if (Object.keys(tableDetails.changeSet || {}).length > 0) {
         setExposedVariables({
           changeSet: {},
           dataUpdates: [],
-        })?.then(() => {
-          mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
         });
+        mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
       }
     });
-
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]);
+  useEffect(() => {
     setExposedVariable('discardNewlyAddedRows', async function () {
       if (
         tableDetails.addNewRowsDetails.addingNewRows &&
@@ -685,55 +691,26 @@ export function Table({
       ) {
         setExposedVariables({
           newRows: [],
-        })?.then(() => {
-          mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
         });
+        mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
       }
     });
-
-    setExposedVariable('downloadTableData', async function (format) {
-      exportData(format, true);
-    });
-
-    setExposedVariable(
-      'filteredData',
-      globalFilteredRows.map((row) => row.original)
-    );
-
-    if (_.isEmpty(changeSet)) {
-      setExposedVariable(
-        'updatedData',
-        _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current
-      );
-    }
   }, [
-    sortOptions,
-    serverSidePagination,
-    clientSidePagination,
-    setPaginationInternalPageIndex,
-    JSON.stringify(tableData),
-    JSON.stringify(tableDetails.selectedRow),
-    JSON.stringify(tableDetails.changeSet),
     JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet),
     tableDetails.addNewRowsDetails.addingNewRows,
     JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
-    _.toString(globalFilteredRows),
-    columns,
-    JSON.stringify(globalFilteredRows.map((row) => row.original)),
-    JSON.stringify(changeSet),
   ]);
 
   useEffect(() => {
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
       const selectedRowsId = selectedFlatRows.map((row) => row.id);
-      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId })?.then(() => {
-        const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
-          accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
-          return accumulator;
-        }, []);
-        mergeToTableDetails({ selectedRowsDetails });
-      });
+      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId });
+      const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
+        accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
+        return accumulator;
+      }, []);
+      mergeToTableDetails({ selectedRowsDetails });
     }
     if (
       (!showBulkSelector && !highlightSelectedRow) ||
@@ -741,18 +718,22 @@ export function Table({
     ) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
-      setExposedVariables({ selectedRow, selectedRowId })?.then(() => {
-        mergeToTableDetails({ selectedRow, selectedRowId });
-      });
+      setExposedVariables({ selectedRow, selectedRowId });
+      mergeToTableDetails({ selectedRow, selectedRowId });
     }
   }, [selectedFlatRows.length, selectedFlatRows]);
 
   useEffect(() => {
+    setExposedVariable('downloadTableData', async function (format) {
+      exportData(format, true);
+    });
+  }, [_.toString(globalFilteredRows), columns]);
+
+  useEffect(() => {
     if (mounted) {
-      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null })?.then(() => {
-        mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
-        toggleAllRowsSelected(false);
-      });
+      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null });
+      mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
+      toggleAllRowsSelected(false);
     }
   }, [showBulkSelector, highlightSelectedRow, allowSelection]);
 
@@ -774,7 +755,7 @@ export function Table({
         ['currentData', data],
         ['selectedRow', []],
         ['selectedRowId', null],
-      ])?.then(() => {
+      ]).then(() => {
         if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
           toggleAllRowsSelected(false);
           mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
@@ -806,13 +787,27 @@ export function Table({
   useEffect(() => {
     if (rowDetails?.hoveredRowId !== '' && hoverRef.current !== rowDetails?.hoveredRowId) rowHover();
   }, [rowDetails]);
+
+  useEffect(() => {
+    setExposedVariable(
+      'filteredData',
+      globalFilteredRows.map((row) => row.original)
+    );
+  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
+
   const rowHover = () => {
     mergeToTableDetails(rowDetails);
-    setExposedVariables(rowDetails)?.then(() => {
-      fireEvent('onRowHovered');
-    });
+    setExposedVariables(rowDetails);
+    fireEvent('onRowHovered');
   };
-
+  useEffect(() => {
+    if (_.isEmpty(changeSet)) {
+      setExposedVariable(
+        'updatedData',
+        _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current
+      );
+    }
+  }, [JSON.stringify(changeSet)]);
   useEffect(() => {
     if (
       allowSelection &&
@@ -828,10 +823,9 @@ export function Table({
       const pageNumber = Math.floor(selectedRowId / rowsPerPage) + 1;
       preSelectRow.current = true;
       if (highlightSelectedRow) {
-        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId })?.then(() => {
-          toggleRowSelected(selectedRowId, true);
-          mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
-        });
+        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        toggleRowSelected(selectedRowId, true);
+        mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
       } else {
         toggleRowSelected(selectedRowId, true);
       }
@@ -1138,10 +1132,9 @@ export function Table({
                       }
                       const selectedRow = row.original;
                       const selectedRowId = row.id;
-                      setExposedVariables({ selectedRow, selectedRowId })?.then(() => {
-                        mergeToTableDetails({ selectedRow, selectedRowId });
-                        fireEvent('onRowClicked');
-                      });
+                      setExposedVariables({ selectedRow, selectedRowId });
+                      mergeToTableDetails({ selectedRow, selectedRowId });
+                      fireEvent('onRowClicked');
                     }}
                     onMouseOver={(e) => {
                       if (hoverAdded) {
@@ -1285,7 +1278,7 @@ export function Table({
                   <button
                     className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
                     onClick={() =>
-                      onEvent('onBulkUpdate', { component })?.then(() => {
+                      onEvent('onBulkUpdate', { component }).then(() => {
                         handleChangesSaved();
                       })
                     }

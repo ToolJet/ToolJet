@@ -37,8 +37,7 @@ const dropAnimation = {
 const TRASH_ID = 'void';
 
 export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
-  const { properties, fireEvent, setExposedVariable, setExposedVariables, registerAction, exposedVariables, styles } =
-    kanbanProps;
+  const { properties, fireEvent, setExposedVariable, setExposedVariables, exposedVariables, styles } = kanbanProps;
   const { lastSelectedCard = {} } = exposedVariables;
   const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;
   const { accentColor } = styles;
@@ -122,7 +121,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
       setItems((items) => ({
         ...items,
         [originColumnId]: items[originColumnId].filter((id) => id !== cardId),
-        [columnId]: [cardId, ...items[columnId]],
+        [columnId]: items[columnId] && [cardId, ...items[columnId]],
       }));
       cardDataAsObj[cardId] = { ...cardDataAsObj[cardId], columnId: columnId };
       const lastCardMovement = {
@@ -135,6 +134,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
       setExposedVariable('lastCardMovement', lastCardMovement);
       fireEvent('onCardMoved');
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, JSON.stringify(cardDataAsObj)]);
 
   useEffect(() => {
