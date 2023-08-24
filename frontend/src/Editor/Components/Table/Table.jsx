@@ -944,6 +944,18 @@ export function Table({
       </Popover>
     );
   }
+  const calculateWidthOfActionColumnHeader = (position) => {
+    let totalWidth = null;
+    if (position === 'rightActions') {
+      const rightActionBtn = document.querySelector('.has-right-actions');
+      totalWidth = rightActionBtn?.offsetWidth;
+    }
+    if (position === 'leftActions') {
+      const leftActionBtn = document.querySelector('.has-left-actions');
+      totalWidth = leftActionBtn?.offsetWidth;
+    }
+    return totalWidth;
+  };
   return (
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
@@ -1080,6 +1092,32 @@ export function Table({
                                     },
                                   };
                                 }
+                                if (column.Header === 'Actions') {
+                                  headerProps = {
+                                    ...headerProps,
+                                    style: {
+                                      ...headerProps.style,
+                                      width: calculateWidthOfActionColumnHeader(column.id),
+                                      maxWidth: calculateWidthOfActionColumnHeader(column.id),
+                                      padding: 0,
+                                      display: 'flex',
+                                      'align-items': 'center',
+                                      'justify-content': 'center',
+                                    },
+                                  };
+                                }
+                                if (
+                                  headerGroup?.headers?.[headerGroup?.headers?.length - 1]?.Header === 'Actions' &&
+                                  index === headerGroup?.headers?.length - 2
+                                ) {
+                                  headerProps = {
+                                    ...headerProps,
+                                    style: {
+                                      ...headerProps.style,
+                                      flex: '1 1 auto',
+                                    },
+                                  };
+                                }
                                 const isEditable = resolveReferences(column?.isEditable ?? false, currentState);
                                 return (
                                   <th
@@ -1087,7 +1125,9 @@ export function Table({
                                     {...headerProps}
                                     className={`th tj-text-xsm font-weight-400 ${
                                       column.isSorted && (column.isSortedDesc ? '' : '')
-                                    } ${column.isResizing && 'resizing-column'}`}
+                                    } ${column.isResizing && 'resizing-column'} ${
+                                      column.Header === 'Actions' && 'has-actions'
+                                    }`}
                                   >
                                     <div
                                       className={`${
@@ -1158,7 +1198,10 @@ export function Table({
                                       draggable="true"
                                       {...column.getResizerProps()}
                                       className={`${
-                                        column.id === 'selection' && column.columnType === 'selector' ? '' : 'resizer'
+                                        (column.id === 'selection' && column.columnType === 'selector') ||
+                                        column.Header === 'Actions'
+                                          ? ''
+                                          : 'resizer'
                                       }  ${column.isResizing ? 'isResizing' : ''}`}
                                     >
                                       {/* {column.isResizing && (
@@ -1268,6 +1311,16 @@ export function Table({
                         cellProps.style.width = 40;
                         cellProps.style.padding = 0;
                       }
+                      if (cell.column.Header === 'Actions') {
+                        cellProps.style.width = 'fit-content';
+                        cellProps.style.maxWidth = 'fit-content';
+                      }
+                      if (
+                        row.cells?.[row.cells?.length - 1]?.column.Header === 'Actions' &&
+                        index === row?.cells?.length - 2
+                      ) {
+                        cellProps.style.flex = '1 1 auto';
+                      }
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
                       const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
@@ -1305,17 +1358,23 @@ export function Table({
                           data-cy={`${cell.column.columnType ?? ''}${String(
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
-                          className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
-                            'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
-                            'has-text': cell.column.columnType === 'text' || isEditable,
-                            'has-dropdown': cell.column.columnType === 'dropdown',
-                            'has-multiselect': cell.column.columnType === 'multiselect',
-                            'has-datepicker': cell.column.columnType === 'datepicker',
-                            'align-items-center flex-column': cell.column.columnType === 'selector',
-                            [cellSize]: true,
-                            'selector-column': cell.column.columnType === 'selector' && cell.column.id === 'selection',
-                            'resizing-column': cell.column.isResizing,
-                          })}
+                          className={cx(
+                            `${wrapAction ? wrapAction : cell?.column?.Header === 'Actions' ? '' : 'wrap'}-wrapper`,
+                            {
+                              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+                              'has-left-actions': cell.column.id === 'leftActions',
+                              'has-right-actions': cell.column.id === 'rightActions',
+                              'has-text': cell.column.columnType === 'text' || isEditable,
+                              'has-dropdown': cell.column.columnType === 'dropdown',
+                              'has-multiselect': cell.column.columnType === 'multiselect',
+                              'has-datepicker': cell.column.columnType === 'datepicker',
+                              'align-items-center flex-column': cell.column.columnType === 'selector',
+                              [cellSize]: true,
+                              'selector-column':
+                                cell.column.columnType === 'selector' && cell.column.id === 'selection',
+                              'resizing-column': cell.column.isResizing,
+                            }
+                          )}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                           onClick={(e) => {
