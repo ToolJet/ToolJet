@@ -32,6 +32,8 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
+import { Alert } from '@/_ui/Alert/Alert';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 const AllElements = {
   Color,
@@ -46,7 +48,6 @@ const AllElements = {
 export function CodeHinter({
   initialValue,
   onChange,
-  currentState,
   mode,
   theme,
   lineNumbers,
@@ -71,6 +72,7 @@ export function CodeHinter({
   cyLabel = '',
   callgpt = () => null,
   isCopilotEnabled = false,
+  currentState: _currentState,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -84,31 +86,39 @@ export function CodeHinter({
     highlightSelectionMatches: true,
     placeholder,
   };
-
+  const currentState = useCurrentState();
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
+
+  // Todo: Remove this when workspace variables are deprecated
+  const isWorkspaceVariable =
+    typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   const slideInStyles = useSpring({
     config: { ...config.stiff },
     from: { opacity: 0, height: 0 },
     to: {
       opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
+      height: isFocused ? currentHeight + (isWorkspaceVariable ? 30 : 0) : 0,
     },
   });
   const { t } = useTranslation();
-
   const { variablesExposedForPreview } = useContext(EditorContext);
 
   const prevCountRef = useRef(false);
 
   useEffect(() => {
-    setRealState(currentState);
+    if (_currentState) {
+      setRealState(_currentState);
+    } else {
+      setRealState(currentState);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components]);
+  }, [currentState.components, _currentState]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -227,6 +237,10 @@ export function CodeHinter({
             {content}
           </div>
         </div>
+        {/* Todo: Remove this when workspace variables are deprecated */}
+        {enablePreview && isWorkspaceVariable && (
+          <CodeHinter.DepericatedAlertForWorkspaceVariable text={'Deprecating soon'} />
+        )}
       </animated.div>
     );
   };
@@ -272,6 +286,7 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
+
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -301,7 +316,7 @@ export function CodeHinter({
         className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
-        <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
+        <div className={`col code-hinter-col`}>
           <div
             className="code-hinter-wrapper position-relative"
             style={{ width: '100%', backgroundColor: darkMode && '#272822' }}
@@ -422,5 +437,22 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
+const DepericatedAlertForWorkspaceVariable = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-warning"
+      cls="codehinter workspace-variables-alert-banner p-1 mb-0"
+      data-cy={``}
+      imgHeight={18}
+      imgWidth={18}
+    >
+      <div className="d-flex align-items-center">
+        <div class="">{text}</div>
+      </div>
+    </Alert>
+  );
+};
+
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;
+CodeHinter.DepericatedAlertForWorkspaceVariable = DepericatedAlertForWorkspaceVariable;

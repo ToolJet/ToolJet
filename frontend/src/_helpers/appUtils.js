@@ -8,6 +8,7 @@ import {
   computeComponentName,
   generateAppActions,
   loadPyodide,
+  isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -29,6 +30,7 @@ import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 const ERROR_TYPES = Object.freeze({
@@ -59,7 +61,7 @@ export function setCurrentStateAsync(_ref, changes) {
 
 export function onComponentOptionsChanged(_ref, component, options) {
   const componentName = component.name;
-  const components = _ref.state.currentState.components;
+  const components = getCurrentState().components;
   let componentData = components[componentName];
   componentData = componentData || {};
 
@@ -67,21 +69,23 @@ export function onComponentOptionsChanged(_ref, component, options) {
     componentData[option[0]] = option[1];
   }
 
-  return setCurrentStateAsync(_ref, {
+  useCurrentStateStore.getState().actions.setCurrentState({
     components: { ...components, [componentName]: componentData },
   });
+  return Promise.resolve();
 }
 
 export function onComponentOptionChanged(_ref, component, option_name, value) {
   const componentName = component.name;
-  const components = _ref.state.currentState.components;
+  const components = getCurrentState().components;
+
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
-
-  return setCurrentStateAsync(_ref, {
+  useCurrentStateStore.getState().actions.setCurrentState({
     components: { ...components, [componentName]: componentData },
   });
+  return Promise.resolve();
 }
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
@@ -101,7 +105,17 @@ export function getDataFromLocalStorage(key) {
 }
 
 async function executeRunPycode(_ref, code, query, isPreview, mode) {
-  const pyodide = await loadPyodide();
+  let pyodide;
+  try {
+    pyodide = await loadPyodide();
+  } catch (errorMessage) {
+    return {
+      data: {
+        status: 'failed',
+        message: errorMessage,
+      },
+    };
+  }
 
   function log(line) {
     console.log({ line });
@@ -109,7 +123,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
 
   const evaluatePythonCode = async (pyodide) => {
     let result = {};
-    const { currentState } = _ref.state;
+    const currentState = getCurrentState();
     try {
       const appStateVars = currentState['variables'] ?? {};
 
@@ -127,6 +141,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
       await pyodide.globals.set('tj_globals', currentState['globals']);
       await pyodide.globals.set('client', currentState['client']);
       await pyodide.globals.set('server', currentState['server']);
+      await pyodide.globals.set('constants', currentState['constants']);
       await pyodide.globals.set('variables', appStateVars);
       await pyodide.globals.set('actions', actions);
 
@@ -162,7 +177,17 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
 }
 
 async function exceutePycode(payload, code, currentState, query, mode) {
-  const pyodide = await loadPyodide();
+  let pyodide;
+  try {
+    pyodide = await loadPyodide();
+  } catch (errorMessage) {
+    return {
+      data: {
+        status: 'failed',
+        message: errorMessage,
+      },
+    };
+  }
 
   const evaluatePython = async (pyodide) => {
     let result = {};
@@ -186,6 +211,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           variables = currentState['variables']
           client = currentState['client']
           server = currentState['server']
+          constants = currentState['constants']
           page = currentState['page']
           code_to_execute = ${_code}
 
@@ -248,7 +274,7 @@ export async function runTransformation(
 
   let result = [];
 
-  const currentState = _ref.state.currentState || {};
+  const currentState = getCurrentState() || {};
 
   if (transformationLanguage === 'python') {
     result = await runPythonTransformation(currentState, data, transformation, query, mode);
@@ -329,20 +355,17 @@ function showModal(_ref, modal, show) {
   }
 
   const modalMeta = _ref.state.appDefinition.pages[_ref.state.currentPageId].components[modalId];
-  const newState = {
-    currentState: {
-      ..._ref.state.currentState,
-      components: {
-        ..._ref.state.currentState.components,
-        [modalMeta.component.name]: {
-          ..._ref.state.currentState.components[modalMeta.component.name],
-          show: show,
-        },
-      },
+
+  const _components = {
+    ...getCurrentState().components,
+    [modalMeta.component.name]: {
+      ...getCurrentState().components[modalMeta.component.name],
+      show: show,
     },
   };
-  _ref.setState(newState);
-
+  useCurrentStateStore.getState().actions.setCurrentState({
+    components: _components,
+  });
   return Promise.resolve();
 }
 
@@ -372,14 +395,14 @@ export const executeAction = debounce(executeActionWithDebounce);
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
     if (event.runOnlyIf) {
-      const shouldRun = resolveReferences(event.runOnlyIf, _ref.state.currentState, undefined, customVariables);
+      const shouldRun = resolveReferences(event.runOnlyIf, getCurrentState(), undefined, customVariables);
       if (!shouldRun) {
         return false;
       }
     }
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, _ref.state.currentState, undefined, customVariables);
+        const message = resolveReferences(event.message, getCurrentState(), undefined, customVariables);
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -399,29 +422,36 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
+        const params = event['parameters'];
+        const resolvedParams = {};
+        if (params) {
+          Object.keys(params).map(
+            (param) => (resolvedParams[param] = resolveReferences(params[param], getCurrentState(), undefined))
+          );
+        }
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
-        return runQuery(_ref, queryId, name, undefined, mode);
+        return runQuery(_ref, queryId, name, undefined, mode, resolvedParams);
       }
       case 'logout': {
         return logoutAction(_ref);
       }
 
       case 'open-webpage': {
-        const url = resolveReferences(event.url, _ref.state.currentState, undefined, customVariables);
+        const url = resolveReferences(event.url, getCurrentState(), undefined, customVariables);
         window.open(url, '_blank');
         return Promise.resolve();
       }
 
       case 'go-to-app': {
-        const slug = resolveReferences(event.slug, _ref.state.currentState, undefined, customVariables);
+        const slug = resolveReferences(event.slug, getCurrentState(), undefined, customVariables);
         const queryParams = event.queryParams?.reduce(
           (result, queryParam) => ({
             ...result,
             ...{
-              [resolveReferences(queryParam[0], _ref.state.currentState)]: resolveReferences(
+              [resolveReferences(queryParam[0], getCurrentState())]: resolveReferences(
                 queryParam[1],
-                _ref.state.currentState,
+                getCurrentState(),
                 undefined,
                 customVariables
               ),
@@ -455,20 +485,15 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         return showModal(_ref, event.modal, false);
 
       case 'copy-to-clipboard': {
-        const contentToCopy = resolveReferences(
-          event.contentToCopy,
-          _ref.state.currentState,
-          undefined,
-          customVariables
-        );
+        const contentToCopy = resolveReferences(event.contentToCopy, getCurrentState(), undefined, customVariables);
         copyToClipboard(contentToCopy);
 
         return Promise.resolve();
       }
 
       case 'set-localstorage-value': {
-        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
-        const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
         localStorage.setItem(key, value);
 
         return Promise.resolve();
@@ -476,14 +501,13 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'generate-file': {
         // const fileType = event.fileType;
-        const data = resolveReferences(event.data, _ref.state.currentState, undefined, customVariables) ?? [];
-        const fileName =
-          resolveReferences(event.fileName, _ref.state.currentState, undefined, customVariables) ?? 'data.txt';
-        const fileType =
-          resolveReferences(event.fileType, _ref.state.currentState, undefined, customVariables) ?? 'csv';
+        const data = resolveReferences(event.data, getCurrentState(), undefined, customVariables) ?? [];
+        const fileName = resolveReferences(event.fileName, getCurrentState(), undefined, customVariables) ?? 'data.txt';
+        const fileType = resolveReferences(event.fileType, getCurrentState(), undefined, customVariables) ?? 'csv';
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
+          pdf: (pdfData) => pdfData,
         }[fileType](data);
         generateFile(fileName, fileData, fileType);
         return Promise.resolve();
@@ -495,84 +519,65 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
-        const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
-        const customAppVariables = { ..._ref.state.currentState.variables };
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const customAppVariables = { ...getCurrentState().variables };
         customAppVariables[key] = value;
-
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            variables: customAppVariables,
-          },
+        return useCurrentStateStore.getState().actions.setCurrentState({
+          variables: customAppVariables,
         });
       }
 
       case 'unset-custom-variable': {
-        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
-        const customAppVariables = { ..._ref.state.currentState.variables };
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customAppVariables = { ...getCurrentState().variables };
         delete customAppVariables[key];
-
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            variables: customAppVariables,
-          },
+        return useCurrentStateStore.getState().actions.setCurrentState({
+          variables: customAppVariables,
         });
       }
 
       case 'set-page-variable': {
-        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
-        const value = resolveReferences(event.value, _ref.state.currentState, undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
         const customPageVariables = {
-          ..._ref.state.currentState.page.variables,
+          ...getCurrentState().page.variables,
           [key]: value,
         };
-
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            page: {
-              ..._ref.state.currentState.page,
-              variables: customPageVariables,
-            },
+        return useCurrentStateStore.getState().actions.setCurrentState({
+          page: {
+            ...getCurrentState().page,
+            variables: customPageVariables,
           },
         });
       }
 
       case 'unset-page-variable': {
-        const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
-        const customPageVariables = _.omit(_ref.state.currentState.page.variables, key);
-
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            page: {
-              ..._ref.state.currentState.page,
-              variables: customPageVariables,
-            },
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customPageVariables = _.omit(getCurrentState().page.variables, key);
+        return useCurrentStateStore.getState().actions.setCurrentState({
+          page: {
+            ...getCurrentState().page,
+            variables: customPageVariables,
           },
         });
       }
 
       case 'control-component': {
-        const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
+        const component = Object.values(getCurrentState()?.components ?? {}).filter(
           (component) => component.id === event.componentId
         )[0];
         const action = component?.[event.componentSpecificActionHandle];
         const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
-          value: resolveReferences(param.value, _ref.state.currentState, undefined, customVariables),
+          value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
         }));
         const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
       }
 
       case 'switch-page': {
-        _ref.switchPage(
-          event.pageId,
-          resolveReferences(event.queryParams, _ref.state.currentState, [], customVariables)
-        );
+        _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
         return Promise.resolve();
       }
     }
@@ -583,133 +588,98 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
 
   const { customVariables } = options;
-
   if (eventName === 'onPageLoad') {
     await executeActionsForEventId(_ref, 'onPageLoad', { definition: { events: [options] } }, mode, customVariables);
   }
 
   if (eventName === 'onTrigger') {
-    const { component, queryId, queryName } = options;
-    _self.setState(
-      {
-        currentState: {
-          ..._self.state.currentState,
-          components: {
-            ..._self.state.currentState.components,
-            [component.name]: {
-              ..._self.state.currentState.components[component.name],
-            },
-          },
+    const { component, queryId, queryName, parameters } = options;
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: {
+        ...getCurrentState().components,
+        [component.name]: {
+          ...getCurrentState().components[component.name],
         },
       },
-      () => {
-        runQuery(_ref, queryId, queryName, true, mode);
-      }
-    );
+    });
+    runQuery(_ref, queryId, queryName, true, mode, parameters);
   }
 
   if (eventName === 'onCalendarEventSelect') {
     const { component, calendarEvent } = options;
-    _self.setState(
-      {
-        currentState: {
-          ..._self.state.currentState,
-          components: {
-            ..._self.state.currentState.components,
-            [component.name]: {
-              ..._self.state.currentState.components[component.name],
-              selectedEvent: { ...calendarEvent },
-            },
-          },
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: {
+        ...getCurrentState().components,
+        [component.name]: {
+          ...getCurrentState().components[component.name],
+          selectedEvent: { ...calendarEvent },
         },
       },
-      () => {
-        executeActionsForEventId(_ref, 'onCalendarEventSelect', component, mode, customVariables);
-      }
-    );
+    });
+    executeActionsForEventId(_ref, 'onCalendarEventSelect', component, mode, customVariables);
   }
 
   if (eventName === 'onCalendarSlotSelect') {
     const { component, selectedSlots } = options;
-    _self.setState(
-      {
-        currentState: {
-          ..._self.state.currentState,
-          components: {
-            ..._self.state.currentState.components,
-            [component.name]: {
-              ..._self.state.currentState.components[component.name],
-              selectedSlots,
-            },
-          },
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: {
+        ...getCurrentState().components,
+        [component.name]: {
+          ...getCurrentState().components[component.name],
+          selectedSlots,
         },
       },
-      () => {
-        executeActionsForEventId(_ref, 'onCalendarSlotSelect', component, mode, customVariables);
-      }
-    );
+    });
+    executeActionsForEventId(_ref, 'onCalendarSlotSelect', component, mode, customVariables);
   }
 
   if (eventName === 'onTableActionButtonClicked') {
     const { component, data, action, rowId } = options;
-    _self.setState(
-      {
-        currentState: {
-          ..._self.state.currentState,
-          components: {
-            ..._self.state.currentState.components,
-            [component.name]: {
-              ..._self.state.currentState.components[component.name],
-              selectedRow: data,
-              selectedRowId: rowId,
-            },
-          },
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: {
+        ...getCurrentState().components,
+        [component.name]: {
+          ...getCurrentState().components[component.name],
+          selectedRow: data,
+          selectedRowId: rowId,
         },
       },
-      async () => {
-        if (action && action.events) {
-          for (const event of action.events) {
-            if (event.actionId) {
-              // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-              await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
-            }
-          }
-        } else {
-          console.log('No action is associated with this event');
+    });
+    if (action && action.events) {
+      for (const event of action.events) {
+        if (event.actionId) {
+          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+          await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
         }
       }
-    );
+    } else {
+      console.log('No action is associated with this event');
+    }
   }
 
   if (eventName === 'OnTableToggleCellChanged') {
     const { component, column, rowId, row } = options;
-    _self.setState(
-      {
-        currentState: {
-          ..._self.state.currentState,
-          components: {
-            ..._self.state.currentState.components,
-            [component.name]: {
-              ..._self.state.currentState.components[component.name],
-              selectedRow: row,
-              selectedRowId: rowId,
-            },
-          },
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: {
+        ...getCurrentState().components,
+        [component.name]: {
+          ...getCurrentState().components[component.name],
+          selectedRow: row,
+          selectedRowId: rowId,
         },
       },
-      async () => {
-        if (column && column.events) {
-          for (const event of column.events) {
-            if (event.actionId) {
-              // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-              await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
-            }
-          }
-        } else {
-          console.log('No action is associated with this event');
+    });
+
+    if (column && column.events) {
+      for (const event of column.events) {
+        if (event.actionId) {
+          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+          await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
         }
       }
-    );
+    } else {
+      console.log('No action is associated with this event');
+    }
   }
 
   if (
@@ -785,11 +755,19 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      // check if {{var}} and %%var%% are present in the string
+      if (options.match(/\{\{(.*?)\}\}/g)?.length > 1 && options.includes('{{constants.')) {
+        const constantVariables = options.match(/\{\{(constants.*?)\}\}/g);
+
+        constantVariables.forEach((constant) => {
+          options = options.replace(constant, 'HiddenOrganizationConstant');
+        });
+      }
 
       if (options.includes('{{') && options.includes('%%')) {
-        const vars = resolveReferences(options, state);
-        console.log('queryVariables', { options, vars });
+        const vars =
+          options.includes('{{constants.') && !options.includes('%%')
+            ? 'HiddenOrganizationConstant'
+            : resolveReferences(options, state);
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
@@ -821,8 +799,8 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false) {
-  const options = getQueryVariables(query.options, _ref?.state?.currentState);
+export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}, hasParamSupport = false) {
+  const options = getQueryVariables(query.options, getCurrentState());
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   setPreviewLoading(true);
@@ -830,13 +808,31 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true);
+      const formattedParams = (query.options.parameters || []).reduce(
+        (paramObj, param) => ({
+          ...paramObj,
+          [param.name]:
+            parameters?.[param.name] === undefined
+              ? resolveReferences(param.defaultValue, {}) //default values will not be resolved with currentState
+              : parameters?.[param.name],
+        }),
+        {}
+      );
+      queryExecutionPromise = executeMultilineJS(
+        _ref,
+        query.options.code,
+        query?.id,
+        true,
+        '',
+        formattedParams,
+        hasParamSupport
+      );
     } else if (query.kind === 'tooljetdb') {
       const currentSessionValue = authenticationService.currentSessionValue;
       queryExecutionPromise = tooljetDbOperations.perform(
         query.options,
         currentSessionValue?.current_organization_id,
-        _ref.state.currentState
+        getCurrentState()
       );
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
@@ -893,7 +889,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
           case 'Created':
           case 'Accepted':
           case 'No Content': {
-            toast(`Query completed.`, {
+            toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
               icon: '🚀',
             });
             break;
@@ -911,7 +907,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters = {}) {
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
@@ -922,7 +918,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     return;
   }
 
-  const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
+  const options = getQueryVariables(dataQuery.options, getCurrentState());
 
   if (dataQuery.options.requestConfirmation) {
     // eslint-disable-next-line no-unsafe-optional-chaining
@@ -942,207 +938,180 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       return;
     }
   }
-  const newState = {
-    ..._ref.state.currentState,
-    queries: {
-      ..._ref.state.currentState.queries,
-      [queryName]: {
-        ..._ref.state.currentState.queries[queryName],
-        isLoading: true,
-        data: [],
-        rawData: [],
-      },
-    },
-    errors: {},
-  };
 
   let _self = _ref;
 
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
-    _self.setState({ currentState: newState }, () => {
-      let queryExecutionPromise = null;
-      if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode);
-      } else if (query.kind === 'runpy') {
-        queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
-      } else if (query.kind === 'tooljetdb') {
-        const currentSessionValue = authenticationService.currentSessionValue;
-        queryExecutionPromise = tooljetDbOperations.perform(
-          query.options,
-          currentSessionValue?.current_organization_id,
-          _self.state.currentState
-        );
-      } else {
-        queryExecutionPromise = dataqueryService.run(queryId, options);
-      }
+    useCurrentStateStore.getState().actions.setCurrentState({
+      queries: {
+        ...getCurrentState().queries,
+        [queryName]: {
+          ...getCurrentState().queries[queryName],
+          isLoading: true,
+          data: [],
+          rawData: [],
+        },
+      },
+      errors: {},
+    });
+    let queryExecutionPromise = null;
+    if (query.kind === 'runjs') {
+      queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
+    } else if (query.kind === 'runpy') {
+      queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
+    } else if (query.kind === 'tooljetdb') {
+      const currentSessionValue = authenticationService.currentSessionValue;
+      queryExecutionPromise = tooljetDbOperations.perform(
+        query.options,
+        currentSessionValue?.current_organization_id,
+        getCurrentState()
+      );
+    } else {
+      queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
+    }
 
-      queryExecutionPromise
-        .then(async (data) => {
-          if (data.status === 'needs_oauth') {
-            const url = data.data.auth_url; // Backend generates and return sthe auth url
-            fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
-          }
+    queryExecutionPromise
+      .then(async (data) => {
+        if (data.status === 'needs_oauth') {
+          const url = data.data.auth_url; // Backend generates and return sthe auth url
+          fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
+        }
 
-          const promiseStatus =
-            query.kind === 'tooljetdb'
-              ? data.statusText
-              : query.kind === 'runpy'
-              ? data?.data?.status ?? 'ok'
-              : data.status;
+        const promiseStatus =
+          query.kind === 'tooljetdb'
+            ? data.statusText
+            : query.kind === 'runpy'
+            ? data?.data?.status ?? 'ok'
+            : data.status;
 
-          if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
-            const errorData = query.kind === 'runpy' ? data.data : data;
-            return _self.setState(
-              {
-                currentState: {
-                  ..._self.state.currentState,
-                  queries: {
-                    ..._self.state.currentState.queries,
-                    [queryName]: _.assign(
-                      {
-                        ..._self.state.currentState.queries[queryName],
-                        isLoading: false,
-                      },
-                      query.kind === 'restapi'
-                        ? {
-                            request: data.data.requestObject,
-                            response: data.data.responseObject,
-                            responseHeaders: data.data.responseHeaders,
-                          }
-                        : {}
-                    ),
-                  },
-                  errors: {
-                    ..._self.state.currentState.errors,
-                    [queryName]: {
-                      type: 'query',
-                      kind: query.kind,
-                      data: errorData,
-                      options: options,
-                    },
-                  },
+        if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
+          const errorData = query.kind === 'runpy' ? data.data : data;
+          useCurrentStateStore.getState().actions.setErrors({
+            [queryName]: {
+              type: 'query',
+              kind: query.kind,
+              data: errorData,
+              options: options,
+            },
+          });
+
+          useCurrentStateStore.getState().actions.setCurrentState({
+            queries: {
+              ...getCurrentState().queries,
+              [queryName]: _.assign(
+                {
+                  ...getCurrentState().queries[queryName],
+                  isLoading: false,
                 },
-              },
-              () => {
-                resolve(data);
-                onEvent(_self, 'onDataQueryFailure', {
-                  definition: { events: dataQuery.options.events },
-                });
-                if (mode !== 'view') {
-                  const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-                  toast.error(err?.message);
-                }
-              }
-            );
-          } else {
-            let rawData = data.data;
-            let finalData = data.data;
-
-            if (dataQuery.options.enableTransformation) {
-              finalData = await runTransformation(
-                _ref,
-                finalData,
-                query.options.transformation,
-                query.options.transformationLanguage,
-                query,
-                'edit'
-              );
-              if (finalData.status === 'failed') {
-                return _self.setState(
-                  {
-                    currentState: {
-                      ..._self.state.currentState,
-                      queries: {
-                        ..._self.state.currentState.queries,
-                        [queryName]: {
-                          ..._self.state.currentState.queries[queryName],
-                          isLoading: false,
-                        },
-                      },
-                      errors: {
-                        ..._self.state.currentState.errors,
-                        [queryName]: {
-                          type: 'transformations',
-                          data: finalData,
-                          options: options,
-                        },
-                      },
-                    },
-                  },
-                  () => {
-                    resolve(finalData);
-                    onEvent(_self, 'onDataQueryFailure', {
-                      definition: { events: dataQuery.options.events },
-                    });
-                  }
-                );
-              }
-            }
-
-            if (dataQuery.options.showSuccessNotification) {
-              const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
-              toast.success(dataQuery.options.successMessage, {
-                duration: notificationDuration,
-              });
-            }
-            _self.setState(
-              {
-                currentState: {
-                  ..._self.state.currentState,
-                  queries: {
-                    ..._self.state.currentState.queries,
-                    [queryName]: _.assign(
-                      {
-                        ..._self.state.currentState.queries[queryName],
-                        isLoading: false,
-                        data: finalData,
-                        rawData,
-                      },
-                      query.kind === 'restapi'
-                        ? {
-                            request: data.request,
-                            response: data.response,
-                            responseHeaders: data.responseHeaders,
-                          }
-                        : {}
-                    ),
-                  },
-                },
-              },
-              () => {
-                resolve({ status: 'ok', data: finalData });
-                onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
-
-                if (mode !== 'view') {
-                  toast(`Query (${queryName}) completed.`, {
-                    icon: '🚀',
-                  });
-                }
-              }
-            );
+                query.kind === 'restapi'
+                  ? {
+                      request: data.data.requestObject,
+                      response: data.data.responseObject,
+                      responseHeaders: data.data.responseHeaders,
+                    }
+                  : {}
+              ),
+            },
+          });
+          resolve(data);
+          onEvent(_self, 'onDataQueryFailure', {
+            definition: { events: dataQuery.options.events },
+          });
+          if (mode !== 'view') {
+            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
+            toast.error(err?.message);
           }
-        })
-        .catch(({ error }) => {
-          if (mode !== 'view') toast.error(error ?? 'Unknown error');
-          _self.setState(
-            {
-              currentState: {
-                ..._self.state.currentState,
+          return;
+        } else {
+          let rawData = data.data;
+          let finalData = data.data;
+
+          if (dataQuery.options.enableTransformation) {
+            finalData = await runTransformation(
+              _ref,
+              finalData,
+              query.options.transformation,
+              query.options.transformationLanguage,
+              query,
+              'edit'
+            );
+            if (finalData.status === 'failed') {
+              useCurrentStateStore.getState().actions.setCurrentState({
                 queries: {
-                  ..._self.state.currentState.queries,
+                  ...getCurrentState().queries,
                   [queryName]: {
+                    ...getCurrentState().queries[queryName],
                     isLoading: false,
                   },
                 },
+              });
+
+              useCurrentStateStore.getState().actions.setErrors({
+                [queryName]: {
+                  type: 'transformations',
+                  data: finalData,
+                  options: options,
+                },
+              });
+              resolve(finalData);
+              onEvent(_self, 'onDataQueryFailure', {
+                definition: { events: dataQuery.options.events },
+              });
+              return;
+            }
+          }
+
+          if (dataQuery.options.showSuccessNotification) {
+            const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
+            toast.success(dataQuery.options.successMessage, {
+              duration: notificationDuration,
+            });
+          }
+          useCurrentStateStore.getState().actions.setCurrentState({
+            queries: {
+              ...getCurrentState().queries,
+              [queryName]: _.assign(
+                {
+                  ...getCurrentState().queries[queryName],
+                  isLoading: false,
+                  data: finalData,
+                  rawData,
+                },
+                query.kind === 'restapi'
+                  ? {
+                      request: data.request,
+                      response: data.response,
+                      responseHeaders: data.responseHeaders,
+                    }
+                  : {}
+              ),
+            },
+            // Used to generate logs
+            succededQuery: {
+              [queryName]: {
+                type: 'query',
+                kind: query.kind,
               },
             },
-            () => {
-              resolve({ status: 'failed', message: error });
-            }
-          );
+          });
+          resolve({ status: 'ok', data: finalData });
+          onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+        }
+      })
+      .catch(({ error }) => {
+        if (mode !== 'view') toast.error(error ?? 'Unknown error');
+        useCurrentStateStore.getState().actions.setCurrentState({
+          queries: {
+            ...getCurrentState().queries,
+            [queryName]: {
+              isLoading: false,
+            },
+          },
         });
-    });
+
+        resolve({ status: 'failed', message: error });
+      });
   });
 }
 
@@ -1152,8 +1121,8 @@ export function setTablePageIndex(_ref, tableId, index) {
     return Promise.resolve();
   }
 
-  const table = Object.entries(_ref.state.currentState.components).filter((entry) => entry[1].id === tableId)[0][1];
-  const newPageIndex = resolveReferences(index, _ref.state.currentState);
+  const table = Object.entries(getCurrentState().components).filter((entry) => entry[1].id === tableId)[0][1];
+  const newPageIndex = resolveReferences(index, getCurrentState());
   table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }
@@ -1169,7 +1138,7 @@ export function renderTooltip({ props, text }) {
 
 export function computeComponentState(_ref, components = {}) {
   let componentState = {};
-  const currentComponents = _ref.state.currentState.components;
+  const currentComponents = getCurrentState().components;
   Object.keys(components).forEach((key) => {
     const component = components[key];
     const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
@@ -1203,14 +1172,13 @@ export function computeComponentState(_ref, components = {}) {
       };
     }
   });
+  useCurrentStateStore.getState().actions.setCurrentState({
+    components: {
+      ...componentState,
+    },
+  });
 
   return setStateAsync(_ref, {
-    currentState: {
-      ..._ref.state.currentState,
-      components: {
-        ...componentState,
-      },
-    },
     defaultComponentStateComputed: true,
   });
 }
@@ -1229,26 +1197,15 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
 
 export const debuggerActions = {
   error: (_self, errors) => {
-    _self.setState((prevState) => ({
-      ...prevState,
-      currentState: {
-        ...prevState.currentState,
-        errors: {
-          ...prevState.currentState.errors,
-          ...errors,
-        },
-      },
-    }));
+    useCurrentStateStore.getState().actions.setErrors({
+      ...errors,
+    });
   },
 
   flush: (_self) => {
-    _self.setState((prevState) => ({
-      ...prevState,
-      currentState: {
-        ...prevState.currentState,
-        errors: {},
-      },
-    }));
+    useCurrentStateStore.getState().actions.setCurrentState({
+      errors: {},
+    });
   },
 
   //* @params: errors - Object
@@ -1318,6 +1275,29 @@ export const debuggerActions = {
       });
     });
     return errorsArr;
+  },
+
+  generateQuerySuccessLogs: (logs) => {
+    const querySuccesslogs = [];
+    Object.entries(logs).forEach(([key, value]) => {
+      const generalProps = {
+        key,
+        type: value.type,
+        page: value.page,
+        timestamp: moment(),
+        message: 'Completed',
+        description: value?.data?.description ?? '',
+        isQuerySuccessLog: true,
+      };
+
+      querySuccesslogs.push(generalProps);
+    });
+    return querySuccesslogs;
+  },
+  flushAllLog: () => {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      succededQuery: {},
+    });
   },
 };
 
@@ -1630,7 +1610,7 @@ export const checkExistingQueryName = (newName) =>
 
 export const runQueries = (queries, _ref) => {
   queries.forEach((query) => {
-    if (query.options.runOnPageLoad) {
+    if (query.options.runOnPageLoad && isQueryRunnable(query)) {
       runQuery(_ref, query.id, query.name);
     }
   });
@@ -1641,26 +1621,23 @@ export const computeQueryState = (queries, _ref) => {
   queries.forEach((query) => {
     if (query.plugin?.plugin_id) {
       queryState[query.name] = {
-        ...query.plugin.manifest_file.data.source.exposedVariables,
+        ...query.plugin.manifest_file.data?.source?.exposedVariables,
         kind: query.plugin.manifest_file.data.source.kind,
-        ..._ref.state.currentState.queries[query.name],
+        ...getCurrentState().queries[query.name],
       };
     } else {
       queryState[query.name] = {
-        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-        kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-        ..._ref.state.currentState.queries[query.name],
+        ...DataSourceTypes.find((source) => source.kind === query.kind)?.exposedVariables,
+        kind: DataSourceTypes.find((source) => source.kind === query.kind)?.kind,
+        ...getCurrentState()?.queries[query.name],
       };
     }
   });
-  const hasDiffQueryState = !_.isEqual(_ref.state?.currentState?.queries, queryState);
+  const hasDiffQueryState = !_.isEqual(getCurrentState()?.queries, queryState);
   if (hasDiffQueryState) {
-    _ref.setState({
-      currentState: {
-        ..._ref.state.currentState,
-        queries: {
-          ...queryState,
-        },
+    useCurrentStateStore.getState().actions.setCurrentState({
+      queries: {
+        ...queryState,
       },
     });
   }

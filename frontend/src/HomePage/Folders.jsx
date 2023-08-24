@@ -160,6 +160,16 @@ export const Folders = function Folders({
     }
   }
 
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      if (showUpdateForm) {
+        executeEditFolder();
+      } else {
+        saveFolder();
+      }
+    }
+  };
+
   const handleInputChange = (e) => {
     setErrorText('');
     const error = validateName(e.target.value, 'Folder name', false, false);
@@ -304,7 +314,7 @@ export const Folders = function Folders({
         closeModal={closeModal}
         title={
           showUpdateForm
-            ? t('homePage.foldersSection.updateFolder', 'Update Folder')
+            ? t('homePage.foldersSection.editFolder', 'Edit Folder')
             : t('homePage.foldersSection.createFolder', 'Create folder')
         }
       >
@@ -319,6 +329,7 @@ export const Folders = function Folders({
               value={newFolderName}
               maxLength={50}
               data-cy="folder-name-input"
+              onKeyPress={handleKeyPress}
               autoFocus
             />
             <label className="tj-input-error">{errorText || ''}</label>
@@ -335,7 +346,7 @@ export const Folders = function Folders({
               isLoading={isCreating || isUpdating}
             >
               {showUpdateForm
-                ? t('homePage.foldersSection.updateFolder', 'Update Folder')
+                ? t('homePage.foldersSection.editFolder', 'Edit Folder')
                 : t('homePage.foldersSection.createFolder', 'Create folder')}
             </ButtonSolid>
           </div>

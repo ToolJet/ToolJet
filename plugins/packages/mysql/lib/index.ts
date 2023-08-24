@@ -66,16 +66,22 @@ export default class MysqlQueryService implements QueryService {
   }
 
   async buildConnection(sourceOptions: SourceOptions) {
+    // either use socket_path or host/port + ssl
+    const props = sourceOptions.socket_path
+      ? { socketPath: sourceOptions.socket_path }
+      : {
+          host: sourceOptions.host,
+          port: +sourceOptions.port,
+          ssl: sourceOptions.ssl_enabled ?? false, // Disabling by default for backward compatibility
+        };
     const config: Knex.Config = {
-      client: 'mysql',
+      client: 'mysql2',
       connection: {
-        host: sourceOptions.host,
+        ...props,
         user: sourceOptions.username,
         password: sourceOptions.password,
         database: sourceOptions.database,
-        port: +sourceOptions.port,
         multipleStatements: true,
-        ssl: sourceOptions.ssl_enabled ?? false, // Disabling by default for backward compatibility
       },
     };
 

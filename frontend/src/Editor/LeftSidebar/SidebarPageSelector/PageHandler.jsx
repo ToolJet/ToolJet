@@ -23,7 +23,6 @@ export const PageHandler = ({
   updateHomePage,
   updatePageHandle,
   updateOnPageLoadEvents,
-  currentState,
   apps,
   pages,
   components,
@@ -188,7 +187,6 @@ export const PageHandler = ({
               }}
               darkMode={darkMode}
               updateOnPageLoadEvents={updateOnPageLoadEvents}
-              currentState={currentState}
               apps={apps}
               pages={pages}
               components={components}
