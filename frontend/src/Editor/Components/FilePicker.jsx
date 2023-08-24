@@ -302,7 +302,7 @@ export const FilePicker = ({
     setExposedVariable('clearFiles', clearFiles);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedFiles, setSelectedFiles]);
+  }, [setSelectedFiles]);
 
   return (
     <section>

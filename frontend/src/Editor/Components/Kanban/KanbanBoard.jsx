@@ -169,12 +169,9 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         ...items,
         [columnId]: items[columnId].filter((id) => id !== cardId),
       }));
-      setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) })?.then(
-        () => {
-          fireEvent('onCardRemoved');
-          // fireEvent('onUpdate');
-        }
-      );
+      setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) });
+      fireEvent('onCardRemoved');
+      // fireEvent('onUpdate');
     };
 
     if (shouldUpdateData.current) {

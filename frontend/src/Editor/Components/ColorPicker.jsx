@@ -53,12 +53,14 @@ export const ColorPicker = function ({
           setColor(colorCode);
           setExposedVariable('selectedColorHex', `${colorCode}`);
           setExposedVariable('selectedColorRGB', hexToRgb(colorCode));
-          setExposedVariable('selectedColorRGBA', hexToRgba(colorCode)).then(() => fireEvent('onChange'));
+          setExposedVariable('selectedColorRGBA', hexToRgba(colorCode));
+          fireEvent('onChange');
         }
       } else {
         setExposedVariable('selectedColorHex', 'undefined');
         setExposedVariable('selectedColorRGB', 'undefined');
-        setExposedVariable('selectedColorRGBA', 'undefined').then(() => fireEvent('onChange'));
+        setExposedVariable('selectedColorRGBA', 'undefined');
+        fireEvent('onChange');
         setColor('Invalid Color');
       }
     });
@@ -89,7 +91,8 @@ export const ColorPicker = function ({
       setColor(hexColor);
       setExposedVariable('selectedColorHex', `${hexColor}`);
       setExposedVariable('selectedColorRGB', `rgb(${r},${g},${b})`);
-      setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`).then(() => fireEvent('onChange'));
+      setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`);
+      fireEvent('onChange');
     }
   };
   //background color style for the div dispaying box filled by selected color
