@@ -29,7 +29,7 @@ export const EventManager = ({
   eventSourceType,
   eventMetaDefinition,
   components,
-  eventsChanged,
+
   excludeEvents,
   popOverCallback,
   popoverPlacement,
@@ -813,13 +813,12 @@ export const EventManager = ({
       </Popover>
     );
   }
-
+  //!Need to fix
   const reorderEvents = (startIndex, endIndex) => {
     const result = _.cloneDeep(events);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
     setEvents(result);
-    eventsChanged(result, null, true);
   };
 
   const onDragEnd = ({ source, destination }) => {
@@ -865,7 +864,6 @@ export const EventManager = ({
                               setFocusedEventIndex(index);
                             } else {
                               setFocusedEventIndex(null);
-                              eventsChanged(events);
                             }
                             if (typeof popOverCallback === 'function') popOverCallback(showing);
                           }}

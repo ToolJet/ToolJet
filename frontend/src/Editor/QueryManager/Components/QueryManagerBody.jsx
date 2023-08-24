@@ -28,7 +28,6 @@ export const QueryManagerBody = ({
   apps,
   appDefinition,
   setOptions,
-  appId,
 }) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
@@ -186,9 +185,6 @@ export const QueryManagerBody = ({
         <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
         <div className="query-manager-events pb-4 flex-grow-1">
           <EventManager
-            //!Query events
-            eventsChanged={eventsChanged}
-            component={queryComponent.component}
             sourceId={selectedQuery?.id}
             eventSourceType="data_query"
             eventMetaDefinition={queryComponent.componentMeta}
