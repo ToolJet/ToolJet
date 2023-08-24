@@ -69,7 +69,8 @@ export const Multiselect = function Multiselect({
     setExposedVariable(
       'values',
       items.map((item) => item.value)
-    ).then(() => fireEvent('onSelect'));
+    );
+    fireEvent('onSelect');
   };
 
   useEffect(() => {
@@ -89,7 +90,8 @@ export const Multiselect = function Multiselect({
         setExposedVariable(
           'values',
           newSelected.map((item) => item.value)
-        ).then(() => fireEvent('onSelect'));
+        );
+        fireEvent('onSelect');
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -107,7 +109,8 @@ export const Multiselect = function Multiselect({
         setExposedVariable(
           'values',
           newSelected.map((item) => item.value)
-        ).then(() => fireEvent('onSelect'));
+        );
+        fireEvent('onSelect');
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -117,7 +120,8 @@ export const Multiselect = function Multiselect({
     setExposedVariable('clearSelections', async function () {
       if (selected.length >= 1) {
         setSelected([]);
-        setExposedVariable('values', []).then(() => fireEvent('onSelect'));
+        setExposedVariable('values', []);
+        fireEvent('onSelect');
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
