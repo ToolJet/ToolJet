@@ -1,11 +1,9 @@
 import React from 'react';
-import GroupHeader from './GroupHeader';
 import TabContent from './TabContent';
 
 export default ({
   options = [],
   jsonBody,
-  currentState,
   theme,
   removeKeyValuePair,
   addNewKeyValuePair,
@@ -13,14 +11,11 @@ export default ({
   onJsonBodyChange,
   componentName,
   bodyToggle,
-  setBodyToggle,
 }) => {
   return (
     <>
-      <GroupHeader paramType={'body'} descText={'Raw JSON'} bodyToggle={bodyToggle} setBodyToggle={setBodyToggle} />
       <TabContent
         options={options}
-        currentState={currentState}
         theme={theme}
         removeKeyValuePair={removeKeyValuePair}
         onChange={onChange}

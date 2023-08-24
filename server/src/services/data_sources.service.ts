@@ -9,13 +9,17 @@ import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
+import { EncryptionService } from './encryption.service';
+import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.entity';
 
 @Injectable()
 export class DataSourcesService {
   constructor(
     private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
+    private encryptionService: EncryptionService,
     private appEnvironmentService: AppEnvironmentService,
+
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
   ) {}
@@ -30,7 +34,7 @@ export class DataSourcesService {
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
-        selectedEnvironmentId = (await this.appEnvironmentService.get(organizationId, null, manager))?.id;
+        selectedEnvironmentId = (await this.appEnvironmentService.get(organizationId, null, true, manager))?.id;
       }
 
       const query = await manager
@@ -196,7 +200,7 @@ export class DataSourcesService {
       await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
 
       // Find the environment to be updated
-      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
 
       await this.appEnvironmentService.updateOptions(
         await this.parseOptionsForCreate(options, false, manager),
@@ -235,7 +239,7 @@ export class DataSourcesService {
     const dataSource = await this.findOne(dataSourceId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
 
       // if datasource is restapi then reset the token data
       if (dataSource.kind === 'restapi')
@@ -282,7 +286,7 @@ export class DataSourcesService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
-      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
 
@@ -290,17 +294,43 @@ export class DataSourcesService {
     });
   }
 
-  async testConnection(kind: string, options: object, plugin_id: string): Promise<object> {
+  async testConnection(
+    kind: string,
+    options: object,
+    plugin_id: string,
+    organization_id: string,
+    environment_id: string
+  ): Promise<object> {
     let result = {};
+
+    const parsedOptions = JSON.parse(JSON.stringify(options));
+
+    for (const key of Object.keys(parsedOptions)) {
+      const currentOption = parsedOptions[key]?.['value'];
+      const variablesMatcher = /(%%.+?%%)/g;
+      // need to match if currentOption is a contant, {{constants.psql_db}
+      const constantMatcher = /{{constants\..+?}}/g;
+      const variableMatched = variablesMatcher.exec(currentOption);
+
+      if (variableMatched) {
+        const resolved = await this.resolveVariable(currentOption, organization_id);
+        parsedOptions[key]['value'] = resolved;
+      }
+      if (constantMatcher.test(currentOption)) {
+        const resolved = await this.resolveConstants(currentOption, organization_id, environment_id);
+        parsedOptions[key]['value'] = resolved;
+      }
+    }
+
     try {
       const sourceOptions = {};
 
-      for (const key of Object.keys(options)) {
-        const credentialId = options[key]?.['credential_id'];
+      for (const key of Object.keys(parsedOptions)) {
+        const credentialId = parsedOptions[key]?.['credential_id'];
         if (credentialId) {
           sourceOptions[key] = await this.credentialsService.getValue(credentialId);
         } else {
-          sourceOptions[key] = options[key]['value'];
+          sourceOptions[key] = parsedOptions[key]['value'];
         }
       }
 
@@ -480,5 +510,60 @@ export class DataSourcesService {
   getAuthUrl(provider: string, sourceOptions?: any): { url: string } {
     const service = new allPlugins[provider]();
     return { url: service.authUrl(sourceOptions) };
+  }
+
+  async resolveConstants(str: string, organization_id: string, environmentId: string) {
+    const tempStr: string = str.match(/\{\{(.*?)\}\}/g)[0].replace(/[{}]/g, '');
+    let result = tempStr;
+    if (new RegExp('^constants.').test(tempStr)) {
+      const splitArray = tempStr.split('.');
+      const constantName = splitArray[splitArray.length - 1];
+
+      const constant = await this.appEnvironmentService.getOrgEnvironmentConstant(
+        constantName,
+        organization_id,
+        environmentId
+      );
+
+      if (constant) {
+        result = constant.value;
+      }
+    }
+
+    return result;
+  }
+
+  async resolveVariable(str: string, organization_id: string) {
+    const tempStr: string = str.replace(/%%/g, '');
+    let result = tempStr;
+
+    const isServerVariable = new RegExp('^server').test(tempStr);
+    const isClientVariable = new RegExp('^client').test(tempStr);
+
+    if (isServerVariable || isClientVariable) {
+      const splitArray = tempStr.split('.');
+
+      const variableType = splitArray[0];
+      const variableName = splitArray[splitArray.length - 1];
+
+      const variableResult = await OrgEnvironmentVariable.findOne({
+        variableType: variableType,
+        organizationId: organization_id,
+        variableName: variableName,
+      });
+
+      if (isClientVariable && variableResult) {
+        result = variableResult.value;
+      }
+
+      if (isServerVariable && variableResult) {
+        result = await this.encryptionService.decryptColumnValue(
+          'org_environment_variables',
+          organization_id,
+          variableResult.value
+        );
+      }
+    }
+    return result;
   }
 }

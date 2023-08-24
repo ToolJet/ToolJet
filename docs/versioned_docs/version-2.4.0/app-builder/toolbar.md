@@ -27,7 +27,7 @@ When a new app is created, by default its name is set to **Untitled app**
 
 To configure the app's global settings, click on the kebab menu(three vertical dots) on the left of the app name. Global settings include:
 
-- **Hide heaeder for launched apps**: Toggle this on to the hide the tooljet's header when the applications are launched
+- **Hide header for launched apps**: Toggle this on to the hide the tooljet's header when the applications are launched
 - **Maintenance mode**: Toggle this on to put the application in maintenance mode. When in **maintenance mode**, on launching the app, the user will get an error message that **the app is under maintenance**.
 - **Max width of canvas**: Modify the width of the canvas in **px** or **%**. The default width is 1292 px.
 - **Max height of canvas**: Modify the width of the canvas in **px** or **%**. The default height is 2400 px and currently it is the maximum height limit.

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-var tinycolor = require('tinycolor2');
+const tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, registerAction, id, dataCy, setExposedVariable } = props;

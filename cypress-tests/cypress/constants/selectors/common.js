@@ -211,6 +211,17 @@ export const commonSelectors = {
   editFolderOption: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
+  inspectorPinIcon: '[data-cy="null-option-icon"]',
+  groupInputFieldLabel: '[data-cy="label-group-input-field"]',
+  documentationLink: '[data-cy="read-documentation-option-button"]',
+  nameLabel: '[data-cy="name-label"]',
+  valueLabel: '[data-cy="value-label"]',
+  valueInputField: '[data-cy="value-input-field"]',
+  yesButton: '[data-cy="yes-button"]',
+  pagination: '[data-cy="pagination-section"]',
+  workspaceConstantsOption: '[data-cy="workspace-constants-list-item"]',
+  nameErrorText: '[data-cy="name-error-text"]',
+  valueErrorText: '[data-cy="value-error-text"]',
 };
 
 export const commonWidgetSelector = {
@@ -314,12 +325,12 @@ export const commonWidgetSelector = {
     makePublicAppToggleLabel: '[data-cy="make-public-app-label"]',
     shareableAppLink: '[data-cy="shareable-app-link-label"]',
     copyAppLinkButton: '[data-cy="copy-app-link-button"]',
-    iframeLinkLabel: '[data-cy="iframe-link-label"]',
-    ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
+    // iframeLinkLabel: '[data-cy="iframe-link-label"]',
+    // ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
   },
   makePublicAppToggle: '[data-cy="make-public-app-toggle"]',
   appLink: '[data-cy="app-link"]',
   appNameSlugInput: '[data-cy="app-name-slug-input"]',
-  iframeLink: '[data-cy="iframe-link"]',
+  // iframeLink: '[data-cy="iframe-link"]',
   modalCloseButton: '[data-cy="modal-close-button"]',
 };

@@ -33,7 +33,7 @@ describe("dashboard", () => {
 
   beforeEach(() => {
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
-    cy.intercept("GET", "/api/apps").as("appEditor");
+    // cy.intercept("GET", "/api/apps").as("appEditor");
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
   });
 
@@ -53,6 +53,8 @@ describe("dashboard", () => {
     cy.wait("@folders");
     cy.wait("@version");
     // deleteDownloadsFolder();
+    cy.visitTheWorkspace('My workspace')
+
   });
 
   it("should verify the elements on empty dashboard", () => {
@@ -281,13 +283,13 @@ describe("dashboard", () => {
       commonSelectors.toastMessage,
       dashboardText.appClonedToast
     );
-    cy.wait("@appEditor");
-    cy.wait(300);
+    cy.waitForAppLoad();
+    cy.wait(2000);
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.dragAndDropWidget("button", 25, 25);
     cy.get(commonSelectors.editorPageLogo).click();
     cy.wait("@appLibrary");
-    cy.wait(500);
+    cy.wait(1000);
     cy.reloadAppForTheElement(data.cloneAppName);
 
     cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
@@ -340,7 +342,7 @@ describe("dashboard", () => {
     cy.appUILogin();
     cy.createApp();
     cy.renameApp(data.appName);
-    cy.dragAndDropWidget("Button", 50, 50);
+    cy.dragAndDropWidget("Button", 450, 450);
 
     cy.get(commonSelectors.editorPageLogo).click();
     cy.reloadAppForTheElement(data.appName);
@@ -350,7 +352,6 @@ describe("dashboard", () => {
     );
 
     navigateToAppEditor(data.appName);
-    cy.dragAndDropWidget("Button");
     cy.get(commonSelectors.canvas).should("contain", "Button");
     cy.get(commonSelectors.editorPageLogo).click();
     cy.wait("@appLibrary");
@@ -414,11 +415,28 @@ describe("dashboard", () => {
     ).verifyVisibleElement("have.text", commonText.deleteFolderOption);
 
     cy.get(commonSelectors.editFolderOption(data.folderName)).click();
-    verifyModal(
-      commonText.updateFolderTitle,
-      commonText.updateFolderButton,
-      commonSelectors.folderNameInput
+
+    cy.get(commonSelectors.modalComponent).should("be.visible");
+    cy.get(commonSelectors.modalTitle(commonText.updateFolderTitle))
+      .should("be.visible")
+      .and("have.text", commonText.updateFolderTitle);
+    cy.get(commonSelectors.buttonSelector(commonText.closeButton)).should(
+      "be.visible"
     );
+    cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
+      .should("be.visible")
+      .and("have.text", commonText.cancelButton);
+    cy.get(commonSelectors.buttonSelector(commonText.updateFolderButton))
+      .should("be.visible")
+      .and("have.text", "Edit folder");
+
+    cy.get(commonSelectors.folderNameInput).should("be.visible")
+
+    // verifyModal(
+    //   commonText.updateFolderTitle,
+    //   commonText.updateFolderButton,
+    //   commonSelectors.folderNameInput
+    // );
 
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
     closeModal(commonText.closeButton);
