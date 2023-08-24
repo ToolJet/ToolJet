@@ -251,7 +251,7 @@ class ManageAppUsersComponent extends React.Component {
                     <div className="input-group">
                       <Textarea
                         disabled
-                        className={`input-with-icon ${this.props.darkMode && 'tbg-dark'} ${
+                        className={`input-with-icon ${this.props.darkMode && 'bg-dark'} ${
                           this.props.darkMode && 'text-light'
                         }`}
                         rows={5}
