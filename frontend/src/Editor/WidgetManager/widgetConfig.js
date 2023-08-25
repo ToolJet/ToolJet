@@ -343,10 +343,8 @@ export const widgets = [
         displayName: 'Table type',
         options: [
           { name: 'Bordered', value: 'table-bordered' },
-          { name: 'Borderless', value: 'table-borderless' },
-          { name: 'Classic', value: 'table-classic' },
+          { name: 'Regular', value: 'table-classic' },
           { name: 'Striped', value: 'table-striped' },
-          { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
         validation: {
           schema: { type: 'string' },
