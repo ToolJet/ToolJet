@@ -19,6 +19,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { Page } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
+import { EventHandler, Target } from 'src/entities/event_handler.entity';
 
 @Injectable()
 export class AppImportExportService {
@@ -547,6 +548,7 @@ export class AppImportExportService {
             );
           }
         }
+
         for (const query of dataQueries.filter(
           (dq) => dq.dataSourceId === source.id && dq.appVersionId === appVersion.id
         )) {
@@ -564,12 +566,28 @@ export class AppImportExportService {
     }
 
     for (const newQuery of newDataQueries) {
-      // const dataQueryEvents = [];
       const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
-      newQuery.options = newOptions;
-      console.log('------arpit new data query:: ', { newQuery });
+      const queryEvents = newQuery.options?.events || [];
 
+      delete newOptions?.events;
+
+      newQuery.options = newOptions;
       await manager.save(newQuery);
+
+      queryEvents.forEach(async (event, index) => {
+        const newEvent = {
+          name: event.eventId,
+          sourceId: newQuery.id,
+          target: Target.dataQuery,
+          event: {
+            ...event,
+            eventIndex: index,
+          },
+          appVersionId: newQuery.appVersionId,
+        };
+
+        await manager.save(EventHandler, newEvent);
+      });
     }
 
     for (const appVersion of appVersions) {
@@ -581,10 +599,8 @@ export class AppImportExportService {
         for (const pageId of Object.keys(updatedDef?.pages)) {
           const page = updatedDef.pages[pageId];
 
-          const pageEvents = page.events;
+          const pageEvents = page.events || [];
           const componentEvents = [];
-
-          // console.log('-----arpit appDefinition', { def: JSON.stringify(updatedDef) });
 
           const pagePostionIntheList = Object.keys(updatedDef?.pages).indexOf(pageId);
 
@@ -633,34 +649,41 @@ export class AppImportExportService {
 
           //Event handlers
 
-          console.log('-----arpit events handle', {
-            componentEvents: JSON.stringify(componentEvents),
-            pageEvents: JSON.stringify(pageEvents),
+          if (pageEvents.length > 0) {
+            pageEvents.forEach(async (event, index) => {
+              const newEvent = {
+                name: event.eventId,
+                sourceId: pageCreated.id,
+                target: Target.page,
+                event: {
+                  ...event,
+                  eventIndex: index,
+                },
+                appVersionId: appVersionMapping[appVersion.id],
+              };
+
+              await manager.save(EventHandler, newEvent);
+            });
+          }
+
+          componentEvents.forEach((eventObj) => {
+            if (eventObj.event?.length === 0) return;
+
+            eventObj.event.forEach(async (event, index) => {
+              const newEvent = {
+                name: event.eventId,
+                sourceId: eventObj.componentId,
+                target: Target.component,
+                event: {
+                  ...event,
+                  eventIndex: index,
+                },
+                appVersionId: appVersionMapping[appVersion.id],
+              };
+
+              await manager.save(EventHandler, newEvent);
+            });
           });
-
-          // pageEvents.forEach(async (eventObj) => {
-          //   const newEvent = {
-          //     name: eventObj.event.eventId,
-          //     sourceId: pageCreated.id,
-          //     target: eventObj.eventType || 'page',
-          //     event: eventObj.event,
-          //     appVersionId: appVersionMapping[appVersion.id],
-          //   };
-
-          //   await manager.save(Event, newEvent);
-          // });
-
-          // componentEvents.forEach(async (eventObj) => {
-          //   const newEvent = {
-          //     name: eventObj.event.eventId,
-          //     sourceId: eventObj.attachedTo,
-          //     target: eventObj.eventType || 'component',
-          //     event: eventObj.event,
-          //     appVersionId: appVersionMapping[appVersion.id],
-          //   };
-
-          //   await manager.save(Event, newEvent);
-          // });
 
           if (isHompage) {
             updateHomepageId = pageCreated.id;
