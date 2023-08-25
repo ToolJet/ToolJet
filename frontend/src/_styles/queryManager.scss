@@ -1884,3 +1884,10 @@ $border-radius: 4px;
   position: absolute;
   right: 0;
 }
+
+.dd-select-value-badge {
+  border-radius: 6px;
+  background: var(--slate-03, #F1F3F5)  !important;
+  text-transform: none;
+  color: var(--slate-12, #11181C) !important;
+}

@@ -165,6 +165,7 @@ function DataSourceSelect({
             // marginBottom: '1px',
             boxShadow: 'none',
             borderRadius: '4px 4px 0 0',
+            borderBottom: '1px solid var(--slate-05, #E6E8EB)',
             ':hover': {
               borderColor: 'var(--slate7)',
             },
@@ -194,9 +195,12 @@ function DataSourceSelect({
           groupHeading: (style) => ({
             ...style,
             fontSize: '100%',
-            textTransform: '',
-            color: 'inherit',
-            fontWeight: '400',
+            color: 'var(--slate-11, #687076)',
+            // font-size: 12px;
+            // font-style: normal;
+            fontWeight: 500,
+            lineHeight: '20px',
+            textTransform: 'uppercase',
           }),
           option: (style, { data: { isNested }, isFocused, isDisabled }) => ({
             ...style,
@@ -218,6 +222,8 @@ function DataSourceSelect({
           }),
           group: (style) => ({
             ...style,
+            borderTop: '1px solid var(--slate-05, #E6E8EB)',
+            marginTop: '8px',
             '.dd-select-option': { marginLeft: '19px' },
           }),
           container: (styles) => ({

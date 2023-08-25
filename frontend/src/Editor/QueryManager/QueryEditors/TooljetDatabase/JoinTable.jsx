@@ -13,6 +13,7 @@ import InnerJoinIcon from '../../Icons/InnerJoinIcon';
 import FullOuterJoin from '../../Icons/FullOuterJoin';
 import SelectBox from './SelectBox';
 import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
+import Remove from '@/_ui/Icon/bulkIcons/Remove';
 
 // Pending :-
 // - For StateManagement we can process with context
@@ -177,10 +178,10 @@ const SelectTableMenu = ({ darkMode }) => {
               </Col>
               <Col sm="2" className="p-0 border-end">
                 {/* <SelectBox /> */}
-                <DropDownSelect options={tableList} />
+                <DropDownSelect options={tableList} darkMode={darkMode} />
               </Col>
               <Col sm="4" className="p-0">
-                <DropDownSelect options={tableList} isMulti />
+                <DropDownSelect options={tableList} isMulti darkMode={darkMode} />
               </Col>
             </Row>
             <Row className="mb-2">
@@ -214,10 +215,10 @@ const SelectTableMenu = ({ darkMode }) => {
               </Col>
               <Col sm="2" className="p-0 border-end">
                 {/* <SelectBox /> */}
-                <DropDownSelect options={tableList} addBtnLabel={'Add new col'} onAdd={alert} />
+                <DropDownSelect options={tableList} addBtnLabel={'Add new col'} onAdd={alert} darkMode={darkMode} />
               </Col>
               <Col sm="4" className="p-0">
-                <DropDownSelect options={tableList} isMulti />
+                <DropDownSelect options={tableList} isMulti darkMode={darkMode} />
               </Col>
             </Row>
             <Row className="mb-2">
@@ -346,15 +347,15 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
           className="px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0 position-relative"
           data-cy={`show-ds-popover-button`}
         >
-          {selected
-            ? Array.isArray(selected)
-              ? selected.map((option) => (
-                  <Badge key={option.value} className="me-1" bg="secondary">
-                    {option.label}
-                  </Badge>
-                ))
-              : selected?.label
-            : ''}
+          {selected ? (
+            Array.isArray(selected) ? (
+              <MultiSelectValueBadge options={options} selected={selected} setSelected={setSelected} />
+            ) : (
+              selected?.label
+            )
+          ) : (
+            ''
+          )}
           <span className="dd-select-control-chevron">
             <CheveronDown />
           </span>
@@ -363,6 +364,40 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
     </OverlayTrigger>
   );
 };
+
+function MultiSelectValueBadge({ options, selected, setSelected }) {
+  if (options?.length === selected?.length && selected?.length !== 0) {
+    return (
+      <Badge className="me-1 dd-select-value-badge" bg="secondary">
+        All {options?.length} selected
+        <span
+          role="button"
+          onClick={(e) => {
+            setSelected([]);
+            e.preventDefault();
+          }}
+        >
+          <Remove fill="var(--slate12)" />
+        </span>
+      </Badge>
+    );
+  }
+
+  return selected.map((option) => (
+    <Badge key={option.value} className="me-1 dd-select-value-badge" bg="secondary">
+      {option.label}
+      <span
+        role="button"
+        onClick={(e) => {
+          setSelected((selected) => selected.filter((opt) => opt.value !== option.value));
+          e.preventDefault();
+        }}
+      >
+        <Remove fill="var(--slate12)" />
+      </span>
+    </Badge>
+  ));
+}
 
 function generateRandomId(length) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
