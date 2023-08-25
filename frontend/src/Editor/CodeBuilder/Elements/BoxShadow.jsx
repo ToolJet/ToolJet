@@ -100,12 +100,8 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
 
   const eventPopover = () => {
     return (
-      <Popover
-        id="popover-basic"
-        style={{ width: '350px', maxWidth: '350px' }}
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
-      >
-        <Popover.Body>
+      <Popover id="popover-basic" style={{ width: '350px', maxWidth: '350px' }}>
+        <Popover.Body className={`${darkMode && 'dark-theme'}`}>
           <>
             {input.map((item) => (
               <div className="row" key={item}>
@@ -139,6 +135,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
               hideFx
               pickerStyle={colorPickerStyle}
               cyLabel={'box-shadow-color'}
+              customStyle={true}
             />
             <button
               data-cy={'box-shadow-clear-button'}
@@ -186,7 +183,6 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
               data-cy={`${cyLabel}-picker`}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              // onClick={() => setShowPicker(true)}
             >
               <div
                 className="col-auto"
