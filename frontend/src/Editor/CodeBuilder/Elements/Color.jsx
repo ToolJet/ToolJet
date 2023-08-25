@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Popover from 'react-bootstrap/Popover';
 
-export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerStyle = {}, cyLabel }) => {
+export const Color = ({
+  value,
+  onChange,
+  forceCodeBox,
+  hideFx = false,
+  pickerStyle = {},
+  cyLabel,
+  customStyle = false,
+}) => {
   const [showPicker, setShowPicker] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -11,12 +21,6 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
     right: '0px',
     bottom: '0px',
     left: '0px',
-  };
-  const popoverStyle = {
-    position: 'absolute',
-    right: '0px',
-    top: '0px',
-    zIndex: 10000,
   };
 
   const handleMouseEnter = () => {
@@ -48,50 +52,70 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
     const hexCode = `${color.hex}${decimalToHex(color?.rgb?.a ?? 1.0)}`;
     onChange(hexCode);
   };
-
+  const eventPopover = () => {
+    return (
+      <Popover>
+        <Popover.Body className={customStyle && 'boxshadow-picker'}>
+          <>
+            {showPicker && (
+              <div>
+                <div style={coverStyles} onClick={() => setShowPicker(false)} />
+                <div style={pickerStyle}>
+                  <SketchPicker
+                    onFocus={() => setShowPicker(true)}
+                    color={value}
+                    onChangeComplete={handleColorChange}
+                    style={{ bottom: 0 }}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        </Popover.Body>
+      </Popover>
+    );
+  };
   return (
     <div className="row fx-container" data-cy="color-picker-parent">
       <div className="col">
         <div className="field">
-          {showPicker && (
-            <div>
-              <div style={coverStyles} onClick={() => setShowPicker(false)} />
-              <div style={pickerStyle}>
-                <SketchPicker
-                  onFocus={() => setShowPicker(true)}
-                  color={value}
-                  onChangeComplete={handleColorChange}
-                  style={{ bottom: 0 }}
-                />
-              </div>
-            </div>
-          )}
-
-          <div
-            className="row mx-0 color-picker-input d-flex"
-            onClick={() => setShowPicker(true)}
-            data-cy={`${String(cyLabel)}-picker`}
-            style={outerStyles}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+          <OverlayTrigger
+            onToggle={(showPicker) => {
+              setShowPicker(showPicker);
+            }}
+            show={showPicker}
+            trigger="click"
+            placement={'left'}
+            rootClose={true}
+            overlay={eventPopover()}
           >
             <div
-              className="col-auto"
-              style={{
-                float: 'right',
-                width: '24px',
-                height: '24px',
-                borderRadius: ' 6px',
-                border: `1px solid var(--slate7, #D7DBDF)`,
-                boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
-                backgroundColor: value,
-              }}
-              data-cy={`${String(cyLabel)}-picker-icon`}
-            ></div>
-            <div className="col tj-text-xsm p-0" data-cy={`${String(cyLabel)}-value`}>
-              {value}
+              className="row mx-0 color-picker-input d-flex"
+              onClick={() => setShowPicker(true)}
+              data-cy={`${String(cyLabel)}-picker`}
+              style={outerStyles}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <div
+                className="col-auto"
+                style={{
+                  float: 'right',
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: ' 6px',
+                  border: `1px solid var(--slate7, #D7DBDF)`,
+                  boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
+                  backgroundColor: value,
+                }}
+                data-cy={`${String(cyLabel)}-picker-icon`}
+              ></div>
+
+              <div className="col tj-text-xsm p-0 color-slate12" data-cy={`${String(cyLabel)}-value`}>
+                {value}
+              </div>
             </div>
-          </div>
+          </OverlayTrigger>
         </div>
       </div>
     </div>

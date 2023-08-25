@@ -533,14 +533,13 @@ button {
     height: calc(100% - 48px);
     position: fixed;
     right: 0;
-    // overflow-x: hidden;
+    overflow-x: hidden;
     width: 300px;
     flex: 1 1 auto;
     top: 48px;
     border-left: 1px solid var(--slate5);
     background-color: var(--base);
     background-clip: border-box;
-    // position: relative;
 
     .nav-tabs .nav-link {
       color: #3e525b;
@@ -3148,7 +3147,8 @@ input:focus-visible {
 
 .sketch-picker {
   position: absolute;
-  left: -225px;
+  left: -192px;
+  top: 0px;
   border-radius: 6px !important;
   border: 1px solid var(--slate5, #E6E8EB) !important;
   background: var(--slate1, #FBFCFD) !important;
@@ -3162,6 +3162,13 @@ input:focus-visible {
     }
   }
 }
+
+.boxshadow-picker {
+  .sketch-picker {
+    left: -209px !important;
+  }
+}
+
 
 .color-picker-input {
   border: solid 1px rgb(223, 223, 223);
@@ -11284,4 +11291,17 @@ tbody {
   position: absolute;
   left: 0;
   bottom: 48px;
+}
+
+.popover-body {
+  background-color: var(--base);
+  color: var(--slate12);
+  border: 1px solid var(--slate3, #F1F3F5);
+  border-radius: 6px;
+}
+
+.popover {
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08);
 }
