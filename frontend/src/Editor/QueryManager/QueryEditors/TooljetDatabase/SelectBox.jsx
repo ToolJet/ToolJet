@@ -26,6 +26,7 @@ function DataSourceSelect({
   onSelect,
   onAdd,
   addBtnLabel,
+  selected,
 }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
@@ -238,6 +239,7 @@ function DataSourceSelect({
         isMulti={isMulti}
         maxMenuHeight={400}
         minMenuHeight={300}
+        value={selected}
         // onKeyDown={handleKeyDown}
         onInputChange={() => {
           const queryDsSelectMenu = document.getElementById('query-ds-select-menu');

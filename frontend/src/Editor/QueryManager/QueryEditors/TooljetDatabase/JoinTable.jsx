@@ -303,6 +303,7 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
             options={options}
             isMulti={isMulti}
             onSelect={setSelected}
+            selected={selected}
             closePopup={() => setShowMenu(false)}
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
