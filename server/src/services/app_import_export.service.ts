@@ -17,6 +17,7 @@ import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { Organization } from 'src/entities/organization.entity';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { Plugin } from 'src/entities/plugin.entity';
 
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
@@ -404,23 +405,23 @@ export class AppImportExportService {
     manager: EntityManager,
     importingDataSources: DataSource[]
   ): Promise<DataSource[]> {
-    const dsKindsFound = new Set<string>();
+    const pluginsFound = new Set<string>();
 
-    const hasOneDataSourceOfKind = async (kind: string) => {
-      if (dsKindsFound.has(kind)) return true;
+    const isPluginInstalled = async (kind: string): Promise<boolean> => {
+      if (pluginsFound.has(kind)) return true;
 
-      const dsOfKindExists = !!(await manager.findOne(DataSource, { where: { kind } }));
+      const pluginExists = !!(await manager.findOne(Plugin, { where: { pluginId: kind } }));
 
-      if (dsOfKindExists) dsKindsFound.add(kind);
+      if (pluginExists) pluginsFound.add(kind);
 
-      return dsOfKindExists;
+      return pluginExists;
     };
 
     const filteredDataSources: DataSource[] = [];
 
     for (const ds of importingDataSources) {
       const isPlugin = !!ds.pluginId;
-      if (!isPlugin || (isPlugin && (await hasOneDataSourceOfKind(ds.kind)))) {
+      if (!isPlugin || (isPlugin && (await isPluginInstalled(ds.kind)))) {
         filteredDataSources.push(ds);
       }
     }
@@ -597,14 +598,14 @@ export class AppImportExportService {
 
     if (existingDatasource) return existingDatasource;
 
-    const createDsFromPluginIdInAnyWorkspace = async (ds: DataSource): Promise<DataSource> => {
-      const pluginOfSameKindInDifferentWorkspace = await manager.findOne(DataSource, {
+    const createDsFromPluginInstalled = async (ds: DataSource): Promise<DataSource> => {
+      const plugin = await manager.findOneOrFail(Plugin, {
         where: {
-          kind: dataSource.kind,
+          pluginId: dataSource.kind,
         },
       });
 
-      if (pluginOfSameKindInDifferentWorkspace) {
+      if (plugin) {
         const newDataSource = manager.create(DataSource, {
           organizationId: user.organizationId,
           name: dataSource.name,
@@ -612,7 +613,7 @@ export class AppImportExportService {
           type: DataSourceTypes.DEFAULT,
           appVersionId,
           scope: 'global',
-          pluginId: pluginOfSameKindInDifferentWorkspace.pluginId,
+          pluginId: plugin.id,
         });
         await manager.save(newDataSource);
 
@@ -636,7 +637,7 @@ export class AppImportExportService {
     };
 
     if (isPlugin) {
-      return await createDsFromPluginIdInAnyWorkspace(dataSource);
+      return await createDsFromPluginInstalled(dataSource);
     } else {
       return await createNewGlobalDs(dataSource);
     }
