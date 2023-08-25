@@ -52,7 +52,7 @@ export const Color = ({ value, onChange, forceCodeBox, hideFx = false, pickerSty
   return (
     <div className="row fx-container" data-cy="color-picker-parent">
       <div className="col">
-        <div className="field mb-2">
+        <div className="field">
           {showPicker && (
             <div>
               <div style={coverStyles} onClick={() => setShowPicker(false)} />
