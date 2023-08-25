@@ -194,7 +194,7 @@ export const EventManager = ({
 
   function getPageOptions(event) {
     // If disabled page is already selected then don't remove from page options
-    if (pages.find((page) => page.id === event.pageId).disabled) {
+    if (pages.find((page) => page.id === event.pageId)?.disabled) {
       return pages.map((page) => ({
         name: page.name,
         value: page.id,
