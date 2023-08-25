@@ -11120,6 +11120,11 @@ tbody {
     padding-top: 5rem;
   }
 
+  .workspace-constant-card-body {
+    height: calc(100vh - 295px);
+    background: var(--base);
+  }
+
   .constant-table-wrapper {
     height: calc(100vh - 403px);
     overflow-y: auto;

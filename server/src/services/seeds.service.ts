@@ -40,7 +40,7 @@ export class SeedsService {
         lastName: 'Developer',
         email: 'dev@tooljet.io',
         password: 'password',
-        userType: process.env.DISABLE_MULTI_WORKSPACE !== 'true' ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE,
+        userType: USER_TYPE.INSTANCE,
         defaultOrganizationId: organization.id,
         status: USER_STATUS.ACTIVE,
       });
