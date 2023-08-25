@@ -153,11 +153,11 @@ export const PageHandler = ({
             )}
           </div>
           <div
-            className="col text-truncate font-weight-400 page-name tj-text-xsm  color-slate12"
+            className="col text-truncate font-weight-400 page-name"
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
             style={isHomePage || isHidden || isHovered || isDisabled ? { paddingLeft: '0px' } : { paddingLeft: '16px' }}
           >
-            {`${page.name}`}
+            <span className={darkMode && 'theme-dark'}>{`${page.name}`}</span>
             {isIconApplied && (
               <span
                 style={{
