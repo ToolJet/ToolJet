@@ -214,7 +214,6 @@ actions.unsetPageVariable('pageVar')`
     cy.wait(200);
     cy.waitForAutoSave();
     query("run");
-    waitForQueryAction("run");
     cy.get('[data-cy="sign-in-header"]').should("be.visible");
   });
 

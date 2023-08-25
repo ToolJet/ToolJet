@@ -35,7 +35,7 @@ describe("Text Input", () => {
     cy.apiLogin();
     cy.apiCreateApp();
     cy.openApp();
-    cy.dragAndDropWidget("Text Input");
+    cy.dragAndDropWidget("Text Input", 500, 500);
   });
   afterEach(() => {
     cy.apiDeleteApp();
@@ -253,7 +253,7 @@ describe("Text Input", () => {
     );
   });
 
-  it("should verify the app preview", () => {
+  it.only("should verify the app preview", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
@@ -336,10 +336,12 @@ describe("Text Input", () => {
       .invoke("attr", "placeholder")
       .should("contain", data.customText);
 
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName),
-      data.customText
-    );
+    cy.get(
+      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
+    )
+      .type(`{selectAll}{backspace}{enter}`)
+      .type(data.customText);
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(
         textInputText.defaultWidgetName
