@@ -533,13 +533,14 @@ button {
     height: calc(100% - 48px);
     position: fixed;
     right: 0;
-    overflow-x: hidden;
+    // overflow-x: hidden;
     width: 300px;
     flex: 1 1 auto;
     top: 48px;
     border-left: 1px solid var(--slate5);
     background-color: var(--base);
     background-clip: border-box;
+    // position: relative;
 
     .nav-tabs .nav-link {
       color: #3e525b;
@@ -1337,23 +1338,24 @@ button {
 }
 
 .fx-common {
- margin-right:12px;
+  margin-right: 12px;
 }
 
 .fx-button {
   border-radius: 6px;
+
   svg {
     margin: 2px 4px;
   }
 }
 
 .fx-button:hover {
-  background-color: var(--slate4) ;
+  background-color: var(--slate4);
   cursor: pointer;
 }
 
 .fx-button.active {
-  background-color: var(--indigo5) ;
+  background-color: var(--indigo5);
   cursor: pointer;
 }
 
@@ -1433,7 +1435,7 @@ button {
 
 .inspector {
   .accordion {
-    margin-bottom : 1rem !important;
+    margin-bottom: 1rem !important;
   }
 }
 
@@ -3073,11 +3075,12 @@ input:focus-visible {
   background: var(--indigo3);
   width: 18.75rem; // 300px
   z-index: 1;
-  padding : 12px 18px;
-  color : var(--slate12);
+  padding: 12px 18px;
+  color: var(--slate12);
   text-decoration: none;
   display: flex;
   justify-content: space-between;
+
   .widget-documentation-link-text {
     margin-left: 13px;
     font-weight: 500;
@@ -3093,12 +3096,14 @@ input:focus-visible {
 .column-sort-row {
   border-radius: 6px;
   background-color: var(--slate3);
+
   .event-handler-text {
-   font-size: 12px;
-   line-height: 20px;
-   color: var(--slate12);
-   font-weight: 500;
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--slate12);
+    font-weight: 500;
   }
+
   .event-name-text {
     font-size: 12px;
     line-height: 20px;
@@ -3106,6 +3111,7 @@ input:focus-visible {
     font-weight: 400;
     border-radius: 4px;
   }
+
   .card-body {
     color: var(--slate12);
   }
@@ -3132,6 +3138,13 @@ input:focus-visible {
 
 .sketch-picker {
   position: absolute;
+  left: -225px;
+  border-radius: 6px !important;
+  border: 1px solid var(--slate5, #E6E8EB) !important;
+  background: var(--slate1, #FBFCFD) !important;
+  width: 210px !important; //adjusted with padding
+  // height: 296px !important;
+  box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08) !important;
 }
 
 .color-picker-input {
@@ -4801,6 +4814,7 @@ input[type="text"] {
   .ToggleGroupItem {
     padding: 2px 10px !important;
   }
+
   .ToggleGroupItem[data-state='on'] {
     padding: 2px 9px !important;
   }
@@ -5186,11 +5200,13 @@ div#driver-page-overlay {
   color: var(--slate12);
   border: 1px transparent;
   border-radius: 6px;
+
   &:hover {
     background-color: var(--slate4);
   }
+
   &:focus {
-    border : 1px solid var(--indigo9) !important;
+    border: 1px solid var(--indigo9) !important;
     background-color: var(--indigo2);
   }
 }
