@@ -555,6 +555,7 @@ export class AppImportExportService {
     user: User
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceKinds.includes(dataSource.kind as DefaultDataSourceKind);
+    const isPlugin = !!dataSource.pluginId;
 
     if (isDefaultDatasource) {
       const createdDefaultDatasource = await manager.findOne(DataSource, {
@@ -596,18 +597,49 @@ export class AppImportExportService {
 
     if (existingDatasource) return existingDatasource;
 
-    const newDataSource = manager.create(DataSource, {
-      organizationId: user.organizationId,
-      name: dataSource.name,
-      kind: dataSource.kind,
-      type: DataSourceTypes.DEFAULT,
-      appVersionId,
-      scope: 'global',
-      pluginId: null,
-    });
-    await manager.save(newDataSource);
+    const createDsFromPluginIdInAnyWorkspace = async (ds: DataSource): Promise<DataSource> => {
+      const pluginOfSameKindInDifferentWorkspace = await manager.findOne(DataSource, {
+        where: {
+          kind: dataSource.kind,
+        },
+      });
 
-    return newDataSource;
+      if (pluginOfSameKindInDifferentWorkspace) {
+        const newDataSource = manager.create(DataSource, {
+          organizationId: user.organizationId,
+          name: dataSource.name,
+          kind: dataSource.kind,
+          type: DataSourceTypes.DEFAULT,
+          appVersionId,
+          scope: 'global',
+          pluginId: pluginOfSameKindInDifferentWorkspace.pluginId,
+        });
+        await manager.save(newDataSource);
+
+        return newDataSource;
+      }
+    };
+
+    const createNewGlobalDs = async (ds: DataSource): Promise<DataSource> => {
+      const newDataSource = manager.create(DataSource, {
+        organizationId: user.organizationId,
+        name: dataSource.name,
+        kind: dataSource.kind,
+        type: DataSourceTypes.DEFAULT,
+        appVersionId,
+        scope: 'global',
+        pluginId: null,
+      });
+      await manager.save(newDataSource);
+
+      return newDataSource;
+    };
+
+    if (isPlugin) {
+      return await createDsFromPluginIdInAnyWorkspace(dataSource);
+    } else {
+      return await createNewGlobalDs(dataSource);
+    }
   }
 
   async associateAppEnvironmentsToAppVersion(
