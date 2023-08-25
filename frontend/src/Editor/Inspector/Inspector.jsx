@@ -410,26 +410,26 @@ export const Inspector = ({
           </Tabs>
         </div>
       </div>
-
-      <a
-        href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
-        target="_blank"
-        rel="noreferrer"
-        className="widget-documentation-link"
-        data-cy="widget-documentation-link"
-      >
-        <span>
-          <Student width={13} fill={'#3E63DD'} />
-          <small className="widget-documentation-link-text">
-            {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-              componentMeta: componentMeta.name,
-            })}
-          </small>
-        </span>
-        <span>
-          <ArrowRight width={20} fill={'#3E63DD'} />
-        </span>
-      </a>
+      <span className="widget-documentation-link">
+        <a
+          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
+          target="_blank"
+          rel="noreferrer"
+          data-cy="widget-documentation-link"
+        >
+          <span>
+            <Student width={13} fill={'#3E63DD'} />
+            <small className="widget-documentation-link-text">
+              {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
+                componentMeta: componentMeta.name,
+              })}
+            </small>
+          </span>
+          <span>
+            <ArrowRight width={20} fill={'#3E63DD'} />
+          </span>
+        </a>
+      </span>
     </div>
   );
 };

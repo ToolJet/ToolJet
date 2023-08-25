@@ -131,7 +131,6 @@ export const CustomSelect = ({ ...props }) => {
       />
       <Select
         width={'100%'}
-        classNamePrefix="custom-version-selector"
         data-cy={`test-version-selector`}
         hasSearch={false}
         components={{ Menu, SingleValue }}

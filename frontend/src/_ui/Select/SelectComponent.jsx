@@ -8,6 +8,7 @@ export const SelectComponent = ({
   value,
   onChange,
   closeMenuOnSelect,
+  classNamePrefix,
   customWrap, //used so that editor selects remains with old theme , remove when whole theme is same !
   ...restProps
 }) => {
@@ -76,7 +77,7 @@ export const SelectComponent = ({
       maxMenuHeight={maxMenuHeight}
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
-      classNamePrefix={`${darkMode && 'dark-theme'} ${'react-select'}`}
+      classNamePrefix={`${darkMode && 'dark-theme'} ${'react-select'} ${classNamePrefix}`}
     />
   );
 };
