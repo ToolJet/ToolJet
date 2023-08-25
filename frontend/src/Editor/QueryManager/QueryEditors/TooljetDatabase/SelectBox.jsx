@@ -16,7 +16,17 @@ import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataS
 import { Form } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options, isMulti, onSelect }) {
+function DataSourceSelect({
+  darkMode,
+  isDisabled,
+  selectRef,
+  closePopup,
+  options,
+  isMulti,
+  onSelect,
+  onAdd,
+  addBtnLabel,
+}) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const [userDefinedSources, setUserDefinedSources] = useState([...dataSources, ...globalDataSources]);
@@ -107,6 +117,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options
                     justifyContent: 'flex-start',
                     width: '100%',
                   }}
+                  className="dd-select-option"
                 >
                   <div
                     style={{
@@ -137,9 +148,10 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options
             );
           },
           // }),
-          MenuList: MenuList,
+          MenuList: (props) => <MenuList {...props} onAdd={onAdd} addBtnLabel={addBtnLabel} />,
           IndicatorSeparator: () => null,
           DropdownIndicator,
+          GroupHeading: CustomGroupHeading,
         }}
         styles={{
           control: (style) => ({
@@ -203,6 +215,10 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options
                 '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
               }),
           }),
+          group: (style) => ({
+            ...style,
+            '.dd-select-option': { marginLeft: '19px' },
+          }),
           container: (styles) => ({
             ...styles,
             borderRadius: '6px',
@@ -244,7 +260,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup, options
   );
 }
 
-const MenuList = ({ children, getStyles, innerRef, ...props }) => {
+const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, ...props }) => {
   const navigate = useNavigate();
   const menuListStyles = getStyles('menuList', props);
 
@@ -265,10 +281,10 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu">
         {children}
       </div>
-      {admin && (
+      {onAdd && (
         <div className="p-2 mt-2 border-slate3-top">
-          <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
-            + Add new datasource
+          <ButtonSolid variant="secondary" size="md" className="w-100" onClick={onAdd}>
+            + {addBtnLabel || 'Add new'}
           </ButtonSolid>
         </div>
       )}
@@ -283,6 +299,29 @@ const DropdownIndicator = (props) => {
         <Search style={{ width: '16px' }} />
       </components.DropdownIndicator>
     )
+  );
+};
+
+const CustomGroupHeading = (props) => {
+  const node = document.querySelector(`#${props.id}`)?.parentElement?.nextElementSibling;
+  const classes = node?.classList;
+  const hidden = classes?.contains('d-none');
+  const handleHeaderClick = (id) => {
+    if (hidden) {
+      node.classList.remove('d-none');
+    } else {
+      node.classList.add('d-none');
+    }
+  };
+
+  return (
+    <div
+      className="group-heading-wrapper d-flex justify-content-between"
+      onClick={() => handleHeaderClick(props.id)}
+      style={{ cursor: 'pointer' }}
+    >
+      <components.GroupHeading {...props} /> <SolidIcon name={hidden ? 'cheveronup' : 'cheverondown'} height={20} />
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Select, { components } from 'react-select';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import cx from 'classnames';
-import { Col, Container, OverlayTrigger, Popover, Row } from 'react-bootstrap';
+import { Badge, Col, Container, OverlayTrigger, Popover, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
@@ -142,6 +142,12 @@ const SelectTableMenu = ({ darkMode }) => {
       label: 'Table F',
       value: 'Table F',
       icon: 'search',
+      options: [
+        {
+          label: 'Test 1',
+          value: 2,
+        },
+      ],
       id: '6',
     },
   ];
@@ -207,7 +213,7 @@ const SelectTableMenu = ({ darkMode }) => {
               </Col>
               <Col sm="2" className="p-0 border-end">
                 {/* <SelectBox /> */}
-                <DropDownSelect options={tableList} />
+                <DropDownSelect options={tableList} addBtnLabel={'Add new col'} onAdd={alert} />
               </Col>
               <Col sm="4" className="p-0">
                 <DropDownSelect options={tableList} isMulti />
@@ -266,7 +272,7 @@ const SelectTableMenu = ({ darkMode }) => {
   );
 };
 
-const DropDownSelect = ({ darkMode, disabled, options, isMulti }) => {
+const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onAdd }) => {
   const popoverId = useRef(`dd-select-${generateRandomId(10)}`);
   const popoverBtnId = useRef(`dd-select-btn-${generateRandomId(10)}`);
   const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
@@ -293,7 +299,14 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti }) => {
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
           style={{ width: '244px', maxWidth: '246px' }}
         >
-          <SelectBox options={options} isMulti={isMulti} onSelect={setSelected} closePopup={() => setShowMenu(false)} />
+          <SelectBox
+            options={options}
+            isMulti={isMulti}
+            onSelect={setSelected}
+            closePopup={() => setShowMenu(false)}
+            onAdd={onAdd}
+            addBtnLabel={addBtnLabel}
+          />
         </Popover>
       }
     >
@@ -309,10 +322,18 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti }) => {
             }
             setShowMenu((show) => !show);
           }}
-          className="px-1 pe-3 ps-2 gap-0 w-100 border-0"
+          className="px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0"
           data-cy={`show-ds-popover-button`}
         >
-          {selected ? selected?.label : ' '}
+          {selected
+            ? Array.isArray(selected)
+              ? selected.map((option) => (
+                  <Badge key={option.value} className="me-1" bg="secondary">
+                    {option.label}
+                  </Badge>
+                ))
+              : selected?.label
+            : ''}
         </ButtonSolid>
       </span>
     </OverlayTrigger>
