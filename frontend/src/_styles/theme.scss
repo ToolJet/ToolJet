@@ -4797,6 +4797,15 @@ input[type="text"] {
   }
 }
 
+.inspector-align-buttons {
+  .ToggleGroupItem {
+    padding: 2px 10px !important;
+  }
+  .ToggleGroupItem[data-state='on'] {
+    padding: 2px 9px !important;
+  }
+}
+
 .radio-img {
   input {
     display: none;
@@ -5068,7 +5077,7 @@ input[type="text"] {
   }
 
   .inspector-component-title-input-holder {
-    padding: 16px 8px;
+    padding: 4px 12px;
     margin: 0;
     padding-bottom: 0;
     display: flex;
@@ -5172,8 +5181,18 @@ div#driver-page-overlay {
   }
 }
 
-.editor .editor-sidebar .inspector .form-control-plaintext {
-  padding: 2px 4px;
+.editor .editor-sidebar .inspector .inspector-edit-widget-name {
+  padding: 4px 8px;
+  color: var(--slate12);
+  border: 1px transparent;
+  border-radius: 6px;
+  &:hover {
+    background-color: var(--slate4);
+  }
+  &:focus {
+    border : 1px solid var(--indigo9) !important;
+    background-color: var(--indigo2);
+  }
 }
 
 .tablr-gutter-x-0 {

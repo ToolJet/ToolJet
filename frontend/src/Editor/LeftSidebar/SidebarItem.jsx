@@ -13,7 +13,6 @@ export const LeftSidebarItem = forwardRef(
     // const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
     let displayIcon = icon;
     if (icon == 'page') displayIcon = 'file01';
-    console.log('displayIcon', displayIcon);
 
     // const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
 

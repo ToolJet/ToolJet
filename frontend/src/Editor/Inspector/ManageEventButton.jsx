@@ -1,8 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import './manageEventButton.scss';
 import AddRectangle from '@/_ui/Icon/solidIcons/AddRectangle';
 import { Button } from '@/_ui/LeftSidebar';
-import Overlay from 'react-bootstrap/Overlay';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import classNames from 'classnames';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
@@ -18,6 +17,20 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
       removeHandler(index);
     }
   };
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showActionsMenu && event.target.closest('.list-menu') === null) {
+        setShowActionsMenu();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ showActionsMenu })]);
 
   return (
     <div className="mb-1">

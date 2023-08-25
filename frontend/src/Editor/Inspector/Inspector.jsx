@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import cx from 'classnames';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
@@ -27,6 +26,10 @@ import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
 import Student from '@/_ui/Icon/solidIcons/Student';
 import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
+import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
+import Edit from '@/_ui/Icon/bulkIcons/Edit';
 
 export const Inspector = ({
   selectedComponentId,
@@ -53,6 +56,8 @@ export const Inspector = ({
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
   const [selectedTab, setSelectedTab] = useState('properties');
+  const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
+  const [isHeaderInputEnabled, setHeaderInputEnabled] = useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -94,7 +99,8 @@ export const Inspector = ({
   };
 
   function handleComponentNameChange(newName) {
-    if (component.component.name === newName) return;
+    if (component.component.name === newName) return setHeaderInputEnabled(false);
+
     if (newName.length === 0) {
       toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
       return setInputFocus();
@@ -107,6 +113,7 @@ export const Inspector = ({
       let newComponent = { ...component };
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
+      setHeaderInputEnabled(false);
     } else {
       toast.error(
         t(
@@ -311,6 +318,20 @@ export const Inspector = ({
     </div>
   );
 
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showHeaderActionsMenu && event.target.closest('.list-menu') === null) {
+        setShowHeaderActionsMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ showHeaderActionsMenu })]);
+
   return (
     <div className="inspector">
       <ConfirmDialog
@@ -325,45 +346,57 @@ export const Inspector = ({
       />
       <div>
         <div className="row inspector-component-title-input-holder">
-          <div className={`col-11 p-0 ${isVersionReleased && 'disabled'}`}>
-            <div className="input-icon">
-              <input
-                onChange={(e) => setNewComponentName(e.target.value)}
-                type="text"
-                onBlur={() => handleComponentNameChange(newComponentName)}
-                className="w-100 form-control-plaintext form-control-plaintext-sm mt-1"
-                value={newComponentName}
-                ref={inputRef}
-                data-cy="edit-widget-name"
-              />
-              <span className="input-icon-addon">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M13.1667 3.11667L10.8833 0.833337C10.5853 0.553417 10.1948 0.392803 9.78611 0.382047C9.3774 0.371291 8.97899 0.511145 8.66667 0.775004L1.16667 8.275C0.897308 8.54664 0.72959 8.90267 0.69167 9.28334L0.333336 12.7583C0.322111 12.8804 0.337948 13.0034 0.379721 13.1187C0.421493 13.2339 0.488172 13.3385 0.575003 13.425C0.65287 13.5022 0.745217 13.5633 0.846748 13.6048C0.948279 13.6463 1.057 13.6673 1.16667 13.6667H1.24167L4.71667 13.35C5.09733 13.3121 5.45337 13.1444 5.725 12.875L13.225 5.375C13.5161 5.06748 13.6734 4.65709 13.6625 4.23378C13.6516 3.81047 13.4733 3.40876 13.1667 3.11667ZM4.56667 11.6833L2.06667 11.9167L2.29167 9.41667L7 4.76667L9.25 7.01667L4.56667 11.6833ZM10.3333 5.9L8.1 3.66667L9.725 2L12 4.275L10.3333 5.9Z"
-                    fill="#8092AC"
-                  />
-                </svg>
-              </span>
+          <div className="col-1" onClick={() => switchSidebarTab(2)}>
+            <span data-cy={`inspector-close-icon`} className="cursor-pointer">
+              <ArrowLeft fill={'#11181C'} width={'14'} />
+            </span>
+          </div>
+          <div className={`col-10 p-0 ${isVersionReleased && 'disabled'}`}>
+            <div className="input-icon" style={{ marginLeft: '8px' }}>
+              {isHeaderInputEnabled && (
+                <input
+                  onChange={(e) => setNewComponentName(e.target.value)}
+                  type="text"
+                  onBlur={() => handleComponentNameChange(newComponentName)}
+                  className="w-100 inspector-edit-widget-name"
+                  value={newComponentName}
+                  ref={inputRef}
+                  data-cy="edit-widget-name"
+                />
+              )}
+              {!isHeaderInputEnabled && <p style={{ marginBottom: '0px' }}>{newComponentName}</p>}
             </div>
           </div>
-          <div className="col-1" onClick={() => switchSidebarTab(2)}>
-            <div className="inspector-close-icon-wrapper cursor-pointer" data-cy={`inspector-close-icon`}>
-              <svg
-                width="20"
-                height="21"
-                viewBox="0 0 20 21"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="close-svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M9.99931 10.9751L15.0242 16.0014L16 15.027L10.9737 10.0007L16 4.97577L15.0256 4L9.99931 9.0263L4.97439 4L4 4.97577L9.02492 10.0007L4 15.0256L4.97439 16.0014L9.99931 10.9751Z"
-                  fill="#8092AC"
-                />
-              </svg>
-            </div>
+          <div className="col-1">
+            <OverlayTrigger
+              trigger={'click'}
+              placement={'bottom-end'}
+              rootClose={false}
+              show={showHeaderActionsMenu}
+              overlay={
+                <Popover id="list-menu" className={darkMode && 'popover-dark-themed'}>
+                  <Popover.Body bsPrefix="list-item-popover-body">
+                    <div
+                      className="list-item-popover-option"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setHeaderInputEnabled(true);
+                        setTimeout(() => setInputFocus(), 0);
+                      }}
+                    >
+                      <div className="list-item-popover-menu-option-icon">
+                        <Edit width={16} />
+                      </div>
+                      <div className={'list-item-option-menu-label'}>Rename</div>
+                    </div>
+                  </Popover.Body>
+                </Popover>
+              }
+            >
+              <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
+                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'#11181C'} />
+              </span>
+            </OverlayTrigger>
           </div>
         </div>
         <div>
