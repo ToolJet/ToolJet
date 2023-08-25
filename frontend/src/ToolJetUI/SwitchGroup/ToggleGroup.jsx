@@ -1,7 +1,7 @@
 import React from 'react';
 import './toggleGroup.scss';
 // eslint-disable-next-line import/no-unresolved
-import { ToggleGroup } from '@radix-ui/react-toggle-group';
+import * as ToggleGroup from '@radix-ui/react-toggle-group';
 
 const ToggleGroup1 = ({ children, className, defaultValue, ...restProps }) => (
   <ToggleGroup.Root className={`ToggleGroup ${className}`} type="single" defaultValue={defaultValue} {...restProps}>
