@@ -140,7 +140,7 @@ export function Table({
     top: 'auto',
     borderRadius: '4px',
     ...(isDragging && {
-      marginLeft: '-120px',
+      marginLeft: '-280px', // hack changing marginLeft to -280px to bring the draggable header to the correct position at the start of drag
       display: 'flex',
       alignItems: 'center',
       paddingLeft: '10px',
