@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 
-enum Target {
+export enum Target {
   page = 'page',
   component = 'component',
   dataQuery = 'data_query',
