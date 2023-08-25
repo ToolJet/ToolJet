@@ -12,6 +12,7 @@ import RightOuterJoin from '../../Icons/RightOuterJoin';
 import InnerJoinIcon from '../../Icons/InnerJoinIcon';
 import FullOuterJoin from '../../Icons/FullOuterJoin';
 import SelectBox from './SelectBox';
+import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
 
 // Pending :-
 // - For StateManagement we can process with context
@@ -285,10 +286,29 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
     }
   }, [showMenu]);
 
+  function checkElementPosition() {
+    const selectControl = document.getElementById(popoverBtnId.current);
+    if (!selectControl) {
+      return 'top-start';
+    }
+
+    const elementRect = selectControl.getBoundingClientRect();
+    console.log(elementRect);
+
+    // Check proximity to top
+    const halfScreenHeight = window.innerHeight / 2;
+
+    if (elementRect.top <= halfScreenHeight) {
+      return 'bottom-start';
+    }
+
+    return 'top-start';
+  }
+
   return (
     <OverlayTrigger
       show={showMenu && !disabled}
-      placement="top-start"
+      placement={checkElementPosition()}
       // placement="auto"
       // arrowOffsetTop={90}
       // arrowOffsetLeft={90}
@@ -323,7 +343,7 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
             }
             setShowMenu((show) => !show);
           }}
-          className="px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0"
+          className="px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0 position-relative"
           data-cy={`show-ds-popover-button`}
         >
           {selected
@@ -335,6 +355,9 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
                 ))
               : selected?.label
             : ''}
+          <span className="dd-select-control-chevron">
+            <CheveronDown />
+          </span>
         </ButtonSolid>
       </span>
     </OverlayTrigger>
