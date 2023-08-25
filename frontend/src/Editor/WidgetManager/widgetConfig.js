@@ -356,8 +356,8 @@ export const widgets = [
         type: 'select',
         displayName: 'Cell size',
         options: [
-          { name: 'Compact', value: 'compact' },
-          { name: 'Spacious', value: 'spacious' },
+          { name: 'Condensed', value: 'condensed' },
+          { name: 'Regular', value: 'regular' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -509,7 +509,7 @@ export const widgets = [
         actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        cellSize: { value: 'compact' },
+        cellSize: { value: 'regular' },
         borderRadius: { value: '0' },
         tableType: { value: 'table-classic' },
       },

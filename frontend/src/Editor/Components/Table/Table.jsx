@@ -136,7 +136,7 @@ export function Table({
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
     userSelect: 'none',
-    background: isDragging ? 'rgba(77, 114, 250, 0.2)' : '',
+    background: isDragging ? 'var(--slate4)' : '',
     top: 'auto',
     borderRadius: '4px',
     ...(isDragging && {
@@ -1131,7 +1131,7 @@ export function Table({
                                       column.isSorted && (column.isSortedDesc ? '' : '')
                                     } ${column.isResizing && 'resizing-column'} ${
                                       column.Header === 'Actions' && 'has-actions'
-                                    }`}
+                                    } position-relative`}
                                   >
                                     <div
                                       className={`${
