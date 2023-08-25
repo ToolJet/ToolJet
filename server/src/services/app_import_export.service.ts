@@ -16,6 +16,9 @@ import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { Organization } from 'src/entities/organization.entity';
+import { Page } from 'src/entities/page.entity';
+import { Component } from 'src/entities/component.entity';
+import { Layout } from 'src/entities/layout.entity';
 
 @Injectable()
 export class AppImportExportService {
@@ -144,6 +147,7 @@ export class AppImportExportService {
 
     await dbTransactionWrap(async (manager) => {
       importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user);
+
       await this.buildImportedAppAssociations(manager, importedApp, schemaUnifiedAppParams, user);
       await this.createAdminGroupPermissions(manager, importedApp);
     });
@@ -329,14 +333,27 @@ export class AppImportExportService {
         currentEnvironmentId = organization.appEnvironments.find((env) => env.priority === 1)?.id;
       }
 
-      const version = manager.create(AppVersion, {
+      const version = await manager.create(AppVersion, {
         appId: importedApp.id,
-        definition: appVersion.definition,
         name: appVersion.name,
         currentEnvironmentId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+
+      // Set default values for app version
+      version.showViewerNavigation = true;
+      version.homePageId = appVersion.definition?.homePageId;
+      version.globalSettings = {
+        hideHeader: false,
+        appInMaintenance: false,
+        canvasMaxWidth: 1292,
+        canvasMaxWidthType: 'px',
+        canvasMaxHeight: 2400,
+        canvasBackgroundColor: '#edeff5',
+        backgroundFxQuery: '',
+      };
+
       await manager.save(version);
 
       appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
@@ -547,16 +564,114 @@ export class AppImportExportService {
     }
 
     for (const newQuery of newDataQueries) {
+      // const dataQueryEvents = [];
       const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, dataQueryMapping);
       newQuery.options = newOptions;
+      console.log('------arpit new data query:: ', { newQuery });
+
       await manager.save(newQuery);
     }
 
     for (const appVersion of appVersions) {
+      const updatedDef = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping);
+
+      let updateHomepageId = null;
+
+      if (updatedDef?.pages) {
+        for (const pageId of Object.keys(updatedDef?.pages)) {
+          const page = updatedDef.pages[pageId];
+
+          const pageEvents = page.events;
+          const componentEvents = [];
+
+          // console.log('-----arpit appDefinition', { def: JSON.stringify(updatedDef) });
+
+          const pagePostionIntheList = Object.keys(updatedDef?.pages).indexOf(pageId);
+
+          const isHompage = updatedDef.homePageId === pageId;
+
+          const pageComponents = page.components;
+
+          const mappedComponents = transformComponentData(pageComponents, componentEvents);
+
+          const componentLayouts = [];
+
+          const newPage = manager.create(Page, {
+            name: page.name,
+            handle: page.handle,
+            appVersionId: appVersionMapping[appVersion.id],
+            index: pagePostionIntheList,
+          });
+          const pageCreated = await manager.save(newPage);
+
+          mappedComponents.forEach((component) => {
+            component.page = pageCreated;
+          });
+
+          const savedComponents = await manager.save(Component, mappedComponents);
+
+          savedComponents.forEach((component) => {
+            const componentLayout = pageComponents[component.id]['layouts'];
+
+            if (componentLayout) {
+              for (const type in componentLayout) {
+                const layout = componentLayout[type];
+                const newLayout = new Layout();
+                newLayout.type = type;
+                newLayout.top = layout.top;
+                newLayout.left = layout.left;
+                newLayout.width = layout.width;
+                newLayout.height = layout.height;
+                newLayout.component = component;
+
+                componentLayouts.push(newLayout);
+              }
+            }
+          });
+
+          await manager.save(Layout, componentLayouts);
+
+          //Event handlers
+
+          console.log('-----arpit events handle', {
+            componentEvents: JSON.stringify(componentEvents),
+            pageEvents: JSON.stringify(pageEvents),
+          });
+
+          // pageEvents.forEach(async (eventObj) => {
+          //   const newEvent = {
+          //     name: eventObj.event.eventId,
+          //     sourceId: pageCreated.id,
+          //     target: eventObj.eventType || 'page',
+          //     event: eventObj.event,
+          //     appVersionId: appVersionMapping[appVersion.id],
+          //   };
+
+          //   await manager.save(Event, newEvent);
+          // });
+
+          // componentEvents.forEach(async (eventObj) => {
+          //   const newEvent = {
+          //     name: eventObj.event.eventId,
+          //     sourceId: eventObj.attachedTo,
+          //     target: eventObj.eventType || 'component',
+          //     event: eventObj.event,
+          //     appVersionId: appVersionMapping[appVersion.id],
+          //   };
+
+          //   await manager.save(Event, newEvent);
+          // });
+
+          if (isHompage) {
+            updateHomepageId = pageCreated.id;
+          }
+        }
+      }
+
       await manager.update(
         AppVersion,
         { id: appVersionMapping[appVersion.id] },
-        { definition: this.replaceDataQueryIdWithinDefinitions(appVersion.definition, dataQueryMapping) }
+        { definition: null, homePageId: updateHomepageId }
       );
     }
 
@@ -722,4 +837,29 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
     })),
   };
   return appParamsWithMultipageSchema;
+}
+
+function transformComponentData(data: object, componentEvents: any[]): Component[] {
+  const transformedComponents: Component[] = [];
+
+  for (const componentId in data) {
+    const componentData = data[componentId]['component'];
+
+    const transformedComponent: Component = new Component();
+    transformedComponent.id = componentId;
+    transformedComponent.name = componentData.name;
+    transformedComponent.type = componentData.component;
+    transformedComponent.properties = componentData.definition.properties || {};
+    transformedComponent.styles = componentData.definition.styles || {};
+    transformedComponent.validations = componentData.definition.validation || {};
+
+    transformedComponents.push(transformedComponent);
+
+    componentEvents.push({
+      componentId: componentId,
+      event: componentData.definition.events,
+    });
+  }
+
+  return transformedComponents;
 }
