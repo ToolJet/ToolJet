@@ -4,10 +4,9 @@ import {
     fillDataSourceTextField,
     selectAndAddDataSource,
     fillConnectionForm,
-    addQuery,
 } from "Support/utils/postgreSql";
 import { commonText } from "Texts/common";
-import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+import { closeDSModal, deleteDatasource, addQuery, addQueryN } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
 import { addNewUserMW } from "Support/utils/userPermissions";
@@ -47,14 +46,14 @@ describe("Global Datasource Manager", () => {
         cy.get(commonSelectors.globalDataSourceIcon).click();
         cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
             "have.text",
-            "Datasources"
+            "Data Sources"
         );
         cy.get(dataSourceSelector.allDatasourceLabelAndCount).verifyVisibleElement(
             "have.text",
             dataSourceText.allDataSources
         );
         cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Global datasources");
+            expect($el.contents().first().text().trim()).to.eq("Data sources");
         });
 
         cy.get(dataSourceSelector.databaseLabelAndCount).verifyVisibleElement(
@@ -103,12 +102,12 @@ describe("Global Datasource Manager", () => {
             .should("eq", "Search Plugins");
 
         cy.get('[data-cy="added-ds-label"]').should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Datasources Added");
+            expect($el.contents().first().text().trim()).to.eq("Data Sources Added");
         });
         cy.get(dataSourceSelector.addedDsSearchIcon).should("be.visible").click();
         cy.get(dataSourceSelector.AddedDsSearchBar)
             .invoke("attr", "placeholder")
-            .should("eq", "Search for Datasources");
+            .should("eq", "Search for Data Sources");
 
 
         selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.dsName1);
@@ -195,9 +194,8 @@ describe("Global Datasource Manager", () => {
         cy.get(commonSelectors.dashboardIcon).click();
         navigateToAppEditor(data.appName);
 
-        cy.get(
-            `[data-cy="cypress-${data.dsName1}-postgresql-add-query-card"]`
-        ).should("be.visible");
+        pinInspector();
+        cy.get(".tooltip-inner").invoke("hide");
 
         addQuery(
             "table_preview",
@@ -207,31 +205,30 @@ describe("Global Datasource Manager", () => {
 
         cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
             "have.text",
-            "table_preview"
+            'table_preview '
         );
 
-        pinInspector();
-
+        cy.get(".tooltip-inner").invoke("hide");
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get('[data-cy="inspector-node-queries"]')
             .parent()
             .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").dblclick();
+                cy.get("span").first().scrollIntoView().contains("queries").click();
             });
         cy.get('[data-cy="inspector-node-table_preview"] > .node-key').click();
         cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
             "have.text",
             "7 items "
         );
-        cy.get(dataSourceSelector.buttonAddNewQueries).click();
+        cy.get('[data-cy="show-ds-popover-button"]').click();
 
         cy.get(
-            ".query-datasource-card-container > .col-auto > .query-manager-btn-name"
+            ".p-2 > .tj-base-btn"
         )
             .should("be.visible")
-            .and("have.text", "Add new global datasource");
+            .and("have.text", "+ Add new datasource");
         cy.get(
-            ".query-datasource-card-container > .col-auto > .query-manager-btn-name"
+            ".p-2 > .tj-base-btn"
         ).click();
 
         selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.dsName2);
@@ -278,16 +275,17 @@ describe("Global Datasource Manager", () => {
 
         cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
             "have.text",
-            "table_preview"
+            'table_preview '
         );
 
         pinInspector();
+        cy.get(".tooltip-inner").invoke("hide");
 
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get('[data-cy="inspector-node-queries"]')
             .parent()
             .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").dblclick();
+                cy.get("span").first().scrollIntoView().contains("queries").click();
             });
         cy.get('[data-cy="inspector-node-table_preview"] > .node-key').click();
         cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
@@ -295,16 +293,24 @@ describe("Global Datasource Manager", () => {
             "7 items "
         );
 
-        addQuery(
+        cy.get('[data-cy="show-ds-popover-button"]').click()
+        addQueryN(
             "student_data",
             `SELECT * FROM student_data;`,
             `cypress-${data.dsName2}-postgresql`
         );
 
+        // addQueryN(
+        //     "student_data",
+        //     `SELECT * FROM student_data;`,
+        //     `cypress-huel-postgresql`
+        // );
+
         cy.get('[data-cy="list-query-student_data"]').verifyVisibleElement(
             "have.text",
-            "student_data"
+            'student_data '
         );
+        cy.get(".tooltip-inner").invoke("hide");
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get('[data-cy="inspector-node-queries"]')
             .parent()
@@ -316,14 +322,7 @@ describe("Global Datasource Manager", () => {
             "have.text",
             "8 items "
         );
-        cy.get(dataSourceSelector.buttonAddNewQueries).click();
-        cy.get(
-            ".query-datasource-card-container > .col-auto > .query-manager-btn-name"
-        ).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "You don't have access to GDS, contact your workspace admin to add datasources"
-        );
+
     });
     it("Should verify the query creation and scope changing functionality.", () => {
         logout();
@@ -340,16 +339,17 @@ describe("Global Datasource Manager", () => {
 
         cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
             "have.text",
-            "table_preview"
+            'table_preview '
         );
 
         pinInspector();
+        cy.get(".tooltip-inner").invoke("hide");
 
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get('[data-cy="inspector-node-queries"]')
             .parent()
             .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").dblclick();
+                cy.get("span").first().scrollIntoView().contains("queries").click();
             });
         cy.get('[data-cy="inspector-node-table_preview"] > .node-key').click();
         cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(

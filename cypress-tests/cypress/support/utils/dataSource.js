@@ -67,3 +67,32 @@ export const closeDSModal = () => {
     }
   });
 };
+
+export const addQuery = (queryName, query, dbName) => {
+  cy.get("body").then(($body) => {
+    if ($body.find('[data-cy="gds-querymanager-search-bar"]').length > 0) {
+      cy.clearAndType('[data-cy="gds-querymanager-search-bar"]', `${dbName}`)
+    }
+  });
+
+  cy.get(`[data-cy="${dbName}-add-query-card"] > .text-truncate`).click()
+  cy.get('[data-cy="query-rename-input"]').clear().type(queryName)
+
+  cy.get(dataSourceSelector.queryInputField)
+    .realMouseDown({ position: "center" })
+    .realType(" ");
+  cy.get(dataSourceSelector.queryInputField).clearAndTypeOnCodeMirror(query);
+  cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+};
+
+export const addQueryN = (queryName, query, dbName) => {
+  cy.get('.css-1rrkggf-Input').type(`${dbName}`)
+  cy.contains(`[id*="react-select-"]`, dbName).click()
+  cy.get('[data-cy="query-rename-input"]').clear().type(queryName)
+
+  cy.get(dataSourceSelector.queryInputField)
+    .realMouseDown({ position: "center" })
+    .realType(" ");
+  cy.get(dataSourceSelector.queryInputField).clearAndTypeOnCodeMirror(query);
+  cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+}
