@@ -3122,7 +3122,6 @@ input:focus-visible {
     background: var(--slate1, #151718);
     color: var(--slate12);
     padding: 6px 10px;
-    // width: 65px;
   }
 
   input {
@@ -7997,6 +7996,7 @@ tbody {
 
 .version-manager-container {
   padding: 0.6rem;
+  width: 158px;
 }
 
 // tooljet db fields styles [ query manager ]
@@ -10706,11 +10706,6 @@ tbody {
 }
 
 .shareable-link {
-  .input-group-text {
-    // background-color: var(--base);
-    // border: none;
-  }
-
   .input-group {
     display: flex;
     align-items: center;
@@ -11149,7 +11144,6 @@ tbody {
   justify-content: center;
   align-items: center;
   height: 28px;
-  // width: 58px;
   gap: 2px;
 
   div {

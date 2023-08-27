@@ -129,7 +129,6 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     <div className={`components-container ${isVersionReleased && 'disabled'}`}>
       <p className="widgets-manager-header">Components</p>
       <div className="input-icon tj-app-input">
-        {/* <SolidIcon name="search" /> */}
         <input
           type="text"
           className={`form-control tj-input tj-widgets-search-input tj-text-xsm`}

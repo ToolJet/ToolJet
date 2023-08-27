@@ -140,12 +140,10 @@ class ManageAppUsersComponent extends React.Component {
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     return (
-      <div
-        title="Share"
-        className="editor-header-icon tj-secondary-btn"
-        onClick={() => this.setState({ showModal: true })}
-      >
-        <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
+      <div title="Share" className="editor-header-icon tj-secondary-btn">
+        <span className="d-flex" onClick={() => this.setState({ showModal: true })}>
+          <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
+        </span>
         <Modal
           show={this.state.showModal}
           size="lg"
@@ -155,7 +153,7 @@ class ManageAppUsersComponent extends React.Component {
           animation={false}
           onEscapeKeyDown={this.hideModal}
           className={`app-sharing-modal animation-fade ${this.props.darkMode ? 'dark-theme' : ''}`}
-          // contentClassName={this.props.darkMode ? 'dark-theme' : ''}
+          contentClassName={this.props.darkMode ? 'dark-theme' : ''}
         >
           <Modal.Header>
             <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
