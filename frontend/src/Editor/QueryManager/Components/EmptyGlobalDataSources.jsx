@@ -10,9 +10,9 @@ const EmptyGlobalDataSources = ({ darkMode }) => {
           <InfoIcon />
         </div>
         <div className="info">
-          No global datasource have been added.
+          No global datasources have been added.
           <br />
-          add new datasource to connect it to your app
+          Add a new datasource to connect to your app.
         </div>
       </div>
       <AddGlobalDataSourceButton />
