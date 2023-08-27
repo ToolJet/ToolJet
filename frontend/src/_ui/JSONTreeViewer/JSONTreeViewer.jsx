@@ -80,7 +80,7 @@ export class JSONTreeViewer extends React.Component {
   renderNodeIcons = (node) => {
     const icon = this.props.iconsList.filter((icon) => icon?.iconName === node)[0];
 
-    if (icon && icon.iconPath) {
+    if (icon && icon?.iconName) {
       return (
         <WidgetIcon
           name={icon.iconName.substring(0, icon.iconName.length - 1)}
