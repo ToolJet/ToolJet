@@ -41,7 +41,6 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
       className={cx(`left-sidebar-item left-sidebar-layout`, {
         disabled: !appVersionsId,
         active: isActive,
-        // dark: darkMode,
       })}
       onClick={() => {
         toggleActive(!isActive);
