@@ -26,7 +26,6 @@ export const GlobalSettings = ({
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
   const [realState, setRealState] = React.useState(currentState);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
-  const [show, setShow] = React.useState('');
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,

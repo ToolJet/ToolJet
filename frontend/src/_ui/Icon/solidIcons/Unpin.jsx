@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Unpin = ({ fill = '#C1C8CD', width = '14', className = '', viewBox = '0 0 25 25' }) => (
+const Unpin = ({ width = '14' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     class="icon-tabler icon-tabler-pinned-off"

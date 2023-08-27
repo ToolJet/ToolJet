@@ -1,7 +1,7 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { HeaderSection, Button } from '@/_ui/LeftSidebar';
+import { HeaderSection } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
