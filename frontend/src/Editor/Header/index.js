@@ -75,54 +75,53 @@ export default function EditorHeader({
                 maxHeight: '48px',
                 margin: '0px',
                 padding: '0px',
-
                 width: 'calc(100% - 348px)',
+                justifyContent: 'space-between',
               }}
-              // className="flex-grow-1 row"
-              className=" row"
+              className="flex-grow-1 d-flex align-items-center"
             >
-              <div className="col p-0 d-flex align-items-center">
-                <div className="row p-0 m-0">
-                  <div className="col global-settings-app-wrapper p-0 m-0">
-                    <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
+              <div
+                className="p-0 m-0 d-flex align-items-center"
+                style={{
+                  padding: '0px',
+                  width: '100%',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div className="global-settings-app-wrapper p-0 m-0 ">
+                  <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
+                </div>
+                <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
+                <div className="d-flex align-items-center">
+                  <div style={{ width: '100px', marginRight: '20px' }}>
+                    <span
+                      className={cx('autosave-indicator tj-text-xsm', {
+                        'autosave-indicator-saving': isSaving,
+                        'text-danger': saveError,
+                        'd-none': isVersionReleased,
+                      })}
+                      data-cy="autosave-indicator"
+                    >
+                      {isSaving ? (
+                        'Saving...'
+                      ) : saveError ? (
+                        <div className="d-flex align-items-center" style={{ gap: '4px' }}>
+                          <SolidIcon name="cloudinvalid" width="14" />
+                          <p className="mb-0">Could not save changes</p>
+                        </div>
+                      ) : (
+                        <div className="d-flex align-items-center" style={{ gap: '4px' }}>
+                          <SolidIcon name="cloudvalid" width="14" />
+                          <p className="mb-0">Changes saved</p>
+                        </div>
+                      )}
+                    </span>
                   </div>
-
-                  <div className="col d-flex align-items-center" style={{ marginLeft: '214px' }}>
-                    <HeaderActions
-                      canUndo={canUndo}
-                      canRedo={canRedo}
-                      handleUndo={handleUndo}
-                      handleRedo={handleRedo}
-                    />
-                    <div style={{ marginLeft: '214px', width: '100px', marginRight: '20px' }}>
-                      <span
-                        className={cx('autosave-indicator tj-text-xsm', {
-                          'autosave-indicator-saving': isSaving,
-                          'text-danger': saveError,
-                          'd-none': isVersionReleased,
-                        })}
-                        data-cy="autosave-indicator"
-                      >
-                        {isSaving ? (
-                          'Saving...'
-                        ) : saveError ? (
-                          <div className="d-flex align-items-center" style={{ gap: '4px' }}>
-                            <SolidIcon name="cloudinvalid" width="14" />
-                            <p className="mb-0">Could not save changes</p>
-                          </div>
-                        ) : (
-                          <div className="d-flex align-items-center" style={{ gap: '4px' }}>
-                            <SolidIcon name="cloudvalid" width="14" />
-                            <p className="mb-0">Changes saved</p>
-                          </div>
-                        )}
-                      </span>
-                    </div>
-                    {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
-                  </div>
+                  {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeAvatars />}
                 </div>
               </div>
-              <div className="col-auto d-flex align-items-center p-0" style={{ marginRight: '12px' }}>
+              <div className="navbar-seperator"></div>
+              <div className="d-flex align-items-center p-0" style={{ marginRight: '12px' }}>
                 <div className="d-flex version-manager-container p-0">
                   {editingVersion && (
                     <AppVersionsManager

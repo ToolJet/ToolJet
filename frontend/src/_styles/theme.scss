@@ -11253,3 +11253,12 @@ tbody {
   height: 28px;
   padding: 7px !important;
 }
+
+.navbar-seperator {
+  border: 1px solid var(--slate5, #2B2F31);
+  background: var(--slate1, #151718);
+  width: 1px;
+  height: 19px;
+  margin-left: 8px;
+  margin-right: 8px;
+}

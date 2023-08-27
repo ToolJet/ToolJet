@@ -63,7 +63,7 @@ export const ApiKeyContainer = ({
               onChange={handleOnchange}
             />
           </div>
-          <div className="col-auto mt-1">
+          <div className="col-auto">
             <Button
               onClick={() => handleOnSave(inputValue)}
               darkMode={darkMode}
