@@ -138,6 +138,7 @@ class ManageAppUsersComponent extends React.Component {
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = isSlugVerificationInProgress ? '' : slugError !== null ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
+    const {darkMode} = this.props;
 
     return (
       <div title="Share">
@@ -173,7 +174,7 @@ class ManageAppUsersComponent extends React.Component {
           <Modal.Header>
             <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
             <button
-              className={`btn-close ${this.props.darkMode ? 'btn-color-white' : ''}`}
+              className={`btn-close ${darkMode ? 'btn-close-white' : ''}`}
               aria-label="Close"
               onClick={this.hideModal}
               data-cy="modal-close-button"
@@ -251,9 +252,7 @@ class ManageAppUsersComponent extends React.Component {
                     <div className="input-group">
                       <Textarea
                         disabled
-                        className={`input-with-icon ${this.props.darkMode && 'bg-dark'} ${
-                          this.props.darkMode && 'text-light'
-                        }`}
+                        className={`input-with-icon ${darkMode && 'bg-dark text-light'}`}
                         rows={5}
                         value={embeddableLink}
                         data-cy="iframe-link"
