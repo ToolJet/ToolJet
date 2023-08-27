@@ -10,7 +10,7 @@ import JSONNodeArray from './JSONNodeArray';
 import JSONNodeValue from './JSONNodeValue';
 import JSONNodeIndicator from './JSONNodeIndicator';
 import JSONNodeMap from './JSONNodeMap';
-import SolidIcon from '../Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {

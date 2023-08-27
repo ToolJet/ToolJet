@@ -8,7 +8,7 @@ import cx from 'classnames';
 const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
   const { t } = useTranslation();
   return (
-    <div className="card-body mb-5 color-slate12">
+    <div className="debugger-card-body color-slate12">
       {logs.length === 0 && (
         <center className="p-2">
           {tabName === 'errors'
@@ -35,7 +35,7 @@ const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
     <Tabs
       defaultActiveKey="allLog"
       id="sidebar-debugger"
-      className={cx('mb-3 sidebar-debugger', {
+      className={cx('sidebar-debugger', {
         'dark-theme': darkMode,
       })}
       justify

@@ -52,11 +52,11 @@ export const ApiKeyContainer = ({
             <img className="encrypted-icon" src="assets/images/icons/padlock2.svg" width="12" height="12" />
             <span className="text-success mx-2 font-500">API KEY</span>
           </small>
-          <div className="mb-3 col-6">
+          <div className="mb-3 col-6 tj-app-input">
             <input
               disabled={!isCopilotEnabled}
               type="password"
-              class="form-control mt-2"
+              class="form-control"
               name="example-text-input"
               placeholder=""
               value={inputValue}

@@ -70,6 +70,8 @@ import NotificationUnread from './NotificationUnread.jsx';
 import Page from './Page.jsx';
 import PageAdd from './PageAdd.jsx';
 import Pin from './Pin.jsx';
+import Unpin from './Unpin.jsx';
+import AlignRight from './AlignRight';
 import Play from './Play.jsx';
 import Plus from './Plus.jsx';
 import Plus01 from './Plus01.jsx';
@@ -131,6 +133,8 @@ const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':
       return <AddRectangle {...props} />;
+    case 'alignright':
+      return <AlignRight {...props} />;
     case 'apps':
       return <Apps {...props} />;
     case 'archive':
@@ -275,6 +279,8 @@ const Icon = (props) => {
       return <PageAdd {...props} />;
     case 'pin':
       return <Pin {...props} />;
+    case 'unpin':
+      return <Unpin {...props} />;
     case 'play':
       return <Play {...props} />;
     case 'plus':

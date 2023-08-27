@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AppLogo from '@/_components/AppLogo';
-import { GlobalSettings } from './GlobalSettings';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
@@ -18,9 +17,6 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export default function EditorHeader({
   M,
-  globalSettingsChanged,
-  appDefinition,
-  toggleAppMaintenance,
   app,
   appVersionPreviewLink,
   slug,
@@ -38,8 +34,8 @@ export default function EditorHeader({
   saveEditingVersion,
   onVersionDelete,
   currentUser,
+  darkMode,
 }) {
-  const { is_maintenance_on } = app;
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -98,9 +94,9 @@ export default function EditorHeader({
                       handleUndo={handleUndo}
                       handleRedo={handleRedo}
                     />
-                    <div style={{ marginLeft: '214px', width: '86px', marginRight: '20px' }}>
+                    <div style={{ marginLeft: '214px', width: '100px', marginRight: '20px' }}>
                       <span
-                        className={cx('autosave-indicator', {
+                        className={cx('autosave-indicator tj-text-xsm', {
                           'autosave-indicator-saving': isSaving,
                           'text-danger': saveError,
                           'd-none': isVersionReleased,
@@ -145,7 +141,15 @@ export default function EditorHeader({
             >
               <div className="navbar-nav flex-row order-md-last release-buttons ">
                 <div className="nav-item">
-                  {app.id && <ManageAppUsers app={app} slug={slug} M={M} handleSlugChange={handleSlugChange} />}
+                  {app.id && (
+                    <ManageAppUsers
+                      app={app}
+                      slug={slug}
+                      M={M}
+                      handleSlugChange={handleSlugChange}
+                      darkMode={darkMode}
+                    />
+                  )}
                 </div>
                 <div className="nav-item">
                   <Link

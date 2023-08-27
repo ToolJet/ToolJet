@@ -61,7 +61,6 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility) {
-              console.log('value--', value?.styles?.visibility, typeof value?.styles?.visibility);
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
               );
@@ -197,15 +196,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
               );
-            console.log('test--', value);
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =
                 value?.validation?.customRule;
-
-            // if (value?.validation?.customRule)
-            //   // uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] = value?.customRule;
-            //   uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =
-            //     value?.validation?.customRule;
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
             if (value?.disabledDates)

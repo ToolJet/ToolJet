@@ -129,7 +129,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       data-cy="icon-workspace-settings"
                     >
                       <SolidIcon
-                        name="setting"
+                        name="settings"
                         fill={
                           router.pathname === getPrivateRoute('workspace_settings')
                             ? '#3E63DD'

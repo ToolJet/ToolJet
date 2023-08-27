@@ -155,11 +155,13 @@ class ManageAppUsersComponent extends React.Component {
           animation={false}
           onEscapeKeyDown={this.hideModal}
           className={`app-sharing-modal animation-fade ${this.props.darkMode ? 'dark-theme' : ''}`}
-          contentClassName={this.props.darkMode ? 'dark-theme' : ''}
+          // contentClassName={this.props.darkMode ? 'dark-theme' : ''}
         >
           <Modal.Header>
             <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
-            <button className="btn-close" aria-label="Close" onClick={this.hideModal} data-cy="modal-close-button" />
+            <span onClick={this.hideModal}>
+              <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" data-cy="modal-close-button" />
+            </span>
           </Modal.Header>
           <Modal.Body>
             {isLoading ? (
@@ -171,7 +173,7 @@ class ManageAppUsersComponent extends React.Component {
                 <div className="make-public mb-3">
                   <div className="form-check form-switch">
                     <input
-                      className="form-check-input"
+                      className="form-check-input color-slate12"
                       type="checkbox"
                       onClick={this.toggleAppVisibility}
                       checked={this.state.app.is_public}
@@ -197,7 +199,7 @@ class ManageAppUsersComponent extends React.Component {
                     <div className="input-with-icon">
                       <input
                         type="text"
-                        className={`form-control form-control-sm ${slugButtonClass}`}
+                        className={`form-control  color-slate12  ${slugButtonClass}`}
                         placeholder={appId}
                         onChange={(e) => {
                           e.persist();
@@ -212,13 +214,11 @@ class ManageAppUsersComponent extends React.Component {
                         </div>
                       )}
                     </div>
-                    <span className="input-group-text">
-                      <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
-                        <button className="btn btn-secondary btn-sm" data-cy="copy-app-link-button">
-                          {this.props.t('editor.shareModal.copy', 'copy')}
-                        </button>
-                      </CopyToClipboard>
-                    </span>
+                    <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
+                      <button className="btn-sm tj-tertiary-btn" data-cy="copy-app-link-button">
+                        {this.props.t('editor.shareModal.copy', 'copy')}
+                      </button>
+                    </CopyToClipboard>
                     <div className="invalid-feedback">{slugError}</div>
                   </div>
                 </div>
@@ -238,16 +238,14 @@ class ManageAppUsersComponent extends React.Component {
                         value={embeddableLink}
                         data-cy="iframe-link"
                       />
-                      <span className="input-group-text">
-                        <CopyToClipboard
-                          text={embeddableLink}
-                          onCopy={() => toast.success('Embeddable link copied to clipboard')}
-                        >
-                          <button className="btn btn-secondary btn-sm" data-cy="iframe-link-copy-button">
-                            {this.props.t('editor.shareModal.copy', 'copy')}
-                          </button>
-                        </CopyToClipboard>
-                      </span>
+                      <CopyToClipboard
+                        text={embeddableLink}
+                        onCopy={() => toast.success('Embeddable link copied to clipboard')}
+                      >
+                        <button className="tj-tertiary-btn btn-sm" data-cy="iframe-link-copy-button">
+                          {this.props.t('editor.shareModal.copy', 'copy')}
+                        </button>
+                      </CopyToClipboard>
                     </div>
                   </div>
                 )}

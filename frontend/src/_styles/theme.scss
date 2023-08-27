@@ -550,6 +550,7 @@ button {
 
       .form-control-plaintext {
         padding: 0;
+        color: var(--slate12);
       }
 
       .header {
@@ -631,8 +632,8 @@ button {
         }
 
         &:hover {
-          background-color: var(--base);
-          border: 1px solid var(--slate5, #E6E8EB);
+          background-color: var(--slate4);
+          border: 1px solid var(--slate4, #E6E8EB);
 
         }
 
@@ -2348,6 +2349,11 @@ tr:focus {
 }
 
 .popover-body {
+  background-color: var(--base);
+  color: var(--slate12);
+  border: 1px solid var(--slate3);
+  border-radius: 6px;
+
   .form-label {
     font-size: 12px;
   }
@@ -3105,10 +3111,57 @@ input:focus-visible {
   padding-left: 3px;
 }
 
+.global-settings-width-input-container {
+  position: relative;
+  display: flex;
+  flex: 1;
+
+  input,
+  .dropdown-max-canvas-width-type {
+    border: 1px solid var(--slate7, #3A3F42);
+    background: var(--slate1, #151718);
+    color: var(--slate12);
+    padding: 6px 10px;
+    // width: 65px;
+  }
+
+  input {
+    border-radius: 6px 0px 0px 6px;
+
+    &:focus {
+      background-color: var(--base);
+    }
+  }
+
+  .dropdown-max-canvas-width-type {
+    border-radius: 0px 6px 6px 0px;
+    gap: 17px;
+
+
+    &:focus-visible {
+      outline: none;
+    }
+
+  }
+}
+
 .input-with-icon {
   position: relative;
   display: flex;
   flex: 1;
+  margin-right: 10px;
+
+  input {
+    border-radius: 0px 6px 6px 0px !important;
+    color: var(--slate12);
+    background-color: var(--base);
+
+    &:focus-visible {
+      background-color: var(--base);
+
+    }
+
+  }
 
   .icon-container {
     position: absolute;
@@ -5797,11 +5850,6 @@ div#driver-page-overlay {
 
 .autosave-indicator {
   color: var(--slate10, #7E868C);
-  font-family: IBM Plex Sans;
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 16px;
 }
 
 
@@ -10658,7 +10706,15 @@ tbody {
 }
 
 .shareable-link {
+  .input-group-text {
+    // background-color: var(--base);
+    // border: none;
+  }
+
   .input-group {
+    display: flex;
+    align-items: center;
+
     .tj-app-input textarea {
       width: 600px;
       border-radius: 0px !important;
@@ -11189,4 +11245,17 @@ tbody {
   position: absolute;
   left: 0;
   bottom: 48px;
+}
+
+.debugger-card-body {
+  margin-top: 8px;
+  margin-bottom: 16px;
+  padding: 0px 16px;
+}
+
+.left-sidebar-header-btn {
+  background-color: var(--base) !important;
+  width: 28px;
+  height: 28px;
+  padding: 7px !important;
 }

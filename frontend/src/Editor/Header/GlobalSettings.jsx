@@ -106,7 +106,7 @@ export const GlobalSettings = ({
                   {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
                 </span>
                 <div className="position-relative">
-                  <div className="input-with-icon">
+                  <div className="global-settings-width-input-container">
                     <input
                       data-cy="maximum-canvas-width-input-field"
                       type="text"
@@ -120,7 +120,7 @@ export const GlobalSettings = ({
                     />
                     <select
                       data-cy={`dropdown-max-canvas-width-type`}
-                      className="form-select"
+                      className="dropdown-max-canvas-width-type"
                       aria-label="Select canvas width type"
                       onChange={(event) => {
                         const newCanvasMaxWidthType = event.currentTarget.value;

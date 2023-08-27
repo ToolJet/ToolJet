@@ -697,7 +697,7 @@ class DataSourceManagerComponent extends React.Component {
                       <input
                         type="text"
                         onChange={(e) => this.onNameChanged(e.target.value)}
-                        className="form-control-plaintext form-control-plaintext-sm"
+                        className="form-control-plaintext form-control-plaintext-sm color-slate12"
                         value={selectedDataSource.name}
                         style={{ width: '160px' }}
                         data-cy="data-source-name-input-filed"
