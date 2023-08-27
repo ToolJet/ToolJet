@@ -128,7 +128,6 @@ class VariableForm extends React.Component {
             disabled={this.props.addingVar}
             data-cy="add-varable-button"
           >
-            {' '}
             {!this.props.selectedVariableId
               ? this.props.t(
                   'header.organization.menus.manageSSO.environmentVar.variableForm.addVariable',

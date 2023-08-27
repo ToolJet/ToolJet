@@ -156,7 +156,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       $NODEType = (
         <JSONNode.DisplayNodeLabel type={'Object'}>
           <span className="mx-1 fs-9 node-length-color">
-            {`${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}{' '}
+            {`${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}
           </span>
         </JSONNode.DisplayNodeLabel>
       );
@@ -167,7 +167,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       $NODEType = (
         <JSONNode.DisplayNodeLabel type={'Array'}>
           <span className="mx-1 fs-9 node-length-color">
-            {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}{' '}
+            {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}
           </span>
         </JSONNode.DisplayNodeLabel>
       );
@@ -179,7 +179,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       $NODEType = (
         <JSONNode.DisplayNodeLabel type={'Array'}>
           <span className="mx-1 fs-9 node-length-color">
-            {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}{' '}
+            {`${numberOfEntries} ${numberOfEntries > 1 ? 'items' : 'item'}`}
           </span>
         </JSONNode.DisplayNodeLabel>
       );

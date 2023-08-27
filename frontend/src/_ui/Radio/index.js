@@ -12,7 +12,7 @@ const Radio = ({ checked, disabled, text, helpText, ...props }) => {
         data-cy={`${String(text).toLocaleLowerCase().replace(/\s+/g, '-')}-input`}
       />
       <span data-cy={`${String(text).toLocaleLowerCase().replace(/\s+/g, '-')}-label`} className="form-check-label">
-        {text}{' '}
+        {text}
         {helpText && (
           <>
             <br />

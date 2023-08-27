@@ -10,8 +10,7 @@ const GroupHeader = ({ paramType, descText, setBodyToggle, bodyToggle }) => {
           className="my-0 py-3 px-3 font-weight-400"
           style={{ marginRight: '10px', color: darkMode ? '#ECEDEE' : '#11181C' }}
         >
-          {' '}
-          {descText}{' '}
+          {descText}
         </p>
         <div className="d-flex align-items-center">
           {paramType == 'body' && (

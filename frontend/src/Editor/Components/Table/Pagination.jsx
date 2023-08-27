@@ -65,7 +65,7 @@ export const Pagination = function Pagination({
         disabled={pageIndex === 1 || !enablePrevButton}
       >
         {'<'}
-      </button>{' '}
+      </button>
       <small className="p-1 mx-2" data-cy={`page-index-details`}>
         {serverSide && <strong>{pageIndex}</strong>}
         {!serverSide && (
@@ -81,7 +81,7 @@ export const Pagination = function Pagination({
         disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
       >
         {'>'}
-      </button>{' '}
+      </button>
       {!serverSide && (
         <button
           data-cy={`pagination-button-to-last`}

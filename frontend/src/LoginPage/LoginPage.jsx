@@ -423,7 +423,7 @@ class LoginPageComponent extends React.Component {
                               .toLowerCase()
                               .replace(/\s+/g, '-')}`}
                           >
-                            back to&nbsp;{' '}
+                            back to&nbsp;
                             <Link
                               onClick={() =>
                                 (window.location = `${getSubpath() ? getSubpath() : ''}/${

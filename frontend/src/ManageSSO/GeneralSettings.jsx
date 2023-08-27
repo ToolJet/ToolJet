@@ -207,7 +207,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                   checked={enabled}
                 />
                 <span className="form-check-label" data-cy="label-password-login">
-                  Password login{' '}
+                  Password login
                 </span>
               </label>
               <div className="help-text tj-text-xsm danger-text-login">

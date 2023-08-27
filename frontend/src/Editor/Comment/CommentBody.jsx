@@ -45,7 +45,7 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
           return (
             <div key={id}>
               <div className="d-flex card-title comment-author">
-                {`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}{' '}
+                {`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}
                 <CommentActions
                   socket={socket}
                   fetchComments={fetchComments}

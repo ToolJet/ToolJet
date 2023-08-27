@@ -298,11 +298,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       <br />
                       <span>
                         <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                          Terms of Service{' '}
+                          Terms of Service
                         </a>
                         &
                         <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                          {' '}
                           Privacy Policy
                         </a>
                       </span>

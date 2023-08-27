@@ -624,7 +624,7 @@ export const Container = ({
                 rel="noreferrer"
               >
                 guide
-              </a>{' '}
+              </a>
               on adding components.
             </center>
           </div>

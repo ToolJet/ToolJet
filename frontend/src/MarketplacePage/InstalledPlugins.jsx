@@ -167,7 +167,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
               <div className="row">
                 <div className="col">
                   <sub>
-                    v{plugin.version}{' '}
+                    v{plugin.version}
                     {isUpdateAvailable && (
                       <span
                         className={cx('link-span', { disabled: updating })}
