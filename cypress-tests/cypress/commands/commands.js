@@ -11,9 +11,7 @@ Cypress.Commands.add(
     cy.clearAndType(commonSelectors.workEmailInputField, email);
     cy.clearAndType(commonSelectors.passwordInputField, password);
     cy.get(commonSelectors.signInButton).click();
-    cy.intercept("GET", "api/library_apps").as("apps");
-    cy.wait("@apps");
-    cy.wait(4000);
+    cy.wait(2000);
     cy.get(commonSelectors.homePageLogo).should("be.visible");
   }
 );
@@ -93,9 +91,7 @@ Cypress.Commands.add("appUILogin", () => {
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.signInButton).click();
-  cy.intercept("GET", "api/library_apps").as("apps");
-  cy.wait("@apps");
-  cy.wait(3000);
+  cy.wait(2000);
   cy.get(commonSelectors.homePageLogo).should("be.visible");
 });
 
@@ -165,8 +161,6 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
   cy.get("[data-cy='left-sidebar-settings-button']").click();
   cy.clearAndType("[data-cy='maximum-canvas-width-input-field']", x);
   cy.forceClickOnCanvas();
-  cy.intercept("/api/apps/**").as("app");
-  cy.wait("@app");
 });
 
 Cypress.Commands.add("renameApp", (appName) => {
@@ -214,31 +208,35 @@ Cypress.Commands.add("notVisible", (dataCy) => {
   });
 });
 
-Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
-  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover", {
-    force: true,
-  });
+Cypress.Commands.add(
+  "resizeWidget",
+  (widgetName, x, y, autosaveStatusCheck = true) => {
+    cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover", {
+      force: true,
+    });
 
-  cy.get('[class="bottom-right"]').trigger("mousedown", {
-    which: 1,
-    force: true,
-  });
-  cy.get(commonSelectors.canvas)
-    .trigger("mousemove", {
+    cy.get('[class="bottom-right"]').trigger("mousedown", {
       which: 1,
-      clientX: x,
-      ClientY: y,
-      clientX: x,
-      clientY: y,
-      pageX: x,
-      pageY: y,
-      screenX: x,
-      screenY: y,
-    })
-    .trigger("mouseup");
-
-  cy.waitForAutoSave();
-});
+      force: true,
+    });
+    cy.get(commonSelectors.canvas)
+      .trigger("mousemove", {
+        which: 1,
+        clientX: x,
+        ClientY: y,
+        clientX: x,
+        clientY: y,
+        pageX: x,
+        pageY: y,
+        screenX: x,
+        screenY: y,
+      })
+      .trigger("mouseup");
+    if (autosaveStatusCheck) {
+      cy.waitForAutoSave();
+    }
+  }
+);
 
 Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
   cy.get("body").then(($title) => {
@@ -249,7 +247,8 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
-  cy.wait(2000);
+  cy.get(".text-muted");
+  cy.wait(1000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
       cy.get(commonSelectors.skipButton).realClick();
