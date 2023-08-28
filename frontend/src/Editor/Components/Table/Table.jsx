@@ -161,6 +161,7 @@ export function Table({
 
   const [showDownloadPopover, setShowDownloadPopover] = useState(false);
   const [showHideColumnsPopover, setHideColumnsPopover] = useState(false);
+  const [resizingColumnId, setResizingColumnId] = useState(null);
 
   const prevDataFromProps = useRef();
   useEffect(() => {
@@ -1155,6 +1156,7 @@ export function Table({
                                   };
                                 }
                                 const isEditable = resolveReferences(column?.isEditable ?? false, currentState);
+                                console.log('kavin', { column });
                                 return (
                                   <th
                                     key={index}
@@ -1230,6 +1232,16 @@ export function Table({
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
+                                      }}
+                                      onMouseMove={(e) => {
+                                        if (column.id !== resizingColumnId) {
+                                          setResizingColumnId(column.id);
+                                        }
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (resizingColumnId) {
+                                          setResizingColumnId(null);
+                                        }
                                       }}
                                       draggable="true"
                                       {...column.getResizerProps()}
@@ -1374,7 +1386,7 @@ export function Table({
                               [cellSize]: true,
                               'selector-column':
                                 cell.column.columnType === 'selector' && cell.column.id === 'selection',
-                              'resizing-column': cell.column.isResizing,
+                              'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,
                             }
                           )}
                           {...cellProps}
