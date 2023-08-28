@@ -159,6 +159,9 @@ export function Table({
   const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
   const mounted = useMounted();
 
+  const [showDownloadPopover, setShowDownloadPopover] = useState(false);
+  const [showHideColumnsPopover, setHideColumnsPopover] = useState(false);
+
   const prevDataFromProps = useRef();
   useEffect(() => {
     if (mounted) prevDataFromProps.current = properties.data;
@@ -1570,12 +1573,21 @@ export function Table({
               )}
               {!loadingState && showDownloadButton && (
                 <div>
-                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'top-end'}>
+                  <OverlayTrigger
+                    trigger="click"
+                    overlay={downlaodPopover()}
+                    rootClose={true}
+                    placement={'top-end'}
+                    show={showDownloadPopover}
+                    onToggle={(show) => {
+                      setShowDownloadPopover(show);
+                    }}
+                  >
                     <span>
                       {' '}
                       <ButtonSolid
                         variant="ghostBlack"
-                        className="tj-text-xsm"
+                        className={`tj-text-xsm ${showDownloadPopover && 'always-active-btn'}`}
                         style={{
                           minWidth: '32px',
                         }}
@@ -1585,24 +1597,43 @@ export function Table({
                         size="md"
                         data-tooltip-id="tooltip-for-download"
                         data-tooltip-content="Download"
+                        onClick={(e) => {
+                          if (document.activeElement === e.currentTarget) {
+                            e.currentTarget.blur();
+                          }
+                        }}
                       ></ButtonSolid>
                     </span>
                   </OverlayTrigger>
                 </div>
               )}
               {!loadingState && !hideColumnSelectorButton && (
-                <OverlayTrigger trigger="click" rootClose={true} overlay={hideColumnsPopover()} placement={'top-end'}>
+                <OverlayTrigger
+                  trigger="click"
+                  rootClose={true}
+                  overlay={hideColumnsPopover()}
+                  placement={'top-end'}
+                  show={showHideColumnsPopover}
+                  onToggle={(show) => {
+                    setHideColumnsPopover(show);
+                  }}
+                >
                   <span>
                     {' '}
                     <ButtonSolid
                       variant="ghostBlack"
-                      className="tj-text-xsm"
+                      className={`tj-text-xsm ${showHideColumnsPopover && 'always-active-btn'}`}
                       style={{ minWidth: '32px' }}
                       leftIcon="eye1"
                       fill={`var(--slate12)`}
                       iconWidth="16"
                       size="md"
                       data-cy={`select-column-icon`}
+                      onClick={(e) => {
+                        if (document.activeElement === e.currentTarget) {
+                          e.currentTarget.blur();
+                        }
+                      }}
                     ></ButtonSolid>
                   </span>
                 </OverlayTrigger>
