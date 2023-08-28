@@ -7,6 +7,7 @@ import { ComponentsService } from './components.service';
 import { CreatePageDto, UpdatePageDto } from '@dto/pages.dto';
 import { AppsService } from './apps.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { EventsService } from './events_handler.service';
 
 @Injectable()
 export class PageService {
@@ -15,6 +16,7 @@ export class PageService {
     private readonly pageRepository: Repository<Page>,
 
     private componentsService: ComponentsService,
+    private eventHandlerService: EventsService,
     private appService: AppsService
   ) {}
 
@@ -76,28 +78,35 @@ export class PageService {
   }
 
   async deletePage(pageId: string, appVersionId: string) {
-    const pageExists = await this.pageRepository.findOne(pageId);
     const { editingVersion } = await this.appService.findAppFromVersion(appVersionId);
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const pageExists = await manager.findOne(Page, pageId);
 
-    if (!pageExists) {
-      throw new Error('Page not found');
-    }
+      if (!pageExists) {
+        throw new Error('Page not found');
+      }
 
-    if (editingVersion?.homePageId === pageId) {
-      throw new Error('Cannot delete home page');
-    }
-    const pageDeletedIndex = pageExists.index;
-    const pageDeleted = await this.pageRepository.delete(pageId);
+      if (editingVersion?.homePageId === pageId) {
+        throw new Error('Cannot delete home page');
+      }
+      this.eventHandlerService.cascadeDeleteEvents(pageExists.id);
+      const pageDeletedIndex = pageExists.index;
+      const pageDeleted = await this.pageRepository.delete(pageId);
 
-    if (pageDeleted.affected === 0) {
-      throw new Error('Page not deleted');
-    }
+      if (pageDeleted.affected === 0) {
+        throw new Error('Page not deleted');
+      }
 
-    const pages = await this.pageRepository.find({ appVersionId: pageExists.appVersionId });
+      const pages = await this.pageRepository.find({ appVersionId: pageExists.appVersionId });
 
-    const rearrangedPages = this.rearrangePagesOnDelete(pages, pageDeletedIndex);
+      const rearrangedPages = this.rearrangePagesOnDelete(pages, pageDeletedIndex);
 
-    await this.pageRepository.save(rearrangedPages);
+      return await Promise.all(
+        rearrangedPages.map(async (page) => {
+          await manager.update(Page, page.id, page);
+        })
+      );
+    });
   }
 
   rearrangePagesOnDelete(pages: Page[], pageDeletedIndex: number) {
