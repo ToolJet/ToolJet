@@ -33,7 +33,7 @@ describe("dashboard", () => {
 
   beforeEach(() => {
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
-    cy.intercept("GET", "/api/apps").as("appEditor");
+    // cy.intercept("GET", "/api/apps").as("appEditor");
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
   });
 
@@ -283,7 +283,7 @@ describe("dashboard", () => {
       commonSelectors.toastMessage,
       dashboardText.appClonedToast
     );
-    cy.wait("@appEditor");
+    cy.waitForAppLoad();
     cy.wait(2000);
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.dragAndDropWidget("button", 25, 25);

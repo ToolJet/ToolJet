@@ -135,7 +135,11 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterPort,
       "5432"
     );
-    cy.get('[data-cy="-toggle-input"]').uncheck();
+    cy.get('[data-cy="-toggle-input"]').then(($el) => {
+      if ($el.is(":checked")) {
+        cy.get('[data-cy="-toggle-input"]').uncheck();
+      }
+    });
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
       postgreSqlText.placeholderNameOfDB,

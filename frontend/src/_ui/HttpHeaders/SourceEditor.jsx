@@ -1,6 +1,7 @@
 import React from 'react';
+import Input from '../Input';
 
-export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged }) => {
+export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, workspaceConstants }) => {
   return (
     <div className="table-responsive table-no-divider">
       <table className="table table-vcenter">
@@ -16,23 +17,25 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             return (
               <tr key={index}>
                 <td>
-                  <input
+                  <Input
                     type="text"
-                    value={option[0]}
-                    placeholder="key"
-                    autoComplete="off"
                     className="form-control no-border"
                     onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
+                    value={option[0]}
+                    workspaceConstants={workspaceConstants}
+                    placeholder="key"
+                    autoComplete="off"
                   />
                 </td>
                 <td>
-                  <input
+                  <Input
                     type="text"
                     value={option[1]}
                     placeholder="value"
                     autoComplete="off"
                     className="form-control no-border"
                     onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
+                    workspaceConstants={workspaceConstants}
                   />
                 </td>
                 {index > 0 && (
