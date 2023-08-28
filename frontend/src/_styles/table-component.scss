@@ -594,3 +594,15 @@
 .jet-data-table .has-actions{
   padding: 0;
 }
+.jet-table.table-component{
+ .filter-applied-state{
+   top: 0;
+   right: 0;
+   height: fit-content;
+   .filter-applied-svg{
+    position: absolute;
+    top: -5px;
+    right: -5px;
+   }
+ }
+}

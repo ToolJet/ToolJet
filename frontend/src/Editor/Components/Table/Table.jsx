@@ -987,23 +987,49 @@ export function Table({
               </SkeletonTheme>
             )}
             {showFilterButton && !loadingState && (
-              <>
+              <div className="position-relative">
+                {''}
                 <Tooltip id="tooltip-for-filter-data" className="tooltip" />
                 <ButtonSolid
                   variant="tertiary"
-                  className={`tj-text-xsm ${tableDetails?.filterDetails?.filtersVisible && 'cursor-not-allowed'}`}
+                  className={`tj-text-xsm`}
                   style={{ minWidth: '32px' }}
                   leftIcon="filter"
                   fill={`var(--slate12)`}
                   iconWidth="16"
                   onClick={() => {
-                    showFilters();
+                    if (tableDetails?.filterDetails?.filtersVisible) {
+                      hideFilters();
+                    } else {
+                      showFilters();
+                    }
                   }}
                   size="md"
                   data-tooltip-id="tooltip-for-filter-data"
                   data-tooltip-content="Filter data"
                 ></ButtonSolid>
-              </>
+                {tableDetails?.filterDetails?.filtersVisible && (
+                  <div className="filter-applied-state position-absolute">
+                    <svg
+                      className="filter-applied-svg"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="17"
+                      height="17"
+                      viewBox="0 0 17 17"
+                      fill="none"
+                    >
+                      <circle
+                        cx="8.3606"
+                        cy="8.08325"
+                        r="6.08325"
+                        stroke="var(--slate1)"
+                        fill="var(--indigo9)"
+                        stroke-width="4"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
