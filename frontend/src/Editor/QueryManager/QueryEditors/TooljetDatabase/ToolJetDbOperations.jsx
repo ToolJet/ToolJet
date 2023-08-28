@@ -34,6 +34,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       limit: 1,
     }
   );
+  const [joinTableOptions, setJoinTableOptions] = useState(options['join_table'] || {});
 
   useEffect(() => {
     fetchTables();
@@ -64,6 +65,11 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     mounted && optionchanged('update_rows', updateRowsOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateRowsOptions]);
+
+  useEffect(() => {
+    mounted && optionchanged('join_table', joinTableOptions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [joinTableOptions]);
 
   const handleOptionsChange = (optionsChanged, value) => {
     setListRowsOptions((prev) => ({ ...prev, [optionsChanged]: value }));
@@ -101,6 +107,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     }
   };
 
+  const joinTableOptionsChange = (optionsChanged, value) => {
+    setJoinTableOptions((prev) => ({ ...prev, [optionsChanged]: value }));
+  };
+
   const value = useMemo(
     () => ({
       organizationId,
@@ -119,10 +129,23 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       deleteOperationLimitOptionChanged,
       updateRowsOptions,
       handleUpdateRowsOptionsChange,
-      loadTableInformation,
+      joinTableOptions,
+      joinTableOptionsChange,
       tableInfo,
+      loadTableInformation,
     }),
-    [organizationId, tables, columns, selectedTable, listRowsOptions, deleteRowsOptions, updateRowsOptions, tableInfo]
+    [
+      organizationId,
+      tables,
+      columns,
+      selectedTable,
+      listRowsOptions,
+      deleteRowsOptions,
+      updateRowsOptions,
+      joinTableOptions,
+      tableInfo,
+      loadTableInformation,
+    ]
   );
 
   const fetchTables = async () => {

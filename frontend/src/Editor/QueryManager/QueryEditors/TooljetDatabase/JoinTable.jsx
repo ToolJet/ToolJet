@@ -18,18 +18,6 @@ import { isEmpty } from 'lodash';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 
-// Pending :-
-// - For StateManagement we can process with context
-// - Try to make it as : Re-usable component
-// - Dark Theme
-// - Keydown Close the popup
-// - Translation if needed
-// - Different CSS Styles ( Active, Hover, Disabled )
-
-// Pending :- Drop Down for Table
-// - For Join Scenario : Only on Table B - Add table button must come
-// -
-
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
     <div>
@@ -188,7 +176,7 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Limit Section */}
-      <div className="field-container d-flex">
+      <div className="field-container d-flex mb-3">
         <label className="form-label">Limit</label>
         <div className="field flex-grow-1">
           <CodeHinter
@@ -197,6 +185,22 @@ const SelectTableMenu = ({ darkMode }) => {
             height={'32px'}
             placeholder="Enter limit"
           />
+        </div>
+      </div>
+      {/* Select Section */}
+      <div className="field-container d-flex mb-3">
+        <label className="form-label">Select</label>
+        <div className="field flex-grow-1">
+          <Container className="p-0">
+            <Row className="border rounded">
+              <Col sm="2" className="p-0 border-end text-center">
+                Table A
+              </Col>
+              <Col sm="10" className="p-0 border-end">
+                <DropDownSelect options={tableList} isMulti />
+              </Col>
+            </Row>
+          </Container>
         </div>
       </div>
     </div>
