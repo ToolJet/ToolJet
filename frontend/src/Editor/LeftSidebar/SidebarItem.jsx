@@ -19,7 +19,11 @@ export const LeftSidebarItem = forwardRef(
             className={`sidebar-svg-icon  position-relative ${selectedSidebarItem === icon && 'sidebar-item'}`}
             data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
           >
-            <SolidIcon name={displayIcon} width="20" fill={selectedSidebarItem === icon ? '#3E63DD' : '#C1C8CD'} />
+            <SolidIcon
+              name={displayIcon}
+              width={icon == 'settings' ? 22.4 : 20}
+              fill={selectedSidebarItem === icon ? '#3E63DD' : '#C1C8CD'}
+            />
             {commentBadge && <LeftSidebarItem.CommentBadge />}
           </div>
         )}

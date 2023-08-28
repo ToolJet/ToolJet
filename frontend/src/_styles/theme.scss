@@ -5090,7 +5090,6 @@ input[type="text"] {
 
   .card {
     background-color: var(--base);
-
   }
 }
 
@@ -11252,6 +11251,12 @@ tbody {
   width: 28px;
   height: 28px;
   padding: 7px !important;
+
+  &:focus-visible {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .navbar-seperator {
