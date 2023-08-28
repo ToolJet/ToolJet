@@ -6,6 +6,7 @@ import { TooljetDbImportExportService } from './tooljet_db_import_export_service
 import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { AppsService } from './apps.service';
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class ImportExportResourcesService {
@@ -21,9 +22,10 @@ export class ImportExportResourcesService {
       resourcesExport['tooljet_database'] = [];
 
       for (const tjdb of exportResourcesDto.tooljet_database) {
-        resourcesExport['tooljet_database'].push(
-          await this.tooljetDbImportExportService.export(exportResourcesDto.organization_id, tjdb)
-        );
+        !isEmpty(tjdb) &&
+          resourcesExport['tooljet_database'].push(
+            await this.tooljetDbImportExportService.export(exportResourcesDto.organization_id, tjdb)
+          );
       }
     }
 
