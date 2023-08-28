@@ -14,6 +14,7 @@ import FullOuterJoin from '../../Icons/FullOuterJoin';
 import SelectBox from './SelectBox';
 import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
+import { isEmpty } from 'lodash';
 
 // Pending :-
 // - For StateManagement we can process with context
@@ -280,12 +281,31 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
   const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
   const [selected, setSelected] = useState();
   const selectRef = useRef();
+  const [isOverflown, setIsOverflown] = useState(false);
 
   useEffect(() => {
     if (showMenu) {
       // selectRef.current.focus();
     }
   }, [showMenu]);
+
+  useEffect(() => {
+    const badges = document.querySelectorAll('.dd-select-value-badge');
+    if (isEmpty(badges)) {
+      return () => {};
+    }
+    let isNewOverFlown = false;
+    for (let i = 0; i < badges.length; i++) {
+      const el = badges[i];
+      isNewOverFlown = el.clientWidth - el.scrollWidth < 0;
+      if (isOverflown) {
+        break;
+      }
+    }
+    if (isNewOverFlown !== isOverflown) {
+      setIsOverflown(isNewOverFlown);
+    }
+  }, [selected]);
 
   function checkElementPosition() {
     const selectControl = document.getElementById(popoverBtnId.current);
@@ -323,7 +343,10 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
           <SelectBox
             options={options}
             isMulti={isMulti}
-            onSelect={setSelected}
+            onSelect={(values) => {
+              setIsOverflown(false);
+              setSelected(values);
+            }}
             selected={selected}
             closePopup={() => setShowMenu(false)}
             onAdd={onAdd}
@@ -347,14 +370,26 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
           className="px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0 position-relative"
           data-cy={`show-ds-popover-button`}
         >
-          {selected ? (
-            Array.isArray(selected) ? (
-              <MultiSelectValueBadge options={options} selected={selected} setSelected={setSelected} />
-            ) : (
-              selected?.label
-            )
-          ) : (
-            ''
+          {selected
+            ? Array.isArray(selected)
+              ? !isOverflown && (
+                  <MultiSelectValueBadge options={options} selected={selected} setSelected={setSelected} />
+                )
+              : selected?.label
+            : ''}
+          {isOverflown && (
+            <Badge className="me-1 dd-select-value-badge" bg="secondary">
+              {selected?.length} selected
+              <span
+                role="button"
+                onClick={(e) => {
+                  setSelected([]);
+                  e.preventDefault();
+                }}
+              >
+                <Remove fill="var(--slate12)" />
+              </span>
+            </Badge>
           )}
           <span className="dd-select-control-chevron">
             <CheveronDown />
@@ -368,7 +403,7 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
 function MultiSelectValueBadge({ options, selected, setSelected }) {
   if (options?.length === selected?.length && selected?.length !== 0) {
     return (
-      <Badge className="me-1 dd-select-value-badge" bg="secondary">
+      <Badge className={`me-1 dd-select-value-badge`} bg="secondary">
         All {options?.length} selected
         <span
           role="button"
