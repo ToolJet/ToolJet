@@ -259,8 +259,8 @@
                     "enterFirstName": "Enter First Name",
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
-                    "enterFulltName": "Enter full name",
-                    "inviteNewUsers": "Invite new users"
+                    "enterFullName": "Enter full name",
+                    "inviteNewUsers":"Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -268,7 +268,7 @@
                         "createNewGroup": "Create new group",
                         "updateGroup": "Update group",
                         "addNewGroup": "Add new group",
-                        "enterName": "Enter Name",
+                        "enterName": "Enter group name",
                         "createGroup": "Create Group",
                         "name": "Name"
                     },

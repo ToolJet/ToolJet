@@ -7,6 +7,8 @@ title: Environment variables
 
 Both the ToolJet server and client requires some environment variables to start running.
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 ## ToolJet server
 
 ### ToolJet host ( required )

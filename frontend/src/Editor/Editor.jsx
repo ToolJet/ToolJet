@@ -1,5 +1,11 @@
 import React from 'react';
-import { appService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
+import {
+  appService,
+  authenticationService,
+  appVersionService,
+  orgEnvironmentVariableService,
+  orgEnvironmentConstantService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
@@ -174,11 +180,12 @@ class EditorComponent extends React.Component {
 
   async componentDidMount() {
     window.addEventListener('message', this.handleMessage);
-    this.getCurrentOrganizationDetails();
+    await this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.fetchApp(this.props.params.pageHandle);
-    await this.fetchOrgEnvironmentVariables();
+    this.fetchOrgEnvironmentConstants(); // for ce
+    this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -196,6 +203,10 @@ class EditorComponent extends React.Component {
       ...this.props.currentState.globals,
       theme: { name: this.props.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+      /* Constant value.it will only change for viewer */
+      mode: {
+        value: 'edit',
+      },
     };
     const page = {
       ...this.props.currentState.page,
@@ -247,6 +258,21 @@ class EditorComponent extends React.Component {
       useCurrentStateStore.getState().actions.setCurrentState({
         server: server_variables,
         client: client_variables,
+      });
+    });
+  };
+
+  fetchOrgEnvironmentConstants = () => {
+    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
+    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+      const orgConstants = {};
+      constants.map((constant) => {
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
+      });
+
+      useCurrentStateStore.getState().actions.setCurrentState({
+        constants: orgConstants,
       });
     });
   };
