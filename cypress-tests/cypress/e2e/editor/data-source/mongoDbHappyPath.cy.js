@@ -7,7 +7,7 @@ import { commonText } from "Texts/common";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 import {
   connectMongo,
@@ -162,7 +162,7 @@ describe("Data source MongoDB", () => {
   });
 
   it("Should verify the functionality of MongoDB connection form.", () => {
-    selectDataSource(mongoDbText.mongoDb);
+    selectAndAddDataSource(mongoDbText.mongoDb);
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
