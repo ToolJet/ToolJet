@@ -110,7 +110,7 @@ export default function AppCard({
               <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
                 <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
               </ToolTip>
-              &nbsp;by
+              &nbsp;by{' '}
               {`${app.user?.first_name ? app.user.first_name : ''} ${app.user?.last_name ? app.user.last_name : ''}`}
             </div>
           )}

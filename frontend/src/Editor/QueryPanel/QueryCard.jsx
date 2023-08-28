@@ -108,7 +108,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
                   data-tooltip-content={dataQuery.name}
                 >
                   {dataQuery.name}
-                </span>
+                </span>{' '}
                 <Tooltip id="query-card-name-tooltip" className="tooltip query-manager-tooltip" />
                 {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
               </div>

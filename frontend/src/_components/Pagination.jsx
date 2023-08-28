@@ -62,8 +62,8 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
       data-cy="container-pagination"
     >
       <p className={`m-0 ${darkMode ? 'text-light' : 'text-muted'}`}>
-        {t('homePage.pagination.showing', 'Showing')} <span>{startingAppCount()}</span>
-        {t('homePage.pagination.to', 'to')} <span>{endingAppCount()}</span> {t('homePage.pagination.of', 'of')}
+        {t('homePage.pagination.showing', 'Showing')} <span>{startingAppCount()}</span>{' '}
+        {t('homePage.pagination.to', 'to')} <span>{endingAppCount()}</span> {t('homePage.pagination.of', 'of')}{' '}
         <span data-cy="total-count">{count}</span>
       </p>
       <ul className="pagination m-0 ms-auto">

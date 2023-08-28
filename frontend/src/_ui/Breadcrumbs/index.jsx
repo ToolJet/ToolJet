@@ -18,6 +18,7 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
               {sidebarNav?.length > 0 && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
               <li className="breadcrumb-item font-weight-500">
                 <Link to={breadcrumb.key} data-cy="breadcrumb-page-title">
+                  {' '}
                   {sidebarNav}
                 </Link>
               </li>
