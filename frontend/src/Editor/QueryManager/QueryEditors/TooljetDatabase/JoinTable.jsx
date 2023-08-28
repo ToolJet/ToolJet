@@ -13,6 +13,8 @@ import InnerJoinIcon from '../../Icons/InnerJoinIcon';
 import FullOuterJoin from '../../Icons/FullOuterJoin';
 import SelectBox from './SelectBox';
 import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
+import Remove from '@/_ui/Icon/bulkIcons/Remove';
+import { isEmpty } from 'lodash';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -165,10 +167,10 @@ const SelectTableMenu = ({ darkMode }) => {
               </Col>
               <Col sm="2" className="p-0 border-end">
                 {/* <SelectBox /> */}
-                <DropDownSelect options={tableList} />
+                <DropDownSelect options={tableList} darkMode={darkMode} />
               </Col>
               <Col sm="4" className="p-0">
-                <DropDownSelect options={tableList} isMulti />
+                <DropDownSelect options={tableList} isMulti darkMode={darkMode} />
               </Col>
             </Row>
             <Row className="mb-2">
@@ -202,10 +204,10 @@ const SelectTableMenu = ({ darkMode }) => {
               </Col>
               <Col sm="2" className="p-0 border-end">
                 {/* <SelectBox /> */}
-                <DropDownSelect options={tableList} addBtnLabel={'Add new col'} onAdd={alert} />
+                <DropDownSelect options={tableList} addBtnLabel={'Add new col'} onAdd={alert} darkMode={darkMode} />
               </Col>
               <Col sm="4" className="p-0">
-                <DropDownSelect options={tableList} isMulti />
+                <DropDownSelect options={tableList} isMulti darkMode={darkMode} />
               </Col>
             </Row>
             <Row className="mb-2">
@@ -283,12 +285,31 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
   const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
   const [selected, setSelected] = useState();
   const selectRef = useRef();
+  const [isOverflown, setIsOverflown] = useState(false);
 
   useEffect(() => {
     if (showMenu) {
       // selectRef.current.focus();
     }
   }, [showMenu]);
+
+  useEffect(() => {
+    const badges = document.querySelectorAll('.dd-select-value-badge');
+    if (isEmpty(badges)) {
+      return () => {};
+    }
+    let isNewOverFlown = false;
+    for (let i = 0; i < badges.length; i++) {
+      const el = badges[i];
+      isNewOverFlown = el.clientWidth - el.scrollWidth < 0;
+      if (isOverflown) {
+        break;
+      }
+    }
+    if (isNewOverFlown !== isOverflown) {
+      setIsOverflown(isNewOverFlown);
+    }
+  }, [selected]);
 
   function checkElementPosition() {
     const selectControl = document.getElementById(popoverBtnId.current);
@@ -326,7 +347,10 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
           <SelectBox
             options={options}
             isMulti={isMulti}
-            onSelect={setSelected}
+            onSelect={(values) => {
+              setIsOverflown(false);
+              setSelected(values);
+            }}
             selected={selected}
             closePopup={() => setShowMenu(false)}
             onAdd={onAdd}
@@ -352,13 +376,25 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
         >
           {selected
             ? Array.isArray(selected)
-              ? selected.map((option) => (
-                  <Badge key={option.value} className="me-1" bg="secondary">
-                    {option.label}
-                  </Badge>
-                ))
+              ? !isOverflown && (
+                  <MultiSelectValueBadge options={options} selected={selected} setSelected={setSelected} />
+                )
               : selected?.label
             : ''}
+          {isOverflown && (
+            <Badge className="me-1 dd-select-value-badge" bg="secondary">
+              {selected?.length} selected
+              <span
+                role="button"
+                onClick={(e) => {
+                  setSelected([]);
+                  e.preventDefault();
+                }}
+              >
+                <Remove fill="var(--slate12)" />
+              </span>
+            </Badge>
+          )}
           <span className="dd-select-control-chevron">
             <CheveronDown />
           </span>
@@ -367,6 +403,40 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
     </OverlayTrigger>
   );
 };
+
+function MultiSelectValueBadge({ options, selected, setSelected }) {
+  if (options?.length === selected?.length && selected?.length !== 0) {
+    return (
+      <Badge className={`me-1 dd-select-value-badge`} bg="secondary">
+        All {options?.length} selected
+        <span
+          role="button"
+          onClick={(e) => {
+            setSelected([]);
+            e.preventDefault();
+          }}
+        >
+          <Remove fill="var(--slate12)" />
+        </span>
+      </Badge>
+    );
+  }
+
+  return selected.map((option) => (
+    <Badge key={option.value} className="me-1 dd-select-value-badge" bg="secondary">
+      {option.label}
+      <span
+        role="button"
+        onClick={(e) => {
+          setSelected((selected) => selected.filter((opt) => opt.value !== option.value));
+          e.preventDefault();
+        }}
+      >
+        <Remove fill="var(--slate12)" />
+      </span>
+    </Badge>
+  ));
+}
 
 function generateRandomId(length) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
