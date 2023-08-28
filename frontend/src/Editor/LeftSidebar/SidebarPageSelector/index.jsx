@@ -97,7 +97,8 @@ const LeftSidebarPageSelector = ({
                   }
                   setNewPageBeingCreated(true);
                 }}
-                className="left-sidebar-header-btn "
+                className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
                 darkMode={darkMode}
                 leftIcon="plus"
                 iconWidth="14"
@@ -107,7 +108,8 @@ const LeftSidebarPageSelector = ({
                 title={'Search'}
                 onClick={() => setShowSearch(!showSearch)}
                 darkMode={darkMode}
-                className="left-sidebar-header-btn "
+                className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
                 leftIcon="search"
                 iconWidth="14"
                 variant="tertiary"
@@ -120,6 +122,7 @@ const LeftSidebarPageSelector = ({
                 }}
                 variant="tertiary"
                 className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
                 darkMode={darkMode}
                 leftIcon={pinned ? 'unpin' : 'pin'}
                 iconWidth="14"

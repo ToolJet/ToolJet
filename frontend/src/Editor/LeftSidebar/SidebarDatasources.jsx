@@ -248,6 +248,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
               className="left-sidebar-header-btn"
               leftIcon={pinned ? 'unpin' : 'pin'}
               iconWidth="14"
+              fill={`var(--slate12)`}
             ></ButtonSolid>
           </div>
         </HeaderSection.PanelHeader>

@@ -16,6 +16,7 @@ export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, setPinned, pin
             style={{ width: '76px', height: '28px' }}
             iconWidth="20"
             title={'Clear'}
+            fill={`var(--slate12)`}
           >
             Clear
           </ButtonSolid>
@@ -26,6 +27,7 @@ export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, setPinned, pin
             leftIcon={pinned ? 'unpin' : 'pin'}
             iconWidth="14"
             className="left-sidebar-header-btn"
+            fill={`var(--slate12)`}
           ></ButtonSolid>
         </div>
       </HeaderSection.PanelHeader>
