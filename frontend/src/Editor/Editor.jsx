@@ -1627,7 +1627,7 @@ class EditorComponent extends React.Component {
                       (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
                       `px solid ${this.computeCanvasBackgroundColor()}`,
                     height: this.computeCanvasContainerHeight(),
-                    background: !this.props.darkMode ? '#eceef0' : '#27282D',
+                    background: !this.props.darkMode ? '#F2F2F5' : '#27282D',
                   }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {
