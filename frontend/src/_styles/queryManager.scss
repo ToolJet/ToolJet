@@ -983,18 +983,16 @@ $border-radius: 4px;
     }
 
     .tab-pane.active {
-      div {
-        background-color: var(--slate1) !important;
-        border-radius: 0 0 6px 6px !important;
+      ul {
+        background-color: var(--slate3) !important;
       }
 
-      ul {
-        background-color: transparent !important;
-      }
     }
 
     .preview-section-header {
-      background-color: var(--slate2);
+      background-color: var(--slate1);
+      border-radius: 6px 6px 0px 0px;
+      border: 1px solid var(--slate5);
     }
   }
 
@@ -1017,6 +1015,7 @@ $border-radius: 4px;
 
     .preview-data-container {
       min-height: 65px;
+      background-color: var(--slate3);
     }
   }
 
@@ -1175,21 +1174,19 @@ $border-radius: 4px;
 
   .runjs-editor {
     background-color: var(--base) !important;
-    border-radius: 1px solid var(--slate4);
-
-    .CodeMirror {
-      background: var(--base);
-      border-radius: 0px !important;
-    }
+    border: 1px solid var(--slate5);
+    border-radius: 6px;
 
     .card-header {
-      background-color: var(--slate2);
+      background-color: var(--slate1);
       color: var(--slate9);
+      border-radius: 6px 6px 0px 0px;
     }
 
     .CodeMirror-scroll,
-    .CodeMirror-gutters {
-      background-color: var(--slate1);
+    .CodeMirror-gutters,
+    .CodeMirror {
+      background-color: var(--slate3) !important;
     }
 
     .CodeMirror-sizer {
@@ -1316,7 +1313,7 @@ $border-radius: 4px;
 
 .rest-api-tabpanes-body {
   .CodeMirror.cm-s-monokai.CodeMirror-wrap {
-    background-color: var(--slate1) !important;
+    background-color: var(--slate3) !important;
   }
 }
 

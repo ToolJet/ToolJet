@@ -4196,16 +4196,28 @@ input[type="text"] {
     .modal-content {
       width: 100% !important;
       height: 100%;
+      background-color: var(--slate3) !important;
+      border: none !important;
 
       .modal-body {
         width: 100% !important;
         height: calc(100% - 44px) !important;
+        border: none !important;
 
         .editor-container {
           height: 100%;
 
           .CodeMirror {
             height: 100% !important;
+            border: 1px solid var(--slate5, #26292B);
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+          }
+
+          .CodeMirror-scroll,
+          .CodeMirror-gutters,
+          .CodeMirror {
+            background-color: var(--slate3) !important;
           }
         }
       }
@@ -4213,6 +4225,9 @@ input[type="text"] {
 
     .portal-header {
       width: 100% !important;
+      border-bottom: 1px solid var(--slate5, #26292B);
+      outline: 1px solid var(--slate5, #26292B);
+      background-color: var(--slate1) !important;
     }
 
     .resize-handle {
@@ -11463,4 +11478,8 @@ tbody {
   height: 19px;
   margin-left: 8px;
   margin-right: 8px;
+}
+
+.CodeMirror {
+  background: var(--base);
 }
