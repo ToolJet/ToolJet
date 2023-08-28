@@ -348,10 +348,10 @@
       position: absolute;
       right: 0;
       top: 0;
-      // transform: translateX(50%);
+      transform: translateX(50%);
       z-index: 1;
       touch-action: none;
-      width: 15px;
+      width: 30px;
       cursor: ew-resize !important;
     }
   }
@@ -579,9 +579,6 @@
     border-right: 4px solid var(--slate5, #E6E8EB) !important;
   }
 }
-.isResizing{
-  cursor: ew-resize !important;
-}
 .loading-spinner-table-component{
   transform-origin:center;
   animation:spinner_AtaB .75s infinite linear;
@@ -595,6 +592,9 @@
   padding: 0;
 }
 .jet-table.table-component{
+  .isResizing{
+    cursor: ew-resize !important;
+  }
  .filter-applied-state{
    top: 0;
    right: 0;
@@ -605,4 +605,7 @@
     right: -5px;
    }
  }
+}
+.th:has(.resizer:hover){
+  border-right:4px solid var(--slate5, #ECEEF0) !important; 
 }
