@@ -754,11 +754,13 @@ export function Table({
   }, [showBulkSelector, highlightSelectedRow, allowSelection]);
 
   React.useEffect(() => {
-    if (serverSidePagination || !clientSidePagination) {
-      setPageSize(rows?.length || 10);
-    }
-    if (!serverSidePagination && clientSidePagination) {
-      setPageSize(rowsPerPage || 10);
+    if (enablePagination) {
+      if (serverSidePagination || !clientSidePagination) {
+        setPageSize(rows?.length || 10);
+      }
+      if (!serverSidePagination && clientSidePagination) {
+        setPageSize(rowsPerPage || 10);
+      }
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
   useEffect(() => {
