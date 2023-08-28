@@ -37,8 +37,7 @@ export class EventsService {
         where: { sourceId },
       });
 
-      await manager.remove(allEvents);
-      return allEvents;
+      return await manager.remove(allEvents);
     });
   }
 
