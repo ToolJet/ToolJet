@@ -33,7 +33,7 @@ export const dataSourceText = {
     placeholderEnterUserName: "Enter username",
 
     headerQueries: "Queries",
-    headerSelectDatasource: "Select Datasource",
+    headerSelectDatasource: "Select Data Source",
     noQueryText: "You haven't created queries yet.",
     buttonLabelCreateQuery: "Create query",
     tabGeneral: "General",
