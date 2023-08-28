@@ -935,9 +935,10 @@
             "tip": "Global Settings",
             "hideHeader": "Hide header for launched apps",
             "maintenanceMode": "Maintenance mode",
-            "maxWidthOfCanvas": "Max width of canvas",
-            "maxHeightOfCanvas": "Max height of canvas",
-            "backgroundColorOfCanvas": "Background color of canvas"
+            "maxWidthOfCanvas": "Max canvas width",
+            "maxHeightOfCanvas": "Max canvas height",
+            "backgroundColorOfCanvas": "Canvas BG",
+            "exportApp": "Export app"
         },
         "Back": {
             "text": "Back",
