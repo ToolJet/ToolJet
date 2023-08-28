@@ -272,7 +272,7 @@ export default function generateColumnsData({
                 }}
                 onKeyDown={(e) => {
                   e.persist();
-                  if (e.key === 'Enter' && isEditable) {
+                  if (e.key === 'Enter' && !e.shiftKey && isEditable) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
