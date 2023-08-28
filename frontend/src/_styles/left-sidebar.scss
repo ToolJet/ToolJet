@@ -578,7 +578,7 @@
 
   .add-datasource-btn {
     position: absolute;
-    bottom: 3rem;
+    bottom: 0rem;
   }
 }
 
@@ -681,4 +681,10 @@
   p {
     color: var(-—slate9) !important;
   }
+}
+
+.left-sidebar-local-datasources-wrapper {
+  height: 100%;
+  min-height: 300px;
+  position: relative;
 }
