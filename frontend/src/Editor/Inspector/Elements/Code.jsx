@@ -17,7 +17,17 @@ export const Code = ({
   component,
 }) => {
   const currentState = useCurrentState();
+
   const getDefinitionForNewProps = (param) => {
+    if (param === 'enablePagination') {
+      const clientSidePagination = component?.component?.definition?.properties?.clientSidePagination?.value ?? false;
+      const serverSidePagination = component?.component?.definition?.properties?.serverSidePagination?.value ?? false;
+      const isPaginationEnabled =
+        resolveReferences(clientSidePagination, currentState) || resolveReferences(serverSidePagination, currentState);
+
+      if (isPaginationEnabled) return '{{true}}';
+      return '{{false}}';
+    }
     if (['showAddNewRowButton', 'allowSelection', 'defaultSelectedRow'].includes(param)) {
       if (param === 'allowSelection') {
         const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
@@ -37,6 +47,7 @@ export const Code = ({
   };
 
   const initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
+
   const paramMeta = componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
 

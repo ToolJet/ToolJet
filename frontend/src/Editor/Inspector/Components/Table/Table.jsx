@@ -16,7 +16,7 @@ import { withTranslation } from 'react-i18next';
 import { ProgramaticallyHandleToggleSwitch } from './ProgramaticallyHandleToggleSwitch';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import List from '@/ToolJetUI/List/List';
-import { capitalize } from 'lodash';
+import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 class TableComponent extends React.Component {
   constructor(props) {
@@ -946,9 +946,15 @@ class TableComponent extends React.Component {
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
-    const enablePagination = component.component.definition.properties.enablePagination?.value
-      ? resolveReferences(component.component.definition.properties.enablePagination?.value, currentState)
+
+    const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
+      ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
       : false;
+
+    let enablePagination = !has(component.component.definition.properties, 'enablePagination')
+      ? clientSidePagination || serverSidePagination
+      : resolveReferences(component.component.definition.properties.enablePagination?.value, currentState);
+
     const enabledSort = component.component.definition.properties.enabledSort?.value
       ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
       : true;
@@ -1080,7 +1086,7 @@ class TableComponent extends React.Component {
       'allowSelection',
       ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
     ];
-    const searchSortFIlterOptions = [
+    const searchSortFilterOptions = [
       ...(displaySearchBox ? ['displaySearchBox'] : []),
       ...(displayServerSideSearch ? ['serverSideSearch'] : []),
       'enabledSort',
@@ -1096,7 +1102,6 @@ class TableComponent extends React.Component {
       ...(enablePagination && serverSidePagination ? ['enableNextButton'] : []),
       ...(enablePagination && serverSidePagination ? ['totalRecords'] : []),
     ];
-
     const additionalActions = ['showAddNewRowButton', 'showDownloadButton', 'hideColumnSelectorButton', 'loadingState'];
 
     items.push({
@@ -1122,7 +1127,7 @@ class TableComponent extends React.Component {
     });
     items.push({
       title: 'Search sort and filter',
-      children: searchSortFIlterOptions.map((option) => renderCustomElement(option)),
+      children: searchSortFilterOptions.map((option) => renderCustomElement(option)),
     });
 
     items.push({

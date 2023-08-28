@@ -97,7 +97,6 @@ export function Table({
   const {
     color,
     serverSidePagination,
-    clientSidePagination,
     serverSideSearch,
     serverSideSort,
     serverSideFilter,
@@ -125,6 +124,7 @@ export function Table({
     defaultSelectedRow,
     showAddNewRowButton,
     allowSelection,
+    enablePagination,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -608,7 +608,7 @@ export function Table({
     }
   );
   const currentColOrder = React.useRef();
-
+  const clientSidePagination = enablePagination && !serverSidePagination;
   const sortOptions = useMemo(() => {
     if (state?.sortBy?.length === 0) {
       return;
@@ -1271,11 +1271,11 @@ export function Table({
           </div>
         )}
       </div>
-      {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
+      {(enablePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row gx-0">
             <div className="col">
-              {(clientSidePagination || serverSidePagination) && (
+              {enablePagination && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}
