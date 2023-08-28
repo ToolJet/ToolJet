@@ -430,7 +430,7 @@ const DynamicForm = ({
                   {...getElementProps(obj[key])}
                   {...computedProps[key]}
                   data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
-                  customWrap={true} //to be removed after whole ui is same
+                  //to be removed after whole ui is same
                   isHorizontalLayout={isHorizontalLayout}
                 />
               </div>
