@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Select, { components } from 'react-select';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import cx from 'classnames';
@@ -15,6 +15,8 @@ import SelectBox from './SelectBox';
 import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import { isEmpty } from 'lodash';
+import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import DropDownSelect from './DropDownSelect';
 
 // Pending :-
 // - For StateManagement we can process with context
@@ -107,6 +109,8 @@ const DropdownIndicator = (props) => {
 };
 
 const SelectTableMenu = ({ darkMode }) => {
+  const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, selectedTable, tables } =
+    useContext(TooljetDatabaseContext);
   const { MenuList, Option } = components;
 
   const IconOptions = (props) => (
@@ -115,45 +119,7 @@ const SelectTableMenu = ({ darkMode }) => {
     </Option>
   );
 
-  const tableList = [
-    {
-      label: 'Table A',
-      value: 'Table A',
-      id: '123',
-    },
-    {
-      label: 'Table B',
-      value: 'Table B',
-      id: '2',
-    },
-    {
-      label: 'Table C',
-      value: 'Table C',
-      id: '3',
-    },
-    {
-      label: 'Table D',
-      value: 'Table D',
-      id: '4',
-    },
-    {
-      label: 'Table E',
-      value: 'Table E',
-      id: '5',
-    },
-    {
-      label: 'Table F',
-      value: 'Table F',
-      icon: 'search',
-      options: [
-        {
-          label: 'Test 1',
-          value: 2,
-        },
-      ],
-      id: '6',
-    },
-  ];
+  const tableList = tables.map((t) => ({ label: t, value: t }));
 
   return (
     <div>
@@ -161,45 +127,7 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex mb-3">
         <label className="form-label">From</label>
         <div className="field flex-grow-1 mt-1">
-          <Container className="p-0">
-            <Row>
-              <Col sm="6" className="text-center">
-                Selected Table
-              </Col>
-              <Col sm="6" className="text-center">
-                Joining Table
-              </Col>
-            </Row>
-            <Row className="border rounded mb-2">
-              <Col sm="2" className="p-0 border-end">
-                {/* <SelectBox /> */}
-              </Col>
-              <Col sm="4" className="p-0 border-end">
-                {/* <SelectBox /> */}
-              </Col>
-              <Col sm="2" className="p-0 border-end">
-                {/* <SelectBox /> */}
-                <DropDownSelect options={tableList} darkMode={darkMode} />
-              </Col>
-              <Col sm="4" className="p-0">
-                <DropDownSelect options={tableList} isMulti darkMode={darkMode} />
-              </Col>
-            </Row>
-            <Row className="mb-2">
-              <Col className="p-0">
-                <ButtonSolid variant="ghostBlue" size="sm">
-                  <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-                  &nbsp;&nbsp; Add more
-                </ButtonSolid>
-              </Col>
-            </Row>
-            <Row>
-              <ButtonSolid variant="secondary" size="sm">
-                <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-                &nbsp;&nbsp; Add another table
-              </ButtonSolid>
-            </Row>
-          </Container>
+          <JoinConstraint darkMode={darkMode} />
         </div>
       </div>
       {/* Filter Section */}
@@ -209,17 +137,17 @@ const SelectTableMenu = ({ darkMode }) => {
           <Container className="p-0">
             <Row className="border rounded mb-1">
               <Col sm="2" className="p-0 border-end">
-                {/* <SelectBox /> */}
+                <div className="tj-small-btn">Join</div>
               </Col>
               <Col sm="4" className="p-0 border-end">
-                {/* <SelectBox /> */}
+                <DropDownSelect options={tableList} addBtnLabel={'Add new col'} onAdd={alert} darkMode={darkMode} />
               </Col>
               <Col sm="2" className="p-0 border-end">
                 {/* <SelectBox /> */}
                 <DropDownSelect options={tableList} addBtnLabel={'Add new col'} onAdd={alert} darkMode={darkMode} />
               </Col>
               <Col sm="4" className="p-0">
-                <DropDownSelect options={tableList} isMulti darkMode={darkMode} />
+                {/* <DropDownSelect options={tableList} isMulti darkMode={darkMode} /> */}
               </Col>
             </Row>
             <Row className="mb-2">
@@ -275,173 +203,128 @@ const SelectTableMenu = ({ darkMode }) => {
   );
 };
 
-const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onAdd }) => {
-  const popoverId = useRef(`dd-select-${generateRandomId(10)}`);
-  const popoverBtnId = useRef(`dd-select-btn-${generateRandomId(10)}`);
-  const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
-  const [selected, setSelected] = useState();
-  const selectRef = useRef();
-  const [isOverflown, setIsOverflown] = useState(false);
-
-  useEffect(() => {
-    if (showMenu) {
-      // selectRef.current.focus();
-    }
-  }, [showMenu]);
-
-  useEffect(() => {
-    const badges = document.querySelectorAll('.dd-select-value-badge');
-    if (isEmpty(badges)) {
-      return () => {};
-    }
-    let isNewOverFlown = false;
-    for (let i = 0; i < badges.length; i++) {
-      const el = badges[i];
-      isNewOverFlown = el.clientWidth - el.scrollWidth < 0;
-      if (isOverflown) {
-        break;
+/**
+ * {
+      "joinType": "INNER",
+      "table": "orders",
+      "conditions": {
+        "operator": "AND",
+        "conditionsList": [
+          {
+            "operator": "=",
+            "leftField": {
+              "columnName": "id",
+              "table": "users",
+              "type": "Column"
+            },
+            "rightField": {
+              "columnName": "user_id",
+              "table": "orders",
+              "type": "Column"
+            }
+          },
+          {
+            "operator": ">",
+            "leftField": {
+              "columnName": "order_date",
+              "table": "orders",
+              "type": "Column"
+            },
+            "rightField": {
+              "value": "2022-01-01",
+              "type": "Value"
+            }
+          }
+        ]
       }
     }
-    if (isNewOverFlown !== isOverflown) {
-      setIsOverflown(isNewOverFlown);
-    }
-  }, [selected]);
-
-  function checkElementPosition() {
-    const selectControl = document.getElementById(popoverBtnId.current);
-    if (!selectControl) {
-      return 'top-start';
-    }
-
-    const elementRect = selectControl.getBoundingClientRect();
-    console.log(elementRect);
-
-    // Check proximity to top
-    const halfScreenHeight = window.innerHeight / 2;
-
-    if (elementRect.top <= halfScreenHeight) {
-      return 'bottom-start';
-    }
-
-    return 'top-start';
-  }
+ */
+const JoinConstraint = ({ darkMode, index }) => {
+  const { columns, selectedTable, tables, loadTableInformation, tableInfo } = useContext(TooljetDatabaseContext);
+  const tableList = tables.map((t) => ({ label: t, value: t }));
+  const [rightField, setRightField] = useState();
+  const [leftField, setLeftField] = useState(selectedTable);
 
   return (
-    <OverlayTrigger
-      show={showMenu && !disabled}
-      placement={checkElementPosition()}
-      // placement="auto"
-      // arrowOffsetTop={90}
-      // arrowOffsetLeft={90}
-      overlay={
-        <Popover
-          key={'page.i'}
-          id={popoverId.current}
-          className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
-          style={{ width: '244px', maxWidth: '246px' }}
-        >
-          <SelectBox
-            options={options}
-            isMulti={isMulti}
-            onSelect={(values) => {
-              setIsOverflown(false);
-              setSelected(values);
-            }}
-            selected={selected}
-            closePopup={() => setShowMenu(false)}
-            onAdd={onAdd}
-            addBtnLabel={addBtnLabel}
-          />
-        </Popover>
-      }
-    >
-      <span className="col-auto" id={popoverBtnId.current}>
-        <ButtonSolid
-          size="sm"
-          variant="tertiary"
-          disabled={disabled}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (disabled) {
-              return;
-            }
-            setShowMenu((show) => !show);
-          }}
-          className="px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0 position-relative"
-          data-cy={`show-ds-popover-button`}
-        >
-          {selected
-            ? Array.isArray(selected)
-              ? !isOverflown && (
-                  <MultiSelectValueBadge options={options} selected={selected} setSelected={setSelected} />
-                )
-              : selected?.label
-            : ''}
-          {isOverflown && (
-            <Badge className="me-1 dd-select-value-badge" bg="secondary">
-              {selected?.length} selected
-              <span
-                role="button"
-                onClick={(e) => {
-                  setSelected([]);
-                  e.preventDefault();
-                }}
-              >
-                <Remove fill="var(--slate12)" />
-              </span>
-            </Badge>
+    <Container className="p-0">
+      <Row>
+        <Col sm="6" className="text-center">
+          Selected Table
+        </Col>
+        <Col sm="6" className="text-center">
+          Joining Table
+        </Col>
+      </Row>
+      <Row className="border rounded mb-2">
+        <Col sm="2" className="p-0 border-end">
+          <div className="tj-small-btn">Join</div>
+        </Col>
+        <Col sm="4" className="p-0 border-end">
+          {/* <DropDownSelect options={tableList} darkMode={darkMode} /> */}
+          {index ? (
+            <DropDownSelect options={tableList} darkMode={darkMode} />
+          ) : (
+            <div className="tj-small-btn">{selectedTable}</div>
           )}
-          <span className="dd-select-control-chevron">
-            <CheveronDown />
-          </span>
+          {/* <SelectBox /> */}
+        </Col>
+        <Col sm="2" className="p-0 border-end">
+          {/* <SelectBox /> */}
+          <DropDownSelect options={staticJoinOperationsList} darkMode={darkMode} />
+        </Col>
+        <Col sm="4" className="p-0">
+          <DropDownSelect
+            options={tableList}
+            darkMode={darkMode}
+            onChange={(value) => {
+              value?.value && loadTableInformation(value?.value);
+              setRightField(value?.value);
+            }}
+          />
+          {/* <DropDownSelect options={tableList} isMulti darkMode={darkMode} /> */}
+        </Col>
+      </Row>
+      <Row className="border rounded mb-2">
+        <Col sm="2" className="p-0 border-end">
+          <div className="tj-small-btn">On</div>
+        </Col>
+        <Col sm="4" className="p-0 border-end">
+          <DropDownSelect
+            options={
+              (index
+                ? tableInfo[leftField]?.map((col) => ({ label: col.Header, value: col.Header }))
+                : columns.map((col) => ({ label: col.Header, value: col.Header }))) || []
+            }
+            darkMode={darkMode}
+          />
+          {/* <SelectBox /> */}
+        </Col>
+        <Col sm="2" className="p-0 border-end">
+          {/* <SelectBox /> */}
+          <DropDownSelect options={[{ label: '=', value: '=' }]} darkMode={darkMode} />
+        </Col>
+        <Col sm="4" className="p-0">
+          <DropDownSelect
+            options={tableInfo[rightField]?.map((col) => ({ label: col.Header, value: col.Header })) || []}
+            darkMode={darkMode}
+          />
+          {/* <DropDownSelect options={tableList} isMulti darkMode={darkMode} /> */}
+        </Col>
+      </Row>
+      <Row className="mb-2">
+        <Col className="p-0">
+          <ButtonSolid variant="ghostBlue" size="sm">
+            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            &nbsp;&nbsp; Add more
+          </ButtonSolid>
+        </Col>
+      </Row>
+      <Row>
+        <ButtonSolid variant="secondary" size="sm">
+          <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+          &nbsp;&nbsp; Add another table
         </ButtonSolid>
-      </span>
-    </OverlayTrigger>
+      </Row>
+    </Container>
   );
 };
-
-function MultiSelectValueBadge({ options, selected, setSelected }) {
-  if (options?.length === selected?.length && selected?.length !== 0) {
-    return (
-      <Badge className={`me-1 dd-select-value-badge`} bg="secondary">
-        All {options?.length} selected
-        <span
-          role="button"
-          onClick={(e) => {
-            setSelected([]);
-            e.preventDefault();
-          }}
-        >
-          <Remove fill="var(--slate12)" />
-        </span>
-      </Badge>
-    );
-  }
-
-  return selected.map((option) => (
-    <Badge key={option.value} className="me-1 dd-select-value-badge" bg="secondary">
-      {option.label}
-      <span
-        role="button"
-        onClick={(e) => {
-          setSelected((selected) => selected.filter((opt) => opt.value !== option.value));
-          e.preventDefault();
-        }}
-      >
-        <Remove fill="var(--slate12)" />
-      </span>
-    </Badge>
-  ));
-}
-
-function generateRandomId(length) {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let randomId = '';
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    randomId += characters.charAt(randomIndex);
-  }
-
-  return randomId;
-}

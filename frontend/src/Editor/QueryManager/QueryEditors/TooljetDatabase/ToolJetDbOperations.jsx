@@ -28,6 +28,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const [updateRowsOptions, setUpdateRowsOptions] = useState(
     options['update_rows'] || { columns: {}, where_filters: {} }
   );
+  const [tableInfo, setTableInfo] = useState({});
   const [deleteRowsOptions, setDeleteRowsOptions] = useState(
     options['delete_rows'] || {
       limit: 1,
@@ -84,6 +85,22 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     setDeleteRowsOptions((prev) => ({ ...prev, limit: limit }));
   };
 
+  const loadTableInformation = async (tableName) => {
+    if (!tableInfo[tableName]) {
+      const { data } = await tooljetDatabaseService.viewTable(organizationId, tableName);
+      setTableInfo((info) => ({
+        ...info,
+        [tableName]: data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+          Header: column_name,
+          accessor: column_name,
+          dataType: data_type,
+          isPrimaryKey: keytype?.toLowerCase() === 'primary key',
+          ...rest,
+        })),
+      }));
+    }
+  };
+
   const value = useMemo(
     () => ({
       organizationId,
@@ -102,8 +119,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       deleteOperationLimitOptionChanged,
       updateRowsOptions,
       handleUpdateRowsOptionsChange,
+      loadTableInformation,
+      tableInfo,
     }),
-    [organizationId, tables, columns, selectedTable, listRowsOptions, deleteRowsOptions, updateRowsOptions]
+    [organizationId, tables, columns, selectedTable, listRowsOptions, deleteRowsOptions, updateRowsOptions, tableInfo]
   );
 
   const fetchTables = async () => {
