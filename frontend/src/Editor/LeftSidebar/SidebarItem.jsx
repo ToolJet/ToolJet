@@ -16,7 +16,9 @@ export const LeftSidebarItem = forwardRef(
       <div {...rest} className={className} onClick={onClick && onClick} ref={ref}>
         {icon && (
           <div
-            className={`sidebar-svg-icon  position-relative ${selectedSidebarItem === icon && 'sidebar-item'}`}
+            className={`sidebar-svg-icon  position-relative ${
+              selectedSidebarItem === icon && selectedSidebarItem != 'comments' && 'sidebar-item'
+            }`}
             data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
           >
             <SolidIcon

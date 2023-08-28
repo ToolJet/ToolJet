@@ -137,6 +137,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                             ? '#4C5155'
                             : '#C1C8CD'
                         }
+                        width={28}
                       />
                     </Link>
                   </ToolTip>
