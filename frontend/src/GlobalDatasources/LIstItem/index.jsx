@@ -18,7 +18,10 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
   };
 
   const sourceMeta = getSourceMetaData(dataSource);
-  const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data);
+
+  // sourceMeta would be missing on development setup when switching between branches
+  // if ds is already in branch while not available in another
+  const icon = getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data);
 
   const focusModal = () => {
     const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
