@@ -4,6 +4,7 @@ FROM node:18.3.0-buster AS builder
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm i -g npm@8.11.0
+RUN npm cache clean --force
 RUN mkdir -p /app
 
 WORKDIR /app
@@ -123,5 +124,6 @@ WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
 
+RUN npm cache clean --force
 
 ENTRYPOINT ["./server/entrypoint.sh"]

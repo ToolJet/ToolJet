@@ -245,6 +245,8 @@ export class GroupPermissionsService {
       org_environment_variable_delete,
       folder_delete,
       folder_update,
+      org_environment_constant_create,
+      org_environment_constant_delete,
     } = body;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -296,6 +298,13 @@ export class GroupPermissionsService {
         ...(typeof folder_update === 'boolean' && { folderUpdate: folder_update }),
         ...(typeof data_source_create === 'boolean' && { dataSourceCreate: data_source_create }),
         ...(typeof data_source_delete === 'boolean' && { dataSourceDelete: data_source_delete }),
+
+        ...(typeof org_environment_constant_create === 'boolean' && {
+          orgEnvironmentConstantCreate: org_environment_constant_create,
+        }),
+        ...(typeof org_environment_constant_delete === 'boolean' && {
+          orgEnvironmentConstantDelete: org_environment_constant_delete,
+        }),
       };
       if (Object.keys(groupPermissionUpdateParams).length !== 0) {
         await manager.update(GroupPermission, groupPermissionId, groupPermissionUpdateParams);

@@ -5,7 +5,7 @@ import posthog from 'posthog-js';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed, appId }) => {
+export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed, appId, environmentId }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [buttonText, setButtonText] = useState('Test Connection');
@@ -28,7 +28,7 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
   function testDataSource() {
     setTestingStatus(true);
     posthog.capture('test_connection_datasource', { dataSource: kind, appId }); //posthog event
-    datasourceService.test(kind, options, pluginId).then(
+    datasourceService.test(kind, options, pluginId, environmentId).then(
       (data) => {
         setTestingStatus(false);
         if (data.status === 'ok') {

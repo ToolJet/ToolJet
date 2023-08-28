@@ -161,7 +161,7 @@ export function Ldap({ settings, updateData }) {
               label={t('header.organization.menus.manageSSO.ldap.title', 'LDAP')}
               onChange={changeStatus}
               checked={enabled}
-              data-cy="ldap"
+              dataCy="ldap"
             />
           </div>
           <div className="card-title">
@@ -221,7 +221,7 @@ export function Ldap({ settings, updateData }) {
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label" data-cy="baseDN-label">
+            <label className="form-label" data-cy="base-dn-label">
               Base DN
             </label>
             <div>
@@ -231,9 +231,9 @@ export function Ldap({ settings, updateData }) {
                 placeholder="dc=example,dc=com"
                 value={basedn}
                 onChange={(e) => setBaseDN(e.target.value)}
-                data-cy="baseDN-input"
+                data-cy="base-dn-input"
               />
-              <small className="form-note" style={{ color: '#6c757d' }}>
+              <small className="form-note" style={{ color: '#6c757d' }} data-cy="base-dn-helper-text">
                 {t('Location without UID or CN')}
               </small>
             </div>
@@ -278,7 +278,7 @@ export function Ldap({ settings, updateData }) {
           {sslOption === 'Certificates' && enableSSL && (
             <>
               <div className="form-group mb-3">
-                <label className="form-label" data-cy="clientKey-label">
+                <label className="form-label" data-cy="client-key-label">
                   Client Key
                   <small className="git- mx-2" data-cy="encripted-label">
                     <SolidIcon name="lock" width="16" />
@@ -290,14 +290,14 @@ export function Ldap({ settings, updateData }) {
                     placeholder="Enter Client Key"
                     value={clientKey}
                     onChange={(e) => setClientKey(e.target.value)}
-                    data-cy="clientKey-input"
+                    data-cy="client-key-input"
                     style={{ height: '116px' }}
                     autoFocus
                   />
                 </div>
               </div>
               <div className="form-group mb-3">
-                <label className="form-label" data-cy="clientCert-label">
+                <label className="form-label" data-cy="client-cert-label">
                   Client Certificate
                   <small className="git- mx-2" data-cy="encripted-label">
                     <SolidIcon name="lock" width="16" />
@@ -309,14 +309,14 @@ export function Ldap({ settings, updateData }) {
                     placeholder="Enter Client Certificate"
                     value={clientCert}
                     onChange={(e) => setClientCert(e.target.value)}
-                    data-cy="clientCert-input"
+                    data-cy="client-cert-input"
                     style={{ height: '116px' }}
                     autoFocus
                   />
                 </div>
               </div>
               <div className="form-group mb-3">
-                <label className="form-label" data-cy="serverCert-label">
+                <label className="form-label" data-cy="server-cert-label">
                   Server Certificate
                   <small className="git- mx-2" data-cy="encripted-label">
                     <SolidIcon name="lock" width="16" />
@@ -328,7 +328,7 @@ export function Ldap({ settings, updateData }) {
                     placeholder="Enter Server Certificate"
                     value={serverCert}
                     onChange={(e) => setServerCert(e.target.value)}
-                    data-cy="serverCert-input"
+                    data-cy="server-cert-input"
                     style={{ height: '116px' }}
                     autoFocus
                   />

@@ -20,7 +20,7 @@ export default function LdapSSOLoginButton({ configs }) {
             fill="#889096"
           />
         </svg>
-        <span data-cy="git-sso-text" className="sso-info-text">{`Sign in with ${name ?? 'LDAP'}`}</span>
+        <span data-cy="ldap-sso-text" className="sso-info-text">{`Sign in with ${name ?? 'LDAP'}`}</span>
       </div>
     </div>
   );

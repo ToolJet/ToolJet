@@ -12,6 +12,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 
 import { getPrivateRoute } from '@/_helpers/routes';
+import { getSubpath } from '@/_helpers/utils';
 const { defaultIcon } = configs;
 import posthog from 'posthog-js';
 import { authenticationService } from '@/_services';
@@ -99,7 +100,7 @@ export default function AppCard({
               folder_id: currentFolder?.id,
             });
             if (app?.current_version_id) {
-              window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
+              window.open(urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`));
             } else {
               navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
             }

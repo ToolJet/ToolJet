@@ -239,10 +239,7 @@ export class UsersService {
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const userType =
-        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && (await manager.count(User)) === 0
-          ? USER_TYPE.INSTANCE
-          : USER_TYPE.WORKSPACE;
+      const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
 
       if (!existingUser) {
         user = manager.create(User, {
@@ -453,6 +450,9 @@ export class UsersService {
       case 'GlobalDataSource':
         return await this.canUserPerformActionOnDataSources(user, action, resourceId);
 
+      case 'OrganizationConstant':
+        return await this.canUserPerformActionOnOrgEnvironmentConstants(user, action);
+
       default:
         return false;
     }
@@ -552,6 +552,32 @@ export class UsersService {
       case 'delete':
         permissionGrant = this.canAnyGroupPerformAction(
           'orgEnvironmentVariableDelete',
+          await this.groupPermissions(user)
+        );
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnOrgEnvironmentConstants(user: User, action: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentConstantCreate',
+          await this.groupPermissions(user)
+        );
+        break;
+
+      case 'delete':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentConstantDelete',
           await this.groupPermissions(user)
         );
         break;

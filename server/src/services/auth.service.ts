@@ -33,7 +33,13 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, isSuperAdmin, generateNextName } from 'src/helpers/utils.helper';
+import {
+  dbTransactionWrap,
+  isSuperAdmin,
+  generateInviteURL,
+  generateNextName,
+  generateOrgInviteURL,
+} from 'src/helpers/utils.helper';
 import { InstanceSettingsService } from './instance_settings.service';
 import { MetadataService } from './metadata.service';
 import { CookieOptions, Response } from 'express';
@@ -538,7 +544,8 @@ export class AuthService {
             user.email,
             `${user.firstName} ${user.lastName} ?? ''`,
             user.invitationToken,
-            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
+            `${organizationUser.invitationToken}`,
+            organizationUser.organizationId
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
         throw new UnauthorizedException(
@@ -564,13 +571,11 @@ export class AuthService {
 
       if (!user && organizationUser) {
         return {
-          redirect_url: `${this.configService.get<string>(
-            'TOOLJET_HOST'
-          )}/organization-invitations/${organizationToken}?oid=${organizationUser.organizationId}`,
+          redirect_url: generateOrgInviteURL(organizationToken, organizationUser.organizationId),
         };
       } else if (user && !organizationUser) {
         return {
-          redirect_url: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${token}`,
+          redirect_url: generateInviteURL(token),
         };
       }
     }

@@ -422,6 +422,8 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         orgEnvironmentVariableDelete: group == 'admin',
         dataSourceCreate: group === 'admin',
         dataSourceDelete: group === 'admin',
+        orgEnvironmentConstantCreate: group == 'admin',
+        orgEnvironmentConstantDelete: group == 'admin',
         folderUpdate: group == 'admin',
         folderDelete: group == 'admin',
       });
