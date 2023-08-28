@@ -992,14 +992,17 @@ export function Table({
                 <Tooltip id="tooltip-for-filter-data" className="tooltip" />
                 <ButtonSolid
                   variant="tertiary"
-                  className={`tj-text-xsm`}
+                  className={`tj-text-xsm ${tableDetails.filterDetails.filtersVisible && 'always-active-btn'}`}
                   style={{ minWidth: '32px' }}
                   leftIcon="filter"
                   fill={`var(--slate12)`}
                   iconWidth="16"
-                  onClick={() => {
+                  onClick={(e) => {
                     if (tableDetails?.filterDetails?.filtersVisible) {
                       hideFilters();
+                      if (document.activeElement === e.currentTarget) {
+                        e.currentTarget.blur();
+                      }
                     } else {
                       showFilters();
                     }
@@ -1548,7 +1551,9 @@ export function Table({
               {!loadingState && showAddNewRowButton && (
                 <ButtonSolid
                   variant="ghostBlack"
-                  className={`tj-text-xsm ${tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed'}`}
+                  className={`tj-text-xsm ${
+                    tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
+                  }`}
                   style={{ minWidth: '32px' }}
                   leftIcon="plus"
                   fill={`var(--slate12)`}

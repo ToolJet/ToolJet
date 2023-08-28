@@ -164,7 +164,7 @@
         }
     }
 
-    &:active,&:focus {
+    &:active,&:focus,&.always-active-btn {
         border: 1px solid var(--slate7, #D7DBDF) !important;
         background: var(--slate5) !important;
         color: var(--slate12);
@@ -242,7 +242,7 @@
         border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
         background: var(--slate1, #FBFCFD) !important;
     }
-    &:active,&:focus {
+    &:active,&:focus,&.always-active-btn {
         color: var(--slate12) !important;
         border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
         background: var(--slate5, #E6E8EB) !important;
