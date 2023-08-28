@@ -37,7 +37,7 @@ export const ReleasedVersionError = () => {
           <div className="me-3">
             <InfoSvg />
           </div>
-          <p style={{ marginBottom: '0' }}>
+          <p style={{ marginBottom: '0' }} data-cy="warning-text">
             This version of the app is released. Please create a new version in development to make any changes.
           </p>
         </div>

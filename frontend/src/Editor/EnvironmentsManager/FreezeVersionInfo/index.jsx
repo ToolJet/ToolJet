@@ -37,7 +37,7 @@ export const FreezeVersionInfo = () => {
           <div className="me-3">
             <Branch />
           </div>
-          <p style={{ marginBottom: '0' }}>
+          <p style={{ marginBottom: '0' }} data-cy="warning-text">
             App cannot be edited after promotion. Please create a new version from Development to make any changes.
           </p>
         </div>

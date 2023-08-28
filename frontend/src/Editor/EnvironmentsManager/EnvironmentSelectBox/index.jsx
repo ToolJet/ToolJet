@@ -37,10 +37,14 @@ function EnvironmentSelectBox(props) {
   const darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
 
   return (
-    <div className={`env-container ${showOptions ? 'selected' : ''} ${darkMode ? 'theme-dark' : ''}`} ref={ref}>
+    <div
+      className={`env-container ${showOptions ? 'selected' : ''} ${darkMode ? 'theme-dark' : ''}`}
+      ref={ref}
+      data-cy="env-container"
+    >
       <div className={`d-inline-flex align-items-center env-header`} onClick={() => setShowOptions(!showOptions)}>
         <XenvSvg />
-        <div>{capitalize(currentEnv.name)}</div>
+        <div data-cy="list-current-env-name">{capitalize(currentEnv.name)}</div>
         <div className={`env-arrow ${showOptions ? 'env-arrow-roate' : ''} `}>
           <svg
             width="12"
@@ -48,6 +52,7 @@ function EnvironmentSelectBox(props) {
             viewBox="0 0 6 10"
             fill={darkMode ? 'ffffff' : '#cccccc'}
             xmlns="http://www.w3.org/2000/svg"
+            data-cy="env-arrow"
           >
             <path
               fill-rule="evenodd"
@@ -60,11 +65,19 @@ function EnvironmentSelectBox(props) {
       </div>
       {showOptions && (
         <div className={`env-popover ${darkMode ? 'theme-dark' : ''}`}>
-          <div className="selected-env"> {capitalize(currentEnv.name)}</div>
+          <div className="selected-env" data-cy="selected-current-env-name">
+            {' '}
+            {capitalize(currentEnv.name)}
+          </div>
           <div className={`popover-options ${darkMode ? 'dark-theme' : ''}`}>
             {options.map((option, index) => {
               return (
-                <div key={index} onClick={() => handleClick(option)} className={`${darkMode ? 'dark-theme' : ''}`}>
+                <div
+                  key={index}
+                  onClick={() => handleClick(option)}
+                  className={`${darkMode ? 'dark-theme' : ''}`}
+                  data-cy="env-name-list"
+                >
                   {option.label}
                 </div>
               );
