@@ -285,7 +285,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <div className="left-sidebar-stack-bottom">
         <div className="">
           {config.COMMENT_FEATURE_ENABLE && (
-            <div className={`${isVersionReleased && 'disabled'}`} style={{ maxHeight: '32px', maxWidth: '32px' }}>
+            <div
+              className={`${isVersionReleased && 'disabled'}`}
+              style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}
+            >
               <LeftSidebarComment
                 selectedSidebarItem={showComments ? 'comments' : ''}
                 currentPageId={currentPageId}
