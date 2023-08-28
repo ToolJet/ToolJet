@@ -119,39 +119,15 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Filter Section */}
-      <div className="field-container d-flex mb-3">
+      <div className="field-container d-flex mb-4">
         <label className="form-label">Filter</label>
-        <div className="field flex-grow-1 mt-2">
-          <Container className="p-0">
-            <Row className="border rounded mb-1">
-              <Col sm="2" className="p-0 border-end">
-                <div className="tj-small-btn">Join</div>
-              </Col>
-              <Col sm="4" className="p-0 border-end">
-                <DropDownSelect options={tableList} addBtnLabel={'Add new col'} onAdd={alert} darkMode={darkMode} />
-              </Col>
-              <Col sm="2" className="p-0 border-end">
-                {/* <SelectBox /> */}
-                <DropDownSelect options={tableList} addBtnLabel={'Add new col'} onAdd={alert} darkMode={darkMode} />
-              </Col>
-              <Col sm="4" className="p-0">
-                {/* <DropDownSelect options={tableList} isMulti darkMode={darkMode} /> */}
-              </Col>
-            </Row>
-            <Row className="mb-2">
-              <Col className="p-0">
-                <ButtonSolid variant="ghostBlue" size="sm">
-                  <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-                  &nbsp;&nbsp; Add more
-                </ButtonSolid>
-              </Col>
-            </Row>
-          </Container>
+        <div className="field flex-grow-1">
+          <RenderFilterSection darkMode={darkMode} />
         </div>
       </div>
       {/* Sort Section */}
       <div className="field-container d-flex mb-3">
-        <label className="form-label">Filter</label>
+        <label className="form-label">Sort</label>
         <div className="field flex-grow-1 mt-2">
           <Container className="p-0">
             <Row className="mb-2">
@@ -332,3 +308,117 @@ const JoinConstraint = ({ darkMode, index }) => {
     </Container>
   );
 };
+
+// Component to Render Filter Section
+const RenderFilterSection = ({ darkMode }) => {
+  const { tables, tableInfo } = useContext(TooljetDatabaseContext);
+
+  // Add New Filter Condition
+  // Update Filter condition
+  // Delete Filter Condition
+  // Handle Column Change
+  // Handle Operator Change
+  // Handle Value Change
+  // Component must change based on First and Rest options
+  // When operator is selected we cannot change
+  // Re-populate the Saved Query *
+  // Multiple Condition
+  // Existing Options Filter
+  // OnChange functionality
+  // Have constants in a separate file
+  // Multiple Condition
+  // Delete Icon
+
+  const tableList = Object.entries(tableInfo).map(([key, value]) => {
+    const tableDetails = {
+      label: key,
+      value: key,
+      options: value.map((columns) => ({ label: columns.Header, value: columns.Header })),
+    };
+    return tableDetails;
+  });
+
+  return (
+    <Container className="p-0">
+      {/* Dynamically render below Row */}
+      <Row className="border rounded mb-1">
+        <Col sm="2" className="p-0 border-end">
+          <div className="tj-small-btn">Where</div>
+        </Col>
+        <Col sm="4" className="p-0 border-end">
+          <DropDownSelect options={tableList} darkMode={darkMode} />
+        </Col>
+        <Col sm="1" className="p-0 border-end">
+          <DropDownSelect options={[{ label: '=', value: '=' }]} darkMode={darkMode} />
+        </Col>
+        <Col sm="4" className="p-0">
+          {/* <CodeHinter
+            // initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
+            className="codehinter-plugins"
+            theme={darkMode ? 'monokai' : 'default'}
+            height={'32px'}
+            placeholder="Value"
+            // onChange={(newValue) => handleValueChange(newValue)}
+          /> */}
+        </Col>
+        <Col sm="1" className="p-0">
+          {/* <DropDownSelect options={tableList} isMulti darkMode={darkMode} /> */}
+        </Col>
+      </Row>
+      <Row className="mb-2">
+        <Col className="p-0">
+          <ButtonSolid variant="ghostBlue" size="sm">
+            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            &nbsp;&nbsp; Add more
+          </ButtonSolid>
+        </Col>
+      </Row>
+    </Container>
+  );
+};
+
+// Component to Render Sort Section
+const RenderSortSection = () => {};
+
+// Component to Render Select Section
+const RenderSelectSection = () => {};
+
+// const tableList = [
+//   {
+//     label: 'Table A',
+//     value: 'Table A',
+//     id: '123',
+//   },
+//   {
+//     label: 'Table B',
+//     value: 'Table B',
+//     id: '2',
+//   },
+//   {
+//     label: 'Table C',
+//     value: 'Table C',
+//     id: '3',
+//   },
+//   {
+//     label: 'Table D',
+//     value: 'Table D',
+//     id: '4',
+//   },
+//   {
+//     label: 'Table E',
+//     value: 'Table E',
+//     id: '5',
+//   },
+//   {
+//     label: 'Table F',
+//     value: 'Table F',
+//     icon: 'search',
+//     options: [
+//       {
+//         label: 'Test 1',
+//         value: 2,
+//       },
+//     ],
+//     id: '6',
+//   },
+// ];
