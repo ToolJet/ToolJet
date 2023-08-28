@@ -17,7 +17,7 @@ export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchP
 
   return (
     <div
-      className={`navigation-area ${darkMode && 'dark'}`}
+      className={`navigation-area`}
       style={{
         width: 200,
         // backgroundColor: canvasBackgroundColor,
