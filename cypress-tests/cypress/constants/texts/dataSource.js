@@ -27,7 +27,7 @@ export const dataSourceText = {
     psqlName: "cypress-postgresql",
 
     labelConnectionVerified: "connection verified",
-    toastDSAdded: "Datasource Added",
+    toastDSAdded: "Data Source Added",
     placeholderNameOfDB: "Name of the database",
     placeholderEnterHost: "Enter host",
     placeholderEnterPort: "Enter port",
@@ -69,6 +69,6 @@ export const dataSourceText = {
 
     tabAdvanced: "Advanced",
     labelNoEventhandler: "This query doesn't have any event handlers",
-    toastDSSaved: "Datasource Saved",
+    toastDSSaved: "Data Source Saved",
     unSavedModalTitle: "Unsaved Changes"
 };
