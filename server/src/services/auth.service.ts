@@ -21,7 +21,7 @@ import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap, generateNextName } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateInviteURL, generateNextName, generateOrgInviteURL } from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -458,7 +458,8 @@ export class AuthService {
             user.email,
             `${user.firstName} ${user.lastName} ?? ''`,
             user.invitationToken,
-            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
+            `${organizationUser.invitationToken}`,
+            organizationUser.organizationId
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
         throw new UnauthorizedException(
@@ -484,13 +485,11 @@ export class AuthService {
 
       if (!user && organizationUser) {
         return {
-          redirect_url: `${this.configService.get<string>(
-            'TOOLJET_HOST'
-          )}/organization-invitations/${organizationToken}?oid=${organizationUser.organizationId}`,
+          redirect_url: generateOrgInviteURL(organizationToken, organizationUser.organizationId),
         };
       } else if (user && !organizationUser) {
         return {
-          redirect_url: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${token}`,
+          redirect_url: generateInviteURL(token),
         };
       }
     }
