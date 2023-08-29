@@ -221,7 +221,7 @@ export function Filter(props) {
         <ButtonSolid
           variant="tertiary"
           className={`tj-text-xsm`}
-          onClick={() => clearFilters()}
+          onClick={clearFilters}
           size="sm"
           customStyles={{ padding: '10px 20px' }}
         >
