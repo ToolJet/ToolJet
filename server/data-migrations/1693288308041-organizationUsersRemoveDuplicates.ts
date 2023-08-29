@@ -7,8 +7,8 @@ export class organizationUsersRemoveDuplicates1693288308041 implements Migration
       'select sub_query.organization_id, sub_query.user_id from (select count(*) as org_user_count, organization_id, user_id from organization_users group by organization_id, user_id) sub_query where org_user_count > 1'
     );
     if (duplicates && duplicates.length) {
-      let idToKeep;
       for (const duplicate of duplicates) {
+        let idToKeep;
         const duplicatesWithStatus = await entityManager.query(
           'select id, status from organization_users where organization_id=$1 and user_id=$2',
           [duplicate.organization_id, duplicate.user_id]
@@ -21,9 +21,12 @@ export class organizationUsersRemoveDuplicates1693288308041 implements Migration
             idToKeep = duplicatesWithStatus[0].id;
           }
         }
-      }
-      if (idToKeep) {
-        await entityManager.query('delete from organization_users where id!=$1', [idToKeep]);
+        if (idToKeep) {
+          await entityManager.query(
+            'delete from organization_users where id!=$1 and organization_id=$1 and user_id=$2',
+            [idToKeep, duplicate.organization_id, duplicate.user_id]
+          );
+        }
       }
     }
   }
