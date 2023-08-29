@@ -144,7 +144,9 @@ export const Inspector = ({
       allParams[param.name][attr] = value;
       const defaultValue = getDefaultValue(value);
       if (param.name === 'enablePagination' && !resolveReferences(value, currentState)) {
-        allParams['clientSidePagination'][attr] = value;
+        if (allParams?.['clientSidePagination']?.[attr]) {
+          allParams['clientSidePagination'][attr] = value;
+        }
         allParams['serverSidePagination'][attr] = value;
       }
       if (param.type === 'select' && defaultValue) {
