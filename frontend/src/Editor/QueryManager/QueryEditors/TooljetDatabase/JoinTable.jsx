@@ -231,7 +231,6 @@ const RenderFilterSection = ({ darkMode }) => {
   const { conditions = {} } = joinTableOptions;
   const { conditionsList = [] } = conditions;
 
-  // Multiple Condition
   // Update Filter condition
   // OnChange & Value - functionality
   // Re-populate the Saved Query *
@@ -254,7 +253,7 @@ const RenderFilterSection = ({ darkMode }) => {
 
     const emptyConditionTemplate = { operator: '', leftField: {}, rightField: {} };
 
-    // First time we need to populate, operator & condition list details
+    // First time populate operator & conditionList details
     if (!Object.keys(conditions).length) {
       editedFilterCondition = {
         operator: 'AND',
@@ -273,7 +272,7 @@ const RenderFilterSection = ({ darkMode }) => {
   function removeFilterConditionEntry(index) {
     if (!Object.keys(conditions).length || !conditionsList.length) return;
 
-    // If there is one condition left, making the state -> 'conditions' to default.
+    // If there is one condition left, then make the 'conditions' state to default.
     let editedFilterConditions = {};
     if (conditionsList.length > 1) {
       editedFilterConditions = {
@@ -285,9 +284,72 @@ const RenderFilterSection = ({ darkMode }) => {
     handleWhereFilterChange(editedFilterConditions);
   }
 
-  // function updateFilterConditionEntry() {
+  function updateFilterConditionEntry(type, indexToUpdate, valueToUpdate) {
+    if (!Object.keys(conditions).length || !conditionsList.length || conditionsList.length < indexToUpdate) return;
+    // type: Column | Value | Operator
 
-  // }
+    // @desc : Input Need for Each Type
+    // Column -> table, columnName, isLeftSideCondition
+    // Value -> value, isLeftSideCondition
+    // Operator -> operator
+
+    const editedConditionList = conditionsList.map((conditionDetail, index) => {
+      if (indexToUpdate === index) {
+        switch (type) {
+          case 'Column':
+            valueToUpdate.isLeftSideCondition
+              ? {
+                  ...conditionDetail,
+                  leftField: {
+                    columnName: valueToUpdate.columnName,
+                    table: valueToUpdate.table,
+                    type: 'Column',
+                  },
+                }
+              : {
+                  ...conditionDetail,
+                  rightField: {
+                    columnName: valueToUpdate.columnName,
+                    table: valueToUpdate.table,
+                    type: 'Column',
+                  },
+                };
+            break;
+          case 'Value':
+            valueToUpdate.isLeftSideCondition
+              ? {
+                  ...conditionDetail,
+                  leftField: {
+                    value: valueToUpdate.value,
+                    type: 'Value',
+                  },
+                }
+              : {
+                  ...conditionDetail,
+                  rightField: {
+                    value: valueToUpdate.value,
+                    type: 'Value',
+                  },
+                };
+            break;
+          case 'Operator':
+            return {
+              ...conditionDetail,
+              operator: valueToUpdate.operator,
+            };
+          default:
+            return conditionDetail;
+        }
+      }
+      return conditionDetail;
+    });
+    handleWhereFilterChange({ ...conditions, conditionsList: editedConditionList });
+  }
+
+  function updateOperatorInConditions(changedOperator) {
+    let editedFilterConditions = { ...conditions, operator: changedOperator };
+    handleWhereFilterChange(editedFilterConditions);
+  }
 
   const tableList = Object.entries(tableInfo).map(([key, value]) => {
     const tableDetails = {
@@ -325,6 +387,7 @@ const RenderFilterSection = ({ darkMode }) => {
           <Col sm="2" className="p-0 border-end">
             {index === 1 && (
               <DropDownSelect
+                onChange={(change) => updateOperatorInConditions(change?.value)}
                 options={groupOperators}
                 darkMode={darkMode}
                 value={groupOperators.find((op) => op.value === conditions.operator)}
@@ -334,10 +397,20 @@ const RenderFilterSection = ({ darkMode }) => {
             {index > 1 && <div className="tj-small-btn px-2">{conditions?.operator}</div>}
           </Col>
           <Col sm="4" className="p-0 border-end">
-            <DropDownSelect options={tableList} darkMode={darkMode} />
+            <DropDownSelect
+              // onChange
+              // value
+              options={tableList}
+              darkMode={darkMode}
+            />
           </Col>
           <Col sm="1" className="p-0 border-end">
-            <DropDownSelect options={operatorConstants} darkMode={darkMode} />
+            <DropDownSelect
+              // onChange
+              // Value
+              options={operatorConstants}
+              darkMode={darkMode}
+            />
           </Col>
           <Col sm="5" className="p-0 d-flex">
             <div className="flex-grow-1">
@@ -350,7 +423,6 @@ const RenderFilterSection = ({ darkMode }) => {
                 // onChange={(newValue) => handleValueChange(newValue)}
               />
             </div>
-            {/* onClick={onRemove} */}
             <ButtonSolid
               size="sm"
               variant="ghostBlack"
