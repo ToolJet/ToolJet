@@ -66,31 +66,37 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
         </div>
       </div>
       <div className="undo-redo-container">
-        <div onClick={handleUndo} className="tj-ghost-black-btn">
+        <div
+          onClick={handleUndo}
+          className="tj-ghost-black-btn"
+          data-tooltip-id="tooltip-for-undo"
+          data-tooltip-content="Undo"
+          data-cy={`editor-undo-button`}
+        >
           <SolidIcon
             width="16"
             height="16"
             viewBox="0 0 16 16"
-            data-tooltip-id="tooltip-for-undo"
-            data-tooltip-content="Undo"
             fill={darkMode ? '#fff' : '#2c3e50'}
             name="arrowforwardup"
-            data-cy={`editor-undo-button`}
             className={cx('cursor-pointer', {
               disabled: !canUndo,
             })}
           />
         </div>
-        <div onClick={handleRedo} className="tj-ghost-black-btn">
+        <div
+          onClick={handleRedo}
+          className="tj-ghost-black-btn"
+          data-tooltip-id="tooltip-for-redo"
+          data-tooltip-content="Redo"
+          data-cy={`editor-redo-button`}
+        >
           <SolidIcon
             width="16"
             height="16"
             viewBox="0 0 16 16"
-            data-tooltip-id="tooltip-for-redo"
-            data-tooltip-content="Redo"
             fill={darkMode ? '#fff' : '#2c3e50'}
             name="arrowbackup"
-            data-cy={`editor-redo-button`}
             className={cx('cursor-pointer', {
               disabled: !canRedo,
             })}
