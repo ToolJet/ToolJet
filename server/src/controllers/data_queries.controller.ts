@@ -27,6 +27,7 @@ import { EntityManager } from 'typeorm';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { App } from 'src/entities/app.entity';
+import { isEmpty } from 'class-validator';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -127,7 +128,12 @@ export class DataQueriesController {
         appVersionId,
         manager
       );
-      return decamelizeKeys(dataQuery);
+
+      const decamelizedQuery = decamelizeKeys({ ...dataQuery, kind });
+
+      decamelizedQuery['options'] = dataQuery.options;
+
+      return decamelizedQuery;
     });
   }
 
@@ -144,7 +150,9 @@ export class DataQueriesController {
     }
 
     const result = await this.dataQueriesService.update(dataQueryId, name, options);
-    return decamelizeKeys(result);
+    const decamelizedQuery = decamelizeKeys({ ...dataQuery, ...result });
+    decamelizedQuery['options'] = result.options;
+    return decamelizedQuery;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -169,7 +177,7 @@ export class DataQueriesController {
     @Param('environmentId') environmentId,
     @Body() updateDataQueryDto: UpdateDataQueryDto
   ) {
-    const { options } = updateDataQueryDto;
+    const { options, resolvedOptions } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
@@ -179,12 +187,17 @@ export class DataQueriesController {
       if (!ability.can('runQuery', dataQuery.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
       }
+
+      if (ability.can('updateQuery', dataQuery.app) && !isEmpty(options)) {
+        await this.dataQueriesService.update(dataQueryId, dataQuery.name, options);
+        dataQuery['options'] = options;
+      }
     }
 
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQuery, options, environmentId);
+      result = await this.dataQueriesService.runQuery(user, dataQuery, resolvedOptions, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {

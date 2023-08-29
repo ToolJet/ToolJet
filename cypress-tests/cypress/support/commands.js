@@ -13,7 +13,7 @@ Cypress.Commands.add(
     cy.get(commonSelectors.signInButton).click();
     cy.intercept("GET", "api/library_apps").as("apps");
     cy.wait("@apps");
-    cy.wait(2000);
+    cy.wait(4000);
     cy.get(commonSelectors.homePageLogo).should("be.visible");
   }
 );
@@ -111,9 +111,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).type(value, {
@@ -165,6 +165,8 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
   cy.get("[data-cy='left-sidebar-settings-button']").click();
   cy.clearAndType("[data-cy='maximum-canvas-width-input-field']", x);
   cy.forceClickOnCanvas();
+  cy.intercept("/api/apps/**").as("app");
+  cy.wait("@app");
 });
 
 Cypress.Commands.add("renameApp", (appName) => {
@@ -188,9 +190,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
   }
 );

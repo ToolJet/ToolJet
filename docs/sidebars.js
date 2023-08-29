@@ -56,6 +56,7 @@ const sidebars = {
             'data-sources/amazonses',
             'data-sources/appwrite',
             'data-sources/athena',
+            'data-sources/azureblob',
             'data-sources/baserow',
             'data-sources/bigquery',
             'data-sources/firestore',
@@ -214,6 +215,16 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'Workflows',
+      'items': [
+        'workflows/overview',
+        'workflows/nodes',
+        'workflows/permissions',
+        'workflows/logs',
+      ],
+    },
+    {
+      'type': 'category',
       'label': 'Org Management',
       'items': [
         {
@@ -266,12 +277,13 @@ const sidebars = {
           ],
         },
         {
-          'type': 'category',
-          'label': 'Workspaces',
-          'items': [
-            'tutorial/workspace_overview',
-            'tutorial/workspace-variables',
-          ],
+          "type": "category",
+          "label": "Workspaces",
+          "items": [
+            "org-management/workspaces/workspace_overview",
+            "org-management/workspaces/workspace-variables",
+            "org-management/workspaces/workspace_constants"
+          ]
         },
         'org-management/permissions',
         'tutorial/manage-users-groups',
@@ -334,6 +346,7 @@ const sidebars = {
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
         'how-to/bulk-update-multiple-rows',
+        'how-to/delete-multiple-rows',
         'how-to/use-server-side-pagination',
         'how-to/access-currentuser',
         'how-to/use-axios-in-runjs',

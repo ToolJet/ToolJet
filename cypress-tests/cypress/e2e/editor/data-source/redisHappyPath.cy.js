@@ -6,7 +6,7 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 import {
   verifyCouldnotConnectWithAlert,
@@ -106,7 +106,7 @@ describe("Data source Redis", () => {
     );
   });
   it("Should verify the functionality of Redis connection form.", () => {
-    selectDataSource(redisText.redis);
+    selectAndAddDataSource(redisText.redis);
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',

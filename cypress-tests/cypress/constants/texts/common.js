@@ -170,7 +170,10 @@ export const commonText = {
     // iframeLinkLabel: "Get embeddable link for this application",
     // ifameLinkCopyButton: "copy",
   },
-  groupInputFieldLabel: "Select Group"
+  groupInputFieldLabel: "Select Group",
+  documentationLink: "Read Documentation",
+  constantsNameError: "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
+  constantsValueError: "Value should be less than 10000 characters and cannot be empty"
 };
 
 export const commonWidgetText = {
@@ -199,7 +202,7 @@ export const commonWidgetText = {
   codeMirrorInputTrue: codeMirrorInputLabel(true),
   codeMirrorInputFalse: codeMirrorInputLabel("false"),
 
-  addEventHandlerLink: "+ Add event handler",
+  addEventHandlerLink: "Add handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
   labelDefaultValue: "Default Value",

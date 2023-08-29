@@ -7,7 +7,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -25,6 +25,7 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.wait(1000);
     cy.get(commonSelectors.addNewDataSourceButton)
       .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
@@ -117,7 +118,7 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(postgreSqlText.postgreSQL);
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
@@ -134,7 +135,11 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterPort,
       "5432"
     );
-    cy.get('[data-cy="-toggle-input"]').uncheck();
+    cy.get('[data-cy="-toggle-input"]').then(($el) => {
+      if ($el.is(":checked")) {
+        cy.get('[data-cy="-toggle-input"]').uncheck();
+      }
+    });
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
       postgreSqlText.placeholderNameOfDB,
@@ -170,7 +175,7 @@ describe("Data sources", () => {
   });
 
   it.skip("Should verify elements of the Query section.", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(postgreSqlText.postgreSQL);
     fillConnectionForm(
       {
         Host: Cypress.env("pg_host"),
@@ -361,7 +366,7 @@ describe("Data sources", () => {
   });
 
   it.skip("Should verify CRUD operations on SQL Query.", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(postgreSqlText.postgreSQL);
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
@@ -448,7 +453,7 @@ describe("Data sources", () => {
   });
 
   it.skip("Should verify bulk update", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(postgreSqlText.postgreSQL);
     fillConnectionForm({
       Host: Cypress.env("pg_host"),
       Port: "5432",

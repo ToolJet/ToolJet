@@ -6,7 +6,7 @@ import { commonSelectors } from "Selectors/common";
 import { commonWidgetText, commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
   addQuery,
   fillConnectionForm,
   openQueryEditor,
@@ -113,7 +113,7 @@ describe("Data sources MySql", () => {
   });
 
   it("Should verify the functionality of MySQL connection form.", () => {
-    selectDataSource("MySQL");
+    selectAndAddDataSource("MySQL");
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
@@ -173,6 +173,12 @@ describe("Data sources MySql", () => {
     verifyCouldnotConnectWithAlert(
       "ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'103.171.99.42' (using password: YES)"
     );
+    cy.get('[data-cy="-toggle-input"]').then(($el) => {
+      if ($el.is(":checked")) {
+        cy.get('[data-cy="-toggle-input"]').uncheck();
+      }
+    });
+    cy.get(postgreSqlSelector.passwordTextField).should("be.visible");
     cy.get(postgreSqlSelector.passwordTextField).type(
       `{selectAll}{backspace}${Cypress.env("mysql_password")}`,
       { log: false }
@@ -199,7 +205,7 @@ describe("Data sources MySql", () => {
 
   it.skip("Should verify elements of the Query section.", () => {
     cy.viewport(1200, 1300);
-    selectDataSource("MySQL");
+    selectAndAddDataSource("MySQL");
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: Cypress.env("mysql_port"),
@@ -369,7 +375,7 @@ describe("Data sources MySql", () => {
 
   it.skip("Should verify CRUD operations on SQL Query.", () => {
     let dbName = "7mmplik";
-    selectDataSource("MySQL");
+    selectAndAddDataSource("MySQL");
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
@@ -448,7 +454,7 @@ describe("Data sources MySql", () => {
   });
 
   it.skip("Should verify bulk update", () => {
-    selectDataSource("MySQL");
+    selectAndAddDataSource("MySQL");
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
       mySqlText.cypressMySql

@@ -4,8 +4,9 @@
 .global-datasources-sidebar {
     height: calc(100vh - 64px);
     max-width: 288px;
-    overflow-y: auto;
     background: var(--base);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
 
     .add-datasource-btn {
         height: 40px;
@@ -16,15 +17,20 @@
         border-radius: 6px;
     }
 
+    .list-group {
+        overflow-y: auto;
+        height: calc(100% - 40px);
+    }
+
     .datasources-list {
         display: flex;
-        padding: 6px 8px;
+        padding: 6px 15px;
         width: 248px;
         height: 32px;
-        margin-bottom: 2px;
+        margin-bottom: 10px;
 
         &:focus-visible {
-            box-shadow: 0px 0px 0px 4px #DFE3E6;
+            box-shadow: 0px 0px 0px 4px #dfe3e6;
             outline: none;
         }
 
@@ -42,10 +48,9 @@
             box-shadow: none;
         }
 
-
         .ds-delete-btn {
             display: block;
-            visibility:hidden;
+            visibility: hidden;
             border: none;
             background: none;
         }
@@ -91,7 +96,7 @@
     background: var(--slate2);
 
     .modal-header {
-        background-color: var(--base) !important;
+        background-color: var(--slate3) !important;
     }
 
     .modal {
@@ -123,5 +128,126 @@
 }
 
 .datasource-inner-sidebar-wrap {
-    min-height: calc(100vh - 185px);
-  }
+    height: 100%;
+    .datasources-search {
+        width: 240px;
+        margin: 0 auto;
+        margin-bottom: 8px;
+        position: sticky;
+        top: 0;
+
+        .datasources-search-btn {
+            width: 28px;
+            height: 28px;
+            background: var(--base);
+            border: 1px solid;
+            border-color: var(--slate7);
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    .datasource-loader {
+        width: 240px;
+        margin: 0 auto;
+        display: block;
+    }
+}
+
+.datasource-selection-confirm-backdrop {
+    z-index: 1060;
+    opacity: 0.4 !important;
+}
+
+.datasource-list-container {
+    overflow-y: auto;
+    max-height: calc(100vh - 64px);
+    .datasource-list {
+        width: 976px;
+        margin: 0 auto;
+        max-height: calc(100vh - 70px);
+
+        .datasource-search-holder {
+            width: 100%;
+            margin-top: 22px;
+
+            .liner {
+                margin-top: 5px;
+                width: 100% !important;
+            }
+
+            input {
+                background: transparent;
+            }
+        }
+    }
+}
+
+.datasources-info {
+    display: contents;
+    font-weight: 500 !important;
+    display: flex;
+    align-items: center;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--slate9);
+}
+
+.datasource-list-header {
+    width: 240px;
+    margin: 0 auto !important;
+    margin-bottom: 8px !important;
+}
+
+.datasource-card {
+    height: 30px;
+    height: 122px !important;
+    button {
+        display: none;
+        padding: 5px 10px;
+        height: 32px;
+        align-items: center;
+        justify-content: center;
+        margin-top: 4px;
+    }
+
+    &:hover {
+        br:first-of-type {
+            display: none !important;
+        }
+
+        img {
+            scale: 0.8;
+        }
+
+        .datasource-card-title {
+            margin-top: 7px;
+            display: block;
+            margin-bottom: 7px;
+        }
+
+        center {
+            .card-icon {
+                width: 25px !important;
+                height: 25px !important;
+            }
+        }
+
+        button {
+            display: flex;
+            width: 90%;
+
+            span {
+                font-size: 14px;
+                font-weight: 500;
+            }
+        }
+    }
+}
+
+.delete-modal {
+    z-index: 1060 !important;
+}

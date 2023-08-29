@@ -145,7 +145,7 @@
             "advanced": "Advanced",
             "preview": "Preview",
             "Save": "Save",
-            "selectDatasource": "Select Datasource",
+            "selectDatasource": "Select Data Source",
             "addDatasource": "Add datasource",
             "dataSourceManager": {
                 "toast": {
@@ -181,7 +181,7 @@
             "events": "Events",
             "transformation": {
                 "transformationToolTip": "Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python",
-                "transformations": "Enable Transformations"
+                "transformations": "Transformations"
             }
         },
         "inspector": {
@@ -204,7 +204,7 @@
                 "table": "Table",
                 "pageIndex": "Page index",
                 "component": "Component",
-                "addHandler": "+ Add handler",
+                "addHandler": "Add handler",
                 "addEventHandler": "+ Add event handler",
                 "emptyMessage": "This {{componentName}} doesn't have any event handlers",
                 "page": "Page"
@@ -258,8 +258,8 @@
                     "enterFirstName": "Enter First Name",
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
-                    "enterFulltName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "enterFullName": "Enter full name",
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -267,7 +267,7 @@
                         "createNewGroup": "Create new group",
                         "updateGroup": "Update group",
                         "addNewGroup": "Add new group",
-                        "enterName": "Enter Name",
+                        "enterName": "Enter group name",
                         "createGroup": "Create Group",
                         "name": "Name"
                     },
@@ -921,7 +921,7 @@
             "tip": "Debugger",
             "errors": "Errors",
             "noErrors": "No errors found",
-            "noLogs" : "No logs found",
+            "noLogs": "No logs found",
             "clear": "clear"
         },
         "Comments": {
