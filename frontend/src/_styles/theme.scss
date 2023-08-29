@@ -539,7 +539,7 @@ button {
     border-left: 1px solid var(--slate5);
     background-color: var(--base);
     background-clip: border-box;
-
+    height: 100vh;
     .nav-tabs .nav-link {
       color: #3e525b;
       border-top-left-radius: 0px;

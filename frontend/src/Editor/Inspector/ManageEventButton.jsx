@@ -56,12 +56,18 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
                   trigger={'click'}
                   placement={'bottom-end'}
                   show={showActionsMenu}
-                  onToggle={(show) => console.log(show, 'show')}
                   overlay={
                     <Popover id="list-menu">
                       <Popover.Body bsPrefix="list-item-popover-body">
                         {MENU_ACTIONS.map((action) => (
-                          <div className="list-item-popover-option" key={action.label}>
+                          <div
+                            className="list-item-popover-option"
+                            key={action.label}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onMenuClick(action.label);
+                            }}
+                          >
                             <div className="list-item-popover-menu-option-icon">
                               {action.label === 'Delete' ? <Trash fill={'#E54D2E'} width={16} /> : action.icon}
                             </div>
@@ -69,10 +75,6 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
                               className={classNames('list-item-option-menu-label', {
                                 'color-tomato9': action.label === 'Delete',
                               })}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onMenuClick(action.label);
-                              }}
                             >
                               {action.label}
                             </div>
