@@ -99,10 +99,17 @@ const DropdownIndicator = (props) => {
 };
 
 const SelectTableMenu = ({ darkMode }) => {
-  const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, selectedTable, tables } =
-    useContext(TooljetDatabaseContext);
+  const {
+    columns,
+    listRowsOptions,
+    limitOptionChanged,
+    handleOptionsChange,
+    selectedTable,
+    tables,
+    joinOptions: joins,
+    setJoinOptions: setJoins,
+  } = useContext(TooljetDatabaseContext);
   const { MenuList, Option } = components;
-  const [joins, setJoins] = useState([{}]);
 
   const IconOptions = (props) => (
     <Option {...props}>
@@ -111,6 +118,17 @@ const SelectTableMenu = ({ darkMode }) => {
   );
 
   const tableList = tables.map((t) => ({ label: t, value: t }));
+
+  const handleJoinChange = (newJoin, index) => {
+    setJoins((joins) =>
+      joins.map((join, i) => {
+        if (i === index) {
+          return newJoin;
+        }
+        return join;
+      })
+    );
+  };
 
   return (
     <div>
@@ -123,11 +141,19 @@ const SelectTableMenu = ({ darkMode }) => {
               darkMode={darkMode}
               key={i}
               index={i}
+              // conditionsList={join?.conditions?.conditionsList}
+              // operator={join?.conditions?.operator}
+              data={join}
+              onChange={(value) => handleJoinChange(value, i)}
               onRemove={() => setJoins((joins) => joins.filter((join, index) => index !== i))}
             />
           ))}
           <Row>
-            <ButtonSolid variant="secondary" size="sm" onClick={() => setJoins((joins) => [...joins, {}])}>
+            <ButtonSolid
+              variant="secondary"
+              size="sm"
+              onClick={() => setJoins((joins) => [...joins, { table: selectedTable }])}
+            >
               <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
               &nbsp;&nbsp; Add another table
             </ButtonSolid>
