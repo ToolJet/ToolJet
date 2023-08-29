@@ -281,11 +281,11 @@ button {
 }
 
 .accordion-button::after {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.24174 8.49998H7.75967C8.53146 8.49998 9.01233 7.66277 8.62345 6.99612L6.86448 3.98075C6.4786 3.31924 5.5228 3.31924 5.13693 3.98075L3.37796 6.99611C2.98908 7.66277 3.46995 8.49998 4.24174 8.49998Z" fill="%2311181C"/></svg>');
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M8.83684 3L4.4484 3C3.86955 3 3.5089 3.62791 3.80056 4.1279L5.99478 7.88943C6.28419 8.38556 7.00104 8.38556 7.29045 7.88943L9.48467 4.1279C9.77634 3.62791 9.41568 3 8.83684 3Z" fill="%2311181C"/></svg>');
 }
 
 .accordion-button:not(.collapsed)::after {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.24174 8.49998H7.75967C8.53146 8.49998 9.01233 7.66277 8.62345 6.99612L6.86448 3.98075C6.4786 3.31924 5.5228 3.31924 5.13693 3.98075L3.37796 6.99611C2.98908 7.66277 3.46995 8.49998 4.24174 8.49998Z" fill="%2311181C"/></svg>');
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M8.83684 3L4.4484 3C3.86955 3 3.5089 3.62791 3.80056 4.1279L5.99478 7.88943C6.28419 8.38556 7.00104 8.38556 7.29045 7.88943L9.48467 4.1279C9.77634 3.62791 9.41568 3 8.83684 3Z" fill="%2311181C"/></svg>');
 }
 
 .accordion-button:not(.collapsed) {
@@ -530,10 +530,9 @@ button {
   }
 
   .editor-sidebar {
-    height: calc(100% - 48px);
     position: fixed;
     right: 0;
-    overflow-x: hidden;
+    overflow: hidden;
     width: 300px;
     flex: 1 1 auto;
     top: 48px;
@@ -1433,8 +1432,30 @@ button {
 }
 
 .inspector {
+  .tab-content {
+    overflow-y: auto;
+    // TAB HEADER HEIGHT + FOOTER HEIGHT = 100px
+    height: calc(100vh - 6.25rem);
+    // Hide scrollbar
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .tab-content::-webkit-scrollbar {
+    display: none;
+  }
   .accordion {
-    margin-bottom: 1rem !important;
+    margin-bottom: 45px !important;
+  }
+  .code-hinter-vertical-line {
+    position: relative;
+    width: 0;
+    border-left: 1px solid var(--slate5);
+    content: '';
+    margin-right: 1rem;
+  }
+  .code-hinter-wrapper {
+    min-width: 0;
   }
 }
 

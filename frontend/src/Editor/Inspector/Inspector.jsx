@@ -30,6 +30,27 @@ import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
+import Copy from '@/_ui/Icon/solidIcons/Copy';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
+import classNames from 'classnames';
+
+const INSPECTOR_HEADER_OPTIONS = [
+  {
+    label: 'Rename',
+    value: 'rename',
+    icon: <Edit width={16} />,
+  },
+  {
+    label: 'Duplicate',
+    value: 'duplicate',
+    icon: <Copy width={16} />,
+  },
+  {
+    label: 'Delete',
+    value: 'delete',
+    icon: <Trash width={16} fill={'#E54D2E'} />,
+  },
+];
 
 export const Inspector = ({
   selectedComponentId,
@@ -40,6 +61,7 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
   pages,
+  cloneComponents,
 }) => {
   const dataQueries = useDataQueries();
   const component = {
@@ -257,6 +279,18 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
+  const handleInspectorHeaderActions = (value) => {
+    if (value === 'rename') {
+      setHeaderInputEnabled(true);
+      setTimeout(() => setInputFocus(), 0);
+    }
+    if (value === 'delete') {
+      setWidgetDeleteConfirmation(true);
+    }
+    if (value === 'duplicate') {
+      cloneComponents();
+    }
+  };
   const buildGeneralStyle = () => {
     const items = [];
 
@@ -376,19 +410,25 @@ export const Inspector = ({
               overlay={
                 <Popover id="list-menu" className={darkMode && 'popover-dark-themed'}>
                   <Popover.Body bsPrefix="list-item-popover-body">
-                    <div
-                      className="list-item-popover-option"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setHeaderInputEnabled(true);
-                        setTimeout(() => setInputFocus(), 0);
-                      }}
-                    >
-                      <div className="list-item-popover-menu-option-icon">
-                        <Edit width={16} />
+                    {INSPECTOR_HEADER_OPTIONS.map((option) => (
+                      <div
+                        className="list-item-popover-option"
+                        key={option?.value}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleInspectorHeaderActions(option.value);
+                        }}
+                      >
+                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                        <div
+                          className={classNames('list-item-option-menu-label', {
+                            'color-tomato9': option.value === 'delete',
+                          })}
+                        >
+                          {option?.label}
+                        </div>
                       </div>
-                      <div className={'list-item-option-menu-label'}>Rename</div>
-                    </div>
+                    ))}
                   </Popover.Body>
                 </Popover>
               }

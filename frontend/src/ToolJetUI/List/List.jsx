@@ -64,7 +64,7 @@ function ListItem({
       {...restProps}
     >
       <div className="row" role="button">
-        <div className="col-auto">
+        <div className="col-auto d-flex align-items-center">
           {!isHovered && Icon && <Icon />}
           <SortableList.DragHandle show={isDraggable && isHovered} />
         </div>
@@ -83,7 +83,7 @@ function ListItem({
         </div>
 
         <div className="col-auto">
-          {enableActionsMenu && true && (
+          {enableActionsMenu && isHovered && (
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
