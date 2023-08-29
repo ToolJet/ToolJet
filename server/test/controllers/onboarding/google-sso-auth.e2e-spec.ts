@@ -17,6 +17,7 @@ import {
 } from '../../test.helper';
 import { getManager, Repository } from 'typeorm';
 import { OAuth2Client } from 'google-auth-library';
+import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 describe('Google SSO Onboarding', () => {
   let app: INestApplication;
@@ -132,7 +133,10 @@ describe('Google SSO Onboarding', () => {
             where: { userId: org_user.id },
           });
           const organization = await orgRepository.findOneOrFail({
-            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
+            where: {
+              id: org_user?.organizationUsers?.find((ou) => ou.status === WORKSPACE_USER_STATUS.INVITED)
+                ?.organizationId,
+            },
           });
 
           org_user_organization = organization;
@@ -384,7 +388,10 @@ describe('Google SSO Onboarding', () => {
             where: { userId: org_user.id },
           });
           const organization = await orgRepository.findOneOrFail({
-            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
+            where: {
+              id: org_user?.organizationUsers?.find((ou) => ou.status === WORKSPACE_USER_STATUS.INVITED)
+                ?.organizationId,
+            },
           });
 
           org_user_organization = organization;
