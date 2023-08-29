@@ -79,7 +79,6 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
   const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const [isHeaderInputEnabled, setHeaderInputEnabled] = useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -121,7 +120,7 @@ export const Inspector = ({
   };
 
   function handleComponentNameChange(newName) {
-    if (component.component.name === newName) return setHeaderInputEnabled(false);
+    if (component.component.name === newName) return;
 
     if (newName.length === 0) {
       toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
@@ -135,7 +134,6 @@ export const Inspector = ({
       let newComponent = { ...component };
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
-      setHeaderInputEnabled(false);
     } else {
       toast.error(
         t(
@@ -281,7 +279,6 @@ export const Inspector = ({
 
   const handleInspectorHeaderActions = (value) => {
     if (value === 'rename') {
-      setHeaderInputEnabled(true);
       setTimeout(() => setInputFocus(), 0);
     }
     if (value === 'delete') {
@@ -387,18 +384,15 @@ export const Inspector = ({
           </div>
           <div className={`col-10 p-0 ${isVersionReleased && 'disabled'}`}>
             <div className="input-icon" style={{ marginLeft: '8px' }}>
-              {isHeaderInputEnabled && (
-                <input
-                  onChange={(e) => setNewComponentName(e.target.value)}
-                  type="text"
-                  onBlur={() => handleComponentNameChange(newComponentName)}
-                  className="w-100 inspector-edit-widget-name"
-                  value={newComponentName}
-                  ref={inputRef}
-                  data-cy="edit-widget-name"
-                />
-              )}
-              {!isHeaderInputEnabled && <p style={{ marginBottom: '0px' }}>{newComponentName}</p>}
+              <input
+                onChange={(e) => setNewComponentName(e.target.value)}
+                type="text"
+                onBlur={() => handleComponentNameChange(newComponentName)}
+                className="w-100 inspector-edit-widget-name"
+                value={newComponentName}
+                ref={inputRef}
+                data-cy="edit-widget-name"
+              />
             </div>
           </div>
           <div className="col-1">

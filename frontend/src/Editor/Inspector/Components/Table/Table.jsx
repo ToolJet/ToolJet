@@ -1020,7 +1020,6 @@ class TableComponent extends React.Component {
                                       <List.Item
                                         primaryText={resolvedItemName}
                                         secondaryText={capitalize(item?.columnType)}
-                                        isDraggable
                                         data-cy={`column-${resolvedItemName}`}
                                         enableActionsMenu
                                         isEditable={item.isEditable === '{{true}}'}

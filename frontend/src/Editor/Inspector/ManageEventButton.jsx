@@ -5,6 +5,8 @@ import { Button } from '@/_ui/LeftSidebar';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import classNames from 'classnames';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 
 const MENU_ACTIONS = [{ label: 'Delete' }];
 
@@ -82,15 +84,18 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
                 >
                   <span>
                     {isHovered && (
-                      <Button.UnstyledButton
+                      <ButtonSolid
+                        variant="tertiary"
+                        size="xs"
+                        className={'list-menu-option-btn'}
                         onClick={(event) => {
                           event.stopPropagation();
                           setShowActionsMenu(true);
                         }}
-                        styles={{ height: '20px', marginLeft: '20px', backgroundColor: 'white' }}
+                        // data-cy={'page-menu'}
                       >
-                        <Button.Content dataCy={`event-handler-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
-                      </Button.UnstyledButton>
+                        <MoreVertical fill={'#11181C'} width={'20'} />
+                      </ButtonSolid>
                     )}
                   </span>
                 </OverlayTrigger>

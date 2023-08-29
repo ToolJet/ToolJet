@@ -35,6 +35,8 @@ import cx from 'classnames';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
 
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
+
 const AllElements = {
   Color,
   Json,
@@ -292,7 +294,7 @@ export function CodeHinter({
             }}
           ></div>
         )}
-        {paramLabel && (
+        {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}

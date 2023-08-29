@@ -7,6 +7,8 @@ import { OverlayTrigger, Popover } from 'react-bootstrap';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 
 function List({ children, ...restProps }) {
   const [showActionsMenu, setShowActionsMenu] = useState(false);
@@ -60,18 +62,19 @@ function ListItem({
       action
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={showActionsMenu ? { backgroundColor: '#E6E8EB' } : {}}
       {...restProps}
     >
       <div className="row" role="button">
-        <div className="col-auto d-flex align-items-center">
-          {!isHovered && Icon && <Icon />}
-          <SortableList.DragHandle show={isDraggable && isHovered} />
-        </div>
+        {(Icon || isDraggable) && (
+          <div className="col-auto d-flex align-items-center">
+            {!isHovered && Icon && <Icon />}
+            <SortableList.DragHandle show={isDraggable && isHovered} />
+          </div>
+        )}
         <div
           className="col text-truncate"
           data-cy={`pages-name-${String(primaryText).toLowerCase()}`}
-          style={{ paddingLeft: '0px' }}
+          style={Icon || isDraggable ? { paddingLeft: '0px' } : { paddingLeft: '8px' }}
         >
           {primaryText}
           <span className="list-item-secondary-text">{secondaryText}</span>
@@ -115,15 +118,18 @@ function ListItem({
               }
             >
               <span>
-                <Button.UnstyledButton
+                <ButtonSolid
+                  variant="tertiary"
+                  size="xs"
+                  className={'list-menu-option-btn'}
                   onClick={(event) => {
                     event.stopPropagation();
                     setShowActionsMenu(true);
                   }}
-                  styles={{ height: '20px', backgroundColor: 'white' }}
+                  // data-cy={'page-menu'}
                 >
-                  <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
-                </Button.UnstyledButton>
+                  <MoreVertical fill={'#11181C'} width={'20'} />
+                </ButtonSolid>
               </span>
             </OverlayTrigger>
           )}

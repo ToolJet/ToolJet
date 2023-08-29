@@ -65,6 +65,11 @@ min-width: 10.625rem; // 170px
   .color-tomato9 {
     color : var(--tomato9)
   }
-
 }
+}
+
+.list-menu-option-btn {
+  padding : 0px !important;
+  background-color: var(--base);
+  border : 1px solid transparent;
 }

@@ -277,7 +277,7 @@ button {
   font-size: 14px;
   font-weight: 500 !important;
   box-shadow: none !important;
-  color: var(--slate-12);
+  color: var(--slate12) !important;
 }
 
 .accordion-button::after {
@@ -296,7 +296,7 @@ button {
   .form-label {
     font-weight: 400;
     font-size: 12px;
-    color: #61656c;
+    color: var(--slate12);
   }
 
   .style-fx {
@@ -1434,8 +1434,8 @@ button {
 .inspector {
   .tab-content {
     overflow-y: auto;
-    // TAB HEADER HEIGHT + FOOTER HEIGHT = 100px
-    height: calc(100vh - 6.25rem);
+    // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
+    height: calc(100vh - 7.5rem);
     // Hide scrollbar
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
@@ -3095,8 +3095,6 @@ input:focus-visible {
   width: 18.75rem; // 300px
   z-index: 1;
   padding: 12px 18px;
-  color: var(--slate12);
-  text-decoration: none;
   display: flex;
   justify-content: space-between;
   cursor: pointer;
@@ -3104,6 +3102,7 @@ input:focus-visible {
   .widget-documentation-link-text {
     margin-left: 13px;
     font-weight: 500;
+    color: var(--slate12);
   }
 
   &:hover {
@@ -5241,16 +5240,18 @@ div#driver-page-overlay {
 .editor .editor-sidebar .inspector .inspector-edit-widget-name {
   padding: 4px 8px;
   color: var(--slate12);
-  border: 1px transparent;
+  border: 1px solid transparent;
   border-radius: 6px;
 
   &:hover {
     background-color: var(--slate4);
+    border: 1px solid var(--slate7);
   }
 
   &:focus {
     border: 1px solid var(--indigo9) !important;
     background-color: var(--indigo2);
+    box-shadow: 0px 0px 0px 1px #C6D4F9;
   }
 }
 
