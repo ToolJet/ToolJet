@@ -4,37 +4,19 @@ title: Table
 ---
 # Table
 
-Tables can be used for both displaying and editing data.
-
-<iframe height="500" src="https://www.youtube.com/embed/hTrdkUtz3aA" title="ToolJet Table Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+Tables can be used for both displaying and editing data. You can use the table widget to display data from a database or API. You can also use the table widget to edit data and save it back to the database or API.
 
 ## Table UI
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/UI.png" alt="ToolJet - Widget Reference - Table" width="900" />
+<img className="screenshot-full" src="/img/widgets/table/newuitable.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
-### Search
+### Filter data
 
-At the top-left corner of the table component, there is a search box that allows users to input keywords and search for rows within the table data. You can also **[show/hide the search box](/docs/widgets/table#show-search-box)** from the table from the table properties.
-
-:::tip
-You can use the `Tab` key to navigate through cells on the table.
-:::
-
-### Add new row
-
-When users click on this button, a popup modal appears which enables them to insert new rows. The modal will have a single row initially, and the columns will have the same column type as those on the table. If the user inputs data into the row, it will be stored on the **[`newRows` variable](/docs/widgets/table#exposed-variables)** of the table. If the user selects the **Discard** button, the data in the variable will be cleared. However, if the user closes the popup without taking any action (neither Save nor Discard), the data will still be retained, and a green indicator will appear on the **Add new row** button. The table has an **[Add new rows event handler](/docs//widgets/table#add-new-rows)** that can be utilized to execute queries that store the data into the datasource whenever the **Save** button is clicked.
-
-:::info
-At present, it is not possible to include columns of type Image when adding a new row to the table.
-:::
-
-### Filters
-
-The table data can be filtered by clicking on this button. You have the option to choose from various filters, such as:
+The table data can be filtered using this option. You have the option to choose from various filters, such as:
 
 - **contains**
 - **does not contain**
@@ -51,6 +33,27 @@ The table data can be filtered by clicking on this button. You have the option t
 
 You have the option to **[hide the filter button](/docs/widgets/table#show-filter-button)** in the table properties.
 
+### Search
+
+At the top-right corner of the table component, there is a search box that allows users to input keywords and search for rows within the table data. You can also **[show/hide the search box](/docs/widgets/table#show-search-box)** from the table from the table properties.
+
+:::tip
+You can use the `Tab` key to navigate through cells on the table.
+:::
+
+### Pagination
+
+The table component supports both **[client-side pagination](/docs/widgets/table#client-side-pagination)** and **[server-side pagination](/docs/widgets/table#server-side-pagination)**. The `<<` and `>>` button skips to the first and last page respectively. The `<` and `>` button skips to the previous and next page respectively. You can also **[hide the pagination buttons](/docs/widgets/table#show-pagination-buttons)** in the table properties.
+
+### Add new rows
+
+Upon clicking this button, a popup modal will show, providing users with the ability to insert new rows. Initially, the modal will contain a single row, with columns mirroring those found in the table. If users input data into this row, it will be stored within the **[`newRows` variable](/docs/widgets/table#exposed-variables)** associated with the table. Clicking on the **Discard** button will clear the data within this variable. However, if the users close the popup without any action (neither saving nor discarding), the data will persist, accompanied by a green indicator on the **Add new row** button. The table incorporates an **[Add new rows event handler](/docs//widgets/table#add-new-rows)**, which can be employed to execute queries that store the data into the datasource upon clicking the **Save** button.
+
+:::info
+At present, it is not possible to include columns of type Image when adding a new row to the table.
+:::
+
+
 ### Download
 
 The table data can be downloaded in various file formats, including:
@@ -65,19 +68,24 @@ You have the option to **[hide the download button](/docs/widgets/table#show-dow
 You can utilize **[Component Specific Actions](#component-specific-actions-csa)** to retrieve the table data in the mentioned formats from the event handlers across the application.
 :::
 
-### Column selector button
+### Hide columns
 
-You can choose which columns to display or hide in the table by clicking on this button. You also have the option to **[hide the column selector button](/docs/widgets/table#show-column-selector-button)** in the table properties.
+You can choose which columns to show or hide in the table using this option. You also have the option to **[hide the column selector button](/docs/widgets/table#show-column-selector-button)** in the table properties.
+
+### Sorting
+
+You can sort the table data in ascending or descending order by clicking on the column header. You can also **[disable the sorting](/docs/widgets/table#disable-sorting)** from the table properties.
 
 ## Table data
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/nesteddata.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/tabledata1.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
+<br/>
 
-The table requires an array of objects to display its data. You can use the data returned by queries, such as `{{queries.restapi1.data}}`, to populate the table. Please note that the table will only populate if the provided data is in the form of an array of objects.
+To populate the table with the data, it is required to provide the data in the form of an array of objects. You can utilize data from queries, using `{{queries.restapi1.data}}`, to populate table. 
 
 Example:
 ```js
@@ -123,22 +131,23 @@ The table also supports the loading of one level of **nested data**. Here is an 
    }
 ]
 ```
+<br/>
 
-When you provide the expected table data as an array of objects, the table component will **automatically generate all the required columns**.
+The table component will **automatically generate all the required columns** when the data is provided in the form of an array of objects. 
 
 ## Columns
 
-Whenever data is loaded into a table, the columns are automatically generated. You can add, remove, or modify columns by accessing the table properties under the column section.
+Whenever data is loaded into a table, the columns are automatically generated. You can add, remove, or modify columns by accessing the table properties under the column section. You can also rearrange the columns by dragging and dropping them. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/columntypes.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/columntypes1.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
 ### Types of Columns
 
-The table provides different column types based on the data being displayed:
+The table component supports the following column types:
 
 - [String | Default](#string--default)
 - [Number](#number)
@@ -528,6 +537,10 @@ When Server-side pagination is enabled, you'll be able to set three other table 
 - **Enable previous page button**: When server-side pagination is enabled, this button is enabled by default. Toggle this off to disable the previous page button from the table.
 - **Enable next page button**: When server-side pagination is enabled, this button is enabled by default. Toggle this off to disable the next page button from the table.
 - **Total records server side**: Set a numerical value to display particular number of records.
+
+:::tip
+Check this how-to guide to learn more about [server-side pagination](/docs/how-to/use-server-side-pagination).
+:::
 
 ### Client-side pagination
 
