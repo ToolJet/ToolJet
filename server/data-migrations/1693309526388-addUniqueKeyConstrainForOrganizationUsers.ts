@@ -1,7 +1,7 @@
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 
-export class addUniqueKeyConstrainForOrganizationUsers1691258637690 implements MigrationInterface {
+export class addUniqueKeyConstrainForOrganizationUsers1693309526388 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createUniqueConstraint(
       'organization_users',
