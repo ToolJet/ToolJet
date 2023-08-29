@@ -996,7 +996,7 @@ export function Table({
                 <ButtonSolid
                   variant="tertiary"
                   className={`tj-text-xsm ${tableDetails.filterDetails.filtersVisible && 'always-active-btn'}`}
-                  style={{ minWidth: '32px' }}
+                  customStyles={{ minWidth: '32px' }}
                   leftIcon="filter"
                   fill={`var(--slate12)`}
                   iconWidth="16"
@@ -1497,7 +1497,7 @@ export function Table({
                       data-cy={`table-button-save-changes`}
                       size="md"
                       isLoading={tableDetails.isSavingChanges ? true : false}
-                      style={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
+                      customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
                       leftIcon={width > 650 ? '' : 'save'}
                       fill={'var(--indigo1)'}
                       iconWidth="16"
@@ -1512,7 +1512,7 @@ export function Table({
                       }}
                       data-cy={`table-button-discard-changes`}
                       size="md"
-                      style={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
+                      customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
                       leftIcon={width > 650 ? '' : 'cross'}
                       fill={'var(--slate12)'}
                       iconWidth="16"
@@ -1568,7 +1568,7 @@ export function Table({
                   className={`tj-text-xsm ${
                     tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
                   }`}
-                  style={{ minWidth: '32px' }}
+                  customStyles={{ minWidth: '32px' }}
                   leftIcon="plus"
                   fill={`var(--slate12)`}
                   iconWidth="16"
@@ -1593,7 +1593,7 @@ export function Table({
                     <ButtonSolid
                       variant="ghostBlack"
                       className={`tj-text-xsm `}
-                      style={{
+                      customStyles={{
                         minWidth: '32px',
                       }}
                       leftIcon="filedownload"
@@ -1621,7 +1621,7 @@ export function Table({
                   <ButtonSolid
                     variant="ghostBlack"
                     className={`tj-text-xsm `}
-                    style={{ minWidth: '32px' }}
+                    customStyles={{ minWidth: '32px' }}
                     leftIcon="eye1"
                     fill={`var(--slate12)`}
                     iconWidth="16"

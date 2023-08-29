@@ -213,7 +213,7 @@ export function Filter(props) {
           className={`tj-text-xsm`}
           onClick={addFilter}
           size="sm"
-          style={{ padding: '10px 20px' }}
+          customStyles={{ padding: '10px 20px' }}
         >
           <span>+ add filter</span>
         </ButtonSolid>
@@ -223,7 +223,7 @@ export function Filter(props) {
           className={`tj-text-xsm`}
           onClick={() => clearFilters()}
           size="sm"
-          style={{ padding: '10px 20px' }}
+          customStyles={{ padding: '10px 20px' }}
         >
           <span>clear filters</span>
         </ButtonSolid>

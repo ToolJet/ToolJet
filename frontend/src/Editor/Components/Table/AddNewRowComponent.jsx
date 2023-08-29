@@ -165,7 +165,7 @@ export function AddNewRowComponent({
             });
           }}
           size="sm"
-          style={{ padding: '10px 20px' }}
+          customStyles={{ padding: '10px 20px' }}
         >
           <span>Save</span>
         </ButtonSolid>
@@ -179,7 +179,7 @@ export function AddNewRowComponent({
             });
           }}
           size="sm"
-          style={{ padding: '10px 20px' }}
+          customStyles={{ padding: '10px 20px' }}
         >
           <span>Discard</span>
         </ButtonSolid>
