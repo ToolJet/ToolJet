@@ -37,7 +37,11 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
             onClick={() => toggleCurrentLayout('desktop')}
             data-cy={`button-change-layout-to-desktop`}
           >
-            <SolidIcon name="computer" width="14" fill={currentLayout === 'desktop' ? '#11181C' : '#C1C8CD'} />
+            <SolidIcon
+              name="computer"
+              width="14"
+              fill={currentLayout === 'desktop' ? 'var(--slate12)' : 'var(--slate8)'}
+            />
           </button>
           <button
             className={cx('btn border-0 p-1', {
@@ -53,7 +57,11 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
             onClick={() => toggleCurrentLayout('mobile')}
             data-cy={`button-change-layout-to-mobile`}
           >
-            <SolidIcon name="mobile" width="14" fill={currentLayout !== 'desktop' ? '#11181C' : '#C1C8CD'} />
+            <SolidIcon
+              name="mobile"
+              width="14"
+              fill={currentLayout !== 'desktop' ? 'var(--slate12)' : 'var(--slate8)'}
+            />
           </button>
         </div>
       </div>
