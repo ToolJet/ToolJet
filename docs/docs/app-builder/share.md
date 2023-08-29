@@ -7,7 +7,7 @@ ToolJet apps offer two sharing options: they can either be shared privately with
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/share/modal.png" alt="Share modal" width='700'/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/share/sharenew.png" alt="Share modal" width='700'/>
 
 </div>
 
@@ -17,7 +17,7 @@ To share the app with external end users and make it accessible to anyone on the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/share/shareon.png" alt="Share modal" width='700'/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/share/publicnew.png" alt="Share modal" width='700'/>
 
 </div>
 
@@ -39,7 +39,7 @@ ToolJet apps can be directly shared with end users and embedded into web apps us
 For embedding private ToolJet apps, you'll need to set an environment variable in the `.env` file.
 
 | Variable        | Description                           |
-| --------------- | ------------------------------------- |
+|:-------------- |:------------------------------------ |
 | ENABLE_PRIVATE_APP_EMBED | `true` or `false` |
 
 You can learn more [here](/docs/setup/env-vars#enabling-embedding-of-private-apps).

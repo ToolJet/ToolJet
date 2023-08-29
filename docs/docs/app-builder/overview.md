@@ -15,6 +15,6 @@ ToolJet's App Builder allows you to build applications. ToolJet's app builder ha
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/builder.png" alt="App Builder: Overview"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/appbuilderui2.png" alt="App Builder: Overview"/>
 
 </div>

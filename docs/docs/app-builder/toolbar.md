@@ -7,35 +7,19 @@ Topbar is present at the top of the app-builder, and is used to configure the ap
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/toolbar.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/topbarnew.png" alt="App Builder: Topbar"/>
 
 </div>
 
 ### App name
 
-App name can be edited from the left side of the topbar next to the ToolJet logo.
+The App name can be modified by selecting the application name located on the left side of the topbar.
 
-When a new app is created, by default its name is set to **Untitled app**
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/name.png" alt="App Builder: Topbar"/>
-
-</div>
-
-### Global Settings
-
-To configure the app's global settings, click on the kebab menu(three vertical dots) on the left of the app name. Global settings include:
-
-- **Hide header for launched apps**: Toggle this on to the hide the tooljet's header when the applications are launched
-- **Maintenance mode**: Toggle this on to put the application in maintenance mode. When in **maintenance mode**, on launching the app, the user will get an error message that **the app is under maintenance**.
-- **Max width of canvas**: Modify the width of the canvas in **px** or **%**. The default width is 1292 px.
-- **Max height of canvas**: Modify the width of the canvas in **px** or **%**. The default height is 2400 px and currently it is the maximum height limit.
-- **Background color of canvas**: Enter the hex color code or choose a color from the picker to change the background color of the canvas. You can also click on the **Fx** to programmatically set the value.
+Upon the creation of a new app, it is automatically assigned a unique app name.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/newglobalset.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/appnamenew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -43,13 +27,13 @@ To configure the app's global settings, click on the kebab menu(three vertical d
 
 Switch the canvas mode in Mobile or Desktop layout from the topbar.
 
-#### Adding existing component to mobile layout
+#### Showing component on mobile layout
 
-Click on the component handle to open component config inspector on the right side. Scroll down to the **Layout** section and enable Mobile Layout. The width of the widget will be adjusted to fit the Mobile Layout.
+Click on the component handle to open [component config inspector](/docs/app-builder/components-library#component-config-inspector) on the right sidebar. Scroll down to the **Layout** section and toggle on the Mobile Layout option. The width of the components will be adjusted to fit the Mobile Layout.
 
 #### Adding a new component to mobile layout
 
-Switch the layout to mobile by clicking the button on the topbar. Drag and drop a component to the canvas. This widget will not be shown on desktop layout unless **Show on desktop** is enabled from the component config inspector.
+Switch the canvas to mobile layout by clicking the mobile icon on the topbar. Drag and drop a new component to the canvas. This component will not be visible on the desktop layout unless **Show on desktop** is enabled from the component config inspector.
 
 :::info
 Width of the component will be automatically adjusted to fit the screen while viewing the application in app viewer.
@@ -57,41 +41,55 @@ Width of the component will be automatically adjusted to fit the screen while vi
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/view.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/canvasmodes.gif" alt="App Builder: Topbar"/>
 
 </div>
 
-### Undo or Redo
+### Changes saved indicator
 
-Use the undo or redo buttons from the topbar to undo or redo any change on the canvas.
-
-You can also **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to perform such actions.
+Whenever a change is made on the component or the query panel/queries, the changes are saved automatically. The changes saved indicator will be displayed on the topbar. This helps the developer to know if the changes are saved or not.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undo.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/changessaved.png" alt="App Builder: Topbar"/>
+
+</div>
+
+### Developer Details
+
+This will show a profile picture of the developer who is currently working on the application. Hovering over the profile picture will show the name of the developer. If there is no profile picture, then the first letter of the first name and last name will be displayed.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/profile.png" alt="App Builder: Topbar"/>
 
 </div>
 
 ### Version Manager
 
-Create or Remove Versions of the applications from the Version Manager. You can also edit the version name from the edit button.
+**Add** or **remove** versions of an application from the Version Manager. Click on the `edit` icon next to version name to rename the version.
 
 When many developers are working on an app, **Versioning** allows them to save their own version of the app. This also prevents developers from overwriting the other developer's work.
 
+:::tip
+Versioning is also helpful when working with **[multiple environments](/docs/release-management/multi-environment/)** like development, staging and production.
+:::
+
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/version.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/versionsnew.png" alt="App Builder: Topbar"/>
 
 </div>
 
-### Comments
+### Undo or Redo
 
-Comment anywhere on the canvas and collaborate with other users in the workspace. Click on the comments button to enable it and then drop comment anywhere on the canvas.
+Undo or Redo any action performed on the canvas.
+
+You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to perform such actions.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/comments.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undonew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -102,9 +100,13 @@ Share your applications with a unique URL generated automatically or edit the UR
 - When **Make the application public** is off and URL is shared then the users will have to login to ToolJet to use the application. Toggle on the option then anyone on the internet will be able to access the application without logging in to ToolJet.
 - ToolJet generates the **Embedded link** which can be used to embed application on the webpages.
 
+:::tip
+Learn more about **[Sharing](/docs/app-builder/share)** your tooljet applications.
+:::
+
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/share.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/sharenew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -114,7 +116,7 @@ Clicking on **Preview** button will open up the currently opened version of the 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/preview.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/previewnew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -128,6 +130,6 @@ ToolJet will block editing of the Released version of an app and will display a 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/release.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/releasenew.png" alt="App Builder: Topbar"/>
 
 </div>

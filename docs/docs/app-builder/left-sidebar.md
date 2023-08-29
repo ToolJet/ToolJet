@@ -8,11 +8,13 @@ Left-sidebar has the following options:
 - **[Pages](#pages)**
 - **[Inspector](#inspector)**
 - **[Debugger](#debugger)**
+- **[Global Settings](#global-settings)**
+- **[Comments](#comments)**
 - **[Theme switch](#theme-switch)**
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/newui.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/leftnew.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 
@@ -24,7 +26,7 @@ Check the detailed documentation for **[Pages](/docs/tutorial/pages)**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/pages2.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/pagesnew.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 
@@ -36,7 +38,7 @@ Check the detailed guide on **[using Inspector](/docs/how-to/use-inspector)**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/inspector2.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/inspectornew.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 
@@ -58,8 +60,40 @@ Debugger consists of two main sections:
 
 </div>
 
+## Global Settings
+
+To configure the app's global settings, click on the kebab menu(three vertical dots) on the left of the app name. Global settings include:
+
+- **Hide header for launched apps**: Toggle this on to the hide the tooljet's header when the applications are launched
+- **Maintenance mode**: Toggle this on to put the application in maintenance mode. When in **maintenance mode**, on launching the app, the user will get an error message that **the app is under maintenance**.
+- **Max width of canvas**: Modify the width of the canvas in **px** or **%**. The default width is 1292 px.
+- **Max height of canvas**: Modify the width of the canvas in **px** or **%**. The default height is 2400 px and currently it is the maximum height limit.
+- **Background color of canvas**: Enter the hex color code or choose a color from the picker to change the background color of the canvas. You can also click on the **Fx** to programmatically set the value.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/globalnew.png" alt="App Builder: Left-sidebar"/>
+
+</div>
+
+## Comments
+
+Comment anywhere on the canvas and collaborate with other users in the workspace. Click on the comments button to enable it and then drop comment anywhere on the canvas.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/commentnew.png" alt="App Builder: Left-sidebar"/>
+
+</div>
+
 ## Theme Switch
 
 Use the theme switch button to toggle ToolJet between light and dark modes.
 
 While developers can access the current theme's value through global variables using `{{globals.theme.name}}`, it is not currently feasible to change the theme programmatically.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/theme.png" alt="App Builder: Left-sidebar"/>
+
+</div>

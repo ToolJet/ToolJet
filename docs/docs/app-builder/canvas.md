@@ -7,17 +7,18 @@ Canvas is the center area of the ToolJet app builder where the application is bu
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/canvas/canvas.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/canvas/canvasnew.png" alt="App Builder: Canvas"/>
 
 </div>
+<br/>
 
 :::info
-- The Canvas height and width can be adjusted from the [Global Settings](/docs/app-builder/topbar#global-settings).
-- When the [Pages drawer](/docs/tutorial/pages) on the left is opened or pinned, the canvas becomes scrollable.
+- The Canvas height and width can be adjusted from the [Global Settings](/docs/app-builder/left-sidebar#global-settings).
+- When the [Pages drawer](/docs/tutorial/pages) on the left is opened or pinned, the canvas becomes horizontally scrollable.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/canvas/canvasscroll.gif" alt="App Builder: Canvas"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/canvas/scrollnew.gif" alt="App Builder: Canvas"/>
 
 </div>
 :::
@@ -28,7 +29,7 @@ All the components are fully interactive in editor mode - to prevent interaction
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/canvas/arrange.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/canvas/handlenew.png" alt="App Builder: Canvas"/>
 
 </div>
 
@@ -46,7 +47,7 @@ You can precisely set the position of selected components using keyboard arrow k
 
 ### Group Components
 
-ToolJet comes with flexible components to group other components together, such as **Container** and **Form**. When you drag and drop components in containers/forms they create a group of nested components. All components can be nested in this way.
+ToolJet comes with flexible components to group other components together, such as **[Container](/docs/widgets/container/)** and **[Form](/docs/widgets/form/)**. When you drag and drop components in containers/forms they create a group of nested components. All components can be nested in this way.
 
 ### Hide or Disable Components
 
@@ -62,5 +63,5 @@ For example: We want to disable a button when a checkbox is checked so we can si
 
 ### Clone Components
 
-You can clone existing components on the canvas by **cmd/ctrl + d**. Check other **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)**
+You can clone existing components on the canvas by **cmd/ctrl + d**. Check other **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)**.
 
