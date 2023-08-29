@@ -6,6 +6,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import Remove from '@/_ui/Icon/solidIcons/Remove';
+import set from 'lodash/set';
 
 /**
  * {
@@ -44,26 +45,32 @@ import Remove from '@/_ui/Icon/solidIcons/Remove';
     }
   */
 
-const JoinConstraint = ({ darkMode, index, onRemove, onChange }) => {
+const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { columns, selectedTable, tables, loadTableInformation, tableInfo } = useContext(TooljetDatabaseContext);
   const tableList = tables.map((t) => ({ label: t, value: t }));
-  const [rightFieldTable, setRightFieldTable] = useState();
-  const [leftFieldTable, setLeftFieldTable] = useState({ label: selectedTable, value: selectedTable });
-  const [joinType, setJoinType] = useState(staticJoinOperationsList[0]);
-  const [conditionsList, setConditionsList] = useState([{}]);
-  const [operator, setOperator] = useState();
+  //   const [leftFieldTable, setLeftFieldTable] = useState({ label: selectedTable, value: selectedTable });
+  const leftFieldTable = data?.table;
+  //   const [joinType, setJoinType] = useState(staticJoinOperationsList[0]);
+  const joinType = data?.joinType;
+  //   const [conditionsList, setConditionsList] = useState([{}]);
+  //   const [operator, setOperator] = useState();
+  const conditionsList = data?.conditions?.conditionsList || [{}];
+  const operator = data?.conditions?.operator;
+  const [rightFieldTable, setRightFieldTable] = useState(conditionsList?.[0]?.rightField?.table);
 
-  useEffect(() => {
-    onChange &&
-      onChange({
-        joinType,
-        table: leftFieldTable?.value,
-        conditions: {
-          operator: operator,
-          conditionsList,
-        },
-      });
-  }, [conditionsList, joinType, rightFieldTable, leftFieldTable]);
+  //   useEffect(() => {
+  //     onChange &&
+  //       onChange({
+  //         joinType,
+  //         table: leftFieldTable?.value,
+  //         conditions: {
+  //           operator: operator,
+  //           conditionsList,
+  //         },
+  //       });
+  //   }, [conditionsList, joinType, rightFieldTable, leftFieldTable]);
+
+  //   const handleChange =
 
   return (
     <Container className="p-0">
@@ -91,19 +98,19 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange }) => {
             <DropDownSelect
               options={tableList}
               darkMode={darkMode}
-              onChange={setLeftFieldTable}
-              value={leftFieldTable?.value}
+              onChange={(value) => onChange({ ...data, table: value?.value })}
+              value={tableList.find((val) => val?.value === leftFieldTable)}
             />
           ) : (
-            <div className="tj-small-btn px-2">{leftFieldTable?.value}</div>
+            <div className="tj-small-btn px-2">{leftFieldTable}</div>
           )}
         </Col>
         <Col sm="2" className="p-0 border-end">
           <DropDownSelect
             options={staticJoinOperationsList}
             darkMode={darkMode}
-            onChange={setJoinType}
-            value={joinType}
+            onChange={(value) => onChange({ ...data, joinType: value?.value })}
+            value={staticJoinOperationsList.find((val) => val.value === joinType)}
           />
         </Col>
         <Col sm="4" className="p-0">
@@ -112,33 +119,43 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange }) => {
             darkMode={darkMode}
             onChange={(value) => {
               value?.value && loadTableInformation(value?.value);
-              setRightFieldTable(value);
+              setRightFieldTable(value?.value);
             }}
-            value={rightFieldTable}
+            value={tableList.find((val) => val?.value === rightFieldTable)}
           />
         </Col>
       </Row>
-      {conditionsList.map((c, index) => (
+      {conditionsList.map((condition, index) => (
         <JoinOn
-          condition={c}
-          leftFieldTable={leftFieldTable?.value}
-          rightFieldTable={rightFieldTable?.value}
+          condition={condition}
+          leftFieldTable={leftFieldTable}
+          rightFieldTable={rightFieldTable}
           darkMode={darkMode}
           key={index}
           index={index}
           groupOperator={operator}
-          onOperatorChange={setOperator}
-          onChange={(value) => {
-            setConditionsList((oldCondition) =>
-              oldCondition.map((con, i) => {
-                if (i === index) {
-                  return value;
-                }
-                return con;
-              })
-            );
+          onOperatorChange={(value) => {
+            const newData = { ...data };
+            set(newData, 'conditions.operator', value);
+            onChange(newData);
           }}
-          onRemove={() => setConditionsList((conditions) => conditions.filter((cond, i) => i !== index))}
+          onChange={(value) => {
+            const newConditionsList = conditionsList.map((con, i) => {
+              if (i === index) {
+                return value;
+              }
+              return con;
+            });
+            const newData = { ...data };
+            set(newData, 'conditions.conditionsList', newConditionsList);
+            onChange(newData);
+          }}
+          onRemove={() => {
+            const newConditionsList = conditionsList.filter((cond, i) => i !== index);
+            const newData = { ...data };
+            set(newData, 'conditions.conditionsList', newConditionsList);
+            onChange(newData);
+          }}
         />
       ))}
       <Row className="mb-2">
@@ -146,7 +163,11 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange }) => {
           <ButtonSolid
             variant="ghostBlue"
             size="sm"
-            onClick={() => setConditionsList((conditions) => [...conditions, {}])}
+            onClick={() => {
+              const newData = { ...data };
+              set(newData, 'conditions.conditionsList', [...conditionsList, {}]);
+              onChange(newData);
+            }}
           >
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
             &nbsp;&nbsp; Add more
@@ -219,7 +240,7 @@ const JoinOn = ({
             onChange &&
               onChange({
                 ...condition,
-                leftField: { ...condition.leftField, columnName: value?.value, type: 'Column' },
+                leftField: { ...condition.leftField, columnName: value?.value, type: 'Column', table: leftFieldTable },
               });
           }}
         />
@@ -244,7 +265,12 @@ const JoinOn = ({
               onChange &&
                 onChange({
                   ...condition,
-                  rightField: { ...condition.rightField, columnName: value?.value, type: 'Column' },
+                  rightField: {
+                    ...condition.rightField,
+                    columnName: value?.value,
+                    type: 'Column',
+                    table: rightFieldTable,
+                  },
                 });
             }}
           />
