@@ -98,7 +98,7 @@ class EditorComponent extends React.Component {
         canvasMaxWidth: 1292,
         canvasMaxWidthType: 'px',
         canvasMaxHeight: 2400,
-        canvasBackgroundColor: props.darkMode ? '#27282D' : '#F2F2F5',
+        canvasBackgroundColor: props.darkMode ? '#1B1B1F' : '#F9F9FB',
         backgroundFxQuery: '',
       },
     };
@@ -884,9 +884,9 @@ class EditorComponent extends React.Component {
   };
 
   computeCanvasBackgroundColor = () => {
-    const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#F2F2F5';
-    if (['#27282D', '#F2F2F5'].includes(canvasBackgroundColor)) {
-      return this.props.darkMode ? '#27282D' : '#F2F2F5';
+    const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#F9F9FB';
+    if (['#1B1B1F', '#F9F9FB'].includes(canvasBackgroundColor)) {
+      return this.props.darkMode ? '#1B1B1F' : '#F9F9FB';
     }
     return canvasBackgroundColor;
   };
@@ -1627,7 +1627,7 @@ class EditorComponent extends React.Component {
                       (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
                       `px solid ${this.computeCanvasBackgroundColor()}`,
                     height: this.computeCanvasContainerHeight(),
-                    background: !this.props.darkMode ? '#F2F2F5' : '#27282D',
+                    background: !this.props.darkMode ? '#EBEBEF' : '#2E3035',
                   }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {

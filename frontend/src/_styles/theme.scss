@@ -749,7 +749,6 @@ button {
     .canvas-container {
       scrollbar-width: auto;
       width: 100%;
-      background-color: var(--slate2);
     }
 
     .canvas-container::-webkit-scrollbar {
@@ -7922,12 +7921,6 @@ tbody {
     .current-layout {
       .bg-white {
         background-color: #151718 !important;
-      }
-
-      svg {
-        path {
-          fill: #ECEDEE;
-        }
       }
     }
   }

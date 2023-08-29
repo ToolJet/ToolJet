@@ -485,10 +485,10 @@ class ViewerComponent extends React.Component {
     const bgColor =
       (this.state.appDefinition.globalSettings?.backgroundFxQuery ||
         this.state.appDefinition.globalSettings?.canvasBackgroundColor) ??
-      '#F2F2F5';
+      '#F9F9FB';
     const resolvedBackgroundColor = resolveReferences(bgColor, this.props.currentState);
-    if (['#27282D', '#F2F2F5'].includes(resolvedBackgroundColor)) {
-      return this.props.darkMode ? '#27282D' : '#F2F2F5';
+    if (['#1B1B1F', '#F9F9FB'].includes(resolvedBackgroundColor)) {
+      return this.props.darkMode ? '#1B1B1F' : '#F9F9FB';
     }
     return resolvedBackgroundColor;
   };
@@ -612,7 +612,10 @@ class ViewerComponent extends React.Component {
               />
               <div className="sub-section">
                 <div className="main">
-                  <div className="canvas-container align-items-center">
+                  <div
+                    className="canvas-container align-items-center"
+                    style={{ background: !this.props.darkMode ? '#EBEBEF' : '#2E3035' }}
+                  >
                     <div className="areas d-flex flex-rows justify-content-center">
                       {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
