@@ -19,19 +19,12 @@ export const Map = function Map({
   // canvasWidth,
   registerAction,
   dataCy,
+  properties,
 }) {
   const center = component.definition.properties.initialLocation.value;
-  const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
-  const polygonPaths = component.definition.properties?.path?.value ?? [];
+  const { polygonPoints = [], defaultMarkers = [] } = properties;
 
   const { t } = useTranslation();
-
-  let defaultMarkers = [];
-  try {
-    defaultMarkers = defaultMarkerValue;
-  } catch (err) {
-    console.log(err);
-  }
 
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
   const canAddNewMarkers = addNewMarkersProp ? resolveReferences(addNewMarkersProp.value, currentState) : false;
@@ -55,17 +48,16 @@ export const Map = function Map({
   const [gmap, setGmap] = useState(null);
   const [autoComplete, setAutoComplete] = useState(null);
   const [mapCenter, setMapCenter] = useState(resolveReferences(center, currentState));
-  const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState));
-  const [path, setPath] = useState(resolveReferences(polygonPaths, currentState) || []);
-
-  useEffect(() => {
-    setPath(resolveReferences(polygonPaths, currentState));
-  }, [JSON.stringify(polygonPaths)]);
+  const [markers, setMarkers] = useState(defaultMarkers);
 
   const containerStyle = {
     width: '100%',
     height,
   };
+
+  useEffect(() => {
+    setMarkers(defaultMarkers);
+  }, [JSON.stringify(defaultMarkers)]);
 
   function handleMapClick(e) {
     if (!canAddNewMarkers) {
@@ -193,9 +185,9 @@ export const Map = function Map({
               ))}
             </>
           )}
-          {path.length > 1 && (
+          {polygonPoints.length > 1 && (
             <Polygon
-              path={path}
+              path={polygonPoints}
               onClick={() => {
                 onEvent('onPolygonClick', { component });
               }}

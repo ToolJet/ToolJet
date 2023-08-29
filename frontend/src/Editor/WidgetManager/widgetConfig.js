@@ -2770,9 +2770,9 @@ export const widgets = [
           },
         },
       },
-      path: {
+      polygonPoints: {
         type: 'code',
-        displayName: 'Polygon path',
+        displayName: 'Polygon points',
         options: {
           mode: 'javascript',
           theme: 'duotone-light',
@@ -2855,7 +2855,7 @@ export const widgets = [
         defaultMarkers: {
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
         },
-        path: {
+        polygonPoints: {
           value: `{{[\n\t\t{"lat": 40.7032, "lng": -73.975242},\n\t\t{"lat": 40.7532, "lng": -73.943242},\n\t\t{"lat": 40.7032, "lng": -73.916242}\n]}}`,
         },
         canSearch: {
