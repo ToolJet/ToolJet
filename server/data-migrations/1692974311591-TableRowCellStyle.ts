@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
 
-export class TableRowCellStyle1692974311590 implements MigrationInterface {
+export class TableRowCellStyle1692974311591 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const queryBuilder = queryRunner.connection.createQueryBuilder();
@@ -20,7 +20,7 @@ export class TableRowCellStyle1692974311590 implements MigrationInterface {
             if (components) {
               for (const componentId of Object.keys(components)) {
                 const component = components[componentId];
-                if (component.component.component === 'Table') {
+                if (component?.component?.component === 'Table') {
                   component.component.definition.styles.tableType = {
                     value: 'table-classic',
                   };
