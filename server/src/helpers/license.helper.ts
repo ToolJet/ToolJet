@@ -10,6 +10,8 @@ export enum LICENSE_FIELD {
   EDITORS = 'editorsCount',
   VIEWERS = 'viewersCount',
   OIDC = 'oidcEnabled',
+  LDAP = 'ldapEnabled',
+  CUSTOM_STYLE = 'customStylingEnabled',
   AUDIT_LOGS = 'auditLogsEnabled',
   UPDATED_AT = 'updatedAt',
   ALL = 'all',

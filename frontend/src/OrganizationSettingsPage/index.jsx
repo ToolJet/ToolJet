@@ -13,6 +13,7 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 import { licenseService } from '../_services/license.service';
 import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseTooltip } from '@/LicenseTooltip';
 import { ManageOrgConstants } from '@/ManageOrgConstants';
 
 export function OrganizationSettings(props) {
@@ -20,6 +21,8 @@ export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const [featureAccess, setFeatureAccess] = useState({});
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  const protectedNavs = [{ id: 'customStyling', label: 'Custom styles' }];
 
   const sideBarNavs = [
     'Users',
@@ -79,13 +82,28 @@ export function OrganizationSettings(props) {
           <div className="organization-page-sidebar col ">
             <div className="workspace-nav-list-wrap">
               {sideBarNavs.map((item, index) => {
+                const protectedNavIndex = protectedNavs.findIndex((nav) => nav.label === item);
+                const Wrapper = ({ children }) =>
+                  protectedNavIndex >= 0 ? (
+                    <LicenseTooltip
+                      limits={featureAccess}
+                      feature={item}
+                      isAvailable={featureAccess[protectedNavs[protectedNavIndex].id]}
+                      noTooltipIfValid={true}
+                    >
+                      {children}
+                    </LicenseTooltip>
+                  ) : (
+                    <>{children}</>
+                  );
                 return (
-                  <>
+                  <Wrapper key={index}>
                     {(admin || item == 'Workspace variables' || item == 'Copilot' || item == 'Workspace constants') && (
                       <FolderList
                         className="workspace-settings-nav-items"
                         key={index}
                         onClick={() => {
+                          if (protectedNavIndex >= 0 && !featureAccess[protectedNavs[protectedNavIndex].id]) return;
                           setSelectedTab(defaultOrgName(item));
                           if (item == 'Users') updateSidebarNAV('Users & permissions');
                           else updateSidebarNAV(item);
@@ -105,7 +123,7 @@ export function OrganizationSettings(props) {
                         {item}
                       </FolderList>
                     )}
-                  </>
+                  </Wrapper>
                 );
               })}
             </div>

@@ -22,7 +22,10 @@ export function ManageSSO({ darkMode }) {
     { id: 'openid', label: 'OpenID Connect' },
     { id: 'ldap', label: 'LDAP' },
   ];
-  const protectedMenuItems = [{ id: 'openid', label: 'OpenID Connect' }];
+  const protectedMenuItems = [
+    { id: 'openid', label: 'OpenID Connect' },
+    { id: 'ldap', label: 'LDAP' },
+  ];
 
   const changePage = useCallback(
     (page) => {

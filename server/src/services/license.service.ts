@@ -49,8 +49,14 @@ export class LicenseService {
       case LICENSE_FIELD.OIDC:
         return License.Instance().oidc;
 
+      case LICENSE_FIELD.LDAP:
+        return License.Instance().ldap;
+
+      case LICENSE_FIELD.CUSTOM_STYLE:
+        return License.Instance().customStyling;
+
       case LICENSE_FIELD.AUDIT_LOGS:
-        return License.Instance().auditLog;
+        return License.Instance().auditLogs;
 
       case LICENSE_FIELD.VALID:
         return License.Instance().isValid && !License.Instance().isExpired;

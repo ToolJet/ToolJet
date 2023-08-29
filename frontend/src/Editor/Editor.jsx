@@ -271,19 +271,23 @@ class EditorComponent extends React.Component {
     });
   };
 
-  fetchAndInjectCustomStyles = () => {
-    customStylesService.get().then((data) => {
-      const head = document.head || document.getElementsByTagName('head')[0];
-      let styleTag = document.getElementById('workspace-custom-css');
-      if (!styleTag) {
-        // If it doesn't exist, create a new style tag and append it to the head
-        styleTag = document.createElement('style');
-        styleTag.type = 'text/css';
-        styleTag.id = 'workspace-custom-css';
-        head.appendChild(styleTag);
-      }
+  fetchAndInjectCustomStyles = async () => {
+    const head = document.head || document.getElementsByTagName('head')[0];
+    let styleTag = document.getElementById('workspace-custom-css');
+    if (!styleTag) {
+      // If it doesn't exist, create a new style tag and append it to the head
+      styleTag = document.createElement('style');
+      styleTag.type = 'text/css';
+      styleTag.id = 'workspace-custom-css';
+      head.appendChild(styleTag);
+    }
+    try {
+      const data = await customStylesService.get(false);
       styleTag.innerHTML = data.css;
-    });
+    } catch (error) {
+      console.log('Failed to fetch custom styles:', error);
+      styleTag.innerHTML = null;
+    }
   };
 
   fetchOrgEnvironmentConstants = (environmentId) => {

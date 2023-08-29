@@ -1,29 +1,31 @@
 import { decrypt, LICENSE_LIMIT, LICENSE_TYPE } from 'src/helpers/license.helper';
 import { Terms } from '../types';
+import { BASIC_PLAN_TERMS } from './PlanTerms';
 
 export default class License {
   private static _instance: License;
-  private appsCount: number;
-  private usersCount: number;
-  private isAuditLogs: boolean;
-  private isOidc: boolean;
-  private expiryDate: Date;
-  private updatedDate: Date;
-  private editorUsersCount: number;
-  private viewerUsersCount: number;
-  private superadminUsersCount: number;
-  private isLicenseValid: boolean;
-  private workspacesCount: number;
-  private featuresAccess: object;
-  private domainsList: Array<{ hostname?: string; subpath?: string }>;
-  private type: string;
+  private _appsCount: number | string;
+  private _usersCount: number | string;
+  private _isAuditLogs: boolean;
+  private _isOidc: boolean;
+  private _isLdap: boolean;
+  private _isCustomStyling: boolean;
+  private _expiryDate: Date;
+  private _updatedDate: Date;
+  private _editorUsersCount: number | string;
+  private _viewerUsersCount: number | string;
+  private _superadminUsersCount: number | string;
+  private _isLicenseValid: boolean;
+  private _workspacesCount: number | string;
+  private _domainsList: Array<{ hostname?: string; subpath?: string }>;
+  private _type: string;
 
   private constructor(key: string, updatedDate: Date) {
     if (process.env.NODE_ENV !== 'test') {
       if (!(key && updatedDate)) {
         console.error('Invalid License Key', key);
-        this.isLicenseValid = false;
-        this.type = LICENSE_TYPE.BASIC;
+        this._isLicenseValid = false;
+        this._type = LICENSE_TYPE.BASIC;
         return;
       }
 
@@ -34,116 +36,163 @@ export default class License {
           throw new Error('Invalid License Key:expiry not found');
         }
 
-        this.appsCount = licenseData?.apps;
-        this.usersCount = licenseData?.users?.total;
-        this.editorUsersCount = licenseData?.users?.editor;
-        this.viewerUsersCount = licenseData?.users?.viewer;
-        this.superadminUsersCount = licenseData?.users?.superadmin;
-        this.isAuditLogs = !!licenseData?.features?.auditLogs;
-        this.isOidc = !!licenseData?.features?.oidc;
-        this.expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
-        this.updatedDate = updatedDate;
-        this.isLicenseValid = true;
-        this.workspacesCount = licenseData?.workspaces;
-        this.type = licenseData?.type;
-        this.featuresAccess = licenseData?.features;
-        this.domainsList = licenseData?.domains;
+        this._appsCount = licenseData?.apps;
+        this._usersCount = licenseData?.users?.total;
+        this._editorUsersCount = licenseData?.users?.editor;
+        this._viewerUsersCount = licenseData?.users?.viewer;
+        this._superadminUsersCount = licenseData?.users?.superadmin;
+        this._isAuditLogs = licenseData?.features?.auditLogs === false ? false : true;
+        this._isOidc = licenseData?.features?.oidc === false ? false : true;
+        this._isLdap = licenseData?.features?.ldap === false ? false : true;
+        this._isCustomStyling = licenseData?.features?.customStyling === false ? false : true;
+        this._expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
+        this._updatedDate = updatedDate;
+        this._isLicenseValid = true;
+        this._workspacesCount = licenseData?.workspaces;
+        this._type = licenseData?.type;
+        this._domainsList = licenseData?.domains;
       } catch (err) {
         console.error('Invalid License Key:Parse error', err);
-        this.isLicenseValid = false;
-        this.type = LICENSE_TYPE.BASIC;
+        this._isLicenseValid = false;
+        this._type = LICENSE_TYPE.BASIC;
       }
     } else {
       const now = new Date();
       now.setMinutes(now.getMinutes() + 30);
       // Setting expiry 30 minutes
-      this.expiryDate = now;
-      this.isAuditLogs = true;
-      this.isOidc = true;
-      this.isLicenseValid = true;
+      this._expiryDate = now;
+      this._isAuditLogs = true;
+      this._isOidc = true;
+      this._isLdap = true;
+      this._isCustomStyling = true;
+      this._isLicenseValid = true;
     }
   }
 
   public get isExpired(): boolean {
-    return this.expiryDate && new Date().getTime() > this.expiryDate.getTime();
+    return this._expiryDate && new Date().getTime() > this._expiryDate.getTime();
   }
 
   public get isValid(): boolean {
-    return this.isLicenseValid;
+    return this._isLicenseValid;
   }
 
   public get apps(): number | string {
-    return this.appsCount || LICENSE_LIMIT.UNLIMITED;
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.apps || this._appsCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._appsCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get users(): number | string {
-    return this.usersCount || LICENSE_LIMIT.UNLIMITED;
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.users?.total || this._usersCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._usersCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get editorUsers(): number | string {
-    return this.editorUsersCount || LICENSE_LIMIT.UNLIMITED;
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.users?.editor || this._editorUsersCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._editorUsersCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get viewerUsers(): number | string {
-    return this.viewerUsersCount || LICENSE_LIMIT.UNLIMITED;
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.users?.viewer || this._viewerUsersCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._viewerUsersCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get superadminUsers(): number | string {
-    return this.superadminUsersCount || LICENSE_LIMIT.UNLIMITED;
-  }
-
-  public get auditLog(): boolean {
-    return !!this.isAuditLogs;
-  }
-
-  public get oidc(): boolean {
-    return !!this.isOidc;
-  }
-
-  public get updatedAt(): Date {
-    return this.updatedDate;
-  }
-
-  public get licenseType(): string {
-    return this.type || LICENSE_TYPE.ENTERPRISE;
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.users?.superadmin || this._superadminUsersCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._superadminUsersCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get workspaces(): number | string {
-    return this.workspacesCount || LICENSE_LIMIT.UNLIMITED;
-  }
-
-  public get features(): object {
-    const access = this.featuresAccess || {
-      openid: false,
-      auditLogs: false,
-    };
-
-    access['openid'] = access['oidc'] || access['openid'];
-    delete access['oidc'];
-
-    return access;
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.workspaces || this._workspacesCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._workspacesCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get domains(): Array<{ hostname?: string; subpath?: string }> {
-    return this.domainsList || [];
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.domains || this._domainsList || [];
+    }
+    return this._domainsList || [];
+  }
+
+  public get auditLogs(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.auditLogs;
+    }
+    return this._isAuditLogs;
+  }
+
+  public get oidc(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.oidc;
+    }
+    return this._isOidc;
+  }
+
+  public get ldap(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.ldap;
+    }
+    return this._isLdap;
+  }
+
+  public get customStyling(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.customStyling;
+    }
+    return this._isCustomStyling;
+  }
+
+  public get updatedAt(): Date {
+    return this._updatedDate;
+  }
+
+  public get licenseType(): string {
+    return this._type || LICENSE_TYPE.ENTERPRISE;
+  }
+
+  public get features(): object {
+    return {
+      openid: this.oidc,
+      auditLogs: this.auditLogs,
+      ldap: this.ldap,
+      customStyling: this.customStyling,
+    };
   }
 
   public get expiry(): Date {
-    return this.expiryDate;
+    return this._expiryDate;
   }
 
   public get terms(): object {
     return {
       appsCount: this.apps,
       usersCount: this.users,
-      auditLogEnabled: this.auditLog,
+      auditLogsEnabled: this.auditLogs,
       oidcEnabled: this.oidc,
-      expiryDate: this.expiryDate,
+      ldapEnabled: this.ldap,
+      customStylingEnabled: this.customStyling,
+      expiryDate: this._expiryDate,
       isExpired: this.isExpired,
       editorUsers: this.editorUsers,
       viewerUsers: this.viewerUsers,
-      workspacesCount: this.workspacesCount,
+      workspacesCount: this.workspaces,
     };
+  }
+
+  private get IsBasicPlan(): boolean {
+    return !this.isValid || this.isExpired;
   }
 
   public static Instance(): License {

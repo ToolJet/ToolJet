@@ -5,6 +5,8 @@ import SolidIcon from '../_ui/Icon/SolidIcons';
 const FeatureLabels = {
   auditLogs: 'Audit Logs',
   openid: 'Open ID',
+  ldap: 'LDAP',
+  customStyling: 'Custom styles',
 };
 
 const Access = () => {
