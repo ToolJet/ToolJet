@@ -231,16 +231,8 @@ const RenderFilterSection = ({ darkMode }) => {
   const { conditions = {} } = joinTableOptions;
   const { conditionsList = [] } = conditions;
 
-  // Update Filter condition
-  // OnChange & Value - functionality
   // Re-populate the Saved Query *
-  // Handle Column Change
-  // Handle Operator Change
-  // Handle Value Change
-
   // Fix all the Edge Cases
-
-  // Existing Options Filter
   // Have constants in a separate file
   // Edit the Codehinter UI
 
@@ -285,7 +277,7 @@ const RenderFilterSection = ({ darkMode }) => {
   }
 
   function updateFilterConditionEntry(type, indexToUpdate, valueToUpdate) {
-    if (!Object.keys(conditions).length || !conditionsList.length || conditionsList.length < indexToUpdate) return;
+    if (!Object.keys(conditions).length || !conditionsList.length) return;
     // type: Column | Value | Operator
 
     // @desc : Input Need for Each Type
@@ -297,7 +289,7 @@ const RenderFilterSection = ({ darkMode }) => {
       if (indexToUpdate === index) {
         switch (type) {
           case 'Column':
-            valueToUpdate.isLeftSideCondition
+            return valueToUpdate.isLeftSideCondition
               ? {
                   ...conditionDetail,
                   leftField: {
@@ -314,9 +306,8 @@ const RenderFilterSection = ({ darkMode }) => {
                     type: 'Column',
                   },
                 };
-            break;
           case 'Value':
-            valueToUpdate.isLeftSideCondition
+            return valueToUpdate.isLeftSideCondition
               ? {
                   ...conditionDetail,
                   leftField: {
@@ -331,7 +322,6 @@ const RenderFilterSection = ({ darkMode }) => {
                     type: 'Value',
                   },
                 };
-            break;
           case 'Operator':
             return {
               ...conditionDetail,
@@ -346,7 +336,7 @@ const RenderFilterSection = ({ darkMode }) => {
     handleWhereFilterChange({ ...conditions, conditionsList: editedConditionList });
   }
 
-  function updateOperatorInConditions(changedOperator) {
+  function updateOperatorForConditions(changedOperator) {
     let editedFilterConditions = { ...conditions, operator: changedOperator };
     handleWhereFilterChange(editedFilterConditions);
   }
@@ -366,6 +356,70 @@ const RenderFilterSection = ({ darkMode }) => {
     { value: 'OR', label: 'OR' },
   ];
 
+  const filterComponents = conditionsList.map((conditionDetail, index) => {
+    const { operator = '', leftField = {}, rightField = {} } = conditionDetail;
+    return (
+      <Row className="border rounded mb-2" key={index}>
+        <Col sm="2" className="p-0 border-end">
+          {index === 1 && (
+            <DropDownSelect
+              onChange={(change) => updateOperatorForConditions(change?.value)}
+              options={groupOperators}
+              darkMode={darkMode}
+              value={groupOperators.find((op) => op.value === conditions.operator)}
+            />
+          )}
+          {index === 0 && <div className="tj-small-btn px-2">Where</div>}
+          {index > 1 && <div className="tj-small-btn px-2">{conditions?.operator}</div>}
+        </Col>
+        <Col sm="4" className="p-0 border-end">
+          <DropDownSelect
+            onChange={(newValue) => console.log('DropDownSelect --------------', newValue)}
+            // value
+            options={tableList}
+            darkMode={darkMode}
+          />
+        </Col>
+        <Col sm="1" className="p-0 border-end">
+          <DropDownSelect
+            onChange={(change) => updateFilterConditionEntry('Operator', index, { operator: change?.value })}
+            Value={operator}
+            options={operatorConstants}
+            darkMode={darkMode}
+          />
+        </Col>
+        <Col sm="5" className="p-0 d-flex">
+          <div className="flex-grow-1">
+            <CodeHinter
+              initialValue={
+                rightField.value
+                  ? typeof rightField.value === 'string'
+                    ? rightField.value
+                    : JSON.stringify(rightField.value)
+                  : rightField.value
+              }
+              className="codehinter-plugins"
+              theme={darkMode ? 'monokai' : 'default'}
+              height={'28px'}
+              placeholder="Value"
+              onChange={(newValue) =>
+                updateFilterConditionEntry('Value', index, { value: newValue, isLeftSideCondition: false })
+              }
+            />
+          </div>
+          <ButtonSolid
+            size="sm"
+            variant="ghostBlack"
+            className="px-1 rounded-0 border-start"
+            onClick={() => removeFilterConditionEntry(index)}
+          >
+            <Trash fill="var(--slate9)" style={{ height: '16px' }} />
+          </ButtonSolid>
+        </Col>
+      </Row>
+    );
+  });
+
   return (
     <Container className="p-0">
       {Object.keys(conditions).length === 0 && (
@@ -381,60 +435,7 @@ const RenderFilterSection = ({ darkMode }) => {
           </div>
         </Row>
       )}
-
-      {conditionsList.map((conditionDetail, index) => (
-        <Row className="border rounded mb-2" key={index}>
-          <Col sm="2" className="p-0 border-end">
-            {index === 1 && (
-              <DropDownSelect
-                onChange={(change) => updateOperatorInConditions(change?.value)}
-                options={groupOperators}
-                darkMode={darkMode}
-                value={groupOperators.find((op) => op.value === conditions.operator)}
-              />
-            )}
-            {index === 0 && <div className="tj-small-btn px-2">Where</div>}
-            {index > 1 && <div className="tj-small-btn px-2">{conditions?.operator}</div>}
-          </Col>
-          <Col sm="4" className="p-0 border-end">
-            <DropDownSelect
-              // onChange
-              // value
-              options={tableList}
-              darkMode={darkMode}
-            />
-          </Col>
-          <Col sm="1" className="p-0 border-end">
-            <DropDownSelect
-              // onChange
-              // Value
-              options={operatorConstants}
-              darkMode={darkMode}
-            />
-          </Col>
-          <Col sm="5" className="p-0 d-flex">
-            <div className="flex-grow-1">
-              <CodeHinter
-                // initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
-                className="codehinter-plugins"
-                theme={darkMode ? 'monokai' : 'default'}
-                height={'28px'}
-                placeholder="Value"
-                // onChange={(newValue) => handleValueChange(newValue)}
-              />
-            </div>
-            <ButtonSolid
-              size="sm"
-              variant="ghostBlack"
-              className="px-1 rounded-0 border-start"
-              onClick={() => removeFilterConditionEntry(index)}
-            >
-              <Trash fill="var(--slate9)" style={{ height: '16px' }} />
-            </ButtonSolid>
-          </Col>
-        </Row>
-      ))}
-
+      {filterComponents}
       <Row className="mb-2">
         <Col className="p-0">
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewFilterConditionEntry()}>
