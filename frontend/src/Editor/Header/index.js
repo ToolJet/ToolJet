@@ -107,12 +107,12 @@ export default function EditorHeader({
                       ) : saveError ? (
                         <div className="d-flex align-items-center" style={{ gap: '4px' }}>
                           <SolidIcon name="cloudinvalid" width="14" />
-                          <p className="mb-0">Could not save changes</p>
+                          <p className="mb-0 text-center">Could not save changes</p>
                         </div>
                       ) : (
                         <div className="d-flex align-items-center" style={{ gap: '4px' }}>
                           <SolidIcon name="cloudvalid" width="14" />
-                          <p className="mb-0">Changes saved</p>
+                          <p className="mb-0 text-center">Changes saved</p>
                         </div>
                       )}
                     </span>
