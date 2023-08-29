@@ -1,0 +1,270 @@
+import React, { useContext, useEffect, useState } from 'react';
+import { Container, Row, Col } from 'react-bootstrap';
+import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
+import DropDownSelect from './DropDownSelect';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
+import Remove from '@/_ui/Icon/solidIcons/Remove';
+
+/**
+ * {
+      "joinType": "INNER",
+      "table": "orders",
+      "conditions": {
+        "operator": "AND",
+        "conditionsList": [
+          {
+            "operator": "=",
+            "leftField": {
+              "columnName": "id",
+              "table": "users",
+              "type": "Column"
+            },
+            "rightField": {
+              "columnName": "user_id",
+              "table": "orders",
+              "type": "Column"
+            }
+          },
+          {
+            "operator": ">",
+            "leftField": {
+              "columnName": "order_date",
+              "table": "orders",
+              "type": "Column"
+            },
+            "rightField": {
+              "value": "2022-01-01",
+              "type": "Value"
+            }
+          }
+        ]
+      }
+    }
+  */
+
+const JoinConstraint = ({ darkMode, index, onRemove, onChange }) => {
+  const { columns, selectedTable, tables, loadTableInformation, tableInfo } = useContext(TooljetDatabaseContext);
+  const tableList = tables.map((t) => ({ label: t, value: t }));
+  const [rightFieldTable, setRightFieldTable] = useState();
+  const [leftFieldTable, setLeftFieldTable] = useState({ label: selectedTable, value: selectedTable });
+  const [joinType, setJoinType] = useState(staticJoinOperationsList[0]);
+  const [conditionsList, setConditionsList] = useState([{}]);
+  const [operator, setOperator] = useState();
+
+  useEffect(() => {
+    onChange &&
+      onChange({
+        joinType,
+        table: leftFieldTable?.value,
+        conditions: {
+          operator: operator,
+          conditionsList,
+        },
+      });
+  }, [conditionsList, joinType, rightFieldTable, leftFieldTable]);
+
+  return (
+    <Container className="p-0">
+      <Row>
+        <Col sm="6" className="text-center px-2">
+          Selected Table
+        </Col>
+        <Col sm="5" className="text-center">
+          Joining Table
+        </Col>
+        {index !== 0 && (
+          <Col sm="1" className="justify-content-end d-flex pe-0">
+            <ButtonSolid variant="ghostBlack" size="sm" className="px-0" onClick={onRemove}>
+              <Remove style={{ height: '16px' }} />
+            </ButtonSolid>
+          </Col>
+        )}
+      </Row>
+      <Row className="border rounded mb-2">
+        <Col sm="2" className="p-0 border-end">
+          <div className="tj-small-btn px-2">Join</div>
+        </Col>
+        <Col sm="4" className="p-0 border-end">
+          {index ? (
+            <DropDownSelect
+              options={tableList}
+              darkMode={darkMode}
+              onChange={setLeftFieldTable}
+              value={leftFieldTable?.value}
+            />
+          ) : (
+            <div className="tj-small-btn px-2">{leftFieldTable?.value}</div>
+          )}
+        </Col>
+        <Col sm="2" className="p-0 border-end">
+          <DropDownSelect
+            options={staticJoinOperationsList}
+            darkMode={darkMode}
+            onChange={setJoinType}
+            value={joinType}
+          />
+        </Col>
+        <Col sm="4" className="p-0">
+          <DropDownSelect
+            options={tableList}
+            darkMode={darkMode}
+            onChange={(value) => {
+              value?.value && loadTableInformation(value?.value);
+              setRightFieldTable(value);
+            }}
+            value={rightFieldTable}
+          />
+        </Col>
+      </Row>
+      {conditionsList.map((c, index) => (
+        <JoinOn
+          condition={c}
+          leftFieldTable={leftFieldTable?.value}
+          rightFieldTable={rightFieldTable?.value}
+          darkMode={darkMode}
+          key={index}
+          index={index}
+          groupOperator={operator}
+          onOperatorChange={setOperator}
+          onChange={(value) => {
+            setConditionsList((oldCondition) =>
+              oldCondition.map((con, i) => {
+                if (i === index) {
+                  return value;
+                }
+                return con;
+              })
+            );
+          }}
+          onRemove={() => setConditionsList((conditions) => conditions.filter((cond, i) => i !== index))}
+        />
+      ))}
+      <Row className="mb-2">
+        <Col className="p-0">
+          <ButtonSolid
+            variant="ghostBlue"
+            size="sm"
+            onClick={() => setConditionsList((conditions) => [...conditions, {}])}
+          >
+            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            &nbsp;&nbsp; Add more
+          </ButtonSolid>
+        </Col>
+      </Row>
+    </Container>
+  );
+};
+
+// {
+// 	"operator": ">",
+// 	"leftField": {
+// 	  "columnName": "order_date",
+// 	  "table": "orders",
+// 	  "type": "Column"
+// 	},
+// 	"rightField": {
+// 	  "value": "2022-01-01",
+// 	  "type": "Value"
+// 	}
+//   }
+
+const JoinOn = ({
+  condition,
+  leftFieldTable,
+  rightFieldTable,
+  darkMode,
+  index,
+  onChange,
+  groupOperator,
+  onOperatorChange,
+  onRemove,
+}) => {
+  const { columns, selectedTable, tables, loadTableInformation, tableInfo } = useContext(TooljetDatabaseContext);
+  const { operator, leftField, rightField } = condition;
+  const leftFieldColumn = leftField?.columnName;
+  const rightFieldColumn = rightField?.columnName;
+
+  const leftFieldOptions = tableInfo[leftFieldTable]?.map((col) => ({ label: col.Header, value: col.Header })) || [];
+  const rightFieldOptions = tableInfo[rightFieldTable]?.map((col) => ({ label: col.Header, value: col.Header })) || [];
+  const operators = [{ label: '=', value: '=' }];
+  const groupOperators = [
+    { value: 'AND', label: 'AND' },
+    { value: 'OR', label: 'OR' },
+  ];
+
+  return (
+    <Row className="border rounded mb-2">
+      <Col sm="2" className="p-0 border-end">
+        {index == 1 && (
+          <DropDownSelect
+            options={groupOperators}
+            darkMode={darkMode}
+            value={groupOperators.find((op) => op.value === groupOperator)}
+            onChange={(value) => {
+              onOperatorChange && onOperatorChange(value?.value);
+            }}
+          />
+        )}
+        {index == 0 && <div className="tj-small-btn px-2">On</div>}
+        {index > 1 && <div className="tj-small-btn px-2">{groupOperator}</div>}
+      </Col>
+      <Col sm="4" className="p-0 border-end">
+        <DropDownSelect
+          options={leftFieldOptions}
+          darkMode={darkMode}
+          value={leftFieldOptions.find((opt) => opt.value === leftFieldColumn)}
+          onChange={(value) => {
+            onChange &&
+              onChange({
+                ...condition,
+                leftField: { ...condition.leftField, columnName: value?.value, type: 'Column' },
+              });
+          }}
+        />
+      </Col>
+      <Col sm="2" className="p-0 border-end">
+        <DropDownSelect
+          options={operators}
+          darkMode={darkMode}
+          value={operators.find((op) => op.value === operator)}
+          onChange={(value) => {
+            onChange && onChange({ ...condition, operator: value?.value });
+          }}
+        />
+      </Col>
+      <Col sm="4" className="p-0 d-flex">
+        <div className="flex-grow-1">
+          <DropDownSelect
+            options={rightFieldOptions}
+            darkMode={darkMode}
+            value={rightFieldOptions.find((opt) => opt.value === rightFieldColumn)}
+            onChange={(value) => {
+              onChange &&
+                onChange({
+                  ...condition,
+                  rightField: { ...condition.rightField, columnName: value?.value, type: 'Column' },
+                });
+            }}
+          />
+        </div>
+        {index > 0 && (
+          <ButtonSolid size="sm" variant="ghostBlack" className="px-1 rounded-0 border-start" onClick={onRemove}>
+            <Trash fill="var(--slate9)" style={{ height: '16px' }} />
+          </ButtonSolid>
+        )}
+      </Col>
+    </Row>
+  );
+};
+
+// Base Component for Join Drop Down ----------
+const staticJoinOperationsList = [
+  { label: 'Inner Join', value: 'INNER' },
+  { label: 'Left Join', value: 'LEFT' },
+  { label: 'Right Join', value: 'RIGHT' },
+  { label: 'Full Outer Join', value: 'FULL OUTER' },
+];
+
+export default JoinConstraint;

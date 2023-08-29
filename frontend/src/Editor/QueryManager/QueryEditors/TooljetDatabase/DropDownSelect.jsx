@@ -8,11 +8,11 @@ import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import { isEmpty } from 'lodash';
 
-const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onAdd, onChange }) => {
+const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onAdd, onChange, value }) => {
   const popoverId = useRef(`dd-select-${generateRandomId(10)}`);
   const popoverBtnId = useRef(`dd-select-btn-${generateRandomId(10)}`);
   const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
-  const [selected, setSelected] = useState();
+  const [selected, setSelected] = useState(value);
   const selectRef = useRef();
   const [isOverflown, setIsOverflown] = useState(false);
 
@@ -21,6 +21,12 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
       // selectRef.current.focus();
     }
   }, [showMenu]);
+
+  useEffect(() => {
+    if (selected?.value !== value?.value) {
+      setSelected(value);
+    }
+  }, [value]);
 
   useEffect(() => {
     onChange && onChange(selected);
@@ -101,7 +107,7 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
             }
             setShowMenu((show) => !show);
           }}
-          className="px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0 position-relative"
+          className="px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0 position-relative font-weight-normal"
           data-cy={`show-ds-popover-button`}
         >
           {selected
@@ -111,7 +117,7 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
                 )
               : selected?.label
             : ''}
-          {isOverflown && (
+          {isOverflown && !Array.isArray(selected) && (
             <Badge className="me-1 dd-select-value-badge" bg="secondary">
               {selected?.length} selected
               <span

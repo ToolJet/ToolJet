@@ -17,6 +17,7 @@ import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import { isEmpty } from 'lodash';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
+import JoinConstraint from './JoinConstraint';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -29,10 +30,10 @@ export const JoinTable = React.memo(({ darkMode }) => {
 
 // Base Component for Join Drop Down ----------
 const staticJoinOperationsList = [
-  { label: 'Inner Join', value: 'inner-join' },
-  { label: 'Left Join', value: 'left-join' },
-  { label: 'Right Join', value: 'right-join' },
-  { label: 'Full Outer Join', value: 'full-outer-join' },
+  { label: 'Inner Join', value: 'INNER' },
+  { label: 'Left Join', value: 'LEFT' },
+  { label: 'Right Join', value: 'RIGHT' },
+  { label: 'Full Outer Join', value: 'FULL OUTER' },
 ];
 
 const DBJoinIcons = ({ joinType }) => {
@@ -100,6 +101,7 @@ const SelectTableMenu = ({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, selectedTable, tables } =
     useContext(TooljetDatabaseContext);
   const { MenuList, Option } = components;
+  const [joins, setJoins] = useState([{}]);
 
   const IconOptions = (props) => (
     <Option {...props}>
@@ -115,7 +117,20 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex mb-3">
         <label className="form-label">From</label>
         <div className="field flex-grow-1 mt-1">
-          <JoinConstraint darkMode={darkMode} />
+          {joins.map((join, i) => (
+            <JoinConstraint
+              darkMode={darkMode}
+              key={i}
+              index={i}
+              onRemove={() => setJoins((joins) => joins.filter((join, index) => index !== i))}
+            />
+          ))}
+          <Row>
+            <ButtonSolid variant="secondary" size="sm" onClick={() => setJoins((joins) => [...joins, {}])}>
+              <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+              &nbsp;&nbsp; Add another table
+            </ButtonSolid>
+          </Row>
         </div>
       </div>
       {/* Filter Section */}
@@ -180,132 +195,6 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
     </div>
-  );
-};
-
-/**
- * {
-      "joinType": "INNER",
-      "table": "orders",
-      "conditions": {
-        "operator": "AND",
-        "conditionsList": [
-          {
-            "operator": "=",
-            "leftField": {
-              "columnName": "id",
-              "table": "users",
-              "type": "Column"
-            },
-            "rightField": {
-              "columnName": "user_id",
-              "table": "orders",
-              "type": "Column"
-            }
-          },
-          {
-            "operator": ">",
-            "leftField": {
-              "columnName": "order_date",
-              "table": "orders",
-              "type": "Column"
-            },
-            "rightField": {
-              "value": "2022-01-01",
-              "type": "Value"
-            }
-          }
-        ]
-      }
-    }
- */
-const JoinConstraint = ({ darkMode, index }) => {
-  const { columns, selectedTable, tables, loadTableInformation, tableInfo } = useContext(TooljetDatabaseContext);
-  const tableList = tables.map((t) => ({ label: t, value: t }));
-  const [rightField, setRightField] = useState();
-  const [leftField, setLeftField] = useState(selectedTable);
-
-  return (
-    <Container className="p-0">
-      <Row>
-        <Col sm="6" className="text-center">
-          Selected Table
-        </Col>
-        <Col sm="6" className="text-center">
-          Joining Table
-        </Col>
-      </Row>
-      <Row className="border rounded mb-2">
-        <Col sm="2" className="p-0 border-end">
-          <div className="tj-small-btn">Join</div>
-        </Col>
-        <Col sm="4" className="p-0 border-end">
-          {/* <DropDownSelect options={tableList} darkMode={darkMode} /> */}
-          {index ? (
-            <DropDownSelect options={tableList} darkMode={darkMode} />
-          ) : (
-            <div className="tj-small-btn">{selectedTable}</div>
-          )}
-          {/* <SelectBox /> */}
-        </Col>
-        <Col sm="2" className="p-0 border-end">
-          {/* <SelectBox /> */}
-          <DropDownSelect options={staticJoinOperationsList} darkMode={darkMode} />
-        </Col>
-        <Col sm="4" className="p-0">
-          <DropDownSelect
-            options={tableList}
-            darkMode={darkMode}
-            onChange={(value) => {
-              value?.value && loadTableInformation(value?.value);
-              setRightField(value?.value);
-            }}
-          />
-          {/* <DropDownSelect options={tableList} isMulti darkMode={darkMode} /> */}
-        </Col>
-      </Row>
-      <Row className="border rounded mb-2">
-        <Col sm="2" className="p-0 border-end">
-          <div className="tj-small-btn">On</div>
-        </Col>
-        <Col sm="4" className="p-0 border-end">
-          <DropDownSelect
-            options={
-              (index
-                ? tableInfo[leftField]?.map((col) => ({ label: col.Header, value: col.Header }))
-                : columns.map((col) => ({ label: col.Header, value: col.Header }))) || []
-            }
-            darkMode={darkMode}
-          />
-          {/* <SelectBox /> */}
-        </Col>
-        <Col sm="2" className="p-0 border-end">
-          {/* <SelectBox /> */}
-          <DropDownSelect options={[{ label: '=', value: '=' }]} darkMode={darkMode} />
-        </Col>
-        <Col sm="4" className="p-0">
-          <DropDownSelect
-            options={tableInfo[rightField]?.map((col) => ({ label: col.Header, value: col.Header })) || []}
-            darkMode={darkMode}
-          />
-          {/* <DropDownSelect options={tableList} isMulti darkMode={darkMode} /> */}
-        </Col>
-      </Row>
-      <Row className="mb-2">
-        <Col className="p-0">
-          <ButtonSolid variant="ghostBlue" size="sm">
-            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp; Add more
-          </ButtonSolid>
-        </Col>
-      </Row>
-      <Row>
-        <ButtonSolid variant="secondary" size="sm">
-          <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-          &nbsp;&nbsp; Add another table
-        </ButtonSolid>
-      </Row>
-    </Container>
   );
 };
 
