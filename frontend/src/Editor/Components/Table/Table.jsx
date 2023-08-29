@@ -49,6 +49,7 @@ import { AddNewRowComponent } from './AddNewRowComponent';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -159,8 +160,6 @@ export function Table({
   const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
   const mounted = useMounted();
 
-  const [showDownloadPopover, setShowDownloadPopover] = useState(false);
-  const [showHideColumnsPopover, setHideColumnsPopover] = useState(false);
   const [resizingColumnId, setResizingColumnId] = useState(null);
 
   const prevDataFromProps = useRef();
@@ -1585,70 +1584,56 @@ export function Table({
               )}
               {!loadingState && showDownloadButton && (
                 <div>
-                  <OverlayTrigger
+                  <OverlayTriggerComponent
                     trigger="click"
                     overlay={downlaodPopover()}
                     rootClose={true}
                     placement={'top-end'}
-                    show={showDownloadPopover}
-                    onToggle={(show) => {
-                      setShowDownloadPopover(show);
-                    }}
                   >
-                    <span>
-                      {' '}
-                      <ButtonSolid
-                        variant="ghostBlack"
-                        className={`tj-text-xsm ${showDownloadPopover && 'always-active-btn'}`}
-                        style={{
-                          minWidth: '32px',
-                        }}
-                        leftIcon="filedownload"
-                        fill={`var(--slate12)`}
-                        iconWidth="16"
-                        size="md"
-                        data-tooltip-id="tooltip-for-download"
-                        data-tooltip-content="Download"
-                        onClick={(e) => {
-                          if (document.activeElement === e.currentTarget) {
-                            e.currentTarget.blur();
-                          }
-                        }}
-                      ></ButtonSolid>
-                    </span>
-                  </OverlayTrigger>
-                </div>
-              )}
-              {!loadingState && !hideColumnSelectorButton && (
-                <OverlayTrigger
-                  trigger="click"
-                  rootClose={true}
-                  overlay={hideColumnsPopover()}
-                  placement={'top-end'}
-                  show={showHideColumnsPopover}
-                  onToggle={(show) => {
-                    setHideColumnsPopover(show);
-                  }}
-                >
-                  <span>
-                    {' '}
                     <ButtonSolid
                       variant="ghostBlack"
-                      className={`tj-text-xsm ${showHideColumnsPopover && 'always-active-btn'}`}
-                      style={{ minWidth: '32px' }}
-                      leftIcon="eye1"
+                      className={`tj-text-xsm `}
+                      style={{
+                        minWidth: '32px',
+                      }}
+                      leftIcon="filedownload"
                       fill={`var(--slate12)`}
                       iconWidth="16"
                       size="md"
-                      data-cy={`select-column-icon`}
+                      data-tooltip-id="tooltip-for-download"
+                      data-tooltip-content="Download"
                       onClick={(e) => {
                         if (document.activeElement === e.currentTarget) {
                           e.currentTarget.blur();
                         }
                       }}
                     ></ButtonSolid>
-                  </span>
-                </OverlayTrigger>
+                  </OverlayTriggerComponent>
+                </div>
+              )}
+              {!loadingState && !hideColumnSelectorButton && (
+                <OverlayTriggerComponent
+                  trigger="click"
+                  rootClose={true}
+                  overlay={hideColumnsPopover()}
+                  placement={'top-end'}
+                >
+                  <ButtonSolid
+                    variant="ghostBlack"
+                    className={`tj-text-xsm `}
+                    style={{ minWidth: '32px' }}
+                    leftIcon="eye1"
+                    fill={`var(--slate12)`}
+                    iconWidth="16"
+                    size="md"
+                    data-cy={`select-column-icon`}
+                    onClick={(e) => {
+                      if (document.activeElement === e.currentTarget) {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                  ></ButtonSolid>
+                </OverlayTriggerComponent>
               )}
             </div>
           </div>
