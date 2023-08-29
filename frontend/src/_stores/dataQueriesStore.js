@@ -131,7 +131,6 @@ export const useDataQueriesStore = create(
                   if (query.id === tempId) {
                     return {
                       ...query,
-                      // ...data,
                       id: data.id,
                       data_source_id: dataSourceId,
                     };
@@ -165,7 +164,7 @@ export const useDataQueriesStore = create(
         },
         renameQuery: (id, newName) => {
           /** If query creation in progress, skips call and pushes the update to queue */
-          if (get().creatingQueryInProcessId && get().creatingQueryInProcessId === id) {
+          if (get().creatingQueryInProcessId === id) {
             set({ queuedActions: { ...get().queuedActions, renameQuery: newName } });
             return;
           }
