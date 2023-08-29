@@ -211,6 +211,7 @@ button {
   max-height: 48px;
   min-height: auto;
   background-color: var(--base) !important;
+  border-bottom: 1px solid var(--slate5);
 
   .nav-item.active:after {
     bottom: 0 !important;
