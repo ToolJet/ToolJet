@@ -165,7 +165,7 @@ class DataSourceManagerComponent extends React.Component {
       connectionTestError: null,
       options: {
         ...this.state.options,
-        [option]: { ...this.state.options[option], value: value },
+        [option]: { value: value },
       },
     };
 
@@ -222,7 +222,7 @@ class DataSourceManagerComponent extends React.Component {
             this.setState({ isSaving: false });
             this.hideModal();
             toast.success(
-              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Datasource Saved'),
+              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Data Source Saved'),
               { position: 'top-center' }
             );
             this.props.dataSourcesChanged(false, selectedDataSource);
@@ -255,7 +255,7 @@ class DataSourceManagerComponent extends React.Component {
 
             this.hideModal();
             toast.success(
-              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
+              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Data Source Added'),
               { position: 'top-center' }
             );
 

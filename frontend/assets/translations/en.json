@@ -150,8 +150,8 @@
             "dataSourceManager": {
                 "toast": {
                     "success": {
-                        "dataSourceAdded": "Datasource Added",
-                        "dataSourceSaved": "Datasource Saved"
+                        "dataSourceAdded": "Data Source Added",
+                        "dataSourceSaved": "Data Source Saved"
                     },
                     "error": {
                         "noEmptyDsName": "The name of datasource should not be empty"
