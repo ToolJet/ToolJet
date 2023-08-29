@@ -260,7 +260,7 @@
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
                     "enterFullName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -927,7 +927,7 @@
         },
         "Comments": {
             "text": "Comments",
-            "tip": "toggle comments",
+            "tip": "Toggle comments",
             "commentBody": "There are no comments to display",
             "typeComment": "Type your comment here"
         },
