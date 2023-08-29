@@ -215,6 +215,12 @@
     }
 
     &:hover {
+        span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
         br:first-of-type {
             display: none !important;
         }
