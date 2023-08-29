@@ -73,11 +73,8 @@ export const ReleaseVersionButton = function DeployVersionButton({
           className={cx('release-button', {
             'btn-loading': isReleasing,
           })}
-          rightIcon="arrowup"
           disabled={isVersionReleased}
           onClick={() => setShowPageDeletionConfirmation(true)}
-          iconWidth="14"
-          fill={isVersionReleased ? '#697177' : '#FBFCFD'}
         >
           {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
         </ButtonSolid>
