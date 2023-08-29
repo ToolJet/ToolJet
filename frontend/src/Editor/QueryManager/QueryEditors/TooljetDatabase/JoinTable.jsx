@@ -311,7 +311,7 @@ const JoinConstraint = ({ darkMode, index }) => {
 
 // Component to Render Filter Section
 const RenderFilterSection = ({ darkMode }) => {
-  const { tables, tableInfo } = useContext(TooljetDatabaseContext);
+  const { tables, tableInfo, joinTableOptions, joinTableOptionsChange } = useContext(TooljetDatabaseContext);
 
   // Add New Filter Condition
   // Update Filter condition
@@ -328,6 +328,10 @@ const RenderFilterSection = ({ darkMode }) => {
   // Have constants in a separate file
   // Multiple Condition
   // Delete Icon
+
+  // function addNewFilterConditionPair() {
+  //   const
+  // }
 
   const tableList = Object.entries(tableInfo).map(([key, value]) => {
     const tableDetails = {
