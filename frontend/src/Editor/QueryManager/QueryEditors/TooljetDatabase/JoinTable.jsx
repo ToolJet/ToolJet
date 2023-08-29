@@ -19,6 +19,7 @@ import { isEmpty } from 'lodash';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
+import JoinSelect from './JoinSelect';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -190,7 +191,8 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex mb-3">
         <label className="form-label">Select</label>
         <div className="field flex-grow-1">
-          <Container className="p-0">
+          <JoinSelect darkMode={darkMode} />
+          {/* <Container className="p-0">
             <Row className="border rounded">
               <Col sm="2" className="p-0 border-end text-center">
                 Table A
@@ -199,7 +201,7 @@ const SelectTableMenu = ({ darkMode }) => {
                 <DropDownSelect options={tableList} isMulti />
               </Col>
             </Row>
-          </Container>
+          </Container> */}
         </div>
       </div>
     </div>

@@ -29,6 +29,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     options['update_rows'] || { columns: {}, where_filters: {} }
   );
   const [joinOptions, setJoinOptions] = useState([{ table: selectedTable }]);
+  const [joinSelectOptions, setJoinSelectOptions] = useState([]);
   const [tableInfo, setTableInfo] = useState({});
   const [deleteRowsOptions, setDeleteRowsOptions] = useState(
     options['delete_rows'] || {
@@ -136,6 +137,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       loadTableInformation,
       joinOptions,
       setJoinOptions,
+      joinSelectOptions,
+      setJoinSelectOptions,
     }),
     [
       organizationId,
@@ -149,6 +152,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       tableInfo,
       loadTableInformation,
       joinOptions,
+      joinSelectOptions,
     ]
   );
 
