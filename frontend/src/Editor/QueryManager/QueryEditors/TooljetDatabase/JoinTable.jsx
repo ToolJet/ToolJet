@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { Badge, Col, Container, OverlayTrigger, Popover, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import useShowPopover from '@/_hooks/useShowPopover';
 import LeftOuterJoinIcon from '../../Icons/LeftOuterJoinIcon';
@@ -143,27 +144,8 @@ const SelectTableMenu = ({ darkMode }) => {
       {/* Sort Section */}
       <div className="field-container d-flex mb-3">
         <label className="form-label">Sort</label>
-        <div className="field flex-grow-1 mt-2">
-          <Container className="p-0">
-            <Row className="mb-2">
-              <div
-                style={{
-                  border: '1px dashed var(--slate-08, #C1C8CD)',
-                }}
-                className="px-4 py-2 text-center rounded-1"
-              >
-                There are no conditions
-              </div>
-            </Row>
-            <Row className="mb-2">
-              <Col className="p-0">
-                <ButtonSolid variant="ghostBlue" size="sm">
-                  <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-                  &nbsp;&nbsp; Add more
-                </ButtonSolid>
-              </Col>
-            </Row>
-          </Container>
+        <div className="field flex-grow-1">
+          <RenderSortSection darkMode={darkMode} />
         </div>
       </div>
       {/* Limit Section */}
@@ -198,6 +180,24 @@ const SelectTableMenu = ({ darkMode }) => {
   );
 };
 
+//   "conditions": {
+//     "operator": "AND",
+//       "conditionsList": [
+//         {
+//           "operator": ">",
+//           "leftField": {
+//             "columnName": "registration_date",
+//             "table": "users",
+//             "type": "Column"
+//           },
+//           "rightField": {
+//             "value": "2022-01-01",
+//             "type": "Value"
+//           }
+//         }
+//       ]
+//   }
+
 // Component to Render Filter Section
 const RenderFilterSection = ({ darkMode }) => {
   const { tables, tableInfo, joinTableOptions, joinTableOptionsChange } = useContext(TooljetDatabaseContext);
@@ -216,7 +216,7 @@ const RenderFilterSection = ({ darkMode }) => {
   // OnChange functionality
   // Have constants in a separate file
   // Multiple Condition
-  // Delete Icon
+  // Edit the Codehinter UI
 
   // function addNewFilterConditionPair() {
   //   const
@@ -231,8 +231,20 @@ const RenderFilterSection = ({ darkMode }) => {
     return tableDetails;
   });
 
+  const operatorConstants = [{ label: '=', value: '=' }];
+
   return (
     <Container className="p-0">
+      <Row className="mb-2">
+        <div
+          style={{
+            border: '1px dashed var(--slate-08, #C1C8CD)',
+          }}
+          className="px-4 py-2 text-center rounded-1"
+        >
+          There are no conditions
+        </div>
+      </Row>
       {/* Dynamically render below Row */}
       <Row className="border rounded mb-1">
         <Col sm="2" className="p-0 border-end">
@@ -242,20 +254,23 @@ const RenderFilterSection = ({ darkMode }) => {
           <DropDownSelect options={tableList} darkMode={darkMode} />
         </Col>
         <Col sm="1" className="p-0 border-end">
-          <DropDownSelect options={[{ label: '=', value: '=' }]} darkMode={darkMode} />
+          <DropDownSelect options={operatorConstants} darkMode={darkMode} />
         </Col>
-        <Col sm="4" className="p-0">
-          {/* <CodeHinter
-            // initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
-            className="codehinter-plugins"
-            theme={darkMode ? 'monokai' : 'default'}
-            height={'32px'}
-            placeholder="Value"
-            // onChange={(newValue) => handleValueChange(newValue)}
-          /> */}
-        </Col>
-        <Col sm="1" className="p-0">
-          {/* <DropDownSelect options={tableList} isMulti darkMode={darkMode} /> */}
+        <Col sm="5" className="p-0 d-flex">
+          <div className="flex-grow-1">
+            <CodeHinter
+              // initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
+              className="codehinter-plugins"
+              theme={darkMode ? 'monokai' : 'default'}
+              height={'28px'}
+              placeholder="Value"
+              // onChange={(newValue) => handleValueChange(newValue)}
+            />
+          </div>
+          {/* onClick={onRemove} */}
+          <ButtonSolid size="sm" variant="ghostBlack" className="px-1 rounded-0 border-start">
+            <Trash fill="var(--slate9)" style={{ height: '16px' }} />
+          </ButtonSolid>
         </Col>
       </Row>
       <Row className="mb-2">
@@ -270,8 +285,76 @@ const RenderFilterSection = ({ darkMode }) => {
   );
 };
 
+// "order_by": [
+//   {
+//     "columnName": "total_spent",
+//     "direction": "DESC"
+//   },
+//   {
+//     "columnName": "name",
+//     "table": "users",
+//     "direction": "ASC"
+//   }
+// ]
+
 // Component to Render Sort Section
-const RenderSortSection = () => {};
+const RenderSortSection = ({ darkMode }) => {
+  const { tableInfo } = useContext(TooljetDatabaseContext);
+
+  const tableList = Object.entries(tableInfo).map(([key, value]) => {
+    const tableDetails = {
+      label: key,
+      value: key,
+      options: value.map((columns) => ({ label: columns.Header, value: columns.Header })),
+    };
+    return tableDetails;
+  });
+
+  const sortbyConstants = [
+    { label: 'Ascending', value: 'ASC' },
+    { label: 'Descending', value: 'DESC' },
+  ];
+
+  return (
+    <Container className="p-0">
+      <Row className="mb-2">
+        <div
+          style={{
+            border: '1px dashed var(--slate-08, #C1C8CD)',
+          }}
+          className="px-4 py-2 text-center rounded-1"
+        >
+          There are no conditions
+        </div>
+      </Row>
+      {/* Dynamically render below Row */}
+      <Row className="border rounded mb-1">
+        <Col sm="6" className="p-0 border-end">
+          <DropDownSelect options={tableList} darkMode={darkMode} />
+        </Col>
+        <Col sm="5" className="p-0 border-end d-flex">
+          <div className="flex-grow-1">
+            <DropDownSelect options={sortbyConstants} darkMode={darkMode} />
+          </div>
+        </Col>
+        <Col sm="1" className="p-0">
+          {/* onClick={onRemove} */}
+          <ButtonSolid size="sm" variant="ghostBlack" className="px-1 w-100 rounded-0">
+            <Trash fill="var(--slate9)" style={{ height: '16px' }} />
+          </ButtonSolid>
+        </Col>
+      </Row>
+      <Row className="mb-2">
+        <Col className="p-0">
+          <ButtonSolid variant="ghostBlue" size="sm">
+            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            &nbsp;&nbsp; Add more
+          </ButtonSolid>
+        </Col>
+      </Row>
+    </Container>
+  );
+};
 
 // Component to Render Select Section
 const RenderSelectSection = () => {};
