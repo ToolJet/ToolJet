@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { GoogleMap, LoadScript, Marker, Autocomplete } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Marker, Autocomplete, Polygon } from '@react-google-maps/api';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +22,8 @@ export const Map = function Map({
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
+  const polygonPaths = component.definition.properties?.path?.value ?? [];
+
   const { t } = useTranslation();
 
   let defaultMarkers = [];
@@ -54,6 +56,11 @@ export const Map = function Map({
   const [autoComplete, setAutoComplete] = useState(null);
   const [mapCenter, setMapCenter] = useState(resolveReferences(center, currentState));
   const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState));
+  const [path, setPath] = useState(resolveReferences(polygonPaths, currentState) || []);
+
+  useEffect(() => {
+    setPath(resolveReferences(polygonPaths, currentState));
+  }, [JSON.stringify(polygonPaths)]);
 
   const containerStyle = {
     width: '100%',
@@ -185,6 +192,21 @@ export const Map = function Map({
                 <Marker key={index} position={marker} label={marker.label} onClick={() => handleMarkerClick(index)} />
               ))}
             </>
+          )}
+          {path.length > 1 && (
+            <Polygon
+              path={path}
+              onClick={() => {
+                onEvent('onPolygonClick', { component });
+              }}
+              options={{
+                strokeColor: '#4d72fa',
+                strokeOpacity: 1,
+                strokeWeight: 2,
+                fillColor: '#4d72fa',
+                fillOpacity: 0.5,
+              }}
+            />
           )}
         </GoogleMap>
       </LoadScript>
