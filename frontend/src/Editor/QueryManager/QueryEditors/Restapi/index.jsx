@@ -166,7 +166,7 @@ class Restapi extends React.Component {
                 {dataSourceURL && (
                   <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
-                <div className={`flex-grow-1 ${dataSourceURL ? 'url-input-group' : ''}`}>
+                <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={options.url}

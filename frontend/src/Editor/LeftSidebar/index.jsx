@@ -59,7 +59,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
   const queryPanelHeight = usePanelHeight();
   const [selectedSidebarItem, setSelectedSidebarItem] = useState(
-    dataSources?.length === 0 && prevSelectedSidebarItem === 'database' ? 'inspect' : prevSelectedSidebarItem
+    dataSources?.length === 0 && prevSelectedSidebarItem === 'datasource' ? 'inspect' : prevSelectedSidebarItem
   );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -175,7 +175,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         pinned={pinned}
       />
     ),
-    database: (
+    datasource: (
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}
@@ -187,7 +187,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         onDeleteofAllDataSources={() => {
           handleSelectedSidebarItem(null);
           handlePin(false);
-          delete sideBarBtnRefs.current['database'];
+          delete sideBarBtnRefs.current['datasource'];
         }}
         setPinned={handlePin}
         pinned={pinned}
@@ -259,11 +259,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
       {dataSources?.length > 0 && (
         <LeftSidebarItem
           selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('database')}
-          icon="database"
+          onClick={() => handleSelectedSidebarItem('datasource')}
+          icon="datasource"
           className={`left-sidebar-item left-sidebar-layout sidebar-datasources`}
           tip="Sources"
-          ref={setSideBarBtnRefs('database')}
+          ref={setSideBarBtnRefs('datasource')}
         />
       )}
 
@@ -285,7 +285,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <div className="left-sidebar-stack-bottom">
         <div className="">
           {config.COMMENT_FEATURE_ENABLE && (
-            <div className={`${isVersionReleased && 'disabled'}`} style={{ maxHeight: '32px', maxWidth: '32px' }}>
+            <div
+              className={`${isVersionReleased && 'disabled'}`}
+              style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}
+            >
               <LeftSidebarComment
                 selectedSidebarItem={showComments ? 'comments' : ''}
                 currentPageId={currentPageId}

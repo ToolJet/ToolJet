@@ -5,7 +5,6 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-import { getRecommendation } from '@/Editor/CodeBuilder/utils';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
@@ -13,17 +12,14 @@ import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+
+const noop = () => {};
 import { Button } from '@/_ui/LeftSidebar';
-import { Tooltip as ReactTooltip } from 'react-tooltip';
-import { authenticationService } from '@/_services';
 import Information from '@/_ui/Icon/solidIcons/Information';
-import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
   const { t } = useTranslation();
-  const { current_organization_name } = authenticationService.currentSessionValue;
-  const currentOrgName = current_organization_name.replace(/\s/g, '').toLowerCase();
-  const currentState = useCurrentState();
+
   const [lang, setLang] = React.useState(options?.transformationLanguage ?? 'javascript');
 
   const defaultValue = {
@@ -40,17 +36,6 @@ return [row for row in data if row['amount'] > 1000]
   const [enableTransformation, setEnableTransformation] = useState(() => options.enableTransformation);
 
   const [state, setState] = useLocalStorageState('transformation', defaultValue);
-
-  const [fetchingRecommendation, setFetchingRecommendation] = useState(false);
-  const isCopilotEnabled = localStorage.getItem(`copilotEnabled-${currentOrgName}`) === 'true';
-
-  const handleCallToGPT = async () => {
-    setFetchingRecommendation(true);
-    const query = state[lang];
-    const recommendation = await getRecommendation(currentState, query, lang);
-    setFetchingRecommendation(false);
-    changeOption('transformation', recommendation);
-  };
 
   function toggleEnableTransformation() {
     setEnableTransformation((prev) => !prev);
@@ -224,35 +209,6 @@ return [row for row in data if row['amount'] > 1000]
                     useCustomStyles={true}
                   />
                 </div>
-
-                <div
-                  data-tooltip-id="tooltip-for-active-copilot"
-                  data-tooltip-content="Activate Copilot in the workspace settings"
-                >
-                  <Button
-                    onClick={handleCallToGPT}
-                    darkMode={darkMode}
-                    size="sm"
-                    classNames={`${fetchingRecommendation ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`}
-                    styles={{
-                      width: '100%',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      borderColor: darkMode && 'transparent',
-                    }}
-                    disabled={!isCopilotEnabled}
-                  >
-                    <Button.Content title={'Generate code'} />
-                  </Button>
-                </div>
-
-                {!isCopilotEnabled && (
-                  <ReactTooltip
-                    id="tooltip-for-active-copilot"
-                    className="tooltip"
-                    style={{ backgroundColor: '#e6eefe', color: '#222' }}
-                  />
-                )}
               </div>
               <div className="codehinter-border-bottom mx-3"></div>
               <CodeHinter
@@ -266,8 +222,8 @@ return [row for row in data if row['amount'] > 1000]
                 onChange={(value) => changeOption('transformation', value)}
                 componentName={`transformation`}
                 cyLabel={'transformation-input'}
-                callgpt={handleCallToGPT}
-                isCopilotEnabled={isCopilotEnabled}
+                callgpt={noop}
+                isCopilotEnabled={false}
               />
             </div>
           )}

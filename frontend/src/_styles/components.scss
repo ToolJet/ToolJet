@@ -107,7 +107,6 @@ $btn-dark-color: #FFFFFF;
     align-items: center;
     justify-content: space-between;
     height: 28px;
-    // background-color: red;
     display: flex;
     align-items: center;
 
@@ -118,7 +117,7 @@ $btn-dark-color: #FFFFFF;
   }
 
   .panel-search-container {
-    padding: 8px 12px;
+    padding: 12px 0px;
   }
 }
 
@@ -178,21 +177,6 @@ $btn-dark-color: #FFFFFF;
   }
 }
 
-// .page-selector-panel-body.dark {
-//   .page-handler {
-//     .card {
-//       background: none !important
-//     }
-
-//     .card.active {
-//       background: #26292B !important;
-//     }
-
-//     .card:hover {
-//       background: #2C3547 !important;
-//     }
-//   }
-// }
 
 .left-sidebar-page-selector.dark {
   background: #1F2936 !important;
@@ -346,7 +330,6 @@ $btn-dark-color: #FFFFFF;
 .DragHandle {
   display: flex;
   width: 12px;
-  // padding: 3px;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
@@ -357,7 +340,6 @@ $btn-dark-color: #FFFFFF;
   outline: none;
   appearance: none;
   background-color: transparent;
-  // margin-top: 3px;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -373,6 +355,7 @@ $btn-dark-color: #FFFFFF;
 #popover-change-scope {
   border: 1px solid rgba(101, 109, 119, 0.16);
   box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.25);
+  background: var(--base) !important;
 }
 
 .tj-badge {

@@ -285,6 +285,7 @@ class DataSourceManagerComponent extends React.Component {
         hideModal={this.hideModal}
         selectedDataSource={this.state.selectedDataSource}
         isEditMode={!isEmpty(this.state.selectedDataSource)}
+        currentAppEnvironmentId={this.props.currentEnvironment?.id}
       />
     );
   };
@@ -697,7 +698,7 @@ class DataSourceManagerComponent extends React.Component {
                       <input
                         type="text"
                         onChange={(e) => this.onNameChanged(e.target.value)}
-                        className="form-control-plaintext form-control-plaintext-sm"
+                        className="form-control-plaintext form-control-plaintext-sm color-slate12"
                         value={selectedDataSource.name}
                         style={{ width: '160px' }}
                         data-cy="data-source-name-input-filed"
@@ -810,6 +811,7 @@ class DataSourceManagerComponent extends React.Component {
                   options={options}
                   onConnectionTestFailed={this.onConnectionTestFailed}
                   darkMode={this.props.darkMode}
+                  environmentId={this.props.currentEnvironment?.id}
                 />
               </div>
               <div className="col-auto" data-cy="db-connection-save-button">
@@ -919,6 +921,11 @@ const EmptyStateContainer = ({
                   value={inputValue}
                   placeholder={placeholder}
                   onChange={(e) => set(e.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      handleSend();
+                    }
+                  }}
                 />
               </div>
             </div>

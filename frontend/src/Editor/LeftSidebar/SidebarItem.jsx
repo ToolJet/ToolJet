@@ -10,20 +10,22 @@ export const LeftSidebarItem = forwardRef(
     ref
   ) => {
     const { t } = useTranslation();
-    // const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
     let displayIcon = icon;
     if (icon == 'page') displayIcon = 'file01';
-
-    // const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
-
     const content = (
       <div {...rest} className={className} onClick={onClick && onClick} ref={ref}>
         {icon && (
           <div
-            className={`sidebar-svg-icon  position-relative ${selectedSidebarItem === icon && 'sidebar-item'}`}
+            className={`sidebar-svg-icon  position-relative ${
+              selectedSidebarItem === icon && selectedSidebarItem != 'comments' && 'sidebar-item'
+            }`}
             data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
           >
-            <SolidIcon name={displayIcon} width="16" fill={selectedSidebarItem === icon ? '#3E63DD' : '#C1C8CD'} />
+            <SolidIcon
+              name={displayIcon}
+              width={icon == 'settings' ? 22.4 : 20}
+              fill={selectedSidebarItem === icon ? '#3E63DD' : '#C1C8CD'}
+            />
             {commentBadge && <LeftSidebarItem.CommentBadge />}
           </div>
         )}

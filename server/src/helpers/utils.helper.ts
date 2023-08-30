@@ -144,3 +144,25 @@ export const truncateAndReplace = (name) => {
   }
   return name + secondsSinceEpoch;
 };
+
+export const generateInviteURL = (
+  invitationToken: string,
+  organizationToken?: string,
+  organizationId?: string,
+  source?: string
+) => {
+  const host = process.env.TOOLJET_HOST;
+  const subpath = process.env.SUB_PATH;
+
+  return `${host}${subpath ? subpath : '/'}invitations/${invitationToken}${
+    organizationToken ? `/workspaces/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''}` : ''
+  }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
+};
+
+export const generateOrgInviteURL = (organizationToken: string, organizationId?: string) => {
+  const host = process.env.TOOLJET_HOST;
+  const subpath = process.env.SUB_PATH;
+  return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
+    organizationId ? `?oid=${organizationId}` : ''
+  }`;
+};

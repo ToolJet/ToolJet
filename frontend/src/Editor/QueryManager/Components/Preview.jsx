@@ -47,7 +47,7 @@ const Preview = ({ darkMode }) => {
 
   return (
     <div className="preview-header preview-section d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
-      <div className="w-100 border rounded-top">
+      <div className="w-100" style={{ borderRadius: '0px 0px 6px 6px' }}>
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
           <div className="position-relative">
             {previewLoading && (
@@ -91,7 +91,7 @@ const Preview = ({ darkMode }) => {
               </Col>
             </Row>
             <Row className="m-0">
-              <Tab.Content style={{ overflowWrap: 'anywhere', padding: 0 }}>
+              <Tab.Content style={{ overflowWrap: 'anywhere', padding: 0, border: '1px solid var(--slate5)' }}>
                 <Tab.Pane eventKey="json" transition={false}>
                   <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
                     <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />

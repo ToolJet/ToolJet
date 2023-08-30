@@ -59,11 +59,14 @@ export const DarkModeToggle = function DarkModeToggle({
         </Tooltip>
       }
     >
-      <div className="unstyled-button dark-theme-toggle-btn" onClick={toggleDarkMode}>
+      <div
+        className="unstyled-button dark-theme-toggle-btn  sidebar-svg-icon  left-sidebar-item "
+        onClick={toggleDarkMode}
+      >
         <animated.svg
           xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
           fill="none"
           color={darkMode ? '#fff' : '#C1C8CD'}

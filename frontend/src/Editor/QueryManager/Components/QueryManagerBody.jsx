@@ -28,7 +28,6 @@ export const QueryManagerBody = ({
   apps,
   appDefinition,
   setOptions,
-  appId,
 }) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
