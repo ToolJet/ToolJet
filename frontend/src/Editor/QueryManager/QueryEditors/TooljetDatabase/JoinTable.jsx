@@ -6,6 +6,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 // import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import { clone } from 'lodash';
 // import useShowPopover from '@/_hooks/useShowPopover';
 // import LeftOuterJoinIcon from '../../Icons/LeftOuterJoinIcon';
 // import RightOuterJoin from '../../Icons/RightOuterJoin';
@@ -19,6 +20,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
 import JoinSelect from './JoinSelect';
+import JoinSort from './JoinSort';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -106,9 +108,11 @@ const SelectTableMenu = ({ darkMode }) => {
     // handleOptionsChange,
     selectedTable,
     tables,
-    joinOptions: joins,
+    joinOptions,
     setJoinOptions: setJoins,
   } = useContext(TooljetDatabaseContext);
+
+  const joins = clone(joinOptions);
   // const { Option } = components;
 
   // const IconOptions = (props) => (
@@ -171,7 +175,7 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex mb-3">
         <label className="form-label">Sort</label>
         <div className="field flex-grow-1">
-          <RenderSortSection darkMode={darkMode} />
+          <JoinSort darkMode={darkMode} />
         </div>
       </div>
       {/* Limit Section */}
@@ -468,63 +472,46 @@ const RenderFilterSection = ({ darkMode }) => {
 // ]
 
 // Component to Render Sort Section
-const RenderSortSection = ({ darkMode }) => {
-  const { tableInfo } = useContext(TooljetDatabaseContext);
 
-  // Function name: joinTableOptionsChange
+// Component to Render Select Section
+const RenderSelectSection = () => {};
 
-  const tableList = Object.entries(tableInfo).map(([key, value]) => {
-    const tableDetails = {
-      label: key,
-      value: key,
-      options: value.map((columns) => ({ label: columns.Header, value: columns.Header })),
-    };
-    return tableDetails;
-  });
-
-  const sortbyConstants = [
-    { label: 'Ascending', value: 'ASC' },
-    { label: 'Descending', value: 'DESC' },
-  ];
-
-  return (
-    <Container className="p-0">
-      <Row className="mb-2">
-        <div
-          style={{
-            height: '30px',
-            border: '1px dashed var(--slate-08, #C1C8CD)',
-          }}
-          className="px-4 py-2 text-center rounded-1"
-        >
-          There are no conditions
-        </div>
-      </Row>
-      {/* Dynamically render below Row */}
-      <Row className="border rounded mb-1">
-        <Col sm="6" className="p-0 border-end">
-          <DropDownSelect options={tableList} darkMode={darkMode} />
-        </Col>
-        <Col sm="5" className="p-0 border-end d-flex">
-          <div className="flex-grow-1">
-            <DropDownSelect options={sortbyConstants} darkMode={darkMode} />
-          </div>
-        </Col>
-        <Col sm="1" className="p-0">
-          {/* onClick={onRemove} */}
-          <ButtonSolid size="sm" variant="ghostBlack" className="px-1 w-100 rounded-0">
-            <Trash fill="var(--slate9)" style={{ height: '16px' }} />
-          </ButtonSolid>
-        </Col>
-      </Row>
-      <Row className="mb-2">
-        <Col className="p-0">
-          <ButtonSolid variant="ghostBlue" size="sm">
-            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp; Add more
-          </ButtonSolid>
-        </Col>
-      </Row>
-    </Container>
-  );
-};
+// const tableList = [
+//   {
+//     label: 'Table A',
+//     value: 'Table A',
+//     id: '123',
+//   },
+//   {
+//     label: 'Table B',
+//     value: 'Table B',
+//     id: '2',
+//   },
+//   {
+//     label: 'Table C',
+//     value: 'Table C',
+//     id: '3',
+//   },
+//   {
+//     label: 'Table D',
+//     value: 'Table D',
+//     id: '4',
+//   },
+//   {
+//     label: 'Table E',
+//     value: 'Table E',
+//     id: '5',
+//   },
+//   {
+//     label: 'Table F',
+//     value: 'Table F',
+//     icon: 'search',
+//     options: [
+//       {
+//         label: 'Test 1',
+//         value: 2,
+//       },
+//     ],
+//     id: '6',
+//   },
+// ];

@@ -29,7 +29,7 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
   }, [value]);
 
   useEffect(() => {
-    onChange && onChange(selected);
+    // onChange && onChange(selected);
     const badges = document.querySelectorAll('.dd-select-value-badge');
     if (isEmpty(badges)) {
       return () => {};
@@ -85,6 +85,7 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
             isMulti={isMulti}
             onSelect={(values) => {
               setIsOverflown(false);
+              onChange && onChange(values);
               setSelected(values);
             }}
             selected={selected}
@@ -113,7 +114,12 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
           {selected
             ? Array.isArray(selected)
               ? !isOverflown && (
-                  <MultiSelectValueBadge options={options} selected={selected} setSelected={setSelected} />
+                  <MultiSelectValueBadge
+                    options={options}
+                    selected={selected}
+                    setSelected={setSelected}
+                    onChange={onChange}
+                  />
                 )
               : selected?.label
             : ''}
@@ -124,7 +130,9 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
                 role="button"
                 onClick={(e) => {
                   setSelected([]);
+                  onChange && onChange([]);
                   e.preventDefault();
+                  e.stopPropagation();
                 }}
               >
                 <Remove fill="var(--slate12)" />
@@ -140,7 +148,7 @@ const DropDownSelect = ({ darkMode, disabled, options, isMulti, addBtnLabel, onA
   );
 };
 
-function MultiSelectValueBadge({ options, selected, setSelected }) {
+function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
   if (options?.length === selected?.length && selected?.length !== 0) {
     return (
       <Badge className={`me-1 dd-select-value-badge`} bg="secondary">
@@ -150,6 +158,7 @@ function MultiSelectValueBadge({ options, selected, setSelected }) {
           onClick={(e) => {
             setSelected([]);
             e.preventDefault();
+            e.stopPropagation();
           }}
         >
           <Remove fill="var(--slate12)" />
@@ -164,8 +173,12 @@ function MultiSelectValueBadge({ options, selected, setSelected }) {
       <span
         role="button"
         onClick={(e) => {
-          setSelected((selected) => selected.filter((opt) => opt.value !== option.value));
+          setSelected((selected) => {
+            onChange && onChange(selected.filter((opt) => opt.value !== option.value));
+            return selected.filter((opt) => opt.value !== option.value);
+          });
           e.preventDefault();
+          e.stopPropagation();
         }}
       >
         <Remove fill="var(--slate12)" />

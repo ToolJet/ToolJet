@@ -7,6 +7,7 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import Remove from '@/_ui/Icon/solidIcons/Remove';
 import set from 'lodash/set';
+import { clone, cloneDeep } from 'lodash';
 
 /**
  * {
@@ -56,7 +57,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   //   const [operator, setOperator] = useState();
   const conditionsList = data?.conditions?.conditionsList || [{}];
   const operator = data?.conditions?.operator;
-  const [rightFieldTable, setRightFieldTable] = useState(conditionsList?.[0]?.rightField?.table);
+  const rightFieldTable = conditionsList?.[0]?.rightField?.table;
 
   //   useEffect(() => {
   //     onChange &&
@@ -118,8 +119,15 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             options={tableList}
             darkMode={darkMode}
             onChange={(value) => {
-              value?.value && loadTableInformation(value?.value);
-              setRightFieldTable(value?.value);
+              const newData = { ...data };
+              const { conditionsList = [] } = newData?.conditions || {};
+              const newConditionsList = conditionsList.map((condition) => {
+                const newCondition = { ...condition };
+                set(newCondition, 'rightField.table', value?.value);
+                return newCondition;
+              });
+              set(newData, 'conditions.conditionsList', newConditionsList);
+              onChange(newData);
             }}
             value={tableList.find((val) => val?.value === rightFieldTable)}
           />
@@ -135,7 +143,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           index={index}
           groupOperator={operator}
           onOperatorChange={(value) => {
-            const newData = { ...data };
+            const newData = cloneDeep(data);
             set(newData, 'conditions.operator', value);
             onChange(newData);
           }}
@@ -146,13 +154,13 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               }
               return con;
             });
-            const newData = { ...data };
+            const newData = cloneDeep(data);
             set(newData, 'conditions.conditionsList', newConditionsList);
             onChange(newData);
           }}
           onRemove={() => {
             const newConditionsList = conditionsList.filter((cond, i) => i !== index);
-            const newData = { ...data };
+            const newData = cloneDeep(data);
             set(newData, 'conditions.conditionsList', newConditionsList);
             onChange(newData);
           }}
@@ -240,7 +248,12 @@ const JoinOn = ({
             onChange &&
               onChange({
                 ...condition,
-                leftField: { ...condition.leftField, columnName: value?.value, type: 'Column', table: leftFieldTable },
+                leftField: {
+                  ...condition.leftField,
+                  columnName: value?.value,
+                  type: 'Column',
+                  table: leftFieldTable,
+                },
               });
           }}
         />
