@@ -570,7 +570,7 @@ $border-radius: 4px;
     color: var(--slate11);
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #dee2e6 !important;
+    border-bottom: 1px solid var(--slate5) !important;
 
     span {
       padding: 6px 8px;
@@ -1309,12 +1309,20 @@ $border-radius: 4px;
 }
 
 .runps-editor {
+  .query-hinter {
+    border-radius: 6px !important;
+  }
 
   .CodeMirror.cm-s-monokai.CodeMirror-wrap,
   .cm-s-monokai .CodeMirror-gutters {
     background-color: var(--slate3) !important;
   }
+}
 
+.rest-api-tabpanes-body {
+  .query-hinter {
+    border-radius: 6px !important;
+  }
 }
 
 .CodeMirror.cm-s-monokai.CodeMirror-wrap {
@@ -1531,11 +1539,11 @@ $border-radius: 4px;
 
 .query-hinter {
   border: 1px solid var(--slate5);
+  border-radius: 0px 0px 6px 6px;
 
   .cm-s-base16-light.CodeMirror,
   .CodeMirror-scroll,
   .CodeMirror-gutters {
     background-color: var(--slate3) !important;
-    border-radius: 0px;
   }
 }

@@ -164,7 +164,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
           </div>
         </aside>
       </div>
-      <div style={{ paddingLeft: 56, paddingRight: 0 }} className="col">
+      <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
         <Header />
         <div style={{ paddingTop: 64 }}>{children}</div>
       </div>

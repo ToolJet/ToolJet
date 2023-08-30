@@ -91,7 +91,15 @@ const Preview = ({ darkMode }) => {
               </Col>
             </Row>
             <Row className="m-0">
-              <Tab.Content style={{ overflowWrap: 'anywhere', padding: 0, border: '1px solid var(--slate5)' }}>
+              <Tab.Content
+                style={{
+                  overflowWrap: 'anywhere',
+                  padding: 0,
+                  border: '1px solid var(--slate5)',
+                  borderBottomLeftRadius: '6px',
+                  borderBottomRightRadius: '6px',
+                }}
+              >
                 <Tab.Pane eventKey="json" transition={false}>
                   <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
                     <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
