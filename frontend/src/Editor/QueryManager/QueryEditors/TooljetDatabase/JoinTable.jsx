@@ -235,6 +235,7 @@ const RenderFilterSection = ({ darkMode }) => {
   // Fix all the Edge Cases
   // Have constants in a separate file
   // Edit the Codehinter UI
+  // While Executing Query - Emtpy Fields must be removed
 
   function handleWhereFilterChange(conditionsEdited) {
     joinTableOptionsChange('conditions', conditionsEdited);
@@ -345,7 +346,7 @@ const RenderFilterSection = ({ darkMode }) => {
     const tableDetails = {
       label: key,
       value: key,
-      options: value.map((columns) => ({ label: columns.Header, value: columns.Header })),
+      options: value.map((columns) => ({ label: columns.Header, value: columns.Header, table: key })),
     };
     return tableDetails;
   });
@@ -374,8 +375,14 @@ const RenderFilterSection = ({ darkMode }) => {
         </Col>
         <Col sm="4" className="p-0 border-end">
           <DropDownSelect
-            onChange={(newValue) => console.log('DropDownSelect --------------', newValue)}
-            // value
+            onChange={(newValue) =>
+              updateFilterConditionEntry('Column', index, {
+                table: newValue.table,
+                columnName: newValue.value,
+                isLeftSideCondition: true,
+              })
+            }
+            value={{ label: leftField?.columnName, value: leftField?.columnName, table: leftField?.table }}
             options={tableList}
             darkMode={darkMode}
           />
@@ -383,7 +390,7 @@ const RenderFilterSection = ({ darkMode }) => {
         <Col sm="1" className="p-0 border-end">
           <DropDownSelect
             onChange={(change) => updateFilterConditionEntry('Operator', index, { operator: change?.value })}
-            Value={operator}
+            value={operatorConstants.find((op) => op.value === operator)}
             options={operatorConstants}
             darkMode={darkMode}
           />
@@ -392,11 +399,11 @@ const RenderFilterSection = ({ darkMode }) => {
           <div className="flex-grow-1">
             <CodeHinter
               initialValue={
-                rightField.value
-                  ? typeof rightField.value === 'string'
-                    ? rightField.value
-                    : JSON.stringify(rightField.value)
-                  : rightField.value
+                rightField?.value
+                  ? typeof rightField?.value === 'string'
+                    ? rightField?.value
+                    : JSON.stringify(rightField?.value)
+                  : rightField?.value
               }
               className="codehinter-plugins"
               theme={darkMode ? 'monokai' : 'default'}
