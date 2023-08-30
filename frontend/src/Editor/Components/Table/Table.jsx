@@ -1567,27 +1567,31 @@ export function Table({
                 </SkeletonTheme>
               )}
               {!loadingState && showAddNewRowButton && (
-                <ButtonSolid
-                  variant="ghostBlack"
-                  className={`tj-text-xsm ${
-                    tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
-                  }`}
-                  customStyles={{ minWidth: '32px' }}
-                  leftIcon="plus"
-                  fill={`var(--slate12)`}
-                  iconWidth="16"
-                  onClick={() => {
-                    if (!tableDetails.addNewRowsDetails.addingNewRows) {
-                      showAddNewRowPopup();
-                    }
-                  }}
-                  size="md"
-                  data-tooltip-id="tooltip-for-add-new-row"
-                  data-tooltip-content="Add new row"
-                ></ButtonSolid>
+                <>
+                  <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
+                  <ButtonSolid
+                    variant="ghostBlack"
+                    className={`tj-text-xsm ${
+                      tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
+                    }`}
+                    customStyles={{ minWidth: '32px' }}
+                    leftIcon="plus"
+                    fill={`var(--slate12)`}
+                    iconWidth="16"
+                    onClick={() => {
+                      if (!tableDetails.addNewRowsDetails.addingNewRows) {
+                        showAddNewRowPopup();
+                      }
+                    }}
+                    size="md"
+                    data-tooltip-id="tooltip-for-add-new-row"
+                    data-tooltip-content="Add new row"
+                  ></ButtonSolid>
+                </>
               )}
               {!loadingState && showDownloadButton && (
                 <div>
+                  <Tooltip id="tooltip-for-download" className="tooltip" />
                   <OverlayTriggerComponent
                     trigger="click"
                     overlay={downlaodPopover()}
@@ -1616,28 +1620,33 @@ export function Table({
                 </div>
               )}
               {!loadingState && !hideColumnSelectorButton && (
-                <OverlayTriggerComponent
-                  trigger="click"
-                  rootClose={true}
-                  overlay={hideColumnsPopover()}
-                  placement={'top-end'}
-                >
-                  <ButtonSolid
-                    variant="ghostBlack"
-                    className={`tj-text-xsm `}
-                    customStyles={{ minWidth: '32px' }}
-                    leftIcon="eye1"
-                    fill={`var(--slate12)`}
-                    iconWidth="16"
-                    size="md"
-                    data-cy={`select-column-icon`}
-                    onClick={(e) => {
-                      if (document.activeElement === e.currentTarget) {
-                        e.currentTarget.blur();
-                      }
-                    }}
-                  ></ButtonSolid>
-                </OverlayTriggerComponent>
+                <>
+                  <Tooltip id="tooltip-for-manage-columns" className="tooltip" />
+                  <OverlayTriggerComponent
+                    trigger="click"
+                    rootClose={true}
+                    overlay={hideColumnsPopover()}
+                    placement={'top-end'}
+                  >
+                    <ButtonSolid
+                      variant="ghostBlack"
+                      className={`tj-text-xsm `}
+                      customStyles={{ minWidth: '32px' }}
+                      leftIcon="eye1"
+                      fill={`var(--slate12)`}
+                      iconWidth="16"
+                      size="md"
+                      data-cy={`select-column-icon`}
+                      onClick={(e) => {
+                        if (document.activeElement === e.currentTarget) {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      data-tooltip-id="tooltip-for-manage-columns"
+                      data-tooltip-content="Manage columns"
+                    ></ButtonSolid>
+                  </OverlayTriggerComponent>
+                </>
               )}
             </div>
           </div>
