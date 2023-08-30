@@ -159,6 +159,10 @@
 }
 
 .debugger {
+  .leftsidebar-panel-header {
+    border-bottom: none;
+  }
+
   .text-slate-12 {
     color: var(--slate12);
     font-weight: 500;
