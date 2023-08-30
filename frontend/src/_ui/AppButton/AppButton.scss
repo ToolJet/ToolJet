@@ -64,15 +64,15 @@
 .tj-primary-btn {
     border-radius: 6px;
     border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
-    background: var(--indigo9);
+    background: #3E63DD ;
     box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.04);
-    color: var(--indigo1);
+    color: #FDFDFE;
     &:hover {
         border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
-        background: var(--indigo8);
+        background: #8DA4EF;
         svg{
             path{
-                fill: var(--indigo1) !important;
+                fill: #FDFDFE !important;
             }
         }
     }
@@ -80,10 +80,10 @@
     &:focus-visible {
         border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
         outline: none;
-        background: var(--indigo10);
+        background: #3A5CCC;
         svg{
             path{
-                fill: var(--indigo1) !important;
+                fill:#FDFDFE !important;
             }
         }
 
@@ -91,13 +91,13 @@
 
 
     &:active {
-        background: var(--slate1, #FBFCFD);
+        background: var(--slate1);
         border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
         box-shadow: 0px 0px 0px 4px #C6D4F9;
-        color: var(--indigo9);
+        color: #3E63DD !important;
         svg{
             path{
-                fill:var(--indigo9) !important;
+                fill:#3E63DD!important;
             }
         }
     }

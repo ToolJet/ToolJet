@@ -1499,7 +1499,7 @@ export function Table({
                       isLoading={tableDetails.isSavingChanges ? true : false}
                       customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
                       leftIcon={width > 650 ? '' : 'save'}
-                      fill={'var(--indigo1)'}
+                      fill="#FDFDFE"
                       iconWidth="16"
                     >
                       {width > 650 ? <span>Save changes</span> : ''}
