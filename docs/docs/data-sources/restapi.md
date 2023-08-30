@@ -11,7 +11,7 @@ To establish a connection with the REST API global datasource, you can either cl
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/restapi2.gif" alt="ToolJet - Data source - REST API" />
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/restconnect.gif" alt="ToolJet - Data source - REST API" />
 
 </div>
 
@@ -23,6 +23,9 @@ To establish a connection with the REST API global datasource, you can either cl
   - **Basic**: Requires Username and Password
   - **Bearer**: Requires a token, typically a JSON Web Token (JWT), to grant access
   - **OAuth 2.0**: The OAuth 2.0 protocol mandates the provision of the following parameters: access token URL, access token URL custom headers, client ID, client secret, scopes, custom query parameters, authorization URL, custom authentication parameters, and client authentication.
+- __SSL Certificate__: SSL certificate to use with REST API requests. Supported Types: None, CA Certificate, and Client Certificate
+  - **CA Certificate**: Requires a CA certificate to verify the server certificate
+  - **Client Certificate**: Requires a client certificate to authenticate with the server
 
 <div style={{textAlign: 'center'}}>
 
@@ -36,7 +39,7 @@ REST HTTP methods that are supported are **GET, POST, PUT, PATCH & DELETE**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/methods.png" alt="ToolJet - Data source - REST API" />
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/restquery.png" alt="ToolJet - Data source - REST API" />
 
 </div>
 
@@ -49,8 +52,7 @@ Once you have connected to the REST API datasource, follow these steps to write 
 2. Click the `+Add` button to open the list of available `local` and `global datasources`.
 3. Select **REST API** from the global datasource section.
 4. Enter the required query parameters.
-5. Save the query.
-6. Click `Preview` to view the data returned from the query or click `Run` to execute the query.
+5. Click `Preview` to view the data returned from the query or click `Run` to execute the query.
 
 :::tip
 Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/tutorial/transformations)**.
