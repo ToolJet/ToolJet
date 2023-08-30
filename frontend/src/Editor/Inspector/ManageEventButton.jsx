@@ -96,7 +96,7 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
                         }}
                         // data-cy={'page-menu'}
                       >
-                        <MoreVertical fill={'#11181C'} width={'20'} />
+                        <MoreVertical fill={'var(--slate12)'} width={'20'} />
                       </ButtonSolid>
                     )}
                   </span>
