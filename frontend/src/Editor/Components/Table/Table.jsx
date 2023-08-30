@@ -1315,8 +1315,8 @@ export function Table({
                             _.get(tableDetails.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
                             undefined
                           ) {
-                            cellProps.style.backgroundColor = darkMode ? '#391A03' : '#FFF1E7';
-                            cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#391A03' : '#FFF1E7';
+                            cellProps.style.backgroundColor = 'var(--orange3)';
+                            cellProps.style['--tblr-table-accent-bg'] = 'var(--orange3)';
                           }
                         }
                       }
