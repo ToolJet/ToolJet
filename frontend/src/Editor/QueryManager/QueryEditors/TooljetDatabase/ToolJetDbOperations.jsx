@@ -12,6 +12,7 @@ import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { JoinTable } from './JoinTable';
+import clone from 'lodash/clone';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
@@ -51,6 +52,16 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const newJoinOptions = clone(joinOptions);
+    if (newJoinOptions?.[0]) {
+      newJoinOptions[0].table = selectedTable;
+    } else {
+      newJoinOptions[0] = { table: selectedTable };
+    }
+    setJoinOptions(newJoinOptions);
+  }, [selectedTable]);
 
   useEffect(() => {
     const tableSet = new Set();

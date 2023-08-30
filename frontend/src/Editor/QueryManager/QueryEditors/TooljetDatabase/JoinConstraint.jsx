@@ -7,7 +7,7 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import Remove from '@/_ui/Icon/solidIcons/Remove';
 import set from 'lodash/set';
-import { clone, cloneDeep } from 'lodash';
+import { clone, cloneDeep, isEmpty } from 'lodash';
 
 /**
  * {
@@ -55,7 +55,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const joinType = data?.joinType;
   //   const [conditionsList, setConditionsList] = useState([{}]);
   //   const [operator, setOperator] = useState();
-  const conditionsList = data?.conditions?.conditionsList || [{}];
+  const conditionsList = isEmpty(data?.conditions?.conditionsList) ? [{}] : data?.conditions?.conditionsList;
   const operator = data?.conditions?.operator;
   const rightFieldTable = conditionsList?.[0]?.rightField?.table;
 
