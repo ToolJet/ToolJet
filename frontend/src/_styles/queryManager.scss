@@ -1317,6 +1317,15 @@ $border-radius: 4px;
   }
 }
 
+.runps-editor {
+
+  .CodeMirror.cm-s-monokai.CodeMirror-wrap,
+  .cm-s-monokai .CodeMirror-gutters {
+    background-color: var(--slate3) !important;
+  }
+
+}
+
 .CodeMirror.cm-s-monokai.CodeMirror-wrap {
   background-color: transparent !important;
 
