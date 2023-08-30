@@ -1,5 +1,6 @@
 import { create, zustandDevTools } from './utils';
 import { datasourceService, globalDatasourceService } from '@/_services';
+import { shallow } from 'zustand/shallow';
 
 const initialState = {
   dataSources: [],
@@ -53,4 +54,4 @@ export const useDataSources = () => useDataSourcesStore((state) => state.dataSou
 export const useGlobalDataSources = () => useDataSourcesStore((state) => state.globalDataSources);
 export const useLoadingDataSources = () => useDataSourcesStore((state) => state.loadingDataSources);
 export const useDataSourcesActions = () => useDataSourcesStore((state) => state.actions);
-export const useGlobalDataSourcesStatus = () => useDataSourcesStore((state) => state.globalDataSourceStatus);
+export const useGlobalDataSourcesStatus = () => useDataSourcesStore((state) => state.globalDataSourceStatus, shallow);

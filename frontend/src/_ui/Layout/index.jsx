@@ -10,10 +10,10 @@ import { authenticationService, licenseService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { LicenseTooltip } from '@/LicenseTooltip';
-import Beta from '../Beta';
-import './styles.scss';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
+import Beta from '../Beta';
+import './styles.scss';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
@@ -65,7 +65,16 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const admin = currentUserValue?.admin;
   const super_admin = currentUserValue?.super_admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
-  const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
+  const { isExpired, isLicenseValid } = licenseService.licenseTermsValue;
+  const hasCommonPermissions =
+    canReadDataSource() ||
+    canUpdateDataSource() ||
+    canCreateDataSource() ||
+    canDeleteDataSource() ||
+    admin ||
+    super_admin;
+  const licenseValid = !isExpired && isLicenseValid;
+  const isAuthorizedForGDS = (hasCommonPermissions && licenseValid) || (!licenseValid && (admin || super_admin));
 
   const {
     checkForUnsavedChanges,
@@ -75,6 +84,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
     unSavedModalVisible,
     nextRoute,
   } = useGlobalDatasourceUnsavedChanges();
+  const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
 
   return (
     <div className="row m-auto">
@@ -178,12 +188,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 )}
 
                 {/* DATASOURCES */}
-                {(canReadDataSource() ||
-                  canUpdateDataSource() ||
-                  canCreateDataSource() ||
-                  canDeleteDataSource() ||
-                  admin ||
-                  super_admin) && (
+                {isAuthorizedForGDS && (
                   <li className="text-center cursor-pointer">
                     <ToolTip message="Data Sources" placement="right">
                       <Link
@@ -259,6 +264,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                           router.pathname === '/instance-settings' && `current-seleted-route`
                         }`}
                         data-cy="icon-instance-settings"
+                        onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
                       >
                         <SolidIcon
                           name="instancesettings"
@@ -282,6 +288,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                           featureAccess?.licenseStatus?.isLicenseValid &&
                           getPrivateRoute('audit_logs')
                         }
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('audit_logs'), event)}
                         className={`tj-leftsidebar-icon-items ${
                           router.pathname === getPrivateRoute('audit_logs') && `current-seleted-route`
                         }`}

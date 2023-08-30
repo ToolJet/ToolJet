@@ -240,7 +240,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
   return (
     <div className="left-sidebar-local-datasources-wrapper">
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Datasources">
+        <HeaderSection.PanelHeader title="Data sources">
           <div className="d-flex justify-content-end">
             <Button
               title={`${pinned ? 'Unpin' : 'Pin'}`}

@@ -16,6 +16,8 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { EncryptionService } from './encryption.service';
 import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { decode } from 'js-base64';
 
 @Injectable()
@@ -26,6 +28,7 @@ export class DataSourcesService {
     private encryptionService: EncryptionService,
     private appEnvironmentService: AppEnvironmentService,
     private usersService: UsersService,
+    private licenseService: LicenseService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
   ) {}
@@ -37,6 +40,7 @@ export class DataSourcesService {
     const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
     const groupPermissions = await this.usersService.groupPermissions(user);
     const canPerformCreateOrDelete = groupPermissions?.some((gp) => gp['dataSourceCreate'] || gp['dataSourceDelete']);
+    const { isExpired, isLicenseValid } = await this.licenseService.getLicenseTerms(LICENSE_FIELD.STATUS);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
@@ -52,7 +56,7 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
 
       if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
-        if (!canPerformCreateOrDelete) {
+        if (!canPerformCreateOrDelete && !isExpired && isLicenseValid) {
           query
             .innerJoin('data_source.groupPermissions', 'group_permissions')
             .innerJoin(

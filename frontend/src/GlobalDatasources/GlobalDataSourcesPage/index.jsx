@@ -44,6 +44,8 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     fetchDataSourceByEnvironment,
     activeDatasourceList,
     setActiveDatasourceList,
+    canCreateDataSource,
+    canUpdateDataSource,
     isLoading,
   } = useContext(GlobalDataSourcesContext);
 
@@ -93,7 +95,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   };
 
   const dataSourcesChanged = (resetSelection, dataSource) => {
-    setCurrentEnvironment(environments[0]);
     fetchDataSources(resetSelection, dataSource);
   };
 
@@ -374,6 +375,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             container={selectedDataSource ? containerRef?.current : null}
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
+            showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id)}
           />
         )}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}

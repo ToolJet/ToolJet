@@ -18,8 +18,10 @@ import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '..
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
+import { canUpdateDataSource } from '@/_helpers';
 
 const DynamicForm = ({
   schema,
@@ -43,7 +45,6 @@ const DynamicForm = ({
   const isHorizontalLayout = layout === 'horizontal';
   const currentState = useCurrentState();
 
-  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
   const { isEditorActive } = useEditorStore(
     (state) => ({
@@ -52,6 +53,10 @@ const DynamicForm = ({
     shallow
   );
 
+  const globalDataSourcesStatus = useGlobalDataSourcesStatus();
+  const { isEditing: isDataSourceEditing } = globalDataSourcesStatus;
+
+  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
@@ -112,18 +117,31 @@ const DynamicForm = ({
       Object.keys(fields).length > 0 &&
         Object.keys(fields).map((key) => {
           const { type, encrypted } = fields[key];
-          if ((type === 'password' || encrypted) && !(key in computedProps)) {
-            //Editable encrypted fields only if datasource doesn't exists
+          if (!canUpdateDataSource(selectedDataSource?.id)) {
             encrpytedFieldsProps[key] = {
-              disabled: !!selectedDataSource?.id,
+              disabled: true,
             };
+          } else if (!isDataSourceEditing) {
+            if (type === 'password' || encrypted) {
+              //Editable encrypted fields only if datasource doesn't exists
+              encrpytedFieldsProps[key] = {
+                disabled: true,
+              };
+            }
+          } else {
+            if ((type === 'password' || encrypted) && !(key in computedProps)) {
+              //Editable encrypted fields only if datasource doesn't exists
+              encrpytedFieldsProps[key] = {
+                disabled: !!selectedDataSource?.id,
+              };
+            }
           }
         });
       setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options]);
+  }, [options, isDataSourceEditing]);
 
   const getElement = (type) => {
     switch (type) {
@@ -224,6 +242,7 @@ const DynamicForm = ({
           useMenuPortal: disableMenuPortal ? false : queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
         };
 
       case 'checkbox-group':
@@ -419,6 +438,7 @@ const DynamicForm = ({
                         variant="tertiary"
                         target="_blank"
                         rel="noreferrer"
+                        disabled={!canUpdateDataSource()}
                         onClick={(event) => handleEncryptedFieldsToggle(event, key)}
                       >
                         {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}

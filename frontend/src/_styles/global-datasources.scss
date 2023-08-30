@@ -61,6 +61,10 @@
     }
 }
 
+.two-rows-grid {
+    grid-template-rows: 1fr auto;
+}
+
 .main-empty-container {
     display: flex;
     flex-direction: column;

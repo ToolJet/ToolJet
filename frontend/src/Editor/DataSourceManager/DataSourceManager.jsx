@@ -15,7 +15,7 @@ import {
 } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
-import { capitalize, isEmpty } from 'lodash';
+import { capitalize, isEmpty, isEqual } from 'lodash';
 import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
@@ -27,6 +27,7 @@ import { ConfirmDialog } from '@/_components';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
+import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -72,6 +73,7 @@ class DataSourceManagerComponent extends React.Component {
       createdDataSource: null,
       unsavedChangesModal: false,
       datasourceName,
+      showSaveBtn: props.showSaveBtn,
     };
   }
 
@@ -100,6 +102,7 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
         connectionTestError: null,
         datasourceName: this.props.selectedDataSource?.name,
+        showSaveBtn: this.props?.showSaveBtn,
       });
     }
   }
@@ -144,7 +147,6 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   onExit = () => {
-    !this.state.selectedDataSource?.id && this.props.environmentChanged(returnDevelopmentEnv(this.props.environments));
     this.setState({
       dataSourceMeta: {},
       selectedDataSource: null,
@@ -229,7 +231,6 @@ class DataSourceManagerComponent extends React.Component {
           .then(() => {
             this.props.updateSelectedDatasource && this.props.updateSelectedDatasource(selectedDataSource.name);
             this.setState({ isSaving: false });
-            this.hideModal(selectedDataSource);
             toast.success(
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Data Source Saved'),
               { position: 'top-center' }
@@ -237,13 +238,11 @@ class DataSourceManagerComponent extends React.Component {
             this.props.dataSourcesChanged(false, selectedDataSource);
             this.props.globalDataSourcesChanged && this.props.globalDataSourcesChanged();
             this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: false });
-            this.resetDataSourceConfirmModal();
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false });
             this.hideModal(selectedDataSource);
             error && toast.error(error, { position: 'top-center' });
-            this.resetDataSourceConfirmModal();
             this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: false });
           });
       } else {
@@ -698,11 +697,14 @@ class DataSourceManagerComponent extends React.Component {
           {this.props?.environments.map((env) => (
             <a
               key={env?.id}
-              onClick={() => {
-                !selectedDataSource?.id && this.resetOptions();
-                this.props.environmentChanged(env, selectedDataSource?.id);
-              }}
+              onClick={() =>
+                this.props.handleActions(() => {
+                  !selectedDataSource?.id && this.resetOptions();
+                  this.props.environmentChanged(env, selectedDataSource?.id);
+                })
+              }
               className={cx('nav-item nav-link', { active: this.props.currentEnvironment?.name === env.name })}
+              data-cy={`${env.name}-label`}
             >
               {capitalize(env.name)}
             </a>
@@ -725,6 +727,7 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceConfirmModalProps,
       addingDataSource,
       datasourceName,
+      showSaveBtn,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
     const createSelectedDataSource = (dataSource) => {
@@ -888,19 +891,21 @@ class DataSourceManagerComponent extends React.Component {
                   environmentId={this.props.currentEnvironment?.id}
                 />
               </div>
-              <div className="col-auto" data-cy="db-connection-save-button">
-                <ButtonSolid
-                  className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                  isLoading={isSaving}
-                  disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
-                  variant="primary"
-                  onClick={this.createDataSource}
-                  leftIcon="floppydisk"
-                  fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
-                >
-                  {this.props.t('globals.save', 'Save')}
-                </ButtonSolid>
-              </div>
+              {showSaveBtn && (
+                <div className="col-auto" data-cy="db-connection-save-button">
+                  <ButtonSolid
+                    className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
+                    isLoading={isSaving}
+                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                    variant="primary"
+                    onClick={this.createDataSource}
+                    leftIcon="floppydisk"
+                    fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
+                  >
+                    {this.props.t('globals.save', 'Save')}
+                  </ButtonSolid>
+                </div>
+              )}
             </Modal.Footer>
           )}
 
@@ -1139,7 +1144,9 @@ const withStore = (Component) => (props) => {
     shallow
   );
 
-  return <Component {...props} setGlobalDataSourceStatus={setGlobalDataSourceStatus} />;
+  const { handleActions } = useGlobalDatasourceUnsavedChanges();
+
+  return <Component {...props} setGlobalDataSourceStatus={setGlobalDataSourceStatus} handleActions={handleActions} />;
 };
 
 export const DataSourceManager = withTranslation()(withRouter(withStore(DataSourceManagerComponent)));
