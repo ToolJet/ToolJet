@@ -635,7 +635,7 @@ $border-radius: 4px;
     display: flex;
     align-items: center;
     border-bottom: 1px solid #dee2e6 !important;
-
+    border-radius : unset !important;
     span {
       padding: 6px 8px;
     }
