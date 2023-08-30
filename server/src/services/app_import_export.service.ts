@@ -323,6 +323,14 @@ export class AppImportExportService {
       );
       appResourceMappings.appEnvironmentMapping = appEnvironmentMapping;
 
+      const { defaultDataSourceIdMapping } = await this.createDefaultDatasourcesForAppVersion(
+        manager,
+        importingAppVersion,
+        user,
+        appResourceMappings
+      );
+      appResourceMappings.defaultDataSourceIdMapping = defaultDataSourceIdMapping;
+
       const importingDataSourcesForAppVersion = await this.rejectMarketplacePluginsNotInstalled(
         manager,
         importingDataSources
@@ -331,14 +339,6 @@ export class AppImportExportService {
       const importingDataQueriesForAppVersion = importingDataQueries.filter(
         (dq: { dataSourceId: string; appVersionId: string }) => dq.appVersionId === importingAppVersion.id
       );
-
-      const { defaultDataSourceIdMapping } = await this.createDefaultDatasourcesForAppVersion(
-        manager,
-        importingAppVersion,
-        user,
-        appResourceMappings
-      );
-      appResourceMappings.defaultDataSourceIdMapping = defaultDataSourceIdMapping;
 
       // associate data sources and queries for each of the app versions
       for (const importingDataSource of importingDataSourcesForAppVersion) {
@@ -374,16 +374,19 @@ export class AppImportExportService {
           );
         }
 
-        await this.createDataSourceOptionsForExistingAppEnvs(
-          manager,
-          importingAppVersion,
-          dataSourceForAppVersion,
-          importingDataSourceOptions,
-          importingDataSource,
-          importingAppEnvironments,
-          appResourceMappings,
-          importingDefaultAppEnvironmentId
-        );
+        const isDefaultDatasource = DefaultDataSourceKinds.includes(importingDataSource.kind as DefaultDataSourceKind);
+        if (!isDefaultDatasource) {
+          await this.createDataSourceOptionsForExistingAppEnvs(
+            manager,
+            importingAppVersion,
+            dataSourceForAppVersion,
+            importingDataSourceOptions,
+            importingDataSource,
+            importingAppEnvironments,
+            appResourceMappings,
+            importingDefaultAppEnvironmentId
+          );
+        }
 
         const { dataQueryMapping } = await this.createDataQueriesForAppVersion(
           manager,
