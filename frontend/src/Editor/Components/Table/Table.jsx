@@ -980,7 +980,9 @@ export function Table({
     >
       {(displaySearchBox || showFilterButton) && (
         <div
-          className="table-card-header d-flex justify-content-between align-items-center"
+          className={`table-card-header d-flex justify-content-between align-items-center ${
+            (tableDetails.addNewRowsDetails.addingNewRows || tableDetails.filterDetails.filtersVisible) && 'disabled'
+          }`}
           style={{ padding: '12px', height: 56 }}
         >
           <div>
@@ -1474,6 +1476,8 @@ export function Table({
         <div
           className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
             darkMode && 'dark-theme'
+          } ${
+            (tableDetails.addNewRowsDetails.addingNewRows || tableDetails.filterDetails.filtersVisible) && 'disabled'
           }`}
         >
           <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
