@@ -195,7 +195,7 @@ class ManageAppUsersComponent extends React.Component {
                     <span className="input-group-text" data-cy="app-link">
                       {appLink}
                     </span>
-                    <div className="input-with-icon">
+                    <div className="input-with-icon app-name-slug-input">
                       <input
                         type="text"
                         className={`form-control  color-slate12  ${slugButtonClass}`}

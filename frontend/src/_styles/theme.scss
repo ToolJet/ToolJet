@@ -10895,6 +10895,20 @@ tbody {
 
 .shareable-link {
   .input-group {
+    .input-group-text {
+      border-color: var(--slate7);
+      color: var(--slate12);
+      background-color: var(--base);
+    }
+
+    .app-name-slug-input {
+      input {
+        border-color: var(--grass9);
+      }
+    }
+  }
+
+  .input-group {
     display: flex;
     align-items: center;
 
