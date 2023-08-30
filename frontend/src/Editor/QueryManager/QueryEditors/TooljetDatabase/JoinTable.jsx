@@ -21,7 +21,14 @@ export const JoinTable = React.memo(({ darkMode }) => {
 });
 
 const SelectTableMenu = ({ darkMode }) => {
-  const { selectedTable, tables, joinOptions, setJoinOptions: setJoins } = useContext(TooljetDatabaseContext);
+  const {
+    selectedTable,
+    tables,
+    joinOptions,
+    setJoinOptions: setJoins,
+    joinTableOptions,
+    joinTableOptionsChange,
+  } = useContext(TooljetDatabaseContext);
 
   const joins = clone(joinOptions);
   const tableList = tables.map((t) => ({ label: t, value: t }));
@@ -88,6 +95,11 @@ const SelectTableMenu = ({ darkMode }) => {
             theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
             placeholder="Enter limit"
+            type="code"
+            initialValue={joinTableOptions?.limit ?? ''}
+            onChange={(value) => {
+              joinTableOptionsChange('limit', value);
+            }}
           />
         </div>
       </div>
@@ -110,7 +122,7 @@ const RenderFilterSection = ({ darkMode }) => {
 
   // Re-populate the Saved Query *
   // Fix all the Edge Cases
-  // Have constants in a separate file
+  // Have constants in a separate file - utils in tooljetDB
   // Edit the Codehinter UI
   // V-important: While Executing Query - Emtpy Fields must be removed *
   // Limit Section

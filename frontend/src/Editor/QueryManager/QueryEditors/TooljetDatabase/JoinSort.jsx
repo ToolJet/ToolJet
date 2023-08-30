@@ -30,6 +30,7 @@ export default function JoinSort({ darkMode }) {
         <Row className="mb-2">
           <div
             style={{
+              height: '30px',
               border: '1px dashed var(--slate-08, #C1C8CD)',
             }}
             className="px-4 py-2 text-center rounded-1"
