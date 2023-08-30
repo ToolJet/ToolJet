@@ -1,8 +1,8 @@
 {
   "name": "S3 File Explorer",
-  "description": "Display the list of all the buckets in your aws s3 and user can perform operations like reading, downloading, and uploading files to the selected bucket.",
+  "description": "This app template facilitates the comprehensive display of all AWS S3 buckets associated with your account. Users gain the ability to execute various actions, including reading and uploading files, within the selected bucket.",
   "widgets": ["Table", "File Picker"],
-  "sources": [{"name": "AWS S3", "id": "s3"}],
+  "sources": [{ "name": "AWS S3", "id": "s3" }],
   "id": "s3-file-explorer",
   "category": "product-management"
 }

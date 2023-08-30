@@ -7,10 +7,12 @@ const categoryTitles = {
   'product-management': 'Product management',
   operations: 'Operations',
   'data-and-analytics': 'Data and Analytics',
+  'supply-chain-management': 'Supply Chain Management',
 };
 
 export default function Categories(props) {
   const { categories, selectedCategory, selectCategory } = props;
+  console.log('test');
   return (
     <div className="mt-2 template-categories">
       {categories.map((category) => (
