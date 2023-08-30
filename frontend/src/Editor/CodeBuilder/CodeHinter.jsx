@@ -293,19 +293,7 @@ export function CodeHinter({
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
-        {paramLabel === 'Type' && (
-          <div
-            className="field-type-vertical-line"
-            // style={{
-            //   position: 'relative',
-            //   width: '0',
-            //   height: '2rem',
-            //   borderLeft: '1px solid #E6E8EB',
-            //   content: '',
-            //   marginRight: '-2.75rem',
-            // }}
-          ></div>
-        )}
+        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip

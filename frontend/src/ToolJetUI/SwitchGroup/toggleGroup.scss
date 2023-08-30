@@ -18,7 +18,6 @@
   justify-content: center;
   padding: 2px 6px;
   border-radius: 6px;
-
 }
 .ToggleGroupItem:first-child {
   margin-left: 0;
@@ -32,7 +31,7 @@
 .ToggleGroupItem[data-state='on'] {
   padding: 2px 2px;
   .toggle-item {
-    background-color: white;
+    background-color: var(--slate1);
     color: var(--indigo9);
     border-radius: 6px;
     padding: 4px;

@@ -5,17 +5,19 @@ import './tabs.scss';
 
 const Tabs = ({ darkMode, defaultActiveKey, id, className, children, ...restProps }) => {
   return (
-    <BootstrapTabs
-      defaultActiveKey={defaultActiveKey}
-      id={id}
-      className={cx(className, {
-        'theme-dark dark-theme': darkMode,
-      })}
-      justify
-      {...restProps}
-    >
-      {children}
-    </BootstrapTabs>
+    <div className="tj-tabs">
+      <BootstrapTabs
+        defaultActiveKey={defaultActiveKey}
+        id={id}
+        className={cx(className, {
+          'theme-dark dark-theme': darkMode,
+        })}
+        justify
+        {...restProps}
+      >
+        {children}
+      </BootstrapTabs>
+    </div>
   );
 };
 

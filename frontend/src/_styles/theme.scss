@@ -543,11 +543,6 @@ button {
     background-clip: border-box;
     height: 100vh;
 
-    .nav-tabs .nav-link {
-      color: #3e525b;
-      border-top-left-radius: 0px;
-      border-top-right-radius: 0px;
-    }
 
     .inspector {
       // .inspector-add-button {
@@ -3348,10 +3343,6 @@ input:focus-visible {
 
   .form-check-label {
     color: white;
-  }
-
-  .nav-tabs .nav-link.active {
-    color: #ffffff !important;
   }
 
   .nav-tabs .nav-link {
