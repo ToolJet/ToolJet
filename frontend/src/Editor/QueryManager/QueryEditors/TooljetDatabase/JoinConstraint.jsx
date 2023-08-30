@@ -120,7 +120,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             darkMode={darkMode}
             onChange={(value) => {
               const newData = { ...data };
-              const { conditionsList } = newData?.conditions || {};
+              const { conditionsList = [] } = newData?.conditions || {};
               const newConditionsList = conditionsList.map((condition) => {
                 const newCondition = { ...condition };
                 set(newCondition, 'rightField.table', value?.value);
