@@ -13,6 +13,7 @@ import { Col, Container, Row } from 'react-bootstrap';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { Tooltip } from 'react-tooltip';
+import { authenticationService } from '@/_services';
 
 function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalDataSources }) {
   const allUserDefinedSources = [...dataSources, ...globalDataSources];
@@ -21,6 +22,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
   const navigate = useNavigate();
   const { createDataQuery } = useDataQueriesActions();
   const { setPreviewData } = useQueryPanelActions();
+  const { admin } = authenticationService.currentSessionValue;
 
   const handleChangeDataSource = (source) => {
     createDataQuery(source);
@@ -42,7 +44,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
 
   const handleAddClick = () => {
     const workspaceId = getWorkspaceId();
-    navigate(`/${workspaceId}/global-datasources`);
+    navigate(`/${workspaceId}/data-sources`);
   };
 
   return (
@@ -83,15 +85,17 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
           <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
             {`Available Datasources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
-          <ButtonSolid
-            size="sm"
-            variant="ghostBlue"
-            onClick={handleAddClick}
-            data-cy={`landing-page-add-new-ds-button`}
-          >
-            <Plus style={{ height: '16px' }} fill="var(--indigo9)" />
-            Add new
-          </ButtonSolid>
+          {admin && (
+            <ButtonSolid
+              size="sm"
+              variant="ghostBlue"
+              onClick={handleAddClick}
+              data-cy={`landing-page-add-new-ds-button`}
+            >
+              <Plus style={{ height: '16px' }} fill="var(--indigo9)" />
+              Add new
+            </ButtonSolid>
+          )}
         </div>
         {isEmpty(allUserDefinedSources) ? (
           <EmptyDataSourceBanner />
