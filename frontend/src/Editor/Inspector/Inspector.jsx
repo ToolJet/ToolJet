@@ -379,10 +379,10 @@ export const Inspector = ({
         <div className="row inspector-component-title-input-holder">
           <div className="col-1" onClick={() => switchSidebarTab(2)}>
             <span data-cy={`inspector-close-icon`} className="cursor-pointer">
-              <ArrowLeft fill={'#11181C'} width={'14'} />
+              <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
-          <div className={`col-10 p-0 ${isVersionReleased && 'disabled'}`}>
+          <div className={`col-9 p-0 ${isVersionReleased && 'disabled'}`}>
             <div className="input-icon" style={{ marginLeft: '8px' }}>
               <input
                 onChange={(e) => setNewComponentName(e.target.value)}
@@ -395,7 +395,7 @@ export const Inspector = ({
               />
             </div>
           </div>
-          <div className="col-1">
+          <div className="col-2">
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -428,7 +428,7 @@ export const Inspector = ({
               }
             >
               <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'#11181C'} />
+                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
               </span>
             </OverlayTrigger>
           </div>

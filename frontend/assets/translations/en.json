@@ -205,7 +205,7 @@
                 "table": "Table",
                 "pageIndex": "Page index",
                 "component": "Component",
-                "addHandler": "Add handler",
+                "addHandler": "New event handler",
                 "addEventHandler": "+ Add event handler",
                 "emptyMessage": "This {{componentName}} doesn't have any event handlers",
                 "page": "Page"

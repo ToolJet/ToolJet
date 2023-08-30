@@ -131,7 +131,9 @@ function ListItem({
                   }}
                   // data-cy={'page-menu'}
                 >
-                  <MoreVertical fill={'#11181C'} width={'20'} />
+                  <span>
+                    <MoreVertical fill={'var(--slate12)'} width={'20'} />
+                  </span>
                 </ButtonSolid>
               </span>
             </OverlayTrigger>

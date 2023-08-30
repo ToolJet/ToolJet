@@ -295,14 +295,15 @@ export function CodeHinter({
       <div className={cx('d-flex align-items-center justify-content-between')}>
         {paramLabel === 'Type' && (
           <div
-            style={{
-              position: 'relative',
-              width: '0',
-              height: '2rem',
-              borderLeft: '1px solid #E6E8EB',
-              content: '',
-              marginRight: '-2.75rem',
-            }}
+            className="field-type-vertical-line"
+            // style={{
+            //   position: 'relative',
+            //   width: '0',
+            //   height: '2rem',
+            //   borderLeft: '1px solid #E6E8EB',
+            //   content: '',
+            //   marginRight: '-2.75rem',
+            // }}
           ></div>
         )}
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (

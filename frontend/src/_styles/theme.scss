@@ -1454,6 +1454,15 @@ button {
   .accordion {
     margin-bottom: 45px !important;
   }
+  .field-type-vertical-line {
+    position: relative;
+    width: 0;
+    height:2rem;
+    border-left: 1px solid var(--slate5);
+    content: '';
+    margin-right: -2.75rem;
+
+  }
 
   .code-hinter-vertical-line {
     position: relative;
@@ -1465,6 +1474,13 @@ button {
 
   .code-hinter-wrapper {
     min-width: 0;
+  }
+
+  .inspector-field-number {
+    background-color: var(--slate1);
+    border: none;
+    color: var(--slate12);
+    width: 8.063rem, //129px
   }
 }
 
