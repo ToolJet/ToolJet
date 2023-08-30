@@ -310,7 +310,7 @@ export function CodeHinter({
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`form-label ${!codeShow && 'mb-0'} ${darkMode && 'color-whitish-darkmode'}`}
+              labelClass={`tj-text-xsm color-slate12 ${!codeShow && 'mb-0'} ${darkMode && 'color-whitish-darkmode'}`}
             />
           </div>
         )}
