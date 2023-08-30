@@ -1157,7 +1157,6 @@ export function Table({
                                   };
                                 }
                                 const isEditable = resolveReferences(column?.isEditable ?? false, currentState);
-                                console.log('kavin', { column });
                                 return (
                                   <th
                                     key={index}
