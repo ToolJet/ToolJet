@@ -231,8 +231,8 @@ export class TooljetDbService {
   private async buildJoinQuery(organizationId: string, queryJson) {
     // Pending: For Subquery, Alias is its table name. Need to handle it on Internal Table details mapping
     // Pending: SELECT Statement - Nested params --> SUM( price * quantity )
-
-    if (!queryJson.tables.length) throw new BadRequestException('TableList is N/A');
+    if (!Object.keys(queryJson).length) throw new BadRequestException('Input is N/A');
+    if (!queryJson?.tables?.length) throw new BadRequestException('TableList is N/A');
 
     const tableList = queryJson.tables
       .filter((table) => table.type === 'Table')
@@ -312,7 +312,7 @@ export class TooljetDbService {
   }
 
   private constructWhereStatement(whereStatementConditions, internalTableNametoIdMap) {
-    const { operator, conditionsList } = whereStatementConditions;
+    const { operator = 'AND', conditionsList } = whereStatementConditions;
     const whereConditionOutput = conditionsList
       .map((condition) => {
         // @description: Recursive call to build - Sub-condition

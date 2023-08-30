@@ -18,6 +18,8 @@ async function perform(queryOptions, organizationId, currentState) {
       return updateRows(queryOptions, organizationId, currentState);
     case 'delete_rows':
       return deleteRows(queryOptions, organizationId, currentState);
+    case 'join_tables':
+      return joinTables(queryOptions, organizationId, currentState);
 
     default:
       return {
@@ -164,4 +166,11 @@ async function deleteRows(queryOptions, organizationId, currentState) {
   limit && limit !== '' && query.push(`limit=${limit}&order=id`);
 
   return await tooljetDatabaseService.deleteRow(organizationId, tableName, query.join('&'));
+}
+
+async function joinTables(queryOptions, organizationId, currentState) {
+  const resolvedOptions = resolveReferences(queryOptions, currentState);
+  // Check and Remove Empty options, Before sending a API
+  const { join_table = {} } = resolvedOptions;
+  return await tooljetDatabaseService.joinTables(organizationId, join_table);
 }

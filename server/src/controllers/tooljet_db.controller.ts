@@ -97,7 +97,7 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
-  @Get('/:organizationId/getDetailsOnJoin')
+  @Post('/:organizationId/getDetailsOnJoin')
   @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
   async getDetailsOnJoin(@Body() joinQueryJsonDto: any, @Param('organizationId') organizationId) {

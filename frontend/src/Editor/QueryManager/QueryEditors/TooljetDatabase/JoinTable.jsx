@@ -120,13 +120,6 @@ const RenderFilterSection = ({ darkMode }) => {
   const { conditions = {} } = joinTableOptions;
   const { conditionsList = [] } = conditions;
 
-  // Re-populate the Saved Query *
-  // Fix all the Edge Cases
-  // Have constants in a separate file - utils in tooljetDB
-  // Edit the Codehinter UI
-  // V-important: While Executing Query - Emtpy Fields must be removed *
-  // Limit Section
-
   function handleWhereFilterChange(conditionsEdited) {
     joinTableOptionsChange('conditions', conditionsEdited);
   }

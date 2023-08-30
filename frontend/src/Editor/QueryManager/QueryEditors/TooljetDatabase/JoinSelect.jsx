@@ -7,7 +7,6 @@ export default function JoinSelect({ darkMode }) {
   const { joinOptions, tableInfo, setJoinSelectOptions, joinSelectOptions } = useContext(TooljetDatabaseContext);
 
   const tableSet = new Set();
-  console.log('joinTableOptions', joinOptions);
   (joinOptions || []).forEach((join) => {
     const { table, conditions } = join;
     tableSet.add(table);
