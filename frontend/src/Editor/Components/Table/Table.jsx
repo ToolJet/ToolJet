@@ -1016,7 +1016,7 @@ export function Table({
                   data-tooltip-id="tooltip-for-filter-data"
                   data-tooltip-content="Filter data"
                 ></ButtonSolid>
-                {tableDetails?.filterDetails?.filtersVisible && (
+                {(tableDetails?.filterDetails?.filtersVisible || !_.isEmpty(tableDetails.filterDetails.filters)) && (
                   <div className="filter-applied-state position-absolute">
                     <svg
                       className="filter-applied-svg"
