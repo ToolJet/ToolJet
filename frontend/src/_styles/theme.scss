@@ -3686,11 +3686,6 @@ input:focus-visible {
     background-color: transparent !important;
   }
 
-  .color-picker-input {
-    border: solid 1px #333c48;
-    height: 36px;
-  }
-
   .codehinter-query-editor-input .CodeMirror {
     height: 31px !important;
   }
@@ -11643,4 +11638,17 @@ tbody {
 
 .CodeMirror {
   background: var(--base);
+}
+
+.color-picker-input {
+  border: solid 1px #333c48;
+  height: 36px;
+  background-color: var(--slate1);
+  border: 1px solid var(--slate7);
+
+  &:hover {
+    background-color: var(--slate4);
+    border: 1px solid var(--slate8);
+
+  }
 }
