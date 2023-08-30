@@ -32,8 +32,11 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
+import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
+
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
 const AllElements = {
   Color,
@@ -94,12 +97,17 @@ export function CodeHinter({
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
+
+  // Todo: Remove this when workspace variables are deprecated
+  const isWorkspaceVariable =
+    typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   const slideInStyles = useSpring({
     config: { ...config.stiff },
     from: { opacity: 0, height: 0 },
     to: {
       opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
+      height: isFocused ? currentHeight + (isWorkspaceVariable ? 30 : 0) : 0,
     },
   });
   const { t } = useTranslation();
@@ -232,6 +240,10 @@ export function CodeHinter({
             {content}
           </div>
         </div>
+        {/* Todo: Remove this when workspace variables are deprecated */}
+        {enablePreview && isWorkspaceVariable && (
+          <CodeHinter.DepericatedAlertForWorkspaceVariable text={'Deprecating soon'} />
+        )}
       </animated.div>
     );
   };
@@ -277,20 +289,27 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
+
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
-        {paramLabel && (
+        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
+        {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`form-label ${!codeShow && 'mb-0'} ${darkMode && 'color-whitish-darkmode'}`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
             />
           </div>
         )}
         <div className={`${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
-          <div style={{ width: width }} className="d-flex align-items-center">
+          <div
+            style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
+            className="d-flex align-items-center"
+          >
             <div className="col-auto pt-0 fx-common">
               {paramLabel !== 'Type' && (
                 <FxButton
@@ -335,63 +354,66 @@ export function CodeHinter({
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`}>
-          <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
-            <div
-              className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
-              key={componentName}
-              style={{
-                height: height || 'auto',
-                minHeight,
-                maxHeight: '320px',
-                overflow: 'auto',
-                fontSize: ' .875rem',
-              }}
-              data-cy={`${cyLabel}-input-field`}
-            >
-              {usePortalEditor && (
-                <CodeHinter.PopupIcon
-                  callback={handleToggle}
-                  icon="portal-open"
-                  tip="Pop out code editor into a new window"
-                  transformation={componentName === 'transformation'}
-                />
-              )}
-              <CodeHinter.Portal
-                isCopilotEnabled={isCopilotEnabled}
-                isOpen={isOpen}
-                callback={setIsOpen}
-                componentName={componentName}
+          <div className="d-flex">
+            <div className="code-hinter-vertical-line"></div>
+            <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
+              <div
+                className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
                 key={componentName}
-                customComponent={getPreview}
-                forceUpdate={forceUpdate}
-                optionalProps={{ styles: { height: 300 }, cls: className }}
-                darkMode={darkMode}
-                selectors={{ className: 'preview-block-portal' }}
-                dragResizePortal={true}
-                callgpt={callgpt}
+                style={{
+                  height: height || 'auto',
+                  minHeight,
+                  maxHeight: '320px',
+                  overflow: 'auto',
+                  fontSize: ' .875rem',
+                }}
+                data-cy={`${cyLabel}-input-field`}
               >
-                <CodeMirror
-                  value={typeof initialValue === 'string' ? initialValue : ''}
-                  realState={realState}
-                  scrollbarStyle={null}
-                  height={'100%'}
-                  onFocus={() => setFocused(true)}
-                  onBlur={(editor, e) => {
-                    e.stopPropagation();
-                    const value = editor.getValue()?.trimEnd();
-                    onChange(value);
-                    if (!isPreviewFocused.current) {
-                      setFocused(false);
-                    }
-                  }}
-                  onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
-                  onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
-                  options={options}
-                  viewportMargin={Infinity}
-                />
-              </CodeHinter.Portal>
+                {usePortalEditor && (
+                  <CodeHinter.PopupIcon
+                    callback={handleToggle}
+                    icon="portal-open"
+                    tip="Pop out code editor into a new window"
+                    transformation={componentName === 'transformation'}
+                  />
+                )}
+                <CodeHinter.Portal
+                  isCopilotEnabled={isCopilotEnabled}
+                  isOpen={isOpen}
+                  callback={setIsOpen}
+                  componentName={componentName}
+                  key={componentName}
+                  customComponent={getPreview}
+                  forceUpdate={forceUpdate}
+                  optionalProps={{ styles: { height: 300 }, cls: className }}
+                  darkMode={darkMode}
+                  selectors={{ className: 'preview-block-portal' }}
+                  dragResizePortal={true}
+                  callgpt={callgpt}
+                >
+                  <CodeMirror
+                    value={typeof initialValue === 'string' ? initialValue : ''}
+                    realState={realState}
+                    scrollbarStyle={null}
+                    height={'100%'}
+                    onFocus={() => setFocused(true)}
+                    onBlur={(editor, e) => {
+                      e.stopPropagation();
+                      const value = editor.getValue()?.trimEnd();
+                      onChange(value);
+                      if (!isPreviewFocused.current) {
+                        setFocused(false);
+                      }
+                    }}
+                    onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
+                    onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+                    options={options}
+                    viewportMargin={Infinity}
+                  />
+                </CodeHinter.Portal>
+              </div>
+              {enablePreview && !isOpen && getPreview()}
             </div>
-            {enablePreview && !isOpen && getPreview()}
           </div>
         </div>
       </div>
@@ -435,5 +457,22 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
+const DepericatedAlertForWorkspaceVariable = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-warning"
+      cls="codehinter workspace-variables-alert-banner p-1 mb-0"
+      data-cy={``}
+      imgHeight={18}
+      imgWidth={18}
+    >
+      <div className="d-flex align-items-center">
+        <div class="">{text}</div>
+      </div>
+    </Alert>
+  );
+};
+
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;
+CodeHinter.DepericatedAlertForWorkspaceVariable = DepericatedAlertForWorkspaceVariable;

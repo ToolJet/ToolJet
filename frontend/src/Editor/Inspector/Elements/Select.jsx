@@ -17,21 +17,13 @@ export const Select = ({ param, definition, onChange, paramType, componentMeta }
     <div className="field mb-3">
       <ToolTip label={displayName} meta={paramMeta} />
       <SelectSearch
-        className="basic-single"
-        classNamePrefix="select"
-        defaultValue={value}
-        isSearchable={true}
-        name="color"
-        options={options}
-      />
-      {/* <SelectSearch
         options={options}
         value={value}
         search={true}
         onChange={(newVal) => onChange(param, 'value', newVal, paramType)}
         fuzzySearch
         placeholder={t('globals.select', 'Select') + '...'}
-      /> */}
+      />
     </div>
   );
 };

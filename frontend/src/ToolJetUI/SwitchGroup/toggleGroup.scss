@@ -1,7 +1,7 @@
 .ToggleGroup {
   display: inline-flex;
   background-color:  var(--slate4);
-  border-radius: 6px;
+  border-radius: 8px;
   box-shadow: 0 2px 10px var(--black-a7);
 }
 
@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: center;
   padding: 2px 6px;
-
+  border-radius: 6px;
 }
 .ToggleGroupItem:first-child {
   margin-left: 0;
@@ -31,7 +31,7 @@
 .ToggleGroupItem[data-state='on'] {
   padding: 2px 2px;
   .toggle-item {
-    background-color: white;
+    background-color: var(--slate1);
     color: var(--indigo9);
     border-radius: 6px;
     padding: 4px;

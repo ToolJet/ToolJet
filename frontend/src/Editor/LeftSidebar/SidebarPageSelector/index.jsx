@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Fuse from 'fuse.js';
-import { Button, HeaderSection } from '@/_ui/LeftSidebar';
+import { HeaderSection } from '@/_ui/LeftSidebar';
 import { PageHandler, AddingPageHandler } from './PageHandler';
 import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
@@ -10,6 +10,7 @@ import EmptyIllustration from '@assets/images/no-results.svg';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -87,7 +88,7 @@ const LeftSidebarPageSelector = ({
             }
           >
             <div className="d-flex justify-content-end" style={{ gap: '2px' }}>
-              <Button
+              <ButtonSolid
                 title={'Add Page'}
                 onClick={() => {
                   if (isVersionReleased) {
@@ -96,52 +97,36 @@ const LeftSidebarPageSelector = ({
                   }
                   setNewPageBeingCreated(true);
                 }}
+                className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
                 darkMode={darkMode}
-                size="sm"
-                styles={{
-                  width: '28px',
-                  padding: 0,
-                  border: darkMode && '1px solid #3A3F42',
-                  backgroundColor: darkMode && ' #121212',
-                }}
-              >
-                <Button.Content dataCy={`add-page`} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
-              </Button>
-              <Button
+                leftIcon="plus"
+                iconWidth="14"
+                variant="tertiary"
+              ></ButtonSolid>
+              <ButtonSolid
                 title={'Search'}
                 onClick={() => setShowSearch(!showSearch)}
                 darkMode={darkMode}
-                size="sm"
-                styles={{
-                  width: '28px',
-                  padding: 0,
-                  border: darkMode && '1px solid #3A3F42',
-                  backgroundColor: darkMode && ' #121212',
-                }}
-              >
-                <Button.Content dataCy={'search-page'} iconSrc={'assets/images/icons/search.svg'} direction="left" />
-              </Button>
-              <Button
+                className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
+                leftIcon="search"
+                iconWidth="14"
+                variant="tertiary"
+              ></ButtonSolid>
+              <ButtonSolid
                 title={`${pinned ? 'Unpin' : 'Pin'}`}
                 onClick={() => {
                   setPinned(!pinned);
                   !haveUserPinned && setHaveUserPinned(true);
                 }}
+                variant="tertiary"
+                className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
                 darkMode={darkMode}
-                size="sm"
-                styles={{
-                  width: '28px',
-                  padding: 0,
-                  border: darkMode && '1px solid #3A3F42',
-                  backgroundColor: darkMode && ' #121212',
-                }}
-              >
-                <Button.Content
-                  dataCy={'pin-panel'}
-                  iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
-                  direction="left"
-                />
-              </Button>
+                leftIcon={pinned ? 'unpin' : 'pin'}
+                iconWidth="14"
+              ></ButtonSolid>
             </div>
           </HeaderSection.PanelHeader>
           {showSearch && (

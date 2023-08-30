@@ -4,7 +4,6 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import AlignLeft from '@/_ui/Icon/solidIcons/AlignLeft';
 import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
-import AlignJustify from '@/_ui/Icon/solidIcons/AlignJustify';
 
 export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
   function handleOptionChanged(_value) {
@@ -20,9 +19,6 @@ export const AlignButtons = ({ value, onChange, forceCodeBox, meta }) => {
       </ToggleGroupItem>
       <ToggleGroupItem value="right">
         <AlignRight width={14} />
-      </ToggleGroupItem>
-      <ToggleGroupItem value="justify">
-        <AlignJustify width={14} />
       </ToggleGroupItem>
     </ToggleGroup>
   );

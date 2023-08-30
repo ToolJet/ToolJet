@@ -9,7 +9,6 @@ export const SelectComponent = ({
   onChange,
   closeMenuOnSelect,
   classNamePrefix,
-  customWrap, //used so that editor selects remains with old theme , remove when whole theme is same !
   ...restProps
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';

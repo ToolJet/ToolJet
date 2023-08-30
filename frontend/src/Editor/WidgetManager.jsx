@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { SearchBox } from '@/_components';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
@@ -63,7 +63,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
             )}
           </p>
           <button
-            className="btn btn-sm btn-outline-azure mt-3"
+            className=" btn-sm tj-tertiary-btn mt-3"
             onClick={() => {
               setFilteredComponents(componentTypes);
               setSearchQuery('');
@@ -128,15 +128,19 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   return (
     <div className={`components-container ${isVersionReleased && 'disabled'}`}>
       <p className="widgets-manager-header">Components</p>
-      <div className="input-icon">
-        {/* <SolidIcon name="search" /> */}
-        <input
-          type="text"
-          className={`form-control tj-input tj-widgets-search-input tj-text-xsm`}
+      <div className="input-icon tj-app-input">
+        <SearchBox
+          dataCy={`widget-search-box`}
+          initialValue={''}
+          callBack={(e) => handleSearchQueryChange(e)}
+          onClearCallback={() => {
+            setSearchQuery('');
+            filterComponents('');
+          }}
           placeholder={t('globals.searchComponents', 'Search widgets')}
-          value={searchQuery}
-          onChange={(e) => handleSearchQueryChange(e)}
-          data-cy="widget-search-box"
+          customClass={`tj-widgets-search-input  tj-text-xsm`}
+          showClearButton={false}
+          width={266}
         />
       </div>
       <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>

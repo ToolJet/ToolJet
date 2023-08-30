@@ -858,8 +858,7 @@ export const EventManager = ({
   const renderAddHandlerBtn = () => {
     return (
       <AddNewButton onClick={addHandler} data-cy="add-more-event-handler" className="mt-2">
-        {/* {t('editor.inspector.eventManager.addHandler', 'New event handler')} */}
-        New event handler
+        {t('editor.inspector.eventManager.addHandler', 'New event handler')}
       </AddNewButton>
     );
   };

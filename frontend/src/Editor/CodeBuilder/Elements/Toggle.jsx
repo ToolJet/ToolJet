@@ -5,7 +5,10 @@ export const Toggle = ({ value, onChange, cyLabel }) => {
     <div className="row fx-container">
       <div className="col d-flex align-items-center">
         <div className="field">
-          <label className="form-check form-switch my-1">
+          <label
+            className="form-check form-switch mb-0 d-flex justify-content-end"
+            style={{ marginBottom: '0px', paddingLeft: '28px' }}
+          >
             <input
               className="form-check-input"
               type="checkbox"

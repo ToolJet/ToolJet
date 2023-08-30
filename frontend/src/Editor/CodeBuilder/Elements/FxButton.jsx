@@ -1,5 +1,4 @@
 import Fx from '@/_ui/Icon/bulkIcons/Fx';
-import Telescope from '@/_ui/Icon/bulkIcons/Telescope';
 import React from 'react';
 
 export default function FxButton({ active, onPress, dataCy }) {

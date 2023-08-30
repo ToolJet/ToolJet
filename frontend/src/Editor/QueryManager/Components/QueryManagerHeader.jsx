@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
 
-import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
+import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import {
   useSelectedQuery,
   useSelectedDataSource,

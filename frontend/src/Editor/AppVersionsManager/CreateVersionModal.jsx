@@ -108,7 +108,6 @@ export const CreateVersion = ({
               useMenuPortal={false}
               width="100%"
               maxMenuHeight={100}
-              customWrap={true}
             />
           </div>
         </div>

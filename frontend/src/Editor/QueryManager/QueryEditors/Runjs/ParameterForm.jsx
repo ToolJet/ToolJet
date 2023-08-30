@@ -33,6 +33,7 @@ const ParameterForm = ({
     if (!showModal && !error) {
       onSubmit && onSubmit({ name, defaultValue });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
   const handleSubmit = (event) => {
@@ -50,6 +51,7 @@ const ParameterForm = ({
     } else {
       setError();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
   return (

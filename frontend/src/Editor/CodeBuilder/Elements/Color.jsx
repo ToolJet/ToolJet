@@ -13,7 +13,7 @@ export const Color = ({
   customStyle = false,
 }) => {
   const [showPicker, setShowPicker] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const coverStyles = {
     position: 'fixed',
@@ -23,23 +23,15 @@ export const Color = ({
     left: '0px',
   };
 
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-  };
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-  };
-
   const outerStyles = {
     width: '142px',
     height: '32px',
-    border: !isHovering ? `1px solid var(--slate7)` : `1px solid var(--slate8)`,
     borderRadius: ' 6px',
     display: 'flex',
     paddingLeft: '4px',
     alignItems: 'center',
     gap: '4px',
-    background: showPicker ? 'var(--indigo2)' : !isHovering ? 'var(--slate1)' : 'var(--slate4)',
+    background: showPicker && 'var(--indigo2)',
     outline: showPicker && '1px solid var(--indigo9)',
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
@@ -54,7 +46,7 @@ export const Color = ({
   };
   const eventPopover = () => {
     return (
-      <Popover>
+      <Popover className={`${darkMode && ' dark-theme'}`}>
         <Popover.Body className={customStyle && 'boxshadow-picker'}>
           <>
             {showPicker && (
@@ -94,8 +86,6 @@ export const Color = ({
               onClick={() => setShowPicker(true)}
               data-cy={`${String(cyLabel)}-picker`}
               style={outerStyles}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
             >
               <div
                 className="col-auto"

@@ -30,6 +30,27 @@ import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
+import Copy from '@/_ui/Icon/solidIcons/Copy';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
+import classNames from 'classnames';
+
+const INSPECTOR_HEADER_OPTIONS = [
+  {
+    label: 'Rename',
+    value: 'rename',
+    icon: <Edit width={16} />,
+  },
+  {
+    label: 'Duplicate',
+    value: 'duplicate',
+    icon: <Copy width={16} />,
+  },
+  {
+    label: 'Delete',
+    value: 'delete',
+    icon: <Trash width={16} fill={'#E54D2E'} />,
+  },
+];
 
 export const Inspector = ({
   selectedComponentId,
@@ -40,6 +61,7 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
   pages,
+  cloneComponents,
 }) => {
   const dataQueries = useDataQueries();
   const component = {
@@ -57,7 +79,6 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
   const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const [isHeaderInputEnabled, setHeaderInputEnabled] = useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -99,7 +120,7 @@ export const Inspector = ({
   };
 
   function handleComponentNameChange(newName) {
-    if (component.component.name === newName) return setHeaderInputEnabled(false);
+    if (component.component.name === newName) return;
 
     if (newName.length === 0) {
       toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
@@ -113,7 +134,6 @@ export const Inspector = ({
       let newComponent = { ...component };
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent);
-      setHeaderInputEnabled(false);
     } else {
       toast.error(
         t(
@@ -274,6 +294,17 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
+  const handleInspectorHeaderActions = (value) => {
+    if (value === 'rename') {
+      setTimeout(() => setInputFocus(), 0);
+    }
+    if (value === 'delete') {
+      setWidgetDeleteConfirmation(true);
+    }
+    if (value === 'duplicate') {
+      cloneComponents();
+    }
+  };
   const buildGeneralStyle = () => {
     const items = [];
 
@@ -365,26 +396,23 @@ export const Inspector = ({
         <div className="row inspector-component-title-input-holder">
           <div className="col-1" onClick={() => switchSidebarTab(2)}>
             <span data-cy={`inspector-close-icon`} className="cursor-pointer">
-              <ArrowLeft fill={'#11181C'} width={'14'} />
+              <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>
-          <div className={`col-10 p-0 ${isVersionReleased && 'disabled'}`}>
+          <div className={`col-9 p-0 ${isVersionReleased && 'disabled'}`}>
             <div className="input-icon" style={{ marginLeft: '8px' }}>
-              {isHeaderInputEnabled && (
-                <input
-                  onChange={(e) => setNewComponentName(e.target.value)}
-                  type="text"
-                  onBlur={() => handleComponentNameChange(newComponentName)}
-                  className="w-100 inspector-edit-widget-name"
-                  value={newComponentName}
-                  ref={inputRef}
-                  data-cy="edit-widget-name"
-                />
-              )}
-              {!isHeaderInputEnabled && <p style={{ marginBottom: '0px' }}>{newComponentName}</p>}
+              <input
+                onChange={(e) => setNewComponentName(e.target.value)}
+                type="text"
+                onBlur={() => handleComponentNameChange(newComponentName)}
+                className="w-100 inspector-edit-widget-name"
+                value={newComponentName}
+                ref={inputRef}
+                data-cy="edit-widget-name"
+              />
             </div>
           </div>
-          <div className="col-1">
+          <div className="col-2">
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -393,25 +421,31 @@ export const Inspector = ({
               overlay={
                 <Popover id="list-menu" className={darkMode && 'popover-dark-themed'}>
                   <Popover.Body bsPrefix="list-item-popover-body">
-                    <div
-                      className="list-item-popover-option"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setHeaderInputEnabled(true);
-                        setTimeout(() => setInputFocus(), 0);
-                      }}
-                    >
-                      <div className="list-item-popover-menu-option-icon">
-                        <Edit width={16} />
+                    {INSPECTOR_HEADER_OPTIONS.map((option) => (
+                      <div
+                        className="list-item-popover-option"
+                        key={option?.value}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleInspectorHeaderActions(option.value);
+                        }}
+                      >
+                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                        <div
+                          className={classNames('list-item-option-menu-label', {
+                            'color-tomato9': option.value === 'delete',
+                          })}
+                        >
+                          {option?.label}
+                        </div>
                       </div>
-                      <div className={'list-item-option-menu-label'}>Rename</div>
-                    </div>
+                    ))}
                   </Popover.Body>
                 </Popover>
               }
             >
               <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'#11181C'} />
+                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
               </span>
             </OverlayTrigger>
           </div>

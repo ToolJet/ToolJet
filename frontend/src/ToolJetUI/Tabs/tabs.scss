@@ -1,9 +1,17 @@
-.nav-tabs {
+
+.tj-tabs {
+  .nav-tabs {
     border-bottom: 0px !important;
+  }
+
+  .nav-item {
+    font-size: 12px !important;
+    line-height: 20px !important;
   }
 
   .nav-item .nav-link {
     color: var(--slate11) !important;
+    background-color: var(--base) !important;
   }
 
   .nav-tabs .nav-link.active {
@@ -11,3 +19,5 @@
     border-width: 2px !important;
     color: var(--indigo9) !important;
   }
+}
+

@@ -10,6 +10,7 @@ import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { getSubpath } from '@/_helpers/utils';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -134,18 +135,16 @@ class ManageAppUsersComponent extends React.Component {
   render() {
     const { isLoading, app, slugError, isSlugVerificationInProgress } = this.state;
     const appId = app.id;
-    const appLink = `${window.public_config?.TOOLJET_HOST}/applications/`;
+    const appLink = `${window.public_config?.TOOLJET_HOST}${getSubpath() ? getSubpath() : ''}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = isSlugVerificationInProgress ? '' : slugError !== null ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     return (
-      <div
-        title="Share"
-        className="editor-header-icon tj-secondary-btn"
-        onClick={() => this.setState({ showModal: true })}
-      >
-        <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
+      <div title="Share" className="editor-header-icon tj-secondary-btn">
+        <span className="d-flex" onClick={() => this.setState({ showModal: true })}>
+          <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
+        </span>
         <Modal
           show={this.state.showModal}
           size="lg"
@@ -159,7 +158,9 @@ class ManageAppUsersComponent extends React.Component {
         >
           <Modal.Header>
             <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
-            <button className="btn-close" aria-label="Close" onClick={this.hideModal} data-cy="modal-close-button" />
+            <span onClick={this.hideModal}>
+              <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" data-cy="modal-close-button" />
+            </span>
           </Modal.Header>
           <Modal.Body>
             {isLoading ? (
@@ -171,7 +172,7 @@ class ManageAppUsersComponent extends React.Component {
                 <div className="make-public mb-3">
                   <div className="form-check form-switch">
                     <input
-                      className="form-check-input"
+                      className="form-check-input color-slate12"
                       type="checkbox"
                       onClick={this.toggleAppVisibility}
                       checked={this.state.app.is_public}
@@ -194,10 +195,10 @@ class ManageAppUsersComponent extends React.Component {
                     <span className="input-group-text" data-cy="app-link">
                       {appLink}
                     </span>
-                    <div className="input-with-icon">
+                    <div className="input-with-icon app-name-slug-input">
                       <input
                         type="text"
-                        className={`form-control form-control-sm ${slugButtonClass}`}
+                        className={`form-control  color-slate12  ${slugButtonClass}`}
                         placeholder={appId}
                         onChange={(e) => {
                           e.persist();
@@ -212,13 +213,11 @@ class ManageAppUsersComponent extends React.Component {
                         </div>
                       )}
                     </div>
-                    <span className="input-group-text">
-                      <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
-                        <button className="btn btn-secondary btn-sm" data-cy="copy-app-link-button">
-                          {this.props.t('editor.shareModal.copy', 'copy')}
-                        </button>
-                      </CopyToClipboard>
-                    </span>
+                    <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
+                      <button className="btn-sm tj-tertiary-btn" data-cy="copy-app-link-button">
+                        {this.props.t('editor.shareModal.copy', 'copy')}
+                      </button>
+                    </CopyToClipboard>
                     <div className="invalid-feedback">{slugError}</div>
                   </div>
                 </div>
@@ -238,16 +237,14 @@ class ManageAppUsersComponent extends React.Component {
                         value={embeddableLink}
                         data-cy="iframe-link"
                       />
-                      <span className="input-group-text">
-                        <CopyToClipboard
-                          text={embeddableLink}
-                          onCopy={() => toast.success('Embeddable link copied to clipboard')}
-                        >
-                          <button className="btn btn-secondary btn-sm" data-cy="iframe-link-copy-button">
-                            {this.props.t('editor.shareModal.copy', 'copy')}
-                          </button>
-                        </CopyToClipboard>
-                      </span>
+                      <CopyToClipboard
+                        text={embeddableLink}
+                        onCopy={() => toast.success('Embeddable link copied to clipboard')}
+                      >
+                        <button className="tj-tertiary-btn btn-sm" data-cy="iframe-link-copy-button">
+                          {this.props.t('editor.shareModal.copy', 'copy')}
+                        </button>
+                      </CopyToClipboard>
                     </div>
                   </div>
                 )}

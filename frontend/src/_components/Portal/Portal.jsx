@@ -30,10 +30,8 @@ const Portal = ({ children, ...restProps }) => {
 
   const portalStyles = {
     background: 'transparent',
-    backgroundColor: darkMode ? '#151718' : '#FBFCFD',
     borderRadius: '0px',
     width: '500px',
-    border: `1px solid ${darkMode ? '#151718' : '#FBFCFD'}`,
   };
 
   return (
@@ -127,10 +125,7 @@ const Modal = ({
           />
         </Button>
       </div>
-      <div
-        className={`modal-body ${darkMode ? 'dark-mode-border' : ''}`}
-        style={{ background: 'transparent', height: 300 }}
-      >
+      <div className={`modal-body `} style={{ background: 'transparent', height: 300 }}>
         {children}
       </div>
     </div>
