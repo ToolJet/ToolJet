@@ -4,25 +4,41 @@ import { GlobalDataSourcesContext } from '..';
 import { DataSourceTypes } from '../../Editor/DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
+import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
 export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedDatasource }) => {
-  const { setSelectedDataSource, toggleDataSourceManagerModal, environments, setCurrentEnvironment } =
-    useContext(GlobalDataSourcesContext);
+  const {
+    setSelectedDataSource,
+    toggleDataSourceManagerModal,
+    environments,
+    setCurrentEnvironment,
+    setActiveDatasourceList,
+  } = useContext(GlobalDataSourcesContext);
+  const { handleActions } = useGlobalDatasourceUnsavedChanges();
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {
       return dataSource.plugin?.manifestFile?.data.source;
     }
 
-    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+    return DataSourceTypes.find((source) => source?.kind === dataSource?.kind);
   };
 
   const sourceMeta = getSourceMetaData(dataSource);
-  const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data);
+  const icon = getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data);
 
   const focusModal = () => {
     const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
     element.focus();
+  };
+
+  const selectDataSource = () => {
+    setActiveDatasourceList('');
+    setSelectedDataSource(dataSource);
+    setCurrentEnvironment(environments[0]);
+    toggleDataSourceManagerModal(true);
+    focusModal();
+    updateSelectedDatasource(dataSource?.name);
   };
 
   return (
@@ -34,13 +50,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
     >
       <div
         role="button"
-        onClick={() => {
-          setSelectedDataSource(dataSource);
-          setCurrentEnvironment(environments[0]);
-          toggleDataSourceManagerModal(true);
-          focusModal();
-          updateSelectedDatasource(dataSource?.name);
-        }}
+        onClick={() => handleActions(selectDataSource)}
         className="col d-flex align-items-center overflow-hidden"
         data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
       >
