@@ -224,6 +224,7 @@ function DataSourceSelect({
             ...style,
             borderTop: '1px solid var(--slate-05, #E6E8EB)',
             marginTop: '8px',
+            paddingBottom: 0,
             '.dd-select-option': { marginLeft: '19px' },
           }),
           container: (styles) => ({
@@ -314,6 +315,7 @@ const CustomGroupHeading = (props) => {
   const node = document.querySelector(`#${props.id}`)?.parentElement?.nextElementSibling;
   const classes = node?.classList;
   const hidden = classes?.contains('d-none');
+  console.log('Recreated', props);
   const handleHeaderClick = (id) => {
     if (hidden) {
       node.classList.remove('d-none');
