@@ -164,7 +164,7 @@ export const GlobalSettings = ({
             </div> */}
               <div className="d-flex align-items-center">
                 <span className="w-full" data-cy={`label-bg-canvas`}>
-                  {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
+                  {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
                 </span>
                 <div className="canvas-codehinter-container">
                   {showPicker && (
