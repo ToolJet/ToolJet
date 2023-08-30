@@ -69,7 +69,7 @@ export const DarkModeToggle = function DarkModeToggle({
           height="20"
           viewBox="0 0 24 24"
           fill="none"
-          color={darkMode ? '#fff' : '#C1C8CD'}
+          color={darkMode ? '#fff' : 'var(--slate8)'}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -89,7 +89,7 @@ export const DarkModeToggle = function DarkModeToggle({
             cx="12"
             cy="12"
             style={centerCircleProps}
-            fill={darkMode ? 'white' : '#C1C8CD'}
+            fill={darkMode ? 'white' : 'var(--slate8)'}
             mask="url(#myMask2)"
           />
           <animated.g stroke="currentColor" style={linesProps}>
