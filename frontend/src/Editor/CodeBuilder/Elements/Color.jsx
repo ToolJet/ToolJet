@@ -14,6 +14,7 @@ export const Color = ({
 }) => {
   const [showPicker, setShowPicker] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const coverStyles = {
     position: 'fixed',
@@ -54,7 +55,7 @@ export const Color = ({
   };
   const eventPopover = () => {
     return (
-      <Popover>
+      <Popover className={`${darkMode && ' dark-theme'}`}>
         <Popover.Body className={customStyle && 'boxshadow-picker'}>
           <>
             {showPicker && (
