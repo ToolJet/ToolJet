@@ -1,5 +1,11 @@
 import React from 'react';
-import { appService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
+import {
+  appService,
+  authenticationService,
+  appVersionService,
+  orgEnvironmentVariableService,
+  orgEnvironmentConstantService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
@@ -92,7 +98,7 @@ class EditorComponent extends React.Component {
         canvasMaxWidth: 1292,
         canvasMaxWidthType: 'px',
         canvasMaxHeight: 2400,
-        canvasBackgroundColor: props.darkMode ? '#1A1D1E' : '#F8F9FA',
+        canvasBackgroundColor: props.darkMode ? '#1B1B1F' : '#F9F9FB',
         backgroundFxQuery: '',
       },
     };
@@ -174,11 +180,12 @@ class EditorComponent extends React.Component {
 
   async componentDidMount() {
     window.addEventListener('message', this.handleMessage);
-    this.getCurrentOrganizationDetails();
+    await this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.fetchApp(this.props.params.pageHandle);
-    await this.fetchOrgEnvironmentVariables();
+    this.fetchOrgEnvironmentConstants(); // for ce
+    this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -196,6 +203,10 @@ class EditorComponent extends React.Component {
       ...this.props.currentState.globals,
       theme: { name: this.props.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+      /* Constant value.it will only change for viewer */
+      mode: {
+        value: 'edit',
+      },
     };
     const page = {
       ...this.props.currentState.page,
@@ -247,6 +258,21 @@ class EditorComponent extends React.Component {
       useCurrentStateStore.getState().actions.setCurrentState({
         server: server_variables,
         client: client_variables,
+      });
+    });
+  };
+
+  fetchOrgEnvironmentConstants = () => {
+    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
+    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+      const orgConstants = {};
+      constants.map((constant) => {
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
+      });
+
+      useCurrentStateStore.getState().actions.setCurrentState({
+        constants: orgConstants,
       });
     });
   };
@@ -858,9 +884,9 @@ class EditorComponent extends React.Component {
   };
 
   computeCanvasBackgroundColor = () => {
-    const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#F8F9FA';
-    if (['#1A1D1E', '#F8F9FA'].includes(canvasBackgroundColor)) {
-      return this.props.darkMode ? '#1A1D1E' : '#F8F9FA';
+    const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#F9F9FB';
+    if (['#1B1B1F', '#F9F9FB'].includes(canvasBackgroundColor)) {
+      return this.props.darkMode ? '#1B1B1F' : '#F9F9FB';
     }
     return canvasBackgroundColor;
   };
@@ -1601,7 +1627,7 @@ class EditorComponent extends React.Component {
                       (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
                       `px solid ${this.computeCanvasBackgroundColor()}`,
                     height: this.computeCanvasContainerHeight(),
-                    background: !this.props.darkMode ? '#eceef0' : '#1a1d1e',
+                    background: !this.props.darkMode ? '#EBEBEF' : '#2E3035',
                   }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {

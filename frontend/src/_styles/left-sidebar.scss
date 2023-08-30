@@ -195,6 +195,11 @@
 
 .debugger-content {
   background-color: var(--base);
+
+  hr {
+    margin-top: 0px !important;
+    margin-bottom: 16px !important;
+  }
 }
 
 

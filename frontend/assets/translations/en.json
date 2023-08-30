@@ -259,7 +259,7 @@
                     "enterFirstName": "Enter First Name",
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
-                    "enterFulltName": "Enter full name",
+                    "enterFullName": "Enter full name",
                     "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
@@ -268,7 +268,7 @@
                         "createNewGroup": "Create new group",
                         "updateGroup": "Update group",
                         "addNewGroup": "Add new group",
-                        "enterName": "Enter Name",
+                        "enterName": "Enter group name",
                         "createGroup": "Create Group",
                         "name": "Name"
                     },
@@ -927,7 +927,7 @@
         },
         "Comments": {
             "text": "Comments",
-            "tip": "toggle comments",
+            "tip": "Toggle comments",
             "commentBody": "There are no comments to display",
             "typeComment": "Type your comment here"
         },

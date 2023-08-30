@@ -96,7 +96,6 @@ function MultiSelectUser({
         disabled={isLoading}
         fuzzySearch
         renderOption={renderCustom}
-        customWrap={true}
       />
     </div>
   );

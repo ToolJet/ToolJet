@@ -285,11 +285,8 @@ export const Box = function Box({
         style={{
           ...styles,
           backgroundColor,
-          // height: '82px',
-          // width: '72px',
         }}
         role={preview ? 'BoxPreview' : 'Box'}
-        // style={{}}
       >
         {inCanvas ? (
           !resetComponent ? (

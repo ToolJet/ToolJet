@@ -63,14 +63,10 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 | Background Color | You can change the background color of the text component by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Text Color |  You can change the color of the text by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Align Text | You can align the text inside the widget in following ways: left, right, center, justified |
+| Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
+| Disable | This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 
 
-### Visibility
-
-This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`.
-### Disable
-
-This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

@@ -37,6 +37,6 @@ Please check the detailed doc on **[Permissions](/docs/org-management/permission
 - User can directly login to a workspace using workspace login URL, Administrator can view the URL **Manage SSO -> General Settings -> Login URL**.
 
 ### When disabled (Super Admin)
-- Only **[Super Admins](/docs//Enterprise/superadmin#restrict-creation-of-personal-workspace-of-users)** can disable the option for creating personal workspaces for a user.
+- Only **[Super Admins](/docs/Enterprise/superadmin#restrict-creation-of-personal-workspace-of-users)** can disable the option for creating personal workspaces for a user.
 - If creating personal workspaces is disabled, Create workspace feature won’t be available.
 - No separate login page for workspace and SSO configured for the workspace will be reflected to the main login page/login.

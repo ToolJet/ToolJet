@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import cx from 'classnames';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
@@ -21,12 +21,11 @@ export const GlobalSettings = ({
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
-  const [showPicker, setShowPicker] = useState(false);
+  const [showPicker, setShowPicker] = React.useState(false);
   const currentState = useCurrentState();
-  const [forceCodeBox, setForceCodeBox] = useState(true);
-  const [realState, setRealState] = useState(currentState);
-  const [showConfirmation, setConfirmationShow] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
+  const [forceCodeBox, setForceCodeBox] = React.useState(true);
+  const [realState, setRealState] = React.useState(currentState);
+  const [showConfirmation, setConfirmationShow] = React.useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -42,36 +41,16 @@ export const GlobalSettings = ({
     left: '0px',
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     setRealState(currentState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     backgroundFxQuery &&
       globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, realState));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
-
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-  };
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-  };
-  const outerStyles = {
-    width: '142px',
-    height: '32px',
-    border: !isHovering ? `1px solid var(--slate7)` : `1px solid var(--slate8)`,
-    borderRadius: ' 6px',
-    display: 'flex',
-    paddingLeft: '4px',
-    alignItems: 'center',
-    gap: '4px',
-    background: showPicker ? 'var(--indigo2)' : !isHovering ? 'var(--slate1)' : 'var(--slate4)',
-    outline: showPicker && '1px solid var(--indigo9)',
-    boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
-  };
 
   return (
     <>
@@ -126,7 +105,7 @@ export const GlobalSettings = ({
                   {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
                 </span>
                 <div className="position-relative">
-                  <div className="input-with-icon">
+                  <div className="global-settings-width-input-container">
                     <input
                       data-cy="maximum-canvas-width-input-field"
                       type="text"
@@ -140,7 +119,7 @@ export const GlobalSettings = ({
                     />
                     <select
                       data-cy={`dropdown-max-canvas-width-type`}
-                      className="form-select"
+                      className="dropdown-max-canvas-width-type"
                       aria-label="Select canvas width type"
                       onChange={(event) => {
                         const newCanvasMaxWidthType = event.currentTarget.value;
@@ -205,28 +184,23 @@ export const GlobalSettings = ({
                   )}
                   {forceCodeBox && (
                     <div
-                      className="row mx-0 color-picker-input d-flex"
+                      className="row mx-0 form-control form-control-sm canvas-background-holder"
                       onClick={() => setShowPicker(true)}
-                      style={outerStyles}
-                      onMouseEnter={handleMouseEnter}
-                      onMouseLeave={handleMouseLeave}
                     >
                       <div
                         data-cy={`canvas-bg-color-picker`}
                         className="col-auto"
                         style={{
                           float: 'right',
-                          width: '24px',
-                          height: '24px',
+                          width: '20px',
+                          height: '20px',
                           backgroundColor: canvasBackgroundColor,
-                          borderRadius: ' 6px',
-                          border: `1px solid var(--slate7, #D7DBDF)`,
-                          boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
+                          border: `0.25px solid ${
+                            ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
+                          }`,
                         }}
                       ></div>
-                      <div style={{ height: '20px' }} className="col">
-                        {canvasBackgroundColor}
-                      </div>
+                      <div className="col">{canvasBackgroundColor}</div>
                     </div>
                   )}
                   <div

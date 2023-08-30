@@ -10,12 +10,13 @@ export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, setPinned, pin
         <div className="d-flex justify-content-end" style={{ gap: '2px' }}>
           <ButtonSolid
             onClick={clearErrorLogs}
-            leftIcon="remove"
+            leftIcon="alignright"
             variant="tertiary"
-            className="tj-text-sm"
+            className="tj-text-xsm left-sidebar-header-btn"
             style={{ width: '76px', height: '28px' }}
             iconWidth="20"
             title={'Clear'}
+            fill={`var(--slate12)`}
           >
             Clear
           </ButtonSolid>
@@ -23,9 +24,10 @@ export const SidebarDebuggerHeader = ({ darkMode, clearErrorLogs, setPinned, pin
             title={`${pinned ? 'Unpin' : 'Pin'}`}
             onClick={() => setPinned(!pinned)}
             variant="tertiary"
-            style={{ width: '28px', height: '28px', padding: 0 }}
-            leftIcon={pinned ? 'pin' : 'unpin'}
-            iconWidth="20"
+            leftIcon={pinned ? 'unpin' : 'pin'}
+            iconWidth="14"
+            className="left-sidebar-header-btn"
+            fill={`var(--slate12)`}
           ></ButtonSolid>
         </div>
       </HeaderSection.PanelHeader>
