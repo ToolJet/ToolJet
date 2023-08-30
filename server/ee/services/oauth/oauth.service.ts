@@ -233,6 +233,9 @@ export class OauthService {
         break;
 
       case 'ldap':
+        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.LDAP))) {
+          throw new UnauthorizedException('Ldap login disabled');
+        }
         userResponse = await this.ldapService.signIn({ username, password }, configs);
         break;
 

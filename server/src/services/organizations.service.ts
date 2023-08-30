@@ -128,10 +128,7 @@ export class OrganizationsService {
 
   async constructSSOConfigs() {
     const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE');
-    const {
-      oidcEnabled,
-      status: { isExpired, isLicenseValid },
-    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.OIDC, LICENSE_FIELD.STATUS]);
+    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
     return {
       google: {
         enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
@@ -147,12 +144,7 @@ export class OrganizationsService {
         },
       },
       openid: {
-        enabled: !!(
-          this.configService.get<string>('SSO_OPENID_CLIENT_ID') &&
-          oidcEnabled &&
-          isLicenseValid &&
-          !isExpired
-        ),
+        enabled: !!(this.configService.get<string>('SSO_OPENID_CLIENT_ID') && oidcEnabled),
         configs: {
           client_id: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
           name: this.configService.get<string>('SSO_OPENID_NAME'),
@@ -484,12 +476,13 @@ export class OrganizationsService {
       }
     }
 
-    // filter oidc configs
-    if (
-      result?.ssoConfigs?.some((sso) => sso.sso === 'openid') &&
-      !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.AUDIT_LOGS))
-    ) {
+    // filter oidc and ldap configs
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.OIDC, LICENSE_FIELD.LDAP]);
+    if (result?.ssoConfigs?.some((sso) => sso.sso === 'openid') && !licenseTerms[LICENSE_FIELD.OIDC]) {
       result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'openid');
+    }
+    if (result?.ssoConfigs?.some((sso) => sso.sso === 'ldap') && !licenseTerms[LICENSE_FIELD.LDAP]) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'ldap');
     }
 
     if (!isHideSensitiveData) {

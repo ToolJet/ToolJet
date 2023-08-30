@@ -6,6 +6,7 @@ import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard'
 import { User } from 'src/decorators/user.decorator';
 import { ConfigService } from '@nestjs/config';
 import { LdapService } from '@ee/services/oauth/ldap.service';
+import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
 
 @Controller('oauth')
 export class OauthController {
@@ -29,6 +30,7 @@ export class OauthController {
     return result;
   }
 
+  @UseGuards(OIDCGuard)
   @Get(['openid/configs/:configId', 'openid/configs'])
   async getOpenIDRedirect(@Res({ passthrough: true }) response: Response, @Param('configId') configId) {
     const { codeVerifier, authorizationUrl } = await this.oidcOAuthService.getConfigs(configId);
