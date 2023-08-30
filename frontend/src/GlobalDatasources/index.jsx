@@ -22,18 +22,21 @@ export const GlobalDatasources = (props) => {
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [isEditing, setEditing] = useState(true);
+  const [isLoading, setLoading] = useState(true);
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
+  const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
-    if (dataSources?.length == 0) updateSidebarNAV('');
-    else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV(dataSources?.[0].name);
+    if (dataSources?.length == 0) updateSidebarNAV('Databases');
+  }, []);
 
-    //if user selected a new datasource to create one. switch to development env
-    if (!selectedDataSource) setCurrentEnvironment(returnDevelopmentEnv(environments));
-
+  useEffect(() => {
+    selectedDataSource
+      ? updateSidebarNAV(selectedDataSource.name)
+      : !activeDatasourceList && updateSidebarNAV('Databases');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
@@ -75,6 +78,8 @@ export const GlobalDatasources = (props) => {
   }
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
+    toggleDataSourceManagerModal(false);
+    setLoading(true);
     globalDatasourceService
       .getAll(current_organization_id)
       .then((data) => {
@@ -89,14 +94,16 @@ export const GlobalDatasources = (props) => {
           return;
         }
         if (orderedDataSources.length && resetSelection) {
-          setSelectedDataSource(orderedDataSources[0]);
-          toggleDataSourceManagerModal(true);
-          return;
+          setActiveDatasourceList('#databases');
         }
-        toggleDataSourceManagerModal(false);
+        if (!orderedDataSources.length) {
+          setActiveDatasourceList('#databases');
+        }
+        setLoading(false);
       })
       .catch(() => {
         setDataSources([]);
+        setLoading(false);
       });
   };
 
@@ -155,9 +162,21 @@ export const GlobalDatasources = (props) => {
       canUpdateDataSource,
       canDeleteDataSource,
       canCreateDataSource,
+      isLoading,
+      activeDatasourceList,
+      setActiveDatasourceList,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing, environments, currentEnvironment]
+    [
+      selectedDataSource,
+      dataSources,
+      showDataSourceManagerModal,
+      isEditing,
+      environments,
+      currentEnvironment,
+      isLoading,
+      activeDatasourceList,
+    ]
   );
 
   return (

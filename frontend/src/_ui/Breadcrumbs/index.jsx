@@ -35,7 +35,7 @@ const routes = [
   { path: '/:worspace_id', breadcrumb: 'Applications' },
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
-  { path: '/global-datasources', breadcrumb: 'Global Datasources' },
+  { path: '/data-sources', breadcrumb: 'Data Sources' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
   { path: '/license', breadcrumb: 'Enterprise Edition' },
   { path: '/instance-settings', breadcrumb: 'Instance settings' },

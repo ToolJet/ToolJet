@@ -15,8 +15,8 @@ function Header() {
         return 'Database';
       case 'workspace-settings':
         return 'Workspace settings';
-      case 'global-datasources':
-        return 'Datasources';
+      case 'data-sources':
+        return 'Data Sources';
       case 'settings':
         return 'Profile settings';
       case 'integrations':

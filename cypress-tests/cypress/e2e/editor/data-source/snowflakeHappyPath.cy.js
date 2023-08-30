@@ -9,7 +9,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -118,8 +118,8 @@ describe("Data sources", () => {
     );
   });
 
-  it.skip("Should verify the functionality of Snowflake connection form.", () => {
-    selectDataSource("Snowflake");
+  it.skip("Should verify the functionality of PostgreSQL connection form.", () => {
+    selectAndAddDataSource("Snowflake");
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',

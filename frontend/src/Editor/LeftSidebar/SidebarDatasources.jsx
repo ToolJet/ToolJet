@@ -162,7 +162,7 @@ export const LeftSidebarDataSources = ({
           </span>
         </div>
         {showDeleteIcon && !(isVersionReleased || isEditorFreezed) && (
-          <div className="col-auto">
+          <div className="col-auto cursor-pointer">
             <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
               <div>
                 <TrashIcon width="14" height="14" />
@@ -171,7 +171,7 @@ export const LeftSidebarDataSources = ({
           </div>
         )}
         {convertToGlobal && admin && !(isVersionReleased || isEditorFreezed) && (
-          <div className="col-auto">
+          <div className="col-auto cursor-pointer">
             <OverlayTrigger
               rootClose={false}
               show={isConversionVisible}
@@ -222,6 +222,7 @@ export const LeftSidebarDataSources = ({
         selectedDataSource={selectedDataSource}
         currentAppEnvironmentId={currentAppEnvironmentId}
         isVersionReleased={isVersionReleased || isEditorFreezed}
+        showSaveBtn={true}
       />
     </>
   );
@@ -237,7 +238,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
     shallow
   );
   return (
-    <div>
+    <div className="left-sidebar-local-datasources-wrapper">
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Datasources">
           <div className="d-flex justify-content-end">
@@ -261,7 +262,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
           <div className="d-flex flex-column w-100">
             {dataSources.length ? (
               <>
-                <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
+                <div className="tj-text-sm my-2 datasources-category">Local Data Sources</div>
                 <div className="mt-2 w-100" data-cy="datasource-Label">
                   {dataSources?.map((source, idx) => (
                     <RenderDataSource
@@ -280,7 +281,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
       </div>
       {!(isVersionReleased || isEditorFreezed) && (
         <div className="add-datasource-btn w-100 p-3">
-          <Link to={getPrivateRoute('global_datasources')}>
+          <Link to={getPrivateRoute('data_sources')}>
             <div className="p-2 color-primary cursor-pointer">
               {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
             </div>

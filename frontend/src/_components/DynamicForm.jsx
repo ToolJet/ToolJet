@@ -237,7 +237,7 @@ const DynamicForm = ({
 
       case 'react-component-headers': {
         let isRenderedAsQueryEditor;
-        if (!isEditorActive) {
+        if (!isEditorActive || isGDS) {
           isRenderedAsQueryEditor = false;
         } else {
           isRenderedAsQueryEditor = !isGDS && currentState != null;
@@ -362,14 +362,6 @@ const DynamicForm = ({
 
     const handleEncryptedFieldsToggle = (event, field) => {
       const isEditing = computedProps[field]['disabled'];
-      setComputedProps({
-        ...computedProps,
-        [field]: {
-          ...computedProps[field],
-          disabled: !isEditing,
-        },
-      });
-
       if (isEditing) {
         optionchanged(field, '');
       } else {
@@ -378,6 +370,13 @@ const DynamicForm = ({
         const oldFieldValue = selectedDataSource?.['options']?.[field];
         optionsChanged({ ...newOptions, [field]: oldFieldValue });
       }
+      setComputedProps({
+        ...computedProps,
+        [field]: {
+          ...computedProps[field],
+          disabled: !isEditing,
+        },
+      });
     };
 
     return (

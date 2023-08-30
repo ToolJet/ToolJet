@@ -241,7 +241,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
 
   menuListStyles.padding = '4px';
 
-  const handleAddClick = () => navigate(`/${workspaceId}/global-datasources`);
+  const handleAddClick = () => navigate(`/${workspaceId}/data-sources`);
 
   return (
     <>

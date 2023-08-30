@@ -5,11 +5,18 @@ const initialState = {
   dataSources: [],
   loadingDataSources: true,
   globalDataSources: [],
+  globalDataSourceStatus: {
+    isSaving: false,
+    isEditing: false,
+    unSavedModalVisible: false,
+    action: null,
+    saveAction: null,
+  },
 };
 
 export const useDataSourcesStore = create(
   zustandDevTools(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       actions: {
         //DON'T REMOVE environmentId WHILE RESOLVING CONFLICTS !!!
@@ -29,6 +36,13 @@ export const useDataSourcesStore = create(
             });
           });
         },
+        setGlobalDataSourceStatus: (status) =>
+          set({
+            globalDataSourceStatus: {
+              ...get().globalDataSourceStatus,
+              ...status,
+            },
+          }),
       },
     }),
     { name: 'Data Source Store' }
@@ -39,3 +53,4 @@ export const useDataSources = () => useDataSourcesStore((state) => state.dataSou
 export const useGlobalDataSources = () => useDataSourcesStore((state) => state.globalDataSources);
 export const useLoadingDataSources = () => useDataSourcesStore((state) => state.loadingDataSources);
 export const useDataSourcesActions = () => useDataSourcesStore((state) => state.actions);
+export const useGlobalDataSourcesStatus = () => useDataSourcesStore((state) => state.globalDataSourceStatus);
