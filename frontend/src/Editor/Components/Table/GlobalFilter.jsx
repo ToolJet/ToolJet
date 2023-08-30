@@ -30,7 +30,7 @@ export const GlobalFilter = ({
         <input
           type="text"
           className={`align-self-center bg-transparent tj-text tj-text-xsm mx-lg-1`}
-          value={value || ''}
+          defaultValue={value || ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Search"
           data-cy="search-input-field"
