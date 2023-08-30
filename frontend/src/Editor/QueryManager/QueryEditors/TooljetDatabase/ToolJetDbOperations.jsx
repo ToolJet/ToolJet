@@ -13,6 +13,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { JoinTable } from './JoinTable';
 import clone from 'lodash/clone';
+import isEmpty from 'lodash/isEmpty';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
@@ -61,6 +62,16 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       newJoinOptions[0] = { table: selectedTable };
     }
     setJoinOptions(newJoinOptions);
+    selectedTable &&
+      setJoinTableOptions((joinOptions) => {
+        return {
+          ...joinOptions,
+          from: {
+            name: selectedTable,
+            type: 'Table',
+          },
+        };
+      });
   }, [selectedTable]);
 
   useEffect(() => {
