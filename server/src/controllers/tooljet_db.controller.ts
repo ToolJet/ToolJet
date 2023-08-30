@@ -101,8 +101,30 @@ export class TooljetDbController {
   @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
   async getDetailsOnJoin(@Body() joinQueryJsonDto: any, @Param('organizationId') organizationId) {
+    // Gathering tables used from Join coditions
+    const tableSet = new Set();
+    const joinOptions = joinQueryJsonDto?.['joins'];
+    (joinOptions || []).forEach((join) => {
+      const { table, conditions } = join;
+      tableSet.add(table);
+      conditions?.conditionsList?.forEach((condition) => {
+        const { leftField, rightField } = condition;
+        if (leftField?.table) {
+          tableSet.add(leftField?.table);
+        }
+        if (rightField?.table) {
+          tableSet.add(rightField?.table);
+        }
+      });
+    });
+
+    const tables = [...tableSet].map((table) => ({
+      name: table,
+      type: 'Table',
+    }));
+
     const params = {
-      joinQueryJson: joinQueryJsonDto,
+      joinQueryJson: { ...joinQueryJsonDto, tables: tables },
     };
 
     const result = await this.tooljetDbService.perform(organizationId, 'join_tables', params);
