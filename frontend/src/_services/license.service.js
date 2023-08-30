@@ -29,7 +29,7 @@ function get() {
 
 function update(body) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  return fetch(`${config.apiUrl}/license`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/license`, requestOptions).then(handleResponse).then(getTerms);
 }
 
 function getFeatureAccess() {
