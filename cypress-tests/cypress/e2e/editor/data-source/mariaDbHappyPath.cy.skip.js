@@ -6,7 +6,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -116,7 +116,7 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource("MariaDB");
+    selectAndAddDataSource("MariaDB");
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
@@ -158,11 +158,11 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get('[data-cy="cypress-mariadb-button"]').verifyVisibleElement(
-        "have.text",
-        "cypress-mariadb"
-      );
-  
-      deleteDatasource("cypress-mariadb");
+    cy.get('[data-cy="cypress-mariadb-button"]').verifyVisibleElement(
+      "have.text",
+      "cypress-mariadb"
+    );
+
+    deleteDatasource("cypress-mariadb");
   });
 });
