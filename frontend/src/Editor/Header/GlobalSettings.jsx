@@ -26,7 +26,6 @@ export const GlobalSettings = ({
   const [forceCodeBox, setForceCodeBox] = useState(true);
   const [realState, setRealState] = useState(currentState);
   const [showConfirmation, setConfirmationShow] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -53,22 +52,15 @@ export const GlobalSettings = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-  };
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-  };
   const outerStyles = {
     width: '142px',
     height: '32px',
-    border: !isHovering ? `1px solid var(--slate7)` : `1px solid var(--slate8)`,
     borderRadius: ' 6px',
     display: 'flex',
     paddingLeft: '4px',
     alignItems: 'center',
     gap: '4px',
-    background: showPicker ? 'var(--indigo2)' : !isHovering ? 'var(--slate1)' : 'var(--slate4)',
+    background: showPicker && 'var(--indigo2)',
     outline: showPicker && '1px solid var(--indigo9)',
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
@@ -208,8 +200,6 @@ export const GlobalSettings = ({
                       className="row mx-0 color-picker-input d-flex"
                       onClick={() => setShowPicker(true)}
                       style={outerStyles}
-                      onMouseEnter={handleMouseEnter}
-                      onMouseLeave={handleMouseLeave}
                     >
                       <div
                         data-cy={`canvas-bg-color-picker`}

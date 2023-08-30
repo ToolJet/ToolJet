@@ -6,7 +6,6 @@ import { Color } from './Color';
 
 export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
   const defaultValue = { X: 0, Y: 0, Blur: 0, Spread: 0, Color: '#00000040' };
-  const [isHovering, setIsHovering] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
 
   const popoverLabelstyle = {
@@ -69,12 +68,6 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
   };
 
   const clearBoxShadow = () => setDebouncedShadow(defaultValue);
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-  };
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-  };
   const renderSlider = (item, value) => {
     return (
       <div className="range-slider">
@@ -153,13 +146,12 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
   const outerStyles = {
     width: '142px',
     height: '32px',
-    border: !isHovering ? `1px solid var(--slate7)` : `1px solid var(--slate8)`,
     borderRadius: ' 6px',
     display: 'flex',
     paddingLeft: '4px',
     alignItems: 'center',
     gap: '4px',
-    background: showPicker ? 'var(--indigo2)' : !isHovering ? 'var(--slate1)' : 'var(--slate4)',
+    background: showPicker && 'var(--indigo2)',
     outline: showPicker && '1px solid var(--indigo9)',
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
@@ -181,8 +173,6 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
               className="row mx-0 color-picker-input d-flex align-items-center"
               style={outerStyles}
               data-cy={`${cyLabel}-picker`}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
             >
               <div
                 className="col-auto"
