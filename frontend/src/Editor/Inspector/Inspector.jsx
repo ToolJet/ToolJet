@@ -143,11 +143,22 @@ export const Inspector = ({
     if (attr) {
       allParams[param.name][attr] = value;
       const defaultValue = getDefaultValue(value);
+      // This is needed to have enable pagination as backward compatible
+      // Whenever enable pagination is false, we turn client and server side pagination as false
       if (param.name === 'enablePagination' && !resolveReferences(value, currentState)) {
         if (allParams?.['clientSidePagination']?.[attr]) {
           allParams['clientSidePagination'][attr] = value;
         }
         allParams['serverSidePagination'][attr] = value;
+      }
+      // This case is required to handle for older apps when serverSidePagination is connected to Fx
+      if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
+        allParams = {
+          ...allParams,
+          enablePagination: {
+            value: true,
+          },
+        };
       }
       if (param.type === 'select' && defaultValue) {
         allParams[defaultValue.paramName]['value'] = defaultValue.value;

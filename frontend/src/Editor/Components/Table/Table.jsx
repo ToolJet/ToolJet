@@ -233,7 +233,6 @@ export function Table({
         ..._.merge(clonedTableData[key], newChangeset[key]),
       };
     });
-
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
     fireEvent('onCellValueChanged');

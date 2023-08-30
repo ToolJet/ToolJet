@@ -4,6 +4,8 @@ import _ from 'lodash';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 
+const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
+
 export const Code = ({
   param,
   definition,
@@ -77,7 +79,7 @@ export const Code = ({
         paramLabel={displayName}
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
-        fxActive={fxActive}
+        fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
         component={component}
       />
     </div>
