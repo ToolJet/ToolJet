@@ -1,21 +1,10 @@
 import React, { useContext } from 'react';
-// import Select, { components } from 'react-select';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { Col, Container, Row } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-// import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { clone } from 'lodash';
-// import useShowPopover from '@/_hooks/useShowPopover';
-// import LeftOuterJoinIcon from '../../Icons/LeftOuterJoinIcon';
-// import RightOuterJoin from '../../Icons/RightOuterJoin';
-// import InnerJoinIcon from '../../Icons/InnerJoinIcon';
-// import FullOuterJoin from '../../Icons/FullOuterJoin';
-// import SelectBox from './SelectBox';
-// import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
-// import Remove from '@/_ui/Icon/bulkIcons/Remove';
-// import { isEmpty } from 'lodash';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
@@ -31,96 +20,10 @@ export const JoinTable = React.memo(({ darkMode }) => {
   );
 });
 
-// Base Component for Join Drop Down ----------
-// const staticJoinOperationsList = [
-//   { label: 'Inner Join', value: 'INNER' },
-//   { label: 'Left Join', value: 'LEFT' },
-//   { label: 'Right Join', value: 'RIGHT' },
-//   { label: 'Full Outer Join', value: 'FULL OUTER' },
-// ];
-
-// const DBJoinIcons = ({ joinType }) => {
-//   switch (joinType) {
-//     case 'left-join':
-//       return <LeftOuterJoinIcon />;
-//     case 'inner-join':
-//       return <InnerJoinIcon />;
-//     case 'right-join':
-//       return <RightOuterJoin />;
-//     case 'full-outer-join':
-//       return <FullOuterJoin />;
-//     default:
-//       return '';
-//   }
-// };
-
-// const JoinOperationMenu = () => {
-//   const { Option, SingleValue } = components;
-
-//   const SingleValueComponent = (props) => (
-//     <SingleValue {...props}>
-//       <DBJoinIcons joinType={props.data.value} />
-//     </SingleValue>
-//   );
-
-//   const OptionWithIcons = (props) => (
-//     <Option {...props}>
-//       <DBJoinIcons joinType={props.data.value} /> <span className="ms-1 small">{props.data.label}</span>
-//     </Option>
-//   );
-
-//   return (
-//     <div>
-//       <Select
-//         classNames={{
-//           menu: () => 'tj-scrollbar',
-//         }}
-//         menuPlacement="bottom"
-//         placeholder="Search"
-//         defaultValue={staticJoinOperationsList[0]}
-//         options={staticJoinOperationsList}
-//         components={{
-//           SingleValue: SingleValueComponent,
-//           Option: OptionWithIcons,
-//           IndicatorSeparator: () => null,
-//         }}
-//       />
-//     </div>
-//   );
-// };
-
-// Base Component for Table Drop Down ---------------
-// const DropdownIndicator = (props) => {
-//   return (
-//     components.DropdownIndicator && (
-//       <components.DropdownIndicator {...props}>
-//         <SolidIcon name="search" width="16px" />
-//       </components.DropdownIndicator>
-//     )
-//   );
-// };
-
 const SelectTableMenu = ({ darkMode }) => {
-  const {
-    // columns,
-    // listRowsOptions,
-    // limitOptionChanged,
-    // handleOptionsChange,
-    selectedTable,
-    tables,
-    joinOptions,
-    setJoinOptions: setJoins,
-  } = useContext(TooljetDatabaseContext);
+  const { selectedTable, tables, joinOptions, setJoinOptions: setJoins } = useContext(TooljetDatabaseContext);
 
   const joins = clone(joinOptions);
-  // const { Option } = components;
-
-  // const IconOptions = (props) => (
-  //   <Option {...props}>
-  //     <DBJoinIcons joinType={props.data.value} /> <span className="ms-1 small">{props.data.label}</span>
-  //   </Option>
-  // );
-
   const tableList = tables.map((t) => ({ label: t, value: t }));
 
   const handleJoinChange = (newJoin, index) => {
@@ -145,8 +48,6 @@ const SelectTableMenu = ({ darkMode }) => {
               darkMode={darkMode}
               key={i}
               index={i}
-              // conditionsList={join?.conditions?.conditionsList}
-              // operator={join?.conditions?.operator}
               data={join}
               onChange={(value) => handleJoinChange(value, i)}
               onRemove={() => setJoins((joins) => joins.filter((join, index) => index !== i))}
@@ -195,39 +96,11 @@ const SelectTableMenu = ({ darkMode }) => {
         <label className="form-label">Select</label>
         <div className="field flex-grow-1">
           <JoinSelect darkMode={darkMode} />
-          {/* <Container className="p-0">
-            <Row className="border rounded">
-              <Col sm="2" className="p-0 border-end text-center">
-                Table A
-              </Col>
-              <Col sm="10" className="p-0 border-end">
-                <DropDownSelect options={tableList} isMulti />
-              </Col>
-            </Row>
-          </Container> */}
         </div>
       </div>
     </div>
   );
 };
-
-//   "conditions": {
-//     "operator": "AND",
-//       "conditionsList": [
-//         {
-//           "operator": ">",
-//           "leftField": {
-//             "columnName": "registration_date",
-//             "table": "users",
-//             "type": "Column"
-//           },
-//           "rightField": {
-//             "value": "2022-01-01",
-//             "type": "Value"
-//           }
-//         }
-//       ]
-//   }
 
 // Component to Render Filter Section
 const RenderFilterSection = ({ darkMode }) => {
@@ -239,7 +112,8 @@ const RenderFilterSection = ({ darkMode }) => {
   // Fix all the Edge Cases
   // Have constants in a separate file
   // Edit the Codehinter UI
-  // While Executing Query - Emtpy Fields must be removed
+  // V-important: While Executing Query - Emtpy Fields must be removed *
+  // Limit Section
 
   function handleWhereFilterChange(conditionsEdited) {
     joinTableOptionsChange('conditions', conditionsEdited);
@@ -458,60 +332,3 @@ const RenderFilterSection = ({ darkMode }) => {
     </Container>
   );
 };
-
-// "order_by": [
-//   {
-//     "columnName": "total_spent",
-//     "direction": "DESC"
-//   },
-//   {
-//     "columnName": "name",
-//     "table": "users",
-//     "direction": "ASC"
-//   }
-// ]
-
-// Component to Render Sort Section
-
-// Component to Render Select Section
-const RenderSelectSection = () => {};
-
-// const tableList = [
-//   {
-//     label: 'Table A',
-//     value: 'Table A',
-//     id: '123',
-//   },
-//   {
-//     label: 'Table B',
-//     value: 'Table B',
-//     id: '2',
-//   },
-//   {
-//     label: 'Table C',
-//     value: 'Table C',
-//     id: '3',
-//   },
-//   {
-//     label: 'Table D',
-//     value: 'Table D',
-//     id: '4',
-//   },
-//   {
-//     label: 'Table E',
-//     value: 'Table E',
-//     id: '5',
-//   },
-//   {
-//     label: 'Table F',
-//     value: 'Table F',
-//     icon: 'search',
-//     options: [
-//       {
-//         label: 'Test 1',
-//         value: 2,
-//       },
-//     ],
-//     id: '6',
-//   },
-// ];

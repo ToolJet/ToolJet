@@ -70,7 +70,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     });
 
     const tables = [...tableSet];
-    tables.forEach((table) => loadTableInformation(table));
+    tables.forEach((table) => table && loadTableInformation(table));
   }, [options['join_table']?.['joins']]);
 
   useEffect(() => {
