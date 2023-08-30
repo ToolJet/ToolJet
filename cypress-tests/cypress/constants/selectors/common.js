@@ -213,6 +213,9 @@ export const commonSelectors = {
   },
   inspectorPinIcon: '[data-cy="null-option-icon"]',
   groupInputFieldLabel: '[data-cy="label-group-input-field"]',
+  pageSectionHeader: '[data-cy="dashboard-section-header"]',
+  yesButton: '[data-cy="yes-button"]',
+
   documentationLink: '[data-cy="read-documentation-option-button"]',
   nameLabel: '[data-cy="name-label"]',
   valueLabel: '[data-cy="value-label"]',
