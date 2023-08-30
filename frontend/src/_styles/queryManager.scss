@@ -1226,15 +1226,6 @@ $border-radius: 4px;
       cursor: pointer !important;
     }
 
-    .query-hinter {
-
-      .CodeMirror-scroll,
-      .CodeMirror-gutters {
-        background-color: var(--slate1);
-
-      }
-    }
-
     .codehinter-plugins {
       .code-hinter.codehinter-plugins {
         height: 32px !important;
@@ -1527,10 +1518,24 @@ $border-radius: 4px;
 
 .copilot-section-header {
   background-color: var(--slate2);
+  border: 1px solid var(--slate5);
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
 }
 
 .query-manager-input-elem {
   input {
     background-color: var(--base) !important;
+  }
+}
+
+.query-hinter {
+  border: 1px solid var(--slate5);
+
+  .cm-s-base16-light.CodeMirror,
+  .CodeMirror-scroll,
+  .CodeMirror-gutters {
+    background-color: var(--slate3) !important;
+    border-radius: 0px;
   }
 }
