@@ -3,11 +3,12 @@ export const postgreSqlSelector = {
   labelDataSources: "[data-cy='label-datasources']",
   addDatasourceLink: "[data-cy='add-datasource-link']",
 
-  allDatasourceLabelAndCount: '[data-rr-ui-event-key="#alldatasources"]',
-  databaseLabelAndCount: '[data-rr-ui-event-key="#databases"]',
-  apiLabelAndCount: '[data-rr-ui-event-key="#apis"]',
-  cloudStorageLabelAndCount: '[data-rr-ui-event-key="#cloudstorage"]',
-  dataSourceSearchInputField: '[data-cy="datasource-search-input"]',
+  allDatasourceLabelAndCount: '[data-cy="datasource-list-header"]',
+  databaseLabelAndCount: '[data-cy="databases-datasource-button"]',
+  apiLabelAndCount: '[data-cy="apis-datasource-button"]',
+  cloudStorageLabelAndCount: '[data-cy="cloudstorage-datasource-button"]',
+  pluginsLabelAndCount: '[data-cy="plugins-datasource-button"]',
+  dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
   dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
@@ -23,7 +24,7 @@ export const postgreSqlSelector = {
   linkReadDocumentation: '[data-cy="link-read-documentation"]',
   buttonTestConnection: '[data-cy="test-connection-button"]',
   connectionFailedText: '[data-cy="test-connection-failed-text"]',
-  buttonSave: '[data-cy="db-connection-save-button"]',
+  buttonSave: '[data-cy="db-connection-save-button"] > .tj-base-btn',
   dangerAlertNotSupportSSL: '.go3958317564',
 
   passwordTextField: '[data-cy="password-text-field"]',

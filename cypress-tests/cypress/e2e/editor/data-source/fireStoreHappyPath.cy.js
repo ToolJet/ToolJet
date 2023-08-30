@@ -11,7 +11,7 @@ import {
 } from "Support/utils/dataSource";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 const data = {};
 data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -97,7 +97,7 @@ describe("Data source Firestore", () => {
   });
 
   it("Should verify the functionality of Firestore connection form.", () => {
-    selectDataSource(firestoreText.firestore);
+    selectAndAddDataSource(firestoreText.firestore);
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',

@@ -9,7 +9,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -106,7 +106,7 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource("TypeSense");
+    selectAndAddDataSource("TypeSense");
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
