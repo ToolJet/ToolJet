@@ -28,7 +28,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
-
     appDefinition,
     setSelectedComponent,
     removeComponent,
