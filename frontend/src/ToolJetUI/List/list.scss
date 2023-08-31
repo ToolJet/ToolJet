@@ -51,7 +51,7 @@ button:focus:not(:focus-visible) {
   min-width: 10.625rem; // 170px
   color: var(--slate12);
   border-radius: 6px;
-  background-color: var(--base) !important;
+  background-color: var(--base);
 
 
   .list-item-popover-option {

@@ -84,7 +84,6 @@ function ListItem({
             </span>
           )}
         </div>
-
         <div className="col-auto">
           {enableActionsMenu && isHovered && (
             <OverlayTrigger
@@ -100,7 +99,7 @@ function ListItem({
                         className="list-item-popover-option"
                         key={action.label}
                         onClick={(e) => {
-                          e.stopPropagation();
+                          // e.stopPropagation();
                           onMenuOptionClick(primaryText, action.label);
                         }}
                       >

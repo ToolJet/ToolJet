@@ -1032,6 +1032,7 @@ class TableComponent extends React.Component {
                                         onMenuOptionClick={(listItem, menuOptionLabel) => {
                                           if (menuOptionLabel === 'Delete') this.removeColumn(index);
                                         }}
+                                        darkMode={darkMode}
                                         menuActions={[
                                           {
                                             label: 'Delete',
