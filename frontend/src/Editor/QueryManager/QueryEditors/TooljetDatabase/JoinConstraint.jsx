@@ -50,13 +50,13 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { columns, selectedTable, tables, loadTableInformation, tableInfo } = useContext(TooljetDatabaseContext);
   const tableList = tables.map((t) => ({ label: t, value: t }));
   //   const [leftFieldTable, setLeftFieldTable] = useState({ label: selectedTable, value: selectedTable });
-  const leftFieldTable = data?.table;
   //   const [joinType, setJoinType] = useState(staticJoinOperationsList[0]);
   const joinType = data?.joinType;
   //   const [conditionsList, setConditionsList] = useState([{}]);
   //   const [operator, setOperator] = useState();
   const conditionsList = isEmpty(data?.conditions?.conditionsList) ? [{}] : data?.conditions?.conditionsList;
   const operator = data?.conditions?.operator;
+  const leftFieldTable = conditionsList?.[0]?.leftField?.table || selectedTable;
   const rightFieldTable = conditionsList?.[0]?.rightField?.table;
 
   //   useEffect(() => {
@@ -99,11 +99,22 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             <DropDownSelect
               options={tableList}
               darkMode={darkMode}
-              onChange={(value) => onChange({ ...data, table: value?.value })}
+              onChange={(value) => {
+                const newData = { ...data };
+                const { conditionsList = [{}] } = newData?.conditions || {};
+                const newConditionsList = conditionsList.map((condition) => {
+                  const newCondition = { ...condition };
+                  set(newCondition, 'leftField.table', value?.value);
+                  return newCondition;
+                });
+                set(newData, 'conditions.conditionsList', newConditionsList);
+                set(newData, 'table', value?.value);
+                onChange(newData);
+              }}
               value={tableList.find((val) => val?.value === leftFieldTable)}
             />
           ) : (
-            <div className="tj-small-btn px-2">{leftFieldTable}</div>
+            <div className="tj-small-btn px-2">{selectedTable}</div>
           )}
         </Col>
         <Col sm="2" className="p-0 border-end">
@@ -127,6 +138,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                 return newCondition;
               });
               set(newData, 'conditions.conditionsList', newConditionsList);
+              set(newData, 'table', value?.value);
               onChange(newData);
             }}
             value={tableList.find((val) => val?.value === rightFieldTable)}
