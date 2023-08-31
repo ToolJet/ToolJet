@@ -137,7 +137,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
                         }`}
-                        data-cy="icon-database"
+                        data-cy="icon-workflows"
                         style={{
                           display: 'flex',
                           flexDirection: 'column',
