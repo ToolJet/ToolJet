@@ -140,6 +140,7 @@ export default class License {
       oidcEnabled: this.oidc,
       expiryDate: this.expiryDate,
       isExpired: this.isExpired,
+      isLicenseValid: this.isLicenseValid,
       editorUsers: this.editorUsers,
       viewerUsers: this.viewerUsers,
       workspacesCount: this.workspacesCount,

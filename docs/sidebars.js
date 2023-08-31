@@ -215,6 +215,16 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'Workflows',
+      'items': [
+        'workflows/overview',
+        'workflows/nodes',
+        'workflows/permissions',
+        'workflows/logs',
+      ],
+    },
+    {
+      'type': 'category',
       'label': 'Org Management',
       'items': [
         {
@@ -336,6 +346,7 @@ const sidebars = {
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
         'how-to/bulk-update-multiple-rows',
+        'how-to/delete-multiple-rows',
         'how-to/use-server-side-pagination',
         'how-to/access-currentuser',
         'how-to/use-axios-in-runjs',

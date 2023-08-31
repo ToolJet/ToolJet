@@ -5,7 +5,7 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 import { deleteDatasource, closeDSModal } from "Support/utils/dataSource";
 
@@ -97,7 +97,7 @@ describe("Data source SMTP", () => {
   });
 
   it("Should verify the functionality of SMTP connection form.", () => {
-    selectDataSource("SMTP");
+    selectAndAddDataSource("SMTP");
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
