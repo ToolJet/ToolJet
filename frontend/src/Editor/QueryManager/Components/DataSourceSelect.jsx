@@ -58,7 +58,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
           <div>
             {index === 0 && (
               <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
-                Global datasources
+                Global data sources
               </div>
             )}
             <DataSourceIcon source={sources?.[0]} height={16} />

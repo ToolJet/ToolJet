@@ -270,6 +270,7 @@ const DynamicForm = ({
           currentState,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
         };
       }
       case 'react-component-oauth-authentication':
@@ -297,6 +298,7 @@ const DynamicForm = ({
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           optionchanged,
           workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
@@ -309,6 +311,7 @@ const DynamicForm = ({
           selectedDataSource,
           currentAppEnvironmentId,
           workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
         };
       case 'tooljetdb-operations':
         return {
@@ -365,6 +368,7 @@ const DynamicForm = ({
           custom_query_params: options.custom_query_params?.value,
           spec: options.spec?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
         };
       default:
         return {};

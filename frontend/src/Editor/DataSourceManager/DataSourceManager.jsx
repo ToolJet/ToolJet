@@ -922,20 +922,22 @@ class DataSourceManagerComponent extends React.Component {
                   {this.props.t('globals.readDocumentation', 'Read documentation')}
                 </a>
               </div>
-              <div className="col-auto">
-                <ButtonSolid
-                  leftIcon="floppydisk"
-                  fill={'#FDFDFE'}
-                  className="m-2"
-                  disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
-                  variant="primary"
-                  onClick={this.createDataSource}
-                >
-                  {isSaving
-                    ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
-                    : this.props.t('globals.save', 'Save')}
-                </ButtonSolid>
-              </div>
+              {showSaveBtn && (
+                <div className="col-auto">
+                  <ButtonSolid
+                    leftIcon="floppydisk"
+                    fill={'#FDFDFE'}
+                    className="m-2"
+                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                    variant="primary"
+                    onClick={this.createDataSource}
+                  >
+                    {isSaving
+                      ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
+                      : this.props.t('globals.save', 'Save')}
+                  </ButtonSolid>
+                </div>
+              )}
             </Modal.Footer>
           )}
         </Modal>

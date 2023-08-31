@@ -14,6 +14,7 @@ const Zendesk = ({
   selectedDataSource,
   currentAppEnvironmentId,
   workspaceConstants,
+  isDisabled,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
@@ -57,6 +58,7 @@ const Zendesk = ({
             value={options?.subdomain?.value ?? ''}
             placeholder="e.g. tooljet"
             workspaceConstants={workspaceConstants}
+            disabled={isDisabled}
           />
         </div>
 
@@ -69,6 +71,7 @@ const Zendesk = ({
             value={options?.client_id?.value}
             placeholder="e.g. tj-zendesk"
             workspaceConstants={workspaceConstants}
+            disabled={isDisabled}
           />
         </div>
         <div className="col-md-12 mb-2">
@@ -85,6 +88,7 @@ const Zendesk = ({
             onChange={(e) => optionchanged('client_secret', e.target.value)}
             value={options?.client_secret?.value}
             workspaceConstants={workspaceConstants}
+            disabled={isDisabled}
           />
         </div>
 
@@ -101,7 +105,7 @@ const Zendesk = ({
             <div>
               <Radio
                 checked={options?.access_type?.value === 'read'}
-                disabled={authStatus === 'waiting_for_token'}
+                disabled={authStatus === 'waiting_for_token' || isDisabled}
                 onClick={() => optionchanged('access_type', 'read')}
                 text="Read only"
                 helpText={t(
@@ -112,7 +116,7 @@ const Zendesk = ({
               />
               <Radio
                 checked={options?.access_type?.value === 'write'}
-                disabled={authStatus === 'waiting_for_token'}
+                disabled={authStatus === 'waiting_for_token' || isDisabled}
                 onClick={() => optionchanged('access_type', 'write')}
                 text="Read and write"
                 helpText={t(
@@ -131,7 +135,7 @@ const Zendesk = ({
             <div>
               <Button
                 className={`m2 ${isSaving ? ' loading' : ''}`}
-                disabled={isSaving}
+                disabled={isSaving || isDisabled}
                 onClick={() => saveDataSource()}
               >
                 {isSaving ? 'Saving...' : 'Save data source'}
@@ -142,7 +146,7 @@ const Zendesk = ({
           {(!authStatus || authStatus === 'waiting_for_url') && (
             <Button
               className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
-              disabled={isSaving}
+              disabled={isSaving || isDisabled}
               onClick={() => authZendesk()}
             >
               {selectedDataSource?.id ? 'Reconnect' : 'Connect'} to Zendesk

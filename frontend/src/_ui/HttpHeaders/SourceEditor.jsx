@@ -1,7 +1,14 @@
 import React from 'react';
 import Input from '../Input';
 
-export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, workspaceConstants }) => {
+export default ({
+  options,
+  addNewKeyValuePair,
+  removeKeyValuePair,
+  keyValuePairValueChanged,
+  workspaceConstants,
+  isDisabled,
+}) => {
   return (
     <div className="table-responsive table-no-divider">
       <table className="table table-vcenter">
@@ -25,6 +32,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
                     workspaceConstants={workspaceConstants}
                     placeholder="key"
                     autoComplete="off"
+                    disabled={isDisabled}
                   />
                 </td>
                 <td>
@@ -36,12 +44,14 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
                     className="form-control no-border"
                     onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
                     workspaceConstants={workspaceConstants}
+                    disabled={isDisabled}
                   />
                 </td>
                 {index > 0 && (
                   <td>
                     <span
                       role="button"
+                      disabled={isDisabled}
                       onClick={() => {
                         removeKeyValuePair(index);
                       }}
@@ -52,7 +62,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
                 )}
                 {index === 0 && (
                   <td>
-                    <button className="btn btn-sm btn-primary" onClick={addNewKeyValuePair}>
+                    <button disabled={isDisabled} className="btn btn-sm btn-primary" onClick={addNewKeyValuePair}>
                       Add
                     </button>
                   </td>
