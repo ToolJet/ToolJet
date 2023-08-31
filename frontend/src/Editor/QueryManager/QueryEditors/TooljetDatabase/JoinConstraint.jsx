@@ -48,7 +48,7 @@ import { clone, cloneDeep, isEmpty } from 'lodash';
   */
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
-  const { columns, selectedTable, tables, loadTableInformation, tableInfo } = useContext(TooljetDatabaseContext);
+  const { selectedTable, tables, joinOptions } = useContext(TooljetDatabaseContext);
   const tableList = tables.map((t) => ({ label: t, value: t }));
   //   const [leftFieldTable, setLeftFieldTable] = useState({ label: selectedTable, value: selectedTable });
   //   const [joinType, setJoinType] = useState(staticJoinOperationsList[0]);
@@ -59,6 +59,25 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const operator = data?.conditions?.operator;
   const leftFieldTable = conditionsList?.[0]?.leftField?.table || selectedTable;
   const rightFieldTable = conditionsList?.[0]?.rightField?.table;
+
+  const tableSet = new Set();
+  (joinOptions || [])
+    .filter((join, i) => i < index)
+    .forEach((join) => {
+      const { table, conditions } = join;
+      tableSet.add(table);
+      conditions?.conditionsList?.forEach((condition) => {
+        const { leftField, rightField } = condition;
+        if (leftField?.table) {
+          tableSet.add(leftField?.table);
+        }
+        if (rightField?.table) {
+          tableSet.add(rightField?.table);
+        }
+      });
+    });
+  tableSet.add(selectedTable);
+  const leftTableList = [...tableSet].map((t) => ({ label: t, value: t }));
 
   //   useEffect(() => {
   //     onChange &&
@@ -98,7 +117,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         <Col sm="4" className="p-0 border-end">
           {index ? (
             <DropDownSelect
-              options={tableList}
+              options={leftTableList}
               darkMode={darkMode}
               onChange={(value) => {
                 const newData = { ...data };
