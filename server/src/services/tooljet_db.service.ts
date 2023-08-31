@@ -273,6 +273,7 @@ export class TooljetDbService {
   private constructSelectStatement(selectStatementInputList, internalTableNametoIdMap) {
     if (selectStatementInputList.length) {
       const selectQueryFields = selectStatementInputList
+        .filter((selectInput) => selectInput.name)
         .map((field) => {
           let fieldExpression = ``;
           if (field.function) fieldExpression += `${field.function}(`;
