@@ -938,7 +938,7 @@
             "maintenanceMode": "Maintenance mode",
             "maxWidthOfCanvas": "Max width of canvas",
             "maxHeightOfCanvas": "Max height of canvas",
-            "backgroundColorOfCanvas": "Background color of canvas"
+            "backgroundColorOfCanvas": "Canvas background"
         },
         "Back": {
             "text": "Back",

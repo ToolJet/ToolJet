@@ -60,7 +60,11 @@ const ParameterForm = ({
         {isEdit ? 'UPDATE PARAMETER' : 'ADD PARAMETER'}
       </Popover.Header>
       <Popover.Body className={darkMode && 'dark-theme dark-theme'} key={'1'} bsPrefix="popover-body">
-        <Form className="container p-0" onSubmit={handleSubmit} style={{ paddingRight: '25px !important' }}>
+        <Form
+          className="container p-0 tj-app-input"
+          onSubmit={handleSubmit}
+          style={{ paddingRight: '25px !important' }}
+        >
           <Form.Group as={Row} className="mb-2 pr-1">
             <Form.Label column htmlFor="paramName">
               Name

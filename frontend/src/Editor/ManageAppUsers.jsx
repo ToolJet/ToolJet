@@ -257,7 +257,7 @@ class ManageAppUsersComponent extends React.Component {
               <Link
                 to={getPrivateRoute('workspace_settings')}
                 target="_blank"
-                className="btn color-primary mt-3"
+                className="tj-primary-btn tj-base-btn"
                 data-cy="manage-users-button"
               >
                 Manage users

@@ -7872,7 +7872,7 @@ tbody {
 .layout-header {
   position: fixed;
   right: 0;
-  left: 56px;
+  left: 48px;
   z-index: 1;
   background: var(--base);
   height: 64px;
@@ -11549,10 +11549,6 @@ tbody {
   background-color: transparent !important;
   display: flex;
   align-items: center;
-}
-
-.codehinter-border-bottom {
-  border-bottom: 1px solid var(--slate5);
 }
 
 .copilot-codehinter-wrap {
