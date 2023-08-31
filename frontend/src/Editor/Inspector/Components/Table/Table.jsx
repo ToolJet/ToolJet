@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../../EventManager';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
-import { ProgramaticallyHandleToggleSwitch } from './ProgramaticallyHandleToggleSwitch';
+import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -262,6 +262,27 @@ class TableComponent extends React.Component {
               popOverCallback={(showing) => {
                 this.setColumnPopoverRootCloseBlocker('tableKey', showing);
               }}
+            />
+          </div>
+          <div className="field mb-2">
+            <label className="form-label">
+              {this.props.t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}
+            </label>
+            <SelectSearch
+              className={'select-search'}
+              options={[
+                { name: 'Left', value: 'left' },
+                { name: 'Center', value: 'center' },
+                { name: 'Right', value: 'right' },
+              ]}
+              value={column?.horizontalAlignment ?? 'left'}
+              search={true}
+              closeOnSelect={true}
+              onChange={(value) => {
+                this.onColumnItemChange(index, 'horizontalAlignment', value);
+              }}
+              fuzzySearch
+              placeholder={this.props.t('globals.select', 'Select') + '...'}
             />
           </div>
 
@@ -673,7 +694,7 @@ class TableComponent extends React.Component {
           )}
           {column.columnType === 'link' && (
             <div className="field mb-2">
-              <ProgramaticallyHandleToggleSwitch
+              <ProgramaticallyHandleProperties
                 label="Link target"
                 currentState={this.state.currentState}
                 index={index}
@@ -682,14 +703,21 @@ class TableComponent extends React.Component {
                 property="linkTarget"
                 props={column}
                 component={this.props.component}
-                paramMeta={{ type: 'select', displayName: 'Link Target' }}
+                paramMeta={{
+                  type: 'select',
+                  displayName: 'Link Target',
+                  options: [
+                    { name: 'Same window', value: '_self' },
+                    { name: 'New window', value: '_blank' },
+                  ],
+                }}
                 paramType="properties"
               />
             </div>
           )}
 
           {!['image', 'link'].includes(column.columnType) && (
-            <ProgramaticallyHandleToggleSwitch
+            <ProgramaticallyHandleProperties
               label="make editable"
               currentState={this.state.currentState}
               index={index}
@@ -703,7 +731,7 @@ class TableComponent extends React.Component {
             />
           )}
 
-          <ProgramaticallyHandleToggleSwitch
+          <ProgramaticallyHandleProperties
             label="Column visibility"
             currentState={this.state.currentState}
             index={index}
@@ -783,7 +811,7 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
           />
-          <ProgramaticallyHandleToggleSwitch
+          <ProgramaticallyHandleProperties
             label="Disable button"
             currentState={this.state.currentState}
             index={index}
