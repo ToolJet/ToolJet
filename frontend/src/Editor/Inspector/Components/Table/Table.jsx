@@ -549,7 +549,7 @@ class TableComponent extends React.Component {
               <label data-cy={`label-date-parse-format`} className="form-label">
                 {this.props.t('widget.Table.dateParseformat', 'Date Parse Format')}
               </label>
-              <div className="field mb-2">
+              <div className="field mb-2 tj-app-input">
                 <input
                   data-cy={`input-date-parse-format`}
                   type="text"
