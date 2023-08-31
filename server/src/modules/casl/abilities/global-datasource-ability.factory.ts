@@ -27,9 +27,9 @@ export class GlobalDataSourceAbilityFactory {
       Ability as AbilityClass<GlobalDataSourcesAbility>
     );
 
-    const { isExpired, isLicenseValid } = await this.licenseService.getLicenseTerms(LICENSE_FIELD.STATUS);
+    const isValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
-    if (isExpired || !isLicenseValid) {
+    if (!isValid) {
       can('fetchEnvironments', DataSource);
       can('readGlobalDataSource', DataSource);
       can('createGlobalDataSource', DataSource);

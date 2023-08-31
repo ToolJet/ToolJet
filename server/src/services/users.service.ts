@@ -17,7 +17,7 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { UserDetails } from 'src/entities/user_details.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { LicenseService } from './license.service';
-import { LICENSE_FIELD, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -829,7 +829,7 @@ export class UsersService {
       return;
     }
 
-    if (superadminUsers !== 'UNLIMITED') {
+    if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (superadmin === -1) {
         superadmin = await this.fetchTotalSuperadminCount(manager);
       }
@@ -838,14 +838,14 @@ export class UsersService {
       }
     }
 
-    if (users !== 'UNLIMITED' && (await this.getCount(true, manager)) > users) {
+    if (users !== LICENSE_LIMIT.UNLIMITED && (await this.getCount(true, manager)) > users) {
       throw new HttpException('You have reached your limit for number of users.', 451);
     }
 
-    if (editorUsers !== 'UNLIMITED' && viewerUsers !== 'UNLIMITED') {
+    if (editorUsers !== LICENSE_LIMIT.UNLIMITED && viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
       ({ editor, viewer } = await this.fetchTotalViewerEditorCount(manager));
     }
-    if (editorUsers !== 'UNLIMITED') {
+    if (editorUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (editor === -1) {
         editor = await this.fetchTotalEditorCount(manager);
       }
@@ -854,7 +854,7 @@ export class UsersService {
       }
     }
 
-    if (viewerUsers !== 'UNLIMITED') {
+    if (viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (viewer === -1) {
         ({ viewer } = await this.fetchTotalViewerEditorCount(manager));
       }
@@ -877,28 +877,25 @@ export class UsersService {
 
     switch (type) {
       case LIMIT_TYPE.TOTAL: {
-        const currentUsersCount = await this.getCount(true, manager);
-        if (users === 'UNLIMITED') {
+        if (users === LICENSE_LIMIT.UNLIMITED) {
           return;
-        } else {
-          return generatePayloadForLimits(currentUsersCount, users, licenseStatus);
         }
+        const currentUsersCount = await this.getCount(true, manager);
+        return generatePayloadForLimits(currentUsersCount, users, licenseStatus);
       }
       case LIMIT_TYPE.EDITOR: {
-        const currentEditorsCount = await this.fetchTotalEditorCount(manager);
-        if (editorUsers === 'UNLIMITED') {
+        if (editorUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
-        } else {
-          return generatePayloadForLimits(currentEditorsCount, editorUsers, licenseStatus);
         }
+        const currentEditorsCount = await this.fetchTotalEditorCount(manager);
+        return generatePayloadForLimits(currentEditorsCount, editorUsers, licenseStatus);
       }
       case LIMIT_TYPE.VIEWER: {
-        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager);
-        if (viewerUsers === 'UNLIMITED') {
+        if (viewerUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
-        } else {
-          return generatePayloadForLimits(currentViewersCount, viewerUsers, licenseStatus);
         }
+        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager);
+        return generatePayloadForLimits(currentViewersCount, viewerUsers, licenseStatus);
       }
       case LIMIT_TYPE.ALL: {
         const currentUsersCount = await this.getCount(true, manager);

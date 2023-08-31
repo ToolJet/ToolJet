@@ -40,7 +40,7 @@ export class DataSourcesService {
     const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
     const groupPermissions = await this.usersService.groupPermissions(user);
     const canPerformCreateOrDelete = groupPermissions?.some((gp) => gp['dataSourceCreate'] || gp['dataSourceDelete']);
-    const { isExpired, isLicenseValid } = await this.licenseService.getLicenseTerms(LICENSE_FIELD.STATUS);
+    const isValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
@@ -56,7 +56,7 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
 
       if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
-        if (!canPerformCreateOrDelete && !isExpired && isLicenseValid) {
+        if (!canPerformCreateOrDelete && isValid) {
           query
             .innerJoin('data_source.groupPermissions', 'group_permissions')
             .innerJoin(
