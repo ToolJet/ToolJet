@@ -45,7 +45,6 @@ class TableComponent extends React.Component {
       actionPopOverRootClose: true,
       showPopOver: false,
       popOverRootCloseBlockers: [],
-      showActionMenu: false,
     };
   }
   componentDidMount() {
@@ -994,7 +993,7 @@ class TableComponent extends React.Component {
           <div>{renderCustomElement('useDynamicColumn')}</div>
           {useDynamicColumn && <div>{renderCustomElement('columnData')}</div>}
           {!useDynamicColumn && (
-            <>
+            <List>
               <DragDropContext
                 onDragEnd={(result) => {
                   this.onDragEnd(result);
@@ -1021,26 +1020,24 @@ class TableComponent extends React.Component {
                                   rootClose={this.state.popOverRootCloseBlockers.length === 0}
                                   overlay={this.columnPopover(item, index)}
                                 >
-                                  <div>
-                                    <List>
-                                      <List.Item
-                                        primaryText={resolvedItemName}
-                                        secondaryText={capitalize(item?.columnType)}
-                                        data-cy={`column-${resolvedItemName}`}
-                                        enableActionsMenu
-                                        isEditable={item.isEditable === '{{true}}'}
-                                        onMenuOptionClick={(listItem, menuOptionLabel) => {
-                                          if (menuOptionLabel === 'Delete') this.removeColumn(index);
-                                        }}
-                                        darkMode={darkMode}
-                                        menuActions={[
-                                          {
-                                            label: 'Delete',
-                                            icon: '',
-                                          },
-                                        ]}
-                                      />
-                                    </List>
+                                  <div key={resolvedItemName}>
+                                    <List.Item
+                                      primaryText={resolvedItemName}
+                                      secondaryText={capitalize(item?.columnType)}
+                                      data-cy={`column-${resolvedItemName}`}
+                                      enableActionsMenu
+                                      isEditable={item.isEditable === '{{true}}'}
+                                      onMenuOptionClick={(listItem, menuOptionLabel) => {
+                                        if (menuOptionLabel === 'Delete') this.removeColumn(index);
+                                      }}
+                                      darkMode={darkMode}
+                                      menuActions={[
+                                        {
+                                          label: 'Delete',
+                                          icon: '',
+                                        },
+                                      ]}
+                                    />
                                   </div>
                                 </OverlayTrigger>
                               </div>
@@ -1061,7 +1058,7 @@ class TableComponent extends React.Component {
                   </AddNewButton>
                 </div>
               </div>
-            </>
+            </List>
           )}
         </div>
       ),

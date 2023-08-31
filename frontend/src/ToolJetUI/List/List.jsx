@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import './list.scss';
 import ListGroup from 'react-bootstrap/ListGroup';
-import SortableList from '@/_components/SortableList';
-import { Button } from '@/_ui/LeftSidebar';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
@@ -11,26 +9,13 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 
 function List({ children, ...restProps }) {
-  const [showActionsMenu, setShowActionsMenu] = useState(false);
-
-  const renderChildrenWithProps = () => {
-    return React.Children.map(children, (child) => {
-      if (React.isValidElement(child)) {
-        return React.cloneElement(child, { showActionsMenu, setShowActionsMenu });
-      }
-      return child;
-    });
-  };
-  return <ListGroup {...restProps}>{renderChildrenWithProps()}</ListGroup>;
+  return <ListGroup {...restProps}>{children}</ListGroup>;
 }
 
 function ListItem({
   primaryText = '',
   secondaryText = '',
-  isDraggable = false,
   Icon,
-  showActionsMenu,
-  setShowActionsMenu,
   darkMode,
   enableActionsMenu,
   menuActions = [],
@@ -39,6 +24,8 @@ function ListItem({
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
+
   const closeMenu = () => {
     setShowActionsMenu(false);
   };
@@ -58,34 +45,24 @@ function ListItem({
   }, [JSON.stringify({ showActionsMenu })]);
 
   return (
-    <ListGroup.Item
-      action
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      {...restProps}
-    >
-      <div className="row" role="button">
-        {(Icon || isDraggable) && (
-          <div className="col-auto d-flex align-items-center">
-            {!isHovered && Icon && <Icon />}
-            <SortableList.DragHandle show={isDraggable && isHovered} />
+    <div>
+      <ListGroup.Item onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} {...restProps}>
+        <div className="row">
+          {Icon && <div className="col-auto d-flex align-items-center">{!isHovered && Icon && <Icon />}</div>}
+          <div
+            className="col text-truncate cursor-pointer"
+            data-cy={`pages-name-${String(primaryText).toLowerCase()}`}
+            style={Icon ? { paddingLeft: '0px' } : { paddingLeft: '8px' }}
+          >
+            {primaryText}
+            <span className="list-item-secondary-text">{secondaryText}</span>
+            {isEditable && (
+              <span style={{ marginLeft: '8px' }}>
+                <Edit width={16} />
+              </span>
+            )}
           </div>
-        )}
-        <div
-          className="col text-truncate"
-          data-cy={`pages-name-${String(primaryText).toLowerCase()}`}
-          style={Icon || isDraggable ? { paddingLeft: '0px' } : { paddingLeft: '8px' }}
-        >
-          {primaryText}
-          <span className="list-item-secondary-text">{secondaryText}</span>
-          {isEditable && (
-            <span style={{ marginLeft: '8px' }}>
-              <Edit width={16} />
-            </span>
-          )}
-        </div>
-        <div className="col-auto">
-          {enableActionsMenu && isHovered && (
+          <div className="col-auto">
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -99,7 +76,7 @@ function ListItem({
                         className="list-item-popover-option"
                         key={action.label}
                         onClick={(e) => {
-                          // e.stopPropagation();
+                          e.stopPropagation();
                           onMenuOptionClick(primaryText, action.label);
                         }}
                       >
@@ -120,26 +97,28 @@ function ListItem({
               }
             >
               <span>
-                <ButtonSolid
-                  variant="tertiary"
-                  size="xs"
-                  className={'list-menu-option-btn'}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setShowActionsMenu(true);
-                  }}
-                  // data-cy={'page-menu'}
-                >
-                  <span>
-                    <MoreVertical fill={'var(--slate12)'} width={'20'} />
-                  </span>
-                </ButtonSolid>
+                {enableActionsMenu && isHovered && (
+                  <ButtonSolid
+                    variant="tertiary"
+                    size="xs"
+                    className={'list-menu-option-btn'}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setShowActionsMenu(true);
+                    }}
+                    // data-cy={'page-menu'}
+                  >
+                    <span>
+                      <MoreVertical fill={'var(--slate12)'} width={'20'} />
+                    </span>
+                  </ButtonSolid>
+                )}
               </span>
             </OverlayTrigger>
-          )}
+          </div>
         </div>
-      </div>
-    </ListGroup.Item>
+      </ListGroup.Item>
+    </div>
   );
 }
 

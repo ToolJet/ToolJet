@@ -16,15 +16,15 @@
   }
 }
 
-.list-group-item-action:hover {
+.list-group-item:hover {
   background-color: var(--slate4) !important;
 }
 
-.list-group-item-action:disabled {
+.list-group-item:disabled {
   color: var(--slate9) !important;
 }
 
-.list-group-item-action:focus {
+.list-group-item:focus {
   background-color: unset !important;
 }
 
@@ -33,7 +33,7 @@ button:focus:not(:focus-visible) {
   outline: 1px solid rgba(255, 255, 255, 0.00) !important;
 }
 
-.list-group-item-action:focus-visible {
+.list-group-item:focus-visible {
   border-radius: 6px !important;
   border: 1px solid var(--bases-transparent, rgba(255, 255, 255, 0.00)) !important;
   /* Focus rings/Gray/light */
