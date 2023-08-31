@@ -703,7 +703,7 @@ class TableComponent extends React.Component {
               property="isEditable"
               props={column}
               component={this.props.component}
-              paramMeta={{ type: 'toggle', displayName: 'make editable' }}
+              paramMeta={{ type: 'toggle', displayName: 'Make editable' }}
               paramType="properties"
             />
           )}
