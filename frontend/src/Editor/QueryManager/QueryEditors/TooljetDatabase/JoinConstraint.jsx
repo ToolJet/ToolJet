@@ -6,6 +6,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import Remove from '@/_ui/Icon/solidIcons/Remove';
+import Icon from '@/_ui/Icon/solidIcons/index';
 import set from 'lodash/set';
 import { clone, cloneDeep, isEmpty } from 'lodash';
 
@@ -117,15 +118,16 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             <div className="tj-small-btn px-2">{selectedTable}</div>
           )}
         </Col>
-        <Col sm="2" className="p-0 border-end">
+        <Col sm="1" className="p-0 border-end">
           <DropDownSelect
             options={staticJoinOperationsList}
             darkMode={darkMode}
             onChange={(value) => onChange({ ...data, joinType: value?.value })}
             value={staticJoinOperationsList.find((val) => val.value === joinType)}
+            renderSelected={(selected) => (selected ? <Icon name={selected?.icon} /> : '')}
           />
         </Col>
-        <Col sm="4" className="p-0">
+        <Col sm="5" className="p-0">
           <DropDownSelect
             options={tableList}
             darkMode={darkMode}
@@ -270,7 +272,7 @@ const JoinOn = ({
           }}
         />
       </Col>
-      <Col sm="2" className="p-0 border-end">
+      <Col sm="1" className="p-0 border-end">
         <DropDownSelect
           options={operators}
           darkMode={darkMode}
@@ -280,7 +282,7 @@ const JoinOn = ({
           }}
         />
       </Col>
-      <Col sm="4" className="p-0 d-flex">
+      <Col sm="5" className="p-0 d-flex">
         <div className="flex-grow-1">
           <DropDownSelect
             options={rightFieldOptions}
@@ -312,10 +314,10 @@ const JoinOn = ({
 
 // Base Component for Join Drop Down ----------
 const staticJoinOperationsList = [
-  { label: 'Inner Join', value: 'INNER' },
-  { label: 'Left Join', value: 'LEFT' },
-  { label: 'Right Join', value: 'RIGHT' },
-  { label: 'Full Outer Join', value: 'FULL OUTER' },
+  { label: 'Inner Join', value: 'INNER', icon: 'innerjoin' },
+  { label: 'Left Join', value: 'LEFT', icon: 'leftouterjoin' },
+  { label: 'Right Join', value: 'RIGHT', icon: 'rightouterjoin' },
+  { label: 'Full Outer Join', value: 'FULL OUTER', icon: 'fullouterjoin' },
 ];
 
 export default JoinConstraint;
