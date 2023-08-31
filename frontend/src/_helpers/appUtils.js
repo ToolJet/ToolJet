@@ -32,6 +32,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1323,7 +1324,8 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
 };
 
 export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCut = false) => {
-  const { selectedComponents, appDefinition, currentPageId } = _ref.state;
+  const { appDefinition, currentPageId } = _ref.state;
+  const selectedComponents = useEditorStore.getState().selectedComponents;
   if (selectedComponents.length < 1) return getSelectedText();
   const { components: allComponents } = appDefinition.pages[currentPageId];
   let newDefinition = _.cloneDeep(appDefinition);

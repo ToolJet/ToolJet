@@ -2807,6 +2807,7 @@ input:focus-visible {
   border-bottom-right-radius: 3px;
   box-sizing: border-box;
   font-family: "Source Code Pro", monospace;
+  word-break: break-word;
 
   .heading {
     font-weight: 700;
@@ -3317,6 +3318,16 @@ input:focus-visible {
 
 .main-wrapper.theme-dark {
   background-color: #2b394b;
+}
+
+.jet-table {
+  .global-search-field {
+    background: transparent;
+  }
+}
+
+.jet-table-image-column {
+  width: 100%;
 }
 
 .modal-backdrop.show {

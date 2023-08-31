@@ -14,7 +14,7 @@ import {
   useColumnOrder,
 } from 'react-table';
 import cx from 'classnames';
-import { resolveReferences, validateWidget } from '@/_helpers/utils';
+import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
 import { Pagination } from './Pagination';
@@ -1177,12 +1177,14 @@ export function Table({
                                       {...provided.dragHandleProps}
                                       // {...extraProps}
                                       ref={provided.innerRef}
-                                      style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                      style={{
+                                        ...getItemStyle(snapshot, provided.draggableProps.style),
+                                      }}
                                     >
                                       <div
-                                        className={`${
-                                          column.columnType !== 'selector' && isEditable && 'd-flex custom-gap-4'
-                                        }`}
+                                        className={`w-100 d-flex justify-content-${determineJustifyContentValue(
+                                          column?.horizontalAlignment ?? ''
+                                        )} ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
                                       >
                                         <div>
                                           {column.columnType !== 'selector' && isEditable && (
@@ -1309,6 +1311,7 @@ export function Table({
                   >
                     {row.cells.map((cell, index) => {
                       let cellProps = cell.getCellProps();
+                      cellProps.style.textAlign = cell.column?.horizontalAlignment;
                       if (tableDetails.changeSet) {
                         if (tableDetails.changeSet[cell.row.index]) {
                           const currentColumn = columnData.find((column) => column.id === cell.column.id);
@@ -1365,6 +1368,7 @@ export function Table({
                         cellValue,
                         rowData,
                       });
+                      const horizontalAlignment = cell.column?.horizontalAlignment;
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -1373,7 +1377,9 @@ export function Table({
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(
-                            `${wrapAction ? wrapAction : cell?.column?.Header === 'Actions' ? '' : 'wrap'}-wrapper`,
+                            `table-text-align-${cell.column.horizontalAlignment} ${
+                              wrapAction ? wrapAction : cell?.column?.Header === 'Actions' ? '' : 'wrap'
+                            }-wrapper`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                               'has-left-actions': cell.column.id === 'leftActions',
@@ -1407,7 +1413,12 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell', { cell, actionButtonsArray, isEditable })}
+                              cellRender={cell.render('Cell', {
+                                cell,
+                                actionButtonsArray,
+                                isEditable,
+                                horizontalAlignment,
+                              })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
                               columnType={cell.column.columnType}
