@@ -38,7 +38,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   );
   const [joinTableOptions, setJoinTableOptions] = useState(options['join_table'] || {});
   const [joinOptions, setJoinOptions] = useState(options['join_table']?.['joins'] || [{ table: selectedTable }]);
-  const [joinSelectOptions, setJoinSelectOptions] = useState(options['join_table']?.['fields'] || [{}]);
+  const [joinSelectOptions, setJoinSelectOptions] = useState(options['join_table']?.['fields'] || []);
   const joinOrderByOptions = options?.['join_table']?.['order_by'] || [];
   const setJoinOrderByOptions = (values) => {
     setJoinTableOptions((joinOptions) => {

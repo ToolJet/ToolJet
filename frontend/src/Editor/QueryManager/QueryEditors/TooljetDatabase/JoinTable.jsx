@@ -64,7 +64,12 @@ const SelectTableMenu = ({ darkMode }) => {
             <ButtonSolid
               variant="secondary"
               size="sm"
-              onClick={() => setJoins((joins) => [...joins, { table: selectedTable }])}
+              onClick={() =>
+                setJoins((joins) => [
+                  ...joins,
+                  { table: selectedTable, conditions: { conditionsList: [{ leftField: { table: selectedTable } }] } },
+                ])
+              }
             >
               <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
               &nbsp;&nbsp; Add another table
