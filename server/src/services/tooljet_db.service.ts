@@ -313,7 +313,7 @@ export class TooljetDbService {
   }
 
   private constructWhereStatement(whereStatementConditions, internalTableNametoIdMap) {
-    const { operator = 'AND', conditionsList } = whereStatementConditions;
+    const { operator = 'AND', conditionsList = [] } = whereStatementConditions;
     const whereConditionOutput = conditionsList
       .map((condition) => {
         // @description: Recursive call to build - Sub-condition
