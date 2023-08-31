@@ -587,7 +587,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
                 type: 'navToDisablePage',
                 page: name,
                 data: {
-                  message: `Attempt to switch to disabled page ${name} blocked, redirected to home page.`,
+                  message: `Attempt to switch to disabled page ${name} blocked.`,
                   status: true,
                 },
               },
