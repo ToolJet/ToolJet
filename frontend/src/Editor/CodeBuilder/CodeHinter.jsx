@@ -221,7 +221,9 @@ export function CodeHinter({
 
     if (error) {
       const err = String(error);
-      const errorMessage = err.includes('.run()') ? `${err} in ${componentName.split('::')[0]}'s field` : err;
+      const errorMessage = err.includes('.run()')
+        ? `${err} in ${componentName ? componentName.split('::')[0] + "'s" : 'fx'} field`
+        : err;
       return (
         <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
           <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
