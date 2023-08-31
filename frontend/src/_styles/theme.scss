@@ -1618,10 +1618,10 @@ button {
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.4285714;
-  color: #232e3c;
-  background-color: #ffffff;
+  color: var(--slate12);
+  background-color: var(--base);
   background-clip: padding-box;
-  border: 1px solid #dadcde;
+  border: 1px solid var(--slate7);
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -11599,7 +11599,9 @@ tbody {
 .popover {
   border: none;
   border-radius: 6px;
-  box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08);
+  border: 1px solid var(--slate3, #F1F3F5);
+  background: var(--slate1, #FBFCFD);
+  box-shadow: 0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10);
 }
 
 .canvas-codehinter-container {

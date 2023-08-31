@@ -173,7 +173,7 @@ class TableComponent extends React.Component {
     return (
       <Popover
         id="popover-basic-2"
-        className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        className={`${this.props.darkMode && 'dark-theme'} shadow`}
         style={{
           maxHeight: resolveReferences(column.isEditable, this.state.currentState) ? '100vh' : 'inherit',
           overflowY: 'auto',

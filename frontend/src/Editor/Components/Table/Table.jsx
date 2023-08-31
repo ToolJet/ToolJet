@@ -861,7 +861,7 @@ export function Table({
       <Popover
         id="popover-basic"
         data-cy="popover-card"
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow table-widget-download-popup`}
+        className={`${darkMode && 'dark-theme'} shadow table-widget-download-popup`}
         placement="bottom"
       >
         <Popover.Body>

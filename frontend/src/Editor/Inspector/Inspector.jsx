@@ -419,7 +419,7 @@ export const Inspector = ({
               rootClose={false}
               show={showHeaderActionsMenu}
               overlay={
-                <Popover id="list-menu" className={darkMode && 'popover-dark-themed'}>
+                <Popover id="list-menu" className={darkMode && 'dark-theme'}>
                   <Popover.Body bsPrefix="list-item-popover-body">
                     {INSPECTOR_HEADER_OPTIONS.map((option) => (
                       <div

@@ -93,8 +93,8 @@ function ListItem({
               rootClose={false}
               show={showActionsMenu}
               overlay={
-                <Popover id="list-menu" className={darkMode && 'popover-dark-themed'}>
-                  <Popover.Body bsPrefix="list-item-popover-body">
+                <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                  <Popover.Body bsPrefix="list-item-popover-body" className={`list-item-popover-body`}>
                     {menuActions.map((action) => (
                       <div
                         className="list-item-popover-option"
