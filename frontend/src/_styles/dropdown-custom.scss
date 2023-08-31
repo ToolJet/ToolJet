@@ -8,6 +8,16 @@
     }
 }
 
+.react-select__menu-portal {
+    .react-select__option {
+        color: var(--slate12);
+    }
+}
+
+.react-select__single-value {
+    color: var(--slate12) !important;
+}
+
 .react-select__menu {
     background-color: var(--base) !important;
     border: 1px solid var(--slate3) !important;

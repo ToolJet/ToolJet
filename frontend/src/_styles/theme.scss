@@ -1449,10 +1449,11 @@ button {
   .accordion {
     margin-bottom: 45px !important;
   }
+
   .field-type-vertical-line {
     position: relative;
     width: 0;
-    height:2rem;
+    height: 2rem;
     border-left: 1px solid var(--slate5);
     content: '';
     margin-right: -2.75rem;
@@ -1475,7 +1476,9 @@ button {
     background-color: var(--slate1);
     border: none;
     color: var(--slate12);
-    width: 8.063rem, //129px
+    width: 8.063rem; //129px
+    border: 1px solid var(--slate7);
+    padding: 6px 10px;
   }
 }
 

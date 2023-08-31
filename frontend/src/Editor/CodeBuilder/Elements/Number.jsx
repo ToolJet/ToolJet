@@ -5,7 +5,7 @@ export const Number = ({ value, onChange, cyLabel }) => {
 
   return (
     <>
-      <div className="field form-control" style={{ padding: '0.225rem 0.35rem' }}>
+      <div className="field tj-app-input" style={{ padding: '0.225rem 0.35rem' }}>
         <input
           className={'inspector-field-number'}
           type="number"
