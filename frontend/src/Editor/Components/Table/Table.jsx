@@ -1075,7 +1075,10 @@ export function Table({
                                   {...provided.dragHandleProps}
                                   // {...extraProps}
                                   ref={provided.innerRef}
-                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                  style={{
+                                    ...getItemStyle(snapshot, provided.draggableProps.style),
+                                    textAlign: column?.horizontalAlignment,
+                                  }}
                                 >
                                   {column.render('Header')}
                                 </div>
@@ -1149,6 +1152,7 @@ export function Table({
                   >
                     {row.cells.map((cell, index) => {
                       let cellProps = cell.getCellProps();
+                      cellProps.style.textAlign = cell.column?.horizontalAlignment;
                       if (tableDetails.changeSet) {
                         if (tableDetails.changeSet[cell.row.index]) {
                           const currentColumn = columnData.find((column) => column.id === cell.column.id);
@@ -1191,6 +1195,7 @@ export function Table({
                         cellValue,
                         rowData,
                       });
+                      const horizontalAlignment = cell.column?.horizontalAlignment;
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -1198,15 +1203,20 @@ export function Table({
                           data-cy={`${cell.column.columnType ?? ''}${String(
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
-                          className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
-                            'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
-                            'has-text': cell.column.columnType === 'text' || isEditable,
-                            'has-dropdown': cell.column.columnType === 'dropdown',
-                            'has-multiselect': cell.column.columnType === 'multiselect',
-                            'has-datepicker': cell.column.columnType === 'datepicker',
-                            'align-items-center flex-column': cell.column.columnType === 'selector',
-                            [cellSize]: true,
-                          })}
+                          className={cx(
+                            `table-text-align-${cell.column.horizontalAlignment} ${
+                              wrapAction ? wrapAction : 'wrap'
+                            }-wrapper`,
+                            {
+                              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+                              'has-text': cell.column.columnType === 'text' || isEditable,
+                              'has-dropdown': cell.column.columnType === 'dropdown',
+                              'has-multiselect': cell.column.columnType === 'multiselect',
+                              'has-datepicker': cell.column.columnType === 'datepicker',
+                              'align-items-center flex-column': cell.column.columnType === 'selector',
+                              [cellSize]: true,
+                            }
+                          )}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                           onClick={(e) => {
@@ -1225,7 +1235,12 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell', { cell, actionButtonsArray, isEditable })}
+                              cellRender={cell.render('Cell', {
+                                cell,
+                                actionButtonsArray,
+                                isEditable,
+                                horizontalAlignment,
+                              })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
                               columnType={cell.column.columnType}
