@@ -26,9 +26,6 @@ describe("Data sources", () => {
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.wait(1000);
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -47,18 +44,12 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      postgreSqlText.postgreSQL
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
     );
-    cy.get("[data-cy*='data-source-']")
-      .eq(1)
-      .should("contain", postgreSqlText.postgreSQL);
-    cy.get(postgreSqlSelector.postgresDataSource).click();
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      postgreSqlText.postgreSQL
-    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -115,14 +106,14 @@ describe("Data sources", () => {
       postgreSqlText.buttonTextSave
     );
     cy.get('[data-cy="connection-alert-text"]').should("be.visible");
+    deleteDatasource(`cypress-${data.lastName}-postgresql`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectAndAddDataSource(postgreSqlText.postgreSQL);
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-postgresql`
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
     );
 
     fillDataSourceTextField(
@@ -150,8 +141,9 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterUserName,
       "postgres"
     );
-
-    cy.get(postgreSqlSelector.passwordTextField).type(
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "Enter password",
       Cypress.env("pg_password")
     );
 
@@ -163,7 +155,7 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -175,7 +167,11 @@ describe("Data sources", () => {
   });
 
   it.skip("Should verify elements of the Query section.", () => {
-    selectAndAddDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
+    );
     fillConnectionForm(
       {
         Host: Cypress.env("pg_host"),
@@ -366,7 +362,11 @@ describe("Data sources", () => {
   });
 
   it.skip("Should verify CRUD operations on SQL Query.", () => {
-    selectAndAddDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
+    );
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
@@ -453,7 +453,11 @@ describe("Data sources", () => {
   });
 
   it.skip("Should verify bulk update", () => {
-    selectAndAddDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
+    );
     fillConnectionForm({
       Host: Cypress.env("pg_host"),
       Port: "5432",
