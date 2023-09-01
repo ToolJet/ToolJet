@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import './manageEventButton.scss';
 import AddRectangle from '@/_ui/Icon/solidIcons/AddRectangle';
-import { Button } from '@/_ui/LeftSidebar';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
-import classNames from 'classnames';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 
 const MENU_ACTIONS = [{ label: 'Delete' }];
 
@@ -52,55 +48,34 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
               </small>
               {!actionName && <AddRectangle width={13.33} />}
               <span>
-                <OverlayTrigger
-                  trigger={'click'}
-                  placement={'bottom-end'}
-                  show={showActionsMenu}
-                  overlay={
-                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                      <Popover.Body bsPrefix="list-item-popover-body">
-                        {MENU_ACTIONS.map((action) => (
-                          <div
-                            className="list-item-popover-option"
-                            key={action.label}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onMenuClick(action.label);
-                            }}
-                          >
-                            <div className="list-item-popover-menu-option-icon">
-                              {action.label === 'Delete' ? <Trash fill={'#E54D2E'} width={16} /> : action.icon}
-                            </div>
-                            <div
-                              className={classNames('list-item-option-menu-label', {
-                                'color-tomato9': action.label === 'Delete',
-                              })}
-                            >
-                              {action.label}
-                            </div>
+                <span>
+                  {isHovered && (
+                    <ButtonSolid
+                      variant="tertiary"
+                      size="xs"
+                      className={'list-menu-option-btn'}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setShowActionsMenu(true);
+                      }}
+                    >
+                      {MENU_ACTIONS.map((action) => (
+                        <div
+                          className="list-item-popover-option"
+                          key={action.label}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onMenuClick(action.label);
+                          }}
+                        >
+                          <div className="list-item-popover-menu-option-icon d-flex align-center">
+                            {action.label === 'Delete' ? <Trash fill={'#E54D2E'} width={12} /> : action.icon}
                           </div>
-                        ))}
-                      </Popover.Body>
-                    </Popover>
-                  }
-                >
-                  <span>
-                    {isHovered && (
-                      <ButtonSolid
-                        variant="tertiary"
-                        size="xs"
-                        className={'list-menu-option-btn'}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setShowActionsMenu(true);
-                        }}
-                        // data-cy={'page-menu'}
-                      >
-                        <MoreVertical fill={'var(--slate12)'} width={'20'} />
-                      </ButtonSolid>
-                    )}
-                  </span>
-                </OverlayTrigger>
+                        </div>
+                      ))}{' '}
+                    </ButtonSolid>
+                  )}
+                </span>
               </span>
             </div>
           </div>
