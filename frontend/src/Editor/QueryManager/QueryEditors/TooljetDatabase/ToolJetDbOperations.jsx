@@ -54,13 +54,18 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   // );
   const [joinSelectOptions, setJoinSelectOptions] = useState(options['join_table']?.['fields'] || []);
   const joinOrderByOptions = options?.['join_table']?.['order_by'] || [];
+
   const setJoinOrderByOptions = (values) => {
-    setJoinTableOptions((joinOptions) => {
-      return {
-        ...joinOptions,
-        order_by: values,
-      };
-    });
+    if (values.length) {
+      setJoinTableOptions((joinOptions) => {
+        return {
+          ...joinOptions,
+          order_by: values,
+        };
+      });
+    } else {
+      deleteJoinTableOptions('order_by');
+    }
   };
 
   useEffect(() => {
@@ -191,6 +196,14 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     setJoinTableOptions((prev) => ({ ...prev, [optionsChanged]: value }));
   };
 
+  const deleteJoinTableOptions = (optionToDelete) => {
+    setJoinTableOptions((prev) => {
+      const prevOptions = { ...prev };
+      if (prevOptions[optionToDelete]) delete prevOptions[optionToDelete];
+      return prevOptions;
+    });
+  };
+
   const value = useMemo(
     () => ({
       organizationId,
@@ -219,6 +232,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       setJoinSelectOptions,
       joinOrderByOptions,
       setJoinOrderByOptions,
+      deleteJoinTableOptions,
     }),
     [
       organizationId,

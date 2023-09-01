@@ -27,12 +27,13 @@ export default function JoinSelect({ darkMode }) {
     const table = tables[index];
     tableOptions[table] = (tableInfo[table] || []).map((column) => ({ label: column.Header, value: column.Header }));
   }
-  // const tableOptions = (tableInfo[table] || []).map((t) => ({ label: t, value: t }))
+
+  // When column name are same, alias has been added
   const handleChange = (columns, table) => {
     const unchangedSelectFields = joinSelectOptions.filter((t) => t.table !== table);
     let newSelectFields = [...unchangedSelectFields, ...columns.map((column) => ({ name: column?.value, table }))];
     newSelectFields = newSelectFields.map((field) => {
-      if (newSelectFields.filter(({ name }) => name === field.name).length > 1) {
+      if (newSelectFields.filter(({ name }) => name === field.name).length > 1 && !('alias' in field)) {
         return {
           ...field,
           alias: field.table + '_' + field.name,

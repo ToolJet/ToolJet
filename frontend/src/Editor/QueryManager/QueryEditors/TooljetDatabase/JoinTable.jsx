@@ -28,6 +28,7 @@ const SelectTableMenu = ({ darkMode }) => {
     setJoinOptions: setJoins,
     joinTableOptions,
     joinTableOptionsChange,
+    deleteJoinTableOptions,
   } = useContext(TooljetDatabaseContext);
 
   const joins = clone(joinOptions);
@@ -114,7 +115,11 @@ const SelectTableMenu = ({ darkMode }) => {
             type="code"
             initialValue={joinTableOptions?.limit ?? ''}
             onChange={(value) => {
-              joinTableOptionsChange('limit', value);
+              if (value.length) {
+                joinTableOptionsChange('limit', value);
+              } else {
+                deleteJoinTableOptions('limit');
+              }
             }}
           />
         </div>
@@ -132,7 +137,8 @@ const SelectTableMenu = ({ darkMode }) => {
 
 // Component to Render Filter Section
 const RenderFilterSection = ({ darkMode }) => {
-  const { tableInfo, joinTableOptions, joinTableOptionsChange } = useContext(TooljetDatabaseContext);
+  const { tableInfo, joinTableOptions, joinTableOptionsChange, deleteJoinTableOptions } =
+    useContext(TooljetDatabaseContext);
   const { conditions = {} } = joinTableOptions;
   const { conditionsList = [] } = conditions;
 
@@ -173,7 +179,11 @@ const RenderFilterSection = ({ darkMode }) => {
       };
     }
 
-    handleWhereFilterChange(editedFilterConditions);
+    if (Object.keys(editedFilterConditions).length === 0) {
+      deleteJoinTableOptions('conditions');
+    } else {
+      handleWhereFilterChange(editedFilterConditions);
+    }
   }
 
   function updateFilterConditionEntry(type, indexToUpdate, valueToUpdate) {

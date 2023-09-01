@@ -257,15 +257,15 @@ export class TooljetDbService {
     finalQuery += `\nFROM ${await this.constructFromStatement(queryJson, internalTableNametoIdMap)}`;
     if (queryJson?.joins?.length)
       finalQuery += `\n${await this.constructJoinStatements(queryJson.joins, internalTableNametoIdMap)}`;
-    if (queryJson?.conditions)
+    if (queryJson?.conditions && Object.keys(queryJson?.conditions).length)
       finalQuery += `\nWHERE ${await this.constructWhereStatement(queryJson.conditions, internalTableNametoIdMap)}`;
     if (queryJson?.group_by?.length)
       finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(queryJson.group_by, internalTableNametoIdMap)}`;
-    if (queryJson?.having)
+    if (queryJson?.having && Object.keys(queryJson?.having).length)
       finalQuery += `\nHAVING ${await this.constructWhereStatement(queryJson.having, internalTableNametoIdMap)}`;
     if (queryJson?.order_by?.length)
       finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by, internalTableNametoIdMap)}`;
-    if (queryJson.limit) finalQuery += `\nLIMIT ${queryJson.limit}`;
+    if (queryJson?.limit && queryJson?.limit.length) finalQuery += `\nLIMIT ${queryJson.limit}`;
 
     return finalQuery;
   }
@@ -312,7 +312,7 @@ export class TooljetDbService {
   }
 
   private constructWhereStatement(whereStatementConditions, internalTableNametoIdMap) {
-    const { operator = 'AND', conditionsList } = whereStatementConditions;
+    const { operator = 'AND', conditionsList = [] } = whereStatementConditions;
     const whereConditionOutput = conditionsList
       .map((condition) => {
         // @description: Recursive call to build - Sub-condition
