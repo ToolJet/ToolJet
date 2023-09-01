@@ -130,7 +130,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                 // set(newData, 'table', value?.value);
                 onChange(newData);
               }}
-              value={tableList.find((val) => val?.value === leftFieldTable)}
+              value={leftTableList.find((val) => val?.value === leftFieldTable)}
             />
           ) : (
             <div className="tj-small-btn px-2">{selectedTable}</div>
