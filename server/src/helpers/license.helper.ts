@@ -21,6 +21,7 @@ export enum LICENSE_FIELD {
   FEATURES = 'features',
   DOMAINS = 'domains',
   STATUS = 'status',
+  META = 'metadata',
 }
 
 export enum LICENSE_LIMITS_LABEL {

@@ -19,6 +19,7 @@ export default class License {
   private _workspacesCount: number | string;
   private _domainsList: Array<{ hostname?: string; subpath?: string }>;
   private _type: string;
+  private _metaData: object;
 
   private constructor(key: string, updatedDate: Date) {
     if (process.env.NODE_ENV !== 'test') {
@@ -51,6 +52,7 @@ export default class License {
         this._workspacesCount = licenseData?.workspaces;
         this._type = licenseData?.type;
         this._domainsList = licenseData?.domains;
+        this._metaData = licenseData?.meta;
       } catch (err) {
         console.error('Invalid License Key:Parse error', err);
         this._isLicenseValid = false;
@@ -175,6 +177,10 @@ export default class License {
     return this._expiryDate;
   }
 
+  public get metaData(): object {
+    return this._metaData;
+  }
+
   public get terms(): object {
     return {
       appsCount: this.apps,
@@ -185,7 +191,7 @@ export default class License {
       customStylingEnabled: this.customStyling,
       expiryDate: this._expiryDate,
       isExpired: this.isExpired,
-      isLicenseValid: this.isLicenseValid,
+      isLicenseValid: this._isLicenseValid,
       editorUsers: this.editorUsers,
       viewerUsers: this.viewerUsers,
       workspacesCount: this.workspaces,

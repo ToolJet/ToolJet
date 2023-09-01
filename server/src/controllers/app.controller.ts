@@ -125,8 +125,7 @@ export class AppController {
     UserCountGuard,
     EditorUserCountGuard,
     AllowPersonalWorkspaceGuard,
-    FirstUserSignupDisableGuard,
-    LicenseExpiryGuard
+    FirstUserSignupDisableGuard
   )
   @Post('signup')
   async signup(@Body() appAuthDto: AppSignupDto) {

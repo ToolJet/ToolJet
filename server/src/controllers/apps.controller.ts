@@ -30,7 +30,6 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
-import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 
 @Controller('apps')
 export class AppsController {
@@ -75,12 +74,6 @@ export class AppsController {
 
       return decamelizeKeys(app);
     });
-  }
-
-  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, AppCountGuard)
-  @Get('license-terms')
-  async getAppCount() {
-    return;
   }
 
   @UseGuards(JwtAuthGuard)

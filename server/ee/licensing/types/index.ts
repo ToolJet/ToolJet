@@ -21,4 +21,10 @@ export interface Terms {
     customStyling?: boolean;
   };
   type?: LICENSE_TYPE;
+  meta?: {
+    customerName?: string;
+    generatedFrom?: 'API';
+    customerId?: string;
+    createdBy?: string;
+  };
 }
