@@ -154,7 +154,7 @@ describe("User permissions", () => {
     cy.login(data.email, usersText.password);
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(postgreSqlSelector.buttonSave).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Datasource Saved");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
 
     adminLogin();
     cy.get(eeGroupsSelector.datasourceLink).click();

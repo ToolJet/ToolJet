@@ -16,6 +16,7 @@ export function parseJson(jsonString: string, errorMessage?: string): object {
 const protobuf = require('protobufjs');
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
+import { LICENSE_LIMIT } from './license.helper';
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -196,7 +197,7 @@ export async function getServiceAndRpcNames(protoDefinition) {
 }
 
 export function generatePayloadForLimits(currentCount: number, totalCount: any, licenseStatus: object, label?: string) {
-  return totalCount !== 'UNLIMITED'
+  return totalCount !== LICENSE_LIMIT.UNLIMITED
     ? {
         percentage: (currentCount / totalCount) * 100,
         total: totalCount,

@@ -11,7 +11,7 @@ export const getPrivateRoute = (page, params = {}) => {
     settings: '/settings',
     database: '/database',
     integrations: '/integrations',
-    global_datasources: '/global-datasources',
+    data_sources: '/data-sources',
     audit_logs: '/audit-logs',
     workflows: '/workflows',
   };

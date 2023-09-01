@@ -5,7 +5,15 @@ import { useTranslation } from 'react-i18next';
 import Button from '@/_ui/Button';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
 
-const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDataSource, currentAppEnvironmentId }) => {
+const Slack = ({
+  optionchanged,
+  createDataSource,
+  options,
+  isSaving,
+  selectedDataSource,
+  currentAppEnvironmentId,
+  isDisabled,
+}) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
 
@@ -62,7 +70,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
                   type="radio"
                   onClick={() => optionchanged('access_type', 'chat:write')}
                   checked={options?.access_type?.value === 'chat:write'}
-                  disabled={authStatus === 'waiting_for_token'}
+                  disabled={authStatus === 'waiting_for_token' || isDisabled}
                 />
                 <span className="form-check-label">
                   {t('slack.chatWrite', 'chat:write')} <br />
@@ -85,7 +93,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
             <div>
               <Button
                 className={`m2 ${isSaving ? ' loading' : ''}`}
-                disabled={isSaving}
+                disabled={isSaving || isDisabled}
                 onClick={() => saveDataSource()}
               >
                 {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
@@ -96,7 +104,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, selectedDat
           {(!authStatus || authStatus === 'waiting_for_url') && (
             <Button
               className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
-              disabled={isSaving}
+              disabled={isSaving || isDisabled}
               onClick={() => authGoogle()}
             >
               {t('slack.connectSlack', 'Connect to Slack')}

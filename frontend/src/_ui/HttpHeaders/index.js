@@ -9,6 +9,7 @@ export default ({
   currentState,
   isRenderedAsQueryEditor,
   workspaceConstants,
+  isDisabled,
 }) => {
   function addNewKeyValuePair() {
     const newPairs = [...options, ['', '']];
@@ -35,6 +36,7 @@ export default ({
     addNewKeyValuePair,
     removeKeyValuePair,
     keyValuePairValueChanged,
+    isDisabled,
   };
 
   return isRenderedAsQueryEditor ? (

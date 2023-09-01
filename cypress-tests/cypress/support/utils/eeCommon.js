@@ -426,3 +426,15 @@ export const disableToggle = (toggleSelector) => {
     }
   });
 }
+
+export const verifyPromoteModalUI = (versionName, currEnv, targetEnv) => {
+  cy.get('[data-cy="promte-button"]').verifyVisibleElement("have.text", ' Promote ').click()
+  cy.get('[data-cy="modal-title"]').verifyVisibleElement("have.text", `Promote ${versionName}`)
+  cy.get('[data-cy="close-button"]').should('be.visible')
+  cy.get('[data-cy="from-label"]').verifyVisibleElement("have.text", "FROM")
+  cy.get('[data-cy="to-label"]').verifyVisibleElement("have.text", "TO")
+  cy.get('[data-cy="current-env-name"]').verifyVisibleElement("have.text", currEnv)
+  cy.get('[data-cy="target-env-name"]').verifyVisibleElement("have.text", targetEnv)
+  cy.get('[data-cy="cancel-button"]').verifyVisibleElement("have.text", "Cancel")
+  cy.get('[data-cy="promote-button"]').verifyVisibleElement("have.text", "Promote ")
+}

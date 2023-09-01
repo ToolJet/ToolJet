@@ -55,7 +55,7 @@ export default function EnvironmontConfirmationModal(props) {
       contentClassName={`promote-confirm-dialogue-modal ${darkMode ? 'theme-dark' : ''}`}
     >
       <Modal.Header>
-        <Modal.Title className={`confirmation-header ${darkMode ? 'theme-dark' : ''}`}>
+        <Modal.Title className={`confirmation-header ${darkMode ? 'theme-dark' : ''}`} data-cy="modal-title">
           Promote {editingVersion.name}
         </Modal.Title>
         <svg
@@ -66,6 +66,7 @@ export default function EnvironmontConfirmationModal(props) {
           viewBox="0 0 33 33"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          data-cy="close-button"
         >
           <path
             fillRule="evenodd"
@@ -79,8 +80,12 @@ export default function EnvironmontConfirmationModal(props) {
       <Modal.Body className="env-confirm-dialogue-body">
         <div className={`change-info ${darkMode ? 'theme-dark' : ''}`}>
           <div className="section">
-            <div className="label">FROM</div>
-            <div className="env-name">{capitalize(data?.current.name)}</div>
+            <div className="label" data-cy="from-label">
+              FROM
+            </div>
+            <div className="env-name" data-cy="current-env-name">
+              {capitalize(data?.current.name)}
+            </div>
           </div>
           <div className="arrow-container">
             <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -93,21 +98,30 @@ export default function EnvironmontConfirmationModal(props) {
             </svg>
           </div>
           <div className="section">
-            <div className="label">TO</div>
-            <div className="env-name">{capitalize(data?.target.name)}</div>
+            <div className="label" data-cy="to-label">
+              TO
+            </div>
+            <div className="env-name" data-cy="target-env-name">
+              {capitalize(data?.target.name)}
+            </div>
           </div>
         </div>
         {data?.current.name === 'development' && (
-          <div className="env-change-info">
+          <div className="env-change-info" data-cy="env-change-info-text">
             You won’t be able to edit this version after promotion. Are you sure you want to continue?
           </div>
         )}
       </Modal.Body>
       <Modal.Footer className="mt-3 env-modal-footer">
-        <ButtonSolid variant="tertiary" onClick={handleClose}>
+        <ButtonSolid variant="tertiary" onClick={handleClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
-        <ButtonSolid variant="primary" onClick={handleConfirm} isLoading={promtingEnvirontment}>
+        <ButtonSolid
+          variant="primary"
+          onClick={handleConfirm}
+          isLoading={promtingEnvirontment}
+          data-cy="promote-button"
+        >
           Promote <ArrowRightIcon />
         </ButtonSolid>
       </Modal.Footer>
