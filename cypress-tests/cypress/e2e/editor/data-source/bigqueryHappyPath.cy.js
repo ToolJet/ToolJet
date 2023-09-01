@@ -6,7 +6,7 @@ import { firestoreText } from "Texts/firestore";
 import { commonSelectors } from "Selectors/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 import { commonText } from "Texts/common";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
@@ -96,7 +96,7 @@ describe("Data source BigQuery", () => {
   });
 
   it("Should verify the functionality of BigQuery connection form.", () => {
-    selectDataSource(bigqueryText.bigQuery);
+    selectAndAddDataSource(bigqueryText.bigQuery);
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',

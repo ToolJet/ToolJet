@@ -14,6 +14,7 @@ const Googlesheets = ({
   isSaving,
   selectedDataSource,
   currentAppEnvironmentId,
+  isDisabled,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
@@ -69,7 +70,7 @@ const Googlesheets = ({
             <div>
               <Radio
                 checked={options?.access_type?.value === 'read'}
-                disabled={authStatus === 'waiting_for_token'}
+                disabled={authStatus === 'waiting_for_token' || isDisabled}
                 onClick={() => optionchanged('access_type', 'read')}
                 text={t('googleSheets.readOnly', 'Read only')}
                 helpText={t(
@@ -80,7 +81,7 @@ const Googlesheets = ({
               />
               <Radio
                 checked={options?.access_type?.value === 'write'}
-                disabled={authStatus === 'waiting_for_token'}
+                disabled={authStatus === 'waiting_for_token' || isDisabled}
                 onClick={() => optionchanged('access_type', 'write')}
                 text={t('googleSheets.readWrite', 'Read and write')}
                 helpText={t(
@@ -99,7 +100,7 @@ const Googlesheets = ({
             <div>
               <Button
                 className={`m2 ${isSaving ? ' loading' : ''}`}
-                disabled={isSaving}
+                disabled={isSaving || isDisabled}
                 onClick={() => saveDataSource()}
                 data-cy="button-connect-gsheet"
               >
@@ -111,7 +112,7 @@ const Googlesheets = ({
           {(!authStatus || authStatus === 'waiting_for_url') && (
             <Button
               className={`m2 ${authStatus === 'waiting_for_url' ? ' btn-loading' : ''}`}
-              disabled={isSaving}
+              disabled={isSaving || isDisabled}
               onClick={() => authGoogle()}
               data-cy="button-connect-gsheet"
             >

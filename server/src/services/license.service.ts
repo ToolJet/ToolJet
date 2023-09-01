@@ -10,7 +10,7 @@ import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
 export class LicenseService {
   constructor(private instanceSettingsService: InstanceSettingsService) {}
 
-  async getLicenseTerms(type: LICENSE_FIELD | LICENSE_FIELD[]): Promise<any> {
+  async getLicenseTerms(type?: LICENSE_FIELD | LICENSE_FIELD[]): Promise<any> {
     await this.init();
 
     if (Array.isArray(type)) {

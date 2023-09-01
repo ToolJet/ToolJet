@@ -38,7 +38,7 @@ import { decamelize } from 'humps';
 import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
 import { LicenseService } from './license.service';
-import { LICENSE_FIELD, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 const MAX_ROW_COUNT = 500;
@@ -606,7 +606,7 @@ export class OrganizationsService {
       throw new BadRequestException();
     }
 
-    if (type === 'openid' && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.AUDIT_LOGS))) {
+    if (type === 'openid' && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC))) {
       throw new HttpException('OIDC disabled', 451);
     }
 
@@ -931,36 +931,29 @@ export class OrganizationsService {
 
   async organizationsLimit() {
     const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.WORKSPACES, LICENSE_FIELD.STATUS]);
+    if (licenseTerms[LICENSE_FIELD.WORKSPACES] === LICENSE_LIMIT.UNLIMITED) {
+      return;
+    }
     const currentOrganizationsCount = await this.organizationsCount();
 
-    if (licenseTerms[LICENSE_FIELD.WORKSPACES] === 'UNLIMITED') {
-      return;
-    } else {
-      return {
-        workspacesCount: generatePayloadForLimits(
-          currentOrganizationsCount,
-          licenseTerms[LICENSE_FIELD.WORKSPACES],
-          licenseTerms[LICENSE_FIELD.STATUS],
-          LICENSE_LIMITS_LABEL.WORKSPACES
-        ),
-      };
-    }
+    return {
+      workspacesCount: generatePayloadForLimits(
+        currentOrganizationsCount,
+        licenseTerms[LICENSE_FIELD.WORKSPACES],
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.WORKSPACES
+      ),
+    };
   }
 
   async validateLicense(manager: EntityManager): Promise<void> {
-    const licenseTerms = await this.licenseService.getLicenseTerms([
-      LICENSE_FIELD.WORKSPACES,
-      LICENSE_FIELD.IS_EXPIRED,
-    ]);
+    const workspacesCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.WORKSPACES);
 
-    if (licenseTerms[LICENSE_FIELD.IS_EXPIRED]) {
+    if (workspacesCount === LICENSE_LIMIT.UNLIMITED) {
       return;
     }
 
-    if (
-      licenseTerms[LICENSE_FIELD.WORKSPACES] !== 'UNLIMITED' &&
-      (await this.organizationsCount(manager)) > licenseTerms[LICENSE_FIELD.WORKSPACES]
-    ) {
+    if ((await this.organizationsCount(manager)) > workspacesCount) {
       throw new HttpException('You have reached your limit for number of workspaces.', 451);
     }
   }

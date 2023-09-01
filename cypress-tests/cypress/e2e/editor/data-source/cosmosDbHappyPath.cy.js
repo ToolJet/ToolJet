@@ -9,7 +9,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -95,7 +95,7 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of CosmosDB connection form.", () => {
-    selectDataSource("CosmosDB");
+    selectAndAddDataSource("CosmosDB");
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
       `cypress-${data.lastName}-cosmosdb`
