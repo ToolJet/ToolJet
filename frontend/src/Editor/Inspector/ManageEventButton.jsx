@@ -5,28 +5,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index, removeHandler }) => {
-  const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
-  const onMenuClick = (label) => {
-    if (label === 'Delete') {
-      removeHandler(index);
-    }
-  };
-
-  React.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showActionsMenu && event.target.closest('.list-menu') === null) {
-        setShowActionsMenu();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ showActionsMenu })]);
 
   return (
     <div className="mb-1">
@@ -35,7 +14,7 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className={''} data-cy="event-handler-card">
+        <div data-cy="event-handler-card">
           <div className="d-flex justify-content-between" role="button" style={{ padding: '6px 12px' }}>
             <div className="text-truncate event-handler-text" data-cy="event-handler">
               {eventDisplayName}
@@ -54,14 +33,13 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
                       className={'list-menu-option-btn'}
                       onClick={(event) => {
                         event.stopPropagation();
-                        setShowActionsMenu(true);
                       }}
                     >
                       <div
                         className="list-item-popover-option"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onMenuClick('Delete');
+                          removeHandler(index);
                         }}
                       >
                         <div className="d-flex align-center">
