@@ -32,6 +32,7 @@ export default function JoinSelect({ darkMode }) {
   const handleChange = (columns, table) => {
     const unchangedSelectFields = joinSelectOptions.filter((t) => t.table !== table);
     let newSelectFields = [...unchangedSelectFields, ...columns.map((column) => ({ name: column?.value, table }))];
+
     newSelectFields = newSelectFields.map((field) => {
       if (newSelectFields.filter(({ name }) => name === field.name).length > 1 && !('alias' in field)) {
         return {

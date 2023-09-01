@@ -168,9 +168,74 @@ async function deleteRows(queryOptions, organizationId, currentState) {
   return await tooljetDatabaseService.deleteRow(organizationId, tableName, query.join('&'));
 }
 
+// Function: To valid Empty fields in JSON ( Works for Nested JSON too )
+function validateInputJsonHasEmptyFields(input) {
+  let isValid = true;
+
+  if (isEmpty(input)) return false;
+  if (Array.isArray(input)) {
+    let isIncludesInvalidJson = input
+      .map((eachValue) => {
+        let isValidJson = validateInputJsonHasEmptyFields(eachValue);
+        return isValidJson;
+      })
+      .includes(false);
+    if (isIncludesInvalidJson) isValid = false;
+  }
+
+  if (typeof input === 'object') {
+    let isIncludesInvalidJson = Object.entries(input)
+      .map(([key, value]) => {
+        let isValidJson = validateInputJsonHasEmptyFields(value);
+        return isValidJson;
+      })
+      .includes(false);
+    if (isIncludesInvalidJson) isValid = false;
+  }
+
+  return isValid;
+}
+
 async function joinTables(queryOptions, organizationId, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  // Check and Remove Empty options, Before sending a API
   const { join_table = {} } = resolvedOptions;
+
+  const sectionNames = {
+    fields: 'Select',
+    from: 'Table name',
+    joins: 'From',
+    conditions: 'Filter',
+    order_by: 'Sort',
+    limit: 'Limit',
+  };
+
+  if (Object.keys(join_table).length === 0) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: `Empty JSON is not allowed`,
+      description: 'Empty inputs are not allowed',
+      data: {},
+    };
+  }
+
+  if (Object.keys(join_table).length !== 0) {
+    let sectionWithInvalidInput = [];
+    Object.entries(join_table).forEach(([key, value]) => {
+      const isValidSection = validateInputJsonHasEmptyFields(value);
+      if (!isValidSection) sectionWithInvalidInput.push(sectionNames[key] || key);
+    });
+
+    if (sectionWithInvalidInput.length) {
+      return {
+        status: 'failed',
+        statusText: 'failed',
+        message: `Empty values are found in the section - ${sectionWithInvalidInput.join(', ')}`,
+        description: 'Empty fields are not allowed',
+        data: {},
+      };
+    }
+  }
+
   return await tooljetDatabaseService.joinTables(organizationId, join_table);
 }
