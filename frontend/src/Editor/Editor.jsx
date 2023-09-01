@@ -1360,6 +1360,30 @@ class EditorComponent extends React.Component {
     );
   };
 
+  disableEnablePage = ({ pageId, isDisabled }) => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [pageId]: {
+          ...this.state.appDefinition.pages[pageId],
+          disabled: isDisabled ?? false,
+        },
+      },
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   switchPage = (pageId, queryParams = []) => {
     document.getElementById('real-canvas').scrollIntoView();
     if (
@@ -1568,6 +1592,7 @@ class EditorComponent extends React.Component {
                 renamePage={this.renamePage}
                 clonePage={this.clonePage}
                 hidePage={this.hidePage}
+                disableEnablePage={this.disableEnablePage}
                 unHidePage={this.unHidePage}
                 updateHomePage={this.updateHomePage}
                 updatePageHandle={this.updatePageHandle}

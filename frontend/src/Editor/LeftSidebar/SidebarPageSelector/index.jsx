@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Fuse from 'fuse.js';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { PageHandler, AddingPageHandler } from './PageHandler';
@@ -22,6 +22,7 @@ const LeftSidebarPageSelector = ({
   clonePage,
   hidePage,
   unHidePage,
+  disableEnablePage,
   updateHomePage,
   updatePageHandle,
   pages,
@@ -44,6 +45,11 @@ const LeftSidebarPageSelector = ({
       isVersionReleased: state.isVersionReleased,
     }),
     shallow
+  );
+
+  const sortedAllPages = useMemo(
+    () => [...allpages.filter((c) => !c.disabled), ...allpages.filter((c) => c.disabled)],
+    [allpages]
   );
 
   const filterPages = (value) => {
@@ -141,11 +147,11 @@ const LeftSidebarPageSelector = ({
 
         <div className={`${darkMode && 'dark theme-dark'} page-selector-panel-body`}>
           <div>
-            {allpages.length > 0 ? (
+            {sortedAllPages.length > 0 ? (
               <SortableList
-                data={allpages}
+                data={sortedAllPages}
                 Element={PageHandler}
-                pages={allpages}
+                pages={sortedAllPages}
                 darkMode={darkMode}
                 switchPage={switchPage}
                 deletePage={deletePage}
@@ -153,6 +159,7 @@ const LeftSidebarPageSelector = ({
                 clonePage={clonePage}
                 hidePage={hidePage}
                 unHidePage={unHidePage}
+                disableEnablePage={disableEnablePage}
                 homePageId={homePageId}
                 currentPageId={currentPageId}
                 updateHomePage={updateHomePage}
