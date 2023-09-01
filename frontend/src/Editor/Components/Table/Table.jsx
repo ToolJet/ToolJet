@@ -1210,24 +1210,29 @@ export function Table({
                                           {column.render('Header')}
                                         </div>
                                       </div>
-                                      <div>
-                                        {column.columnType !== 'selector' &&
-                                          column.isSorted &&
-                                          (column.isSortedDesc ? (
-                                            <SolidIcon
-                                              name="arrowdown"
-                                              width="16"
-                                              height="16"
-                                              fill={darkMode ? '#ECEDEE' : '#11181C'}
-                                            />
-                                          ) : (
-                                            <SolidIcon
-                                              name="arrowup"
-                                              width="16"
-                                              height="16"
-                                              fill={darkMode ? '#ECEDEE' : '#11181C'}
-                                            />
-                                          ))}
+                                      <div
+                                        style={{
+                                          visibility:
+                                            column?.columnType !== 'selector' && column?.isSorted
+                                              ? 'visible'
+                                              : 'hidden',
+                                        }}
+                                      >
+                                        {column?.isSortedDesc ? (
+                                          <SolidIcon
+                                            name="arrowdown"
+                                            width="16"
+                                            height="16"
+                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                          />
+                                        ) : (
+                                          <SolidIcon
+                                            name="arrowup"
+                                            width="16"
+                                            height="16"
+                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                          />
+                                        )}
                                       </div>
                                     </div>
                                     <div
