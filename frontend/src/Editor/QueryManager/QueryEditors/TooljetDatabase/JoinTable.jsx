@@ -33,9 +33,23 @@ const SelectTableMenu = ({ darkMode }) => {
   const joins = clone(joinOptions);
   const tableList = tables.map((t) => ({ label: t, value: t }));
 
+  // const handleJoinChange = (newJoin, index) => {
+  //   const updatedJoin = joinOptions.map((join, i) => {
+  //     if (i === index) {
+  //       return newJoin;
+  //     }
+  //     return join;
+  //   });
+  //   const cleanedJoin = [];
+  //   updatedJoin.forEach(join => {
+  //     const conditions = join?.conditions?.conditionsList
+  //   })
+  //   setJoins();
+  // };
+
   const handleJoinChange = (newJoin, index) => {
-    setJoins((joins) =>
-      joins.map((join, i) => {
+    setJoins(
+      joinOptions.map((join, i) => {
         if (i === index) {
           return newJoin;
         }
@@ -57,7 +71,7 @@ const SelectTableMenu = ({ darkMode }) => {
               index={i}
               data={join}
               onChange={(value) => handleJoinChange(value, i)}
-              onRemove={() => setJoins((joins) => joins.filter((join, index) => index !== i))}
+              onRemove={() => setJoins(joins.filter((join, index) => index !== i))}
             />
           ))}
           <Row>
@@ -65,10 +79,7 @@ const SelectTableMenu = ({ darkMode }) => {
               variant="secondary"
               size="sm"
               onClick={() =>
-                setJoins((joins) => [
-                  ...joins,
-                  { table: selectedTable, conditions: { conditionsList: [{ leftField: { table: selectedTable } }] } },
-                ])
+                setJoins([...joins, { conditions: { conditionsList: [{ leftField: { table: selectedTable } }] } }])
               }
             >
               <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />

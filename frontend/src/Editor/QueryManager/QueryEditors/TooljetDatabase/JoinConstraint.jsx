@@ -49,12 +49,7 @@ import { clone, cloneDeep, isEmpty } from 'lodash';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { selectedTable, tables, joinOptions } = useContext(TooljetDatabaseContext);
-  const tableList = tables.map((t) => ({ label: t, value: t }));
-  //   const [leftFieldTable, setLeftFieldTable] = useState({ label: selectedTable, value: selectedTable });
-  //   const [joinType, setJoinType] = useState(staticJoinOperationsList[0]);
   const joinType = data?.joinType;
-  //   const [conditionsList, setConditionsList] = useState([{}]);
-  //   const [operator, setOperator] = useState();
   const conditionsList = isEmpty(data?.conditions?.conditionsList) ? [{}] : data?.conditions?.conditionsList;
   const operator = data?.conditions?.operator;
   const leftFieldTable = conditionsList?.[0]?.leftField?.table || selectedTable;
@@ -77,7 +72,11 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
       });
     });
   tableSet.add(selectedTable);
-  const leftTableList = [...tableSet].map((t) => ({ label: t, value: t }));
+  const leftTableList = [...tableSet].filter((table) => table !== rightFieldTable).map((t) => ({ label: t, value: t }));
+
+  const tableList = tables
+    .filter((table) => ![...tableSet, leftFieldTable].includes(table))
+    .map((t) => ({ label: t, value: t }));
 
   //   useEffect(() => {
   //     onChange &&
@@ -120,7 +119,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               options={leftTableList}
               darkMode={darkMode}
               onChange={(value) => {
-                const newData = { ...data };
+                const newData = cloneDeep({ ...data });
                 const { conditionsList = [{}] } = newData?.conditions || {};
                 const newConditionsList = conditionsList.map((condition) => {
                   const newCondition = { ...condition };
@@ -128,7 +127,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                   return newCondition;
                 });
                 set(newData, 'conditions.conditionsList', newConditionsList);
-                set(newData, 'table', value?.value);
+                // set(newData, 'table', value?.value);
                 onChange(newData);
               }}
               value={tableList.find((val) => val?.value === leftFieldTable)}
@@ -151,7 +150,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             options={tableList}
             darkMode={darkMode}
             onChange={(value) => {
-              const newData = { ...data };
+              const newData = cloneDeep({ ...data });
               const { conditionsList = [] } = newData?.conditions || {};
               const newConditionsList = conditionsList.map((condition) => {
                 const newCondition = { ...condition };
@@ -206,7 +205,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             size="sm"
             onClick={() => {
               const newData = { ...data };
-              set(newData, 'conditions.conditionsList', [...conditionsList, {}]);
+              set(newData, 'conditions.conditionsList', [...conditionsList, { operator: '=' }]);
               onChange(newData);
             }}
           >

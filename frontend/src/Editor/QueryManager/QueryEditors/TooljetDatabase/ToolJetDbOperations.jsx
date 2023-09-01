@@ -37,11 +37,21 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     }
   );
   const [joinTableOptions, setJoinTableOptions] = useState(options['join_table'] || {});
-  const [joinOptions, setJoinOptions] = useState(
-    options['join_table']?.['joins'] || [
-      { table: selectedTable, conditions: { conditionsList: [{ leftField: { table: selectedTable } }] } },
-    ]
-  );
+  const joinOptions = options['join_table']?.['joins'] || [
+    { conditions: { conditionsList: [{ leftField: { table: selectedTable } }] } },
+  ];
+
+  const setJoinOptions = (values) =>
+    setJoinTableOptions((joinOptions) => {
+      console.log(values);
+      return {
+        ...joinOptions,
+        joins: values,
+      };
+    });
+  // const [joinOptions, setJoinOptions] = useState(
+
+  // );
   const [joinSelectOptions, setJoinSelectOptions] = useState(options['join_table']?.['fields'] || []);
   const joinOrderByOptions = options?.['join_table']?.['order_by'] || [];
   const setJoinOrderByOptions = (values) => {
@@ -58,25 +68,27 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const newJoinOptions = clone(joinOptions);
-    if (newJoinOptions?.[0]) {
-      newJoinOptions[0].table = selectedTable;
-    } else {
-      newJoinOptions[0] = { table: selectedTable };
-    }
-    setJoinOptions(newJoinOptions);
-    selectedTable &&
-      setJoinTableOptions((joinOptions) => {
-        return {
-          ...joinOptions,
-          from: {
-            name: selectedTable,
-            type: 'Table',
-          },
-        };
-      });
-  }, [selectedTable]);
+  // useEffect(() => {
+  //   const newJoinOptions = clone(joinOptions);
+  //   if (newJoinOptions?.[0]?.conditions?.conditionsList) {
+  //     const newConditionsList = [...newJoinOptions?.[0]?.conditions?.conditionsList].map(condition => {
+  //       if(condition?.leftField?.table)
+  //     })
+  //   } else {
+  //     newJoinOptions[0] = { table: selectedTable };
+  //   }
+  //   setJoinOptions(newJoinOptions);
+  //   selectedTable &&
+  //     setJoinTableOptions((joinOptions) => {
+  //       return {
+  //         ...joinOptions,
+  //         from: {
+  //           name: selectedTable,
+  //           type: 'Table',
+  //         },
+  //       };
+  //     });
+  // }, [selectedTable]);
 
   useEffect(() => {
     const tableSet = new Set();
@@ -119,7 +131,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       setJoinTableOptions((opts) => ({ ...opts, joins: joinOptions, fields: joinSelectOptions }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [joinOptions, joinSelectOptions]);
+  }, [joinSelectOptions]);
 
   useEffect(() => {
     mounted && optionchanged('delete_rows', deleteRowsOptions);
@@ -278,6 +290,9 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
     optionchanged('organization_id', organizationId);
     optionchanged('table_name', tableName);
+    setJoinTableOptions({ joins: [{ conditions: { conditionsList: [{ leftField: { table: tableName } }] } }] });
+    setJoinOptions([{ conditions: { conditionsList: [{ leftField: { table: tableName } }] } }]);
+    setJoinSelectOptions([]);
   };
 
   const getComponent = () => {

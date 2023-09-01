@@ -153,6 +153,7 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
+          ...(options?.length < 5 && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({

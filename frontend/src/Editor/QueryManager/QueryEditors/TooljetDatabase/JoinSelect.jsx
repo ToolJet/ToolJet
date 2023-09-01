@@ -29,8 +29,18 @@ export default function JoinSelect({ darkMode }) {
   }
   // const tableOptions = (tableInfo[table] || []).map((t) => ({ label: t, value: t }))
   const handleChange = (columns, table) => {
-    const newSelectFields = joinSelectOptions.filter((t) => t.table !== table);
-    setJoinSelectOptions([...newSelectFields, ...columns.map((column) => ({ name: column?.value, table }))]);
+    const unchangedSelectFields = joinSelectOptions.filter((t) => t.table !== table);
+    let newSelectFields = [...unchangedSelectFields, ...columns.map((column) => ({ name: column?.value, table }))];
+    newSelectFields = newSelectFields.map((field) => {
+      if (newSelectFields.filter(({ name }) => name === field.name).length > 1) {
+        return {
+          ...field,
+          alias: field.table + '_' + field.name,
+        };
+      }
+      return field;
+    });
+    setJoinSelectOptions(newSelectFields);
   };
 
   return (
