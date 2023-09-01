@@ -47,6 +47,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     clonePage,
     setEditorMarginLeft,
+    disableEnablePage,
   } = props;
 
   const dataSources = useDataSources();
@@ -143,6 +144,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         renamePage={renamePage}
         hidePage={hidePage}
         unHidePage={unHidePage}
+        disableEnablePage={disableEnablePage}
         updateHomePage={updateHomePage}
         updatePageHandle={updatePageHandle}
         clonePage={clonePage}

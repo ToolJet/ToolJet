@@ -6,21 +6,39 @@ import cx from 'classnames';
 
 function Logs({ logProps, idx, darkMode }) {
   const [open, setOpen] = React.useState(false);
-  console.log('Debug debugger: open:', open);
 
   const title = ` [${capitalize(logProps?.type)} ${logProps?.key}]`;
-  const message = logProps?.isQuerySuccessLog
-    ? 'Completed'
-    : logProps?.type === 'component'
-    ? `Invalid property detected: ${logProps?.message}.`
-    : `${startCase(logProps?.type)} failed: ${logProps?.message ?? ''}`;
+  const message =
+    logProps?.type === 'navToDisablePage'
+      ? logProps?.message
+      : logProps?.isQuerySuccessLog
+      ? 'Completed'
+      : logProps?.type === 'component'
+      ? `Invalid property detected: ${logProps?.message}.`
+      : `${startCase(logProps?.type)} failed: ${logProps?.message ?? ''}`;
 
   const defaultStyles = {
     transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
     transition: '0.2s all',
-    display: logProps?.isQuerySuccessLog ? 'none' : 'inline-block',
+    display: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'inline-block',
     cursor: 'pointer',
-    pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default',
+    pointerEvents: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'default',
+  };
+
+  const renderNavToDisabledPageMessage = () => {
+    const text = message.split(logProps.page);
+    return (
+      <div className="d-flex">
+        <span className={cx('mx-1 text-tomato-9')}>
+          {text[0]}
+          <small className="text-slate-12" style={{ fontSize: '14px' }}>{`'${logProps.page}'`}</small>
+          {text[1]}
+        </span>
+        <small className="text-slate-10 text-right px-1 " style={{ width: '115px' }}>
+          {moment(logProps?.timestamp).fromNow()}
+        </small>
+      </div>
+    );
   };
 
   return (
@@ -28,7 +46,6 @@ function Logs({ logProps, idx, darkMode }) {
       <p
         className="m-0 d-flex"
         onClick={(e) => {
-          console.log('Debug debugger: setOpen:', e);
           setOpen((prev) => !prev);
         }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default' }}
@@ -44,18 +61,24 @@ function Logs({ logProps, idx, darkMode }) {
           </svg>
         </span>
         <span className="ps-3 w-100">
-          <span className="d-flex justify-content-between align-items-center  text-truncate">
-            <span className="text-truncate text-slate-12">{title}</span>
-            <small className="text-slate-10 text-right px-1 ">{moment(logProps?.timestamp).fromNow()}</small>
-          </span>
-          <span
-            className={cx('mx-1', {
-              'text-tomato-9': !logProps?.isQuerySuccessLog,
-              'color-light-green': logProps?.isQuerySuccessLog,
-            })}
-          >
-            {message}
-          </span>
+          {logProps.type === 'navToDisablePage' ? (
+            renderNavToDisabledPageMessage()
+          ) : (
+            <>
+              <span className="d-flex justify-content-between align-items-center  text-truncate">
+                <span className="text-truncate text-slate-12">{title}</span>
+                <small className="text-slate-10 text-right px-1 ">{moment(logProps?.timestamp).fromNow()}</small>
+              </span>
+              <span
+                className={cx('mx-1', {
+                  'text-tomato-9': !logProps?.isQuerySuccessLog,
+                  'color-light-green': logProps?.isQuerySuccessLog,
+                })}
+              >
+                {message}
+              </span>
+            </>
+          )}
         </span>
       </p>
 
