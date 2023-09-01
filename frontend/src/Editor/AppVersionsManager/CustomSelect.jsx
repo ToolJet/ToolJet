@@ -16,8 +16,10 @@ const Menu = (props) => {
           style={{ padding: '8px 12px' }}
           onClick={() => !props?.selectProps?.value?.isReleasedVersion && props.selectProps.setShowEditAppVersion(true)}
         >
-          <div className="row">
-            <div className="col-10 text-truncate">{props?.selectProps?.value?.appVersionName}</div>
+          <div className="row" style={{ padding: '8px 12px' }}>
+            <div className="col-10 text-truncate tj-text-xsm color-slate12">
+              {props?.selectProps?.value?.appVersionName}
+            </div>
             {!props?.selectProps?.value?.isReleasedVersion && (
               <div className="col-1">
                 <svg

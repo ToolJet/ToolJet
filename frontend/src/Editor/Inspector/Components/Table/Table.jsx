@@ -194,12 +194,12 @@ class TableComponent extends React.Component {
                 { name: 'Multiple badges', value: 'badges' },
                 { name: 'Tags', value: 'tags' },
                 { name: 'Dropdown', value: 'dropdown' },
+                { name: 'Link', value: 'link' },
                 { name: 'Radio', value: 'radio' },
                 { name: 'Multiselect', value: 'multiselect' },
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
                 { name: 'Image', value: 'image' },
-                { name: 'Link', value: 'link' },
               ]}
               value={column.columnType}
               search={true}
@@ -734,7 +734,7 @@ class TableComponent extends React.Component {
     };
 
     return (
-      <Popover id="popover-basic" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
+      <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
         <Popover.Body>
           <div className="field mb-2">
             <label data-cy={`label-action-button-text`} className="form-label">
