@@ -10,7 +10,7 @@ import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
 
 const MENU_ACTIONS = [{ label: 'Delete' }];
 
-const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index, removeHandler }) => {
+const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index, removeHandler, darkMode }) => {
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -57,7 +57,7 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
                   placement={'bottom-end'}
                   show={showActionsMenu}
                   overlay={
-                    <Popover id="list-menu">
+                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
                       <Popover.Body bsPrefix="list-item-popover-body">
                         {MENU_ACTIONS.map((action) => (
                           <div

@@ -839,6 +839,7 @@ export const EventManager = ({
                               actionName={actionMeta.name}
                               removeHandler={removeHandler}
                               index={index}
+                              darkMode={darkMode}
                             />
                           </div>
                         </OverlayTrigger>
