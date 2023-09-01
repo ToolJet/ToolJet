@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
@@ -13,6 +14,9 @@ import {
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
 
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
@@ -21,10 +25,6 @@ describe("Data sources", () => {
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.reload();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
-
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -43,14 +43,8 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("RethinkDB");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "RethinkDB");
-    cy.get('[data-cy="data-source-rethinkdb"]').click();
+    selectAndAddDataSource("databases", "RethinkDB", data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      "RethinkDB"
-    );
     cy.get('[data-cy="label-database"]').verifyVisibleElement(
       "have.text",
       "Database"
@@ -95,23 +89,19 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.couldNotConnect
     );
-    cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.buttonTextSave
-    );
+
     cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
       "have.text",
       "Could not connect to localhost:28015.connect ECONNREFUSED ::1:28015"
     );
+    cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
+      "have.text",
+      postgreSqlText.buttonTextSave
+    );
   });
 
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectAndAddDataSource("RethinkDB");
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      postgreSqlText.psqlName
-    );
+  it("Should verify the functionality of RethinkDB connection form.", () => {
+    selectAndAddDataSource("databases", "RethinkDB", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -146,7 +136,7 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(postgreSqlSelector.datasourceLabelOnList)
