@@ -4,9 +4,7 @@ import AddRectangle from '@/_ui/Icon/solidIcons/AddRectangle';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-const MENU_ACTIONS = [{ label: 'Delete' }];
-
-const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index, removeHandler, darkMode }) => {
+const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index, removeHandler }) => {
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -59,20 +57,17 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
                         setShowActionsMenu(true);
                       }}
                     >
-                      {MENU_ACTIONS.map((action) => (
-                        <div
-                          className="list-item-popover-option"
-                          key={action.label}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onMenuClick(action.label);
-                          }}
-                        >
-                          <div className="list-item-popover-menu-option-icon d-flex align-center">
-                            {action.label === 'Delete' ? <Trash fill={'#E54D2E'} width={12} /> : action.icon}
-                          </div>
+                      <div
+                        className="list-item-popover-option"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onMenuClick('Delete');
+                        }}
+                      >
+                        <div className="d-flex align-center">
+                          <Trash fill={'#E54D2E'} width={12} />
                         </div>
-                      ))}{' '}
+                      </div>
                     </ButtonSolid>
                   )}
                 </span>
