@@ -148,6 +148,7 @@ export const Box = memo(
     sideBarDebugger,
     readOnly,
     childComponents,
+    parentKey,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
@@ -202,6 +203,12 @@ export const Box = memo(
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
     const componentActions = useRef(new Set());
+
+    useEffect(() => {
+      onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); /*computeComponentState was not getting the id on initial render therefore exposed variables were not set.
+  computeComponentState was being executed before addNewWidgetToTheEditor was completed.*/
 
     useEffect(() => {
       const currentPage = currentState?.page;
@@ -312,27 +319,6 @@ export const Box = memo(
                 styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
                 setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
                 setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
-                registerAction={(actionName, func, dependencies = []) => {
-                  if (
-                    Object.keys(currentState?.components ?? {}).includes(component.name) &&
-                    currentState?.components[component.name].id === id
-                  ) {
-                    if (!Object.keys(exposedVariables).includes(actionName)) {
-                      func.dependencies = dependencies;
-                      componentActions.current.add(actionName);
-                      return onComponentOptionChanged(component, actionName, func);
-                    } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
-                      return Promise.resolve();
-                    } else if (
-                      JSON.stringify(dependencies) !== JSON.stringify(exposedVariables[actionName]?.dependencies) ||
-                      !componentActions.current.has(actionName)
-                    ) {
-                      func.dependencies = dependencies;
-                      componentActions.current.add(actionName);
-                      return onComponentOptionChanged(component, actionName, func);
-                    }
-                  }
-                }}
                 fireEvent={fireEvent}
                 validate={validate}
                 parentId={parentId}

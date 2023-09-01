@@ -14,7 +14,6 @@ export const Modal = function Modal({
   styles,
   exposedVariables,
   setExposedVariable,
-  registerAction,
   fireEvent,
   dataCy,
   height,
@@ -46,22 +45,17 @@ export const Modal = function Modal({
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
 
-  registerAction(
-    'open',
-    async function () {
+  useEffect(() => {
+    setExposedVariable('open', async function () {
       setExposedVariable('show', true);
       setShowModal(true);
-    },
-    [setShowModal]
-  );
-  registerAction(
-    'close',
-    async function () {
+    });
+    setExposedVariable('close', async function () {
       setShowModal(false);
       setExposedVariable('show', false);
-    },
-    [setShowModal]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setShowModal]);
 
   useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
@@ -129,7 +123,8 @@ export const Modal = function Modal({
 
   function hideModal() {
     setShowModal(false);
-    setExposedVariable('show', false).then(() => fireEvent('onClose'));
+    setExposedVariable('show', false);
+    fireEvent('onClose');
   }
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 

@@ -79,13 +79,20 @@ export function onComponentOptionsChanged(_ref, component, options) {
 export function onComponentOptionChanged(_ref, component, option_name, value) {
   const componentName = component.name;
   const components = getCurrentState().components;
-
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
-  useCurrentStateStore.getState().actions.setCurrentState({
-    components: { ...components, [componentName]: componentData },
-  });
+
+  if (option_name !== 'id') {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
+  } else if (!componentData?.id) {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
+  }
+
   return Promise.resolve();
 }
 
@@ -1173,6 +1180,7 @@ export function computeComponentState(_ref, components = {}) {
       };
     }
   });
+
   useCurrentStateStore.getState().actions.setCurrentState({
     components: {
       ...componentState,
@@ -1424,7 +1432,6 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 
 export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
-  console.log({ pageId, newComponentObj });
   const finalComponents = [];
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
@@ -1643,4 +1650,15 @@ export const computeQueryState = (queries, _ref) => {
       },
     });
   }
+};
+
+export const removeFunctionObjects = (obj) => {
+  for (const key in obj) {
+    if (typeof obj[key] === 'function') {
+      delete obj[key];
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      removeFunctionObjects(obj[key]);
+    }
+  }
+  return obj;
 };
