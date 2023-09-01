@@ -34,30 +34,49 @@ const SelectTableMenu = ({ darkMode }) => {
   const joins = clone(joinOptions);
   const tableList = tables.map((t) => ({ label: t, value: t }));
 
-  // const handleJoinChange = (newJoin, index) => {
-  //   const updatedJoin = joinOptions.map((join, i) => {
-  //     if (i === index) {
-  //       return newJoin;
-  //     }
-  //     return join;
-  //   });
-  //   const cleanedJoin = [];
-  //   updatedJoin.forEach(join => {
-  //     const conditions = join?.conditions?.conditionsList
-  //   })
-  //   setJoins();
-  // };
-
   const handleJoinChange = (newJoin, index) => {
-    setJoins(
-      joinOptions.map((join, i) => {
-        if (i === index) {
-          return newJoin;
+    const updatedJoin = joinOptions.map((join, i) => {
+      if (i === index) {
+        return newJoin;
+      }
+      return join;
+    });
+    const cleanedJoin = [];
+    const tableSet = new Set();
+    (updatedJoin || []).forEach((join, i) => {
+      const { table, conditions } = join;
+      let leftTable, rightTable;
+      conditions?.conditionsList?.forEach((condition) => {
+        const { leftField, rightField } = condition;
+        if (leftField?.table) {
+          // tableSet.add(leftField?.table);
+          leftTable = leftField?.table;
         }
-        return join;
-      })
-    );
+        if (rightField?.table) {
+          // tableSet.add(rightField?.table);
+          rightTable = rightField?.table;
+        }
+      });
+      if (tableSet.has(leftTable) || i === 0) {
+        tableSet.add(leftTable);
+        tableSet.add(rightTable);
+        cleanedJoin.push({ ...join });
+      }
+    });
+    // tableSet.add(selectedTable);
+    setJoins(cleanedJoin);
   };
+
+  // const handleJoinChange = (newJoin, index) => {
+  //   setJoins(
+  //     joinOptions.map((join, i) => {
+  //       if (i === index) {
+  //         return newJoin;
+  //       }
+  //       return join;
+  //     })
+  //   );
+  // };
 
   return (
     <div>
@@ -68,7 +87,7 @@ const SelectTableMenu = ({ darkMode }) => {
           {joins.map((join, i) => (
             <JoinConstraint
               darkMode={darkMode}
-              key={i}
+              key={join.id}
               index={i}
               data={join}
               onChange={(value) => handleJoinChange(value, i)}
@@ -80,7 +99,13 @@ const SelectTableMenu = ({ darkMode }) => {
               variant="secondary"
               size="sm"
               onClick={() =>
-                setJoins([...joins, { conditions: { conditionsList: [{ leftField: { table: selectedTable } }] } }])
+                setJoins([
+                  ...joins,
+                  {
+                    id: new Date().getTime(),
+                    conditions: { conditionsList: [{ leftField: { table: selectedTable } }] },
+                  },
+                ])
               }
             >
               <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
