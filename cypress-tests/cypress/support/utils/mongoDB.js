@@ -1,13 +1,13 @@
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 import { mongoDbText } from "Texts/mongoDb";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 
 export const connectMongo = () => {
-  selectDataSource(mongoDbText.mongoDb);
+  selectAndAddDataSource(mongoDbText.mongoDb);
 
   cy.clearAndType(
     '[data-cy="data-source-name-input-filed"]',

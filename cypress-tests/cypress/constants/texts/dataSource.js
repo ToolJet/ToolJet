@@ -2,10 +2,11 @@ export const dataSourceText = {
     labelDataSources: "Datasources",
     labelAddDataSource: "+ add data source",
 
-    allDataSources: "All Datasources (41)",
+    allDataSources: "All data sources (41)",
     allDatabase: "Databases (17)",
     allApis: "APIs (20)",
     allCloudStorage: "Cloud Storage (4)",
+    pluginsLabelAndCount: "Plugins (0)",
 
     postgreSQL: "PostgreSQL",
     labelHost: "Host",
@@ -26,14 +27,14 @@ export const dataSourceText = {
     psqlName: "cypress-postgresql",
 
     labelConnectionVerified: "connection verified",
-    toastDSAdded: "Datasource Added",
+    toastDSAdded: "Data Source Added",
     placeholderNameOfDB: "Name of the database",
     placeholderEnterHost: "Enter host",
     placeholderEnterPort: "Enter port",
     placeholderEnterUserName: "Enter username",
 
     headerQueries: "Queries",
-    headerSelectDatasource: "Select Datasource",
+    headerSelectDatasource: "Select Data Source",
     noQueryText: "You haven't created queries yet.",
     buttonLabelCreateQuery: "Create query",
     tabGeneral: "General",
@@ -68,4 +69,6 @@ export const dataSourceText = {
 
     tabAdvanced: "Advanced",
     labelNoEventhandler: "This query doesn't have any event handlers",
+    toastDSSaved: "Data Source Saved",
+    unSavedModalTitle: "Unsaved Changes"
 };

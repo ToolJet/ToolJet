@@ -6,7 +6,7 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 import {
   verifyCouldnotConnectWithAlert,
@@ -116,7 +116,7 @@ describe("Data source Elasticsearch", () => {
   });
 
   it("Should verify the functionality of Elasticsearch connection form.", () => {
-    selectDataSource(elasticsearchText.elasticSearch);
+    selectAndAddDataSource(elasticsearchText.elasticSearch);
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,

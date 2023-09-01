@@ -7,7 +7,7 @@ import { commonText } from "Texts/common";
 
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 import {
   closeDSModal,
@@ -106,7 +106,7 @@ describe("Data source DynamoDB", () => {
   });
 
   it("Should verify the functionality of DynamoDB connection form.", () => {
-    selectDataSource(dynamoDbText.dynamoDb);
+    selectAndAddDataSource(dynamoDbText.dynamoDb);
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,

@@ -21,7 +21,9 @@ const Menu = (props) => {
           onClick={() => !props?.selectProps?.value?.isReleasedVersion && props.selectProps.setShowEditAppVersion(true)}
         >
           <div className="row">
-            <div className="col-10 text-truncate">{props?.selectProps?.value?.appVersionName}</div>
+            <div className="col-10 text-truncate" data-cy="current-version">
+              {props?.selectProps?.value?.appVersionName}
+            </div>
             {!props?.selectProps?.value?.isReleasedVersion && (
               <div className="col-1">
                 <EditWhite />
@@ -45,6 +47,7 @@ be created in development"
               cursor: `${isEnvDevelopment ? 'pointer' : 'none'}`,
             }}
             onClick={() => isEnvDevelopment && props.selectProps.setShowCreateAppVersion(true)}
+            data-cy="create-new-version-button"
           >
             <svg
               className="icon me-1"

@@ -11,7 +11,7 @@ import {
   pathnameWithoutSubpath,
   retrieveWhiteLabelText,
 } from '@/_helpers/utils';
-import { authenticationService, tooljetService, organizationService } from '@/_services';
+import { authenticationService, tooljetService, organizationService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -158,9 +158,10 @@ class AppComponent extends React.Component {
     authenticationService
       .authorize()
       .then((data) => {
-        organizationService.getOrganizations().then((response) => {
+        organizationService.getOrganizations().then(async (response) => {
           const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
           // this will add the other details like permission and user previlliage details to the subject
+          await licenseService.getTerms();
           this.updateCurrentSession({
             ...data,
             current_organization_name,
@@ -383,7 +384,7 @@ class AppComponent extends React.Component {
               />
               <Route
                 exact
-                path="/:workspaceId/global-datasources"
+                path="/:workspaceId/data-sources"
                 element={
                   <PrivateRoute>
                     <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />

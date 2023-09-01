@@ -31,6 +31,13 @@ export class LicenseController {
     return { domains: [...licenseTerms[LICENSE_FIELD.DOMAINS]], licenseStatus: licenseTerms[LICENSE_FIELD.STATUS] };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('terms')
+  async terms() {
+    const licenseTerms = await this.licenseService.getLicenseTerms();
+    return { terms: licenseTerms };
+  }
+
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Patch()
   async updateLicenseKey(@Body() licenseUpdateDto: LicenseUpdateDto) {

@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, HttpException } from '@nestj
 import { UsersService } from '@services/users.service';
 import { getManager } from 'typeorm';
 import { LicenseService } from '@services/license.service';
-import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_LIMIT } from 'src/helpers/license.helper';
 
 @Injectable()
 export class EditorUserCountGuard implements CanActivate {
@@ -10,7 +10,7 @@ export class EditorUserCountGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const editorsCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.EDITORS);
-    if (editorsCount === 'UNLIMITED') {
+    if (editorsCount === LICENSE_LIMIT.UNLIMITED) {
       return true;
     }
     const editorCount = await this.usersService.fetchTotalEditorCount(getManager());

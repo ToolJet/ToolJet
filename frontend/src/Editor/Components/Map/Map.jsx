@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { GoogleMap, LoadScript, Marker, Autocomplete } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Marker, Autocomplete, Polygon } from '@react-google-maps/api';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
 import { useTranslation } from 'react-i18next';
@@ -19,17 +19,12 @@ export const Map = function Map({
   // canvasWidth,
   registerAction,
   dataCy,
+  properties,
 }) {
   const center = component.definition.properties.initialLocation.value;
-  const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
-  const { t } = useTranslation();
+  const { polygonPoints = [], defaultMarkers = [] } = properties;
 
-  let defaultMarkers = [];
-  try {
-    defaultMarkers = defaultMarkerValue;
-  } catch (err) {
-    console.log(err);
-  }
+  const { t } = useTranslation();
 
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
   const canAddNewMarkers = addNewMarkersProp ? resolveReferences(addNewMarkersProp.value, currentState) : false;
@@ -53,12 +48,16 @@ export const Map = function Map({
   const [gmap, setGmap] = useState(null);
   const [autoComplete, setAutoComplete] = useState(null);
   const [mapCenter, setMapCenter] = useState(resolveReferences(center, currentState));
-  const [markers, setMarkers] = useState(resolveReferences(defaultMarkers, currentState));
+  const [markers, setMarkers] = useState(defaultMarkers);
 
   const containerStyle = {
     width: '100%',
     height,
   };
+
+  useEffect(() => {
+    setMarkers(defaultMarkers);
+  }, [JSON.stringify(defaultMarkers)]);
 
   function handleMapClick(e) {
     if (!canAddNewMarkers) {
@@ -185,6 +184,21 @@ export const Map = function Map({
                 <Marker key={index} position={marker} label={marker.label} onClick={() => handleMarkerClick(index)} />
               ))}
             </>
+          )}
+          {polygonPoints.length > 1 && (
+            <Polygon
+              path={polygonPoints}
+              onClick={() => {
+                onEvent('onPolygonClick', { component });
+              }}
+              options={{
+                strokeColor: '#4d72fa',
+                strokeOpacity: 1,
+                strokeWeight: 2,
+                fillColor: '#4d72fa',
+                fillOpacity: 0.5,
+              }}
+            />
           )}
         </GoogleMap>
       </LoadScript>

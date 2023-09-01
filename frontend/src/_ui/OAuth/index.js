@@ -26,6 +26,7 @@ const OAuth = ({
   multiple_auth_enabled,
   optionchanged,
   workspaceConstants,
+  isDisabled,
 }) => {
   const authOptions = (isGrpc = false) => {
     const options = [
@@ -55,6 +56,7 @@ const OAuth = ({
         onChange={(value) => optionchanged('auth_type', value)}
         width={'100%'}
         useMenuPortal={false}
+        isDisabled={isDisabled}
       />
       <ElementToRender
         add_token_to={add_token_to}

@@ -203,7 +203,13 @@ export default function EditorHeader({
                 </div>
                 <div className="nav-item dropdown">
                   {!isVersionReleased && currentEnvironment?.name !== 'production' ? (
-                    <ButtonSolid variant="primary" onClick={handlePromote} size="md" disabled={shouldDisablePromote}>
+                    <ButtonSolid
+                      variant="primary"
+                      onClick={handlePromote}
+                      size="md"
+                      disabled={shouldDisablePromote}
+                      data-cy="promte-button"
+                    >
                       {' '}
                       <ToolTip
                         message="Promote this version to the next environment"

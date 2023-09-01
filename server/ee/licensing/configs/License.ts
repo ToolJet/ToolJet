@@ -185,6 +185,7 @@ export default class License {
       customStylingEnabled: this.customStyling,
       expiryDate: this._expiryDate,
       isExpired: this.isExpired,
+      isLicenseValid: this.isLicenseValid,
       editorUsers: this.editorUsers,
       viewerUsers: this.viewerUsers,
       workspacesCount: this.workspaces,
