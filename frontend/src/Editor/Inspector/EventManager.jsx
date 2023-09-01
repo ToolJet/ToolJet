@@ -24,6 +24,7 @@ import { shallow } from 'zustand/shallow';
 export const EventManager = ({
   component,
   componentMeta,
+  currentState = {},
   components,
   eventsChanged,
   apps,
@@ -121,18 +122,19 @@ export const EventManager = ({
     });
     return componentOptions;
   }
-
+  // currently blocking items inside subcontainer because they can't be controlled through event manager
+  // use components instead of currentState?.components to get all the components in canvas
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
-    Object.keys(components || {}).forEach((key) => {
+    Object.values(currentState?.components || {}).forEach((value) => {
       const targetComponentMeta = componentTypes.find(
-        (componentType) => components[key].component.component === componentType.component
+        (componentType) => components[value.id].component.component === componentType.component
       );
       if ((targetComponentMeta?.actions?.length ?? 0) > 0) {
-        if (componentType === '' || components[key].component.component === componentType) {
+        if (componentType === '' || components[value.id].component.component === componentType) {
           componentOptions.push({
-            name: components[key].component.name,
-            value: key,
+            name: components[value.id].component.name,
+            value: value.id,
           });
         }
       }

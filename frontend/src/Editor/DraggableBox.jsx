@@ -97,6 +97,7 @@ export const DraggableBox = React.memo(
     parentId,
     sideBarDebugger,
     childComponents = null,
+    parentKey,
   }) => {
     const [isResizing, setResizing] = useState(false);
     const [isDragging2, setDragging] = useState(false);
@@ -312,6 +313,7 @@ export const DraggableBox = React.memo(
                     readOnly={readOnly}
                     customResolvables={customResolvables}
                     parentId={parentId}
+                    parentKey={parentKey}
                     allComponents={allComponents}
                     sideBarDebugger={sideBarDebugger}
                     childComponents={childComponents}

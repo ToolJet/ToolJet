@@ -49,7 +49,7 @@ export function AddNewRowComponent({
         accumulator[index] = nestedData;
         return accumulator;
       }, {});
-      setExposedVariable('newRows', newRowsState).then(() => {
+      setExposedVariable('newRows', newRowsState)?.then(() => {
         mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
       });
     }
@@ -131,7 +131,7 @@ export function AddNewRowComponent({
               accumulator.push(newRowDataUpdates[row]);
               return accumulator;
             }, []);
-            setExposedVariable('newRows', newRowAddedExposedVar).then(() => {
+            setExposedVariable('newRows', newRowAddedExposedVar)?.then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
               setNewRowsState(rowData);
             });
@@ -157,7 +157,7 @@ export function AddNewRowComponent({
         </button>
         <button
           onClick={() => {
-            setExposedVariable('newRows', []).then(() => {
+            setExposedVariable('newRows', [])?.then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });
