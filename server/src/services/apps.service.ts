@@ -30,7 +30,11 @@ import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { Page } from 'src/entities/page.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { Layout } from 'src/entities/layout.entity';
 
+import { Component } from 'src/entities/component.entity';
+
+const uuid = require('uuid');
 @Injectable()
 export class AppsService {
   constructor(
@@ -371,8 +375,86 @@ export class AppsService {
       );
 
       await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId);
+
+      if (versionFrom) {
+        (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+          (appVersion.globalSettings = versionFrom.globalSettings),
+          await manager.save(appVersion);
+
+        await this.createNewPagesAndComponentsForVersion(manager, appVersion, versionFrom.id, versionFrom.homePageId);
+      }
+
       return appVersion;
     }, manager);
+  }
+
+  async createNewPagesAndComponentsForVersion(
+    manager: EntityManager,
+    appVersion: AppVersion,
+    versionFromId: string,
+    prevHomePagePage: string
+  ) {
+    const pages = await manager
+      .createQueryBuilder(Page, 'page')
+      .leftJoinAndSelect('page.components', 'component')
+      .leftJoinAndSelect('component.layouts', 'layout')
+      .where('page.appVersionId = :appVersionId', { appVersionId: versionFromId })
+      .getMany();
+
+    let homePageId = prevHomePagePage;
+
+    const newComponents = [];
+    const newComponentLayouts = [];
+
+    for (const page of pages) {
+      const savedPage = await manager.save(
+        manager.create(Page, {
+          name: page.name,
+          handle: page.handle,
+          index: page.index,
+          appVersionId: appVersion.id,
+        })
+      );
+
+      if (page.id === prevHomePagePage) {
+        homePageId = savedPage.id;
+      }
+
+      page.components.forEach(async (component) => {
+        const newComponent = new Component();
+
+        newComponent.id = uuid.v4();
+        newComponent.name = component.name;
+        newComponent.type = component.type;
+        newComponent.pageId = savedPage.id;
+        newComponent.properties = component.properties;
+        newComponent.styles = component.styles;
+        newComponent.validations = component.validations;
+        newComponent.page = savedPage;
+
+        newComponents.push(newComponent);
+
+        component.layouts.forEach((layout) => {
+          const newLayout = new Layout();
+          newLayout.id = uuid.v4();
+          newLayout.type = layout.type;
+          newLayout.top = layout.top;
+          newLayout.left = layout.left;
+          newLayout.width = layout.width;
+          newLayout.height = layout.height;
+          newLayout.componentId = layout.componentId;
+
+          newLayout.component = newComponent;
+
+          newComponentLayouts.push(newLayout);
+        });
+      });
+
+      await manager.save(newComponents);
+      await manager.save(newComponentLayouts);
+    }
+
+    return await manager.update(AppVersion, { id: appVersion.id }, { homePageId });
   }
 
   async deleteVersion(app: App, version: AppVersion): Promise<void> {

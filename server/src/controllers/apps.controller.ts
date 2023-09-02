@@ -300,7 +300,22 @@ export class AppsController {
       );
     }
 
-    return { ...appVersion, data_queries: appVersion.dataQueries };
+    const pagesForVersion = await this.pageService.findPagesForVersion(versionId);
+    const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
+
+    delete appCurrentEditingVersion['app'];
+
+    const appData = {
+      ...app,
+    };
+
+    delete appData['editingVersion'];
+
+    return {
+      ...appData,
+      editing_version: camelizeKeys(appCurrentEditingVersion),
+      pages: pagesForVersion,
+    };
   }
 
   @UseGuards(JwtAuthGuard)
