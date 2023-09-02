@@ -627,78 +627,78 @@ const EditorComponent = (props) => {
   };
 
   //!--------
+  const callBack = async (data, startingPageHandle) => {
+    useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
+    useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
+
+    const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
+    setAppVersions(appVersions.appVersions);
+
+    updateState({
+      slug: data.slug,
+      isMaintenanceOn: data?.is_maintenance_on,
+      organizationId: data?.organization_id,
+      isPublic: data?.is_public,
+      appName: data?.name,
+      userId: data?.user_id,
+      appId: data?.id,
+      events: data.events,
+      currentVersionId: data?.editing_version?.id,
+    });
+
+    await fetchDataSources(data.editing_version?.id);
+    await fetchDataQueries(data.editing_version?.id, true, true);
+
+    const appDefData = buildAppDefinition(data);
+
+    const appJson = appDefData;
+    const pages = data.pages;
+
+    const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
+    const homePageId = !startingPageId || startingPageId === 'null' ? appJson.homePageId : startingPageId;
+
+    const currentpageData = {
+      handle: appJson.pages[homePageId]?.handle,
+      name: appJson.pages[homePageId]?.name,
+      id: homePageId,
+      variables: {},
+    };
+
+    setCurrentPageId(homePageId);
+
+    useCurrentStateStore.getState().actions.setCurrentState({
+      page: currentpageData,
+    });
+
+    updateEditorState({
+      isLoading: false,
+      appDefinition: appJson,
+    });
+
+    //! need to handle
+
+    const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
+
+    for (const currentEvent of currentPageEvents ?? []) {
+      await handleEvent(currentEvent.name, currentPageEvents);
+    }
+  };
 
   //****** */
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
     const _appId = props?.params?.id;
 
-    const callBack = async (data) => {
-      useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
-      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
-
-      const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
-      setAppVersions(appVersions.appVersions);
-
-      updateState({
-        slug: data.slug,
-        isMaintenanceOn: data?.is_maintenance_on,
-        organizationId: data?.organization_id,
-        isPublic: data?.is_public,
-        appName: data?.name,
-        userId: data?.user_id,
-        appId: data?.id,
-        events: data.events,
-        currentVersionId: data?.editing_version?.id,
-      });
-
-      await fetchDataSources(data.editing_version?.id);
-      await fetchDataQueries(data.editing_version?.id, true, true);
-
-      const appDefData = buildAppDefinition(data);
-
-      const appJson = appDefData;
-      const pages = data.pages;
-
-      const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
-      const homePageId = !startingPageId || startingPageId === 'null' ? appJson.homePageId : startingPageId;
-
-      const currentpageData = {
-        handle: appJson.pages[homePageId]?.handle,
-        name: appJson.pages[homePageId]?.name,
-        id: homePageId,
-        variables: {},
-      };
-
-      setCurrentPageId(homePageId);
-
-      useCurrentStateStore.getState().actions.setCurrentState({
-        page: currentpageData,
-      });
-
-      updateEditorState({
-        isLoading: false,
-        appDefinition: appJson,
-      });
-
-      //! need to handle
-
-      const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
-
-      for (const currentEvent of currentPageEvents ?? []) {
-        await handleEvent(currentEvent.name, currentPageEvents);
-      }
-    };
-
     if (!onMount) {
-      await appService.getApp(_appId).then(callBack);
+      await appService.getApp(_appId).then((data) => callBack(data, startingPageHandle));
     } else {
-      callBack(app);
+      callBack(app, startingPageHandle);
     }
   };
 
   // !--------
-  const setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
+  const setAppDefinitionFromVersion = (appData, shouldWeEditVersion = true) => {
+    const version = appData?.editing_version?.id;
     if (version?.id !== props.editingVersion?.id) {
       // !Need to fix this
       // appDefinitionChanged(defaults(version.definition, defaultDefinition(props.darkMode)), {
@@ -712,15 +712,13 @@ const EditorComponent = (props) => {
           canRedo: false,
         });
       }
-      useAppVersionStore.getState().actions.updateEditingVersion(version);
 
       updateEditorState({
-        isUpdatingEditorStateInProcess: false,
+        isLoading: true,
       });
 
-      shouldWeEditVersion && saveEditingVersion(true);
-      fetchDataSources(props.editingVersion?.id);
-      fetchDataQueries(props.editingVersion?.id, true);
+      callBack(appData);
+
       initComponentVersioning();
     }
   };
@@ -822,7 +820,7 @@ const EditorComponent = (props) => {
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
 
           if (updateDiff?.type === 'components' && updateDiff?.operation === 'delete') {
-            const appEvents = JSON.parse(JSON.stringify(events));
+            const appEvents = Array.isArray(events) && events.length > 0 ? JSON.parse(JSON.stringify(events)) : [];
 
             const updatedEvents = appEvents.filter((event) => {
               return !updateDiff?.updateDiff.includes(event.sourceId);
