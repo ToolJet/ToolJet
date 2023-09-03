@@ -673,9 +673,8 @@ const EditorComponent = (props) => {
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
+      isUpdatingEditorStateInProcess: false,
     });
-
-    //! need to handle
 
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
