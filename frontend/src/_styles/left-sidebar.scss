@@ -3,8 +3,17 @@
 
 .left-sidebar {
   background: var(--base) !important;
+  display: flex;
+  gap: 16px;
 
   .sidebar-svg-icon {
+    height: 32px;
+    width: 32px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
     &:hover {
       background: var(--slate5);
       border-radius: 6px;
@@ -13,9 +22,12 @@
 
   .left-sidebar-item {
     text-align: center;
-    padding-top: 12px;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
+    max-height: 32px;
+    width: 32px;
+    display: flex;
+    align-items: center;
 
     &:hover {
       .debugger-badge {
@@ -29,6 +41,8 @@
     position: fixed;
     bottom: 5px;
     text-align: center;
+    display: flex;
+    justify-content: center;
   }
 
   .popover {
@@ -54,7 +68,11 @@
     cursor: pointer;
   }
 
-
+  #global-settings-popover {
+    .card-body {
+      background-color: var(--base) !important;
+    }
+  }
 
   .global-settings-popover {
     top: 260px;
@@ -141,38 +159,53 @@
 }
 
 .debugger {
-    .text-slate-12 {
-      color :var(--slate12);
-      font-weight : 500;
-      line-height : 20px;
-    }
-    .text-tomato-9 {
-      color : var(--tomato9);
-    }
-    .text-slate-10 {
-      color : var(--slate10)
-    }
-    .nav-tabs {
-      border-bottom: 0px !important;
-    }
+  .leftsidebar-panel-header {
+    border-bottom: none;
+  }
 
-    .nav-item .nav-link{
-      background-color: var(--slate3) !important;
-      color : var(--slate11)!important;
-    }
-   
-    .nav-tabs .nav-link.active {
-      border-radius: 0 !important;
-      border-width: 2px !important;
-      color : var(--indigo9)!important;
-    }
-    .panel-header-container {
-      border-bottom: 0px !important
-    }
- }
+  .text-slate-12 {
+    color: var(--slate12);
+    font-weight: 500;
+    line-height: 20px;
+  }
 
+  .text-tomato-9 {
+    color: var(--tomato9);
+  }
 
- 
+  .text-slate-10 {
+    color: var(--slate10)
+  }
+
+  .nav-tabs {
+    border-bottom: 0px !important;
+  }
+
+  .nav-item .nav-link {
+    background-color: var(--slate3) !important;
+    color: var(--slate11) !important;
+  }
+
+  .nav-tabs .nav-link.active {
+    border-radius: 0 !important;
+    border-width: 2px !important;
+    color: var(--indigo9) !important;
+  }
+
+  .panel-header-container {
+    border-bottom: 0px !important
+  }
+}
+
+.debugger-content {
+  background-color: var(--base);
+
+  hr {
+    margin-top: 0px !important;
+    margin-bottom: 16px !important;
+  }
+}
+
 
 .datasource-modal-button {
   background: #ffffff;
@@ -193,7 +226,7 @@
   background: transparent !important;
 
   &:hover {
-    background: $primary !important;
+    background: $primary  !important;
     color: #fffffc !important;
   }
 }
@@ -287,7 +320,7 @@
         width: 860px !important;
       }
 
-      
+
     }
 
     .card {
@@ -538,31 +571,13 @@
   .card.active {
     width: inherit;
     background-color: var(--slate5);
-    color: #3e525b;
-  }
-}
-
-.bm-item .pages-container.dark {
-  .card.active {
-    background-color: #2c405c;
-    color: #fff;
+    color: var(--slate12);
+    border: none;
   }
 }
 
 .viewer-footer {
   height: 48px;
-}
-
-.sidebar-comments {
-  position: fixed !important;
-  top: 0;
-  right: 260px;
-  border-left: 1px solid #d2ddec;
-  padding: 5px 0 5px 5px !important;
-}
-
-.sidebar-comments.dark {
-  border-color: #324156;
 }
 
 .sidebar-global-settings {
@@ -575,10 +590,15 @@
   position: relative;
   height: 100vh;
   margin-top: 0px;
+  border-radius: 0px !important;
 
   .add-datasource-btn {
     position: absolute;
     bottom: 3rem;
+  }
+
+  .card {
+    border: none !important;
   }
 }
 
@@ -601,7 +621,7 @@
   flex-direction: column;
   align-items: center;
   padding-top: 16px;
-  width: 56px;
+  width: 48px;
   border-right: 1px solid var(--slate5);
 }
 
@@ -627,7 +647,7 @@
 }
 
 .tj-leftsidebar-icon-items {
-  margin-bottom: 22px;
+  margin-bottom: 16px;
   height: 32px;
   width: 32px;
   border-radius: 4px;
@@ -681,4 +701,24 @@
   p {
     color: var(-—slate9) !important;
   }
+}
+
+.sidebar-debugger {
+  button {
+    border-radius: 0px;
+  }
+
+  .tab-content {
+    background: var(--base);
+  }
+}
+
+.sidebar-item {
+  height: 32px;
+  width: 32px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--indigo4);
 }

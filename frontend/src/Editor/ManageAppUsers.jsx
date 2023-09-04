@@ -9,6 +9,7 @@ import Textarea from '@/_ui/Textarea';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getSubpath } from '@/_helpers/utils';
 
 class ManageAppUsersComponent extends React.Component {
@@ -140,25 +141,10 @@ class ManageAppUsersComponent extends React.Component {
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="Tooljet app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     return (
-      <div title="Share">
-        <svg
-          className="w-100 h-100 cursor-pointer icon"
-          onClick={() => this.setState({ showModal: true })}
-          width="33"
-          height="33"
-          viewBox="0 0 33 33"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          data-cy="share-button-link"
-        >
-          <rect x="0.363281" y="0.220703" width="32" height="32" rx="6" fill="#F0F4FF" />
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M20.362 10.8875C19.6256 10.8875 19.0286 11.4845 19.0286 12.2209C19.0286 12.4112 19.0685 12.5922 19.1404 12.756C19.1453 12.7646 19.15 12.7733 19.1546 12.7822C19.1647 12.8019 19.1738 12.8217 19.1818 12.8418C19.4051 13.2654 19.8498 13.5542 20.362 13.5542C21.0984 13.5542 21.6953 12.9572 21.6953 12.2209C21.6953 11.4845 21.0984 10.8875 20.362 10.8875ZM18.3354 13.9542C18.8245 14.5255 19.551 14.8875 20.362 14.8875C21.8347 14.8875 23.0286 13.6936 23.0286 12.2209C23.0286 10.7481 21.8347 9.5542 20.362 9.5542C18.8892 9.5542 17.6953 10.7481 17.6953 12.2209C17.6953 12.4043 17.7138 12.5834 17.7491 12.7564L14.3886 14.4876C13.8995 13.9163 13.173 13.5542 12.362 13.5542C10.8892 13.5542 9.69531 14.7481 9.69531 16.2209C9.69531 17.6936 10.8892 18.8875 12.362 18.8875C13.173 18.8875 13.8995 18.5255 14.3886 17.9542L17.7491 19.6854C17.7138 19.8584 17.6953 20.0375 17.6953 20.2209C17.6953 21.6936 18.8892 22.8875 20.362 22.8875C21.8347 22.8875 23.0286 21.6936 23.0286 20.2209C23.0286 18.7481 21.8347 17.5542 20.362 17.5542C19.551 17.5542 18.8245 17.9163 18.3354 18.4876L14.9749 16.7564C15.0101 16.5834 15.0286 16.4043 15.0286 16.2209C15.0286 16.0375 15.0101 15.8584 14.9749 15.6854L18.3354 13.9542ZM13.5422 15.5999C13.5502 15.62 13.5592 15.6399 13.5693 15.6595C13.5739 15.6684 13.5787 15.6771 13.5836 15.6857C13.6554 15.8495 13.6953 16.0305 13.6953 16.2209C13.6953 16.4112 13.6554 16.5922 13.5836 16.756C13.5787 16.7646 13.5739 16.7733 13.5693 16.7822C13.5592 16.8019 13.5502 16.8217 13.5422 16.8418C13.3188 17.2654 12.8741 17.5542 12.362 17.5542C11.6256 17.5542 11.0286 16.9572 11.0286 16.2209C11.0286 15.4845 11.6256 14.8875 12.362 14.8875C12.8741 14.8875 13.3188 15.1763 13.5422 15.5999ZM19.1404 19.6857C19.1453 19.6771 19.15 19.6684 19.1546 19.6595C19.1647 19.6399 19.1738 19.62 19.1818 19.5999C19.4051 19.1763 19.8498 18.8875 20.362 18.8875C21.0984 18.8875 21.6953 19.4845 21.6953 20.2209C21.6953 20.9572 21.0984 21.5542 20.362 21.5542C19.6256 21.5542 19.0286 20.9572 19.0286 20.2209C19.0286 20.0305 19.0685 19.8495 19.1404 19.6857Z"
-            fill="#3E63DD"
-          />
-        </svg>
+      <div title="Share" className="editor-header-icon tj-secondary-btn">
+        <span className="d-flex" onClick={() => this.setState({ showModal: true })}>
+          <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
+        </span>
         <Modal
           show={this.state.showModal}
           size="lg"
@@ -167,12 +153,14 @@ class ManageAppUsersComponent extends React.Component {
           keyboard={true}
           animation={false}
           onEscapeKeyDown={this.hideModal}
-          className="app-sharing-modal animation-fade"
-          contentClassName={this.props.darkMode ? 'theme-dark' : ''}
+          className={`app-sharing-modal animation-fade ${this.props.darkMode ? 'dark-theme' : ''}`}
+          contentClassName={this.props.darkMode ? 'dark-theme' : ''}
         >
           <Modal.Header>
             <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
-            <button className="btn-close" aria-label="Close" onClick={this.hideModal} data-cy="modal-close-button" />
+            <span onClick={this.hideModal}>
+              <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" data-cy="modal-close-button" />
+            </span>
           </Modal.Header>
           <Modal.Body>
             {isLoading ? (
@@ -184,7 +172,7 @@ class ManageAppUsersComponent extends React.Component {
                 <div className="make-public mb-3">
                   <div className="form-check form-switch">
                     <input
-                      className="form-check-input"
+                      className="form-check-input color-slate12"
                       type="checkbox"
                       onClick={this.toggleAppVisibility}
                       checked={this.state.app.is_public}
@@ -207,10 +195,10 @@ class ManageAppUsersComponent extends React.Component {
                     <span className="input-group-text" data-cy="app-link">
                       {appLink}
                     </span>
-                    <div className="input-with-icon">
+                    <div className="input-with-icon app-name-slug-input">
                       <input
                         type="text"
-                        className={`form-control form-control-sm ${slugButtonClass}`}
+                        className={`form-control  color-slate12  ${slugButtonClass}`}
                         placeholder={appId}
                         onChange={(e) => {
                           e.persist();
@@ -225,13 +213,11 @@ class ManageAppUsersComponent extends React.Component {
                         </div>
                       )}
                     </div>
-                    <span className="input-group-text">
-                      <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
-                        <button className="btn btn-secondary btn-sm" data-cy="copy-app-link-button">
-                          {this.props.t('editor.shareModal.copy', 'copy')}
-                        </button>
-                      </CopyToClipboard>
-                    </span>
+                    <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
+                      <button className="btn-sm tj-tertiary-btn" data-cy="copy-app-link-button">
+                        {this.props.t('editor.shareModal.copy', 'copy')}
+                      </button>
+                    </CopyToClipboard>
                     <div className="invalid-feedback">{slugError}</div>
                   </div>
                 </div>
@@ -251,16 +237,14 @@ class ManageAppUsersComponent extends React.Component {
                         value={embeddableLink}
                         data-cy="iframe-link"
                       />
-                      <span className="input-group-text">
-                        <CopyToClipboard
-                          text={embeddableLink}
-                          onCopy={() => toast.success('Embeddable link copied to clipboard')}
-                        >
-                          <button className="btn btn-secondary btn-sm" data-cy="iframe-link-copy-button">
-                            {this.props.t('editor.shareModal.copy', 'copy')}
-                          </button>
-                        </CopyToClipboard>
-                      </span>
+                      <CopyToClipboard
+                        text={embeddableLink}
+                        onCopy={() => toast.success('Embeddable link copied to clipboard')}
+                      >
+                        <button className="tj-tertiary-btn btn-sm" data-cy="iframe-link-copy-button">
+                          {this.props.t('editor.shareModal.copy', 'copy')}
+                        </button>
+                      </CopyToClipboard>
                     </div>
                   </div>
                 )}
@@ -273,7 +257,7 @@ class ManageAppUsersComponent extends React.Component {
               <Link
                 to={getPrivateRoute('workspace_settings')}
                 target="_blank"
-                className="btn color-primary mt-3"
+                className="tj-primary-btn tj-base-btn"
                 data-cy="manage-users-button"
               >
                 Manage users

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import Information from '@/_ui/Icon/solidIcons/Information';
-import Search from '@/_ui/Icon/solidIcons/Search';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId } from '@/_helpers/utils';
@@ -38,6 +37,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
     } else {
       setFilteredUserDefinedDataSources(allUserDefinedSources);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, globalDataSources, dataSources]);
 
   const handleAddClick = () => {
