@@ -43,6 +43,7 @@ import { AppEnvironmentsModule } from './modules/app_environments/app_environmen
 import { OrganizationConstantModule } from './modules/organization_constants/organization_constants.module';
 import { RequestContextModule } from './modules/request_context/request-context.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -97,6 +98,7 @@ const imports = [
   PluginsModule,
   EventsModule,
   AppEnvironmentsModule,
+  ImportExportResourcesModule,
   CopilotModule,
   OrganizationConstantModule,
 ];
