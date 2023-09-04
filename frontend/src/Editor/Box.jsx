@@ -67,6 +67,7 @@ import _ from 'lodash';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import WidgetIcon from '@/../assets/images/icons/widgets';
 
 const AllComponents = {
   Button,
@@ -139,7 +140,6 @@ export const Box = memo(
     paramUpdated,
     changeCanDrag,
     containerProps,
-    darkMode,
     removeComponent,
     canvasWidth,
     mode,
@@ -148,7 +148,6 @@ export const Box = memo(
     sideBarDebugger,
     readOnly,
     childComponents,
-    parentKey,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
@@ -156,7 +155,6 @@ export const Box = memo(
 
     let styles = {
       height: '100%',
-      padding: '1px',
     };
 
     if (inCanvas) {
@@ -200,9 +198,9 @@ export const Box = memo(
         ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
         : [resolvedGeneralStyles, []];
 
-    const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
-
     const componentActions = useRef(new Set());
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
     useEffect(() => {
       onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
@@ -337,27 +335,27 @@ export const Box = memo(
               <></>
             )
           ) : (
-            <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
+            <div className="component-image-wrapper" style={{ height: '56px', width: '72px' }}>
               <div
-                className="component-image-holder p-2 d-flex flex-column justify-content-center"
+                className="component-image-holder d-flex flex-column justify-content-center"
                 style={{ height: '100%' }}
                 data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <center>
                   <div
+                    className="widget-svg-container"
                     style={{
-                      width: '20px',
-                      height: '20px',
+                      width: '24px',
+                      height: '24px',
                       backgroundSize: 'contain',
-                      backgroundImage: `url(assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
                       backgroundRepeat: 'no-repeat',
                     }}
-                  ></div>
+                  >
+                    <WidgetIcon name={component.name.toLowerCase()} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
+                  </div>
                 </center>
-                <span className="component-title">
-                  {t(`widget.${component.name}.displayName`, component.displayName)}
-                </span>
               </div>
+              <div className="component-title">{t(`widget.${component.name}.displayName`, component.displayName)}</div>
             </div>
           )}
         </div>

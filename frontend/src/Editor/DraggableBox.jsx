@@ -97,7 +97,6 @@ export const DraggableBox = React.memo(
     parentId,
     sideBarDebugger,
     childComponents = null,
-    parentKey,
   }) => {
     const [isResizing, setResizing] = useState(false);
     const [isDragging2, setDragging] = useState(false);
@@ -211,8 +210,8 @@ export const DraggableBox = React.memo(
         className={
           inCanvas
             ? ''
-            : cx('text-center align-items-center clearfix mb-2', {
-                'col-md-4': component.component !== 'KanbanBoard',
+            : cx('text-center align-items-center clearfix draggable-box-wrapper', {
+                '': component.component !== 'KanbanBoard',
                 'd-none': component.component === 'KanbanBoard',
               })
         }
@@ -313,7 +312,6 @@ export const DraggableBox = React.memo(
                     readOnly={readOnly}
                     customResolvables={customResolvables}
                     parentId={parentId}
-                    parentKey={parentKey}
                     allComponents={allComponents}
                     sideBarDebugger={sideBarDebugger}
                     childComponents={childComponents}

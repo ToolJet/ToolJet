@@ -16,7 +16,7 @@ export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchP
   }
   return (
     <div
-      className={`navigation-area ${darkMode && 'dark'}`}
+      className={`navigation-area`}
       style={{
         width: 200,
         // backgroundColor: canvasBackgroundColor,
@@ -155,7 +155,7 @@ const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, cu
   return (
     <Header
       styles={{
-        height: '45px',
+        height: '48px',
       }}
     >
       {showHeader && (

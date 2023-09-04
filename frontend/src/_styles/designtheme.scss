@@ -62,14 +62,14 @@
 @import "@radix-ui/colors/bronzeDark.css";
 
 :root {
-    --base: white;
-    --base-black: #121212;
+    --base: #FBFCFD;
+    --base-black: #151718;
     --text-black-000 : #000000;
 }
 
 .dark-theme {
     /* Remap your colors for dark mode */
-    --base: #121212;
-    --base-black: white;
+    --base: #151718;
+    --base-black: #FBFCFD;
     --text-black-000: #ffffff;
 }

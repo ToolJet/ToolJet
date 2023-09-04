@@ -98,7 +98,7 @@ class EditorComponent extends React.Component {
         canvasMaxWidth: 1292,
         canvasMaxWidthType: 'px',
         canvasMaxHeight: 2400,
-        canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
+        canvasBackgroundColor: props.darkMode ? '#1B1B1F' : '#F9F9FB',
         backgroundFxQuery: '',
       },
     };
@@ -881,9 +881,9 @@ class EditorComponent extends React.Component {
   };
 
   computeCanvasBackgroundColor = () => {
-    const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#edeff5';
-    if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
-      return this.props.darkMode ? '#2f3c4c' : '#edeff5';
+    const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#F9F9FB';
+    if (['#1B1B1F', '#F9F9FB'].includes(canvasBackgroundColor)) {
+      return this.props.darkMode ? '#1B1B1F' : '#F9F9FB';
     }
     return canvasBackgroundColor;
   };
@@ -1563,6 +1563,9 @@ class EditorComponent extends React.Component {
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
               <LeftSidebar
+                globalSettingsChanged={this.globalSettingsChanged}
+                toggleAppMaintenance={this.toggleAppMaintenance}
+                app={app}
                 errorLogs={currentState.errors}
                 components={currentState.components}
                 appId={appId}
@@ -1579,6 +1582,7 @@ class EditorComponent extends React.Component {
                   pages: this.state.appDefinition.pages,
                   homePageId: this.state.appDefinition.homePageId,
                   showViewerNavigation: this.state.appDefinition.showViewerNavigation,
+                  globalSettings: this.state.appDefinition.globalSettings,
                 }}
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}
@@ -1602,6 +1606,7 @@ class EditorComponent extends React.Component {
                 apps={apps}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
               />
+
               {!this.props.showComments && (
                 <Selecto
                   dragContainer={'.canvas-container'}
@@ -1636,7 +1641,7 @@ class EditorComponent extends React.Component {
                       (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
                       `px solid ${this.computeCanvasBackgroundColor()}`,
                     height: this.computeCanvasContainerHeight(),
-                    background: !this.props.darkMode && '#f4f6fa',
+                    background: !this.props.darkMode ? '#EBEBEF' : '#2E3035',
                   }}
                   onMouseUp={this.handleCanvasContainerMouseUp}
                   ref={this.canvasContainerRef}
@@ -1765,6 +1770,7 @@ class EditorComponent extends React.Component {
                         darkMode={this.props.darkMode}
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                         pages={this.getPagesWithIds()}
+                        cloneComponents={this.cloneComponents}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">

@@ -4,6 +4,8 @@ import _ from 'lodash';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 
+const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
+
 export const Code = ({
   param,
   definition,
@@ -17,7 +19,17 @@ export const Code = ({
   component,
 }) => {
   const currentState = useCurrentState();
+
   const getDefinitionForNewProps = (param) => {
+    if (param === 'enablePagination') {
+      const clientSidePagination = component?.component?.definition?.properties?.clientSidePagination?.value ?? false;
+      const serverSidePagination = component?.component?.definition?.properties?.serverSidePagination?.value ?? false;
+      const isPaginationEnabled =
+        resolveReferences(clientSidePagination, currentState) || resolveReferences(serverSidePagination, currentState);
+
+      if (isPaginationEnabled) return '{{true}}';
+      return '{{false}}';
+    }
     if (['showAddNewRowButton', 'allowSelection', 'defaultSelectedRow'].includes(param)) {
       if (param === 'allowSelection') {
         const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
@@ -84,7 +96,7 @@ export const Code = ({
         paramLabel={displayName}
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
-        fxActive={fxActive}
+        fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
         component={component}
       />
     </div>

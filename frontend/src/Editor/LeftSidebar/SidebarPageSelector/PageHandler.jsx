@@ -134,10 +134,11 @@ export const PageHandler = ({
       onMouseLeave={() => setIsHovered(false)}
       className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
       onClick={() => page.id != currentPageId && switchPage(page.id)}
+      style={{ display: 'flex', justifyContent: 'center' }}
     >
-      <div className="card-body">
+      <div>
         <div className="row" role="button">
-          <div className="col-auto">
+          <div className="col-auto d-flex align-items-center">
             {!isHovered && isHomePage && <Home width={16} height={16} />}
             {/* When the page is hidden as well as disabled, disabled icon takes precedence */}
             {!isHovered && (isDisabled || (isDisabled && isHidden)) && (
@@ -153,11 +154,11 @@ export const PageHandler = ({
             )}
           </div>
           <div
-            className="col text-truncate font-weight-400 page-name"
+            className="col text-truncate font-weight-400 page-name tj-text-xsm"
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
             style={isHomePage || isHidden || isHovered || isDisabled ? { paddingLeft: '0px' } : { paddingLeft: '16px' }}
           >
-            <span className={darkMode && 'theme-dark'}>{`${page.name}`}</span>
+            <span className={darkMode && 'dark-theme'}>{`${page.name}`}</span>
             {isIconApplied && (
               <span
                 style={{
@@ -228,11 +229,11 @@ export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode
   };
 
   return (
-    <div className="row" role="button">
+    <div className="row" role="button" style={{ marginTop: '2px' }}>
       <div className="col-12">
         <input
           type="text"
-          className={`form-control page-name-input ${darkMode && 'bg-transparent'}`}
+          className={`form-control page-name-input color-slate12 ${darkMode && 'bg-transparent'}`}
           autoFocus
           onBlur={(event) => {
             const name = event.target.value;
