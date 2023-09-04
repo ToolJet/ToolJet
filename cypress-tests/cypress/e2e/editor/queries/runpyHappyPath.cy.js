@@ -248,10 +248,6 @@ actions.unsetPageVariable('pageVar')`
     waitForQueryAction("preview");
     verifypreview("raw", `["all_users","admin"]`);
     if (Cypress.env("environment") != "Community") {
-      addInputOnQueryField("runpy", "tj_globals.mode.value");
-      query("preview");
-      verifypreview("raw", `edit`);
-
       addInputOnQueryField("runpy", "tj_globals.environment.name");
       query("preview");
       verifypreview("raw", `development`);
@@ -263,6 +259,14 @@ actions.unsetPageVariable('pageVar')`
       // query("preview");
       // verifypreview("raw", `true`);
     }
+
+    addInputOnQueryField("runpy", "tj_globals.mode.value");
+    query("preview");
+    verifypreview("raw", `edit`);
+    addInputOnQueryField("runpy", "constants");
+    query("preview");
+    waitForQueryAction("preview");
+    verifypreview("raw", `{}`);
     cy.apiDeleteApp();
   });
 

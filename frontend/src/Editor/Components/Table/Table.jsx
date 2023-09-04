@@ -84,7 +84,6 @@ export function Table({
   fireEvent,
   setExposedVariable,
   setExposedVariables,
-  registerAction,
   styles,
   properties,
   variablesExposedForPreview,
@@ -340,17 +339,17 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
+    });
+    mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
   }
 
   function handleChangesDiscarded() {
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => {
-      mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
-      fireEvent('onCancelChanges');
     });
+    mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
+    fireEvent('onCancelChanges');
   }
 
   const changeSet = tableDetails?.changeSet ?? {};
@@ -478,9 +477,8 @@ export function Table({
         !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) ||
         tableDetails.addNewRowsDetails.addingNewRows
       ) {
-        setExposedVariable('newRows', []).then(() => {
-          mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
-        });
+        setExposedVariable('newRows', []);
+        mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
@@ -635,65 +633,57 @@ export function Table({
     if (!sortOptions) {
       setExposedVariable('sortApplied', []);
     }
-    if (mounted) setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
+    if (mounted) setExposedVariable('sortApplied', sortOptions);
+    fireEvent('onSort');
   }, [sortOptions]);
 
-  registerAction(
-    'setPage',
-    async function (targetPageIndex) {
+  useEffect(() => {
+    setExposedVariable('setPage', async function (targetPageIndex) {
       setPaginationInternalPageIndex(targetPageIndex);
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
-    },
-    [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]
-  );
-  registerAction(
-    'selectRow',
-    async function (key, value) {
+    });
+  }, [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]);
+
+  useEffect(() => {
+    setExposedVariable('selectRow', async function (key, value) {
       const item = tableData.filter((item) => item[key] == value);
       const row = rows.find((item, index) => item.original[key] == value);
       if (row != undefined) {
         const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
-        setExposedVariables(selectedRowDetails).then(() => {
-          toggleRowSelected(row.id);
-          mergeToTableDetails(selectedRowDetails);
-          fireEvent('onRowClicked');
-        });
+        setExposedVariables(selectedRowDetails);
+        toggleRowSelected(row.id);
+        mergeToTableDetails(selectedRowDetails);
+        fireEvent('onRowClicked');
       }
-    },
-    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
-  );
-  registerAction(
-    'deselectRow',
-    async function () {
+    });
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
+
+  useEffect(() => {
+    setExposedVariable('deselectRow', async function () {
       if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
-        setExposedVariables(selectedRowDetails).then(() => {
-          if (allowSelection && !showBulkSelector) toggleRowSelected(tableDetails.selectedRowId, false);
-          mergeToTableDetails(selectedRowDetails);
-        });
+        setExposedVariables(selectedRowDetails);
+        if (allowSelection && !showBulkSelector) toggleRowSelected(tableDetails.selectedRowId, false);
+        mergeToTableDetails(selectedRowDetails);
       }
       return;
-    },
-    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
-  );
-  registerAction(
-    'discardChanges',
-    async function () {
+    });
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
+
+  useEffect(() => {
+    setExposedVariable('discardChanges', async function () {
       if (Object.keys(tableDetails.changeSet || {}).length > 0) {
         setExposedVariables({
           changeSet: {},
           dataUpdates: [],
-        }).then(() => {
-          mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
         });
+        mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
       }
-    },
-    [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]
-  );
-  registerAction(
-    'discardNewlyAddedRows',
-    async function () {
+    });
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]);
+  useEffect(() => {
+    setExposedVariable('discardNewlyAddedRows', async function () {
       if (
         tableDetails.addNewRowsDetails.addingNewRows &&
         (Object.keys(tableDetails.addNewRowsDetails.newRowsChangeSet || {}).length > 0 ||
@@ -701,28 +691,26 @@ export function Table({
       ) {
         setExposedVariables({
           newRows: [],
-        }).then(() => {
-          mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
         });
+        mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
       }
-    },
-    [
-      JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet),
-      tableDetails.addNewRowsDetails.addingNewRows,
-      JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
-    ]
-  );
+    });
+  }, [
+    JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet),
+    tableDetails.addNewRowsDetails.addingNewRows,
+    JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
+  ]);
+
   useEffect(() => {
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
       const selectedRowsId = selectedFlatRows.map((row) => row.id);
-      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId }).then(() => {
-        const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
-          accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
-          return accumulator;
-        }, []);
-        mergeToTableDetails({ selectedRowsDetails });
-      });
+      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId });
+      const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
+        accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
+        return accumulator;
+      }, []);
+      mergeToTableDetails({ selectedRowsDetails });
     }
     if (
       (!showBulkSelector && !highlightSelectedRow) ||
@@ -730,26 +718,22 @@ export function Table({
     ) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
-      setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-        mergeToTableDetails({ selectedRow, selectedRowId });
-      });
+      setExposedVariables({ selectedRow, selectedRowId });
+      mergeToTableDetails({ selectedRow, selectedRowId });
     }
   }, [selectedFlatRows.length, selectedFlatRows]);
 
-  registerAction(
-    'downloadTableData',
-    async function (format) {
+  useEffect(() => {
+    setExposedVariable('downloadTableData', async function (format) {
       exportData(format, true);
-    },
-    [_.toString(globalFilteredRows), columns]
-  );
+    });
+  }, [_.toString(globalFilteredRows), columns]);
 
   useEffect(() => {
     if (mounted) {
-      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
-        mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
-        toggleAllRowsSelected(false);
-      });
+      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null });
+      mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
+      toggleAllRowsSelected(false);
     }
   }, [showBulkSelector, highlightSelectedRow, allowSelection]);
 
@@ -813,9 +797,8 @@ export function Table({
 
   const rowHover = () => {
     mergeToTableDetails(rowDetails);
-    setExposedVariables(rowDetails).then(() => {
-      fireEvent('onRowHovered');
-    });
+    setExposedVariables(rowDetails);
+    fireEvent('onRowHovered');
   };
   useEffect(() => {
     if (_.isEmpty(changeSet)) {
@@ -840,10 +823,9 @@ export function Table({
       const pageNumber = Math.floor(selectedRowId / rowsPerPage) + 1;
       preSelectRow.current = true;
       if (highlightSelectedRow) {
-        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
-          toggleRowSelected(selectedRowId, true);
-          mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
-        });
+        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        toggleRowSelected(selectedRowId, true);
+        mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
       } else {
         toggleRowSelected(selectedRowId, true);
       }
@@ -1093,7 +1075,10 @@ export function Table({
                                   {...provided.dragHandleProps}
                                   // {...extraProps}
                                   ref={provided.innerRef}
-                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                  style={{
+                                    ...getItemStyle(snapshot, provided.draggableProps.style),
+                                    textAlign: column?.horizontalAlignment,
+                                  }}
                                 >
                                   {column.render('Header')}
                                 </div>
@@ -1150,10 +1135,9 @@ export function Table({
                       }
                       const selectedRow = row.original;
                       const selectedRowId = row.id;
-                      setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-                        mergeToTableDetails({ selectedRow, selectedRowId });
-                        fireEvent('onRowClicked');
-                      });
+                      setExposedVariables({ selectedRow, selectedRowId });
+                      mergeToTableDetails({ selectedRow, selectedRowId });
+                      fireEvent('onRowClicked');
                     }}
                     onMouseOver={(e) => {
                       if (hoverAdded) {
@@ -1168,6 +1152,7 @@ export function Table({
                   >
                     {row.cells.map((cell, index) => {
                       let cellProps = cell.getCellProps();
+                      cellProps.style.textAlign = cell.column?.horizontalAlignment;
                       if (tableDetails.changeSet) {
                         if (tableDetails.changeSet[cell.row.index]) {
                           const currentColumn = columnData.find((column) => column.id === cell.column.id);
@@ -1210,6 +1195,7 @@ export function Table({
                         cellValue,
                         rowData,
                       });
+                      const horizontalAlignment = cell.column?.horizontalAlignment;
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -1217,15 +1203,20 @@ export function Table({
                           data-cy={`${cell.column.columnType ?? ''}${String(
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
-                          className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
-                            'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
-                            'has-text': cell.column.columnType === 'text' || isEditable,
-                            'has-dropdown': cell.column.columnType === 'dropdown',
-                            'has-multiselect': cell.column.columnType === 'multiselect',
-                            'has-datepicker': cell.column.columnType === 'datepicker',
-                            'align-items-center flex-column': cell.column.columnType === 'selector',
-                            [cellSize]: true,
-                          })}
+                          className={cx(
+                            `table-text-align-${cell.column.horizontalAlignment} ${
+                              wrapAction ? wrapAction : 'wrap'
+                            }-wrapper`,
+                            {
+                              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+                              'has-text': cell.column.columnType === 'text' || isEditable,
+                              'has-dropdown': cell.column.columnType === 'dropdown',
+                              'has-multiselect': cell.column.columnType === 'multiselect',
+                              'has-datepicker': cell.column.columnType === 'datepicker',
+                              'align-items-center flex-column': cell.column.columnType === 'selector',
+                              [cellSize]: true,
+                            }
+                          )}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                           onClick={(e) => {
@@ -1244,7 +1235,12 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell', { cell, actionButtonsArray, isEditable })}
+                              cellRender={cell.render('Cell', {
+                                cell,
+                                actionButtonsArray,
+                                isEditable,
+                                horizontalAlignment,
+                              })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
                               columnType={cell.column.columnType}

@@ -245,8 +245,6 @@ export const pinInspector = () => {
       cy.get(commonSelectors.inspectorPinIcon).click();
     }
   });
-  cy.reload();
-  cy.waitForAppLoad();
 };
 
 export const createGroup = (groupName) => {
@@ -257,4 +255,9 @@ export const createGroup = (groupName) => {
     commonSelectors.toastMessage,
     groupsText.groupCreatedToast
   );
+};
+
+export const navigateToworkspaceConstants = () => {
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.workspaceConstantsOption).click();
 };

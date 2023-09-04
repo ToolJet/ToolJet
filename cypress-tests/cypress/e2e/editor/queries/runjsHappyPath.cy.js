@@ -239,10 +239,6 @@ describe("RunJS", () => {
     query("preview");
     verifypreview("raw", `["all_users","admin"]`);
     if (Cypress.env("environment") != "Community") {
-      addInputOnQueryField("runjs", "return globals.mode");
-      query("preview");
-      verifypreview("raw", `{"value":"edit"}`);
-
       addInputOnQueryField("runjs", "return globals.environment.name");
       query("preview");
       verifypreview("raw", `development`);
@@ -254,6 +250,14 @@ describe("RunJS", () => {
       query("preview");
       verifypreview("raw", `true`);
     }
+
+    addInputOnQueryField("runjs", "return globals.mode");
+    query("preview");
+    verifypreview("raw", `{"value":"edit"}`);
+
+    addInputOnQueryField("runjs", "return constants");
+    query("preview");
+    verifypreview("raw", `{}`);
     cy.apiDeleteApp();
   });
 
@@ -297,7 +301,11 @@ describe("RunJS", () => {
     cy.wait(`@editQuery`);
     cy.waitForAutoSave();
     cy.reload();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "alert from runjs",
+      false
+    );
 
     changeQueryToggles("confirmation-before-run");
     cy.wait(`@editQuery`);

@@ -9,6 +9,8 @@ title: Google Cloud Run
 You should setup a PostgreSQL database manually to be used by ToolJet.
 :::
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 ## Deploying ToolJet application

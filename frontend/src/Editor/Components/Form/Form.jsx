@@ -7,7 +7,7 @@ import _, { omit } from 'lodash';
 import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-
+import { removeFunctionObjects } from '@/_helpers/appUtils';
 export const Form = function Form(props) {
   const {
     id,
@@ -22,7 +22,6 @@ export const Form = function Form(props) {
     currentState,
     fireEvent,
     properties,
-    registerAction,
     resetComponent,
     childComponents,
     onEvent,
@@ -51,20 +50,20 @@ export const Form = function Form(props) {
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
-  registerAction('resetForm', async function () {
-    resetComponent();
-  });
-  registerAction(
-    'submitForm',
-    async function () {
+
+  useEffect(() => {
+    setExposedVariable('resetForm', async function () {
+      resetComponent();
+    });
+    setExposedVariable('submitForm', async function () {
       if (isValid) {
         onEvent('onSubmit', { component }).then(() => resetComponent());
       } else {
         fireEvent('onInvalid');
       }
-    },
-    [isValid]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
   const extractData = (data) => {
     const result = {};
@@ -87,7 +86,6 @@ export const Form = function Form(props) {
   };
 
   useEffect(() => {
-    // resetComponent()
     if (mounted) resetComponent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema)]);
@@ -108,6 +106,7 @@ export const Form = function Form(props) {
 
     if (childComponents === null) {
       setExposedVariable('data', formattedChildData);
+      setExposedVariable('children', formattedChildData);
       setExposedVariable('isValid', childValidation);
       return setValidation(childValidation);
     }
@@ -127,8 +126,9 @@ export const Form = function Form(props) {
       // eslint-disable-next-line no-unused-vars
       Object.entries(formattedChildData).map(([key, { keyValue, ...rest }]) => [key, rest])
     );
-
-    setExposedVariable('data', formattedChildData);
+    const formattedChildDataClone = _.cloneDeep(formattedChildData);
+    setExposedVariable('children', formattedChildDataClone);
+    setExposedVariable('data', removeFunctionObjects(formattedChildData));
     setExposedVariable('isValid', childValidation);
     setValidation(childValidation);
 

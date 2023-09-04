@@ -32,6 +32,7 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
+import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 
 const AllElements = {
@@ -88,16 +89,26 @@ export function CodeHinter({
   const currentState = useCurrentState();
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
+
+  const [prevCurrentValue, setPrevCurrentValue] = useState(null);
+  const [resolvedValue, setResolvedValue] = useState(null);
+  const [resolvingError, setResolvingError] = useState(null);
+
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
+
+  // Todo: Remove this when workspace variables are deprecated
+  const isWorkspaceVariable =
+    typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   const slideInStyles = useSpring({
     config: { ...config.stiff },
     from: { opacity: 0, height: 0 },
     to: {
       opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
+      height: isFocused ? currentHeight + (isWorkspaceVariable ? 30 : 0) : 0,
     },
   });
   const { t } = useTranslation();
@@ -132,6 +143,28 @@ export function CodeHinter({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
+
+  useEffect(() => {
+    if (JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+      const customResolvables = getCustomResolvables();
+      const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+      setPrevCurrentValue(currentValue);
+
+      if (error) {
+        setResolvingError(error);
+        setResolvedValue(null);
+      } else {
+        setResolvingError(null);
+        setResolvedValue(preview);
+      }
+    }
+
+    return () => {
+      setPrevCurrentValue(null);
+      setResolvedValue(null);
+      setResolvingError(null);
+    };
+  }, [JSON.stringify({ currentValue, realState })]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
@@ -179,13 +212,18 @@ export function CodeHinter({
 
   const getPreview = () => {
     if (!enablePreview) return;
-    const customResolvables = getCustomResolvables();
-    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+    // const customResolvables = getCustomResolvables();
+    // const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
+    const preview = resolvedValue;
+    const error = resolvingError;
 
     if (error) {
       const err = String(error);
-      const errorMessage = err.includes('.run()') ? `${err} in ${componentName.split('::')[0]}'s field` : err;
+      const errorMessage = err.includes('.run()')
+        ? `${err} in ${componentName ? componentName.split('::')[0] + "'s" : 'fx'} field`
+        : err;
       return (
         <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
           <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
@@ -231,6 +269,10 @@ export function CodeHinter({
             {content}
           </div>
         </div>
+        {/* Todo: Remove this when workspace variables are deprecated */}
+        {enablePreview && isWorkspaceVariable && (
+          <CodeHinter.DepericatedAlertForWorkspaceVariable text={'Deprecating soon'} />
+        )}
       </animated.div>
     );
   };
@@ -276,6 +318,7 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
+
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -426,5 +469,22 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
+const DepericatedAlertForWorkspaceVariable = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-warning"
+      cls="codehinter workspace-variables-alert-banner p-1 mb-0"
+      data-cy={``}
+      imgHeight={18}
+      imgWidth={18}
+    >
+      <div className="d-flex align-items-center">
+        <div class="">{text}</div>
+      </div>
+    </Alert>
+  );
+};
+
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;
+CodeHinter.DepericatedAlertForWorkspaceVariable = DepericatedAlertForWorkspaceVariable;
