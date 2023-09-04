@@ -2,7 +2,7 @@ export const postgreSqlText = {
   labelDataSources: "Datasources",
   labelAddDataSource: "+ add data source",
 
-  allDataSources: "All datasources (43)",
+  allDataSources: "All data sources (43)",
   allDatabase: "Databases (19)",
   allApis: "APIs (20)",
   allCloudStorage: "Cloud Storage (4)",

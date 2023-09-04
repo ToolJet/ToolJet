@@ -101,6 +101,12 @@ describe("Data source Azure Blob Storage", () => {
   });
 
   it("Should verify the functionality of Azure Blob Storage connection form.", () => {
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDataSources
+    );
     selectAndAddDataSource(
       "cloudstorage",
       azureBlobStorageText.azureBlobStorage,
