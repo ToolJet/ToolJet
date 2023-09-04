@@ -89,6 +89,9 @@ describe("Table", () => {
       "have.text",
       tableText.defaultPageIndexDetails
     );
+    cy.get(`${tableSelector.pageIndexDetails}>input`)
+      .invoke("val")
+      .should("equal", "1");
     cy.get(tableSelector.paginationButtonToFirst).should("be.visible");
     cy.get(tableSelector.paginationButtonToPrevious).should("be.visible");
     cy.get(tableSelector.paginationButtonToNext).should("be.visible");
@@ -758,16 +761,13 @@ describe("Table", () => {
       .and("contain", "classic");
 
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    selectFromSidebarDropdown(
-      '[data-cy="dropdown-table-type"]',
-      "Striped & bordered"
-    );
+    selectFromSidebarDropdown('[data-cy="dropdown-table-type"]', "Striped");
     cy.forceClickOnCanvas();
     cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
       .click()
       .find("table")
       .invoke("attr", "class")
-      .and("contain", "table-striped table-bordered ");
+      .and("contain", "table-striped");
 
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     cy.get('[data-cy="label-cell-size"]').verifyVisibleElement(
@@ -793,7 +793,7 @@ describe("Table", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     cy.get('[data-cy="cell-size-fx-button"]').click();
-    selectFromSidebarDropdown('[data-cy="dropdown-cell-size"]', "Spacious");
+    selectFromSidebarDropdown('[data-cy="dropdown-cell-size"]', "Condensed");
     cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
@@ -802,7 +802,7 @@ describe("Table", () => {
     cy.get(tableSelector.column(0))
       .eq(0)
       .invoke("attr", "class")
-      .and("contain", "spacious");
+      .and("contain", "condensed");
 
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
     cy.get('[data-cy="label-text-color"]').verifyVisibleElement(
@@ -904,7 +904,7 @@ describe("Table", () => {
     cy.get(
       commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
     ).should("be.visible");
-    cy.get(tableSelector.filterButton).click();
+    // cy.get(tableSelector.filterButton).click();
     addFilter(
       [{ column: "name", operation: "contains", value: "Sarah" }],
       true
@@ -1076,7 +1076,10 @@ describe("Table", () => {
 
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.get('[data-cy*="-cell-1"] ').eq(1).should("have.text", "Jon");
-    cy.get('[data-cy="page-index-details"]').should("have.text", "2 of 2");
+    cy.get('[data-cy="page-index-details"]').should("have.text", "of 2");
+    cy.get(`${tableSelector.pageIndexDetails}>input`)
+      .invoke("val")
+      .should("equal", "2");
 
     cy.get('[data-cy="3-cell-0"]')
       .click()
