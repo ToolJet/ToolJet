@@ -58,14 +58,23 @@ export default function JoinSelect({ darkMode }) {
           </Col>
           <Col sm="9" className="p-0 border-end">
             <DropDownSelect
-              options={tableOptions[table]}
+              options={tableOptions[table]?.sort((a, b) => {
+                const aChecked = joinSelectOptions.some((item) => item.name === a.value && item.table === table);
+                const bChecked = joinSelectOptions.some((item) => item.name === b.value && item.table === table);
+                if (aChecked && !bChecked) {
+                  return -1;
+                }
+                if (!aChecked && bChecked) {
+                  return 1;
+                }
+                return 0;
+              })}
               darkMode={darkMode}
               isMulti
               onChange={(values) => handleChange(values, table)}
               value={joinSelectOptions
                 .filter((val) => val?.table === table)
                 .map((column) => ({ value: column?.name, label: column?.name }))}
-              // value=''
             />
           </Col>
         </Row>
