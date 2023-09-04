@@ -44,8 +44,6 @@ function DataSourceSelect({
     // closePopup();
   };
 
-  console.log(dataSourcesKinds);
-
   useEffect(() => {
     const allDataSources = [...dataSources, ...globalDataSources];
     setUserDefinedSources(allDataSources);
@@ -324,7 +322,7 @@ const CustomGroupHeading = (props) => {
   const node = document.querySelector(`#${props.id}`)?.parentElement?.nextElementSibling;
   const classes = node?.classList;
   const hidden = classes?.contains('d-none');
-  console.log('Recreated', props);
+
   const handleHeaderClick = (id) => {
     if (hidden) {
       node.classList.remove('d-none');

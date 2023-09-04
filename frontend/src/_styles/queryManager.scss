@@ -1898,3 +1898,11 @@ $border-radius: 4px;
     border: 0 !important;
   }
 }
+
+.tdb-dropdown-btn {
+  &:active {
+    border: 1px solid var(--indigo-09, #3E63DD) !important;
+    background: var(--indigo-02, #F8FAFF);
+    box-shadow: 0px 0px 0px 1px #C6D4F9
+  }
+}
