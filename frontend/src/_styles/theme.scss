@@ -730,7 +730,7 @@ button {
       }
 
       .canvas-area {
-        background: #edeff5;
+        background: #F9F9FB;
         margin: 0px auto;
 
         .resizer {
@@ -781,7 +781,7 @@ button {
 
       .canvas-area {
         width: 1280px;
-        background: #edeff5;
+        background: #F9F9FB;
         margin: 0px auto;
         background-size: 80px 80px;
         background-repeat: repeat;
@@ -3075,6 +3075,9 @@ input:focus-visible {
 
   .DateRangePickerInput__withBorder {
     border: 1px solid #1f2936;
+  }
+  .main .canvas-container .canvas-area {
+    background: #2f3c4c;
   }
 
 
@@ -11337,9 +11340,4 @@ tbody {
 }
 .custom-gap-12{
   gap:12px
-}
-.dark-theme{
-  .main .canvas-container .canvas-area {
-    background: #2E3035 !important;
-  }
 }

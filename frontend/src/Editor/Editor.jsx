@@ -882,7 +882,7 @@ class EditorComponent extends React.Component {
 
   computeCanvasBackgroundColor = () => {
     const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#F9F9FB';
-    if (['#1B1B1F', '#F9F9FB'].includes(canvasBackgroundColor)) {
+    if (['#1B1B1F', '#F9F9FB', '#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
       return this.props.darkMode ? '#1B1B1F' : '#F9F9FB';
     }
     return canvasBackgroundColor;
