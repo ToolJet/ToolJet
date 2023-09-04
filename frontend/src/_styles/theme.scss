@@ -6133,7 +6133,7 @@ a.step-item-disabled {
 
 .notification-center-badge {
   top: 0;
-  right: 0;
+  right: 6px;
   position: absolute;
 }
 
@@ -7075,9 +7075,13 @@ tbody {
 }
 
 .application-brand {
-  position: relative;
-  display: flex;
-  justify-content: center;
+  a{
+    height: 48px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .breadcrumb-item.active {
