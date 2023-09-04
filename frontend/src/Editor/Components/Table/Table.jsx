@@ -942,6 +942,12 @@ export function Table({
     }
     return totalWidth;
   };
+  console.log('kavin', {
+    totalRecords,
+    'globalFilteredRows-length': globalFilteredRows.length,
+    clientSidePagination,
+    serverSidePagination,
+  });
   return (
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
@@ -1154,7 +1160,7 @@ export function Table({
                                       className={`${
                                         column.columnType !== 'selector' &&
                                         'd-flex justify-content-between custom-gap-12'
-                                      }`}
+                                      } ${column.columnType === 'selector' && 'd-flex justify-content-center w-100'}`}
                                       {...column.getSortByToggleProps()}
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
@@ -1165,9 +1171,15 @@ export function Table({
                                       }}
                                     >
                                       <div
-                                        className={`w-100 d-flex justify-content-${determineJustifyContentValue(
-                                          column?.horizontalAlignment ?? ''
-                                        )} ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
+                                        className={`w-100 d-flex 
+                                          ${
+                                            column.columnType === 'selector'
+                                              ? 'justify-content-center'
+                                              : `justify-content-${determineJustifyContentValue(
+                                                  column?.horizontalAlignment ?? ''
+                                                )}`
+                                          }                                     
+                                          ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
                                       >
                                         <div>
                                           {column.columnType !== 'selector' && isEditable && (
@@ -1195,10 +1207,8 @@ export function Table({
                                       </div>
                                       <div
                                         style={{
-                                          visibility:
-                                            column?.columnType !== 'selector' && column?.isSorted
-                                              ? 'visible'
-                                              : 'hidden',
+                                          display:
+                                            column?.columnType !== 'selector' && column?.isSorted ? 'block' : 'none',
                                         }}
                                       >
                                         {column?.isSortedDesc ? (
