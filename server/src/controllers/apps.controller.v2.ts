@@ -164,7 +164,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.create(versionEditDto.diff, versionEditDto.pageId);
+    await this.componentsService.create(versionEditDto.diff, versionEditDto.pageId, versionId);
   }
 
   @UseGuards(JwtAuthGuard)

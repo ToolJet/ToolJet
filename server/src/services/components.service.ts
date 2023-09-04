@@ -21,9 +21,11 @@ export class ComponentsService {
     return this.componentsRepository.findOne(id);
   }
 
-  async create(componentDiff: object, pageId: string) {
+  async create(componentDiff: object, pageId: string, appVersionId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const page = await manager.findOne(Page, pageId);
+      const page = await manager.findOne(Page, {
+        where: { appVersionId, id: pageId },
+      });
 
       const newComponents = this.transformComponentData(componentDiff);
       const componentLayouts = [];
