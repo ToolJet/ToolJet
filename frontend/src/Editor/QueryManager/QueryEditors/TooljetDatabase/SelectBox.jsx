@@ -95,6 +95,14 @@ function DataSourceSelect({
     );
   }, [userDefinedSources]);
 
+  let optionsCount = options.length;
+
+  options.forEach((item) => {
+    if (item.options && item.options.length > 0) {
+      optionsCount += item.options.length;
+    }
+  });
+
   return (
     <div>
       <Select
@@ -153,7 +161,7 @@ function DataSourceSelect({
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
-          ...(options?.length < 5 && { Control: () => '' }),
+          ...(optionsCount < 5 && { Control: () => '' }),
         }}
         styles={{
           control: (style) => ({
