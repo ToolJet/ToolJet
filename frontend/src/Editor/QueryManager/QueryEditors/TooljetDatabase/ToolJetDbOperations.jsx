@@ -102,27 +102,27 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    // const newJoinOptions = clone(joinOptions);
-    // if (newJoinOptions?.[0]?.conditions?.conditionsList) {
-    //   const newConditionsList = [...newJoinOptions?.[0]?.conditions?.conditionsList].map(condition => {
-    //     if(condition?.leftField?.table)
-    //   })
-    // } else {
-    //   newJoinOptions[0] = { table: selectedTable };
-    // }
-    // setJoinOptions(newJoinOptions);
-    selectedTable &&
-      setJoinTableOptions((joinOptions) => {
-        return {
-          ...joinOptions,
-          from: {
-            name: selectedTable,
-            type: 'Table',
-          },
-        };
-      });
-  }, [selectedTable]);
+  // useEffect(() => {
+  //   const newJoinOptions = clone(joinOptions);
+  //   if (newJoinOptions?.[0]?.conditions?.conditionsList) {
+  //     const newConditionsList = [...newJoinOptions?.[0]?.conditions?.conditionsList].map(condition => {
+  //       if(condition?.leftField?.table)
+  //     })
+  //   } else {
+  //     newJoinOptions[0] = { table: selectedTable };
+  //   }
+  //   setJoinOptions(newJoinOptions);
+  //   selectedTable &&
+  //     setJoinTableOptions((joinOptions) => {
+  //       return {
+  //         ...joinOptions,
+  //         from: {
+  //           name: selectedTable,
+  //           type: 'Table',
+  //         },
+  //       };
+  //     });
+  // }, [selectedTable]);
 
   useEffect(() => {
     const tableSet = new Set();
@@ -333,9 +333,11 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
     optionchanged('organization_id', organizationId);
     optionchanged('table_name', tableName);
-    setJoinTableOptions({ joins: [{ conditions: { conditionsList: [{ leftField: { table: tableName } }] } }] });
-    setJoinOptions([{ conditions: { conditionsList: [{ leftField: { table: tableName } }] } }]);
-    setJoinSelectOptions([]);
+    setJoinTableOptions((joinOptions) => ({
+      joins: [{ conditions: { conditionsList: [{ leftField: { table: tableName } }] } }],
+    }));
+    // setJoinOptions([{ conditions: { conditionsList: [{ leftField: { table: tableName } }] } }]);
+    // setJoinSelectOptions([]);
   };
 
   const getComponent = () => {
