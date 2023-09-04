@@ -118,6 +118,13 @@ import Marketplace from './Marketplace.jsx';
 import Minimize from './Minimize.jsx';
 import Maximize from './Maximize.jsx';
 import PlusRectangle from './PlusRectangle.jsx';
+import CheveronLeftDouble from './CheveronLeftDouble.jsx';
+import CheveronRightDouble from './CheveronRightDouble.jsx';
+import Dot from './Dot.jsx';
+import Check from './Check.jsx';
+import Editable from './Editable.jsx';
+import Save from './Save.jsx';
+import Cross from './Cross.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -159,8 +166,12 @@ const Icon = (props) => {
       return <CheveronDown {...props} />;
     case 'cheveronleft':
       return <CheveronLeft {...props} />;
+    case 'cheveronleftdouble':
+      return <CheveronLeftDouble {...props} />;
     case 'cheveronright':
       return <CheveronRight {...props} />;
+    case 'cheveronrightdouble':
+      return <CheveronRightDouble {...props} />;
     case 'cheveronup':
       return <CheveronUp {...props} />;
     case 'clearrectangle':
@@ -353,10 +364,20 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'dot':
+      return <Dot {...props} />;
+    case 'check':
+      return <Check {...props} />;
+    case 'editable':
+      return <Editable {...props} />;
     case 'minimize':
       return <Minimize {...props} />;
     case 'maximize':
       return <Maximize {...props} />;
+    case 'save':
+      return <Save {...props} />;
+    case 'cross':
+      return <Cross {...props} />;
     default:
       return <Apps {...props} />;
   }

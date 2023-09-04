@@ -76,4 +76,5 @@ export const tableSelector = {
   },
 
   addNewRowTooltip: '[data-tooltip-id="tooltip-for-add-new-row"]',
+  manageColumns:'[data-tooltip-id="tooltip-for-manage-columns"]'
 };

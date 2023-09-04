@@ -14,14 +14,12 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref)
         data-cy={`checkbox-input`}
         type="checkbox"
         ref={resolvedRef}
-        style={{
-          width: 15,
-          height: 15,
-          marginTop: 8,
-          marginLeft: 10,
-        }}
         onClick={(event) => event.stopPropagation()}
         {...rest}
+        style={{
+          width: 16,
+          height: 16,
+        }}
       />
     </>
   );
