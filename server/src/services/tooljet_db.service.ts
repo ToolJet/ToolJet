@@ -257,7 +257,11 @@ export class TooljetDbService {
     finalQuery += `\nFROM ${await this.constructFromStatement(queryJson, internalTableNametoIdMap)}`;
     if (queryJson?.joins?.length)
       finalQuery += `\n${await this.constructJoinStatements(queryJson.joins, internalTableNametoIdMap)}`;
-    if (queryJson?.conditions && Object.keys(queryJson?.conditions).length)
+    if (
+      queryJson?.conditions &&
+      Object.keys(queryJson?.conditions).length &&
+      queryJson?.conditions?.conditionsList.length
+    )
       finalQuery += `\nWHERE ${await this.constructWhereStatement(queryJson.conditions, internalTableNametoIdMap)}`;
     if (queryJson?.group_by?.length)
       finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(queryJson.group_by, internalTableNametoIdMap)}`;
