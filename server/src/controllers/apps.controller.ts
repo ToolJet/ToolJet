@@ -301,6 +301,8 @@ export class AppsController {
     }
 
     const pagesForVersion = await this.pageService.findPagesForVersion(versionId);
+    const eventsForVersion = await this.eventsService.findEventsForVersion(versionId);
+
     const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
 
     delete appCurrentEditingVersion['app'];
@@ -315,6 +317,7 @@ export class AppsController {
       ...appData,
       editing_version: camelizeKeys(appCurrentEditingVersion),
       pages: pagesForVersion,
+      events: eventsForVersion,
     };
   }
 

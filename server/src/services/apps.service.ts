@@ -33,6 +33,7 @@ import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
 
 import { Component } from 'src/entities/component.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
 
 const uuid = require('uuid');
 @Injectable()
@@ -401,6 +402,10 @@ export class AppsService {
       .where('page.appVersionId = :appVersionId', { appVersionId: versionFromId })
       .getMany();
 
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionFromId },
+    });
+
     let homePageId = prevHomePagePage;
 
     const newComponents = [];
@@ -420,8 +425,24 @@ export class AppsService {
         homePageId = savedPage.id;
       }
 
+      const pageEvents = allEvents.filter((event) => event.sourceId === page.id);
+
+      pageEvents.forEach(async (event) => {
+        const newEvent = new EventHandler();
+
+        newEvent.id = uuid.v4();
+        newEvent.name = event.name;
+        newEvent.sourceId = savedPage.id;
+        newEvent.target = event.target;
+        newEvent.event = event.event;
+        newEvent.appVersionId = appVersion.id;
+
+        await manager.save(newEvent);
+      });
+
       page.components.forEach(async (component) => {
         const newComponent = new Component();
+        const componentEvents = allEvents.filter((event) => event.sourceId === component.id);
 
         newComponent.id = uuid.v4();
         newComponent.name = component.name;
@@ -447,6 +468,19 @@ export class AppsService {
           newLayout.component = newComponent;
 
           newComponentLayouts.push(newLayout);
+        });
+
+        componentEvents.forEach(async (event) => {
+          const newEvent = new EventHandler();
+
+          newEvent.id = uuid.v4();
+          newEvent.name = event.name;
+          newEvent.sourceId = newComponent.id;
+          newEvent.target = event.target;
+          newEvent.event = event.event;
+          newEvent.appVersionId = appVersion.id;
+
+          await manager.save(newEvent);
         });
       });
 
@@ -506,6 +540,9 @@ export class AppsService {
       const dataSources = versionFrom?.dataSources;
       const dataSourceMapping = {};
       const newDataQueries = [];
+      const allEvents = await manager.find(EventHandler, {
+        where: { appVersionId: versionFrom?.id },
+      });
 
       if (dataSources?.length) {
         for (const dataSource of dataSources) {
@@ -527,8 +564,22 @@ export class AppsService {
               dataSourceId: newDataSource.id,
               appVersionId: appVersion.id,
             };
-
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+
+            const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
+            for (const event of dataQueryEvents) {
+              const newEvent = new EventHandler();
+
+              newEvent.id = uuid.v4();
+              newEvent.name = event.name;
+              newEvent.sourceId = newQuery.id;
+              newEvent.target = event.target;
+              newEvent.event = event.event;
+              newEvent.appVersionId = appVersion.id;
+
+              await manager.save(newEvent);
+            }
+
             oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
@@ -544,6 +595,19 @@ export class AppsService {
             };
 
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+            const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+            for (const event of dataQueryEvents) {
+              const newEvent = new EventHandler();
+
+              newEvent.id = uuid.v4();
+              newEvent.name = event.name;
+              newEvent.sourceId = newQuery.id;
+              newEvent.target = event.target;
+              newEvent.event = event.event;
+              newEvent.appVersionId = appVersion.id;
+
+              await manager.save(newEvent);
+            }
             oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
