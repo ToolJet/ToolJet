@@ -16,8 +16,13 @@ import { commonWidgetText } from "Texts/common";
 describe("Editor- CSA", () => {
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
+  });
+
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("Should verify Tabs CSA", () => {

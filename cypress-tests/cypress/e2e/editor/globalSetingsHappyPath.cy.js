@@ -20,8 +20,9 @@ import {
 
 describe("Editor- Global Settings", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
   });
 
   it("should verify global settings", () => {
@@ -103,6 +104,6 @@ describe("Editor- Global Settings", () => {
       .invoke("attr", "class")
       .should("contains", "disabled-btn");
 
-    cy.wait(2000);
+    cy.apiDeleteApp();
   });
 });
