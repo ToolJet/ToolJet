@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker, Autocomplete } from '@react-google-maps/api';
 import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -16,8 +17,7 @@ export const Map = function Map({
   onComponentOptionsChanged,
   onEvent,
   styles,
-  // canvasWidth,
-  registerAction,
+  setExposedVariable,
   dataCy,
 }) {
   const center = component.definition.properties.initialLocation.value;
@@ -127,13 +127,11 @@ export const Map = function Map({
     setAutoComplete(autocompleteInstance);
   }
 
-  registerAction(
-    'setLocation',
-    async function (lat, lng) {
+  useEffect(() => {
+    setExposedVariable('setLocation', async function (lat, lng) {
       if (lat && lng) setMapCenter(resolveReferences({ lat, lng }, currentState));
-    },
-    [setMapCenter]
-  );
+    });
+  }, [setMapCenter]);
 
   return (
     <div

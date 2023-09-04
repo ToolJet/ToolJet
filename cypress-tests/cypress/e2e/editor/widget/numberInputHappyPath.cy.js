@@ -23,9 +23,13 @@ import {
 
 describe("Number Input", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget("Number Input");
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the number input widget", () => {
@@ -36,8 +40,6 @@ describe("Number Input", () => {
     data.randomNumber = `${randomNumber(10, 99)}`;
     data.minimumvalue = `${randomNumber(5, 10)}`;
     data.maximumValue = `${randomNumber(90, 99)}`;
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     editAndVerifyWidgetName(data.widgetName);
@@ -130,9 +132,6 @@ describe("Number Input", () => {
       "have.text",
       numberInputText.numberInputDocumentationLink
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
   it("should verify the styles of the number input widget", () => {
     const data = {};
@@ -140,8 +139,6 @@ describe("Number Input", () => {
     data.colourHex = fake.randomRgbaHex;
     data.boxShadowColor = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -192,9 +189,6 @@ describe("Number Input", () => {
       data.boxShadowColor,
       3
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 
   it("should verify the app preview", () => {
@@ -207,8 +201,6 @@ describe("Number Input", () => {
     data.randomNumber = randomNumber(10, 99);
     data.minimumvalue = randomNumber(5, 10);
     data.maximumValue = randomNumber(90, 99);
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     verifyAndModifyParameter(
@@ -300,8 +292,5 @@ describe("Number Input", () => {
       data.boxShadowColor,
       data.boxShadowParam
     );
-
-    cy.get(commonSelectors.viewerPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 });

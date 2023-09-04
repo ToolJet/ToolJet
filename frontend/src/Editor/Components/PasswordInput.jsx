@@ -30,7 +30,8 @@ export const PasswordInput = ({
         disabled={disabledState}
         onChange={(e) => {
           setPasswordValue(e.target.value);
-          setExposedVariable('value', e.target.value).then(() => fireEvent('onChange'));
+          setExposedVariable('value', e.target.value);
+          fireEvent('onChange');
           setShowValidationError(true);
         }}
         type={'password'}

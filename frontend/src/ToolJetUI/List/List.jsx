@@ -96,16 +96,17 @@ function ListItem({
                 </Popover>
               }
             >
-              <span>
+              <span
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setShowActionsMenu(true);
+                }}
+              >
                 {enableActionsMenu && isHovered && (
                   <ButtonSolid
                     variant="tertiary"
                     size="xs"
                     className={'list-menu-option-btn'}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setShowActionsMenu(true);
-                    }}
                     // data-cy={'page-menu'}
                   >
                     <span>

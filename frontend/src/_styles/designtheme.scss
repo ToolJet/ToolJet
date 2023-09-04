@@ -64,10 +64,12 @@
 :root {
     --base: #FBFCFD;
     --base-black: #151718;
+    --text-black-000 : #000000;
 }
 
 .dark-theme {
     /* Remap your colors for dark mode */
     --base: #151718;
     --base-black: #FBFCFD;
+    --text-black-000: #ffffff;
 }

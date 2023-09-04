@@ -1,7 +1,7 @@
 import React from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
-export const ProgramaticallyHandleToggleSwitch = ({
+export const ProgramaticallyHandleProperties = ({
   darkMode,
   // eslint-disable-next-line no-unused-vars
   label,
@@ -18,10 +18,8 @@ export const ProgramaticallyHandleToggleSwitch = ({
     switch (property) {
       case 'isEditable':
         return props.isEditable;
-
       case 'disableActionButton':
         return props.disableActionButton;
-
       case 'columnVisibility':
         return props.columnVisibility;
       case 'linkTarget':
@@ -30,33 +28,15 @@ export const ProgramaticallyHandleToggleSwitch = ({
         return;
     }
   };
-  const getOptionsForSelectElement = (property, paramMeta) => {
-    switch (property) {
-      case 'linkTarget':
-        return {
-          ...paramMeta,
-          options: [
-            { name: 'Same window', value: '_self' },
-            { name: 'New window', value: '_blank' },
-          ],
-        };
 
-      default:
-        break;
-    }
-  };
-  if (paramMeta.type === 'select') {
-    paramMeta = getOptionsForSelectElement(property, paramMeta);
-  }
-
-  const getInitialValue = (property, definition) => {
+  const getInitialValue = (property, definitionObj) => {
     if (property === 'columnVisibility') {
-      return definition?.value ?? `{{true}}`;
+      return definitionObj?.value ?? `{{true}}`;
     }
     if (property === 'linkTarget') {
-      return definition?.value ?? '_blank';
+      return definitionObj?.value ?? '_blank';
     }
-    return definition?.value ?? `{{false}}`;
+    return definitionObj?.value ?? `{{false}}`;
   };
 
   const value = getValueBasedOnProperty(property, props);

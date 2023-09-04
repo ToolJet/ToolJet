@@ -32,11 +32,14 @@ import {
 
 describe("Date Picker widget", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget("Date Picker");
   });
-
+  afterEach(() => {
+    cy.apiDeleteApp();
+  });
   it("should verify the properties of the date picker widget", () => {
     const data = {};
     data.alertMessage = fake.randomSentence;

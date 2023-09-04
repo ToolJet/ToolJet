@@ -41,9 +41,8 @@ export const Datepicker = function Datepicker({
     setShowValidationError(true);
     setDate(date);
     const dateString = computeDateString(date);
-    setExposedVariable('value', dateString).then(() => {
-      fireEvent('onSelect');
-    });
+    setExposedVariable('value', dateString);
+    fireEvent('onSelect');
   };
 
   useEffect(() => {

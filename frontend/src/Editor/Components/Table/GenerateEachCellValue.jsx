@@ -113,7 +113,7 @@ export default function GenerateEachCellValue({
           setHighlighterCells(false);
         }
       }}
-      className="w-100 h-100"
+      className={`w-100 h-100 ${columnType === 'selector' && 'd-flex align-items-center justify-content-center'}`}
     >
       {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
         <div className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper">

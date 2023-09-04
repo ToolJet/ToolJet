@@ -14,7 +14,6 @@ export const DropDown = function DropDown({
   id,
   component,
   exposedVariables,
-  registerAction,
   dataCy,
 }) {
   let { label, value, advanced, schema, placeholder, display_values, values } = properties;
@@ -22,6 +21,9 @@ export const DropDown = function DropDown({
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
   const [showValidationError, setShowValidationError] = useState(false);
+
+  const validationData = validate(value);
+  const { isValid, validationError } = validationData;
 
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item?.default === true);
@@ -74,16 +76,12 @@ export const DropDown = function DropDown({
     }
   }
 
-  registerAction(
-    'selectOption',
-    async function (value) {
+  useEffect(() => {
+    setExposedVariable('selectOption', async function (value) {
       selectOption(value);
-    },
-    [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]
-  );
-
-  const validationData = validate(value);
-  const { isValid, validationError } = validationData;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -249,7 +247,8 @@ export const DropDown = function DropDown({
               setShowValidationError(true);
               if (actionProps.action === 'select-option') {
                 setCurrentValue(selectedOption.value);
-                setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+                setExposedVariable('value', selectedOption.value);
+                fireEvent('onSelect');
                 setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
             }}

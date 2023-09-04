@@ -29,7 +29,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
-
     appDefinition,
     setSelectedComponent,
     removeComponent,
@@ -52,6 +51,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     globalSettingsChanged,
     toggleAppMaintenance,
     app,
+    disableEnablePage,
   } = props;
   const { is_maintenance_on } = app;
 
@@ -149,6 +149,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         renamePage={renamePage}
         hidePage={hidePage}
         unHidePage={unHidePage}
+        disableEnablePage={disableEnablePage}
         updateHomePage={updateHomePage}
         updatePageHandle={updatePageHandle}
         clonePage={clonePage}

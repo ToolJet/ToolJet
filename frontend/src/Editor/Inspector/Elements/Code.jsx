@@ -48,10 +48,27 @@ export const Code = ({
     }
   };
 
-  const initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
-
+  let initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
   const paramMeta = componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
+
+  /*
+    following block is written for cellSize Prop to support backward compatibility, 
+    because from older app we also get cellSize value as compact or spacious, 
+    so accordigly we update the initial value with the new values respectively
+  */
+  if (paramType === 'styles' && param.name === 'cellSize') {
+    switch (initialValue) {
+      case 'compact':
+        initialValue = 'condensed';
+        break;
+      case 'spacious':
+        initialValue = 'regular';
+        break;
+      default:
+        break;
+    }
+  }
 
   function handleCodeChanged(value) {
     onChange(param, 'value', value, paramType);

@@ -27,12 +27,18 @@ export const verifyAndModifyParameter = (paramName, value) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName))
     .scrollIntoView()
     .should("have.text", paramName);
-  cy.get(
-    commonWidgetSelector.parameterInputField(paramName)
-  ).clearAndTypeOnCodeMirror(value);
+  cy.get(commonWidgetSelector.parameterInputField(paramName))
+    .clearAndTypeOnCodeMirror(" ")
+    .clearAndTypeOnCodeMirror(value);
 };
 
 export const openEditorSidebar = (widgetName = "") => {
+  cy.get("body").then(($body) => {
+    if ($body.find(".tooltip-inner").length > 0) {
+      cy.get(".tooltip-inner").invoke("css", "display", "none");
+    }
+  });
+
   cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger(
     "mouseover"
   );
