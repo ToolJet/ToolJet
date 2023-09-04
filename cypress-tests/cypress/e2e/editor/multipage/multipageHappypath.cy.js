@@ -40,8 +40,9 @@ import {
 
 describe("Multipage", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
   });
 
   it("should verify the elements on multipage", () => {
@@ -52,8 +53,6 @@ describe("Multipage", () => {
     data.minimumLength = randomNumber(1, 4);
     data.maximumLength = randomNumber(8, 10);
     data.customText = randomString(12);
-
-    cy.renameApp(data.appName);
 
     cy.get(multipageSelector.sidebarPageButton).click();
     cy.get(multipageSelector.pagesLabel).verifyVisibleElement(

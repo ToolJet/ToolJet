@@ -25,10 +25,14 @@ import { randomString } from "Support/utils/textInput";
 
 describe("Password Input", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.modifyCanvasSize(1200, 780);
     cy.dragAndDropWidget("Password Input", 350, 300);
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the password input widget", () => {
@@ -40,8 +44,6 @@ describe("Password Input", () => {
     data.minimumLength = randomNumber(1, 4);
     data.maximumLength = randomNumber(8, 10);
     data.customText = randomString(12);
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(passwordInputText.defaultWidgetName);
     closeAccordions(["Events", "Validation", "Properties", "Layout"]);
@@ -171,9 +173,6 @@ describe("Password Input", () => {
       "have.text",
       "PasswordInput documentation"
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
   it("should verify the styles of the password input widget", () => {
     const data = {};
@@ -181,8 +180,6 @@ describe("Password Input", () => {
     data.colourHex = fake.randomRgbaHex;
     data.boxShadowColor = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(passwordInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -233,9 +230,6 @@ describe("Password Input", () => {
       data.boxShadowColor,
       1
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 
   it("should verify the app preview", () => {
@@ -250,8 +244,6 @@ describe("Password Input", () => {
     data.maximumLength = randomNumber(8, 10);
     data.customText = randomString(12);
     data.maxLengthText = randomString(data.maximumLength);
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(passwordInputText.defaultWidgetName);
     verifyAndModifyParameter("Placeholder", data.customText);
@@ -328,6 +320,11 @@ describe("Password Input", () => {
 
     cy.get('[data-cy="real-canvas"]').click("topLeft", { force: true });
     cy.get(
+      commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)
+    )
+      .type(" ")
+      .type("{selectAll}{backspace}");
+    cy.get(
       commonWidgetSelector.validationFeedbackMessage(
         passwordInputText.defaultWidgetName
       )
@@ -355,6 +352,13 @@ describe("Password Input", () => {
       data.customText.toUpperCase()
     );
     cy.get('[data-cy="real-canvas"]').click("topLeft", { force: true });
+
+    // cy.get(
+    //   commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName)
+    // )
+    //   .type("1")
+    //   .type("{selectAll}{backspace}");
+
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(
         passwordInputText.defaultWidgetName
@@ -383,8 +387,5 @@ describe("Password Input", () => {
       commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName),
       data.tooltipText
     );
-
-    cy.get(commonSelectors.viewerPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 });

@@ -55,8 +55,9 @@ import { resizeQueryPanel } from "Support/utils/dataSource";
 
 describe("Table", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     deleteDownloadsFolder();
     cy.viewport(1400, 2200);
     cy.modifyCanvasSize(900, 800);
@@ -64,6 +65,9 @@ describe("Table", () => {
     cy.resizeWidget(tableText.defaultWidgetName, 750, 600);
     resizeQueryPanel("1");
     cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("Should verify the table components and labels", () => {
