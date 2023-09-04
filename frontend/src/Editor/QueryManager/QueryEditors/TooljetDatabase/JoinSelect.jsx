@@ -40,7 +40,11 @@ export default function JoinSelect({ darkMode }) {
           alias: field.table + '_' + field.name,
         };
       }
-      return field;
+
+      return {
+        ...field,
+        ...(!('alias' in field) && { alias: field.table + '_' + field.name }),
+      };
     });
     setJoinSelectOptions(newSelectFields);
   };
