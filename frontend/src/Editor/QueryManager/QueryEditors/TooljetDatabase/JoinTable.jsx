@@ -162,7 +162,7 @@ const SelectTableMenu = ({ darkMode }) => {
 
 // Component to Render Filter Section
 const RenderFilterSection = ({ darkMode }) => {
-  const { tableInfo, joinTableOptions, joinTableOptionsChange, deleteJoinTableOptions } =
+  const { tableInfo, joinTableOptions, joinTableOptionsChange, deleteJoinTableOptions, joinOptions } =
     useContext(TooljetDatabaseContext);
   const { conditions = {} } = joinTableOptions;
   const { conditionsList = [] } = conditions;
@@ -276,13 +276,33 @@ const RenderFilterSection = ({ darkMode }) => {
     handleWhereFilterChange(editedFilterConditions);
   }
 
-  const tableList = Object.entries(tableInfo).map(([key, value]) => {
-    const tableDetails = {
-      label: key,
-      value: key,
-      options: value.map((columns) => ({ label: columns.Header, value: columns.Header, table: key })),
-    };
-    return tableDetails;
+  const tableSet = new Set();
+  (joinOptions || []).forEach((join) => {
+    const { table, conditions } = join;
+    tableSet.add(table);
+    conditions?.conditionsList?.forEach((condition) => {
+      const { leftField, rightField } = condition;
+      if (leftField?.table) {
+        tableSet.add(leftField?.table);
+      }
+      if (rightField?.table) {
+        tableSet.add(rightField?.table);
+      }
+    });
+  });
+
+  const tables = [...tableSet];
+  const tableList = [];
+
+  Object.entries(tableInfo).forEach(([key, value]) => {
+    if (tables.includes(key)) {
+      const tableDetails = {
+        label: key,
+        value: key,
+        options: value.map((columns) => ({ label: columns.Header, value: columns.Header, table: key })),
+      };
+      tableList.push(tableDetails);
+    }
   });
 
   const operatorConstants = [{ label: '=', value: '=' }];
@@ -363,7 +383,7 @@ const RenderFilterSection = ({ darkMode }) => {
 
   return (
     <Container className="p-0">
-      {Object.keys(conditions).length === 0 && (
+      {conditionsList.length === 0 && (
         <Row className="mb-2">
           <div
             style={{
