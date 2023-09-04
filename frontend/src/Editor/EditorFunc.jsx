@@ -851,7 +851,7 @@ const EditorComponent = (props) => {
   };
 
   const realtimeSave = debounce(appDefinitionChanged, 500);
-  const autoSave = debounce(saveEditingVersion, 3000);
+  const autoSave = debounce(saveEditingVersion, 200);
 
   function handlePaths(prevPatch, path = [], appJSON) {
     const paths = [...path];
@@ -1121,6 +1121,7 @@ const EditorComponent = (props) => {
     const newPageId = uuid();
 
     copyOfAppDefinition.pages[newPageId] = {
+      id: newPageId,
       name,
       handle: newHandle,
       components: {},

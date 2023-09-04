@@ -39,10 +39,12 @@ export class PageService {
   }
 
   async createPage(page: CreatePageDto, appVersionId: string): Promise<Page> {
-    const newPage = {
-      ...page,
-      appVersionId: appVersionId,
-    };
+    const newPage = new Page();
+    newPage.id = page.id;
+    newPage.name = page.name;
+    newPage.handle = page.handle;
+    newPage.index = page.index;
+    newPage.appVersionId = appVersionId;
 
     return this.pageRepository.save(newPage);
   }
