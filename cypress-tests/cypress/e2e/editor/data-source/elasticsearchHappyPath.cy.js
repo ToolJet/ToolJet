@@ -25,9 +25,6 @@ describe("Data source Elasticsearch", () => {
   it("Should verify elements on Elasticsearch connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -46,18 +43,12 @@ describe("Data source Elasticsearch", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      elasticsearchText.elasticSearch
+    selectAndAddDataSource(
+      "databases",
+      elasticsearchText.elasticSearch,
+      data.lastName
     );
-    cy.get("[data-cy*='data-source-']")
-      .eq(1)
-      .should("contain", elasticsearchText.elasticSearch);
-    cy.get('[data-cy="data-source-elasticsearch"]').click();
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      elasticsearchText.elasticSearch
-    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -113,14 +104,14 @@ describe("Data source Elasticsearch", () => {
       "have.text",
       elasticsearchText.errorConnectionRefused
     );
+    deleteDatasource(`cypress-${data.lastName}-elasticsearch`);
   });
 
   it("Should verify the functionality of Elasticsearch connection form.", () => {
-    selectAndAddDataSource(elasticsearchText.elasticSearch);
-
-    cy.clearAndType(
-      postgreSqlSelector.dataSourceNameInputField,
-      `cypress-${data.lastName}-elasticsearch`
+    selectAndAddDataSource(
+      "databases",
+      elasticsearchText.elasticSearch,
+      data.lastName
     );
 
     fillDataSourceTextField(
@@ -140,9 +131,12 @@ describe("Data source Elasticsearch", () => {
       Cypress.env("elasticsearch_user")
     );
 
-    cy.get(postgreSqlSelector.passwordTextField).type(
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "Enter password",
       Cypress.env("elasticsearch_password")
     );
+
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     verifyCouldnotConnectWithAlert(elasticsearchText.errorGetAddrInfoNotFound);
 
@@ -166,16 +160,23 @@ describe("Data source Elasticsearch", () => {
       postgreSqlText.placeholderEnterUserName,
       Cypress.env("elasticsearch_user")
     );
-    cy.get(postgreSqlSelector.passwordTextField)
-      .clear()
-      .type("elasticsearch_password");
+
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "Enter password",
+      "elasticsearch_password"
+    );
+
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     verifyCouldnotConnectWithAlert(
       "write EPROTO 4041EA0502000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:"
     );
-    cy.get(postgreSqlSelector.passwordTextField)
-      .clear()
-      .type(Cypress.env("elasticsearch_password"));
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "Enter password",
+      Cypress.env("elasticsearch_password")
+    );
+
     cy.get(".form-check-input").click();
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
@@ -186,7 +187,7 @@ describe("Data source Elasticsearch", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(
