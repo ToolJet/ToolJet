@@ -16,6 +16,7 @@ import { join } from 'path';
 const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
+process.env['RELEASE_VERSION'] = globalThis.TOOLJET_VERSION;
 
 function replaceSubpathPlaceHoldersInStaticAssets() {
   const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
