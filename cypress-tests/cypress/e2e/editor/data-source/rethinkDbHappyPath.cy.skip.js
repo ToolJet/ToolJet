@@ -6,7 +6,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -20,7 +20,7 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-cy.reload();
+    cy.reload();
     cy.get(commonSelectors.addNewDataSourceButton)
       .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
@@ -106,7 +106,7 @@ cy.reload();
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource("RethinkDB");
+    selectAndAddDataSource("RethinkDB");
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',

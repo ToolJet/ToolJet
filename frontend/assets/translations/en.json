@@ -146,13 +146,13 @@
             "advanced": "Advanced",
             "preview": "Preview",
             "Save": "Save",
-            "selectDatasource": "Select Datasource",
+            "selectDatasource": "Select Data Source",
             "addDatasource": "Add datasource",
             "dataSourceManager": {
                 "toast": {
                     "success": {
-                        "dataSourceAdded": "Datasource Added",
-                        "dataSourceSaved": "Datasource Saved"
+                        "dataSourceAdded": "Data Source Added",
+                        "dataSourceSaved": "Data Source Saved"
                     },
                     "error": {
                         "noEmptyDsName": "The name of datasource should not be empty"
