@@ -124,6 +124,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                 const newConditionsList = conditionsList.map((condition) => {
                   const newCondition = { ...condition };
                   set(newCondition, 'leftField.table', value?.value);
+                  set(newCondition, 'operator', '='); //should we removed when we have more options
                   return newCondition;
                 });
                 set(newData, 'conditions.conditionsList', newConditionsList);
@@ -155,6 +156,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               const newConditionsList = conditionsList.map((condition) => {
                 const newCondition = { ...condition };
                 set(newCondition, 'rightField.table', value?.value);
+                set(newCondition, 'operator', '='); //should we removed when we have more options
                 return newCondition;
               });
               set(newData, 'conditions.conditionsList', newConditionsList);

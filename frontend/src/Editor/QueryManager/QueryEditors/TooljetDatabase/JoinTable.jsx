@@ -57,7 +57,7 @@ const SelectTableMenu = ({ darkMode }) => {
           rightTable = rightField?.table;
         }
       });
-      if (tableSet.has(leftTable) || i === 0) {
+      if ((tableSet.has(leftTable) && !tableSet.has(rightTable)) || i === 0) {
         tableSet.add(leftTable);
         tableSet.add(rightTable);
         cleanedJoin.push({ ...join });

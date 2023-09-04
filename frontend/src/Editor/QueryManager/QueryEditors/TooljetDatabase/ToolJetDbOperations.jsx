@@ -14,6 +14,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { JoinTable } from './JoinTable';
 import clone from 'lodash/clone';
 import isEmpty from 'lodash/isEmpty';
+import { cloneDeep } from 'lodash';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
@@ -41,14 +42,42 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     { conditions: { conditionsList: [{ leftField: { table: selectedTable } }] } },
   ];
 
-  const setJoinOptions = (values) =>
+  const setJoinOptions = (values) => {
+    const tableSet = new Set();
+    (values || []).forEach((join) => {
+      const { table, conditions } = join;
+      tableSet.add(table);
+      conditions?.conditionsList?.forEach((condition) => {
+        const { leftField, rightField } = condition;
+        if (leftField?.table) {
+          tableSet.add(leftField?.table);
+        }
+        if (rightField?.table) {
+          tableSet.add(rightField?.table);
+        }
+      });
+    });
+    tableSet.add(selectedTable);
+
     setJoinTableOptions((joinOptions) => {
-      console.log(values);
+      const { conditions, order_by = [] } = joinOptions;
+      const conditionsList = cloneDeep(conditions?.conditionsList || []);
+      const newConditionsList = conditionsList.filter((condition) => {
+        const { leftField } = condition || {};
+        if (tableSet.has(leftField?.table)) {
+          return true;
+        }
+        return false;
+      });
+      const newOrderBy = order_by.filter((order) => tableSet.has(order.table));
       return {
         ...joinOptions,
         joins: values,
+        conditions: { conditionsList: newConditionsList },
+        order_by: newOrderBy,
       };
     });
+  };
   // const [joinOptions, setJoinOptions] = useState(
 
   // );
