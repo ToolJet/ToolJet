@@ -158,7 +158,7 @@ export const PageHandler = ({
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
             style={isHomePage || isHidden || isHovered || isDisabled ? { paddingLeft: '0px' } : { paddingLeft: '16px' }}
           >
-            <span className={darkMode && 'theme-dark'}>{`${page.name}`}</span>
+            <span className={darkMode && 'dark-theme'}>{`${page.name}`}</span>
             {isIconApplied && (
               <span
                 style={{

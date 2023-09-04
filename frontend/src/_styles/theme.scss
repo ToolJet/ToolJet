@@ -5067,7 +5067,8 @@ div#driver-page-overlay {
 .hinter-canvas-input {
   .canvas-hinter-wrap {
     width: 135px;
-    height: 42px !important;
+    height: 32px !important;
+    border: 1px solid var(--slate7);
   }
 }
 
@@ -7820,6 +7821,11 @@ tbody {
       width: 240px;
       height: 28px;
       flex-direction: row;
+      div{
+        a{
+          text-decoration: none;
+        }
+      }
 
     }
 
@@ -8494,6 +8500,7 @@ tbody {
   justify-content: center;
   align-items: center;
   height: 28px;
+  text-decoration: none;
 }
 
 .launch-button {
@@ -8502,6 +8509,7 @@ tbody {
   align-items: center;
   color: var(--slate12);
   justify-content: center;
+  text-decoration: none;
 }
 
 .launch-button.tj-disabled-btn {
