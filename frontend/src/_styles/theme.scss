@@ -11338,3 +11338,8 @@ tbody {
 .custom-gap-12{
   gap:12px
 }
+.dark-theme{
+  .main .canvas-container .canvas-area {
+    background: #2E3035 !important;
+  }
+}
