@@ -4,6 +4,7 @@ import Table from '../Table';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
 import EditRowDrawer from '../Drawers/EditRowDrawer';
+import BulkUploadDrawer from '../Drawers/BulkUploadDrawer';
 import Filter from '../Filter';
 import Sort from '../Sort';
 import Sidebar from '../Sidebar';
@@ -30,6 +31,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
   } = useContext(TooljetDatabaseContext);
 
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+  const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
 
@@ -92,28 +94,15 @@ const TooljetDatabasePage = ({ totalTables }) => {
           <>
             <div className="database-table-header-wrapper">
               <div className="card border-0">
-                <div className="card-body  tj-db-operaions-header">
+                <div className="card-body  tj-db-operations-header">
                   <div className="row align-items-center">
-                    <div className="col d-flex">
+                    <div className="col align-items-start">
                       <CreateColumnDrawer
                         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
                         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
                       />
                       {columns?.length > 0 && (
                         <>
-                          <Filter
-                            filters={queryFilters}
-                            setFilters={setQueryFilters}
-                            handleBuildFilterQuery={handleBuildFilterQuery}
-                            resetFilterQuery={resetFilterQuery}
-                          />
-                          <Sort
-                            filters={sortFilters}
-                            setFilters={setSortFilters}
-                            handleBuildSortQuery={handleBuildSortQuery}
-                            resetSortQuery={resetSortQuery}
-                          />
-                          <ExportSchema onClick={exportTable} />
                           <CreateRowDrawer
                             isCreateRowDrawerOpen={isCreateRowDrawerOpen}
                             setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
@@ -122,8 +111,31 @@ const TooljetDatabasePage = ({ totalTables }) => {
                             isCreateRowDrawerOpen={isEditRowDrawerOpen}
                             setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
                           />
+                          <BulkUploadDrawer
+                            isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
+                            setIsBulkUploadDrawerOpen={setIsBulkUploadDrawerOpen}
+                          />
+                          <ExportSchema onClick={exportTable} />
                         </>
                       )}
+                    </div>
+                    <div className="col align-items-end">
+                      <div className="col-1 offset-9">
+                        <Filter
+                          filters={queryFilters}
+                          setFilters={setQueryFilters}
+                          handleBuildFilterQuery={handleBuildFilterQuery}
+                          resetFilterQuery={resetFilterQuery}
+                        />
+                      </div>
+                      <div className="col-1">
+                        <Sort
+                          filters={sortFilters}
+                          setFilters={setSortFilters}
+                          handleBuildSortQuery={handleBuildSortQuery}
+                          resetSortQuery={resetSortQuery}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
