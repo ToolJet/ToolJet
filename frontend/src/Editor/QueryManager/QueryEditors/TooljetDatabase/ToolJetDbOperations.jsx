@@ -14,7 +14,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { JoinTable } from './JoinTable';
 import clone from 'lodash/clone';
 import isEmpty from 'lodash/isEmpty';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, difference } from 'lodash';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
@@ -60,7 +60,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     tableSet.add(selectedTable);
 
     setJoinTableOptions((joinOptions) => {
-      const { conditions, order_by = [] } = joinOptions;
+      const { conditions, order_by = [], joins: currJoins, fields: currFields = [] } = joinOptions;
       const conditionsList = cloneDeep(conditions?.conditionsList || []);
       const newConditionsList = conditionsList.filter((condition) => {
         const { leftField } = condition || {};
@@ -70,18 +70,53 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         return false;
       });
       const newOrderBy = order_by.filter((order) => tableSet.has(order.table));
+
+      //getting old states
+      const currTableSet = new Set();
+      (currJoins || []).forEach((join) => {
+        const { table, conditions } = join;
+        currTableSet.add(table);
+        conditions?.conditionsList?.forEach((condition) => {
+          const { leftField, rightField } = condition;
+          if (leftField?.table) {
+            currTableSet.add(leftField?.table);
+          }
+          if (rightField?.table) {
+            currTableSet.add(rightField?.table);
+          }
+        });
+      });
+      currTableSet.add(selectedTable);
+      const newTables = difference([...tableSet], [...currTableSet]);
+      const newFields = newTables.reduce(
+        (acc, newTable) => [
+          ...acc,
+          ...(tableInfo[newTable]
+            ? tableInfo[newTable].map((col) => ({
+                name: col.Header,
+                table: newTable,
+              }))
+            : []),
+        ],
+        []
+      );
+
+      const updatedFields = [...currFields.filter((field) => tableSet.has(field.table)), ...newFields];
+      newTables.forEach((table) => table && loadTableInformation(table, true));
+      console.log('updatedFields', JSON.stringify(updatedFields));
       return {
         ...joinOptions,
         joins: values,
         conditions: { conditionsList: newConditionsList },
         order_by: newOrderBy,
+        fields: updatedFields,
       };
     });
   };
   // const [joinOptions, setJoinOptions] = useState(
 
   // );
-  const [joinSelectOptions, setJoinSelectOptions] = useState(options['join_table']?.['fields'] || []);
+  // const [joinSelectOptions, setJoinSelectOptions] = useState(options['join_table']?.['fields'] || []);
   const joinOrderByOptions = options?.['join_table']?.['order_by'] || [];
 
   const setJoinOrderByOptions = (values) => {
@@ -160,12 +195,12 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listRowsOptions]);
 
-  useEffect(() => {
-    if (mounted) {
-      setJoinTableOptions((opts) => ({ ...opts, joins: joinOptions, fields: joinSelectOptions }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [joinSelectOptions]);
+  // useEffect(() => {
+  //   if (mounted) {
+  //     setJoinTableOptions((opts) => ({ ...opts, joins: joinOptions, fields: joinSelectOptions }));
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [joinSelectOptions]);
 
   useEffect(() => {
     mounted && optionchanged('delete_rows', deleteRowsOptions);
@@ -202,24 +237,77 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     setDeleteRowsOptions((prev) => ({ ...prev, limit: limit }));
   };
 
-  const loadTableInformation = useCallback(
-    async (tableName) => {
-      if (!tableInfo[tableName]) {
-        const { data } = await tooljetDatabaseService.viewTable(organizationId, tableName);
-        setTableInfo((info) => ({
-          ...info,
-          [tableName]: data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
-            Header: column_name,
-            accessor: column_name,
-            dataType: data_type,
-            isPrimaryKey: keytype?.toLowerCase() === 'primary key',
-            ...rest,
-          })),
-        }));
-      }
-    },
-    [tableInfo]
-  );
+  // const loadTableInformation = useCallback(
+  //   async (tableName, isNewTableAdded) => {
+  //     if (!tableInfo[tableName]) {
+  //       const { data } = await tooljetDatabaseService.viewTable(organizationId, tableName);
+
+  //       setTableInfo((info) => ({
+  //         ...info,
+  //         [tableName]: data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+  //           Header: column_name,
+  //           accessor: column_name,
+  //           dataType: data_type,
+  //           isPrimaryKey: keytype?.toLowerCase() === 'primary key',
+  //           ...rest,
+  //         })),
+  //       }));
+  //       isNewTableAdded &&
+  //         setJoinTableOptions((joinOptions) => {
+  //           const { fields } = joinOptions;
+  //           const newFields = cloneDeep(fields).filter((field) => field.table !== tableName);
+  //           newFields.push(
+  //             ...(data?.result
+  //               ? data.result.map((col) => ({
+  //                   name: col.column_name,
+  //                   table: tableName,
+  //                 }))
+  //               : [])
+  //           );
+  //           return {
+  //             ...joinOptions,
+  //             fields: newFields,
+  //           };
+  //         });
+  //     }
+  //   },
+  //   [tableInfo, joinTableOptions]
+  // );
+
+  const loadTableInformation = async (tableName, isNewTableAdded) => {
+    if (!tableInfo[tableName]) {
+      const { data } = await tooljetDatabaseService.viewTable(organizationId, tableName);
+
+      setTableInfo((info) => ({
+        ...info,
+        [tableName]: data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+          Header: column_name,
+          accessor: column_name,
+          dataType: data_type,
+          isPrimaryKey: keytype?.toLowerCase() === 'primary key',
+          ...rest,
+        })),
+      }));
+      isNewTableAdded &&
+        setJoinTableOptions((joinOptions) => {
+          const { fields } = joinOptions;
+          const newFields = cloneDeep(fields).filter((field) => field.table !== tableName);
+          newFields.push(
+            ...(data?.result
+              ? data.result.map((col) => ({
+                  name: col.column_name,
+                  table: tableName,
+                }))
+              : [])
+          );
+          console.log('updatedFields>newFields', JSON.stringify(newFields));
+          return {
+            ...joinOptions,
+            fields: newFields,
+          };
+        });
+    }
+  };
 
   const joinTableOptionsChange = (optionsChanged, value) => {
     setJoinTableOptions((prev) => ({ ...prev, [optionsChanged]: value }));
@@ -257,8 +345,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       loadTableInformation,
       joinOptions,
       setJoinOptions,
-      joinSelectOptions,
-      setJoinSelectOptions,
+      // joinSelectOptions,
+      // setJoinSelectOptions,
       joinOrderByOptions,
       setJoinOrderByOptions,
       deleteJoinTableOptions,
@@ -275,7 +363,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       tableInfo,
       loadTableInformation,
       joinOptions,
-      joinSelectOptions,
+      // joinSelectOptions,
       joinOrderByOptions,
     ]
   );

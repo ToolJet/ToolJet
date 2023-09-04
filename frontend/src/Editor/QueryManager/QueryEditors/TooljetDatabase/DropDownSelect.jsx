@@ -33,7 +33,7 @@ const DropDownSelect = ({
   }, [showMenu]);
 
   useEffect(() => {
-    if (selected?.value !== value?.value) {
+    if (Array.isArray(value) || selected?.value !== value?.value) {
       setSelected(value);
     }
   }, [value]);
