@@ -3,10 +3,10 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Slider from 'rc-slider';
 import { Color } from './Color';
-import FxButton from './FxButton';
 
 export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
   const defaultValue = { X: 0, Y: 0, Blur: 0, Spread: 0, Color: '#00000040' };
+  const [showPicker, setShowPicker] = useState(false);
 
   const popoverLabelstyle = {
     display: 'flex',
@@ -68,7 +68,6 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
   };
 
   const clearBoxShadow = () => setDebouncedShadow(defaultValue);
-
   const renderSlider = (item, value) => {
     return (
       <div className="range-slider">
@@ -94,12 +93,8 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
 
   const eventPopover = () => {
     return (
-      <Popover
-        id="popover-basic"
-        style={{ width: '350px', maxWidth: '350px' }}
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
-      >
-        <Popover.Body>
+      <Popover id="popover-basic" style={{ width: '350px', maxWidth: '350px' }}>
+        <Popover.Body className={`${darkMode && 'dark-theme'}`}>
           <>
             {input.map((item) => (
               <div className="row" key={item}>
@@ -133,6 +128,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
               hideFx
               pickerStyle={colorPickerStyle}
               cyLabel={'box-shadow-color'}
+              customStyle={true}
             />
             <button
               data-cy={'box-shadow-clear-button'}
@@ -146,33 +142,57 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
       </Popover>
     );
   };
-
+  const _value = `#${value.split('#')[1]}`;
+  const outerStyles = {
+    width: '142px',
+    height: '32px',
+    borderRadius: ' 6px',
+    display: 'flex',
+    paddingLeft: '4px',
+    alignItems: 'center',
+    gap: '4px',
+    background: showPicker && 'var(--indigo2)',
+    outline: showPicker && '1px solid var(--indigo9)',
+    boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
+  };
   return (
     <div className="row fx-container">
       <div className="col">
-        <div className="field mb-2">
-          <OverlayTrigger trigger="click" placement={'left'} rootClose={true} overlay={eventPopover()}>
-            <div className="row mx-0 form-control color-picker-input" data-cy={`${cyLabel}-picker`}>
+        <div className="field">
+          <OverlayTrigger
+            onToggle={(showPicker) => {
+              setShowPicker(showPicker);
+            }}
+            show={showPicker}
+            trigger="click"
+            placement={'left'}
+            rootClose={true}
+            overlay={eventPopover()}
+          >
+            <div
+              className="row mx-0 color-picker-input d-flex align-items-center"
+              style={outerStyles}
+              data-cy={`${cyLabel}-picker`}
+            >
               <div
                 className="col-auto"
                 style={{
-                  float: 'right',
-                  width: '20px',
-                  height: '20px',
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: ' 6px',
+                  border: `1px solid var(--slate7, #D7DBDF)`,
+                  boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
                   backgroundColor: boxShadow.Color,
-                  border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(boxShadow.Color) && '#c5c8c9'}`,
+                  marginRight: '4px',
                 }}
                 data-cy={`${cyLabel}-picker-icon`}
               ></div>
               <small className="col p-0" data-cy={`${cyLabel}-value`}>
-                {value}
+                {_value}
               </small>
             </div>
           </OverlayTrigger>
         </div>
-      </div>
-      <div className="col-auto pt-0 style-fx fx-common">
-        <FxButton active={false} onPress={forceCodeBox} dataCy={'box-shadow'} />
       </div>
     </div>
   );

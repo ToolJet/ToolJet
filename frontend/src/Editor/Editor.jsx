@@ -1763,6 +1763,7 @@ class EditorComponent extends React.Component {
                         darkMode={this.props.darkMode}
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                         pages={this.getPagesWithIds()}
+                        cloneComponents={this.cloneComponents}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">

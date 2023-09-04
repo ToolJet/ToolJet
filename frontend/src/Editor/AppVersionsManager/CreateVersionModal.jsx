@@ -75,7 +75,7 @@ export const CreateVersion = ({
         }}
       >
         <div className="mb-3 pb-2">
-          <div className="col">
+          <div className="col tj-app-input">
             <label className="form-label" data-cy="version-name-label">
               {t('editor.appVersionManager.versionName', 'Version Name')}
             </label>

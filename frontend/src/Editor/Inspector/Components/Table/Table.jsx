@@ -14,6 +14,10 @@ import { EventManager } from '../../EventManager';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
 import { ProgramaticallyHandleToggleSwitch } from './ProgramaticallyHandleToggleSwitch';
+import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
+import List from '@/ToolJetUI/List/List';
+import { capitalize, has } from 'lodash';
+import NoListItem from './NoListItem';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -168,7 +172,7 @@ class TableComponent extends React.Component {
     return (
       <Popover
         id="popover-basic-2"
-        className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        className={`${this.props.darkMode && 'dark-theme'} shadow`}
         style={{
           maxHeight: resolveReferences(column.isEditable, this.state.currentState) ? '100vh' : 'inherit',
           overflowY: 'auto',
@@ -190,12 +194,12 @@ class TableComponent extends React.Component {
                 { name: 'Multiple badges', value: 'badges' },
                 { name: 'Tags', value: 'tags' },
                 { name: 'Dropdown', value: 'dropdown' },
+                { name: 'Link', value: 'link' },
                 { name: 'Radio', value: 'radio' },
                 { name: 'Multiselect', value: 'multiselect' },
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
                 { name: 'Image', value: 'image' },
-                { name: 'Link', value: 'link' },
               ]}
               value={column.columnType}
               search={true}
@@ -544,7 +548,7 @@ class TableComponent extends React.Component {
               <label data-cy={`label-date-parse-format`} className="form-label">
                 {this.props.t('widget.Table.dateParseformat', 'Date Parse Format')}
               </label>
-              <div className="field mb-2">
+              <div className="field mb-2 tj-app-input">
                 <input
                   data-cy={`input-date-parse-format`}
                   type="text"
@@ -698,7 +702,7 @@ class TableComponent extends React.Component {
               property="isEditable"
               props={column}
               component={this.props.component}
-              paramMeta={{ type: 'toggle', displayName: 'make editable' }}
+              paramMeta={{ type: 'toggle', displayName: 'Make editable' }}
               paramType="properties"
             />
           )}
@@ -730,9 +734,9 @@ class TableComponent extends React.Component {
     };
 
     return (
-      <Popover id="popover-basic" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
+      <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
         <Popover.Body>
-          <div className="field mb-2">
+          <div className="field mb-2 tj-app-input">
             <label data-cy={`label-action-button-text`} className="form-label">
               {this.props.t('widget.Table.buttonText', 'Button Text')}
             </label>
@@ -817,7 +821,7 @@ class TableComponent extends React.Component {
     );
   };
 
-  actionButton(action, index) {
+  renderActionButton(action, index) {
     return (
       <OverlayTrigger
         trigger="click"
@@ -826,19 +830,15 @@ class TableComponent extends React.Component {
         overlay={this.actionPopOver(action, index)}
         onToggle={(showing) => this.setState({ showPopOver: showing })}
       >
-        <div className={`card p-2 mb-1 ${this.props.darkMode ? 'bg-secondary' : 'bg-light'}`} role="button">
-          <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`}>
-            <div className="col-auto">
-              <div
-                data-cy={`action-button-${String(action.buttonText ?? '')
-                  .toLowerCase()
-                  .replace(/\s+/g, '-')}-${String(index ?? '')}`}
-                className="text"
-              >
-                {action.buttonText}
-              </div>
-            </div>
-          </div>
+        <div>
+          <List>
+            <List.Item
+              data-cy={`action-button-${String(action.buttonText ?? '')
+                .toLowerCase()
+                .replace(/\s+/g, '-')}-${String(index ?? '')}`}
+              primaryText={action.buttonText}
+            />
+          </List>
         </div>
       </OverlayTrigger>
     );
@@ -945,9 +945,15 @@ class TableComponent extends React.Component {
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
       ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
       : false;
+
     const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
       ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
       : false;
+
+    let enablePagination = !has(component.component.definition.properties, 'enablePagination')
+      ? clientSidePagination || serverSidePagination
+      : resolveReferences(component.component.definition.properties.enablePagination?.value, currentState);
+
     const enabledSort = component.component.definition.properties.enabledSort?.value
       ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
       : true;
@@ -966,7 +972,7 @@ class TableComponent extends React.Component {
     let items = [];
 
     items.push({
-      title: 'Properties',
+      title: 'Data',
       children: renderElement(
         component,
         componentMeta,
@@ -984,17 +990,10 @@ class TableComponent extends React.Component {
       title: 'Columns',
       children: (
         <div>
+          <div>{renderCustomElement('useDynamicColumn')}</div>
+          {useDynamicColumn && <div>{renderCustomElement('columnData')}</div>}
           {!useDynamicColumn && (
-            <>
-              <div className="col-auto text-right mb-3">
-                <button
-                  data-cy={`button-add-column`}
-                  onClick={this.addNewColumn}
-                  className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-                >
-                  {this.props.t('widget.Table.addColumn', '+ Add column')}
-                </button>
-              </div>
+            <List>
               <DragDropContext
                 onDragEnd={(result) => {
                   this.onDragEnd(result);
@@ -1009,7 +1008,6 @@ class TableComponent extends React.Component {
                           <Draggable key={item.id} draggableId={item.id} index={index}>
                             {(provided, snapshot) => (
                               <div
-                                className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`}
                                 key={index}
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
@@ -1023,35 +1021,23 @@ class TableComponent extends React.Component {
                                   overlay={this.columnPopover(item, index)}
                                 >
                                   <div key={resolvedItemName}>
-                                    <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
-                                      <div className="col-auto">
-                                        <img
-                                          data-cy={`draggable-handle-column-${resolvedItemName}`}
-                                          src="assets/images/icons/dragicon.svg"
-                                        />
-                                      </div>
-                                      <div className="col">
-                                        <div className="text" data-cy={`column-${resolvedItemName}`}>
-                                          {resolvedItemName}
-                                        </div>
-                                      </div>
-                                      <div className="col-auto">
-                                        <svg
-                                          data-cy={`button-delete-${resolvedItemName}`}
-                                          onClick={() => this.removeColumn(index)}
-                                          width="10"
-                                          height="16"
-                                          viewBox="0 0 10 16"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                          <path
-                                            d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
-                                            fill="#8092AC"
-                                          />
-                                        </svg>
-                                      </div>
-                                    </div>
+                                    <List.Item
+                                      primaryText={resolvedItemName}
+                                      secondaryText={capitalize(item?.columnType)}
+                                      data-cy={`column-${resolvedItemName}`}
+                                      enableActionsMenu
+                                      isEditable={item.isEditable === '{{true}}'}
+                                      onMenuOptionClick={(listItem, menuOptionLabel) => {
+                                        if (menuOptionLabel === 'Delete') this.removeColumn(index);
+                                      }}
+                                      darkMode={darkMode}
+                                      menuActions={[
+                                        {
+                                          label: 'Delete',
+                                          icon: '',
+                                        },
+                                      ]}
+                                    />
                                   </div>
                                 </OverlayTrigger>
                               </div>
@@ -1064,10 +1050,16 @@ class TableComponent extends React.Component {
                   )}
                 </Droppable>
               </DragDropContext>
-            </>
+              <div style={{ paddingTop: '8px' }}>
+                {columns?.value?.length === 0 && <NoListItem text={'There are no columns'} />}
+                <div style={{ marginTop: '8px' }}>
+                  <AddNewButton data-cy={`button-add-column`} onClick={this.addNewColumn}>
+                    {this.props.t('widget.Table.addColumn', ' New column')}
+                  </AddNewButton>
+                </div>
+              </div>
+            </List>
           )}
-          <div style={{ marginTop: useDynamicColumn ? '0px' : '30px' }}>{renderCustomElement('useDynamicColumn')}</div>
-          {useDynamicColumn && <div>{renderCustomElement('columnData')}</div>}
         </div>
       ),
     });
@@ -1077,66 +1069,37 @@ class TableComponent extends React.Component {
       children: (
         <div className="field mb-2 mt-2">
           <div className="row g-2">
-            <div className="text-right mb-3">
-              <button
-                data-cy="button-add-new-action-button"
-                onClick={this.addNewAction}
-                className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-              >
-                {this.props.t('widget.Table.addButton', '+ Add button')}
-              </button>
-            </div>
+            <div>{actions.value.map((action, index) => this.renderActionButton(action, index))}</div>
+            {actions.value.length === 0 && <NoListItem text={'There are no action buttons'} />}
+            <AddNewButton data-cy="button-add-new-action-button" onClick={this.addNewAction}>
+              New action button
+            </AddNewButton>
           </div>
-          <div>{actions.value.map((action, index) => this.actionButton(action, index))}</div>
-          {actions.value.length === 0 && (
-            <div className="text-center">
-              <small data-cy="message-no-action-button" className="color-disabled">
-                {this.props.t('widget.Table.noActionMessage', "This table doesn't have any action buttons")}
-              </small>
-            </div>
-          )}
         </div>
       ),
     });
 
-    const options = [
-      'serverSidePagination',
-      ...(serverSidePagination ? ['enablePrevButton'] : []),
-      ...(serverSidePagination ? ['enableNextButton'] : []),
-      ...(serverSidePagination ? ['totalRecords'] : []),
-      ...(clientSidePagination && !serverSidePagination ? ['rowsPerPage'] : []),
-      'enabledSort',
-      ...(enabledSort ? ['serverSideSort'] : []),
-      'showDownloadButton',
-      'showFilterButton',
-      'showAddNewRowButton',
-      ...(displayServerSideFilter ? ['serverSideFilter'] : []),
-      'showBulkUpdateActions',
+    const rowSelectionsOptions = [
       'allowSelection',
       ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
-      'hideColumnSelectorButton',
     ];
-
-    let renderOptions = [];
-
-    !serverSidePagination && options.splice(1, 0, 'clientSidePagination');
-
-    options.map((option) => renderOptions.push(renderCustomElement(option)));
-
-    const conditionalOptions = [
-      { name: 'displaySearchBox', condition: displaySearchBox },
-      { name: 'serverSideSearch', condition: displayServerSideSearch },
-      { name: 'loadingState', condition: true },
+    const searchSortFilterOptions = [
+      ...(displaySearchBox ? ['displaySearchBox'] : []),
+      ...(displayServerSideSearch ? ['serverSideSearch'] : []),
+      'enabledSort',
+      ...(enabledSort ? ['serverSideSort'] : []),
+      'showFilterButton',
+      ...(displayServerSideFilter ? ['serverSideFilter'] : []),
     ];
-
-    conditionalOptions.map(({ name, condition }) => {
-      if (condition) renderOptions.push(renderCustomElement(name));
-    });
-
-    items.push({
-      title: 'Options',
-      children: renderOptions,
-    });
+    const paginationOptions = [
+      'enablePagination',
+      ...(enablePagination ? ['serverSidePagination'] : []),
+      ...(enablePagination && !serverSidePagination ? ['rowsPerPage'] : []),
+      ...(enablePagination && serverSidePagination ? ['enablePrevButton'] : []),
+      ...(enablePagination && serverSidePagination ? ['enableNextButton'] : []),
+      ...(enablePagination && serverSidePagination ? ['totalRecords'] : []),
+    ];
+    const additionalActions = ['showAddNewRowButton', 'showDownloadButton', 'hideColumnSelectorButton', 'loadingState'];
 
     items.push({
       title: 'Events',
@@ -1156,7 +1119,26 @@ class TableComponent extends React.Component {
     });
 
     items.push({
-      title: 'Layout',
+      title: 'Row Selection',
+      children: rowSelectionsOptions.map((option) => renderCustomElement(option)),
+    });
+    items.push({
+      title: 'Search sort and filter',
+      children: searchSortFilterOptions.map((option) => renderCustomElement(option)),
+    });
+
+    items.push({
+      title: 'Pagination',
+      children: paginationOptions.map((option) => renderCustomElement(option)),
+    });
+
+    items.push({
+      title: 'Additional actions',
+      children: additionalActions.map((option) => renderCustomElement(option)),
+    });
+
+    items.push({
+      title: 'Devices',
       isOpen: true,
       children: (
         <>
