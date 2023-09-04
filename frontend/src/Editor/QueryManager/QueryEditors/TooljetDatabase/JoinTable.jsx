@@ -115,7 +115,7 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Filter Section */}
-      <div className="field-container d-flex mb-4">
+      <div className="tdb-join-filtersection field-container d-flex mb-4">
         <label className="form-label">Filter</label>
         <div className="field flex-grow-1">
           <RenderFilterSection darkMode={darkMode} />

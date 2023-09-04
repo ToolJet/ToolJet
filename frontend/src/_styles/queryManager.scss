@@ -503,7 +503,7 @@ $border-radius: 4px;
 
         .delete-field-option-dark {
           background-color: #272822 !important;
-          border-color: #272822 !important ;
+          border-color: #272822 !important;
         }
 
         .code-hinter.codehinter-default-input {
@@ -1137,44 +1137,45 @@ $border-radius: 4px;
       padding: 0;
       margin-right: 12px;
     }
+
     .preview-data-container {
       min-height: 65px;
     }
   }
 
-    .rest-methods-url {
-      
-      .url-input-group {
-        .code-hinter.codehinter-default-input {
-          border-radius: 0 6px 6px 0 !important;
-        }
-      }
+  .rest-methods-url {
 
+    .url-input-group {
       .code-hinter.codehinter-default-input {
-        border-style: solid !important;
-        border-color: var(--slate7) !important;
-        // border-radius: 0 6px 6px 0 !important;
-        border-radius: 6px !important;
-  
-        &:focus-within {
-          box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-          border: 1px solid #3E63DD !important;
-          background-color: #F8FAFF;
-          position: relative;
-          z-index: 1 !important;
-        }
-      }
-  
-      .CodeMirror.CodeMirror-wrap {
-        background-color: transparent !important;
-  
-        .cm-variable,
-        .cm-comment {
-          font-size: 12px !important;
-          color: $color-light-slate-12 !important;
-        }
+        border-radius: 0 6px 6px 0 !important;
       }
     }
+
+    .code-hinter.codehinter-default-input {
+      border-style: solid !important;
+      border-color: var(--slate7) !important;
+      // border-radius: 0 6px 6px 0 !important;
+      border-radius: 6px !important;
+
+      &:focus-within {
+        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+        border: 1px solid #3E63DD !important;
+        background-color: #F8FAFF;
+        position: relative;
+        z-index: 1 !important;
+      }
+    }
+
+    .CodeMirror.CodeMirror-wrap {
+      background-color: transparent !important;
+
+      .cm-variable,
+      .cm-comment {
+        font-size: 12px !important;
+        color: $color-light-slate-12 !important;
+      }
+    }
+  }
 
   .rest-api-methods-select-element-container {
     display: flex;
@@ -1308,7 +1309,7 @@ $border-radius: 4px;
     }
   }
 
-  .runpy-editor{
+  .runpy-editor {
     .CodeMirror-sizer {
       margin-left: 29px !important;
     }
@@ -1887,7 +1888,13 @@ $border-radius: 4px;
 
 .dd-select-value-badge {
   border-radius: 6px;
-  background: var(--slate-03, #F1F3F5)  !important;
+  background: var(--slate-03, #F1F3F5) !important;
   text-transform: none;
   color: var(--slate-12, #11181C) !important;
+}
+
+.tdb-join-filtersection {
+  .codehinter-plugins {
+    border: 0 !important;
+  }
 }
