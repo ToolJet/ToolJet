@@ -38,16 +38,23 @@ export const CreateVersion = ({
     setIsCreatingVersion(true);
     appVersionService
       .create(appId, versionName, editingVersion.id)
-      .then(() => {
+      .then((data) => {
         toast.success('Version Created');
         appVersionService.getAll(appId).then((data) => {
           setVersionName('');
           setIsCreatingVersion(false);
           setAppVersions(data.versions);
-          const latestVersion = data.versions.at(0);
-          setAppDefinitionFromVersion(latestVersion);
           setShowCreateAppVersion(false);
         });
+
+        appVersionService
+          .getOne(appId, data.id)
+          .then((data) => {
+            setAppDefinitionFromVersion(data);
+          })
+          .catch((error) => {
+            toast.error(error);
+          });
       })
       .catch((error) => {
         toast.error(error?.error);
