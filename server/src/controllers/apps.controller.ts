@@ -355,4 +355,18 @@ export class AppsController {
     const appUser = await this.appsService.update(app.id, appUpdateDto);
     return decamelizeKeys(appUser);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Get(':id/tables')
+  async tables(@User() user, @AppDecorator() app: App) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+    if (!ability.can('cloneApp', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const result = await this.appsService.findTooljetDbTables(app.id);
+    return { tables: result };
+  }
 }

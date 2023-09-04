@@ -26,9 +26,6 @@ describe("Data sources AWS S3", () => {
   it("Should verify elements on AWS S3 connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -47,14 +44,7 @@ describe("Data sources AWS S3", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(s3Text.awsS3);
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", s3Text.awsS3);
-    cy.get(s3Selector.awsDatasource).click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      s3Text.awsS3
-    );
+    selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.lastName);
     cy.get(s3Selector.accessKeyLabel).verifyVisibleElement(
       "have.text",
       s3Text.accessKey
@@ -103,15 +93,18 @@ describe("Data sources AWS S3", () => {
       "have.text",
       s3Text.alertRegionIsMissing
     );
+    cy.get(postgreSqlSelector.buttonSave)
+      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
+      .click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      postgreSqlText.toastDSSaved
+    );
+    deleteDatasource(`cypress-${data.lastName}-aws-s3`);
   });
 
   it("Should verify the functionality of AWS S3 connection form.", () => {
-    selectAndAddDataSource(s3Text.awsS3);
-
-    cy.clearAndType(
-      s3Selector.dataSourceNameInput,
-      `cypress-${data.lastName}-aws-s3`
-    );
+    selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.lastName);
 
     fillDataSourceTextField(
       s3Text.accessKey,
@@ -191,7 +184,7 @@ describe("Data sources AWS S3", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
