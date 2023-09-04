@@ -14,7 +14,7 @@ import {
   useColumnOrder,
 } from 'react-table';
 import cx from 'classnames';
-import { resolveReferences, validateWidget } from '@/_helpers/utils';
+import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
 import { useExportData } from 'react-table-plugins';
 import Papa from 'papaparse';
 import { Pagination } from './Pagination';
@@ -46,6 +46,10 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import { OverlayTriggerComponent } from './OverlayTriggerComponent';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -132,11 +136,11 @@ export function Table({
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
     userSelect: 'none',
-    background: isDragging ? 'rgba(77, 114, 250, 0.2)' : '',
+    background: isDragging ? 'var(--slate4)' : '',
     top: 'auto',
     borderRadius: '4px',
     ...(isDragging && {
-      marginLeft: '-120px',
+      marginLeft: '-280px', // hack changing marginLeft to -280px to bring the draggable header to the correct position at the start of drag
       display: 'flex',
       alignItems: 'center',
       paddingLeft: '10px',
@@ -154,6 +158,8 @@ export function Table({
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
   const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
   const mounted = useMounted();
+
+  const [resizingColumnId, setResizingColumnId] = useState(null);
 
   const prevDataFromProps = useRef();
   useEffect(() => {
@@ -586,11 +592,13 @@ export function Table({
         hooks.visibleColumns.push((columns) => [
           {
             id: 'selection',
-            Header: ({ getToggleAllPageRowsSelectedProps }) => (
-              <div className="d-flex flex-column align-items-center">
-                {showBulkSelector && <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />}
-              </div>
-            ),
+            Header: ({ getToggleAllPageRowsSelectedProps }) => {
+              return (
+                <div className="d-flex flex-column align-items-center">
+                  {showBulkSelector && <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />}
+                </div>
+              );
+            },
             Cell: ({ row }) => {
               return (
                 <div className="d-flex flex-column align-items-center">
@@ -838,15 +846,20 @@ export function Table({
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
   function downlaodPopover() {
+    const options = [
+      { dataCy: 'option-download-CSV', text: 'Download as CSV', value: 'csv' },
+      { dataCy: 'option-download-execel', text: 'Download as Excel', value: 'xlsx' },
+      { dataCy: 'option-download-pdf', text: 'Download as PDF', value: 'pdf' },
+    ];
     return (
       <Popover
         id="popover-basic"
         data-cy="popover-card"
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow table-widget-download-popup`}
-        placement="bottom"
+        className={`${darkMode && 'dark-theme'} shadow table-widget-download-popup`}
+        placement="top-end"
       >
-        <Popover.Body>
-          <div className="d-flex flex-column">
+        <Popover.Body className="p-0">
+          <div className="table-download-option cursor-pointer">
             <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
               Download as CSV
             </span>
@@ -869,11 +882,70 @@ export function Table({
       </Popover>
     );
   }
+
+  function hideColumnsPopover() {
+    const heightOfTableComponent = document.querySelector('.card.jet-table.table-component')?.offsetHeight;
+    return (
+      <Popover
+        className={`${darkMode && 'dark-theme'}`}
+        style={{ maxHeight: `${heightOfTableComponent - 79}px`, overflowY: 'auto' }}
+      >
+        <div
+          data-cy={`dropdown-hide-column`}
+          className={`dropdown-table-column-hide-common ${
+            darkMode ? 'dropdown-table-column-hide-dark-themed dark-theme' : 'dropdown-table-column-hide'
+          } `}
+          placement="top-end"
+        >
+          <div className="dropdown-item cursor-pointer">
+            <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+            <span className="hide-column-name tj-text-xsm" data-cy={`options-select-all-coloumn`}>
+              Select All
+            </span>
+          </div>
+          {allColumns.map(
+            (column) =>
+              typeof column.Header === 'string' && (
+                <div key={column.id}>
+                  <div>
+                    <label className="dropdown-item d-flex cursor-pointer">
+                      <input
+                        type="checkbox"
+                        data-cy={`checkbox-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
+                        {...column.getToggleHiddenProps()}
+                      />
+                      <span
+                        className="hide-column-name tj-text-xsm"
+                        data-cy={`options-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
+                      >
+                        {` ${column.Header}`}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )
+          )}
+        </div>
+      </Popover>
+    );
+  }
+  const calculateWidthOfActionColumnHeader = (position) => {
+    let totalWidth = null;
+    if (position === 'rightActions') {
+      const rightActionBtn = document.querySelector('.has-right-actions');
+      totalWidth = rightActionBtn?.offsetWidth;
+    }
+    if (position === 'leftActions') {
+      const leftActionBtn = document.querySelector('.has-left-actions');
+      totalWidth = leftActionBtn?.offsetWidth;
+    }
+    return totalWidth;
+  };
   return (
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       data-disabled={parsedDisabledState}
-      className="card jet-table"
+      className={`card jet-table table-component ${darkMode && 'dark-theme'}`}
       style={{
         width: `100%`,
         height: `${height}px`,
@@ -881,21 +953,82 @@ export function Table({
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
         boxShadow: styles.boxShadow,
+        padding: '8px',
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);
       }}
       ref={tableRef}
     >
-      {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
-        <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
-          <div
-            className={`d-flex align-items-center ms-auto text-muted ${
-              displaySearchBox ? 'justify-content-between' : 'justify-content-end'
-            }`}
-          >
-            {displaySearchBox && (
+      {(displaySearchBox || showFilterButton) && (
+        <div
+          className={`table-card-header d-flex justify-content-between align-items-center ${
+            (tableDetails.addNewRowsDetails.addingNewRows || tableDetails.filterDetails.filtersVisible) && 'disabled'
+          }`}
+          style={{ padding: '12px', height: 56 }}
+        >
+          <div>
+            {loadingState && (
+              <SkeletonTheme baseColor="var(--slate3)">
+                <Skeleton count={1} width={83} height={28} className="mb-1" />
+              </SkeletonTheme>
+            )}
+            {showFilterButton && !loadingState && (
+              <div className="position-relative">
+                {''}
+                <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+                <ButtonSolid
+                  variant="tertiary"
+                  className={`tj-text-xsm ${tableDetails.filterDetails.filtersVisible && 'always-active-btn'}`}
+                  customStyles={{ minWidth: '32px' }}
+                  leftIcon="filter"
+                  fill={`var(--slate12)`}
+                  iconWidth="16"
+                  onClick={(e) => {
+                    if (tableDetails?.filterDetails?.filtersVisible) {
+                      hideFilters();
+                      if (document.activeElement === e.currentTarget) {
+                        e.currentTarget.blur();
+                      }
+                    } else {
+                      showFilters();
+                    }
+                  }}
+                  size="md"
+                  data-tooltip-id="tooltip-for-filter-data"
+                  data-tooltip-content="Filter data"
+                ></ButtonSolid>
+                {(tableDetails?.filterDetails?.filtersVisible || !_.isEmpty(tableDetails.filterDetails.filters)) && (
+                  <div className="filter-applied-state position-absolute">
+                    <svg
+                      className="filter-applied-svg"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="17"
+                      height="17"
+                      viewBox="0 0 17 17"
+                      fill="none"
+                    >
+                      <circle
+                        cx="8.3606"
+                        cy="8.08325"
+                        r="6.08325"
+                        stroke="var(--slate1)"
+                        fill="var(--indigo9)"
+                        stroke-width="4"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
+            {loadingState && (
+              <SkeletonTheme baseColor="var(--slate3)">
+                <Skeleton count={1} width={100} height={28} className="mb-1" />
+              </SkeletonTheme>
+            )}
+            {displaySearchBox && !loadingState && (
               <GlobalFilter
                 globalFilter={state.globalFilter}
                 useAsyncDebounce={useAsyncDebounce}
@@ -906,120 +1039,19 @@ export function Table({
                 darkMode={darkMode}
               />
             )}
-            <div>
-              {showAddNewRowButton && (
-                <button
-                  className="btn btn-light btn-sm p-1 mx-1"
-                  onClick={(e) => {
-                    showAddNewRowPopup();
-                  }}
-                  data-tooltip-id="tooltip-for-add-new-row"
-                  data-tooltip-content="Add new row"
-                  disabled={tableDetails.addNewRowsDetails.addingNewRows}
-                >
-                  <img src="assets/images/icons/plus.svg" width="15" height="15" />
-                  {!tableDetails.addNewRowsDetails.addingNewRows &&
-                    !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                    )}
-                </button>
-              )}
-              <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
-              {showFilterButton && (
-                <>
-                  <span
-                    className="btn btn-light btn-sm p-1 mx-1"
-                    onClick={() => showFilters()}
-                    data-tooltip-id="tooltip-for-filter-data"
-                    data-tooltip-content="Filter data"
-                  >
-                    <img src="assets/images/icons/filter.svg" width="15" height="15" />
-                    {tableDetails.filterDetails.filters.length > 0 && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                    )}
-                  </span>
-                  <Tooltip id="tooltip-for-filter-data" className="tooltip" />
-                </>
-              )}
-              {showDownloadButton && (
-                <>
-                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
-                    <span
-                      className="btn btn-light btn-sm p-1"
-                      data-tooltip-id="tooltip-for-download"
-                      data-tooltip-content="Download"
-                    >
-                      <img src="assets/images/icons/download.svg" width="15" height="15" />
-                    </span>
-                  </OverlayTrigger>
-                  <Tooltip id="tooltip-for-download" className="tooltip" />
-                </>
-              )}
-              {!hideColumnSelectorButton && (
-                <OverlayTrigger
-                  trigger="click"
-                  rootClose={true}
-                  overlay={
-                    <Popover>
-                      <div
-                        data-cy={`dropdown-hide-column`}
-                        className={`dropdown-table-column-hide-common ${
-                          darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
-                        } `}
-                      >
-                        <div className="dropdown-item">
-                          <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                          <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
-                            Select All
-                          </span>
-                        </div>
-                        {allColumns.map(
-                          (column) =>
-                            typeof column.Header === 'string' && (
-                              <div key={column.id}>
-                                <div>
-                                  <label className="dropdown-item">
-                                    <input
-                                      type="checkbox"
-                                      data-cy={`checkbox-coloumn-${String(column.Header)
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '-')}`}
-                                      {...column.getToggleHiddenProps()}
-                                    />
-                                    <span
-                                      className="hide-column-name"
-                                      data-cy={`options-coloumn-${String(column.Header)
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '-')}`}
-                                    >
-                                      {` ${column.Header}`}
-                                    </span>
-                                  </label>
-                                </div>
-                              </div>
-                            )
-                        )}
-                      </div>
-                    </Popover>
-                  }
-                  placement={'bottom-end'}
-                >
-                  <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
-                    <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
-                  </span>
-                </OverlayTrigger>
-              )}
-            </div>
           </div>
         </div>
       )}
-
-      <div className="table-responsive jet-data-table">
+      <div
+        className={`table-responsive jet-data-table ${(loadingState || page.length === 0) && 'overflow-hidden'} ${
+          page.length === 0 && 'position-relative'
+        }`}
+      >
         <table
           {...getTableProps()}
           className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
             tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
-          }`}
+          } ${!loadingState && page.length !== 0 && 'h-100'}`}
           style={computedStyles}
         >
           <thead>
@@ -1047,67 +1079,180 @@ export function Table({
                       ref={droppableProvided.innerRef}
                       key={index}
                       {...headerGroup.getHeaderGroupProps()}
-                      tabIndex="0"
                       className="tr"
                     >
-                      {headerGroup.headers.map((column, index) => (
-                        <Draggable
-                          key={column.id}
-                          draggableId={column.id}
-                          index={index}
-                          isDragDisabled={!column.accessor}
-                        >
-                          {(provided, snapshot) => {
-                            return (
-                              <th
-                                key={index}
-                                {...column.getHeaderProps()}
-                                className={
-                                  column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
+                      {loadingState && (
+                        <div className="w-100">
+                          <SkeletonTheme baseColor="var(--slate3)" width="100%">
+                            <Skeleton count={1} width={'100%'} height={28} className="mb-1" />
+                          </SkeletonTheme>
+                        </div>
+                      )}
+                      {!loadingState &&
+                        headerGroup.headers.map((column, index) => {
+                          return (
+                            <Draggable
+                              key={column.id}
+                              draggableId={column.id}
+                              index={index}
+                              isDragDisabled={!column.accessor}
+                            >
+                              {(provided, snapshot) => {
+                                let headerProps = { ...column.getHeaderProps() };
+                                if (column.columnType === 'selector') {
+                                  headerProps = {
+                                    ...headerProps,
+                                    style: {
+                                      ...headerProps.style,
+                                      width: 40,
+                                      padding: 0,
+                                      display: 'flex',
+                                      'align-items': 'center',
+                                      'justify-content': 'center',
+                                    },
+                                  };
                                 }
-                              >
-                                <div
-                                  data-cy={`column-header-${String(column.exportValue)
-                                    .toLowerCase()
-                                    .replace(/\s+/g, '-')}`}
-                                  {...column.getSortByToggleProps()}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  // {...extraProps}
-                                  ref={provided.innerRef}
-                                  style={{
-                                    ...getItemStyle(snapshot, provided.draggableProps.style),
-                                    textAlign: column?.horizontalAlignment,
-                                  }}
-                                >
-                                  {column.render('Header')}
-                                </div>
-                                <div
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                  }}
-                                  draggable="true"
-                                  {...column.getResizerProps()}
-                                  className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
-                                />
-                              </th>
-                            );
-                          }}
-                        </Draggable>
-                      ))}
+                                if (column.Header === 'Actions') {
+                                  headerProps = {
+                                    ...headerProps,
+                                    style: {
+                                      ...headerProps.style,
+                                      width: calculateWidthOfActionColumnHeader(column.id),
+                                      maxWidth: calculateWidthOfActionColumnHeader(column.id),
+                                      padding: 0,
+                                      display: 'flex',
+                                      'align-items': 'center',
+                                      'justify-content': 'center',
+                                    },
+                                  };
+                                }
+                                if (
+                                  headerGroup?.headers?.[headerGroup?.headers?.length - 1]?.Header === 'Actions' &&
+                                  index === headerGroup?.headers?.length - 2
+                                ) {
+                                  headerProps = {
+                                    ...headerProps,
+                                    style: {
+                                      ...headerProps.style,
+                                      flex: '1 1 auto',
+                                    },
+                                  };
+                                }
+                                const isEditable = resolveReferences(column?.isEditable ?? false, currentState);
+                                return (
+                                  <th
+                                    key={index}
+                                    {...headerProps}
+                                    className={`th tj-text-xsm font-weight-400 ${
+                                      column.isSorted && (column.isSortedDesc ? '' : '')
+                                    } ${column.isResizing && 'resizing-column'} ${
+                                      column.Header === 'Actions' && 'has-actions'
+                                    } position-relative`}
+                                  >
+                                    <div
+                                      className={`${
+                                        column.columnType !== 'selector' &&
+                                        'd-flex justify-content-between custom-gap-12'
+                                      }`}
+                                      {...column.getSortByToggleProps()}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      // {...extraProps}
+                                      ref={provided.innerRef}
+                                      style={{
+                                        ...getItemStyle(snapshot, provided.draggableProps.style),
+                                      }}
+                                    >
+                                      <div
+                                        className={`w-100 d-flex justify-content-${determineJustifyContentValue(
+                                          column?.horizontalAlignment ?? ''
+                                        )} ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
+                                      >
+                                        <div>
+                                          {column.columnType !== 'selector' && isEditable && (
+                                            <SolidIcon
+                                              name="editable"
+                                              width="16px"
+                                              height="16px"
+                                              fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                                              vievBox="0 0 16 16"
+                                            />
+                                          )}
+                                        </div>
+                                        <div
+                                          data-cy={`column-header-${String(column.exportValue)
+                                            .toLowerCase()
+                                            .replace(/\s+/g, '-')}`}
+                                          className={`header-text ${
+                                            column.id === 'selection' &&
+                                            column.columnType === 'selector' &&
+                                            'selector-column'
+                                          }`}
+                                        >
+                                          {column.render('Header')}
+                                        </div>
+                                      </div>
+                                      <div
+                                        style={{
+                                          visibility:
+                                            column?.columnType !== 'selector' && column?.isSorted
+                                              ? 'visible'
+                                              : 'hidden',
+                                        }}
+                                      >
+                                        {column?.isSortedDesc ? (
+                                          <SolidIcon
+                                            name="arrowdown"
+                                            width="16"
+                                            height="16"
+                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                          />
+                                        ) : (
+                                          <SolidIcon
+                                            name="arrowup"
+                                            width="16"
+                                            height="16"
+                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                          />
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                      }}
+                                      onMouseMove={(e) => {
+                                        if (column.id !== resizingColumnId) {
+                                          setResizingColumnId(column.id);
+                                        }
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (resizingColumnId) {
+                                          setResizingColumnId(null);
+                                        }
+                                      }}
+                                      draggable="true"
+                                      {...column.getResizerProps()}
+                                      className={`${
+                                        (column.id === 'selection' && column.columnType === 'selector') ||
+                                        column.Header === 'Actions'
+                                          ? ''
+                                          : 'resizer'
+                                      }  ${column.isResizing ? 'isResizing' : ''}`}
+                                    ></div>
+                                  </th>
+                                );
+                              }}
+                            </Draggable>
+                          );
+                        })}
                     </tr>
                   )}
                 </Droppable>
               </DragDropContext>
             ))}
           </thead>
-
-          {!loadingState && page.length === 0 && (
-            <center className="w-100">
-              <div className="py-5"> no data </div>
-            </center>
-          )}
 
           {!loadingState && (
             <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
@@ -1160,10 +1305,24 @@ export function Table({
                             _.get(tableDetails.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
                             undefined
                           ) {
-                            cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
-                            cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
+                            cellProps.style.backgroundColor = 'var(--orange3)';
+                            cellProps.style['--tblr-table-accent-bg'] = 'var(--orange3)';
                           }
                         }
+                      }
+                      if (cell.column.columnType === 'selector') {
+                        cellProps.style.width = 40;
+                        cellProps.style.padding = 0;
+                      }
+                      if (cell.column.Header === 'Actions') {
+                        cellProps.style.width = 'fit-content';
+                        cellProps.style.maxWidth = 'fit-content';
+                      }
+                      if (
+                        row.cells?.[row.cells?.length - 1]?.column.Header === 'Actions' &&
+                        index === row?.cells?.length - 2
+                      ) {
+                        cellProps.style.flex = '1 1 auto';
                       }
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
@@ -1205,16 +1364,21 @@ export function Table({
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(
                             `table-text-align-${cell.column.horizontalAlignment} ${
-                              wrapAction ? wrapAction : 'wrap'
+                              wrapAction ? wrapAction : cell?.column?.Header === 'Actions' ? '' : 'wrap'
                             }-wrapper`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+                              'has-left-actions': cell.column.id === 'leftActions',
+                              'has-right-actions': cell.column.id === 'rightActions',
                               'has-text': cell.column.columnType === 'text' || isEditable,
                               'has-dropdown': cell.column.columnType === 'dropdown',
                               'has-multiselect': cell.column.columnType === 'multiselect',
                               'has-datepicker': cell.column.columnType === 'datepicker',
                               'align-items-center flex-column': cell.column.columnType === 'selector',
                               [cellSize]: true,
+                              'selector-column':
+                                cell.column.columnType === 'selector' && cell.column.id === 'selection',
+                              'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,
                             }
                           )}
                           {...cellProps}
@@ -1259,19 +1423,122 @@ export function Table({
             </tbody>
           )}
         </table>
+        {!loadingState && page.length === 0 && (
+          <div
+            className="d-flex flex-column align-items-center custom-gap-8 justify-content-center h-100"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translateY(-50%) translateX(-50%)',
+            }}
+          >
+            <div className="warning-no-data">
+              <div className="warning-svg-wrapper">
+                <SolidIcon name="warning" width="16" />
+              </div>
+            </div>
+            <div className="warning-no-data-text">No data</div>
+          </div>
+        )}
         {loadingState === true && (
-          <div style={{ width: '100%' }} className="p-2">
-            <center>
-              <div className="spinner-border mt-5" role="status"></div>
-            </center>
+          <div style={{ width: '100%' }} className="p-2 h-100 ">
+            <div className="d-flex align-items-center justify-content-center h-100">
+              <svg
+                className="loading-spinner-table-component"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="var(--indigo6)"
+              >
+                <style>.spinner_ajPY{}</style>
+                <path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" />
+                <path
+                  d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"
+                  class="spinner_ajPY"
+                  fill="var(--indigo9)"
+                />
+              </svg>
+            </div>
           </div>
         )}
       </div>
-      {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
-        <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
-          <div className="table-footer row gx-0">
-            <div className="col">
-              {(clientSidePagination || serverSidePagination) && (
+      {(clientSidePagination ||
+        serverSidePagination ||
+        Object.keys(tableDetails.changeSet || {}).length > 0 ||
+        showAddNewRowButton ||
+        showDownloadButton) && (
+        <div
+          className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
+            darkMode && 'dark-theme'
+          } ${
+            (tableDetails.addNewRowsDetails.addingNewRows || tableDetails.filterDetails.filtersVisible) && 'disabled'
+          }`}
+        >
+          <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
+            <div className="col d-flex justify-content-start custom-gap-4">
+              {loadingState && (
+                <SkeletonTheme baseColor="var(--slate3)" width="100%">
+                  <Skeleton count={1} width={83} height={28} className="mb-1" />
+                </SkeletonTheme>
+              )}
+              {!loadingState &&
+                (showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
+                  <>
+                    <ButtonSolid
+                      variant="primary"
+                      className={`tj-text-xsm`}
+                      onClick={() => {
+                        onEvent('onBulkUpdate', { component }).then(() => {
+                          handleChangesSaved();
+                        });
+                      }}
+                      data-cy={`table-button-save-changes`}
+                      size="md"
+                      isLoading={tableDetails.isSavingChanges ? true : false}
+                      customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
+                      leftIcon={width > 650 ? '' : 'save'}
+                      fill="#FDFDFE"
+                      iconWidth="16"
+                    >
+                      {width > 650 ? <span>Save changes</span> : ''}
+                    </ButtonSolid>
+                    <ButtonSolid
+                      variant="tertiary"
+                      className={`tj-text-xsm`}
+                      onClick={() => {
+                        handleChangesDiscarded();
+                      }}
+                      data-cy={`table-button-discard-changes`}
+                      size="md"
+                      customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
+                      leftIcon={width > 650 ? '' : 'cross'}
+                      fill={'var(--slate12)'}
+                      iconWidth="16"
+                    >
+                      {width > 650 ? <span>Discard</span> : ''}
+                    </ButtonSolid>
+                  </>
+                ) : (
+                  !loadingState && (
+                    <span data-cy={`footer-number-of-records`} className="font-weight-500 text-black-000">
+                      {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
+                      {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
+                    </span>
+                  )
+                ))}
+            </div>
+            <div className={`col d-flex justify-content-center h-100 ${loadingState && 'w-100'}`}>
+              {loadingState && (
+                <div className="w-100">
+                  <SkeletonTheme baseColor="var(--slate3)" width="100%">
+                    <Skeleton count={1} width={'100%'} height={28} className="mb-1" />
+                  </SkeletonTheme>
+                </div>
+              )}
+
+              {(clientSidePagination || serverSidePagination) && !loadingState && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}
@@ -1284,36 +1551,98 @@ export function Table({
                   setPageIndex={setPaginationInternalPageIndex}
                   enableNextButton={enableNextButton}
                   enablePrevButton={enablePrevButton}
+                  darkMode={darkMode}
+                  tableWidth={width}
                 />
               )}
             </div>
-            <div className="col d-flex justify-content-end">
-              {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
+            <div className="col d-flex justify-content-end ">
+              {loadingState && (
+                <SkeletonTheme baseColor="var(--slate3)" width="100%">
+                  <Skeleton count={1} width={83} height={28} className="mb-1" />
+                </SkeletonTheme>
+              )}
+              {!loadingState && showAddNewRowButton && (
                 <>
-                  <button
-                    className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
-                    onClick={() =>
-                      onEvent('onBulkUpdate', { component }).then(() => {
-                        handleChangesSaved();
-                      })
-                    }
-                    data-cy={`table-button-save-changes`}
-                  >
-                    Save Changes
-                  </button>
-                  <button
-                    className="btn btn-light btn-sm"
-                    onClick={() => handleChangesDiscarded()}
-                    data-cy={`table-button-discard-changes`}
-                  >
-                    Discard changes
-                  </button>
+                  <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
+                  <ButtonSolid
+                    variant="ghostBlack"
+                    className={`tj-text-xsm ${
+                      tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
+                    }`}
+                    customStyles={{ minWidth: '32px' }}
+                    leftIcon="plus"
+                    fill={`var(--slate12)`}
+                    iconWidth="16"
+                    onClick={() => {
+                      if (!tableDetails.addNewRowsDetails.addingNewRows) {
+                        showAddNewRowPopup();
+                      }
+                    }}
+                    size="md"
+                    data-tooltip-id="tooltip-for-add-new-row"
+                    data-tooltip-content="Add new row"
+                  ></ButtonSolid>
                 </>
-              ) : (
-                <span data-cy={`footer-number-of-records`}>
-                  {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
-                  {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
-                </span>
+              )}
+              {!loadingState && showDownloadButton && (
+                <div>
+                  <Tooltip id="tooltip-for-download" className="tooltip" />
+                  <OverlayTriggerComponent
+                    trigger="click"
+                    overlay={downlaodPopover()}
+                    rootClose={true}
+                    placement={'top-end'}
+                  >
+                    <ButtonSolid
+                      variant="ghostBlack"
+                      className={`tj-text-xsm `}
+                      customStyles={{
+                        minWidth: '32px',
+                      }}
+                      leftIcon="filedownload"
+                      fill={`var(--slate12)`}
+                      iconWidth="16"
+                      size="md"
+                      data-tooltip-id="tooltip-for-download"
+                      data-tooltip-content="Download"
+                      onClick={(e) => {
+                        if (document.activeElement === e.currentTarget) {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                    ></ButtonSolid>
+                  </OverlayTriggerComponent>
+                </div>
+              )}
+              {!loadingState && !hideColumnSelectorButton && (
+                <>
+                  <Tooltip id="tooltip-for-manage-columns" className="tooltip" />
+                  <OverlayTriggerComponent
+                    trigger="click"
+                    rootClose={true}
+                    overlay={hideColumnsPopover()}
+                    placement={'top-end'}
+                  >
+                    <ButtonSolid
+                      variant="ghostBlack"
+                      className={`tj-text-xsm `}
+                      customStyles={{ minWidth: '32px' }}
+                      leftIcon="eye1"
+                      fill={`var(--slate12)`}
+                      iconWidth="16"
+                      size="md"
+                      data-cy={`select-column-icon`}
+                      onClick={(e) => {
+                        if (document.activeElement === e.currentTarget) {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      data-tooltip-id="tooltip-for-manage-columns"
+                      data-tooltip-content="Manage columns"
+                    ></ButtonSolid>
+                  </OverlayTriggerComponent>
+                </>
               )}
             </div>
           </div>

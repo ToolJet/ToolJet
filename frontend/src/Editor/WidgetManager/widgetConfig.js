@@ -308,8 +308,8 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     defaultSize: {
-      width: 20,
-      height: 358,
+      width: 28.86,
+      height: 456,
     },
     events: {
       onRowHovered: { displayName: 'Row hovered' },
@@ -343,10 +343,8 @@ export const widgets = [
         displayName: 'Table type',
         options: [
           { name: 'Bordered', value: 'table-bordered' },
-          { name: 'Borderless', value: 'table-borderless' },
-          { name: 'Classic', value: 'table-classic' },
+          { name: 'Regular', value: 'table-classic' },
           { name: 'Striped', value: 'table-striped' },
-          { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -356,8 +354,8 @@ export const widgets = [
         type: 'select',
         displayName: 'Cell size',
         options: [
-          { name: 'Compact', value: 'compact' },
-          { name: 'Spacious', value: 'spacious' },
+          { name: 'Condensed', value: 'condensed' },
+          { name: 'Regular', value: 'regular' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -509,9 +507,9 @@ export const widgets = [
         actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        cellSize: { value: 'compact' },
+        cellSize: { value: 'regular' },
         borderRadius: { value: '0' },
-        tableType: { value: 'table-bordered' },
+        tableType: { value: 'table-classic' },
       },
     },
   },

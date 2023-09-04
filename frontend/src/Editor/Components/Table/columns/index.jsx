@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import SelectSearch from 'react-select-search';
-import { resolveReferences, validateWidget } from '@/_helpers/utils';
+import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
 import { CustomSelect } from '../CustomSelect';
 import { Tags } from '../Tags';
 import { Radio } from '../Radio';
@@ -9,7 +9,6 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
-
 export default function generateColumnsData({
   columnProperties,
   columnSizes,
@@ -96,18 +95,6 @@ export default function generateColumnsData({
       columnVisibility: column?.columnVisibility ?? true,
       horizontalAlignment: column?.horizontalAlignment ?? 'left',
       Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment }) {
-        const determineJustifyContentValue = (value) => {
-          switch (value) {
-            case 'left':
-              return 'start';
-            case 'right':
-              return 'end';
-            case 'center':
-              return 'center';
-            default:
-              return 'start';
-          }
-        };
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
