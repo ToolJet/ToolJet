@@ -214,6 +214,7 @@ export function Filter(props) {
           onClick={addFilter}
           size="sm"
           customStyles={{ padding: '10px 20px' }}
+          data-cy={'button-add-filter'}
         >
           <span>+ add filter</span>
         </ButtonSolid>
@@ -224,6 +225,7 @@ export function Filter(props) {
           onClick={clearFilters}
           size="sm"
           customStyles={{ padding: '10px 20px' }}
+          data-cy={'button-clear-filters'}
         >
           <span>clear filters</span>
         </ButtonSolid>
