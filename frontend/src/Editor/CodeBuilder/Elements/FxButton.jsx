@@ -8,7 +8,7 @@ export default function FxButton({ active, onPress, dataCy }) {
       onClick={onPress}
       data-cy={`${dataCy}-fx-button`}
     >
-      fx
+      Fx
     </div>
   );
 }
