@@ -3,12 +3,6 @@ id: workspace-variables
 title: Workspace Variables
 ---
 
-:::caution
-Workspace variables are currently marked as deprecated, indicating that it will be removed in future releases. In the current version, you are still able to delete existing variables and use it through out any ToolJet apps, but creating and updating variables are no longer supported. 
-
-Please use [Workspace Constants](/docs/org-management/workspaces/workspace_constants) instead.
-:::
-
 Workspace Variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same Workspace.
 
 :::note

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
 import { ToolTip } from '@/_components/ToolTip';
@@ -9,6 +9,8 @@ import Header from '../Header';
 import { authenticationService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { ConfirmDialog } from '@/_components';
+import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
@@ -16,13 +18,25 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const admin = currentUserValue?.admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
 
+  const {
+    checkForUnsavedChanges,
+    handleDiscardChanges,
+    handleSaveChanges,
+    handleContinueEditing,
+    unSavedModalVisible,
+    nextRoute,
+  } = useGlobalDatasourceUnsavedChanges();
+
   return (
     <div className="row m-auto">
       <div className="col-auto p-0">
         <aside className="left-sidebar h-100 position-fixed">
           <div className="tj-leftsidebar-icon-wrap">
             <div className="application-brand" data-cy={`home-page-logo`}>
-              <Link to={getPrivateRoute('dashboard')}>
+              <Link
+                to={getPrivateRoute('dashboard')}
+                onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
+              >
                 <Logo />
               </Link>
             </div>
@@ -32,6 +46,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   <ToolTip message="Dashboard" placement="right">
                     <Link
                       to="/"
+                      onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
                       className={`tj-leftsidebar-icon-items  ${
                         (router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')) &&
                         `current-seleted-route`
@@ -54,6 +69,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <ToolTip message="Database" placement="right">
                       <Link
                         to={getPrivateRoute('database')}
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('database'), event)}
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === getPrivateRoute('database') && `current-seleted-route`
                         }`}
@@ -75,17 +91,18 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 {/* DATASOURCES */}
                 {admin && (
                   <li className="text-center cursor-pointer">
-                    <ToolTip message="Global Datasources" placement="right">
+                    <ToolTip message="Data Sources" placement="right">
                       <Link
-                        to={getPrivateRoute('global_datasources')}
+                        to={getPrivateRoute('data_sources')}
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
                         className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === getPrivateRoute('global_datasources') && `current-seleted-route`
+                          router.pathname === getPrivateRoute('data_sources') && `current-seleted-route`
                         }`}
                         data-cy="icon-global-datasources"
                       >
                         <SolidIcon
                           name="datasource"
-                          fill={router.pathname === getPrivateRoute('global_datasources') ? '#3E63DD' : 'var(--slate8)'}
+                          fill={router.pathname === getPrivateRoute('data_sources') ? '#3E63DD' : 'var(--slate8)'}
                         />
                       </Link>
                     </ToolTip>
@@ -96,6 +113,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <ToolTip message="Marketplace (Beta)" placement="right">
                       <Link
                         to="/integrations"
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('integrations'), event)}
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === '/integrations' && `current-seleted-route`
                         }`}
@@ -113,6 +131,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   <ToolTip message="Workspace settings" placement="right">
                     <Link
                       to={getPrivateRoute('workspace_settings')}
+                      onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
                       className={`tj-leftsidebar-icon-items  ${
                         router.pathname === getPrivateRoute('workspace_settings') && `current-seleted-route`
                       }`}
@@ -140,7 +159,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </ToolTip>
 
                   <ToolTip message="Profile" placement="right">
-                    <Profile switchDarkMode={switchDarkMode} darkMode={darkMode} />
+                    <Profile
+                      checkForUnsavedChanges={checkForUnsavedChanges}
+                      switchDarkMode={switchDarkMode}
+                      darkMode={darkMode}
+                    />
                   </ToolTip>
                 </li>
               </ul>
@@ -152,6 +175,19 @@ function Layout({ children, switchDarkMode, darkMode }) {
         <Header />
         <div style={{ paddingTop: 64 }}>{children}</div>
       </div>
+      <ConfirmDialog
+        title={'Unsaved Changes'}
+        show={unSavedModalVisible}
+        message={'Datasource has unsaved changes. Are you sure you want to discard them?'}
+        onConfirm={() => handleDiscardChanges(nextRoute)}
+        onCancel={handleSaveChanges}
+        confirmButtonText={'Discard'}
+        cancelButtonText={'Save changes'}
+        confirmButtonType="dangerPrimary"
+        cancelButtonType="tertiary"
+        backdropClassName="datasource-selection-confirm-backdrop"
+        onCloseIconClick={handleContinueEditing}
+      />
     </div>
   );
 }

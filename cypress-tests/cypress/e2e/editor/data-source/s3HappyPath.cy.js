@@ -7,7 +7,7 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 import {
   verifyCouldnotConnectWithAlert,
@@ -106,7 +106,7 @@ describe("Data sources AWS S3", () => {
   });
 
   it("Should verify the functionality of AWS S3 connection form.", () => {
-    selectDataSource(s3Text.awsS3);
+    selectAndAddDataSource(s3Text.awsS3);
 
     cy.clearAndType(
       s3Selector.dataSourceNameInput,

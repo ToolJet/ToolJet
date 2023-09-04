@@ -594,7 +594,7 @@
 
   .add-datasource-btn {
     position: absolute;
-    bottom: 3rem;
+    bottom: 0rem;
   }
 
   .card {
@@ -721,4 +721,10 @@
   justify-content: center;
   align-items: center;
   background-color: var(--indigo4);
+}
+
+.left-sidebar-local-datasources-wrapper {
+  height: 100%;
+  min-height: 300px;
+  position: relative;
 }
