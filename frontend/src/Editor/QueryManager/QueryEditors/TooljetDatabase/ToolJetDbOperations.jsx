@@ -137,27 +137,32 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // useEffect(() => {
-  //   const newJoinOptions = clone(joinOptions);
-  //   if (newJoinOptions?.[0]?.conditions?.conditionsList) {
-  //     const newConditionsList = [...newJoinOptions?.[0]?.conditions?.conditionsList].map(condition => {
-  //       if(condition?.leftField?.table)
-  //     })
-  //   } else {
-  //     newJoinOptions[0] = { table: selectedTable };
-  //   }
-  //   setJoinOptions(newJoinOptions);
-  //   selectedTable &&
-  //     setJoinTableOptions((joinOptions) => {
-  //       return {
-  //         ...joinOptions,
-  //         from: {
-  //           name: selectedTable,
-  //           type: 'Table',
-  //         },
-  //       };
-  //     });
-  // }, [selectedTable]);
+  useEffect(() => {
+    // const newJoinOptions = clone(joinOptions);
+    // if (newJoinOptions?.[0]?.conditions?.conditionsList) {
+    //   const newConditionsList = [...newJoinOptions?.[0]?.conditions?.conditionsList].map(condition => {
+    //     if(condition?.leftField?.table)
+    //   })
+    // } else {
+    //   newJoinOptions[0] = { table: selectedTable };
+    // }
+    // setJoinOptions(newJoinOptions);
+    selectedTable &&
+      setJoinTableOptions((joinOptions) => {
+        return {
+          ...joinOptions,
+          from: {
+            name: selectedTable,
+            type: 'Table',
+          },
+          fields: columns.map((col) => ({
+            name: col.Header,
+            table: selectedTable,
+          })),
+        };
+      });
+    selectedTable && loadTableInformation(selectedTable, true);
+  }, [selectedTable]);
 
   useEffect(() => {
     const tableSet = new Set();
