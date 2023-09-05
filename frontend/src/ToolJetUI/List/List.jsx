@@ -26,13 +26,14 @@ function ListItem({
   const [isHovered, setIsHovered] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
 
-  const closeMenu = () => {
-    setShowActionsMenu(false);
-  };
-
   return (
     <div>
-      <ListGroup.Item onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} {...restProps}>
+      <ListGroup.Item
+        style={{ marginBottom: '4px', backgroundColor: 'var(--slate3)' }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        {...restProps}
+      >
         <div className="row">
           {Icon && <div className="col-auto d-flex align-items-center">{!isHovered && Icon && <Icon />}</div>}
           <div

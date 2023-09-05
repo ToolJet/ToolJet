@@ -11595,3 +11595,10 @@ tbody {
 .custom-gap-12{
   gap:12px
 }
+#inspector-tabpane-properties{
+  .accordion {
+    .accordion-item:last-child{
+      border-bottom: none !important;
+    }
+  }
+}
