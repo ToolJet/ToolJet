@@ -865,8 +865,8 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
-            ? data?.data?.status ?? 'ok'
-            : data.status;
+              ? data?.data?.status ?? 'ok'
+              : data.status;
 
         switch (queryStatus) {
           case 'Bad Request':
@@ -973,8 +973,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
-            ? data?.data?.status ?? 'ok'
-            : data.status;
+              ? data?.data?.status ?? 'ok'
+              : data.status;
 
         if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
           const errorData = query.kind === 'runpy' ? data.data : data;
@@ -997,10 +997,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 },
                 query.kind === 'restapi'
                   ? {
-                      request: data.data.requestObject,
-                      response: data.data.responseObject,
-                      responseHeaders: data.data.responseHeaders,
-                    }
+                    request: data.data.requestObject,
+                    response: data.data.responseObject,
+                    responseHeaders: data.data.responseHeaders,
+                  }
                   : {}
               ),
             },
@@ -1010,7 +1010,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             definition: { events: dataQuery.options.events },
           });
           if (mode !== 'view') {
-            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
+            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data;
             toast.error(err?.message);
           }
           return;
@@ -1071,10 +1071,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 },
                 query.kind === 'restapi'
                   ? {
-                      request: data.request,
-                      response: data.response,
-                      responseHeaders: data.responseHeaders,
-                    }
+                    request: data.request,
+                    response: data.response,
+                    responseHeaders: data.responseHeaders,
+                  }
                   : {}
               ),
             },
