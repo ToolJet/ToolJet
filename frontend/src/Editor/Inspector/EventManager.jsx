@@ -467,6 +467,7 @@ export const EventManager = ({
                       search={true}
                       onChange={(value) => {
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
+
                         const parameters = (query?.options?.parameters ?? []).reduce(
                           (paramObj, param) => ({
                             ...paramObj,
