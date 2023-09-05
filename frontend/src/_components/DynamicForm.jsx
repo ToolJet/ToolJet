@@ -21,7 +21,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
-import { canUpdateDataSource } from '@/_helpers';
+import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
 
 const DynamicForm = ({
   schema,
@@ -44,6 +44,7 @@ const DynamicForm = ({
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
   const currentState = useCurrentState();
+  const prevDataSourceIdRef = React.useRef(selectedDataSource?.id);
 
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
   const { isEditorActive } = useEditorStore(
@@ -101,6 +102,8 @@ const DynamicForm = ({
   }, [currentAppEnvironmentId]);
 
   React.useEffect(() => {
+    const prevDataSourceId = prevDataSourceIdRef.current;
+    prevDataSourceIdRef.current = selectedDataSource?.id;
     const { properties } = schema;
     if (!isEmpty(properties)) {
       let fields = {};
@@ -117,7 +120,7 @@ const DynamicForm = ({
       Object.keys(fields).length > 0 &&
         Object.keys(fields).map((key) => {
           const { type, encrypted } = fields[key];
-          if (!canUpdateDataSource(selectedDataSource?.id)) {
+          if (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()) {
             encrpytedFieldsProps[key] = {
               disabled: true,
             };
@@ -137,11 +140,14 @@ const DynamicForm = ({
             }
           }
         });
-      setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
+      if (prevDataSourceId !== selectedDataSource?.id) {
+        setComputedProps({ ...encrpytedFieldsProps });
+      } else {
+        setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
+      }
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options, isDataSourceEditing]);
+  }, [selectedDataSource?.id, options, isDataSourceEditing]);
 
   const getElement = (type) => {
     switch (type) {
@@ -242,7 +248,7 @@ const DynamicForm = ({
           useMenuPortal: disableMenuPortal ? false : queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
 
       case 'checkbox-group':
@@ -270,7 +276,7 @@ const DynamicForm = ({
           currentState,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       }
       case 'react-component-oauth-authentication':
@@ -298,7 +304,7 @@ const DynamicForm = ({
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           optionchanged,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
@@ -311,7 +317,7 @@ const DynamicForm = ({
           selectedDataSource,
           currentAppEnvironmentId,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       case 'tooljetdb-operations':
         return {
@@ -368,7 +374,7 @@ const DynamicForm = ({
           custom_query_params: options.custom_query_params?.value,
           spec: options.spec?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id),
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       default:
         return {};
@@ -384,6 +390,9 @@ const DynamicForm = ({
     }
 
     const handleEncryptedFieldsToggle = (event, field) => {
+      if (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()) {
+        return;
+      }
       const isEditing = computedProps[field]['disabled'];
       if (isEditing) {
         optionchanged(field, '');
@@ -442,7 +451,7 @@ const DynamicForm = ({
                         variant="tertiary"
                         target="_blank"
                         rel="noreferrer"
-                        disabled={!canUpdateDataSource()}
+                        disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                         onClick={(event) => handleEncryptedFieldsToggle(event, key)}
                       >
                         {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}

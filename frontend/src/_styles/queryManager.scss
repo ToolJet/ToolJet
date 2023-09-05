@@ -100,6 +100,7 @@ $border-radius: 4px;
     .query-rename-delete-btn {
       display: none;
       align-items: center;
+      justify-content: flex-end;
       gap: 8px;
       margin-left: 2px;
       width: 66px;
