@@ -241,7 +241,7 @@ class DataSourceManagerComponent extends React.Component {
             this.props.dataSourcesChanged(false, selectedDataSource);
             this.props.globalDataSourcesChanged && this.props.globalDataSourcesChanged();
             this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: false });
-            this.resetDataSourceConfirmModal();
+            scope === 'local' && this.hideModal();
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false });
@@ -898,7 +898,7 @@ class DataSourceManagerComponent extends React.Component {
                   <ButtonSolid
                     className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
                     isLoading={isSaving}
-                    disabled={isSaving || this.props.isVersionReleased}
+                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
                     variant="primary"
                     onClick={this.createDataSource}
                     leftIcon="floppydisk"
