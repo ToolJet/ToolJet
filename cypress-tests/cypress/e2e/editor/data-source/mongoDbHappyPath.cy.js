@@ -34,10 +34,6 @@ describe("Data source MongoDB", () => {
   it("Should verify elements on MongoDB connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -54,19 +50,8 @@ describe("Data source MongoDB", () => {
       "have.text",
       postgreSqlText.allCloudStorage
     );
+    selectAndAddDataSource("databases", mongoDbText.mongoDb, data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      mongoDbText.mongoDb
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(1)
-      .should("contain", mongoDbText.mongoDb);
-    cy.get('[data-cy="data-source-mongodb"]').click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      mongoDbText.mongoDb
-    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -155,19 +140,15 @@ describe("Data source MongoDB", () => {
       "Cannot read properties of null (reading '2')"
     );
     verifyCouldnotConnectWithAlert(mongoDbText.errorInvalisScheme);
-    cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.buttonTextSave
-    );
+    cy.get(postgreSqlSelector.buttonSave)
+      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
+      .click();
+
+    deleteDatasource(`cypress-${data.lastName}-mongodb`);
   });
 
   it("Should verify the functionality of MongoDB connection form.", () => {
-    selectAndAddDataSource(mongoDbText.mongoDb);
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-mongodb`
-    );
+    selectAndAddDataSource("databases", mongoDbText.mongoDb, data.lastName);
 
     cy.get('[data-cy="query-select-dropdown"]').type(
       mongoDbText.optionConnectUsingConnectionString
@@ -175,7 +156,7 @@ describe("Data source MongoDB", () => {
 
     fillDataSourceTextField(
       mongoDbText.labelConnectionString,
-      mongoDbText.connectionStringPlaceholder,
+      "**************",
       Cypress.env("mongodb_connString"),
       "contain",
       { parseSpecialCharSequences: false, delay: 0 }
@@ -188,7 +169,7 @@ describe("Data source MongoDB", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();

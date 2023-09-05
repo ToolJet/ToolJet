@@ -939,7 +939,8 @@
             "maintenanceMode": "Maintenance mode",
             "maxWidthOfCanvas": "Max width of canvas",
             "maxHeightOfCanvas": "Max height of canvas",
-            "backgroundColorOfCanvas": "Canvas background"
+            "backgroundColorOfCanvas": "Canvas background",
+            "exportApp": "Export app"
         },
         "Back": {
             "text": "Back",
