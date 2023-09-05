@@ -460,9 +460,10 @@ export class AppImportExportService {
 
     await Promise.all(newDataQueries.map((newQuery: any) => manager.save(newQuery)));
 
-    newDataQueries.forEach(
-      (newQuery: { id: string }) => (appResourceMappings.dataQueryMapping[newQuery.id] = newQuery.id)
-    );
+    newDataQueries.forEach((newQuery, index) => {
+      const importingDataQuery = importingDataQueriesForAppVersion[index];
+      appResourceMappings.dataQueryMapping[importingDataQuery.id] = newQuery.id;
+    });
 
     for (const newQuery of newDataQueries) {
       const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
