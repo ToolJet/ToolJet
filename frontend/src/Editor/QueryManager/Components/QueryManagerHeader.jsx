@@ -101,10 +101,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
       >
         <button
           onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
-          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
-            isLoading,
-            isVersionReleased
-          )}`}
+          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
           data-cy="query-run-button"
           disabled={isInDraft}
           {...(isInDraft && {
@@ -139,7 +136,14 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
   return (
     <div className="row header">
       <div className="col font-weight-500">
-        {selectedQuery && <NameInput onInput={executeQueryNameUpdation} value={queryName} darkMode={darkMode} />}
+        {selectedQuery && (
+          <NameInput
+            onInput={executeQueryNameUpdation}
+            value={queryName}
+            darkMode={darkMode}
+            isDiabled={isVersionReleased}
+          />
+        )}
       </div>
       <div className="query-header-buttons me-3">{renderButtons()}</div>
     </div>
@@ -164,7 +168,7 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   );
 };
 
-const NameInput = ({ onInput, value, darkMode }) => {
+const NameInput = ({ onInput, value, darkMode, isDiabled }) => {
   const [isFocussed, setIsFocussed] = useNameInputFocussed(false);
   const [name, setName] = useState(value);
   const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased);
@@ -226,7 +230,8 @@ const NameInput = ({ onInput, value, darkMode }) => {
         ) : (
           <Button
             size="sm"
-            onClick={() => setIsFocussed(true)}
+            onClick={isDiabled ? null : () => setIsFocussed(true)}
+            disabled={isDiabled}
             className={'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500'}
           >
             <span className="text-truncate">{name} </span>
@@ -234,7 +239,7 @@ const NameInput = ({ onInput, value, darkMode }) => {
               className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
               style={{ minWidth: 14 }}
             >
-              <RenameIcon />
+              {!isDiabled && <RenameIcon />}
             </span>
           </Button>
         )}
