@@ -147,7 +147,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     //   newJoinOptions[0] = { table: selectedTable };
     // }
     // setJoinOptions(newJoinOptions);
-
     selectedTable &&
       setJoinTableOptions((joinOptions) => {
         return {
@@ -156,8 +155,14 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
             name: selectedTable,
             type: 'Table',
           },
+          fields: columns.map((col) => ({
+            name: col.Header,
+            table: selectedTable,
+            alias: `${selectedTable}_${col.Header}`,
+          })),
         };
       });
+    selectedTable && loadTableInformation(selectedTable, true);
   }, [selectedTable]);
 
   useEffect(() => {
@@ -298,10 +303,11 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
               ? data.result.map((col) => ({
                   name: col.column_name,
                   table: tableName,
+                  alias: `${tableName}_${col.column_name}`,
                 }))
               : [])
           );
-          console.log('updatedFields>newFields', JSON.stringify(newFields));
+
           return {
             ...joinOptions,
             fields: newFields,
