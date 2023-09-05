@@ -1893,6 +1893,25 @@ $border-radius: 4px;
   color: var(--slate-12, #11181C) !important;
 }
 
+.dd-select-alert-error {
+  border-radius: 6px;
+  border: 1px solid var(--tomato-05, #FDD8D3);
+  background: var(--tomato-02, #FFF8F7);
+  padding: 8px;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--tomato-09, #E54D2E);
+  svg {
+    height: 17px;
+    width: 17px;
+    margin-right: 2px;
+  }
+  svg>path{
+    fill:var(--tomato-09, #E54D2E);
+    opacity: 0.75;
+  }
+}
+
 .tdb-join-filtersection {
   .codehinter-plugins {
     border: 0 !important;

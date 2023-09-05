@@ -27,6 +27,7 @@ function DataSourceSelect({
   onAdd,
   addBtnLabel,
   selected,
+  emptyError,
 }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
@@ -155,7 +156,7 @@ function DataSourceSelect({
             );
           },
           // }),
-          MenuList: (props) => <MenuList {...props} onAdd={onAdd} addBtnLabel={addBtnLabel} />,
+          MenuList: (props) => <MenuList {...props} onAdd={onAdd} addBtnLabel={addBtnLabel} emptyError={emptyError} />,
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
@@ -276,7 +277,7 @@ function DataSourceSelect({
   );
 }
 
-const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, ...props }) => {
+const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, emptyError, options, ...props }) => {
   const navigate = useNavigate();
   const menuListStyles = getStyles('menuList', props);
 
@@ -294,9 +295,13 @@ const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, ...props 
 
   return (
     <>
-      <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu">
-        {children}
-      </div>
+      {isEmpty(options) && emptyError ? (
+        emptyError
+      ) : (
+        <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu">
+          {children}
+        </div>
+      )}
       {onAdd && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={onAdd}>

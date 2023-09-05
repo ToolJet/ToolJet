@@ -18,6 +18,7 @@ const DropDownSelect = ({
   onChange,
   value,
   renderSelected,
+  emptyError,
 }) => {
   const popoverId = useRef(`dd-select-${generateRandomId(10)}`);
   const popoverBtnId = useRef(`dd-select-btn-${generateRandomId(10)}`);
@@ -102,6 +103,7 @@ const DropDownSelect = ({
             closePopup={() => setShowMenu(false)}
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
+            emptyError={emptyError}
           />
         </Popover>
       }
