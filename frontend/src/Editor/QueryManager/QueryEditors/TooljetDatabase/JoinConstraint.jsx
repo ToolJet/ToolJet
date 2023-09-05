@@ -1,11 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
+import { Tooltip } from 'react-tooltip';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import Remove from '@/_ui/Icon/solidIcons/Remove';
+import Information from '@/_ui/Icon/solidIcons/Information';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import set from 'lodash/set';
 import { clone, cloneDeep, isEmpty } from 'lodash';
@@ -250,7 +252,17 @@ const JoinOn = ({
   const rightFieldColumn = rightField?.columnName;
 
   const leftFieldOptions = tableInfo[leftFieldTable]?.map((col) => ({ label: col.Header, value: col.Header })) || [];
-  const rightFieldOptions = tableInfo[rightFieldTable]?.map((col) => ({ label: col.Header, value: col.Header })) || [];
+  const selectedLeftField = tableInfo[leftFieldTable]?.find((col) => col.Header === leftFieldColumn);
+
+  const rightFieldOptions =
+    tableInfo[rightFieldTable]
+      ?.filter((col) => {
+        if (selectedLeftField?.dataType) {
+          return col.dataType === selectedLeftField.dataType;
+        }
+        return true;
+      })
+      .map((col) => ({ label: col.Header, value: col.Header })) || [];
   const operators = [{ label: '=', value: '=' }];
   const groupOperators = [
     { value: 'AND', label: 'AND' },
@@ -271,7 +283,16 @@ const JoinOn = ({
           />
         )}
         {index == 0 && <div className="tj-small-btn px-2">On</div>}
-        {index > 1 && <div className="tj-small-btn px-2">{groupOperator}</div>}
+        {index > 1 && (
+          <div
+            className="tj-small-btn px-2"
+            data-tooltip-id="tooltip-tjdb-join-operator"
+            data-tooltip-content="This operation will define all the following conditions"
+          >
+            {groupOperator}
+            <Tooltip id="tooltip-tjdb-join-operator" className="tooltip" />
+          </div>
+        )}
       </Col>
       <Col sm="4" className="p-0 border-end">
         <DropDownSelect
@@ -306,6 +327,12 @@ const JoinOn = ({
         <div className="flex-grow-1">
           <DropDownSelect
             options={rightFieldOptions}
+            emptyError={
+              <div className="dd-select-alert-error m-2 d-flex align-items-center">
+                <Information />
+                No columns of the same data type
+              </div>
+            }
             darkMode={darkMode}
             value={rightFieldOptions.find((opt) => opt.value === rightFieldColumn)}
             onChange={(value) => {
