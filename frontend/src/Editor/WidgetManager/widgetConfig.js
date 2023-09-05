@@ -2634,6 +2634,7 @@ export const widgets = [
     },
     events: {
       onSelect: { displayName: 'On select' },
+      onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
       borderRadius: {
@@ -2660,6 +2661,7 @@ export const widgets = [
     },
     exposedVariables: {
       values: {},
+      searchText: '',
     },
     definition: {
       others: {

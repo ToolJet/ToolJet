@@ -857,12 +857,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
         hasParamSupport
       );
     } else if (query.kind === 'tooljetdb') {
-      const currentSessionValue = authenticationService.currentSessionValue;
-      queryExecutionPromise = tooljetDbOperations.perform(
-        query.options,
-        currentSessionValue?.current_organization_id,
-        getCurrentState()
-      );
+      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState());
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
     } else {
@@ -990,12 +985,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
     } else if (query.kind === 'tooljetdb') {
-      const currentSessionValue = authenticationService.currentSessionValue;
-      queryExecutionPromise = tooljetDbOperations.perform(
-        query.options,
-        currentSessionValue?.current_organization_id,
-        getCurrentState()
-      );
+      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState());
     } else {
       queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
     }

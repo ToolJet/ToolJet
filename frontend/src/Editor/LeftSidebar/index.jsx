@@ -211,6 +211,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
         toggleAppMaintenance={toggleAppMaintenance}
         is_maintenance_on={is_maintenance_on}
+        app={app}
       />
     ),
   };
