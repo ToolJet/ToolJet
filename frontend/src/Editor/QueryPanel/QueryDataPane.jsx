@@ -116,7 +116,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
             />
             <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
           </div>
-          <AddDataSourceButton darkMode={darkMode} disabled={isEmpty(dataQueries)} />
+          <AddDataSourceButton darkMode={darkMode} />
         </div>
         <div
           className={cx('queries-header row d-flex align-items-center justify-content-between', {
