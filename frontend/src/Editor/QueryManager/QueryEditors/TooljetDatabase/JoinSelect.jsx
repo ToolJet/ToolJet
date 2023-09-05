@@ -26,7 +26,7 @@ export default function JoinSelect({ darkMode }) {
     });
   });
 
-  const tables = [...tableSet];
+  const tables = [...tableSet].filter((table) => !!table);
   const tableOptions = {};
   for (let index = 0; index < tables.length; index++) {
     const table = tables[index];
