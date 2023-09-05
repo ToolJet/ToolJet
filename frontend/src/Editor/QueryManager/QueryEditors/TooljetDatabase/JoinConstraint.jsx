@@ -98,10 +98,15 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               options={leftTableList}
               darkMode={darkMode}
               onChange={async (value) => {
-                const result = await confirm(
-                  'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
-                  'Change table?'
-                );
+                let result = false;
+                if (leftFieldTable.length) {
+                  result = await confirm(
+                    'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
+                    'Change table?'
+                  );
+                } else {
+                  result = true;
+                }
 
                 if (result) {
                   const newData = cloneDeep({ ...data });
@@ -141,10 +146,15 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             options={tableList}
             darkMode={darkMode}
             onChange={async (value) => {
-              const result = await confirm(
-                'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
-                'Change table?'
-              );
+              let result = false;
+              if (rightFieldTable.length) {
+                result = await confirm(
+                  'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
+                  'Change table?'
+                );
+              } else {
+                result = true;
+              }
 
               if (result) {
                 const newData = cloneDeep({ ...data });
