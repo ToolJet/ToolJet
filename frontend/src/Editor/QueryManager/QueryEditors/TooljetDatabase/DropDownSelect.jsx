@@ -89,7 +89,11 @@ const DropDownSelect = ({
           key={'page.i'}
           id={popoverId.current}
           className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
-          style={{ width: '244px', maxWidth: '246px' }}
+          style={{
+            width: '244px',
+            maxWidth: '246px',
+            boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
+          }}
         >
           <SelectBox
             options={options}

@@ -123,7 +123,7 @@ function DataSourceSelect({
                   style={{
                     display: 'flex',
                     justifyContent: 'flex-start',
-                    width: '100%',
+                    // width: '100%',
                   }}
                   className="dd-select-option"
                 >
@@ -218,11 +218,15 @@ function DataSourceSelect({
             lineHeight: '20px',
             textTransform: 'uppercase',
           }),
-          option: (style, { data: { isNested }, isFocused, isDisabled }) => ({
+          option: (style, { data: { isNested }, isFocused, isDisabled, isSelected }) => ({
             ...style,
             cursor: 'pointer',
             color: 'inherit',
-            backgroundColor: isFocused && !isNested ? 'var(--slate4)' : 'transparent',
+            backgroundColor: isSelected
+              ? 'var(--indigo3, #F0F4FF)'
+              : isFocused && !isNested
+              ? 'var(--slate4)'
+              : 'transparent',
             ...(isNested
               ? { padding: '0 8px', marginLeft: '19px', borderLeft: '1px solid var(--slate5)', width: 'auto' }
               : {}),
