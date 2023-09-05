@@ -3,7 +3,6 @@ import { Container, Row, Col } from 'react-bootstrap';
 import { Tooltip } from 'react-tooltip';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
-import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
@@ -293,16 +292,7 @@ const JoinOn = ({
           />
         )}
         {index == 0 && <div className="tj-small-btn px-2">On</div>}
-        {index > 1 && (
-          <div
-            className="tj-small-btn px-2"
-            data-tooltip-id="tooltip-tjdb-join-operator"
-            data-tooltip-content="This operation will define all the following conditions"
-          >
-            {groupOperator}
-            <Tooltip id="tooltip-tjdb-join-operator" className="tooltip" />
-          </div>
-        )}
+        {index > 1 && <div className="tj-small-btn px-2">{groupOperator}</div>}
       </Col>
       <Col sm="4" className="p-0 border-end">
         <DropDownSelect
