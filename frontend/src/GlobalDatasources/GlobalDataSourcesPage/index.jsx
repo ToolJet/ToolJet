@@ -14,6 +14,7 @@ import { SearchBox } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
+import { canDeleteDataSource } from '@/_helpers';
 
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -375,7 +376,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             container={selectedDataSource ? containerRef?.current : null}
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
-            showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id)}
+            showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
           />
         )}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}
