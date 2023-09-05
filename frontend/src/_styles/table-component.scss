@@ -340,8 +340,7 @@
     }
   }
 
-  .th,
-  .td {
+  .th{
     .resizer {
       display: inline-block;
       height: 100%;
@@ -353,6 +352,11 @@
       touch-action: none;
       width: 30px;
       cursor: ew-resize !important;
+    }
+    &:last-child{
+      .resizer{
+        transform: translateX(0%);
+      }
     }
   }
 }
