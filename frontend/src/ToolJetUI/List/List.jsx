@@ -30,20 +30,6 @@ function ListItem({
     setShowActionsMenu(false);
   };
 
-  React.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showActionsMenu && event.target.closest('.list-menu') === null) {
-        closeMenu();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ showActionsMenu })]);
-
   return (
     <div>
       <ListGroup.Item onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} {...restProps}>
@@ -66,8 +52,9 @@ function ListItem({
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
-              rootClose={false}
+              rootClose={true}
               show={showActionsMenu}
+              onToggle={(show) => setShowActionsMenu(show)}
               overlay={
                 <Popover id="list-menu" className={darkMode && 'dark-theme'}>
                   <Popover.Body bsPrefix="list-item-popover-body" className={`list-item-popover-body`}>
