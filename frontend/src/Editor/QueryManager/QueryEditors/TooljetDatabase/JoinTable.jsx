@@ -299,7 +299,7 @@ const RenderFilterSection = ({ darkMode }) => {
       const tableDetails = {
         label: key,
         value: key,
-        options: value.map((columns) => ({ label: columns.Header, value: columns.Header, table: key })),
+        options: value.map((columns) => ({ label: columns.Header, value: columns.Header + '-' + key, table: key })),
       };
       tableList.push(tableDetails);
     }
@@ -332,11 +332,15 @@ const RenderFilterSection = ({ darkMode }) => {
             onChange={(newValue) =>
               updateFilterConditionEntry('Column', index, {
                 table: newValue.table,
-                columnName: newValue.value,
+                columnName: newValue.label,
                 isLeftSideCondition: true,
               })
             }
-            value={{ label: leftField?.columnName, value: leftField?.columnName, table: leftField?.table }}
+            value={{
+              label: leftField?.columnName,
+              value: leftField?.columnName + '-' + leftField?.table,
+              table: leftField?.table,
+            }}
             options={tableList}
             darkMode={darkMode}
           />
