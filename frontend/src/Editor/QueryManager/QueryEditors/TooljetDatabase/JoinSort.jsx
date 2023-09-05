@@ -27,7 +27,7 @@ export default function JoinSort({ darkMode }) {
   return (
     <Container className="p-0">
       {isEmpty(joinOrderByOptions) ? (
-        <Row className="mb-2">
+        <Row className="mb-2 mx-0">
           <div
             style={{
               height: '30px',
@@ -40,7 +40,7 @@ export default function JoinSort({ darkMode }) {
         </Row>
       ) : (
         joinOrderByOptions.map((options, i) => (
-          <Row className="border rounded mb-1" key={i}>
+          <Row className="border rounded mb-1 mx-0" key={i}>
             <Col sm="6" className="p-0 border-end">
               <DropDownSelect
                 options={tableList}
@@ -102,7 +102,7 @@ export default function JoinSort({ darkMode }) {
         ))
       )}
       {/* Dynamically render below Row */}
-      <Row className="mb-2">
+      <Row className="mb-2 mx-0">
         <Col className="p-0">
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => setJoinOrderByOptions([...joinOrderByOptions, {}])}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />

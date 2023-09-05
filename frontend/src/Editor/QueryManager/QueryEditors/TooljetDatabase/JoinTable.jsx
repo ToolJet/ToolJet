@@ -120,7 +120,7 @@ const SelectTableMenu = ({ darkMode }) => {
               onRemove={() => setJoins(calcUpdatedJoins(joins.filter((join, index) => index !== i)))}
             />
           ))}
-          <Row>
+          <Row className="mx-0">
             <ButtonSolid
               variant="secondary"
               size="sm"
@@ -340,7 +340,7 @@ const RenderFilterSection = ({ darkMode }) => {
   const filterComponents = conditionsList.map((conditionDetail, index) => {
     const { operator = '', leftField = {}, rightField = {} } = conditionDetail;
     return (
-      <Row className="border rounded mb-2" key={index}>
+      <Row className="border rounded mb-2 mx-0" key={index}>
         <Col sm="2" className="p-0 border-end">
           {index === 1 && (
             <DropDownSelect
@@ -414,7 +414,7 @@ const RenderFilterSection = ({ darkMode }) => {
   return (
     <Container className="p-0">
       {conditionsList.length === 0 && (
-        <Row className="mb-2">
+        <Row className="mb-2 mx-0">
           <div
             style={{
               height: '30px',
@@ -427,7 +427,7 @@ const RenderFilterSection = ({ darkMode }) => {
         </Row>
       )}
       {filterComponents}
-      <Row className="mb-2">
+      <Row className="mb-2 mx-0">
         <Col className="p-0">
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewFilterConditionEntry()}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />

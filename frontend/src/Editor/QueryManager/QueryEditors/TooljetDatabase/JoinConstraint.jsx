@@ -62,7 +62,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
 
   return (
     <Container className="p-0">
-      <Row>
+      <Row className="mx-0">
         <Col sm="6" className="text-center px-2">
           Selected Table
         </Col>
@@ -88,7 +88,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           </Col>
         )}
       </Row>
-      <Row className="border rounded mb-2">
+      <Row className="border rounded mb-2 mx-0">
         <Col sm="2" className="p-0 border-end">
           <div className="tj-small-btn px-2">Join</div>
         </Col>
@@ -209,7 +209,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           }}
         />
       ))}
-      <Row className="mb-2">
+      <Row className="mb-2 mx-0">
         <Col className="p-0">
           <ButtonSolid
             variant="ghostBlue"
@@ -265,7 +265,7 @@ const JoinOn = ({
   ];
 
   return (
-    <Row className="border rounded mb-2">
+    <Row className="border rounded mb-2 mx-0">
       <Col
         sm="2"
         className="p-0 border-end"
