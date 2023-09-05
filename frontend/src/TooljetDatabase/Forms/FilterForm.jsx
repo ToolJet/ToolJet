@@ -68,11 +68,11 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
               onChange={handleOperatorChange}
             />
           </div>
-          <div className="col-4 tj-app-input">
+          <div className="col-4">
             <input
               value={filterInputValue}
               type="text"
-              className="form-control"
+              className="form-control css-zz6spl-container"
               data-cy="value-input-field"
               placeholder="Value"
               onChange={(event) => {
