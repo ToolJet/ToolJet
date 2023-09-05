@@ -350,7 +350,7 @@ const EditorComponent = (props) => {
   };
 
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    await useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, editorRef);
+    await useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad);
   };
 
   const fetchDataSources = (id) => {
@@ -646,9 +646,6 @@ const EditorComponent = (props) => {
       currentVersionId: data?.editing_version?.id,
     });
 
-    await fetchDataSources(data.editing_version?.id);
-    await fetchDataQueries(data.editing_version?.id, true, true);
-
     const appDefData = buildAppDefinition(data);
 
     const appJson = appDefData;
@@ -675,6 +672,9 @@ const EditorComponent = (props) => {
       appDefinition: appJson,
       isUpdatingEditorStateInProcess: false,
     });
+
+    await fetchDataSources(data.editing_version?.id);
+    await fetchDataQueries(data.editing_version?.id, true, true);
 
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
