@@ -325,14 +325,18 @@ const JoinOn = ({
         />
       </Col>
       <Col sm="1" className="p-0 border-end">
-        <DropDownSelect
+        {/* <DropDownSelect
           options={operators}
           darkMode={darkMode}
           value={operators.find((op) => op.value === operator)}
           onChange={(value) => {
             onChange && onChange({ ...condition, operator: value?.value });
           }}
-        />
+        /> */}
+
+        {/* Above line is commented and value is hardcoded as below */}
+
+        <div className="tj-small-btn px-2 text-center">{operator}</div>
       </Col>
       <Col sm="5" className="p-0 d-flex">
         <div className="flex-grow-1">

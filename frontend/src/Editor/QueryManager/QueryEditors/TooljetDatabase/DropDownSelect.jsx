@@ -92,6 +92,7 @@ const DropDownSelect = ({
           style={{
             width: '244px',
             maxWidth: '246px',
+            overflow: 'hidden',
             boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
           }}
         >
