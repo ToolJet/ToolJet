@@ -1165,7 +1165,7 @@ class TableComponent extends React.Component {
     });
 
     items.push({
-      title: 'Devices',
+      title: 'Layout',
       isOpen: true,
       children: (
         <>
