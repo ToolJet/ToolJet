@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { Tooltip } from 'react-tooltip';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
@@ -10,14 +10,12 @@ import Remove from '@/_ui/Icon/solidIcons/Remove';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import set from 'lodash/set';
-import { clone, cloneDeep, isEmpty } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
-import DeleteConfirmationModal from './DeleteConfirmationModal';
 import useConfirm from './Confirm';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const { selectedTable, tables, joinOptions } = useContext(TooljetDatabaseContext);
   const joinType = data?.joinType;
   const conditionsList = isEmpty(data?.conditions?.conditionsList) ? [{}] : data?.conditions?.conditionsList;
@@ -77,23 +75,17 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               variant="ghostBlack"
               size="sm"
               className="px-0"
-              onClick={() => setShowDeleteConfirmation(true)}
+              onClick={async () => {
+                const result = await confirm(
+                  'Deleting a join will also delete its associated conditions. Are you sure you want to continue ?',
+                  'Delete'
+                );
+                if (result) onRemove();
+              }}
             >
               <Remove style={{ height: '16px' }} />
             </ButtonSolid>
           </Col>
-        )}
-
-        {index !== 0 && (
-          <DeleteConfirmationModal
-            show={showDeleteConfirmation}
-            title="Delete"
-            message="Deleting the table will also delete its associated conditions. Are you sure you want to continue ?"
-            onCancel={() => setShowDeleteConfirmation(false)}
-            onConfirm={onRemove}
-            confirmButtonText="Delete"
-            darkMode={darkMode}
-          />
         )}
       </Row>
       <Row className="border rounded mb-2">
@@ -110,6 +102,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                   'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
                   'Change table?'
                 );
+
                 if (result) {
                   const newData = cloneDeep({ ...data });
                   const { conditionsList = [{}] } = newData?.conditions || {};
@@ -147,18 +140,25 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           <DropDownSelect
             options={tableList}
             darkMode={darkMode}
-            onChange={(value) => {
-              const newData = cloneDeep({ ...data });
-              const { conditionsList = [] } = newData?.conditions || {};
-              const newConditionsList = conditionsList.map((condition) => {
-                const newCondition = { ...condition };
-                set(newCondition, 'rightField.table', value?.value);
-                set(newCondition, 'operator', '='); //should we removed when we have more options
-                return newCondition;
-              });
-              set(newData, 'conditions.conditionsList', newConditionsList);
-              set(newData, 'table', value?.value);
-              onChange(newData);
+            onChange={async (value) => {
+              const result = await confirm(
+                'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
+                'Change table?'
+              );
+
+              if (result) {
+                const newData = cloneDeep({ ...data });
+                const { conditionsList = [] } = newData?.conditions || {};
+                const newConditionsList = conditionsList.map((condition) => {
+                  const newCondition = { ...condition };
+                  set(newCondition, 'rightField.table', value?.value);
+                  set(newCondition, 'operator', '='); //should we removed when we have more options
+                  return newCondition;
+                });
+                set(newData, 'conditions.conditionsList', newConditionsList);
+                set(newData, 'table', value?.value);
+                onChange(newData);
+              }
             }}
             onAdd={() => navigate(getPrivateRoute('database'))}
             addBtnLabel={'Add new table'}
@@ -215,7 +215,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           </ButtonSolid>
         </Col>
       </Row>
-      <ConfirmDialog />
+      <ConfirmDialog confirmButtonText="Delete" darkMode={darkMode} />
     </Container>
   );
 };
@@ -231,7 +231,7 @@ const JoinOn = ({
   onOperatorChange,
   onRemove,
 }) => {
-  const { columns, selectedTable, tables, loadTableInformation, tableInfo } = useContext(TooljetDatabaseContext);
+  const { tableInfo } = useContext(TooljetDatabaseContext);
   const { operator, leftField, rightField } = condition;
   const leftFieldColumn = leftField?.columnName;
   const rightFieldColumn = rightField?.columnName;
