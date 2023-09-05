@@ -588,13 +588,15 @@ export class DataSourcesService {
 
   async convertToGlobalSource(datasourceId: string, organizationId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.save(DataSource, {
+      await manager.save(DataSource, {
         id: datasourceId,
         updatedAt: new Date(),
         appVersionId: null,
         organizationId,
         scope: DataSourceScopes.GLOBAL,
       });
+      const dataSource = await this.findOne(datasourceId, manager);
+      return await this.createDataSourceGroupPermissionsForAdmin(dataSource, manager);
     });
   }
 

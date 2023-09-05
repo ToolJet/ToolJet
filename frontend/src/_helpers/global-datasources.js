@@ -32,7 +32,8 @@ export const canCreateDataSource = (group_permissions) => {
   return canAnyGroupPerformAction('data_source_create', group_permissions);
 };
 
-export const canDeleteDataSource = (group_permissions) => {
+export const canDeleteDataSource = () => {
+  let { group_permissions } = authenticationService.currentSessionValue;
   return canAnyGroupPerformAction('data_source_delete', group_permissions);
 };
 

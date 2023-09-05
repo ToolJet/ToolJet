@@ -103,11 +103,16 @@ export const GlobalDatasources = (props) => {
           fetchDataSourceByEnvironment(ds?.id, currentEnvironment?.id);
         }
         if (orderedDataSources.length && resetSelection) {
-          if (!canUpdateDataSource()) {
+          if (!canCreateDataSource()) {
+            setActiveDatasourceList('#databases');
+            setSelectedDataSource(null);
+          } else if (!canUpdateDataSource()) {
             setSelectedDataSource(orderedDataSources[0]);
             toggleDataSourceManagerModal(true);
+            setActiveDatasourceList('');
           } else {
             setActiveDatasourceList('#databases');
+            setSelectedDataSource(null);
           }
         }
         if (!orderedDataSources.length) {
