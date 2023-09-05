@@ -40,6 +40,7 @@ export enum LICENSE_TYPE {
   BASIC = 'basic',
   TRIAL = 'trial',
   ENTERPRISE = 'enterprise',
+  BUSINESS = 'business',
 }
 
 export enum LICENSE_LIMIT {

@@ -1,10 +1,11 @@
-import { Body, Controller, UseGuards, Patch, Get } from '@nestjs/common';
+import { Body, Controller, UseGuards, Patch, Get, Post } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { LicenseService } from '@services/license.service';
 import { LicenseUpdateDto } from '@dto/license.dto';
 import { decamelizeKeys } from 'humps';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { CreateTrialLicenseDto } from '@dto/create-trial-license.dto';
 
 @Controller('license')
 export class LicenseController {
@@ -15,6 +16,12 @@ export class LicenseController {
   async index() {
     const licenseSetting = await this.licenseService.getLicense();
     return decamelizeKeys(licenseSetting);
+  }
+
+  @Post('trial')
+  async generateTrialLicense(@Body() createTrialLicenseDto: CreateTrialLicenseDto) {
+    const licenseKey = await this.licenseService.generateTrialLicense(createTrialLicenseDto);
+    return decamelizeKeys({ licenseKey });
   }
 
   @UseGuards(JwtAuthGuard)
