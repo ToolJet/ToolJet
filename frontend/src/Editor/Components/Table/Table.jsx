@@ -942,12 +942,6 @@ export function Table({
     }
     return totalWidth;
   };
-  console.log('kavin', {
-    totalRecords,
-    'globalFilteredRows-length': globalFilteredRows.length,
-    clientSidePagination,
-    serverSidePagination,
-  });
   return (
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
@@ -1533,8 +1527,7 @@ export function Table({
                 ) : (
                   !loadingState && (
                     <span data-cy={`footer-number-of-records`} className="font-weight-500 text-black-000">
-                      {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
-                      {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
+                      {`${globalFilteredRows.length} Records`}
                     </span>
                   )
                 ))}
