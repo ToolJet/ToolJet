@@ -7,13 +7,16 @@ import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { AppsService } from './apps.service';
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
 import { isEmpty } from 'lodash';
+import { AuditLoggerService } from './audit_logger.service';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 
 @Injectable()
 export class ImportExportResourcesService {
   constructor(
     private readonly appImportExportService: AppImportExportService,
     private readonly appsService: AppsService,
-    private readonly tooljetDbImportExportService: TooljetDbImportExportService
+    private readonly tooljetDbImportExportService: TooljetDbImportExportService,
+    private readonly auditLoggerService: AuditLoggerService
   ) {}
 
   async export(user: User, exportResourcesDto: ExportResourcesDto) {
@@ -65,6 +68,15 @@ export class ImportExportResourcesService {
           tooljet_database: tableNameMapping,
         });
         imports.app.push({ id: createdApp.id, name: createdApp.name });
+
+        await this.auditLoggerService.perform({
+          userId: user.id,
+          organizationId: user.organizationId,
+          resourceId: createdApp.id,
+          resourceType: ResourceTypes.APP,
+          resourceName: createdApp.name,
+          actionType: ActionTypes.APP_CREATE,
+        });
       }
     }
 

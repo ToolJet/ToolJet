@@ -214,7 +214,6 @@ class HomePageComponent extends React.Component {
             this.setState({
               isImportingApp: false,
             });
-            toast.error(`Could not import the app: ${error}`);
           });
       } catch (error) {
         toast.error(`Could not import: ${error}`);

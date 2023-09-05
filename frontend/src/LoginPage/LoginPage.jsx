@@ -9,11 +9,11 @@ import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import LdapSSOLoginButton from '@ee/components/LoginPage/LdapSSOLoginButton';
 import {
   getSubpath,
-  redirectToWorkspace,
   validateEmail,
-  eraseRedirectUrl,
-  returnWorkspaceIdIfNeed,
   retrieveWhiteLabelText,
+  eraseRedirectUrl,
+  redirectToWorkspace,
+  returnWorkspaceIdIfNeed,
 } from '@/_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';

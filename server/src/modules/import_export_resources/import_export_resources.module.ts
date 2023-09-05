@@ -20,11 +20,17 @@ import { AppsService } from '@services/apps.service';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppUser } from 'src/entities/app_user.entity';
+import { UsersService } from '@services/users.service';
+import { FilesService } from '@services/files.service';
+import { User } from 'src/entities/user.entity';
+import { Organization } from 'src/entities/organization.entity';
+import { File } from 'src/entities/file.entity';
+import { AuditLoggerService } from '@services/audit_logger.service';
 
 const imports = [
   PluginsModule,
   CaslModule,
-  TypeOrmModule.forFeature([AppUser, AppVersion, App, Credential, Plugin, DataSource]),
+  TypeOrmModule.forFeature([User, Organization, File, AppUser, AppVersion, App, Credential, Plugin, DataSource]),
 ];
 
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
@@ -45,6 +51,9 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
     PluginsHelper,
     AppsService,
     CredentialsService,
+    UsersService,
+    FilesService,
+    AuditLoggerService,
   ],
 })
 export class ImportExportResourcesModule {}
