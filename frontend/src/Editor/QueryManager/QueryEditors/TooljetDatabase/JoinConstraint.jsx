@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
+import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
@@ -259,7 +260,16 @@ const JoinOn = ({
 
   return (
     <Row className="border rounded mb-2">
-      <Col sm="2" className="p-0 border-end">
+      <Col
+        sm="2"
+        className="p-0 border-end"
+        data-tooltip-id={`tdb-join-operator-tooltip-${index}`}
+        data-tooltip-content={
+          index > 1
+            ? 'The operation is defined by the first condition'
+            : 'This operation will define all the following conditions'
+        }
+      >
         {index == 1 && (
           <DropDownSelect
             options={groupOperators}
@@ -328,6 +338,18 @@ const JoinOn = ({
           </ButtonSolid>
         )}
       </Col>
+      {index > 0 && (
+        <Tooltip
+          id={`tdb-join-operator-tooltip-${index}`}
+          className="tooltip"
+          place="left"
+          style={{
+            borderRadius: '8px',
+            width: '180px',
+            padding: '8px 12px',
+          }}
+        />
+      )}
     </Row>
   );
 };
