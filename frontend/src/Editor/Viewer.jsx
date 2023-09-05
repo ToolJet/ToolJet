@@ -485,10 +485,10 @@ class ViewerComponent extends React.Component {
     const bgColor =
       (this.state.appDefinition.globalSettings?.backgroundFxQuery ||
         this.state.appDefinition.globalSettings?.canvasBackgroundColor) ??
-      '#F9F9FB';
+      '#27282D';
     const resolvedBackgroundColor = resolveReferences(bgColor, this.props.currentState);
-    if (['#1B1B1F', '#F9F9FB'].includes(resolvedBackgroundColor)) {
-      return this.props.darkMode ? '#1B1B1F' : '#F9F9FB';
+    if (['#27282D', '#F2F2F5', '#2f3c4c', '#edeff5'].includes(resolvedBackgroundColor)) {
+      return this.props.darkMode ? '#27282D' : '#F2F2F5';
     }
     return resolvedBackgroundColor;
   };
