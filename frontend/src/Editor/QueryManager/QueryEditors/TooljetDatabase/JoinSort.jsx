@@ -14,7 +14,7 @@ export default function JoinSort({ darkMode }) {
     const tableDetails = {
       label: key,
       value: key,
-      options: value.map((columns) => ({ label: columns.Header, value: columns.Header, table: key })),
+      options: value.map((columns) => ({ label: columns.Header, value: columns.Header + '_' + key, table: key })),
     };
     return tableDetails;
   });
@@ -45,14 +45,18 @@ export default function JoinSort({ darkMode }) {
               <DropDownSelect
                 options={tableList}
                 darkMode={darkMode}
-                value={{ value: options.columnName, label: options.columnName }}
+                value={{
+                  value: options.columnName + '_' + options.table,
+                  label: options.columnName,
+                  table: options.table,
+                }}
                 onChange={(option) => {
                   setJoinOrderByOptions(
                     joinOrderByOptions.map((sortBy, index) => {
                       if (i === index) {
                         return {
                           ...sortBy,
-                          columnName: option?.value,
+                          columnName: option?.label,
                           table: option.table,
                         };
                       }
