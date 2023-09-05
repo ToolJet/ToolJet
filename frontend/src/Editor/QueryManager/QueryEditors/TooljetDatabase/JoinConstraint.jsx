@@ -11,6 +11,8 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import Icon from '@/_ui/Icon/solidIcons/index';
 import set from 'lodash/set';
 import { clone, cloneDeep, isEmpty } from 'lodash';
+import { getPrivateRoute } from '@/_helpers/routes';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * {
@@ -56,6 +58,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const operator = data?.conditions?.operator;
   const leftFieldTable = conditionsList?.[0]?.leftField?.table || selectedTable;
   const rightFieldTable = conditionsList?.[0]?.rightField?.table;
+  const navigate = useNavigate();
 
   const tableSet = new Set();
   (joinOptions || [])
@@ -133,6 +136,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                 // set(newData, 'table', value?.value);
                 onChange(newData);
               }}
+              onAdd={() => navigate(getPrivateRoute('database'))}
               value={leftTableList.find((val) => val?.value === leftFieldTable)}
             />
           ) : (
@@ -165,6 +169,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               set(newData, 'table', value?.value);
               onChange(newData);
             }}
+            onAdd={() => navigate(getPrivateRoute('database'))}
             value={tableList.find((val) => val?.value === rightFieldTable)}
           />
         </Col>
