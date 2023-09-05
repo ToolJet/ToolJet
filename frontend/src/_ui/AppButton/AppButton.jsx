@@ -40,10 +40,10 @@ export const ButtonBase = function ButtonBase(props) {
       disabled={disabled}
       style={
         ({
-          ...customStyles,
           backgroundColor: backgroundColor && backgroundColor,
         },
-        restProps.style)
+        restProps.style,
+        customStyles)
       }
       type={isAnchor ? undefined : type || 'button'}
     >

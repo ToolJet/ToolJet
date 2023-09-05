@@ -63,90 +63,58 @@
 /* Variants */
 .tj-primary-btn {
     border-radius: 6px;
-    border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
-    background: #3E63DD ;
+    border: 1px solid rgba(255, 255, 255, 0.00);
+    background: var(--indigo9) ;
     box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.04);
     color: #FDFDFE;
     &:hover {
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
-        background: #8DA4EF;
-        svg{
-            path{
-                fill: #FDFDFE !important;
-            }
-        }
+        border: 1px solid rgba(255, 255, 255, 0.00);
+        background: var(--indigo10) ;
     }
 
     &:focus-visible {
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
+        border: 1px solid rgba(255, 255, 255, 0.00);
         outline: none;
-        background: #3A5CCC;
-        svg{
-            path{
-                fill:#FDFDFE !important;
-            }
-        }
-
+        background: var(--indigo10);
     }
 
 
     &:active {
         background: var(--slate1);
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00));
+        border: 1px solid rgba(255, 255, 255, 0.00);
         box-shadow: 0px 0px 0px 4px #C6D4F9;
-        color: #3E63DD !important;
-        svg{
-            path{
-                fill:#3E63DD!important;
-            }
-        }
+        background: var(--indigo9);
     }
 
 }
 
 .tj-secondary-btn {
     color: var(--indigo9) !important;
-    border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.00) !important;
     background: var(--indigo3, #F0F4FF) !important;
     &:hover {
         color: var(--indigo10) !important;
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
         background: var(--indigo4, #E6EDFE) !important;
-        svg{
-            path{
-                fill:var(--indigo8) !important;
-            }
-        }
     }
 
     &:active {
         color: var(--indigo9) !important;
         box-shadow: none;
         border-radius: 6px;
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
         background: var(--indigo5, #D9E2FC) !important;
-        svg{
-            path{
-                fill: var(--indigo9) !important;
-            }
-        }
     }
 
     &:focus-visible {
         color: var(--indigo10) !important;
         outline: none;
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
         background: var(--indigo3, #F0F4FF) !important;
 
         /* Focus rings/Indigo/light */
         box-shadow: 0px 0px 0px 4px #C6D4F9;
-        svg{
-            path{
-                fill: var(--indigo8) !important;   
-            }
-        }
-    }
-}
+    }}
 
 .tj-tertiary-btn {
     color: var(--slate12);
@@ -157,11 +125,6 @@
         color: var(--slate11) !important;
         border: 1px solid var(--slate7, #D7DBDF) !important;
         background: var(--slate4, #ECEEF0) !important;
-        svg{
-            path{
-                fill: var(--slate8) !important
-            }
-        }
     }
 
     &:active,&:focus,&.always-active-btn {
@@ -175,11 +138,6 @@
         background: transparent;
         box-shadow: none;
         color: var(--slate12) !important;
-        svg{
-            path{
-                fill: var(--slate12) !important;
-            }
-        }
     }
 
     &:focus-visible {
@@ -227,12 +185,7 @@
     &:hover {
         background: var(--slate4, #ECEEF0) !important;
         color: var(--slate11);
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
-        svg{
-            path{
-                fill: var(--slate11) !important;
-            }
-        }
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
     }
     &:focus-visible{
         color: var(--slate11) !important;
@@ -240,24 +193,19 @@
         // border: none;
         box-shadow: 0px 0px 0px 4px var(--slate6) !important;
         outline: none;
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
         background: var(--slate1, #FBFCFD) !important;
     }
     &:active,&:focus,&.always-active-btn {
         color: var(--slate12) !important;
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
         background: var(--slate5, #E6E8EB) !important;
         box-shadow: none !important;
     }
     &:disabled{
-        background: var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
-        border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
+        background: rgba(255, 255, 255, 0.00) !important;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
         color: var(--slate8) !important;
-        svg{
-            path{
-                fill :var(--slate8) !important
-            }
-        }
     }
 }
 
