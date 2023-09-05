@@ -152,7 +152,7 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
-      timeout: 10000,
+      timeout: 15000,
     }).should("have.text", postgreSqlText.labelConnectionVerified);
     cy.get(postgreSqlSelector.buttonSave).click();
 

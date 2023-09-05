@@ -61,6 +61,15 @@ export const selectAndAddDataSource = (
       cy.get(`[data-cy="${cyParamName(dataSource)}-add-button"]`).click();
     });
   cy.get(postgreSqlSelector.buttonSave).should("be.disabled");
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    postgreSqlText.toastDSAdded
+  );
+  cy.get('[data-cy="data-source-name-input-filed"]').verifyVisibleElement(
+    "have.value",
+    `${String(dataSource).toLowerCase().replace(/\s+/g, "")}`
+  );
+
   cy.clearAndType(
     '[data-cy="data-source-name-input-filed"]',
     `cypress-${cyParamName(dataSourceName)}-${cyParamName(dataSource)}`
@@ -68,7 +77,7 @@ export const selectAndAddDataSource = (
   cy.get(postgreSqlSelector.buttonSave).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
-    postgreSqlText.toastDSAdded
+    postgreSqlText.toastDSSaved
   );
 
   cy.get(
