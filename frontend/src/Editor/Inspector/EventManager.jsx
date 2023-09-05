@@ -875,8 +875,6 @@ export const EventManager = ({
     );
   };
 
-  const componentName = componentMeta.name ? componentMeta.name : 'query';
-
   if (events.length === 0) {
     return (
       <>
