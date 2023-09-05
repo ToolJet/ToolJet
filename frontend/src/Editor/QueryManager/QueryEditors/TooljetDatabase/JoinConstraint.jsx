@@ -14,43 +14,6 @@ import { clone, cloneDeep, isEmpty } from 'lodash';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
 
-/**
- * {
-      "joinType": "INNER",
-      "table": "orders",
-      "conditions": {
-        "operator": "AND",
-        "conditionsList": [
-          {
-            "operator": "=",
-            "leftField": {
-              "columnName": "id",
-              "table": "users",
-              "type": "Column"
-            },
-            "rightField": {
-              "columnName": "user_id",
-              "table": "orders",
-              "type": "Column"
-            }
-          },
-          {
-            "operator": ">",
-            "leftField": {
-              "columnName": "order_date",
-              "table": "orders",
-              "type": "Column"
-            },
-            "rightField": {
-              "value": "2022-01-01",
-              "type": "Value"
-            }
-          }
-        ]
-      }
-    }
-  */
-
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { selectedTable, tables, joinOptions } = useContext(TooljetDatabaseContext);
   const joinType = data?.joinType;
@@ -95,8 +58,6 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   //       });
   //   }, [conditionsList, joinType, rightFieldTable, leftFieldTable]);
 
-  //   const handleChange =
-
   return (
     <Container className="p-0">
       <Row>
@@ -137,6 +98,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                 onChange(newData);
               }}
               onAdd={() => navigate(getPrivateRoute('database'))}
+              addBtnLabel={'Add new table'}
               value={leftTableList.find((val) => val?.value === leftFieldTable)}
             />
           ) : (
@@ -170,6 +132,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               onChange(newData);
             }}
             onAdd={() => navigate(getPrivateRoute('database'))}
+            addBtnLabel={'Add new table'}
             value={tableList.find((val) => val?.value === rightFieldTable)}
           />
         </Col>
@@ -226,19 +189,6 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
     </Container>
   );
 };
-
-// {
-// 	"operator": ">",
-// 	"leftField": {
-// 	  "columnName": "order_date",
-// 	  "table": "orders",
-// 	  "type": "Column"
-// 	},
-// 	"rightField": {
-// 	  "value": "2022-01-01",
-// 	  "type": "Value"
-// 	}
-//   }
 
 const JoinOn = ({
   condition,
