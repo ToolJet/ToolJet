@@ -253,6 +253,12 @@ const JoinOn = ({
         <DropDownSelect
           options={leftFieldOptions}
           darkMode={darkMode}
+          emptyError={
+            <div className="dd-select-alert-error m-2 d-flex align-items-center">
+              <Information />
+              No table selected
+            </div>
+          }
           value={leftFieldOptions.find((opt) => opt.value === leftFieldColumn)}
           onChange={(value) => {
             onChange &&
@@ -285,7 +291,7 @@ const JoinOn = ({
             emptyError={
               <div className="dd-select-alert-error m-2 d-flex align-items-center">
                 <Information />
-                No columns of the same data type
+                {rightFieldTable ? 'No columns of the same data type' : 'No table selected'}
               </div>
             }
             darkMode={darkMode}
