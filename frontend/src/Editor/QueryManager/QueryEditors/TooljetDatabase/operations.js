@@ -8,16 +8,16 @@ export const tooljetDbOperations = {
   perform,
 };
 
-async function perform(queryOptions, organizationId, currentState) {
-  switch (queryOptions.operation) {
+async function perform(dataQuery, currentState) {
+  switch (dataQuery.options.operation) {
     case 'list_rows':
-      return listRows(queryOptions, organizationId, currentState);
+      return listRows(dataQuery, currentState);
     case 'create_row':
-      return createRow(queryOptions, organizationId, currentState);
+      return createRow(dataQuery, currentState);
     case 'update_rows':
-      return updateRows(queryOptions, organizationId, currentState);
+      return updateRows(dataQuery, currentState);
     case 'delete_rows':
-      return deleteRows(queryOptions, organizationId, currentState);
+      return deleteRows(dataQuery, currentState);
 
     default:
       return {
@@ -52,8 +52,8 @@ function buildPostgrestQuery(filters) {
   return postgrestQueryBuilder.url.toString();
 }
 
-async function listRows(queryOptions, organizationId, currentState) {
-  let query = [];
+async function listRows(dataQuery, currentState) {
+  const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
   if (hasEqualWithNull(resolvedOptions, 'list_rows')) {
     return {
@@ -64,7 +64,8 @@ async function listRows(queryOptions, organizationId, currentState) {
       data: {},
     };
   }
-  const { table_name: tableName, list_rows: listRows } = resolvedOptions;
+  const { table_id: tableId, list_rows: listRows } = resolvedOptions;
+  let query = [];
 
   if (!isEmpty(listRows)) {
     const { limit, where_filters: whereFilters, order_filters: orderFilters } = listRows;
@@ -86,19 +87,23 @@ async function listRows(queryOptions, organizationId, currentState) {
     !isEmpty(orderQuery) && query.push(orderQuery);
     !isEmpty(limit) && query.push(`limit=${limit}`);
   }
-  return await tooljetDatabaseService.findOne(organizationId, tableName, query.join('&'));
+  const headers = { 'data-query-id': dataQuery.id };
+  return await tooljetDatabaseService.findOne(headers, tableId, query.join('&'));
 }
 
-async function createRow(queryOptions, organizationId, currentState) {
+async function createRow(dataQuery, currentState) {
+  const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
   const columns = Object.values(resolvedOptions.create_row).reduce((acc, colOpts) => {
     if (isEmpty(colOpts.column)) return acc;
     return { ...acc, ...{ [colOpts.column]: colOpts.value } };
   }, {});
-  return await tooljetDatabaseService.createRow(organizationId, resolvedOptions.table_name, columns);
+  const headers = { 'data-query-id': dataQuery.id };
+  return await tooljetDatabaseService.createRow(headers, resolvedOptions.table_id, columns);
 }
 
-async function updateRows(queryOptions, organizationId, currentState) {
+async function updateRows(dataQuery, currentState) {
+  const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
   if (hasEqualWithNull(resolvedOptions, 'update_rows')) {
     return {
@@ -109,7 +114,7 @@ async function updateRows(queryOptions, organizationId, currentState) {
       data: {},
     };
   }
-  const { table_name: tableName, update_rows: updateRows } = resolvedOptions;
+  const { table_id: tableId, update_rows: updateRows } = resolvedOptions;
   const { where_filters: whereFilters, columns } = updateRows;
 
   let query = [];
@@ -121,10 +126,12 @@ async function updateRows(queryOptions, organizationId, currentState) {
 
   !isEmpty(whereQuery) && query.push(whereQuery);
 
-  return await tooljetDatabaseService.updateRows(organizationId, tableName, body, query.join('&') + '&order=id');
+  const headers = { 'data-query-id': dataQuery.id };
+  return await tooljetDatabaseService.updateRows(headers, tableId, body, query.join('&') + '&order=id');
 }
 
-async function deleteRows(queryOptions, organizationId, currentState) {
+async function deleteRows(dataQuery, currentState) {
+  const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
   if (hasEqualWithNull(resolvedOptions, 'delete_rows')) {
     return {
@@ -135,7 +142,7 @@ async function deleteRows(queryOptions, organizationId, currentState) {
       data: {},
     };
   }
-  const { table_name: tableName, delete_rows: deleteRows = { whereFilters: {} } } = resolvedOptions;
+  const { table_id: tableId, delete_rows: deleteRows = { whereFilters: {} } } = resolvedOptions;
   const { where_filters: whereFilters, limit = 1 } = deleteRows;
 
   let query = [];
@@ -163,5 +170,6 @@ async function deleteRows(queryOptions, organizationId, currentState) {
   !isEmpty(whereQuery) && query.push(whereQuery);
   limit && limit !== '' && query.push(`limit=${limit}&order=id`);
 
-  return await tooljetDatabaseService.deleteRow(organizationId, tableName, query.join('&'));
+  const headers = { 'data-query-id': dataQuery.id };
+  return await tooljetDatabaseService.deleteRows(headers, tableId, query.join('&'));
 }
