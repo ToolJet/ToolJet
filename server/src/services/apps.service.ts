@@ -541,7 +541,7 @@ export class AppsService {
       const dataSourceMapping = {};
       const newDataQueries = [];
       const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId: versionFrom?.id },
+        where: { appVersionId: versionFrom?.id, target: 'data_query' },
       });
 
       if (dataSources?.length) {
@@ -569,14 +569,12 @@ export class AppsService {
             const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
             for (const event of dataQueryEvents) {
               const newEvent = new EventHandler();
-
               newEvent.id = uuid.v4();
               newEvent.name = event.name;
               newEvent.sourceId = newQuery.id;
               newEvent.target = event.target;
               newEvent.event = event.event;
               newEvent.appVersionId = appVersion.id;
-
               await manager.save(newEvent);
             }
 
@@ -619,6 +617,18 @@ export class AppsService {
             oldDataQueryToNewMapping
           );
           newQuery.options = newOptions;
+
+          const newQueryEvents = await manager.find(EventHandler, {
+            where: { appVersionId: appVersion.id, sourceId: newQuery.id },
+          });
+
+          const updatedEvents = this.replaceDataQueryEventActionWithNewDataQueryIds(
+            newQueryEvents,
+            oldDataQueryToNewMapping
+          );
+
+          await manager.save(updatedEvents);
+
           await manager.save(newQuery);
         }
 
@@ -674,6 +684,19 @@ export class AppsService {
       options.events = replacedEvents;
     }
     return options;
+  }
+
+  replaceDataQueryEventActionWithNewDataQueryIds(events: EventHandler[], dataQueryMapping) {
+    if (events) {
+      const replacedEvents = events.map((event) => {
+        if (event.event.queryId) {
+          event.event.queryId = dataQueryMapping[event.event.queryId];
+        }
+
+        return event;
+      });
+      return replacedEvents;
+    }
   }
 
   replaceDataQueryIdWithinDefinitions(definition, dataQueryMapping) {
