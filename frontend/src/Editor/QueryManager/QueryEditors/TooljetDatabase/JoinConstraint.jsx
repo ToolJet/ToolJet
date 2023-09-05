@@ -13,45 +13,10 @@ import set from 'lodash/set';
 import { clone, cloneDeep, isEmpty } from 'lodash';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
-
-/**
- * {
-      "joinType": "INNER",
-      "table": "orders",
-      "conditions": {
-        "operator": "AND",
-        "conditionsList": [
-          {
-            "operator": "=",
-            "leftField": {
-              "columnName": "id",
-              "table": "users",
-              "type": "Column"
-            },
-            "rightField": {
-              "columnName": "user_id",
-              "table": "orders",
-              "type": "Column"
-            }
-          },
-          {
-            "operator": ">",
-            "leftField": {
-              "columnName": "order_date",
-              "table": "orders",
-              "type": "Column"
-            },
-            "rightField": {
-              "value": "2022-01-01",
-              "type": "Value"
-            }
-          }
-        ]
-      }
-    }
-  */
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const { selectedTable, tables, joinOptions } = useContext(TooljetDatabaseContext);
   const joinType = data?.joinType;
   const conditionsList = isEmpty(data?.conditions?.conditionsList) ? [{}] : data?.conditions?.conditionsList;
@@ -95,8 +60,6 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   //       });
   //   }, [conditionsList, joinType, rightFieldTable, leftFieldTable]);
 
-  //   const handleChange =
-
   return (
     <Container className="p-0">
       <Row>
@@ -108,10 +71,27 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         </Col>
         {index !== 0 && (
           <Col sm="1" className="justify-content-end d-flex pe-0">
-            <ButtonSolid variant="ghostBlack" size="sm" className="px-0" onClick={onRemove}>
+            <ButtonSolid
+              variant="ghostBlack"
+              size="sm"
+              className="px-0"
+              onClick={() => setShowDeleteConfirmation(true)}
+            >
               <Remove style={{ height: '16px' }} />
             </ButtonSolid>
           </Col>
+        )}
+
+        {index !== 0 && (
+          <DeleteConfirmationModal
+            show={showDeleteConfirmation}
+            title="Delete"
+            message="Deleting the table will also delete its associated conditions. Are you sure you want to continue ?"
+            onCancel={() => setShowDeleteConfirmation(false)}
+            onConfirm={onRemove}
+            confirmButtonText="Delete"
+            darkMode={darkMode}
+          />
         )}
       </Row>
       <Row className="border rounded mb-2">
@@ -137,6 +117,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
                 onChange(newData);
               }}
               onAdd={() => navigate(getPrivateRoute('database'))}
+              addBtnLabel={'Add new table'}
               value={leftTableList.find((val) => val?.value === leftFieldTable)}
             />
           ) : (
@@ -170,6 +151,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               onChange(newData);
             }}
             onAdd={() => navigate(getPrivateRoute('database'))}
+            addBtnLabel={'Add new table'}
             value={tableList.find((val) => val?.value === rightFieldTable)}
           />
         </Col>
@@ -226,19 +208,6 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
     </Container>
   );
 };
-
-// {
-// 	"operator": ">",
-// 	"leftField": {
-// 	  "columnName": "order_date",
-// 	  "table": "orders",
-// 	  "type": "Column"
-// 	},
-// 	"rightField": {
-// 	  "value": "2022-01-01",
-// 	  "type": "Value"
-// 	}
-//   }
 
 const JoinOn = ({
   condition,
@@ -370,6 +339,7 @@ const JoinOn = ({
           </ButtonSolid>
         )}
       </Col>
+
       {index > 0 && (
         <Tooltip
           id={`tdb-join-operator-tooltip-${index}`}

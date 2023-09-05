@@ -158,6 +158,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
           fields: columns.map((col) => ({
             name: col.Header,
             table: selectedTable,
+            alias: `${selectedTable}_${col.Header}`,
           })),
         };
       });
@@ -302,10 +303,11 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
               ? data.result.map((col) => ({
                   name: col.column_name,
                   table: tableName,
+                  alias: `${tableName}_${col.column_name}`,
                 }))
               : [])
           );
-          console.log('updatedFields>newFields', JSON.stringify(newFields));
+
           return {
             ...joinOptions,
             fields: newFields,
