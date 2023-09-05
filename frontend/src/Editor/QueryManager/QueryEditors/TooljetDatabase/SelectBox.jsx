@@ -223,7 +223,7 @@ function DataSourceSelect({
             cursor: 'pointer',
             color: 'inherit',
             backgroundColor: isSelected
-              ? 'var(--indigo-03, #F0F4FF)'
+              ? 'var(--indigo3, #F0F4FF)'
               : isFocused && !isNested
               ? 'var(--slate4)'
               : 'transparent',
