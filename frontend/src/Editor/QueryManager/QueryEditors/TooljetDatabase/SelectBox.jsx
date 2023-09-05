@@ -1,4 +1,4 @@
-import React, { useState, useEffect, isValidElement } from 'react';
+import React, { useState, useEffect, isValidElement, useCallback } from 'react';
 import Select, { components } from 'react-select';
 import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
@@ -170,7 +170,10 @@ function DataSourceSelect({
             );
           },
           // }),
-          MenuList: (props) => <MenuList {...props} onAdd={onAdd} addBtnLabel={addBtnLabel} emptyError={emptyError} />,
+          MenuList: useCallback(
+            (props) => <MenuList {...props} onAdd={onAdd} addBtnLabel={addBtnLabel} emptyError={emptyError} />,
+            [onAdd, addBtnLabel, emptyError]
+          ),
           IndicatorSeparator: () => null,
           DropdownIndicator,
           GroupHeading: CustomGroupHeading,
