@@ -67,6 +67,32 @@ const SelectTableMenu = ({ darkMode }) => {
     setJoins(cleanedJoin);
   };
 
+  const calcUpdatedJoins = (updatedJoin) => {
+    const cleanedJoin = [];
+    const tableSet = new Set();
+    (updatedJoin || []).forEach((join, i) => {
+      const { table, conditions } = join;
+      let leftTable, rightTable;
+      conditions?.conditionsList?.forEach((condition) => {
+        const { leftField, rightField } = condition;
+        if (leftField?.table) {
+          // tableSet.add(leftField?.table);
+          leftTable = leftField?.table;
+        }
+        if (rightField?.table) {
+          // tableSet.add(rightField?.table);
+          rightTable = rightField?.table;
+        }
+      });
+      if ((tableSet.has(leftTable) && !tableSet.has(rightTable)) || i === 0) {
+        tableSet.add(leftTable);
+        tableSet.add(rightTable);
+        cleanedJoin.push({ ...join });
+      }
+    });
+    return cleanedJoin;
+  };
+
   // const handleJoinChange = (newJoin, index) => {
   //   setJoins(
   //     joinOptions.map((join, i) => {
@@ -91,7 +117,7 @@ const SelectTableMenu = ({ darkMode }) => {
               index={i}
               data={join}
               onChange={(value) => handleJoinChange(value, i)}
-              onRemove={() => setJoins(joins.filter((join, index) => index !== i))}
+              onRemove={() => setJoins(calcUpdatedJoins(joins.filter((join, index) => index !== i)))}
             />
           ))}
           <Row>

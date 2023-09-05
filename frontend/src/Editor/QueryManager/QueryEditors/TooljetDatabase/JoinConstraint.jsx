@@ -147,7 +147,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             darkMode={darkMode}
             onChange={async (value) => {
               let result = false;
-              if (rightFieldTable.length) {
+              if (rightFieldTable?.length) {
                 result = await confirm(
                   'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
                   'Change table?'
