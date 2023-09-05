@@ -150,7 +150,15 @@ function DataSourceSelect({
                     ) : (
                       <SolidIcon name={props.data.icon} style={{ height: 16, width: 16 }} />
                     ))}
-                  {children}
+                  <span className="flex-grow-1">{children}</span>
+                  {props.isSelected && (
+                    <SolidIcon
+                      fill="var(--indigo9)"
+                      name="tick"
+                      style={{ height: 16, width: 16 }}
+                      viewBox="0 0 20 20"
+                    />
+                  )}
                 </div>
               </components.Option>
             );
