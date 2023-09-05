@@ -65,7 +65,6 @@ const DropDownSelect = ({
     }
 
     const elementRect = selectControl.getBoundingClientRect();
-    console.log(elementRect);
 
     // Check proximity to top
     const halfScreenHeight = window.innerHeight / 2;

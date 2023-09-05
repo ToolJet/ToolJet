@@ -14,6 +14,7 @@ import { clone, cloneDeep, isEmpty } from 'lodash';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+import useConfirm from './Confirm';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -24,6 +25,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const leftFieldTable = conditionsList?.[0]?.leftField?.table || selectedTable;
   const rightFieldTable = conditionsList?.[0]?.rightField?.table;
   const navigate = useNavigate();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const tableSet = new Set();
   (joinOptions || [])
@@ -103,18 +105,24 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             <DropDownSelect
               options={leftTableList}
               darkMode={darkMode}
-              onChange={(value) => {
-                const newData = cloneDeep({ ...data });
-                const { conditionsList = [{}] } = newData?.conditions || {};
-                const newConditionsList = conditionsList.map((condition) => {
-                  const newCondition = { ...condition };
-                  set(newCondition, 'leftField.table', value?.value);
-                  set(newCondition, 'operator', '='); //should we removed when we have more options
-                  return newCondition;
-                });
-                set(newData, 'conditions.conditionsList', newConditionsList);
-                // set(newData, 'table', value?.value);
-                onChange(newData);
+              onChange={async (value) => {
+                const result = await confirm(
+                  'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
+                  'Change table?'
+                );
+                if (result) {
+                  const newData = cloneDeep({ ...data });
+                  const { conditionsList = [{}] } = newData?.conditions || {};
+                  const newConditionsList = conditionsList.map((condition) => {
+                    const newCondition = { ...condition };
+                    set(newCondition, 'leftField.table', value?.value);
+                    set(newCondition, 'operator', '='); //should we removed when we have more options
+                    return newCondition;
+                  });
+                  set(newData, 'conditions.conditionsList', newConditionsList);
+                  // set(newData, 'table', value?.value);
+                  onChange(newData);
+                }
               }}
               onAdd={() => navigate(getPrivateRoute('database'))}
               addBtnLabel={'Add new table'}
@@ -207,6 +215,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           </ButtonSolid>
         </Col>
       </Row>
+      <ConfirmDialog />
     </Container>
   );
 };
