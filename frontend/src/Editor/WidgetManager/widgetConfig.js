@@ -136,7 +136,7 @@ export const widgets = [
       },
       useDynamicColumn: {
         type: 'toggle',
-        displayName: 'Connect code',
+        displayName: 'Use dynamic column',
         validation: {
           schema: { type: 'boolean' },
         },
