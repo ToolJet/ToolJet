@@ -620,7 +620,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 16px;
+  padding-top: 0px;
   width: 48px;
   border-right: 1px solid var(--slate5);
 }
@@ -675,7 +675,6 @@
 
 .application-brand {
   margin-bottom: 24px !important;
-
 }
 
 .current-seleted-route {
