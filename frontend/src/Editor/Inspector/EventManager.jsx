@@ -29,7 +29,6 @@ export const EventManager = ({
   eventSourceType,
   eventMetaDefinition,
   components,
-
   excludeEvents,
   popOverCallback,
   popoverPlacement,
@@ -51,14 +50,11 @@ export const EventManager = ({
 
   const currentEvents = allAppEvents.filter((event) => event.sourceId === sourceId);
 
-  // console.log('----arpit currentEvents ', { currentEvents, allAppEvents, sourceId, eventSourceType });
-
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
 
   useEffect(() => {
-    console.log('----arpit current events changed ', { currentEvents, events });
     if (_.isEqual(currentEvents, events)) return;
 
     setEvents(currentEvents || []);
@@ -224,10 +220,8 @@ export const EventManager = ({
     newEvents[index] = updatedEvent;
 
     const diffPatches = diff(currentEvents[index], updatedEvent);
-    const isDeepEqual = _.isEqual(currentEvents[index], updatedEvent);
-    setEvents(newEvents);
 
-    console.log('----moh handler changed-arpit ', { diffPatches, isDeepEqual });
+    setEvents(newEvents);
 
     updateAppVersionEventHandlers(
       [
