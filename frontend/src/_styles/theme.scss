@@ -5128,7 +5128,7 @@ div#driver-page-overlay {
 }
 
 .fx-canvas {
-  background: #1c252f;
+  background:var(--slate4);
   padding: 0px;
   display: flex;
   height: 32px;
@@ -5140,7 +5140,7 @@ div#driver-page-overlay {
   align-items: center;
 
   div {
-    background: #1c252f !important;
+    background:var(--slate4) !important;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -5148,13 +5148,6 @@ div#driver-page-overlay {
     padding: 0px;
   }
 }
-
-.fx-canvas-light {
-  div {
-    background: #fff !important;
-  }
-}
-
 .org-name {
   color: var(--slate12) !important;
   font-size: 12px;
