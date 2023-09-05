@@ -123,7 +123,7 @@ function DataSourceSelect({
                   style={{
                     display: 'flex',
                     justifyContent: 'flex-start',
-                    // width: '100%',
+                    alignItems: 'center',
                   }}
                   className="dd-select-option"
                 >
@@ -148,9 +148,15 @@ function DataSourceSelect({
                     (isValidElement(props.data.icon) ? (
                       props.data.icon
                     ) : (
-                      <SolidIcon name={props.data.icon} style={{ height: 16, width: 16 }} />
+                      <SolidIcon
+                        name={props.data.icon}
+                        style={{ height: 16, width: 16 }}
+                        width={20}
+                        height={17}
+                        viewBox=""
+                      />
                     ))}
-                  <span className="flex-grow-1">{children}</span>
+                  <span className={`${props?.data?.icon ? 'ms-1 ' : ''}flex-grow-1`}>{children}</span>
                   {props.isSelected && (
                     <SolidIcon
                       fill="var(--indigo9)"

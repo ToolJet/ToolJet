@@ -130,7 +130,9 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             darkMode={darkMode}
             onChange={(value) => onChange({ ...data, joinType: value?.value })}
             value={staticJoinOperationsList.find((val) => val.value === joinType)}
-            renderSelected={(selected) => (selected ? <Icon name={selected?.icon} /> : '')}
+            renderSelected={(selected) =>
+              selected ? <Icon name={selected?.icon} height={20} width={20} viewBox="" /> : ''
+            }
           />
         </Col>
         <Col sm="5" className="p-0">
