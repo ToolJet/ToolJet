@@ -4,6 +4,7 @@ import React from 'react';
 const NoListItem = ({ text }) => {
   return (
     <div
+      data-cy={`no-items-banner`}
       className="d-flex justify-content-center"
       style={{
         padding: '6px 32px',
