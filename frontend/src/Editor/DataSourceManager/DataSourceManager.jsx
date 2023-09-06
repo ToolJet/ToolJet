@@ -238,6 +238,7 @@ class DataSourceManagerComponent extends React.Component {
             this.props.dataSourcesChanged(false, selectedDataSource);
             this.props.globalDataSourcesChanged && this.props.globalDataSourcesChanged();
             this.props.setGlobalDataSourceStatus({ isSaving: false, isEditing: false });
+            scope === 'local' && this.hideModal();
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false });

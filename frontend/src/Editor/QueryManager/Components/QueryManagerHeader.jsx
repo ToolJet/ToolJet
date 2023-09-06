@@ -21,6 +21,8 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
+import { defaultSources } from '../constants';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, ref) => {
   const { renameQuery } = useDataQueriesActions();
@@ -129,6 +131,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
     return (
       <>
         <PreviewButton
+          selectedQuery={selectedQuery}
           onClick={previewButtonOnClick}
           buttonLoadingState={buttonLoadingState}
           disabled={isVersionReleased || isEditorFreezed}
@@ -141,21 +144,38 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
   return (
     <div className="row header">
       <div className="col font-weight-500">
-        {selectedQuery && <NameInput onInput={executeQueryNameUpdation} value={queryName} darkMode={darkMode} />}
+        {selectedQuery && (
+          <NameInput
+            selectedQuery={selectedQuery}
+            onInput={executeQueryNameUpdation}
+            value={queryName}
+            darkMode={darkMode}
+          />
+        )}
       </div>
       <div className="query-header-buttons me-3">{renderButtons()}</div>
     </div>
   );
 });
 
-const PreviewButton = ({ buttonLoadingState, onClick }) => {
+const PreviewButton = ({ buttonLoadingState, onClick, selectedQuery }) => {
   const previewLoading = usePreviewLoading();
+  const selectedDataSource = useSelectedDataSource();
+  const hasPermissions =
+    selectedDataSource?.scope === 'global'
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
   const { t } = useTranslation();
 
   return (
     <button
+      disabled={!hasPermissions}
       onClick={onClick}
-      className={cx(`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`)}
+      className={cx(`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`, {
+        disabled: !hasPermissions,
+      })}
       data-cy={'query-preview-button'}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
@@ -166,9 +186,16 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   );
 };
 
-const NameInput = ({ onInput, value, darkMode }) => {
+const NameInput = ({ onInput, value, darkMode, selectedQuery }) => {
   const [isFocussed, setIsFocussed] = useNameInputFocussed(false);
   const [name, setName] = useState(value);
+  const selectedDataSource = useSelectedDataSource();
+  const hasPermissions =
+    selectedDataSource?.scope === 'global'
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
   const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -237,7 +264,9 @@ const NameInput = ({ onInput, value, darkMode }) => {
             onClick={() => setIsFocussed(true)}
             className={cx(
               'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500',
-              { disabled: isVersionReleased || isEditorFreezed }
+              {
+                disabled: isVersionReleased || isEditorFreezed || !hasPermissions,
+              }
             )}
           >
             <span className="text-truncate">{name} </span>
@@ -245,7 +274,7 @@ const NameInput = ({ onInput, value, darkMode }) => {
               className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
               style={{ minWidth: 14 }}
             >
-              {!(isVersionReleased || isEditorFreezed) && <RenameIcon />}
+              {!(isVersionReleased || isEditorFreezed || !hasPermissions) && <RenameIcon />}
             </span>
           </Button>
         )}

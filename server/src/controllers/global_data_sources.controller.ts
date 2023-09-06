@@ -118,7 +118,7 @@ export class GlobalDataSourcesController {
   ) {
     const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user, dataSourceId);
 
-    if (!ability.can('updateGlobalDataSource', DataSource)) {
+    if (!ability.can('updateGlobalDataSource', DataSource) && !ability.can('deleteGlobalDataSource', DataSource)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
