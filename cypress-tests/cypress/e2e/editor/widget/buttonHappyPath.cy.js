@@ -99,7 +99,7 @@ describe("Editor- Test Button widget", () => {
     cy.apiDeleteApp(data.appName);
   });
 
-  it.only("should verify the styles of the button widget", () => {
+  it("should verify the styles of the button widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.backgroundColor = fake.randomRgba;
