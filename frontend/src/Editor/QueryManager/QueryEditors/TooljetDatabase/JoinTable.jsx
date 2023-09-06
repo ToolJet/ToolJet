@@ -375,7 +375,7 @@ const RenderFilterSection = ({ darkMode }) => {
           {index === 0 && <div className="tj-small-btn px-2">Where</div>}
           {index > 1 && <div className="tj-small-btn px-2">{conditions?.operator}</div>}
         </Col>
-        <Col sm="4" className="p-0 border-end">
+        <Col sm="3" className="p-0 border-end">
           <DropDownSelect
             onChange={(newValue) =>
               updateFilterConditionEntry('Column', index, {
@@ -393,7 +393,7 @@ const RenderFilterSection = ({ darkMode }) => {
             darkMode={darkMode}
           />
         </Col>
-        <Col sm="1" className="p-0 border-end">
+        <Col sm="3" className="p-0 border-end">
           <DropDownSelect
             onChange={(change) => updateFilterConditionEntry('Operator', index, { operator: change?.value })}
             value={operatorConstants.find((op) => op.value === operator)}
@@ -401,7 +401,7 @@ const RenderFilterSection = ({ darkMode }) => {
             darkMode={darkMode}
           />
         </Col>
-        <Col sm="5" className="p-0 d-flex">
+        <Col sm="4" className="p-0 d-flex">
           <div className="flex-grow-1">
             <CodeHinter
               initialValue={
