@@ -68,8 +68,6 @@ export const GlobalSettings = ({
     outline: showPicker && '1px solid var(--indigo9)',
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
-  console.log('darkmode---', darkMode);
-
   return (
     <>
       <Confirm
