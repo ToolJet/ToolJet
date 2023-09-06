@@ -11,11 +11,11 @@ import JoinConstraint from './JoinConstraint';
 import JoinSelect from './JoinSelect';
 import JoinSort from './JoinSort';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { filterOperatorOptions, nullOperatorOptions } from './util';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
     <div>
-      {/* <JoinOperationMenu /> */}
       <SelectTableMenu darkMode={darkMode} />
     </div>
   );
@@ -308,6 +308,12 @@ const RenderFilterSection = ({ darkMode }) => {
           case 'Operator':
             return {
               ...conditionDetail,
+              ...((conditionDetail.operator === 'IS' || valueToUpdate.operator === 'IS') && {
+                rightField: {
+                  value: '',
+                  type: 'Value',
+                },
+              }),
               operator: valueToUpdate.operator,
             };
           default:
@@ -316,7 +322,7 @@ const RenderFilterSection = ({ darkMode }) => {
       }
       return conditionDetail;
     });
-    handleWhereFilterChange({ ...conditions, conditionsList: editedConditionList });
+    handleWhereFilterChange({ ...conditions, conditionsList: [...editedConditionList] });
   }
 
   function updateOperatorForConditions(changedOperator) {
@@ -353,7 +359,6 @@ const RenderFilterSection = ({ darkMode }) => {
     }
   });
 
-  const operatorConstants = [{ label: '=', value: '=' }];
   const groupOperators = [
     { value: 'AND', label: 'AND' },
     { value: 'OR', label: 'OR' },
@@ -396,29 +401,40 @@ const RenderFilterSection = ({ darkMode }) => {
         <Col sm="3" className="p-0 border-end">
           <DropDownSelect
             onChange={(change) => updateFilterConditionEntry('Operator', index, { operator: change?.value })}
-            value={operatorConstants.find((op) => op.value === operator)}
-            options={operatorConstants}
+            value={filterOperatorOptions.find((op) => op.value === operator)}
+            options={filterOperatorOptions}
             darkMode={darkMode}
           />
         </Col>
         <Col sm="4" className="p-0 d-flex">
           <div className="flex-grow-1">
-            <CodeHinter
-              initialValue={
-                rightField?.value
-                  ? typeof rightField?.value === 'string'
-                    ? rightField?.value
-                    : JSON.stringify(rightField?.value)
-                  : rightField?.value
-              }
-              className="codehinter-plugins"
-              theme={darkMode ? 'monokai' : 'default'}
-              height={'28px'}
-              placeholder="Value"
-              onChange={(newValue) =>
-                updateFilterConditionEntry('Value', index, { value: newValue, isLeftSideCondition: false })
-              }
-            />
+            {operator === 'IS' ? (
+              <DropDownSelect
+                onChange={(change) =>
+                  updateFilterConditionEntry('Value', index, { value: change?.value, isLeftSideCondition: false })
+                }
+                options={nullOperatorOptions}
+                darkMode={darkMode}
+                value={groupOperators.find((op) => op.value === operator)}
+              />
+            ) : (
+              <CodeHinter
+                initialValue={
+                  rightField?.value
+                    ? typeof rightField?.value === 'string'
+                      ? rightField?.value
+                      : JSON.stringify(rightField?.value)
+                    : rightField?.value
+                }
+                className="codehinter-plugins"
+                theme={darkMode ? 'monokai' : 'default'}
+                height={'28px'}
+                placeholder="Value"
+                onChange={(newValue) =>
+                  updateFilterConditionEntry('Value', index, { value: newValue, isLeftSideCondition: false })
+                }
+              />
+            )}
           </div>
           <ButtonSolid
             size="sm"

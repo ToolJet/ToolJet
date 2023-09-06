@@ -327,10 +327,15 @@ export class TooljetDbService {
         // @description: In LHS & RHS it is not mandatory to provide table name, but column name is mandatory
         // @description: In LHS & RHS - We get function only in HAVING statement
         const { operator, leftField, rightField } = condition;
+        // @desc: When 'IS' operator is choosed, 'NULL' & 'NOT NULL' keywords will be provided as value and it should not be converted to string
+        const keywords = ['NULL', 'NOT NULL'];
 
         let leftSideInput = ``;
         if (leftField.type === 'Value') {
-          leftSideInput += this.addQuotesIfString(leftField.value);
+          leftSideInput +=
+            keywords.includes(leftField.value) && operator === 'IS'
+              ? leftField.value
+              : this.addQuotesIfString(leftField.value);
         } else {
           if (leftField.function) leftSideInput += `${leftField.function}(`;
           leftSideInput += `${leftField.table ? '"' + internalTableNametoIdMap[leftField.table] + '"' + '.' : ''}${
@@ -341,7 +346,10 @@ export class TooljetDbService {
 
         let rightSideInput = ``;
         if (rightField.type === 'Value') {
-          rightSideInput += this.addQuotesIfString(rightField.value);
+          rightSideInput +=
+            keywords.includes(rightField.value) && operator === 'IS'
+              ? rightField.value
+              : this.addQuotesIfString(rightField.value);
         } else {
           if (rightField.function) rightSideInput += `${rightField.function}(`;
           rightSideInput += `${rightField.table ? '"' + internalTableNametoIdMap[rightField.table] + '"' + '.' : ''}${
