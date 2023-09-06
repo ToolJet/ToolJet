@@ -11,7 +11,7 @@ import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
-import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
+import { staticDataSources, customToggles, mockDataQueryAsComponent, defaultSources } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -19,6 +19,7 @@ import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 
 export const QueryManagerBody = ({
   darkMode,
@@ -274,12 +275,18 @@ export const QueryManagerBody = ({
   };
 
   if (selectedQueryId !== selectedQuery?.id) return;
+  const hasPermissions =
+    selectedDataSource?.scope === 'global'
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
 
   return (
     <div
       className={`row row-deck px-2 mt-0 query-details ${
         selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
-      }`}
+      } ${!hasPermissions ? 'disabled' : ''}`}
     >
       {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
 

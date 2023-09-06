@@ -19,7 +19,7 @@ export default function ReleaseConfirmation(props) {
       contentClassName={`release-confirm-dialogue-modal ${darkMode ? 'dark-theme' : ''}`}
     >
       <Modal.Header>
-        <Modal.Title>Release Version</Modal.Title>
+        <Modal.Title data-cy="modal-title">Release Version</Modal.Title>
         <svg
           onClick={onClose}
           className="cursor-pointer"
@@ -28,6 +28,7 @@ export default function ReleaseConfirmation(props) {
           viewBox="0 0 33 33"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          data-cy="close-button"
         >
           <path
             fillRule="evenodd"
@@ -38,14 +39,14 @@ export default function ReleaseConfirmation(props) {
         </svg>
       </Modal.Header>
 
-      <Modal.Body className="env-confirm-dialogue-body">
+      <Modal.Body className="env-confirm-dialogue-body" data-cy="confirm-dialogue-box-text">
         <div className="env-change-info">Are you sure you want to release this version?</div>
       </Modal.Body>
       <Modal.Footer className="env-modal-footer">
-        <ButtonSolid variant="tertiary" onClick={onClose}>
+        <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
-        <ButtonSolid variant="primary" onClick={onConfirm}>
+        <ButtonSolid variant="primary" onClick={onConfirm} data-cy="yes-button">
           Yes
         </ButtonSolid>
       </Modal.Footer>

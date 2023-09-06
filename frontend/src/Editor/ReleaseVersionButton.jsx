@@ -75,6 +75,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
           'released-button': isVersionReleased,
         })}
         onClick={onReleaseButtonClick}
+        data-cy="release-button"
       >
         {isVersionReleased ? (
           'Released'

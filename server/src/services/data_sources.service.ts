@@ -16,6 +16,8 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { EncryptionService } from './encryption.service';
 import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { decode } from 'js-base64';
 
 @Injectable()
@@ -26,6 +28,7 @@ export class DataSourcesService {
     private encryptionService: EncryptionService,
     private appEnvironmentService: AppEnvironmentService,
     private usersService: UsersService,
+    private licenseService: LicenseService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
   ) {}
@@ -37,6 +40,7 @@ export class DataSourcesService {
     const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
     const groupPermissions = await this.usersService.groupPermissions(user);
     const canPerformCreateOrDelete = groupPermissions?.some((gp) => gp['dataSourceCreate'] || gp['dataSourceDelete']);
+    const isValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
@@ -52,7 +56,7 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
 
       if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
-        if (!canPerformCreateOrDelete) {
+        if (!canPerformCreateOrDelete && isValid) {
           query
             .innerJoin('data_source.groupPermissions', 'group_permissions')
             .innerJoin(
@@ -584,13 +588,15 @@ export class DataSourcesService {
 
   async convertToGlobalSource(datasourceId: string, organizationId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.save(DataSource, {
+      await manager.save(DataSource, {
         id: datasourceId,
         updatedAt: new Date(),
         appVersionId: null,
         organizationId,
         scope: DataSourceScopes.GLOBAL,
       });
+      const dataSource = await this.findOne(datasourceId, manager);
+      return await this.createDataSourceGroupPermissionsForAdmin(dataSource, manager);
     });
   }
 

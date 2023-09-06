@@ -1,7 +1,7 @@
 import React, { createContext, useMemo, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService, appEnvironmentService, authenticationService } from '@/_services';
+import { globalDatasourceService, appEnvironmentService, authenticationService, licenseService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
@@ -16,26 +16,34 @@ export const GlobalDataSourcesContext = createContext({
 });
 
 export const GlobalDatasources = (props) => {
-  const { admin, data_source_group_permissions, group_permissions, super_admin, current_organization_id } =
+  const { admin, data_source_group_permissions, group_permissions, super_admin, current_organization_id, load_app } =
     authenticationService.currentSessionValue;
+  const { isExpired, isLicenseValid } = licenseService.licenseTermsValue;
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [isEditing, setEditing] = useState(true);
+  const [isLoading, setLoading] = useState(true);
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
+  const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
-    if (dataSources?.length == 0) updateSidebarNAV('');
-    else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV(dataSources?.[0].name);
+    if (dataSources?.length == 0) updateSidebarNAV('Databases');
+  }, []);
+
+  useEffect(() => {
+    selectedDataSource
+      ? updateSidebarNAV(selectedDataSource.name)
+      : !activeDatasourceList && updateSidebarNAV('Databases');
 
     //if user selected a new datasource to create one. switch to development env
     if (!selectedDataSource) setCurrentEnvironment(returnDevelopmentEnv(environments));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
+  }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource), activeDatasourceList]);
 
   useEffect(() => {
     if (!canCreateDataSource() && !canReadDataSource() && !canUpdateDataSource() && !canDeleteDataSource()) {
@@ -44,11 +52,14 @@ export const GlobalDatasources = (props) => {
     }
     fetchEnvironments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [admin]);
+  }, [admin, load_app, isExpired, isLicenseValid]);
 
-  const canAnyGroupPerformAction = (action, permissions) => {
-    if (!permissions) {
+  const canAnyGroupPerformAction = (action, permissions, id) => {
+    if (!permissions || isExpired || !isLicenseValid) {
       return false;
+    }
+    if (id) {
+      return permissions.filter((p) => p.data_source_id === id && p[action]).length;
     }
 
     return permissions.some((p) => p[action]);
@@ -62,8 +73,8 @@ export const GlobalDatasources = (props) => {
     return canAnyGroupPerformAction('data_source_create', group_permissions) || super_admin || admin;
   };
 
-  const canUpdateDataSource = () => {
-    return canAnyGroupPerformAction('update', data_source_group_permissions) || super_admin || admin;
+  const canUpdateDataSource = (id) => {
+    return canAnyGroupPerformAction('update', data_source_group_permissions, id) || super_admin || admin;
   };
 
   const canDeleteDataSource = () => {
@@ -75,6 +86,8 @@ export const GlobalDatasources = (props) => {
   }
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
+    toggleDataSourceManagerModal(false);
+    setLoading(true);
     globalDatasourceService
       .getAll(current_organization_id)
       .then((data) => {
@@ -85,18 +98,31 @@ export const GlobalDatasources = (props) => {
         if (!resetSelection && ds) {
           setEditing(true);
           setSelectedDataSource(ds);
+          setActiveDatasourceList('');
           toggleDataSourceManagerModal(true);
-          return;
+          fetchDataSourceByEnvironment(ds?.id, currentEnvironment?.id);
         }
         if (orderedDataSources.length && resetSelection) {
-          setSelectedDataSource(orderedDataSources[0]);
-          toggleDataSourceManagerModal(true);
-          return;
+          if (!canCreateDataSource()) {
+            setActiveDatasourceList('#databases');
+            setSelectedDataSource(null);
+          } else if (!canUpdateDataSource()) {
+            setSelectedDataSource(orderedDataSources[0]);
+            toggleDataSourceManagerModal(true);
+            setActiveDatasourceList('');
+          } else {
+            setActiveDatasourceList('#databases');
+            setSelectedDataSource(null);
+          }
         }
-        toggleDataSourceManagerModal(false);
+        if (!orderedDataSources.length) {
+          setActiveDatasourceList('#databases');
+        }
+        setLoading(false);
       })
       .catch(() => {
         setDataSources([]);
+        setLoading(false);
       });
   };
 
@@ -130,7 +156,7 @@ export const GlobalDatasources = (props) => {
 
   const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
     globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
-      setSelectedDataSource(data);
+      setSelectedDataSource({ ...data });
     });
   };
 
@@ -155,9 +181,22 @@ export const GlobalDatasources = (props) => {
       canUpdateDataSource,
       canDeleteDataSource,
       canCreateDataSource,
+      isLoading,
+      activeDatasourceList,
+      setActiveDatasourceList,
+      setLoading,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing, environments, currentEnvironment]
+    [
+      selectedDataSource,
+      dataSources,
+      showDataSourceManagerModal,
+      isEditing,
+      environments,
+      currentEnvironment,
+      isLoading,
+      activeDatasourceList,
+    ]
   );
 
   return (

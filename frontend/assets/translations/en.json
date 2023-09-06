@@ -150,13 +150,13 @@
             "advanced": "Advanced",
             "preview": "Preview",
             "Save": "Save",
-            "selectDatasource": "Select Datasource",
+            "selectDatasource": "Select Data Source",
             "addDatasource": "Add datasource",
             "dataSourceManager": {
                 "toast": {
                     "success": {
-                        "dataSourceAdded": "Datasource Added",
-                        "dataSourceSaved": "Datasource Saved"
+                        "dataSourceAdded": "Data Source Added",
+                        "dataSourceSaved": "Data Source Saved"
                     },
                     "error": {
                         "noEmptyDsName": "The name of datasource should not be empty"
@@ -264,7 +264,7 @@
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
                     "enterFullName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -976,7 +976,7 @@
             "tip": "Debugger",
             "errors": "Errors",
             "noErrors": "No errors found",
-            "noLogs" : "No logs found",
+            "noLogs": "No logs found",
             "clear": "clear"
         },
         "Comments": {

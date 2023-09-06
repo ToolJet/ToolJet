@@ -23,8 +23,8 @@ const AddGlobalDataSourceButton = () => {
 
   const handleAddClick = () =>
     canCreateDataSource()
-      ? navigate(`/${workspaceId}/global-datasources`)
-      : toast.error("You don't have access to GDS, contact your workspace admin to add datasources");
+      ? navigate(`/${workspaceId}/data-sources`)
+      : toast.error("You don't have access to GDS, contact your workspace admin to add data sources");
   return (
     canCreateDataSource() && (
       <button
@@ -41,7 +41,7 @@ const AddGlobalDataSourceButton = () => {
             />
           </svg>
         </span>
-        <span className="query-manager-btn-name">Add new global datasource</span>
+        <span className="query-manager-btn-name">Add new global data source</span>
       </button>
     )
   );

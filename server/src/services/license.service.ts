@@ -1,16 +1,22 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InstanceSettingsService } from './instance_settings.service';
-import { LICENSE_FIELD, decrypt } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_TYPE, decrypt } from 'src/helpers/license.helper';
 import License from '@ee/licensing/configs/License';
 import { LicenseUpdateDto } from '@dto/license.dto';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
+import { CreateTrialLicenseDto } from '@dto/create-trial-license.dto';
+import { EntityManager } from 'typeorm';
+import got from 'got';
+import { SelfhostCustomerLicense } from 'src/entities/selfhost_customer_license.entity';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class LicenseService {
-  constructor(private instanceSettingsService: InstanceSettingsService) {}
+  constructor(private instanceSettingsService: InstanceSettingsService, private configService: ConfigService) {}
 
-  async getLicenseTerms(type: LICENSE_FIELD | LICENSE_FIELD[]): Promise<any> {
+  async getLicenseTerms(type?: LICENSE_FIELD | LICENSE_FIELD[]): Promise<any> {
     await this.init();
 
     if (Array.isArray(type)) {
@@ -134,5 +140,87 @@ export class LicenseService {
     } catch (err) {
       throw new BadRequestException(err?.response?.message || 'License key is invalid');
     }
+  }
+
+  async generateTrialLicense(createDto: CreateTrialLicenseDto) {
+    const { email, hostname, subpath, companyName, otherData, customerId } = createDto;
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const isExisted = await manager.findOne(SelfhostCustomerLicense, {
+        where: { email },
+      });
+      if (isExisted) {
+        if (isExisted.hostname === hostname && (!subpath || isExisted.subpath === subpath)) return isExisted.licenseKey;
+        throw new ConflictException('License with same email exists');
+      }
+
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 14);
+      const body = {
+        expiry: expiryDate.toISOString().split('T')[0], // 14 days from now
+        apps: '',
+        workspaces: '',
+        type: LICENSE_TYPE.TRIAL,
+        users: {
+          total: 15,
+          editor: 5,
+          viewer: 10,
+          superadmin: 1,
+        },
+        database: {
+          table: '',
+        },
+        domains: [
+          {
+            ...(subpath ? { subpath } : {}),
+            hostname,
+          },
+        ],
+        features: {
+          oidc: true,
+          auditLogs: true,
+          ldap: true,
+          customStyling: true,
+        },
+        meta: {
+          generatedFrom: 'API',
+          customerName: companyName || email,
+          customerId,
+        },
+      };
+
+      const LICENSE_SERVER_URL = this.configService.get<string>('LICENSE_SERVER_URL');
+      const LICENSE_SERVER_SECRET = this.configService.get<string>('LICENSE_SERVER_SECRET');
+
+      /* generate license here */
+      const licenseResponse = await got(LICENSE_SERVER_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${email}:${LICENSE_SERVER_SECRET}`).toString('base64')}`,
+        },
+        json: body,
+      });
+
+      if (!licenseResponse) {
+        throw new Error('Empty response from Licensing');
+      }
+      const { license: licenseKey } = JSON.parse(licenseResponse.body);
+      if (!licenseKey) {
+        throw new Error('License key not generated');
+      }
+
+      /* add new entry to license table */
+      const licenseEntry = manager.create(SelfhostCustomerLicense, {
+        email,
+        hostname,
+        subpath,
+        companyName,
+        customerId,
+        otherData: JSON.stringify(otherData),
+        licenseKey,
+      });
+      await manager.save(SelfhostCustomerLicense, licenseEntry);
+      return licenseKey;
+    });
   }
 }

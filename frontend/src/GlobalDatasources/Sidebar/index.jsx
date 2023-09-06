@@ -1,10 +1,12 @@
 import React from 'react';
-import { CreateDataSourceModal } from '../CreateDataSourceModal';
+import cx from 'classnames';
+import { CreateDataSource } from '../CreateDataSource';
 
-export const Sidebar = ({ updateSelectedDatasource }) => {
+export const Sidebar = ({ updateSelectedDatasource, renderSidebarList }) => {
   return (
-    <div className="global-datasources-sidebar col border-bottom">
-      <CreateDataSourceModal updateSelectedDatasource={updateSelectedDatasource} />
+    <div className={cx('global-datasources-sidebar col border-bottom')}>
+      {renderSidebarList()}
+      <CreateDataSource updateSelectedDatasource={updateSelectedDatasource} />
     </div>
   );
 };
