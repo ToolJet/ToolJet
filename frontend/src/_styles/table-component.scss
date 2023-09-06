@@ -492,7 +492,7 @@
         border: 1px solid var(--indigo9, #3E63DD) !important;
         background: var(--indigo2, #F8FAFF) !important;
         /* Focus rings/Indigo/light */
-        box-shadow: 0px 0px 0px 4px #C6D4F9 !important;
+        box-shadow: 0px 0px 0px 4px var(--indigo6) !important;
       }
     }
     .total-page-number{
@@ -528,9 +528,18 @@
       &:focus-within{
         outline: 0;
         background: var(--slate4, #ECEEF0) !important;
-        box-shadow: 0px 0px 0px 4px #DFE3E6 !important;
+        box-shadow: 0px 0px 0px 4px var(--slate6) !important;
         z-index: 999;
         margin: 4px 0;
+        
+      }
+      &:first-child:focus-within{
+        outline: 0;
+        border-left: 4px solid  var(--slate6);
+      }
+      &:last-child:focus-within{
+        outline: 0;
+        border-right: 4px solid  var(--slate6);
       }
       div:focus-visible{
         outline: 0 !important;
@@ -594,7 +603,10 @@
   }
 }
 .jet-data-table .has-actions{
-  padding: 0;
+  padding: 6px 12px;
+  .justify-content-start{
+    justify-content: center !important;
+  }
 }
 .jet-table.table-component{
   .isResizing{

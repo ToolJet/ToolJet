@@ -1148,7 +1148,7 @@ export function Table({
                                       column.isSorted && (column.isSortedDesc ? '' : '')
                                     } ${column.isResizing && 'resizing-column'} ${
                                       column.Header === 'Actions' && 'has-actions'
-                                    } position-relative`}
+                                    } position-relative ${column.columnType === 'selector' && 'selector-header'}`}
                                   >
                                     <div
                                       className={`${

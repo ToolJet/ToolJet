@@ -20,6 +20,7 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref)
           width: 16,
           height: 16,
         }}
+        onMouseDown={(e) => e.preventDefault()}
       />
     </>
   );
