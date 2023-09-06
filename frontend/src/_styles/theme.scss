@@ -269,6 +269,10 @@ button {
 .emoji-mart-scroll+.emoji-mart-bar {
   display: none;
 }
+.accordion-item{
+  border: solid var(--slate5);
+  border-width: 0px 0px 1px 0px;
+}
 
 .accordion-item,
 .accordion-button {
@@ -277,7 +281,7 @@ button {
 
 .accordion-button {
   font-size: 14px;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   box-shadow: none !important;
   color: var(--slate12) !important;
   padding: 20px 16px !important;
@@ -470,7 +474,7 @@ button {
     padding-top: 8px;
 
     .accordion-item {
-      border: solid rgba(101, 109, 119, 0.16);
+      border: solid var(--slate5);
       border-width: 1px 0px 1px 0px;
     }
 
@@ -3116,9 +3120,11 @@ input:focus-visible {
     margin-bottom: 4px;
   }
 
-  .nav-tabs .nav-link:focus,
   .nav-tabs .nav-link:hover {
-    border-color: transparent !important;
+    border-left-color: transparent !important;
+    border-top-color: transparent !important;
+    border-right-color: transparent !important;
+
   }
 
   .modal-content,
@@ -3160,10 +3166,6 @@ input:focus-visible {
     }
   }
 
-  // .jet-table {
-  //   background-color: #1f2936 !important;
-  // }
-
   .jet-container {
     background-color: #1f2936;
   }
@@ -3171,7 +3173,6 @@ input:focus-visible {
   .nav-tabs .nav-item.show .nav-link,
   .nav-tabs .nav-link.active {
     background-color: #2f3c4c;
-    border-color: transparent !important;
   }
 
 
@@ -4922,7 +4923,7 @@ input[type="text"] {
 // comment styles ::override
 .editor-sidebar {
   .nav-tabs {
-    border-bottom: none !important;
+    border-bottom: 1px solid var(--slate5) !important;
   }
 
   .nav-tabs .nav-link.active {
