@@ -3,7 +3,6 @@ import Select, { components } from 'react-select';
 import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
-import { authenticationService } from '@/_services';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
@@ -13,6 +12,7 @@ import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
+import { canCreateDataSource } from '@/_helpers';
 
 function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
@@ -231,10 +231,9 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
   const navigate = useNavigate();
   const menuListStyles = getStyles('menuList', props);
 
-  const { admin } = authenticationService.currentSessionValue;
   const workspaceId = getWorkspaceId();
 
-  if (admin) {
+  if (canCreateDataSource()) {
     //offseting for height of button since react-select calculates only the size of options list
     menuListStyles.maxHeight = 400 - 48;
   }
@@ -248,7 +247,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu">
         {children}
       </div>
-      {admin && (
+      {canCreateDataSource() && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
             + Add new data source
