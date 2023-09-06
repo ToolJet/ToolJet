@@ -49,7 +49,7 @@ describe("Editor- Global Settings", () => {
     );
     cy.get('[data-cy="label-bg-canvas"]').verifyVisibleElement(
       "have.text",
-      "Background color of canvas"
+      "Canvas background"
     );
     // cy.get('[data-cy="canvas-bg-colour-picker"]').click();
     selectColourFromColourPicker(

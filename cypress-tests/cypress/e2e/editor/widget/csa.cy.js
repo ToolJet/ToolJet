@@ -59,7 +59,7 @@ describe("Editor- CSA", () => {
     selectCSA("form1", "Reset Form");
 
     openEditorSidebar("form1");
-    cy.get('[data-cy="button-to-submit-form-fx-button"]').eq(1).click();
+    cy.get('[data-cy="button-to-submit-form-fx-button"] > svg').click();
     cy.get(
       '[data-cy="button-to-submit-form-input-field"]'
     ).clearAndTypeOnCodeMirror(`{{components.button2`);

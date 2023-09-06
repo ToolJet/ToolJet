@@ -248,7 +248,7 @@ describe("List view widget", () => {
       false
     );
 
-    cy.get('[data-cy="border-radius-fx-button"]').click();
+    cy.get('[data-cy="border-radius-fx-button"] > svg').click();
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
 
     fillBoxShadowParams(

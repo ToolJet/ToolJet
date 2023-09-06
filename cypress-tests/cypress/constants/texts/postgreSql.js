@@ -67,6 +67,6 @@ export const postgreSqlText = {
   buttonTextTestConnection: "Test Connection",
 
   tabAdvanced: "Advanced",
-  labelNoEventhandler: "This query doesn't have any event handlers",
+  labelNoEventhandler: "New event handler",
   toastDSSaved: "Data Source Saved",
 };

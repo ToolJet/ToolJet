@@ -734,9 +734,7 @@ describe("Table", () => {
       "have.text",
       "Table type"
     );
-    cy.get(
-      '[data-cy="table-type-fx-button"][class*="fx-button  unselectable"]'
-    ).click();
+    cy.get('[data-cy="table-type-fx-button"] > svg').click();
     cy.get('[data-cy="table-type-input-field"]').clearAndTypeOnCodeMirror(
       `randomText`
     );
@@ -750,7 +748,7 @@ describe("Table", () => {
     ).click();
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    cy.get('[data-cy="table-type-fx-button"]').click();
+    cy.get('[data-cy="table-type > svg').click();
     cy.get('[data-cy="dropdown-table-type"]').click();
     selectFromSidebarDropdown('[data-cy="dropdown-table-type"]', "Classic");
     cy.forceClickOnCanvas();
@@ -774,9 +772,7 @@ describe("Table", () => {
       "have.text",
       "Cell size"
     );
-    cy.get(
-      '[data-cy="cell-size-fx-button"][class*="fx-button  unselectable"]'
-    ).click();
+    cy.get('[data-cy="cell-size-fx-button"] > svg').click();
 
     cy.get('[data-cy="cell-size-input-field"]').clearAndTypeOnCodeMirror(
       `randomText`
@@ -792,7 +788,7 @@ describe("Table", () => {
 
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    cy.get('[data-cy="cell-size-fx-button"]').click();
+    cy.get('[data-cy="cell-size-fx-button"] >svg').click();
     selectFromSidebarDropdown('[data-cy="dropdown-cell-size"]', "Condensed");
     cy.forceClickOnCanvas();
     cy.get(

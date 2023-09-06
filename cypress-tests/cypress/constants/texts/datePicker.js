@@ -13,6 +13,6 @@ export const datePickerText = {
   labelEnableTimeSection: "Enable time selection?",
   labelDisabledDates: "Disabled dates",
 
-  noEventMessage: "This datepicker doesn't have any event handlers",
+  noEventMessage: "New event handler",
   defaultTime: "12:00 AM",
 };

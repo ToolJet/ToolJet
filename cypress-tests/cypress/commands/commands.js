@@ -283,3 +283,11 @@ Cypress.Commands.add("visitTheWorkspace", (workspaceName) => {
   });
   cy.wait(2000);
 });
+
+Cypress.Commands.add("hideTooltip", () => {
+  cy.get("body").then(($body) => {
+    if ($body.find(".tooltip-inner").length > 0) {
+      cy.get(".tooltip-inner").invoke("css", "display", "none");
+    }
+  });
+});

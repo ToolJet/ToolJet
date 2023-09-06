@@ -10,7 +10,7 @@ export const path = {
 };
 
 export const commonText = {
-  autoSave: "Saved changes",
+  autoSave: "Changes saved",
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
@@ -172,8 +172,10 @@ export const commonText = {
   },
   groupInputFieldLabel: "Select Group",
   documentationLink: "Read Documentation",
-  constantsNameError: "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
-  constantsValueError: "Value should be less than 10000 characters and cannot be empty"
+  constantsNameError:
+    "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
+  constantsValueError:
+    "Value should be less than 10000 characters and cannot be empty",
 };
 
 export const commonWidgetText = {
@@ -202,7 +204,7 @@ export const commonWidgetText = {
   codeMirrorInputTrue: codeMirrorInputLabel(true),
   codeMirrorInputFalse: codeMirrorInputLabel("false"),
 
-  addEventHandlerLink: "Add handler",
+  addEventHandlerLink: "New event handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
   labelDefaultValue: "Default Value",
