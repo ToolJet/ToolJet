@@ -6,23 +6,23 @@ title: Form
 The **Form** component is designed to capture user input. It can act as a parent component to various components such as **Text**, **Text Input**, **Dropdown** and **Buttons** to initiate specific events. In this document, we'll go through all the configuration options for the **Form** component. 
 
 <div style={{textAlign:'center'}}>
-  <img className="screenshot-full" src="/img/widgets/form/form-preview.png" alt="Form" />
+
+<img className="screenshot-full" src="/img/widgets/form/formnew.png" alt="Form" />
+
 </div>
 <br/>
 
 :::caution Restricted components
-To prevent complexity, components like **Kanban**, **Calendar**, **Modal**, **Container**, **ListView**, **Tabs**, and **Form** can't be dragged and dropped inside the Form component. If tried, an error appears: 
-
-`<Restricted component> cannot be used as a child component within the Form.`
+Components like **Kanban**, **Calendar**, **Modal**, **Container**, **ListView**, **Tabs**, and **Form** can't be dropped inside the Form component.
 :::
 
 ## Properties
 
 | Properties | Description | Expected Value |
 | :---------- | :--------------------------- | :------------- |
-| Button To Submit Form | This dropdown can be used to select a **Button** that will be used to submit the form. | Any button that is a child component inside the **Form** component
-| Loading State | Loading state can be used to show a spinner while the content is loaded. Loading state is commonly used with the **isLoading** property of queries. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
-| Use Custom Schema | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on `Fx` to programmatically enable the **JSON schema**|
+| **Button To Submit For**m | This dropdown can be used to select a **Button** that will be used to submit the form. | Any button that is a child component inside the **Form** component
+| **Loading State** | Loading state can be used to show a spinner while the content is loaded. Loading state is commonly used with the **isLoading** property of queries. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
+| **Use Custom Schema** | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on `Fx` to programmatically enable the **JSON schema**|
 
 :::info
 If you need a step-by-step guide on using a **Form** component, you can checkout **[this](/docs/how-to/use-form-component)** guide.  
@@ -43,9 +43,13 @@ This **[list](/docs/widgets/form#custom-schema-examples)** provides examples of 
 ```js
 {{
   {
-    title: // Provide A Title for the Form
-    properties: // Provide Schema for Components
-    submitButton: // Properties of Submit Button
+    title: '', // Provide title for Form
+    properties: {
+
+    }, // Provide schema of the components that will be inside the form
+    submitButton: {
+
+    } // Provide schema of the submit button
   }
 }}
 ```
@@ -56,8 +60,8 @@ To add an event to the **Form** component, go to the **Events** section and clic
 
 | Event      | Description  |
 |:------------|:-----------------|
-| On submit  | **On submit** event is triggered when the submit button on the form component is clicked. |
-| On invalid | **On invalid** event is triggered when the input on the form is invalid.                  |
+| **On submit**  | **On submit** event is triggered when the submit button on the form component is clicked. |
+| **On invalid** | **On invalid** event is triggered when the input on the form is invalid.                  |
 
 
 :::info
@@ -67,9 +71,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 ## General
 <font size="4"><b>Tooltip</b></font>
 
-A Tooltip is commonly used to provide additional information about an element. This information becomes visible when the user hovers the mouse pointer over the respective component.
-
-In the input field under Tooltip, you can enter some text and the component will show the specified text as a tooltip when it is hovered over.
+A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/widgets/form/tooltip.png" alt="Tooltip Example" />
@@ -91,16 +93,16 @@ Use this toggle to show or hide the component in the mobile view. You can dynami
 
 | Style      | Description | Expected Value |
 | :----------- | :----------- | :-----------|
-| Background color |  Changes the background color of the form. | Hex color code/choose a color using the color picker|
-| Border radius | Adjusts the roundness of the component's corners. | Numeric value|
-| Border color |  Changes the border color of the component.| Hex color code/choose a color using the color picker|
-| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible.| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
-| Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| **Background color** |  Changes the background color of the form. | Hex color code/choose a color using the color picker|
+| **Border radius** | Adjusts the roundness of the component's corners. | Numeric value|
+| **Border color** |  Changes the border color of the component.| Hex color code/choose a color using the color picker|
+| **Visibility** | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible.| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| **Disable** | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
 
 
 ## General
-<font size="4"><b>Box Shadow</b></font>
 
+<font size="4"><b>Box Shadow</b></font>
 
 The **Box Shadow** property is used to add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow.
 
@@ -112,7 +114,7 @@ The **Box Shadow** property is used to add shadow effects around a component's f
 
 | Variables      | Description | Expected Value
 | :----------- | :----------- | :-------- |
-| data | This variable holds the data of all the components that are nested inside the form component. | You can access the value dynamically using JS. For example, `{{components.form1.data.numberinput1.value}}`
+| **data** | This variable holds the data of all the components that are nested inside the form component. | You can access the value dynamically using JS. For example, `{{components.form1.data.numberinput1.value}}`
 
 ## Component Specific Actions (CSA)
 
@@ -120,8 +122,8 @@ Following actions of form component can be controlled using the Component Specif
 
 | Actions     | Description |
 | :----------- | :----------- |
-| submitForm | Submits the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.submitForm()` |
-| resetForm | Resets the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.resetForm()` |
+| **submitForm** | Submits the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.submitForm()` |
+| **resetForm** | Resets the form data via a **[component-specific action](/docs/actions/control-component/)** within any event handler. Additionally, there is an option to employ a RunJS query to execute component-specific actions such as `await components.form1.resetForm()` |
 
 ## Custom Schema Examples
 - **[Datepicker](#datepicker)**
@@ -145,106 +147,46 @@ Following actions of form component can be controlled using the Component Specif
 Properties that can be used in Datepicker schema are:
 
 ```js
-datepicker: {
-    type: 'datepicker',
+datepicker1: {    // component name
+    type: 'datepicker', // define the type of component
     styles: {
-        borderRadius: '',
-        disabledState: false,
-        visibility: true
+        borderRadius: 5, // define the border radius as a numeric value
+        disabled: false,  // set true to disable the component or false to enable it
+        visibility: 'true' // set 'true' to show the component or 'false' to hide it
     },
-    validation: {
-        customRule: ''
-    },
-    defaultValue: '',
-    disabledDates: '',
-    enableDate: '',
-    enableTime: '',
-    format: ''
+    value: '09/09/2023',  // set the default date for the datepicker
+    disabledDates: ['08/09/2023'], // provide the dates in an array that you want to disable 
+    enableTime: true, // set true to enable time or false to disable it
+    format: 'DD/MM/YYYY', // set the format of the date
+    label: 'Select a date' // set the label of the component
 }
-```
-
-**Example**
-
-```js
-{{{
-    title: "User registration form",
-    properties: {
-      "Select the date": {
-        type: "datepicker",
-        styles: {
-            borderRadius: 5,
-            disabledState: false,
-            visibility: true
-        },
-      }
-    },
-    submitButton: {
-      value: "Submit"
-    }
-}}}
 ```
 
 <div style={{textAlign:'center'}}>
   <img className="screenshot-full" src="/img/widgets/form/datepickerschema.png" alt="Form custom schema" />
 </div>
 
-Not that the "Select the date" key in the above example is passed with double-quotes. In JavaScript, any key with space needs to be wrapped in double-quotes.
-```js
-let employee = {
-  name: "Paul",
-  age: 50,
-  "likes birds": true  // property names with space must be quoted
-}
-```
-
 ### Number Input
 
 **Properties**
 
 ```js
-numberinput: {
-    type: 'number',
-    styles: {
-        backgroundColor: '#f6f5ff',
-        borderRadius: '80',
-        textColor: 'red',
-        borderColor: 'blue',
-        disabled: false,
-        visibility: false
-    },
-    value: 10,
-    maxValue: 12,
-    minValue: 6,
-    placeholder: 'test'
-}
-```
-
-**Example**
-
-```js
-{{{
-    title: "User registration form",
-        properties: {
-            'Choose the date': {
-                type: 'number',
-                styles: {
-                    backgroundColor: '#f6f5ff',
-                    borderRadius: '5',
-                    textColor: 'red',
-                    borderColor: 'black',
-                    disabled: false,
-                    visibility: false
-                },
-                value: 50,
-                maxValue: 100,
-                minValue: 6,
-                placeholder: 'Select the quantity'
-            }
-        },
-        "submitButton": {
-            "value": "Submit"
-        }
-}}}
+numberInput:{ // component name
+  type: 'number', // define the type of component
+  styles: {
+        backgroundColor: '#f6f5ff', // set the background color of the component by providing a hex color code
+        borderRadius: 20, // provide a numeric value to set the border radius
+        textColor: 'red', // set the text color of the component by providing a hex color code
+        borderColor: 'blue', // set the border color of the component by providing a hex color code
+        disabled: false, // set true to disable the component or false to enable it
+        visibility: 'true' // set 'true' to show the component or 'false' to hide it
+ },
+    value: 10, // set the default value of the number input
+    maxValue: 12, // set the maximum value of the number input
+    minValue: 6, // set the minimum value of the number input
+    placeholder: 'test', // set the placeholder text of the number input
+    label: 'Number Input' // set the label of the component
+},
 ```
 
 <div style={{textAlign:'center'}}>
@@ -258,37 +200,22 @@ numberinput: {
 **Properties**
 
 ```js
-password:{
-   type:"password",
-   style:{
-      "backgroundColor":"green",
-      "borderRadius":"60",
-      "disabled":false,
-      "visibility":true
+passwordInput1:{ // component name
+  type:"password", // define the type of component
+  styles:{
+      backgroundColor: '#f6f5ff', // set the background color of the component by providing a hex color code
+      borderRadius: 10, // provide a numeric value to set the border radius
+      disabled: false, // set true to disable the component or false to enable it
+      visibility: 'true' // set 'true' to show the component or 'false' to hide it
    },
    validation:{
-      customRule:"",
-      maxLength:"",
-      minLength:"",
-      regex:""
-   },
-   placeholder:"enter a password"
-}
-```
-
-**Example**
-
-```js
-"Enter the Password":{
-               "type":"password",
-               "styles":{
-                  "backgroundColor":"white",
-                  "borderRadius":"5",
-                  "disabled":false,
-                  "visibility":true
-               },
-               "placeholder":"enter a password"
-            }
+      maxLength: 9, // set the maximum length of the password
+      minLength: 5, // set the minimum length of the password
+      regex: '^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$' // set the regex for the password
+},
+   placeholder:"Enter a password", // set the placeholder text of the password input
+   label: '' // set the label of the component
+},
 ```
 
 <div style={{textAlign:'center'}}>
@@ -303,55 +230,17 @@ password:{
 **Properties**
 
 ```js
-checkbox:{
-  type: 'checkbox',
+checkbox1:{ // component name
+  type: 'checkbox', // define the type of component
   styles: {
-    checkboxColor: 'red',
-    disabled: false,
-    textColor: 'red',
-    visibility: false
+    checkboxColor: 'red', // set the color of the checkbox by providing a hex color code
+    disabled: false, // set true to disable the component or false to enable it
+    textColor: 'red', // set the text color of the component by providing a hex color code
+    visibility: 'true' // set 'true' to show the component or 'false' to hide it
   },
-  value: true,
-  label: 'TJ checkox'
-}
-```
-
-**Example**
-
-```js
-"checkbox1":{
-   "type":"checkbox",
-   "styles":{
-      "checkboxColor":"red",
-      "disabled":false,
-      "textColor":"red",
-      "visibility":false
-   },
-   "value":true,
-   "label":"Product 1"
+  value: false, // set the default value of the checkbox
+  label: 'Checkbox' // set the label of the component
 },
-"checkbox2":{
-   "type":"checkbox",
-   "styles":{
-      "checkboxColor":"red",
-      "disabled":false,
-      "textColor":"red",
-      "visibility":false
-   },
-   "value":false,
-   "label":"Product 2"
-},
-"checkbox3":{
-   "type":"checkbox",
-   "styles":{
-      "checkboxColor":"red",
-      "disabled":false,
-      "textColor":"red",
-      "visibility":false
-   },
-   "value":true,
-   "label":"Product 3"
-}
 ```
 
 <div style={{textAlign:'center'}}>
@@ -365,39 +254,17 @@ checkbox:{
 **Properties**
 
 ```js
-toggle:{
-  type: 'toggle',
+toggleswitch1:{ // component name
+  type: 'toggle',  // define the type of component
   styles: {
-    textColor: 'red',
-    disabled: false,
-    visibility: true,
-    toggleSwitchColor: 'red'
+    textColor: 'blue', // set the text color of the component by providing a hex color code
+    disabled: false, // set true to disable the component or false to enable it
+    visibility: 'true', // set 'true' to show the component or 'false' to hide it
+    toggleSwitchColor: 'red' // set the color of the toggle switch by providing a hex color code
   },
-  value: true,
-  label: 'Toggle Switch'
+  value: true, // set the default value of the toggle switch
+  label: 'Toggle switch' // set the label of the component
  },
-```
-
-**Example**
-
-```js
-{{{title:"User registration form",
-         properties:{
-         toggle1:{
-  type: 'toggle',
-  styles: {
-    textColor: 'red',
-    disabled: false,
-    visibility: true,
-    toggleSwitchColor: 'red'
-  },
-  value: true,
-  label: 'Enable this option?'
- },
-         },
-         "submitButton":{
-            "value":"Submit"
-         }}}}
 ```
 
 <div style={{textAlign:'center'}}>
@@ -411,31 +278,17 @@ toggle:{
 **Properties**
 
 ```js
-textarea:{
-  type: 'textarea',
+textArea1:{ // component name
+  type: 'textarea', // define the type of component
   styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: 45
+    disabled: false, // set true to disable the component or false to enable it
+    visibility: 'true', // set 'true' to show the component or 'false' to hide it
+    borderRadius: 20 // provide a numeric value to set the border radius
   },
-  value: 'xyz',
-  placeholder: 'Enter text here'
- }
-```
-
-**Example**
-
-```js
-Enter the text here':{
-  type: 'textarea',
-  styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: 5
-  },
-  value: 'This is a sample text',
-  placeholder: 'Enter text here'
- }
+  value: 'This is a text area', // set the default value of the text area
+  placeholder: 'Enter text here',   // set the placeholder text of the text area
+  label: 'Text Area' // set the label of the component
+ },
 ```
 
 <div style={{textAlign:'center'}}>
@@ -449,40 +302,18 @@ Enter the text here':{
 **Properties**
 
 ```js
-daterangepicker: {
-  type: 'daterangepicker',
+daterangepicker1: { // component name
+  type: 'daterangepicker', // define the type of component
   styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: 100
+    disabled: true, // set true to disable the component or false to enable it  
+    visibility: 'true', // set 'true' to show the component or 'false' to hide it
+    borderRadius: 5 // provide a numeric value to set the border radius
   },
-  defaultEndDate: '12/04/2022',
-  defaultStartDate: '1/04/2022',
-  format: 'DD/MM/YYYY'
-}
-```
-
-**Example**
-
-```js
-{{{
-         "title":"User registration form",
-         "properties":{
-         'Select the range': {
-  type: 'daterangepicker',
-  styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: 100
-  },
-  defaultEndDate: '12/04/2022',
-  defaultStartDate: '16/01/2020',
-  format: 'DD/MM/YYYY'
-}
-         },
-         "submitButton":{
-            "value":"Submit"
-         }}}}
+  defaultEndDate: '12/04/2022', // set the default end date of the date range picker
+  defaultStartDate: '1/04/2022', // set the default start date of the date range picker
+  format: 'DD/MM/YYYY', // set the format of the date
+  label: 'Select a date range' // set the label of the component
+},
 ```
 
 <div style={{textAlign:'center'}}>
@@ -496,37 +327,20 @@ daterangepicker: {
 **Properties**
 
 ```js
-{
-  type: 'multiselect',
+multiselect1: { // component name
+  type: 'multiselect', // define the type of component
   styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: 2
+    disabled: false, // set true to disable the component or false to enable it
+    visibility: 'true', // set 'true' to show the component or 'false' to hide it
+    borderRadius: 5 // provide a numeric value to set the border radius
   },
-  displayValues: ["one","two","three"],
-  label: 'Select options',
-  value: [2,3],
-  values: [1,2,3],
-  showAllOption: false
-}
-```
-
-**Example**
-
-```js
-'Select an option':{
-  type: 'multiselect',
-  styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: 2
-  },
-  displayValues: ["one","two","three"],
-  label: 'Select options',
-  value: [2,3],
-  values: [1,2,3],
-  showAllOption: false
-}
+  displayValues: ["one","two","three"], // set the value for option labels in an array format
+  label: 'Select options', // set the label of the component
+  value: [2,3], // set the default value(s) in an array
+  values: [1,2,3], // set the values in an array
+  showAllOption: true, // set true to show the 'All' option in the multiselect or false to hide it
+  label: 'Select options of your choice' // set the label of the component
+},
 ```
 
 <div style={{textAlign:'center'}}>
@@ -540,39 +354,20 @@ daterangepicker: {
 **Properties**
 
 ```js
-{
-  type: 'starrating',
+starRating1: { // component name
+  type: 'starrating', // define the type of component
   styles: {
-    disabled: false,
-    visibility: true,
-    textColor: 'yellow',
-    labelColor: 'red'
+    disabled: false, // set true to disable the component or false to enable it
+    visibility: 'true', // set 'true' to show the component or 'false' to hide it
+    textColor: 'yellow', // set the color of the stars by providing a hex color code
+    labelColor: 'red' // set the color of the label by providing a hex color code
   },
-  allowHalfStar: false,
-  defaultSelected: 0,
-  label: 'Rate the item',
-  maxRating: 6,
-  tooltips: ['one'],
-}
-```
-
-**Example**
-
-```js
-'Select the rating':{
-  type: 'starrating',
-  styles: {
-    disabled: false,
-    visibility: true,
-    textColor: 'gold',
-    labelColor: 'red'
-  },
-  allowHalfStar: false,
-  defaultSelected: 0,
-  label: 'Rate the item',
-  maxRating: 6,
-  tooltips: ['one'],
-}
+  allowHalfStar: true, // set true to allow selection of half star rating or false to disable it
+  defaultSelected: 4.5, // set the default value of the star rating
+  maxRating: 10, // set the maximum rating 
+  tooltips: ['one','two','three','four'], // set the tooltips for each star in an array
+  label: 'Select a rating' // set the label of the component
+},
 ```
 
 <div style={{textAlign:'center'}}>
@@ -586,48 +381,24 @@ daterangepicker: {
 **Properties**
 
 ```js
-{
-  type: 'filepicker',
+filepicker1: { // component name
+  type: 'filepicker', // define the type of component
   styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: 10
+    visibility: 'true', // set 'true' to show the component or 'false' to hide it
+    borderRadius: 10 // provide a numeric value to set the border radius
   },
-  enableDropzone: true,
-  enableMultiple: true,
-  enablePicker: true,
-  fileType: '',
-  instructionText: 'Select files',
-  maxFileCount: 0,
-  maxSize: '',
-  minSize: '',
-  parseContent: false,
-  parseFileType: ''
-}
+  enableMultiple: true, // set true to enable multiple file selection or false to disable it
+  fileType: '*/*', // set the mime file type
+  instructionText: 'Click here to select files', // set the instruction text of the file picker
+  maxFileCount: 5, // set the maximum number of files that can be selected
+  maxSize: 6000000, // set the maximum size of the file in bytes
+  minSize: 25, // set the minimum size of the file in bytes
+  parseContent: true, // set true to parse the content of the file or false to disable it
+  parseFileType: 'csv', // set the file type to parse e.g. csv, text, xlsx
+  label: 'Select a file' // set the label of the component
+},
 ```
 
-**Example**
-
-```js
-filepicker1:{
-  type: 'filepicker',
-  styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: 10
-  },
-  enableDropzone: true,
-  enableMultiple: true,
-  enablePicker: true,
-  fileType: '',
-  instructionText: 'Select files',
-  maxFileCount: 0,
-  maxSize: '',
-  minSize: '',
-  parseContent: false,
-  parseFileType: ''
-}
-```
 
 <div style={{textAlign:'center'}}>
 
@@ -640,47 +411,23 @@ filepicker1:{
 **Properties**
 
 ```js
-{
-    type: 'textinput',
-    value: 'Maria',
-    placeholder: 'enter first name here',
-    label: 'First name',
+textinput1: { // component name
+    type: 'textinput', // define the type of component
+    value: 'Random text', // set the default value of the text input 
+    placeholder: 'enter first name here', // set the placeholder text of the text input
+    label: 'First name', // set the label of the component
     validation: {
-      maxLength: 6,
-      minLength: 2
+      maxLength: 6, // set the maximum length validation of the text input
     },
     styles: {
-      backgroundColor: 'red',
-      borderRadius: '',
-      errorTextColor: '',
-      disabled: false,
-      visibility: true,
-      textColor: 'black'
+      backgroundColor: 'red', // set the background color of the component by providing a hex color code
+      borderRadius: 20, // provide a numeric value to set the border radius
+      errorTextColor: 'green', // set the color of the error text by providing a hex color code
+      disabled: false, // set true to disable the component or false to enable it
+      visibility: false, // set 'true' to show the component or 'false' to hide it
+      textColor: 'yellow' // set the text color by providing a hex color code
     },
     },
-```
-
-**Example**
-
-```js
-textinput1: {
-    type: 'textinput',
-    value: 'Maria',
-    placeholder: 'enter first name here',
-    label: 'First name',
-    validation: {
-      maxLength: 6,
-      minLength: 2
-    },
-    styles: {
-      backgroundColor: 'white',
-      borderRadius: '',
-      errorTextColor: '',
-      disabled: false,
-      visibility: true,
-      textColor: 'black'
-    }
-    }
 ```
 
 <div style={{textAlign:'center'}}>
@@ -694,39 +441,20 @@ textinput1: {
 **Properties**
 
 ```js
-{
-  type: 'dropdown',
-  displayValues: [1, 2, 3],
-  values: ['one', 'two', 'three'],
-  loading: false,
-  value: 2,
-  label: 'dropdown test',
+dropdown1: { // component name
+  type: 'dropdown', // define the type of component
+  displayValues: [1, 2, 3], // set the value for option labels in an array format
+  values: ['one', 'two', 'three'], // set the option labels in an array
+  loading: false, // set true to show the loading state or false to hide it
+  value: 'two', // set the default selected value of the dropdown
+  label: 'Select a number', // set the label of the component
   styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: '',
-    justifyContent: 'start'
+    disabled: false, // set true to disable the component or false to enable it
+    visibility: 'true', // set 'true' to show the component or 'false' to hide it
+    borderRadius: 5, // provide a numeric value to set the border radius
+    justifyContent: 'end' // set the alignment of the dropdown options to start, center or end
   }
-}
-```
-
-**Example**
-
-```js
-dropdown1: 
-         {
-  type: 'dropdown',
-  displayValues: [1, 2, 3],
-  values: ['one', 'two', 'three'],
-  loading: false,
-  value: 2,
-  label: 'dropdown test',
-  styles: {
-    disabled: false,
-    visibility: true,
-    borderRadius: '',
-    justifyContent: 'start'
-  }
+},
 ```
 
 <div style={{textAlign:'center'}}>
@@ -740,41 +468,20 @@ dropdown1:
 **Properties**
 
 ```js
-{    type:'button'
-    "text": "Submit",
-    "styles": {
-      "backgroundColor": "blue",
-      "textColor": "white",
-      "borderRadius": "40",
-      "borderColor": "black",
-      "loaderColor": "gray",
-      "visibility": true,
-      "disabledState": false
+button1: { // component name
+  type:'button', // define the type of component
+  value: 'Submit', // set the button text
+  label: '', // set the label of the component, set the value null i.e '' to hide the label
+  styles: {
+      backgroundColor: 'blue', // set the background color of the button by providing a hex color code
+      textColor: 'white', // set the text color of the button by providing a hex color code
+      borderRadius: 5, // provide a numeric value to set the border radius
+      borderColor: 'black', // set the border color of the button by providing a hex color code
+      loaderColor: 'gray', // set the color of the loader on the button by providing a hex color code
+      visibility: 'true', // set 'true' to show the component or 'false' to hide it
+      disabled: true // set true to disable the component or false to enable it
+    }
     },
-```
-
-**Example**
-
-```js
-{{{
-"title":"User registration form",
-         "properties":{
-         'Open the page':{
-         type:'button',
-         value: "Sample text",
-         styles:{
-      "backgroundColor": "blue",
-      "textColor": "white",
-      "borderRadius": "40",
-      "borderColor": "black",
-      "loaderColor": "gray",
-      "visibility": true,
-      "disabledState": false
-    },
-    },},
-         "submitButton":{
-            "value":"Submit"
-         }}}}
 ```
 
 <div style={{textAlign:'center'}}>
@@ -788,38 +495,17 @@ dropdown1:
 **Properties**
 
 ```js
-{
-  type: 'text',
-  value: 'maria',
+text1: { // component name
+  type: 'text', // define the type of component
+  value: 'This is a text component', // set the value of the text component
+  label: '', // set the label of the component, set the value null i.e '' to hide the label
   styles: {
-    backgroundColor: '#f6f5ff',
-    textColor: 'black',
-    fontSize: '',
-    fontWeight: ''
+    backgroundColor: '#f6f5ff', // set the background color of the text by providing a hex color code
+    textColor: 'red', // set the text color by providing a hex color code
+    fontSize: 24, // set the font size of the text
+    fontWeight: 30 // set the font weight of the text
   }
-}
-```
-
-**Example**
-
-```js
-{{{
-"title":"User registration form",
-         "properties":{
-         text1:{
-  type: 'text',
-  value: 'This is text component',
-  styles: {
-    backgroundColor: '#f6f5ff',
-    textColor: 'black',
-    fontSize: '',
-    fontWeight: ''
-  },
-  },
-    },
-         "submitButton":{
-            "value":"Submit"
-         }}}}
+},
 ```
 
 <div style={{textAlign:'center'}}>
@@ -833,40 +519,18 @@ dropdown1:
 **Properties**
 
 ```js
-radio: {
-  type: 'radio',
+radioButton1: { // component name
+  type: 'radio', // define the type of component
   styles: {
-    textColor: 'black',
-    disabled: false,
-    visibility: true
+    textColor: 'black', // set the text color of the radio option by providing a hex color code
+    disabled: false, // set true to disable the component or false to enable it
+    visibility: 'true' // set 'true' to show the component or 'false' to hide it 
   },
-  displayValues: ['option 1', 'option 2', 'option 3'],
-  label: 'Radio Buttons',
-  value: 1,
-  values: [1,2,3],
-}
-```
-
-**Example**
-
-```js
-{{{
-"title":"User registration form",
-         "properties":{radio: {
-  type: 'radio',
-  styles: {
-    textColor: 'black',
-    disabled: false,
-    visibility: true
-  },
-  displayValues: ['option 1', 'option 2', 'option 3'],
-  label: 'Radio Buttons',
-  value: 1,
-  values: [1,2,3],
-},},
-         "submitButton":{
-            "value":"Submit"
-         }}}}
+  displayValues: ['option 1', 'option 2', 'option 3'], // set the value for labels in an array format
+  label: 'Radio Buttons', // set the label of the component
+  value: 2, // set the default selected value of the radio button
+  values: [1,2,3], // set the valuees in an array
+},
 ```
 
 <div style={{textAlign:'center'}}>
