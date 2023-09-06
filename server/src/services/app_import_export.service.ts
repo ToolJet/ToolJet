@@ -506,12 +506,19 @@ export class AppImportExportService {
         (dso) => dso.environmentId === defaultAppEnvironmentId
       );
       for (const otherEnvironmentId of otherEnvironmentsIds) {
-        await this.createDatasourceOption(
-          manager,
-          defaultEnvDsOption.options,
-          otherEnvironmentId,
-          dataSourceForAppVersion.id
-        );
+        const existingDataSourceOptions = await manager.findOne(DataSourceOptions, {
+          where: {
+            dataSourceId: dataSourceForAppVersion.id,
+            environmentId: otherEnvironmentId,
+          },
+        });
+        !existingDataSourceOptions &&
+          (await this.createDatasourceOption(
+            manager,
+            defaultEnvDsOption.options,
+            otherEnvironmentId,
+            dataSourceForAppVersion.id
+          ));
       }
     }
 

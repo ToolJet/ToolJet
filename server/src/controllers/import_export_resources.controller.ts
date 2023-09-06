@@ -46,7 +46,11 @@ export class ImportExportResourcesController {
       throw new ForbiddenException('You do not have create app permissions to perform this action');
     }
 
-    if (!gdsAbility.can('createGlobalDataSource', DataSource)) {
+    const importHasGlobalDatasource = importResourcesDto.app[0]?.definition?.appV2?.dataSources.find(
+      (ds) => ds.scope === 'global'
+    );
+
+    if (importHasGlobalDatasource && !gdsAbility.can('createGlobalDataSource', DataSource)) {
       throw new ForbiddenException('You do not have create datasource permissions to perform this action');
     }
 
