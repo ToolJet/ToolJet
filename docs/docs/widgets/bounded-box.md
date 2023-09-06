@@ -5,7 +5,7 @@ title: Bounded Box
 
 # Bounded box
 
-A bounded box is an infinitely customizable image annotation component that can be used to select and tag areas of an image. It supports selection using specific points (landmarking) or draw rectangular areas (bounding boxes).
+A **bounded box** is an infinitely customizable image annotation component that can be used to select and tag areas within an image. It supports selection using specific points (landmarking) or drawing rectangular areas (bounding boxes). It can be used to create datasets for machine learning models or to annotate images for other purposes.
 
 <div style={{textAlign: 'center'}}>
 
@@ -21,24 +21,29 @@ A bounded box is an infinitely customizable image annotation component that can 
 
 </div>
 
-### Image URL
+<br/>
 
-The bounding box requires an image to be displayed. Enter the URL or image data to show it on the component.
+| **Property** | **Description** | **Expected value** |
+| :----------- | :----------- | :----------------- |
+| **Image URL** | The URL or image data to show it on the component. | Get the image URL dynamically from database: **{{queries.queryname.data[0].url}}** or use [image's base64 data](/docs/how-to/loading-image-pdf-from-db/) |
+| **Default value** | The data that will load the default bounded boxes over the image when the app is loaded. | Array of objects. Check the [Default value](#default-value) data properties |
+| **Selector** | The bounded box support selection using rectangle or point. | Click **Fx** to set the value `RECTANGLE` or `POINT` |
+| **List of labels** | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}` |
 
-### Default value
+#### Default value
 
-Provide the data that will load the default bounded boxes over the image when the app is loaded. The data is expected to be an array of objects format.
+Provide the data that will load the default bounding boxes over the image when the app is loaded. The data is expected to be an array of objects format.
 
-| Property | Values |
-| -------- | ------ |
-| type | Sets the type of the bounded box. The value can be `RECTANGLE` or `POINT`. |
-| width | Sets the width of the bounded box in pixels. The value should be a number. If the `type` value is `POINT`, set it to `0`. |
-| height | Sets the height of the bounded box in pixels. The value should be a number. If the `type` value is `POINT`, set it to `0`. |
-| x | Sets the x-coordinate position of the bounded box in the image. It expects a numerical value representing the horizontal position. |
-| y | Sets the y-coordinate position of the bounded box in the image. It expects a numerical value representing the vertical position. |
-| text | Sets the text value of the bounded box. It should be one of the labels provided in the **[List of labels](#list-of-labels)** property. |
+| **Property** | **Description** | **Expected value** |
+| :-------- | :------ | :-------- |
+| **type** | Sets the type of the bounded box. | `RECTANGLE` or `POINT` |
+| **width** | Sets the width of the bounded box in pixels. | Numeric value. If the `type` value is `POINT`, set it to `0` |
+| **height** | Sets the height of the bounded box in pixels. | Numeric value. If the `type` value is `POINT`, set it to `0` |
+| **x** | Sets the x-coordinate(horizontal) position of the bounded box in the image. | Numerical value ex: `41` |
+| **y** | Sets the y-coordinate(vertical) position of the bounded box in the image. | Numerical value ex: `22` |
+| **text** | Sets the text value of the bounded box. | It should be one of the labels provided in the **[List of labels](#properties)** property |
 
-Example of default values:
+**Example of default values:**
 
 ```js
 [
@@ -61,31 +66,21 @@ Example of default values:
 ]
 ```
 
-### Selector
-
-The bounded box support selection using:
-- **Rectangle**
-- **Point**
-
-You can also click on the **Fx** to set the value programmatically.
-
-### List of labels
-
-This property will include the list of label that will be displayed in the dropdown while selection in the bounded-box. This property requires the label in array format.
-
 ## Events
 
-To add an event to a bounded-box, click on the component handle to open its properties on the right. Go to the **Events** accordion and click on **Add handler**.
+Events are actions that can be triggered programmatically when the user interacts with the component. Click on the component handle to open its properties on the right. Go to the **Events** accordion and click on **+ Add handler**.
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
-<img className="screenshot-full" src="/img/widgets/bounded-box/onchange.png" alt="Button group events" width="600"/>
+<img className="screenshot-full" src="/img/widgets/bounded-box/event1.png" alt="Bounded box events" width="600"/>
 
 </div>
 
-### On change
+<br/>
 
-On change event is triggered when the label from the dropdown in the selector is changed in the bounded box. Just like any other event on ToolJet, you can set multiple handlers for on-change event.
+| **Event** | **Description** |
+| :----------- | :----------- |
+| **On change** | Triggered when the label from the dropdown in the selector is changed in the bounded box. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
@@ -93,60 +88,44 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 ## General
 
-### Tooltip
+#### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Hovering over the component will display the string as the tooltip.
+<div style={{textAlign: 'left'}}>
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/bounded-box/tooltip.png" alt="Button group Tooltip" width="300"/>
+<img className="screenshot-full" src="/img/widgets/bounded-box/tooltip1.png" alt="Bounded box Tooltip"/>
 
 </div>
 
 ## Layout
 
-<div style={{textAlign: 'center'}}>
+#### Show on desktop
+Use this toggle to show or hide the component in the desktop view. You can dynamically configure the value by clicking on **`Fx`** and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to **`{{true}}`** or **`{{false}}`**.
 
-<img className="screenshot-full" src="/img/widgets/button-group/layout.png" alt="Button group layout" width="300"/>
-
-</div>
-
-| Layout  | description | Expected value |
-| ----------- | ----------- | ------------ |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to display mobile view. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+#### Show on mobile
+Use this toggle to show or hide the component in the mobile view. You can dynamically configure the value by clicking on **`Fx`** and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to **`{{true}}`** or **`{{false}}`**.
 
 ## Styles
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/bounded-box/styles.png" alt="Bounded box properties" width="300"/>
-
-</div>
-
-| Style      | Description |
-| ----------- | ----------- | 
-| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not be visible when the app is loaded. By default, it's set to `{{true}}`. |
-| Disable | Toggle on to disable the widget. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the component will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
-
-:::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
-:::
+| Style    | Description | Expected value |
+| :----------- | :----------- | :----------- |
+| **Visibility** | Toggle on or off to control the visibility of the component when the app is loaded |  **`{{true}}`** or **`{{false}}`**, By default, it's set to `{{true}}` |
+| **Disable** | Toggle on to disable the component. | **`{{true}}`** or **`{{false}}`**, By default, it's set to `{{false}}` |
+| **Box shadow** | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x,y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040` |
 
 ## Exposed variables
 
 | variable    | Description |
-| ----------- | ----------- | 
-| annotations | This variable is an array of objects, where each object represents an annotation added to an image. The object contains the following keys: type, x, y, width, height, text, and id |
-| annotations.`type` | There are two types of annotations: Rectangle and Point |
-| annotations.`x` | coordinates on x axis  |
-| annotations.`y` | coordinates on y axis |
-| annotations.`width` | width of annotation |
-| annotations.`height` | height of annotation |
-| annotations.`text` | label selected for the annotation |
-| annotations.`id` | unique id of the annotation (system generated) |
+| :----------- | :----------- | 
+| **annotations** | This variable is an array of objects, where each object represents an annotation added to an image. The object contains the following keys: type, x, y, width, height, text, and id |
+| **annotations.`type`** | There are two types of annotations: `RECTANGLE` and `POINT` |
+| **annotations.`x`** | coordinates on the x axis  |
+| **annotations.`y`** | coordinates on the y axis |
+| **annotations.`width`** | width of the annotation |
+| **annotations.`height`** | height of the annotation |
+| **annotations.`text`** | label selected for the annotation |
+| **annotations.`id`** | unique ID of the annotation (system generated) |
 
 The values can be accessed dynamically using `{{components.boundedbox1.annotations[0].text}}` or `{{components.boundedbox1.annotations[1].width}}`
 
