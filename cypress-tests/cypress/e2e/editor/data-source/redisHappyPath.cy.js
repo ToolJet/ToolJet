@@ -22,7 +22,7 @@ describe("Data source Redis", () => {
     cy.appUILogin();
   });
 
-  it("Should verify elements on connecti Redison form", () => {
+  it("Should verify elements on connection Redis form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 

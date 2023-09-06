@@ -29,8 +29,6 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -97,10 +95,10 @@ describe("Data sources", () => {
       "have.text",
       "Invalid URL"
     );
-    deleteDatasource(`cypress-${data.lastName}-influxdb`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", "InfluxDB", data.lastName);
 
     fillDataSourceTextField(

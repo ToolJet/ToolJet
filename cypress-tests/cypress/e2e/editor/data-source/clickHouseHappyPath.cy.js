@@ -26,7 +26,6 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -46,12 +45,6 @@ describe("Data sources", () => {
     );
 
     selectAndAddDataSource("databases", "ClickHouse", data.lastName);
-
-    // cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-    //   //username,password,host,port,protocol,dbname,usepost, trimquery,gzip,debug,raw
-    //   "have.value",
-    //   "ClickHouse"
-    // );
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelUserName
@@ -122,10 +115,10 @@ describe("Data sources", () => {
     cy.get('[data-cy="connection-alert-text"]', { timeout: 60000 })
       .scrollIntoView()
       .verifyVisibleElement("have.text", "getaddrinfo ENOTFOUND undefined");
-    deleteDatasource(`cypress-${data.lastName}-clickhouse`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", "ClickHouse", data.lastName);
 
     fillDataSourceTextField(

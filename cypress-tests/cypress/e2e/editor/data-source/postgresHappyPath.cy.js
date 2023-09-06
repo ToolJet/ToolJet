@@ -106,10 +106,10 @@ describe("Data sources", () => {
       postgreSqlText.buttonTextSave
     );
     cy.get('[data-cy="connection-alert-text"]').should("be.visible");
-    deleteDatasource(`cypress-${data.lastName}-postgresql`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource(
       "databases",
       postgreSqlText.postgreSQL,

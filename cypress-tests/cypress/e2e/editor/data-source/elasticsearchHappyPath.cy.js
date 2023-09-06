@@ -24,8 +24,6 @@ describe("Data source Elasticsearch", () => {
 
   it("Should verify elements on Elasticsearch connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -104,10 +102,10 @@ describe("Data source Elasticsearch", () => {
       "have.text",
       elasticsearchText.errorConnectionRefused
     );
-    deleteDatasource(`cypress-${data.lastName}-elasticsearch`);
   });
 
   it("Should verify the functionality of Elasticsearch connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource(
       "databases",
       elasticsearchText.elasticSearch,

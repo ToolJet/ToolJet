@@ -24,11 +24,6 @@ describe("Data source Azure Blob Storage", () => {
 
   it("Should verify elements on Azure Blob Storage connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-    // cy.get(commonSelectors.addNewDataSourceButton)
-    //   .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-    //   .click();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -50,16 +45,6 @@ describe("Data source Azure Blob Storage", () => {
       azureBlobStorageText.azureBlobStorage,
       data.lastName
     );
-
-    // cy.get("[data-cy*='data-source-']")
-    //   .eq(1)
-    //   .should("contain", azureBlobStorageText.azureBlobStorage);
-    // cy.get('[data-cy="data-source-azure blob storage"]').click();
-
-    // cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-    //   "have.value",
-    //   azureBlobStorageText.azureBlobStorage
-    // );
 
     cy.get('[data-cy="label-connection-string"]').verifyVisibleElement(
       "have.text",
@@ -97,12 +82,11 @@ describe("Data source Azure Blob Storage", () => {
       "have.text",
       "Cannot read properties of undefined (reading 'startsWith')"
     );
-    deleteDatasource(`cypress-${data.lastName}-azure-blob-storage`);
   });
 
   it("Should verify the functionality of Azure Blob Storage connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources

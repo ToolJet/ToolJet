@@ -65,8 +65,7 @@ export const selectAndAddDataSource = (
     commonSelectors.toastMessage,
     postgreSqlText.toastDSAdded
   );
-  cy.get('[data-cy="data-source-name-input-filed"]').should("be.visible");
-
+  cy.wait(1000);
   cy.clearAndType(
     '[data-cy="data-source-name-input-filed"]',
     `cypress-${cyParamName(dataSourceName)}-${cyParamName(dataSource)}`
