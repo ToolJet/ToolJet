@@ -107,7 +107,7 @@ const EditorComponent = (props) => {
     currentSidebarTab,
     isLoading,
     defaultComponentStateComputed,
-    currentVersion,
+
     showLeftSidebar,
     queryConfirmationList,
   } = useEditorState();
@@ -139,6 +139,8 @@ const EditorComponent = (props) => {
 
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
+
+  const [currentSessionId, setCurrentSessionId] = useState(null);
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -192,6 +194,8 @@ const EditorComponent = (props) => {
     });
 
     $componentDidMount();
+
+    setCurrentSessionId(() => uuid());
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
@@ -276,14 +280,10 @@ const EditorComponent = (props) => {
   };
 
   const initComponentVersioning = () => {
-    const currentVersion = {
-      [currentPageId]: -1,
-    };
-
     updateEditorState({
       canUndo: false,
       canRedo: false,
-      currentVersion,
+      // currentVersion: uuid(),
     });
   };
 
@@ -297,10 +297,21 @@ const EditorComponent = (props) => {
     if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
 
     props.ymap?.observe(() => {
-      if (!isEqual(props.editingVersion?.id, props.ymap?.get('appDef').editingVersionId)) return;
-      if (isEqual(appDefinition, props.ymap?.get('appDef').newDefinition)) return;
+      const ymapUpdates = props.ymap?.get('appDef');
 
-      realtimeSave(props.ymap?.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
+      if (!ymapUpdates.currentSessionId || ymapUpdates.currentSessionId === currentSessionId) return;
+      // if (!isEqual(props.editingVersion?.id, props.ymap?.get('appDef').editingVersionId)) return;
+      if (isEqual(appDefinition, ymapUpdates.newDefinition)) return;
+      console.log('-----arpit real time ', {
+        x: ymapUpdates.currentSessionId,
+        y: currentSessionId,
+      });
+
+      realtimeSave(props.ymap?.get('appDef').newDefinition, {
+        skipAutoSave: true,
+        skipYmapUpdate: true,
+        currentSessionId: ymapUpdates.currentSessionId,
+      });
     });
   };
 
@@ -752,27 +763,31 @@ const EditorComponent = (props) => {
     let updatedAppDefinition;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-    updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
-      if (_.isEmpty(draft)) return;
+    if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
+      updatedAppDefinition = newDefinition;
+    } else {
+      updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
+        if (_.isEmpty(draft)) return;
 
-      if (opts?.containerChanges || opts?.componentDefinitionChanged) {
-        const currentPageComponents = newDefinition.pages[currentPageId]?.components;
+        if (opts?.containerChanges || opts?.componentDefinitionChanged) {
+          const currentPageComponents = newDefinition.pages[currentPageId]?.components;
 
-        draft.pages[currentPageId].components = currentPageComponents;
-      }
+          draft.pages[currentPageId].components = currentPageComponents;
+        }
 
-      if (opts?.pageDefinitionChanged) {
-        draft.pages = newDefinition.pages;
-      }
+        if (opts?.pageDefinitionChanged) {
+          draft.pages = newDefinition.pages;
+        }
 
-      if (opts?.homePageChanged) {
-        draft.homePageId = newDefinition.homePageId;
-      }
+        if (opts?.homePageChanged) {
+          draft.homePageId = newDefinition.homePageId;
+        }
 
-      if (opts?.generalAppDefinitionChanged || opts?.globalSettings || isEmpty(opts)) {
-        Object.assign(draft, newDefinition);
-      }
-    });
+        if (opts?.generalAppDefinitionChanged || opts?.globalSettings || isEmpty(opts)) {
+          Object.assign(draft, newDefinition);
+        }
+      });
+    }
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
 
@@ -795,9 +810,13 @@ const EditorComponent = (props) => {
       });
 
       computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
+    }
+
+    if (!opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       props.ymap?.set('appDef', {
         newDefinition: updatedAppDefinition,
         editingVersionId: props.editingVersion?.id,
+        currentSessionId,
       });
     }
   };
