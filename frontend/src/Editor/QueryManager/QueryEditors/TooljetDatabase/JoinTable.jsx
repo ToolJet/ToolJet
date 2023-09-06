@@ -10,6 +10,7 @@ import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
 import JoinSelect from './JoinSelect';
 import JoinSort from './JoinSort';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -417,12 +418,14 @@ const RenderFilterSection = ({ darkMode }) => {
         <Row className="mb-2 mx-0">
           <div
             style={{
+              gap: '4px',
               height: '30px',
               border: '1px dashed var(--slate-08, #C1C8CD)',
             }}
             className="px-4 py-2 text-center rounded-1"
           >
-            There are no conditions
+            <SolidIcon name="information" style={{ height: 14, width: 14 }} width={14} height={14} /> There are no
+            conditions
           </div>
         </Row>
       )}

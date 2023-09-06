@@ -6,6 +6,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { isEmpty } from 'lodash';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export default function JoinSort({ darkMode }) {
   const { tableInfo, joinOrderByOptions, setJoinOrderByOptions } = useContext(TooljetDatabaseContext);
@@ -30,12 +31,14 @@ export default function JoinSort({ darkMode }) {
         <Row className="mb-2 mx-0">
           <div
             style={{
+              gap: '4px',
               height: '30px',
               border: '1px dashed var(--slate-08, #C1C8CD)',
             }}
             className="px-4 py-2 text-center rounded-1"
           >
-            There are no conditions
+            <SolidIcon name="information" style={{ height: 14, width: 14 }} width={14} height={14} /> There are no
+            conditions
           </div>
         </Row>
       ) : (

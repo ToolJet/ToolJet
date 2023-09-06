@@ -48,29 +48,21 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
     .filter((table) => ![...tableSet, leftFieldTable].includes(table))
     .map((t) => ({ label: t, value: t }));
 
-  //   useEffect(() => {
-  //     onChange &&
-  //       onChange({
-  //         joinType,
-  //         table: leftFieldTable?.value,
-  //         conditions: {
-  //           operator: operator,
-  //           conditionsList,
-  //         },
-  //       });
-  //   }, [conditionsList, joinType, rightFieldTable, leftFieldTable]);
-
   return (
     <Container className="p-0">
       <Row className="mx-0">
-        <Col sm="6" className="text-center px-2">
-          Selected Table
-        </Col>
-        <Col sm="5" className="text-center">
-          Joining Table
-        </Col>
+        {index === 0 && (
+          <>
+            <Col sm="6" className="text-center px-2">
+              Selected Table
+            </Col>
+            <Col sm="6" className="text-center">
+              Joining Table
+            </Col>
+          </>
+        )}
         {index !== 0 && (
-          <Col sm="1" className="justify-content-end d-flex pe-0">
+          <Col sm="12" className="justify-content-end d-flex pe-0">
             <ButtonSolid
               variant="ghostBlack"
               size="sm"
