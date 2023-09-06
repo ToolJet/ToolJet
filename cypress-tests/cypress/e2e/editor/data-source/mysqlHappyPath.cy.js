@@ -6,7 +6,7 @@ import { commonSelectors } from "Selectors/common";
 import { commonWidgetText, commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
   addQuery,
   fillConnectionForm,
   openQueryEditor,
@@ -32,9 +32,6 @@ describe("Data sources MySql", () => {
   it("Should verify elements on MySQL connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -53,14 +50,8 @@ describe("Data sources MySql", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("MySQL");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "MySQL");
-    cy.get('[data-cy="data-source-mysql"]').click();
+    selectAndAddDataSource("databases", "MySQL", data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      "MySQL"
-    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -110,15 +101,11 @@ describe("Data sources MySql", () => {
       postgreSqlText.buttonTextSave
     );
     verifyCouldnotConnectWithAlert(mySqlText.errorConnectionRefused);
+    deleteDatasource(`cypress-${data.lastName}-mysql`);
   });
 
   it("Should verify the functionality of MySQL connection form.", () => {
-    selectDataSource("MySQL");
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-mysql`
-    );
+    selectAndAddDataSource("databases", "MySQL", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -140,8 +127,9 @@ describe("Data sources MySql", () => {
       postgreSqlText.placeholderEnterUserName,
       Cypress.env("mysql_user")
     );
-
-    cy.get(postgreSqlSelector.passwordTextField).type(
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "Enter password",
       Cypress.env("mysql_password")
     );
 
@@ -178,11 +166,19 @@ describe("Data sources MySql", () => {
         cy.get('[data-cy="-toggle-input"]').uncheck();
       }
     });
-    cy.get(postgreSqlSelector.passwordTextField).should("be.visible");
-    cy.get(postgreSqlSelector.passwordTextField).type(
-      `{selectAll}{backspace}${Cypress.env("mysql_password")}`,
-      { log: false }
+
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "Enter password",
+      Cypress.env("mysql_password")
     );
+
+    // cy.get(postgreSqlSelector.passwordTextField).should("be.visible");
+    // cy.get(".datasource-edit-btn").should("be.visible").click();
+    // cy.get(postgreSqlSelector.passwordTextField).type(
+    //   `{selectAll}{backspace}${Cypress.env("mysql_password")}`,
+    //   { log: false }
+    // );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
 
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -192,7 +188,7 @@ describe("Data sources MySql", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -205,7 +201,7 @@ describe("Data sources MySql", () => {
 
   it.skip("Should verify elements of the Query section.", () => {
     cy.viewport(1200, 1300);
-    selectDataSource("MySQL");
+    selectAndAddDataSource("databases", "MySQL", data.lastName);
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: Cypress.env("mysql_port"),
@@ -375,7 +371,7 @@ describe("Data sources MySql", () => {
 
   it.skip("Should verify CRUD operations on SQL Query.", () => {
     let dbName = "7mmplik";
-    selectDataSource("MySQL");
+    selectAndAddDataSource("databases", "MySQL", data.lastName);
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
@@ -454,7 +450,7 @@ describe("Data sources MySql", () => {
   });
 
   it.skip("Should verify bulk update", () => {
-    selectDataSource("MySQL");
+    selectAndAddDataSource("databases", "MySQL", data.lastName);
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
       mySqlText.cypressMySql
