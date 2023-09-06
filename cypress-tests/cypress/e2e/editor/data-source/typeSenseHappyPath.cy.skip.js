@@ -26,8 +26,6 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -94,10 +92,10 @@ describe("Data sources", () => {
       "have.text",
       "Ensure that apiKey is set"
     );
-    deleteDatasource(`cypress-${data.lastName}-typesense`);
   });
 
   it("Should verify the functionality of TypeSense connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", "TypeSense", data.lastName);
 
     fillDataSourceTextField(

@@ -25,8 +25,6 @@ describe("Data source DynamoDB", () => {
 
   it("Should verify elements on DynamoDB connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -90,10 +88,10 @@ describe("Data source DynamoDB", () => {
       "have.text",
       dynamoDbText.errorMissingRegion
     );
-    deleteDatasource(`cypress-${data.lastName}-dynamodb`);
   });
 
   it("Should verify the functionality of DynamoDB connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", dynamoDbText.dynamoDb, data.lastName);
 
     cy.get('[data-cy="label-region"]')

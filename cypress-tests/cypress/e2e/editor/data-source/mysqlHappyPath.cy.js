@@ -31,8 +31,6 @@ describe("Data sources MySql", () => {
 
   it("Should verify elements on MySQL connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -101,10 +99,10 @@ describe("Data sources MySql", () => {
       postgreSqlText.buttonTextSave
     );
     verifyCouldnotConnectWithAlert(mySqlText.errorConnectionRefused);
-    deleteDatasource(`cypress-${data.lastName}-mysql`);
   });
 
   it("Should verify the functionality of MySQL connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", "MySQL", data.lastName);
 
     fillDataSourceTextField(

@@ -25,7 +25,6 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -106,10 +105,10 @@ describe("Data sources", () => {
       postgreSqlText.buttonTextSave
     );
     // cy.get('[data-cy="connection-alert-text"]').should("be.visible")
-    deleteDatasource(`cypress-${data.lastName}-mariadb`);
   });
 
   it("Should verify the functionality of MariaDB connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", "MariaDB", data.lastName);
 
     fillDataSourceTextField(

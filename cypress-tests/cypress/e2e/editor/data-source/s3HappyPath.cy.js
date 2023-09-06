@@ -25,8 +25,6 @@ describe("Data sources AWS S3", () => {
 
   it("Should verify elements on AWS S3 connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -100,10 +98,10 @@ describe("Data sources AWS S3", () => {
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
     );
-    deleteDatasource(`cypress-${data.lastName}-aws-s3`);
   });
 
   it("Should verify the functionality of AWS S3 connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.lastName);
 
     fillDataSourceTextField(

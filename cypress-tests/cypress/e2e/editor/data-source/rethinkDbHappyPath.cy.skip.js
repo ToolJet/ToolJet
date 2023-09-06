@@ -101,6 +101,7 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of RethinkDB connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", "RethinkDB", data.lastName);
 
     fillDataSourceTextField(

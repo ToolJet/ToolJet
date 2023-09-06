@@ -19,7 +19,6 @@ describe("Data source SMTP", () => {
 
   it("Should verify elements on  SMTP connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -84,10 +83,10 @@ describe("Data source SMTP", () => {
       "have.text",
       "Invalid credentials"
     );
-    deleteDatasource(`cypress-${data.lastName}-smtp`);
   });
 
   it("Should verify the functionality of SMTP connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("apis", "SMTP", data.lastName);
 
     fillDataSourceTextField(

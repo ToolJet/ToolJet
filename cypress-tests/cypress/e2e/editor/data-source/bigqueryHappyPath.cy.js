@@ -22,10 +22,6 @@ describe("Data source BigQuery", () => {
 
   it("Should verify elements on BigQuery connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-    // cy.get(commonSelectors.addNewDataSourceButton)
-    //   .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-    //   .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -82,14 +78,10 @@ describe("Data source BigQuery", () => {
       "have.text",
       bigqueryText.errorInvalidEmailId
     );
-    deleteDatasource(
-      `cypress-${String(data.lastName).toLowerCase()}-${String(
-        bigqueryText.bigQuery
-      ).toLowerCase()}`
-    );
   });
 
   it("Should verify the functionality of BigQuery connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", bigqueryText.bigQuery, data.lastName);
 
     fillDataSourceTextField(

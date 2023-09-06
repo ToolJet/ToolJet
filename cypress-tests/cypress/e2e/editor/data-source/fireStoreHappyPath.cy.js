@@ -23,7 +23,6 @@ describe("Data source Firestore", () => {
 
   it("Should verify elements on Firestore connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -79,10 +78,10 @@ describe("Data source Firestore", () => {
       "have.text",
       firestoreText.errorGcpKeyCouldNotBeParsed
     );
-    deleteDatasource(`cypress-${data.lastName}-firestore`);
   });
 
   it("Should verify the functionality of Firestore connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource("databases", firestoreText.firestore, data.lastName);
 
     fillDataSourceTextField(
