@@ -30,7 +30,7 @@ function ListItem({
   return (
     <div>
       <ListGroup.Item
-        style={{ marginBottom: '4px', backgroundColor: 'var(--slate3)' }}
+        style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         {...restProps}

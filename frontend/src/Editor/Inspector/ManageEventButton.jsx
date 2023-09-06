@@ -8,7 +8,7 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div className="mb-1">
+    <div style={{ marginBottom: '8px' }}>
       <div
         className="manage-event-btn border-0"
         onMouseEnter={() => setIsHovered(true)}

@@ -277,9 +277,10 @@ button {
 
 .accordion-button {
   font-size: 14px;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   box-shadow: none !important;
   color: var(--slate12) !important;
+  padding: 20px 16px !important;
 }
 
 .accordion-button::after {
@@ -291,10 +292,11 @@ button {
 }
 
 .accordion-button:not(.collapsed) {
-  padding-bottom: 0 !important;
+  // padding-bottom: 0 !important;
 }
 
 .accordion-body {
+  padding: 6px 16px 20px 16px !important;
   .form-label {
     font-weight: 400;
     font-size: 12px;

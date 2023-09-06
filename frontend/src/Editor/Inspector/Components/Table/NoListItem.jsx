@@ -11,6 +11,7 @@ const NoListItem = ({ text }) => {
         border: '1px dashed var(--slate8)',
         color: 'var(--slate11',
         backgroundColor: 'var(--slate3)',
+        marginBottom: '8px',
       }}
     >
       <span className="d-flex align-items-center" style={{ marginRight: '2px' }}>

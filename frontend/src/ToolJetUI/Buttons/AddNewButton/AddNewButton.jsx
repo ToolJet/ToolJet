@@ -11,6 +11,7 @@ const AddNewButton = ({ children, dataCy, onClick, className = '' }) => {
       onClick={onClick}
       data-cy={dataCy}
       leftIcon="plusrectangle"
+      fill={'var(--indigo9)'}
       iconWidth={16}
     >
       {children}
