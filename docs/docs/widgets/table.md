@@ -10,7 +10,7 @@ Tables can be used for both displaying and editing data. You can use the table w
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/newuitable.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/newuitable1.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
@@ -141,7 +141,33 @@ Whenever data is loaded into a table, the columns are automatically generated. Y
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/columntypes1.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/columnsnew.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+### Use dynamic column
+
+Enabling the **Use dynamic column** toggle will allow users to set the **Column data** using which the user can link the column data dynamically from a query. 
+
+The **column data** field expects a JSON value:
+```json
+{
+   "name":"Name",
+   "columnType":"string",
+   "key":"first_name",
+   "cellBackgroundColor":"#000",
+   "textColor":"#fff",
+   "isEditable":true,
+   "regex":"",
+   "maxLength":10,
+   "minLength":5,
+   "customRule":""
+}
+```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/dynamicnew.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
@@ -191,7 +217,7 @@ Selecting the column type as **Number** will only load numerical data in the col
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/numbertype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/numbernew.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
@@ -211,7 +237,7 @@ The **Badge** column type is utilized to exhibit labels on the columns using the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/badgetype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/badgenew.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
@@ -402,6 +428,25 @@ For more information on using cellValue and rowData, refer to the **[how-to guid
 
 </div>
 
+### Add Column
+
+You can add a new column to the table by clicking on the **+ Add Column** button. On clicking this button a new column will be added to the table and you can edit it's properties from the column section. Check [Displaying Data](#displaying-data) section to learn more.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/addcolumn.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+### Delete Column
+
+Hover on the column under the columns section and click on the three dots icon, a dropdown will appear with the option to delete the column. Click on the **delete** option to remove the column from the table.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/deletecolumn.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
 
 ### Displaying Data
 
@@ -460,32 +505,6 @@ Along with `changeSet`, `dataUpdates` property will also be changed when the val
 
 If the data of a cell is changed, "save changes" button will be shown at the bottom of the table. This button when clicked will trigger the `Bulk update query` event. This event can be used to run a query to update the data on your data source.
 
-### Use dynamic column
-
-Enabling the **Use dynamic column** toggle will allow users to set the **Column data** where users can link the column data dynamically from a query. 
-
-The **column data** field expects a JSON value:
-```json
-{
-   "name":"Name",
-   "columnType":"string",
-   "key":"first_name",
-   "cellBackgroundColor":"#000",
-   "textColor":"#fff",
-   "isEditable":true,
-   "regex":"",
-   "maxLength":10,
-   "minLength":5,
-   "customRule":""
-}
-```
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/table/dynamic_column.png" alt="ToolJet - Widget Reference - Table" />
-
-</div>
-
 ## Validation
 
 Under column properties, expand the detailed view of a column type to access a toggle button called `make editable`. You can toggle it `ON` to apply the validations for each column respectively using the following.
@@ -509,7 +528,7 @@ If the condition is true, the validation passes, otherwise return a string that 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/action2.png" alt="ToolJet - Widget Reference - Table" width="800" />
+<img className="screenshot-full" src="/img/widgets/table/actionnew.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
@@ -523,100 +542,6 @@ Action buttons will be displayed as the last column of the table. The styles of 
 | Text color (Action Button) | Color of button-text of the action button. |
 | Disable Action Button | Toggle on to disable the action button. You can programmatically set its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the action button will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
 
-## Options
-
-:::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
-:::
-
-### Server-side pagination
-
-Server-side pagination can be used to run a query whenever the page is changed. Go to events section of the inspector and change the action for `on page changed` event. Number of records per page needs to be handled in your query. If server-side pagination is enabled, `pageIndex` property will be exposed on the table object, this property will have the current page index. `pageIndex` can be used to query the next set of results when page is changed.
-
-When Server-side pagination is enabled, you'll be able to set three other table properties:
-- **Enable previous page button**: When server-side pagination is enabled, this button is enabled by default. Toggle this off to disable the previous page button from the table.
-- **Enable next page button**: When server-side pagination is enabled, this button is enabled by default. Toggle this off to disable the next page button from the table.
-- **Total records server side**: Set a numerical value to display particular number of records.
-
-:::tip
-Check this how-to guide to learn more about [server-side pagination](/docs/how-to/use-server-side-pagination).
-:::
-
-### Client-side pagination
-
-Client-side pagination is enabled by default. When the client-side pagination is enabled(`{{true}}`), another property **Number of rows per page** will be shown that can be used to set the number of records per page. By default, the value is set to 10 and if it is disabled(`{{false}}`) then it will show all the records in the single page.
-
-### Server-side search
-
-If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your data source.
-
-### Show download button
-
-The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the download button by clicking on the **Fx** button.
-
-### Hide column selector button
-
-The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the column selector button by clicking on the **Fx** button.
-
-### Show filter button
-
-The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the filter button by clicking on the **Fx** button.
-
-### Show add new row button
-
-The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the Add new row button by clicking on the **Fx** button.
-
-### Show update buttons
-
-It's enabled by default. Table footer will show two update buttons **Save changes** & **Discard changes** whenever a cell is edited. Toggle `off` to hide update buttons.
-
-### Allow selection
-
-This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is **disabled**, the ability to highlight selected rows and perform bulk selection will not be accessible. 
-
-If the option for allowing selection is enabled, a new option called **[Default selected row](#default-selected-row)** will become visible. However, if the option for allowing selection is disabled, the **[Default selected row](#default-selected-row)** option will not be displayed.
-
-### Highlight selected row
-
-Activate this option to visually emphasize the last clicked row. **Enabling** this feature will alter the row selection appearance of the table from a `checkbox`-based theme to a `highlighting`-based theme.
-
-### Bulk selection
-
-To enable the selection of one or more rows from the current page of a table, you can activate the 'Bulk selection' setting in the inspector. The values of the selected rows will be exposed as '**selectedRows**'.
-
-### Default Selected Row
-
-By enabling this option, you can designate a default row to be pre-selected when the app loads. This means that whenever the app is opened for the first time, a specific row will already be highlighted in the table by default. Additionally, there is an accessible variable that stores the value for this setting. You can find a list of all accessible variables **[here](#exposed-variables)**.
-
-To set a default selected row, you need to provide an object with a single key-value pair. For instance, you can use the `id` key and dynamically obtain the value from a variable, let's say `x`, to specify the default selected row in the table. We assume that the variable `x` holds a valid numerical id.
-
-Example:
-```js
-{{{"id": variables.x}}} //assuming variables.x is already set
-```
-
-Please ensure that the value provided in the object corresponds to a valid id in the table to ensure proper functionality.
-
-### Disable sorting
-
-Enable this option to lock the sorting of columns when clicked on column name.
-
-### Server-side sort
-When Server-side sort is enabled, clicking on the column headers will not automatically sort the table, instead, the `Sort applied` event will be fired and the applied sorting will be exposed as `sortApplied`. You can use this data to run any query that feeds data to the table in a manner that reflects the sorting applied.
-
-### Server-side filter
-When Server-side filter is enabled, applying filters will not automatically filter the table, instead, the `Filter changed` event will be fired and the applied filters will be exposed as `filters`. You can use this data to run any query that feeds data to the table in a manner that reflects the filters applied.
-
-### Show search box
-
-It can be used to show or hide Table Search box. Client-side search is enabled by default and server-side search can be enabled from the events section of the inspector. Whenever the search text is changed, the `searchText` property of the table component is updated. If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your data source.
-
-If you don't wish to use the search feature altogether, you can disable it from the inspector.
-
-### Loading state (Boolean)
-
-Loading state shows a loading skeleton for the table. This property can be used to show a loading status on the table while data is being loaded. `isLoading` property of a query can be used to get the status of a query.
-
 ## Events
 
 - **[Row hovered](#row-hovered)**
@@ -629,6 +554,12 @@ Loading state shows a loading skeleton for the table. This property can be used 
 - **[Cell value changed](#cell-value-changed)**
 - **[Filter changed](#filter-changed)**
 - **[Add new rows](#add-new-rows)**
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/newevents.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
 
 ### Row hovered
 
@@ -670,17 +601,146 @@ This event is triggered when filter is added, removed, or updated from the filte
 
 This event is triggered when the **Save** button is clicked from the **Add new row** modal on the table. 
 
+## Row Selection
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/rowselection.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+
+### Allow selection
+
+This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is **disabled**, the ability to highlight selected rows and perform bulk selection will not be accessible. 
+
+If the option for allowing selection is enabled, a new option called **[Default selected row](#default-selected-row)** will become visible. However, if the option for allowing selection is disabled, the **[Default selected row](#default-selected-row)** option will not be displayed.
+
+### Highlight selected row
+
+Activate this option to visually emphasize the last clicked row. **Enabling** this feature will alter the row selection appearance of the table from a `checkbox`-based theme to a `highlighting`-based theme.
+
+### Bulk selection
+
+To enable the selection of one or more rows from the current page of a table, you can activate the 'Bulk selection' setting in the inspector. The values of the selected rows will be exposed as '**selectedRows**'.
+
+### Default Selected Row
+
+By enabling this option, you can designate a default row to be pre-selected when the app loads. This means that whenever the app is opened for the first time, a specific row will already be highlighted in the table by default. Additionally, there is an accessible variable that stores the value for this setting. You can find a list of all accessible variables **[here](#exposed-variables)**.
+
+To set a default selected row, you need to provide an object with a single key-value pair. For instance, you can use the `id` key and dynamically obtain the value from a variable, let's say `x`, to specify the default selected row in the table. We assume that the variable `x` holds a valid numerical id.
+
+Example:
+```js
+{{{"id": variables.x}}} //assuming variables.x is already set
+```
+
+Please ensure that the value provided in the object corresponds to a valid id in the table to ensure proper functionality.
+
+## Search Sort and Filter
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/searchsort.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+### Show search
+
+It can be used to show or hide Table Search box. Client-side search is enabled by default and server-side search can be enabled from the events section of the inspector. Whenever the search text is changed, the `searchText` property of the table component is updated. If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your data source.
+
+If you don't wish to use the search feature altogether, you can disable it from the inspector.
+
+#### Server-side search
+
+If server-side search is enabled, `on search` event is fired after the content of `searchText` property is changed. `searchText` can be used to run a specific query to search for the records in your data source.
+
+### Enable column sorting
+
+Disable this option to lock the sorting of columns when clicked on column header.
+
+#### Server-side sort
+When Server-side sort is enabled, clicking on the column headers will not automatically sort the table, instead, the `Sort applied` event will be fired and the applied sorting will be exposed as `sortApplied`. You can use this data to run any query that feeds data to the table in a manner that reflects the sorting applied.
+
+### Enable filtering
+
+The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the filter button by clicking on the **Fx** button.
+
+#### Server-side filter
+When Server-side filter is enabled, applying filters will not automatically filter the table, instead, the `Filter changed` event will be fired and the applied filters will be exposed as `filters`. You can use this data to run any query that feeds data to the table in a manner that reflects the filters applied.
+
+
+## Pagination
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/paginationnew.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+### Client-side pagination
+
+Client-side pagination is enabled by default. When the client-side pagination is enabled(`{{true}}`), another property **Number of rows per page** will be shown that can be used to set the number of records per page. By default, the value is set to 10 and if it is disabled(`{{false}}`) then it will show all the records in the single page.
+
+### Server-side pagination
+
+Server-side pagination can be used to run a query whenever the page is changed. Go to events section of the inspector and change the action for `on page changed` event. Number of records per page needs to be handled in your query. If server-side pagination is enabled, `pageIndex` property will be exposed on the table object, this property will have the current page index. `pageIndex` can be used to query the next set of results when page is changed.
+
+When Server-side pagination is enabled, you'll be able to set three other table properties:
+- **Enable previous page button**: When server-side pagination is enabled, this button is enabled by default. Toggle this off to disable the previous page button from the table.
+- **Enable next page button**: When server-side pagination is enabled, this button is enabled by default. Toggle this off to disable the next page button from the table.
+- **Total records server side**: Set a numerical value to display particular number of records.
+
+:::tip
+Check this how-to guide to learn more about [server-side pagination](/docs/how-to/use-server-side-pagination).
+:::
+
+## Addional actions
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/additionalactions.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+### Show add new row button
+
+The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the Add new row button by clicking on the **Fx** button.
+
+### Show download button
+
+The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the download button by clicking on the **Fx** button.
+
+### Hide column selector button
+
+The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the column selector button by clicking on the **Fx** button.
+
+### Loading state (Boolean)
+
+Loading state shows a loading skeleton for the table. This property can be used to show a loading status on the table while data is being loaded. `isLoading` property of a query can be used to get the status of a query.
+
+### Show update buttons
+
+It's enabled by default. Table footer will show two update buttons **Save changes** & **Discard changes** whenever a cell is edited. Toggle `off` to hide update buttons.
+
+## Devices
+
+| Option  | Description | Expected value |
+|:----------- |:----------- |:----------- |
+| **Show on desktop** | Toggle on or off to show or hide the component on desktop devices | `{{true}}` or `{{false}}` |
+| **Show on mobile** | Toggle on or off to show or hide the component on mobile devices | `{{true}}` or `{{false}}` |
+
 ## Styles
 
 | Style      | Description |
-| ----------- | ----------- |
-| Text color | Change the color of the text in table by providing `hex color code` or choosing one from the picker |
-| Action button radius | This field can be used to give a radius to all action buttons. The default value is `0` |
-| Table type | Select a type of table from the dropdown. |
-| Cell size |  This decides the size of table cells. You can choose between a `Compact` size for table cells or a `Spacious` size |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Disable | Toggle on to lock the widget. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
-| Border radius | Use this property to modify the border radius of the button. |
+| :---------- | :---------- |
+| **Text color** | Change the color of the text in table by providing `hex color code` or choosing one from the picker |
+| **Action button radius** | This field can be used to give a radius to all action buttons. The default value is `0` |
+| **Table type** | Select a type of table from the dropdown: Bordered, Regular, or Striped. |
+| **Cell size** |  This decides the size of table cells. You can choose between a `Condensed` size for table cells or a `Regular` size |
+| **Visibility** | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| **Disable** | Toggle on to lock the widget. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| **Border radius** | Use this property to modify the border radius of the button. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
@@ -689,27 +749,27 @@ Any property having `Fx` button next to its field can be **programmatically conf
 ## Exposed variables
 
 | variable      | description |
-| ----------- | ----------- |
-| currentData      | Data that is currently being displayed by the table ( including edits if any ) |
-| currentPageData  | Data that is displayed on the current page if pagination is enabled ( including edits if any )      |
-| pageIndex | Index of the current page, starting from 1
-| changeSet | Object with row number as the key and object of edited fields and their values as the value |
-| dataUpdates | Just like changeSet but includes the data of the entire row |
-| selectedRow | Contains the data of the row that was most recently clicked. When an action button is clicked, `selectedRow` is also updated. Its initial value is set to the data of the first row when the app is loaded. |
-| selectedRowId | Stores the ID of the row that was last clicked. Similar to `selectedRow`, it gets updated when an action button is clicked. You can access its value using `{{components.table1.selectedRowId}}`. By default, it is set to `0`, representing the ID of the first row when the app is loaded. |
-| selectedCell | The data of the cell that was last clicked on the table. |
-| searchText | The value of the search field if server-side pagination is enabled |
-| newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
+| :---------- | :---------- |
+| **currentData**      | Data that is currently being displayed by the table ( including edits if any ) |
+| **currentPageData**  | Data that is displayed on the current page if pagination is enabled ( including edits if any )      |
+| **pageIndex** | Index of the current page, starting from 1
+| **changeSet** | Object with row number as the key and object of edited fields and their values as the value |
+| **dataUpdates** | Just like changeSet but includes the data of the entire row |
+| **selectedRow** | Contains the data of the row that was most recently clicked. When an action button is clicked, `selectedRow` is also updated. Its initial value is set to the data of the first row when the app is loaded. |
+| **selectedRowId** | Stores the ID of the row that was last clicked. Similar to `selectedRow`, it gets updated when an action button is clicked. You can access its value using `{{components.table1.selectedRowId}}`. By default, it is set to `0`, representing the ID of the first row when the app is loaded. |
+| **selectedCell** | The data of the cell that was last clicked on the table. |
+| **searchText** | The value of the search field if server-side pagination is enabled |
+| **newRows**| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
 
 ## Component specific actions (CSA)
 
 Following actions of color picker component can be controlled using the component specific actions(CSA):
 
 | Actions     | Description |
-| ----------- | ----------- |
-| setPage | Set the page on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.setPage(2)` |
-| selectRow | Select the row on the table using via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.selectRow('id','11')` |
-| deselectRow | Deselect the row on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.deselectRow()` |
-| discardChanges | Discard the changes from the table when a cell is edited via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardChanges()` |
-| discardNewlyAddedRows | Discard the newly added rows from the add new row popup on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardNewlyAddedRows()` |
-| downloadTableData | Retrieve the data from the table in the PDF, CSV, or Excel sheet by using a component-specific action within an event handler. Furthermore, you have the choice to utilize a RunJS query to execute component-specific actions. For downloading the table data as a PDF, you can use the following code: `await components.table1.downloadTableData('pdf')`. Similarly, for downloading as a CSV: `await components.table1.downloadTableData('csv')`, and for downloading as an Excel sheet: `await components.table1.downloadTableData('xlsx')`. |
+| :----------- | :----------- |
+| **setPage** | Set the page on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.setPage(2)` |
+| **selectRow** | Select the row on the table using via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.selectRow('id','11')` |
+| **deselectRow** | Deselect the row on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.deselectRow()` |
+| **discardChanges** | Discard the changes from the table when a cell is edited via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardChanges()` |
+| **discardNewlyAddedRows** | Discard the newly added rows from the add new row popup on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardNewlyAddedRows()` |
+| **downloadTableData** | Retrieve the data from the table in the PDF, CSV, or Excel sheet by using a component-specific action within an event handler. Furthermore, you have the choice to utilize a RunJS query to execute component-specific actions. For downloading the table data as a PDF, you can use the following code: `await components.table1.downloadTableData('pdf')`. Similarly, for downloading as a CSV: `await components.table1.downloadTableData('csv')`, and for downloading as an Excel sheet: `await components.table1.downloadTableData('xlsx')`. |
