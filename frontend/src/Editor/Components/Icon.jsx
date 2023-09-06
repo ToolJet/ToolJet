@@ -39,7 +39,7 @@ export const Icon = ({ properties, styles, fireEvent, width, height, registerAct
     >
       <IconElement
         color={color}
-        style={{ width, height, boxShadow }}
+        style={{ width, height, boxShadow, color: iconColor }}
         onClick={(event) => {
           event.stopPropagation();
           fireEvent('onClick');
