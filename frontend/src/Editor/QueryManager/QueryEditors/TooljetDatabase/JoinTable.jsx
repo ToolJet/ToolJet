@@ -176,6 +176,27 @@ const SelectTableMenu = ({ darkMode }) => {
           />
         </div>
       </div>
+      {/* Offset Section */}
+      <div className="field-container d-flex mb-3">
+        <label className="form-label">Offset</label>
+        <div className="field flex-grow-1">
+          <CodeHinter
+            className="codehinter-plugins"
+            theme={darkMode ? 'monokai' : 'default'}
+            height={'32px'}
+            placeholder="Enter offset"
+            type="code"
+            initialValue={joinTableOptions?.offset ?? ''}
+            onChange={(value) => {
+              if (value.length) {
+                joinTableOptionsChange('offset', value);
+              } else {
+                deleteJoinTableOptions('offset');
+              }
+            }}
+          />
+        </div>
+      </div>
       {/* Select Section */}
       <div className="field-container d-flex mb-3">
         <label className="form-label">Select</label>

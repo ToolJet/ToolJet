@@ -270,6 +270,7 @@ export class TooljetDbService {
     if (queryJson?.order_by?.length)
       finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by, internalTableNametoIdMap)}`;
     if (queryJson?.limit && queryJson?.limit.length) finalQuery += `\nLIMIT ${queryJson.limit}`;
+    if (queryJson?.offset && queryJson?.offset.length) finalQuery += `\nOFFSET ${queryJson.offset}`;
 
     return finalQuery;
   }
