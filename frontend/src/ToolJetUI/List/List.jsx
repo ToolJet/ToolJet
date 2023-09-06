@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import MoreVertical from '@/_ui/Icon/solidIcons/MoreVertical';
-
+import SortableList from '@/_components/SortableList';
 function List({ children, ...restProps }) {
   return <ListGroup {...restProps}>{children}</ListGroup>;
 }
@@ -21,6 +21,7 @@ function ListItem({
   menuActions = [],
   onMenuOptionClick,
   isEditable,
+  isDraggable,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -35,7 +36,12 @@ function ListItem({
         {...restProps}
       >
         <div className="row">
-          {Icon && <div className="col-auto d-flex align-items-center">{!isHovered && Icon && <Icon />}</div>}
+          {(Icon || isDraggable) && (
+            <div className="col-auto d-flex align-items-center">
+              {!isHovered && Icon && <Icon />}
+              <SortableList.DragHandle show={isDraggable} />
+            </div>
+          )}
           <div
             className="col text-truncate cursor-pointer"
             data-cy={`pages-name-${String(primaryText).toLowerCase()}`}

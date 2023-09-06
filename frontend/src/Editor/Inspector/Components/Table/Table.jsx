@@ -1049,6 +1049,7 @@ class TableComponent extends React.Component {
                                 >
                                   <div key={resolvedItemName}>
                                     <List.Item
+                                      isDraggable={true}
                                       primaryText={resolvedItemName}
                                       secondaryText={capitalize(item?.columnType)}
                                       data-cy={`column-${resolvedItemName}`}
