@@ -292,7 +292,7 @@ export class TooljetDbService {
       return selectQueryFields;
     }
 
-    throw new BadRequestException('Select statement in the query is empty');
+    throw new BadRequestException('Select statement is empty');
   }
 
   private constructFromStatement(queryJson, internalTableNametoIdMap) {
@@ -301,7 +301,7 @@ export class TooljetDbService {
       return `${'"' + internalTableNametoIdMap[from.name] + '"'} ${from.alias ? from.alias : ''}`;
     }
 
-    throw new BadRequestException('Base table is not selected in the query');
+    throw new BadRequestException('From table is not selected');
   }
 
   private constructJoinStatements(joinsInputList, internalTableNametoIdMap) {

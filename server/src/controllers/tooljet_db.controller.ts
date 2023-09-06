@@ -101,7 +101,7 @@ export class TooljetDbController {
   @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
   async getDetailsOnJoin(@Body() joinQueryJsonDto: any, @Param('organizationId') organizationId) {
-    // Gathering tables used from Join coditions
+    // Gathering tables used, from Join coditions
     const tableSet = new Set();
     const joinOptions = joinQueryJsonDto?.['joins'];
     (joinOptions || []).forEach((join) => {

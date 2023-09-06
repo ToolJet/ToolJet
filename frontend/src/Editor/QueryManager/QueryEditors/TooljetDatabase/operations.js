@@ -168,7 +168,7 @@ async function deleteRows(queryOptions, organizationId, currentState) {
   return await tooljetDatabaseService.deleteRow(organizationId, tableName, query.join('&'));
 }
 
-// Function: To valid Empty fields in JSON ( Works for Nested JSON too )
+// Function:- To valid Empty fields in JSON ( Works for Nested JSON too )
 // function validateInputJsonHasEmptyFields(input) {
 //   let isValid = true;
 
@@ -200,15 +200,6 @@ async function joinTables(queryOptions, organizationId, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
   const { join_table = {} } = resolvedOptions;
 
-  // const sectionNames = {
-  //   fields: 'Select',
-  //   from: 'Table name',
-  //   joins: 'From',
-  //   conditions: 'Filter',
-  //   order_by: 'Sort',
-  //   limit: 'Limit',
-  // };
-
   if (Object.keys(join_table).length === 0) {
     return {
       status: 'failed',
@@ -218,24 +209,31 @@ async function joinTables(queryOptions, organizationId, currentState) {
       data: {},
     };
   }
+  const sanitizedJoinTableJson = { ...join_table };
+  // If mandatory fields are empty throw error
+  let mandatoryFieldsButEmpty = [];
+  if (!sanitizedJoinTableJson?.fields.length) mandatoryFieldsButEmpty.push('Select');
+  if (sanitizedJoinTableJson?.from && !Object.keys(sanitizedJoinTableJson?.from).length)
+    mandatoryFieldsButEmpty.push('From');
+  if (mandatoryFieldsButEmpty.length) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: `Empty values are found in the following section - ${mandatoryFieldsButEmpty.join(',')}.`,
+      description: 'Mandatory fields are not empty',
+      data: {},
+    };
+  }
 
-  // if (Object.keys(join_table).length !== 0) {
-  //   let sectionWithInvalidInput = [];
-  //   Object.entries(join_table).forEach(([key, value]) => {
-  //     const isValidSection = validateInputJsonHasEmptyFields(value);
-  //     if (!isValidSection) sectionWithInvalidInput.push(sectionNames[key] || key);
-  //   });
+  // If non-mandatory fields are empty - remove the particular field
+  if (
+    sanitizedJoinTableJson?.conditions &&
+    (!Object.keys(sanitizedJoinTableJson?.conditions).length ||
+      !sanitizedJoinTableJson?.conditions?.conditionsList.length)
+  ) {
+    delete sanitizedJoinTableJson.conditions;
+  }
+  if (!sanitizedJoinTableJson?.order_by.length) delete sanitizedJoinTableJson.order_by;
 
-  //   if (sectionWithInvalidInput.length) {
-  //     return {
-  //       status: 'failed',
-  //       statusText: 'failed',
-  //       message: `Empty values are found in the section - ${sectionWithInvalidInput.join(', ')}`,
-  //       description: 'Empty fields are not allowed',
-  //       data: {},
-  //     };
-  //   }
-  // }
-
-  return await tooljetDatabaseService.joinTables(organizationId, join_table);
+  return await tooljetDatabaseService.joinTables(organizationId, sanitizedJoinTableJson);
 }
