@@ -204,7 +204,11 @@ export class LicenseService {
       if (!licenseResponse) {
         throw new Error('Empty response from Licensing');
       }
-      const { license: licenseKey } = JSON.parse(licenseResponse.body);
+      const {
+        license: licenseKey,
+        meta: { customerName, customerId: customerIdGenerated },
+      } = JSON.parse(licenseResponse.body);
+
       if (!licenseKey) {
         throw new Error('License key not generated');
       }
@@ -214,8 +218,8 @@ export class LicenseService {
         email,
         hostname,
         subpath,
-        companyName,
-        customerId,
+        companyName: customerName,
+        customerId: customerIdGenerated,
         otherData: JSON.stringify(otherData),
         licenseKey,
       });
