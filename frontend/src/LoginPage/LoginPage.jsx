@@ -5,7 +5,13 @@ import { Link, Navigate } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { getSubpath, getWorkspaceId, validateEmail } from '../_helpers/utils';
+import {
+  getSubpath,
+  redirectToWorkspace,
+  validateEmail,
+  eraseRedirectUrl,
+  returnWorkspaceIdIfNeed,
+} from '@/_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -14,7 +20,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
-import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
+import { setCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -31,13 +37,6 @@ class LoginPageComponent extends React.Component {
     this.organizationId = props.params.organizationId;
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
-
-  returnWorkspaceIdIfNeed = (path) => {
-    if (path) {
-      return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
-    }
-    return `/${getWorkspaceId()}`;
-  };
 
   componentDidMount() {
     // Page is loaded inside an iframe
@@ -70,10 +69,7 @@ class LoginPageComponent extends React.Component {
           (this.organizationId && newSession?.current_organization_id === this.organizationId)
         ) {
           // redirect to home if already logged in
-          // set redirect path for sso login
-          const path = this.eraseRedirectUrl();
-          const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
-          window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+          redirectToWorkspace();
         }
       }
     });
@@ -137,12 +133,6 @@ class LoginPageComponent extends React.Component {
     this.currentSessionObservable && this.currentSessionObservable.unsubscribe();
   }
 
-  eraseRedirectUrl() {
-    const redirectPath = getCookie('redirectPath');
-    redirectPath && eraseCookie('redirectPath');
-    return redirectPath;
-  }
-
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
@@ -190,10 +180,10 @@ class LoginPageComponent extends React.Component {
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
     if (from.pathname !== '/confirm')
       // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
-      from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
+      from.pathname = `${returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
     const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
     this.setState({ isLoading: false });
-    this.eraseRedirectUrl();
+    eraseRedirectUrl();
     window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
   };
 
@@ -206,7 +196,7 @@ class LoginPageComponent extends React.Component {
   };
 
   redirectToUrl = () => {
-    const redirectPath = this.eraseRedirectUrl();
+    const redirectPath = eraseRedirectUrl();
     return redirectPath ? redirectPath : '/';
   };
 

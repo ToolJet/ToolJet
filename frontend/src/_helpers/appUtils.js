@@ -141,6 +141,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
       await pyodide.globals.set('tj_globals', currentState['globals']);
       await pyodide.globals.set('client', currentState['client']);
       await pyodide.globals.set('server', currentState['server']);
+      await pyodide.globals.set('constants', currentState['constants']);
       await pyodide.globals.set('variables', appStateVars);
       await pyodide.globals.set('actions', actions);
 
@@ -210,6 +211,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           variables = currentState['variables']
           client = currentState['client']
           server = currentState['server']
+          constants = currentState['constants']
           page = currentState['page']
           code_to_execute = ${_code}
 
@@ -688,6 +690,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onBoundsChange',
       'onCreateMarker',
       'onMarkerClick',
+      'onPolygonClick',
       'onPageChanged',
       'onSearch',
       'onChange',
@@ -753,11 +756,19 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      // check if {{var}} and %%var%% are present in the string
+      if (options.match(/\{\{(.*?)\}\}/g)?.length > 1 && options.includes('{{constants.')) {
+        const constantVariables = options.match(/\{\{(constants.*?)\}\}/g);
+
+        constantVariables.forEach((constant) => {
+          options = options.replace(constant, 'HiddenOrganizationConstant');
+        });
+      }
 
       if (options.includes('{{') && options.includes('%%')) {
-        const vars = resolveReferences(options, state);
-        console.log('queryVariables', { options, vars });
+        const vars =
+          options.includes('{{constants.') && !options.includes('%%')
+            ? 'HiddenOrganizationConstant'
+            : resolveReferences(options, state);
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
@@ -818,12 +829,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
         hasParamSupport
       );
     } else if (query.kind === 'tooljetdb') {
-      const currentSessionValue = authenticationService.currentSessionValue;
-      queryExecutionPromise = tooljetDbOperations.perform(
-        query.options,
-        currentSessionValue?.current_organization_id,
-        getCurrentState()
-      );
+      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState());
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
     } else {
@@ -951,12 +957,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
     } else if (query.kind === 'tooljetdb') {
-      const currentSessionValue = authenticationService.currentSessionValue;
-      queryExecutionPromise = tooljetDbOperations.perform(
-        query.options,
-        currentSessionValue?.current_organization_id,
-        getCurrentState()
-      );
+      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState());
     } else {
       queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
     }

@@ -2608,6 +2608,7 @@ export const widgets = [
     },
     events: {
       onSelect: { displayName: 'On select' },
+      onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
       borderRadius: {
@@ -2634,6 +2635,7 @@ export const widgets = [
     },
     exposedVariables: {
       values: {},
+      searchText: '',
     },
     definition: {
       others: {
@@ -2770,6 +2772,21 @@ export const widgets = [
           },
         },
       },
+      polygonPoints: {
+        type: 'code',
+        displayName: 'Polygon points',
+        options: {
+          mode: 'javascript',
+          theme: 'duotone-light',
+          className: 'map-location-input pr-2',
+        },
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'object' } }, { type: 'object' }],
+          },
+        },
+      },
       addNewMarkers: {
         type: 'toggle',
         displayName: 'Add new markers',
@@ -2793,6 +2810,7 @@ export const widgets = [
       onBoundsChange: { displayName: 'On bounds change' },
       onCreateMarker: { displayName: 'On create marker' },
       onMarkerClick: { displayName: 'On marker click' },
+      onPolygonClick: { displayName: 'On polygon click' },
     },
     actions: [
       {
@@ -2838,6 +2856,9 @@ export const widgets = [
         },
         defaultMarkers: {
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
+        },
+        polygonPoints: {
+          value: `{{[\n\t\t{"lat": 40.7032, "lng": -73.975242},\n\t\t{"lat": 40.7532, "lng": -73.943242},\n\t\t{"lat": 40.7032, "lng": -73.916242}\n]}}`,
         },
         canSearch: {
           value: `{{true}}`,
