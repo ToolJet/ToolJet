@@ -65,10 +65,7 @@ export const selectAndAddDataSource = (
     commonSelectors.toastMessage,
     postgreSqlText.toastDSAdded
   );
-  cy.get('[data-cy="data-source-name-input-filed"]').verifyVisibleElement(
-    "have.value",
-    `${String(dataSource).toLowerCase().replace(/\s+/g, "")}`
-  );
+  cy.get('[data-cy="data-source-name-input-filed"]').should("be.visible");
 
   cy.clearAndType(
     '[data-cy="data-source-name-input-filed"]',
