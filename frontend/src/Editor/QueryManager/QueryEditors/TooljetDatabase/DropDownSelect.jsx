@@ -173,9 +173,10 @@ function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
         <span
           role="button"
           onClick={(e) => {
-            setSelected([]);
-            e.preventDefault();
             e.stopPropagation();
+            setSelected([]);
+            onChange([]);
+            e.preventDefault();
           }}
         >
           <Remove fill="var(--slate12)" />

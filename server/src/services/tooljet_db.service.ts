@@ -231,8 +231,8 @@ export class TooljetDbService {
   private async buildJoinQuery(organizationId: string, queryJson) {
     // Pending: For Subquery, Alias is its table name. Need to handle it on Internal Table details mapping
     // Pending: SELECT Statement - Nested params --> SUM( price * quantity )
-    if (!Object.keys(queryJson).length) throw new BadRequestException('Input is N/A');
-    if (!queryJson?.tables?.length) throw new BadRequestException('TableList is N/A');
+    if (!Object.keys(queryJson).length) throw new BadRequestException('Input is empty');
+    if (!queryJson?.tables?.length) throw new BadRequestException('Tables are not chosen');
 
     const tableList = queryJson.tables
       .filter((table) => table.type === 'Table')
