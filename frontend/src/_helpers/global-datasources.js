@@ -18,7 +18,7 @@ export const canUseDataSourceForQuery = (dataSourceId) => {
 
   if (admin || super_admin) return true;
 
-  if (canCreateDataSource(group_permissions) || canDeleteDataSource(group_permissions)) return true;
+  if (canCreateDataSource() || canDeleteDataSource(group_permissions)) return true;
 
   if (!data_source_group_permissions) {
     return false;
@@ -28,8 +28,10 @@ export const canUseDataSourceForQuery = (dataSourceId) => {
   return dataSource ? true : false;
 };
 
-export const canCreateDataSource = (group_permissions) => {
-  return canAnyGroupPerformAction('data_source_create', group_permissions);
+export const canCreateDataSource = () => {
+  let { group_permissions, super_admin, admin } = authenticationService.currentSessionValue;
+
+  return canAnyGroupPerformAction('data_source_create', group_permissions) || super_admin || admin;
 };
 
 export const canDeleteDataSource = () => {
@@ -49,7 +51,7 @@ export const canUpdateDataSource = (id) => {
 
   return (
     canAnyGroupPerformAction('update', data_source_group_permissions, id) ||
-    canCreateDataSource(group_permissions) ||
+    canCreateDataSource() ||
     super_admin ||
     admin
   );
