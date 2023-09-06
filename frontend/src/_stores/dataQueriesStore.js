@@ -139,7 +139,7 @@ export const useDataQueriesStore = create(
                 dataQueries: state.dataQueries.filter((query) => query.id !== tempId),
               }));
               actions.setSelectedQuery(null);
-              toast.error(`Failed to create query: ${error.message}`);
+              toast.error(`Failed to create query: ${error.message ?? error.error}`);
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
@@ -165,6 +165,9 @@ export const useDataQueriesStore = create(
               }));
               useQueryPanelStore.getState().actions.setSelectedQuery(id);
             })
+            .catch((error) => {
+              toast.error(`Failed to rename query: ${error.message ?? error.error}`);
+            })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         changeDataQuery: (newDataSource) => {
@@ -188,7 +191,8 @@ export const useDataQueriesStore = create(
               useQueryPanelStore.getState().actions.setSelectedQuery(selectedQuery.id);
               useQueryPanelStore.getState().actions.setSelectedDataSource(newDataSource);
             })
-            .catch(() => {
+            .catch((error) => {
+              toast.error(`Failed to change data query: ${error.message ?? error.error}`);
               set({
                 isUpdatingQueryInProcess: false,
               });
@@ -229,6 +233,7 @@ export const useDataQueriesStore = create(
             })
             .catch((error) => {
               console.error('error', error);
+              toast.error(`Failed to duplicate query: ${error.message ?? error.error}`);
               set({
                 isCreatingQueryInProcess: false,
               });
