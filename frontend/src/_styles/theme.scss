@@ -788,7 +788,8 @@ button {
       }
 
       .navigation-area {
-        background-color: var(--base);
+        // background-color: var(--base);
+        background: var(--bases-base, #FFF);
         padding: 1rem;
 
         a.page-link {
