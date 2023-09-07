@@ -702,11 +702,14 @@ class DataSourceManagerComponent extends React.Component {
           {this.props?.environments.map((env) => (
             <a
               key={env?.id}
-              onClick={() => {
-                !selectedDataSource?.id && this.resetOptions();
-                this.props.environmentChanged(env, selectedDataSource?.id);
-              }}
+              onClick={() =>
+                this.props.handleActions(() => {
+                  !selectedDataSource?.id && this.resetOptions();
+                  this.props.environmentChanged(env, selectedDataSource?.id);
+                })
+              }
               className={cx('nav-item nav-link', { active: this.props.currentEnvironment?.name === env.name })}
+              data-cy={`${env.name}-label`}
             >
               {capitalize(env.name)}
             </a>
@@ -928,7 +931,7 @@ class DataSourceManagerComponent extends React.Component {
                     leftIcon="floppydisk"
                     fill={'#FDFDFE'}
                     className="m-2"
-                    disabled={isSaving || this.props.isVersionReleased}
+                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
                     variant="primary"
                     onClick={this.createDataSource}
                   >
