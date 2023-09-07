@@ -485,10 +485,7 @@ describe('Form Onboarding', () => {
           expect(body?.name).toEqual('another user');
           const { invitationToken } = org_user;
           const organization = await orgRepository.findOneOrFail({
-            where: {
-              id: org_user?.organizationUsers?.find((ou) => ou.status === WORKSPACE_USER_STATUS.INVITED)
-                ?.organizationId,
-            },
+            where: { id: org_user.defaultOrganizationId },
           });
 
           org_user_organization = organization;
