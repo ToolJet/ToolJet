@@ -154,6 +154,7 @@ const PageHandleField = ({ page, updatePageHandle }) => {
 
 const Field = ({ id, text, iconSrc, customClass = '', closeMenu, disabled = false, callback = () => null }) => {
   const handleOnClick = (e) => {
+    e.preventDefault()
     e.stopPropagation();
     closeMenu();
     callback(id);
@@ -161,7 +162,7 @@ const Field = ({ id, text, iconSrc, customClass = '', closeMenu, disabled = fals
 
   return (
     <div className={`field ${customClass ? ` ${customClass}` : ''}`}>
-      <Button.UnstyledButton onClick={handleOnClick} styles={{ height: '28px' }} disabled={disabled}>
+      <Button.UnstyledButton onMouseDown={handleOnClick} onClick={handleOnClick} styles={{ height: '28px' }} disabled={disabled}>
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
       </Button.UnstyledButton>
     </div>

@@ -4,8 +4,12 @@ export const RenameInput = ({ page, updaterCallback, updatePageEditMode }) => {
   const handleAddingNewPage = (pageName) => {
     if (pageName.length > 0 && pageName !== page.name) {
       updaterCallback(page.id, pageName);
+      updatePageEditMode(false);
+    } else {
+      //updaterCallback(page.id, pageName);
+      updatePageEditMode(false);
     }
-    updatePageEditMode(false);
+
   };
 
   return (
