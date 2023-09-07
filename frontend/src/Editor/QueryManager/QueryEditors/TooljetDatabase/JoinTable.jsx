@@ -131,6 +131,7 @@ const SelectTableMenu = ({ darkMode }) => {
                   {
                     id: new Date().getTime(),
                     conditions: { conditionsList: [{ leftField: { table: selectedTable } }] },
+                    joinType: 'INNER',
                   },
                 ])
               }

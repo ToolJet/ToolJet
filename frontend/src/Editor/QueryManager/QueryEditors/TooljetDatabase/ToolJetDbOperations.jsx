@@ -446,7 +446,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     // selectedTable &&
     setJoinTableOptions((joinOptions) => {
       return {
-        joins: [{ conditions: { conditionsList: [{ leftField: { table: tableName } }] } }],
+        joins: [{ conditions: { conditionsList: [{ leftField: { table: tableName } }] }, joinType: 'INNER' }],
         from: {
           name: tableName,
           type: 'Table',

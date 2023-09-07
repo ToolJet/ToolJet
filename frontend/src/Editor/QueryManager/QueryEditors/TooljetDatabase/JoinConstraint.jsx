@@ -261,12 +261,12 @@ const JoinOn = ({
       <Col
         sm="2"
         className="p-0 border-end"
-        data-tooltip-id={`tdb-join-operator-tooltip-${index}`}
-        data-tooltip-content={
-          index > 1
-            ? 'The operation is defined by the first condition'
-            : 'This operation will define all the following conditions'
-        }
+        // data-tooltip-id={`tdb-join-operator-tooltip-${index}`}
+        // data-tooltip-content={
+        //   index > 1
+        //     ? 'The operation is defined by the first condition'
+        //     : 'This operation will define all the following conditions'
+        // }
       >
         {index == 1 && (
           <DropDownSelect
@@ -279,7 +279,11 @@ const JoinOn = ({
           />
         )}
         {index == 0 && <div className="tj-small-btn px-2">On</div>}
-        {index > 1 && <div className="tj-small-btn px-2">{groupOperator}</div>}
+        {index > 1 && (
+          <div className="tj-small-btn px-2" style={{ color: 'var(--slate9)' }}>
+            {groupOperator}
+          </div>
+        )}
       </Col>
       <Col sm="4" className="p-0 border-end">
         <DropDownSelect
@@ -353,7 +357,7 @@ const JoinOn = ({
         )}
       </Col>
 
-      {index > 0 && (
+      {/* {index > 0 && (
         <Tooltip
           id={`tdb-join-operator-tooltip-${index}`}
           className="tooltip"
@@ -364,7 +368,7 @@ const JoinOn = ({
             padding: '8px 12px',
           }}
         />
-      )}
+      )} */}
     </Row>
   );
 };
