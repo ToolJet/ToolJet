@@ -27,6 +27,7 @@ import { ConfirmDialog } from '@/_components';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
+import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -1149,7 +1150,9 @@ const withStore = (Component) => (props) => {
     shallow
   );
 
-  return <Component {...props} setGlobalDataSourceStatus={setGlobalDataSourceStatus} />;
+  const { handleActions } = useGlobalDatasourceUnsavedChanges();
+
+  return <Component {...props} setGlobalDataSourceStatus={setGlobalDataSourceStatus} handleActions={handleActions} />;
 };
 
 export const DataSourceManager = withTranslation()(withRouter(withStore(DataSourceManagerComponent)));
