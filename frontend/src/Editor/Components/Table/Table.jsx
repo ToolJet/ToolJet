@@ -1370,7 +1370,7 @@ export function Table({
                           className={cx(
                             `table-text-align-${cell.column.horizontalAlignment} ${
                               wrapAction ? wrapAction : cell?.column?.Header === 'Actions' ? '' : 'wrap'
-                            }-wrapper`,
+                            }-wrapper td`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                               'has-left-actions': cell.column.id === 'leftActions',
