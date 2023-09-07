@@ -22,11 +22,6 @@ describe("Data sources", () => {
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.reload();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
-
-
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -45,13 +40,11 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      postgreSqlText.postgreSQL
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
     );
-    cy.get("[data-cy*='data-source-']")
-      .eq(1)
-      .should("contain", postgreSqlText.postgreSQL);
-    cy.get(postgreSqlSelector.postgresDataSource).click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
       "have.value",
@@ -119,7 +112,11 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectAndAddDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
+    );
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',

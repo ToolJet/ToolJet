@@ -216,6 +216,26 @@ export class MigrationProgress {
     console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
   }
 }
+
+export const processDataInBatches = async <T>(
+  entityManager: EntityManager,
+  getData: (entityManager: EntityManager, skip: number, take: number) => Promise<T[]>,
+  processBatch: (entityManager: EntityManager, data: T[]) => Promise<void>,
+  batchSize = 1000
+): Promise<void> => {
+  let skip = 0;
+  let data: T[];
+
+  do {
+    data = await getData(entityManager, skip, batchSize);
+    skip += batchSize;
+
+    if (data.length > 0) {
+      await processBatch(entityManager, data);
+    }
+  } while (data.length === batchSize);
+};
+
 export const generateNextName = (firstWord: string) => {
   return `${firstWord} ${Date.now()}`;
 };

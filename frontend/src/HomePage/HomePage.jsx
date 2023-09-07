@@ -15,7 +15,7 @@ import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
 import { retrieveWhiteLabelText, getWorkspaceId } from '../_helpers/utils';
 import { withTranslation } from 'react-i18next';
-import { sample } from 'lodash';
+import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
@@ -164,12 +164,11 @@ class HomePageComponent extends React.Component {
   cloneApp = (app) => {
     this.setState({ isCloningApp: true });
     appService
-      .cloneApp(app.id)
+      .cloneResource({ app: [{ id: app.id }], organization_id: getWorkspaceId() })
       .then((data) => {
         toast.success('App cloned successfully.');
         this.setState({ isCloningApp: false });
-        const workspaceId = getWorkspaceId();
-        this.props.navigate(`/${workspaceId}/apps/${data.id}`);
+        this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
       })
       .catch(({ _error }) => {
         _error.statusCode !== 451 && toast.error('Could not clone the app.');
@@ -189,24 +188,35 @@ class HomePageComponent extends React.Component {
       const fileContent = event.target.result;
       this.setState({ isImportingApp: true });
       try {
-        const requestBody = JSON.parse(fileContent);
+        const organization_id = getWorkspaceId();
+        let importJSON = JSON.parse(fileContent);
+        // For backward compatibility with legacy app import
+        const isLegacyImport = isEmpty(importJSON.tooljet_version);
+        if (isLegacyImport) {
+          importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
+        }
+        const requestBody = { organization_id, ...importJSON };
         appService
-          .importApp(requestBody)
+          .importResource(requestBody)
           .then((data) => {
-            toast.success('App imported successfully.');
+            toast.success('Imported successfully.');
             this.setState({
               isImportingApp: false,
             });
-            this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
+            if (!isEmpty(data.imports.app)) {
+              this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
+            } else if (!isEmpty(data.imports.tooljet_database)) {
+              this.props.navigate(`/${getWorkspaceId()}/database`);
+            }
           })
           .catch(({ error }) => {
+            toast.error(`Could not import: ${error}`);
             this.setState({
               isImportingApp: false,
             });
-            toast.error(`Could not import the app: ${error}`);
           });
       } catch (error) {
-        toast.error(`Could not import the app: ${error}`);
+        toast.error(`Could not import: ${error}`);
         this.setState({
           isImportingApp: false,
         });

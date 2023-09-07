@@ -23,11 +23,6 @@ describe("Data source Firestore", () => {
 
   it("Should verify elements on Firestore connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -45,18 +40,7 @@ describe("Data source Firestore", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      firestoreText.firestore
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(1)
-      .should("contain", firestoreText.firestore);
-    cy.get('[data-cy="data-source-firestore"]').click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      firestoreText.firestore
-    );
+    selectAndAddDataSource("databases", firestoreText.firestore, data.lastName);
 
     cy.get('[data-cy="label-private-key"]').verifyVisibleElement(
       "have.text",
@@ -97,12 +81,8 @@ describe("Data source Firestore", () => {
   });
 
   it("Should verify the functionality of Firestore connection form.", () => {
-    selectAndAddDataSource(firestoreText.firestore);
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-firestore`
-    );
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    selectAndAddDataSource("databases", firestoreText.firestore, data.lastName);
 
     fillDataSourceTextField(
       firestoreText.privateKey,
@@ -119,7 +99,7 @@ describe("Data source Firestore", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(

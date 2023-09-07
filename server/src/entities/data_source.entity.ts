@@ -59,7 +59,9 @@ export class DataSource extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 

@@ -12,8 +12,11 @@ import {
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
+import { fake } from "Fixtures/fake";
 import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
@@ -22,10 +25,6 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -44,14 +43,7 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("MariaDB");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "MariaDB");
-    cy.get('[data-cy="data-source-mariadb"]').click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      "MariaDB"
-    );
+    selectAndAddDataSource("databases", "MariaDB", data.lastName);
 
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -115,37 +107,46 @@ describe("Data sources", () => {
     // cy.get('[data-cy="connection-alert-text"]').should("be.visible")
   });
 
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectAndAddDataSource("MariaDB");
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      "cypress-mariadb"
-    );
+  it("Should verify the functionality of MariaDB connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    selectAndAddDataSource("databases", "MariaDB", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
       postgreSqlText.placeholderEnterHost,
       Cypress.env("mariadb_host")
     );
-    fillDataSourceTextField(
-      postgreSqlText.labelPort,
-      postgreSqlText.placeholderEnterPort,
-      "5432"
-    );
+    // fillDataSourceTextField(
+    //   postgreSqlText.labelPort,
+    //   postgreSqlText.placeholderEnterPort,
+    //   "5432"
+    // );
+
+    cy.get('[data-cy="label-port"]').verifyVisibleElement("have.text", "Port");
+    cy.get('[data-cy="port-text-field"]')
+      .should("be.visible")
+      .invoke("attr", "placeholder")
+      .should("contain", "Enter port");
 
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
       Cypress.env("mariadb_user")
     );
-
-    cy.get(postgreSqlSelector.passwordTextField).type(
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "Enter password",
       Cypress.env("mariadb_password")
     );
 
-    cy.get('[data-cy="label-database"]').verifyVisibleElement("have.text", "Database")
-    cy.get('[data-cy="database-text-field"]').should("be.visible").invoke('attr', 'placeholder').should('contain', 'Enter name of the database')
+    cy.get('[data-cy="label-database"]').verifyVisibleElement(
+      "have.text",
+      "Database"
+    );
+    cy.get('[data-cy="database-text-field"]')
+      .should("be.visible")
+      .invoke("attr", "placeholder")
+      .should("contain", "Enter name of the database");
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -155,14 +156,13 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
-    cy.get('[data-cy="cypress-mariadb-button"]').verifyVisibleElement(
-      "have.text",
-      "cypress-mariadb"
-    );
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-mariadb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-mariadb`);
 
-    deleteDatasource("cypress-mariadb");
+    deleteDatasource(`cypress-${data.lastName}-mariadb`);
   });
 });
