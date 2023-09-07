@@ -27,16 +27,22 @@ interface AppResourceMappings {
   appDefaultEnvironmentMapping: Record<string, string[]>;
 }
 
-type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb';
-type DefaultDataSourceName = 'restapidefault' | 'runjsdefault' | 'runpydefault' | 'tooljetdbdefault';
+type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
+type DefaultDataSourceName =
+  | 'restapidefault'
+  | 'runjsdefault'
+  | 'runpydefault'
+  | 'tooljetdbdefault'
+  | 'workflowsdefault';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
   'runjsdefault',
   'runpydefault',
   'tooljetdbdefault',
+  'workflowsdefault',
 ];
-const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb'];
+const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
 
 @Injectable()
 export class AppImportExportService {
