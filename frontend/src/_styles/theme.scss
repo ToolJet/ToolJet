@@ -11179,59 +11179,6 @@ tbody {
   }
 }
 
-#global-settings-popover {
-  padding: 24px;
-  gap: 20px;
-  max-width: 377px !important;
-  height: 316px !important;
-  background: #FFFFFF;
-  border: 1px solid #E6E8EB;
-  box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
-  border-radius: 6px;
-  margin-top: -13px;
-
-
-  .input-with-icon {
-    justify-content: end;
-  }
-
-  .form-check-input {
-    padding-right: 8px;
-  }
-
-  .global-popover-div-wrap-width {
-    width: 156px !important;
-  }
-
-  .form-switch {
-    margin-bottom: 20px;
-  }
-
-  .global-popover-div-wrap {
-    padding: 0px;
-    gap: 75px;
-    width: 329px;
-    height: 32px;
-    margin-bottom: 20px !important;
-    justify-content: space-between;
-
-    &:last-child {
-      margin-bottom: 0px !important;
-    }
-  }
-}
-
-.global-popover-text {
-  font-family: 'IBM Plex Sans';
-  font-style: normal;
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 20px;
-  color: #11181C;
-
-
-}
-
 .maximum-canvas-width-input-select {
   padding: 6px 10px;
   gap: 17px;
@@ -11319,10 +11266,6 @@ tbody {
 #global-settings-popover.theme-dark {
   background-color: $bg-dark-light  !important;
   border: 1px solid #2B2F31;
-
-  .global-popover-text {
-    color: #fff !important;
-  }
 
   .maximum-canvas-width-input-select {
     background-color: $bg-dark-light  !important;
