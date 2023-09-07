@@ -332,10 +332,10 @@ export class TooljetDbService {
 
         let leftSideInput = ``;
         if (leftField.type === 'Value') {
-          leftSideInput +=
-            keywords.includes(leftField.value) && operator === 'IS'
-              ? leftField.value
-              : this.addQuotesIfString(leftField.value);
+          const dontAddQuotes =
+            (keywords.includes(leftField.value) && operator === 'IS') || operator === 'IN' || operator === 'NOT IN';
+
+          leftSideInput += dontAddQuotes ? leftField.value : this.addQuotesIfString(leftField.value);
         } else {
           if (leftField.function) leftSideInput += `${leftField.function}(`;
           leftSideInput += `${leftField.table ? '"' + internalTableNametoIdMap[leftField.table] + '"' + '.' : ''}${
@@ -346,10 +346,10 @@ export class TooljetDbService {
 
         let rightSideInput = ``;
         if (rightField.type === 'Value') {
-          rightSideInput +=
-            keywords.includes(rightField.value) && operator === 'IS'
-              ? rightField.value
-              : this.addQuotesIfString(rightField.value);
+          const dontAddQuotes =
+            (keywords.includes(rightField.value) && operator === 'IS') || operator === 'IN' || operator === 'NOT IN';
+
+          rightSideInput += dontAddQuotes ? rightField.value : this.addQuotesIfString(rightField.value);
         } else {
           if (rightField.function) rightSideInput += `${rightField.function}(`;
           rightSideInput += `${rightField.table ? '"' + internalTableNametoIdMap[rightField.table] + '"' + '.' : ''}${

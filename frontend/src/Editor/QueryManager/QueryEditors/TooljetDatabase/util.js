@@ -53,8 +53,10 @@ export const filterOperatorOptions = [
   { label: 'not like', value: 'NOT LIKE' },
   { label: 'ilike', value: 'ILIKE' },
   { label: 'not ilike', value: 'NOT ILIKE' },
-  // { label: 'in', value: 'IN' },
-  // { label: 'not in', value: 'NOT IN' },
+  { label: 'match', value: '~' },
+  { label: 'imatch', value: '~*' },
+  { label: 'in', value: 'IN' },
+  { label: 'not in', value: 'NOT IN' },
   { label: 'is', value: 'IS' },
 ];
 
