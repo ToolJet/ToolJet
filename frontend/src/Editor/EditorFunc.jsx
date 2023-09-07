@@ -125,6 +125,7 @@ const EditorComponent = (props) => {
     appDefinitionDiff,
     appDiffOptions,
     events,
+    areOthersOnSameVersionAndPage,
   } = useAppInfo();
 
   const [currentPageId, setCurrentPageId] = useState(null);
@@ -283,30 +284,32 @@ const EditorComponent = (props) => {
     updateEditorState({
       canUndo: false,
       canRedo: false,
-      // currentVersion: uuid(),
     });
   };
 
   /**
-   * When a new update is received over-the-websocket connection
-   * the useEffect in Container.jsx is triggered, but already appDef had been updated
-   * to avoid ymap observe going into a infinite loop a check is added where if the
-   * current appDef is equal to the newAppDef then we do not trigger a realtimeSave
+   * Initializes real-time saving of application definitions if multiplayer editing is enabled.
+   * Monitors changes in the 'appDef' property of the provided 'ymap' object and triggers a real-time save
+   * when all conditions are met.
    */
   const initRealtimeSave = () => {
+    // Check if multiplayer editing is enabled; if not, return early
     if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
 
+    // Observe changes in the 'appDef' property of the 'ymap' object
     props.ymap?.observe(() => {
       const ymapUpdates = props.ymap?.get('appDef');
 
+      // Check if there is a new session and if others are on the same version and page
       if (!ymapUpdates.currentSessionId || ymapUpdates.currentSessionId === currentSessionId) return;
-      // if (!isEqual(props.editingVersion?.id, props.ymap?.get('appDef').editingVersionId)) return;
-      if (isEqual(appDefinition, ymapUpdates.newDefinition)) return;
-      console.log('-----arpit real time ', {
-        x: ymapUpdates.currentSessionId,
-        y: currentSessionId,
-      });
 
+      // Check if others are on the same version and page
+      if (!ymapUpdates.areOthersOnSameVersionAndPage) return;
+
+      // Check if the new application definition is different from the current one
+      if (isEqual(appDefinition, ymapUpdates.newDefinition)) return;
+
+      // Trigger real-time save with specific options
       realtimeSave(props.ymap?.get('appDef').newDefinition, {
         skipAutoSave: true,
         skipYmapUpdate: true,
@@ -741,13 +744,6 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
-    if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
-      props.ymap?.set('appDef', {
-        newDefinition,
-        editingVersionId: props.editingVersion?.id,
-      });
-    }
-
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
 
@@ -812,11 +808,12 @@ const EditorComponent = (props) => {
       computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
     }
 
-    if (!opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
+    if (config.ENABLE_MULTIPLAYER_EDITING && !opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       props.ymap?.set('appDef', {
         newDefinition: updatedAppDefinition,
         editingVersionId: props.editingVersion?.id,
         currentSessionId,
+        areOthersOnSameVersionAndPage,
       });
     }
   };

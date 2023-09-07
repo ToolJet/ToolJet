@@ -22,6 +22,7 @@ const initialState = {
   appDiffOptions: {},
   isSaving: false,
   appId: null,
+  areOthersOnSameVersionAndPage: false,
 };
 
 export const useAppDataStore = create(
