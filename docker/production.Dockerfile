@@ -99,21 +99,35 @@ COPY --from=builder /app/server/dist ./app/server/dist
 # Define non-sudo user
 RUN useradd --create-home --home-dir /home/appuser appuser \
     && chown -R appuser:0 /app \
-    && chown -R appuser:0 /home/appuser \
+    && chown -R appuser:0 /home \
     && chmod u+x /app \
-    && chmod -R g=u /app
+    && chmod u+x /home \
+    && chmod -R g=u /app \
+    && chmod -R g=u /home
 
-RUN mkdir -p /home/appuser/.npm/ \
-    && chown -R appuser:0 /home/appuser/.npm \
-    && chmod g+s /home/appuser/.npm
+# Create directory /home/appuser and set ownership to appuser (Refer doc for understanding the changes https://app.clickup.com/37484951/v/dc/13qycq-4081)
+RUN mkdir -p /home/appuser \
+    && chown -R appuser:0 /home/appuser \
+    && chmod g+s /home/appuser \
+    && chmod -R g=u /home/appuser \
+    && npm cache clean --force
 
-RUN mkdir -p /tmp/npm-cache/ \
-    && chown -R appuser:0 /tmp/npm-cache \
-    && chmod g+s /tmp/npm-cache
+# Create directory /tmp/.npm/npm-cache/ and set ownership to appuser (Refer doc for understanding the changes https://app.clickup.com/37484951/v/dc/13qycq-4081)
+RUN mkdir -p /tmp/.npm/npm-cache/ \
+    && chown -R appuser:0 /tmp/.npm/npm-cache/ \
+    && chmod g+s /tmp/.npm/npm-cache/ \
+    && chmod -R g=u /tmp/.npm/npm-cache \
+    && npm cache clean --force
 
-# Set npm cache directory
-RUN npm config set cache /tmp/npm-cache --global
-ENV npm_config_cache /tmp/npm-cache
+# Set npm cache directory globally
+RUN npm config set cache /tmp/.npm/npm-cache/ --global
+ENV npm_config_cache /tmp/.npm/npm-cache/
+
+# Create directory /tmp/.npm/npm-cache/_logs and set ownership to appuser
+RUN mkdir -p /tmp/.npm/npm-cache/_logs \
+    && chown -R appuser:0 /tmp/.npm/npm-cache/_logs \
+    && chmod g+s /tmp/.npm/npm-cache/_logs \
+    && chmod -R g=u /tmp/.npm/npm-cache/_logs
 
 ENV HOME=/home/appuser
 
