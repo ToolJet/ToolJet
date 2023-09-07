@@ -134,8 +134,9 @@ describe('Google SSO Onboarding', () => {
           });
           const organization = await orgRepository.findOneOrFail({
             where: {
-              id: org_user?.organizationUsers?.find((ou) => ou.status === WORKSPACE_USER_STATUS.INVITED)
-                ?.organizationId,
+              id: org_user?.organizationUsers?.find(
+                (ou) => ou.status === WORKSPACE_USER_STATUS.INVITED && ou.invitationToken === orgInviteToken
+              )?.organizationId,
             },
           });
 
@@ -325,7 +326,7 @@ describe('Google SSO Onboarding', () => {
         it('should setup account for user using sso link', async () => {
           const { invitationToken } = current_user;
           const organization = await orgRepository.findOneOrFail({
-            where: { id: current_user?.organizationUsers?.[0]?.organizationId },
+            where: { id: current_user.defaultOrganizationId },
           });
 
           current_organization = organization;
@@ -389,8 +390,9 @@ describe('Google SSO Onboarding', () => {
           });
           const organization = await orgRepository.findOneOrFail({
             where: {
-              id: org_user?.organizationUsers?.find((ou) => ou.status === WORKSPACE_USER_STATUS.INVITED)
-                ?.organizationId,
+              id: org_user?.organizationUsers?.find(
+                (ou) => ou.status === WORKSPACE_USER_STATUS.INVITED && ou.invitationToken === orgInviteToken
+              )?.organizationId,
             },
           });
 
