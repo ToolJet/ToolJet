@@ -28,7 +28,14 @@ interface AppResourceMappings {
 }
 
 type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb';
+type DefaultDataSourceName = 'restapidefault' | 'runjsdefault' | 'runpydefault' | 'tooljetdbdefault';
 
+const DefaultDataSourceNames: DefaultDataSourceName[] = [
+  'restapidefault',
+  'runjsdefault',
+  'runpydefault',
+  'tooljetdbdefault',
+];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb'];
 
 @Injectable()
@@ -374,7 +381,7 @@ export class AppImportExportService {
           );
         }
 
-        const isDefaultDatasource = DefaultDataSourceKinds.includes(importingDataSource.kind as DefaultDataSourceKind);
+        const isDefaultDatasource = DefaultDataSourceNames.includes(importingDataSource.name as DefaultDataSourceName);
         if (!isDefaultDatasource) {
           await this.createDataSourceOptionsForExistingAppEnvs(
             manager,
@@ -566,7 +573,7 @@ export class AppImportExportService {
     appVersionId: string,
     user: User
   ): Promise<DataSource> {
-    const isDefaultDatasource = DefaultDataSourceKinds.includes(dataSource.kind as DefaultDataSourceKind);
+    const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
     const isPlugin = !!dataSource.pluginId;
 
     if (isDefaultDatasource) {
