@@ -869,13 +869,11 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <AddNewButton onClick={addHandler} data-cy="add-more-event-handler" className="mt-2">
+      <AddNewButton onClick={addHandler} data-cy="add-more-event-handler" className="mt-0">
         {t('editor.inspector.eventManager.addHandler', 'New event handler')}
       </AddNewButton>
     );
   };
-
-  const componentName = componentMeta.name ? componentMeta.name : 'query';
 
   if (events.length === 0) {
     return (
