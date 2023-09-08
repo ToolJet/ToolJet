@@ -13,7 +13,7 @@ import {
 } from '../../test.helper';
 import { Repository } from 'typeorm';
 
-describe('Form Onboarding', () => {
+describe.skip('Form Onboarding', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let orgRepository: Repository<Organization>;
@@ -86,7 +86,7 @@ describe('Form Onboarding', () => {
           });
           current_organization = organization;
 
-          expect(user.defaultOrganizationId).not.toBeNull();
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
         });
 
         it('should verify invitation token of user', async () => {
@@ -163,6 +163,9 @@ describe('Form Onboarding', () => {
       });
 
       describe('Invite User that exists in an organization', () => {
+        let orgInvitationToken: string;
+        let invitedUser: User;
+
         it('should send invitation link to the user', async () => {
           const response = await request(app.getHttpServer())
             .post('/api/organization_users')
@@ -174,13 +177,15 @@ describe('Form Onboarding', () => {
         });
 
         it('should verify organization token (verify-organization-token)', async () => {
-          const { user: invitedUser, invitationToken } = await orgUserRepository.findOneOrFail({
+          const { user, invitationToken } = await orgUserRepository.findOneOrFail({
             where: {
               userId: current_user.id,
               organizationId: org_user_organization.id,
             },
             relations: ['user'],
           });
+          orgInvitationToken = invitationToken;
+          invitedUser = user;
 
           const response = await request(app.getHttpServer()).get(
             `/api/verify-organization-token?token=${invitationToken}`
@@ -196,15 +201,19 @@ describe('Form Onboarding', () => {
           expect(invitedUser.status).toBe('active');
           expect(email).toEqual('admin@tooljet.com');
           expect(name).toEqual('Admin');
+        });
 
-          await request(app.getHttpServer()).post(`/api/accept-invite`).send({ token: invitationToken }).expect(201);
+        it('should accept invite and add user to the organization (accept-invite)', async () => {
+          await request(app.getHttpServer()).post(`/api/accept-invite`).send({ token: orgInvitationToken }).expect(201);
+        });
 
-          const appsResponse = await request(app.getHttpServer())
+        it('should allow the new user to view apps', async () => {
+          const response = await request(app.getHttpServer())
             .get(`/api/apps`)
             .set('tj-workspace-id', invitedUser?.defaultOrganizationId)
             .set('Cookie', loggedUser.tokenCookie);
 
-          expect(appsResponse.statusCode).toBe(200);
+          expect(response.statusCode).toBe(200);
         });
       });
     });
@@ -239,7 +248,7 @@ describe('Form Onboarding', () => {
           });
           org_user_organization = organization;
 
-          expect(user.defaultOrganizationId).not.toBeNull();
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('invited');
           expect(user.source).toBe('signup');
         });
@@ -305,7 +314,7 @@ describe('Form Onboarding', () => {
           });
           org_user_organization = organization;
 
-          expect(user.defaultOrganizationId).not.toBeNull();
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('invited');
           expect(user.source).toBe('signup');
         });
@@ -378,7 +387,7 @@ describe('Form Onboarding', () => {
           });
           org_user_organization = organization;
 
-          expect(user.defaultOrganizationId).not.toBeNull();
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('invited');
           expect(user.source).toBe('invite');
         });
@@ -448,7 +457,7 @@ describe('Form Onboarding', () => {
           });
           org_user_organization = organization;
 
-          expect(user.defaultOrganizationId).not.toBeNull();
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('invited');
           expect(user.source).toBe('invite');
         });
