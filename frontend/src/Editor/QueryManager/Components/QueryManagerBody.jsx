@@ -20,23 +20,17 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
-export const QueryManagerBody = ({
-  darkMode,
-  options,
-  currentState,
-  allComponents,
-  apps,
-  appDefinition,
-  setOptions,
-  appId,
-}) => {
+export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDefinition, setOptions, appId }) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const { changeDataQuery, updateDataQuery } = useDataQueriesActions();
+
+  const currentState = useCurrentStateStore();
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
