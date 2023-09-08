@@ -1,0 +1,23 @@
+{
+  "tooljet_database": [
+    {
+      "id": "a7426184-4d4d-4191-9f74-d668cc779ef9",
+      "table_name": "new",
+      "schema": {
+        "columns": [
+          {
+            "column_name": "id",
+            "data_type": "integer",
+            "column_default": "nextval('\"a7426184-4d4d-4191-9f74-d668cc779ef9_id_seq\"'::regclass)",
+            "character_maximum_length": null,
+            "numeric_precision": 32,
+            "is_nullable": "NO",
+            "constraint_type": "PRIMARY KEY",
+            "keytype": "PRIMARY KEY"
+          }
+        ]
+      }
+    }
+  ],
+  "tooljet_version": "2.4.9"
+}
