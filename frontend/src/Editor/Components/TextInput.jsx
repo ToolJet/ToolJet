@@ -39,42 +39,43 @@ export const TextInput = function TextInput({
   }, [styles.visibility]);
 
   useEffect(() => {
-    const setFocusFunc = async () => {
-      textInputRef.current.focus();
-    };
-
-    const setBlurFunc = async () => {
-      textInputRef.current.blur();
-    };
-
-    const setTextFunc = async (text) => {
-      setValue(text);
-      await setExposedVariable('value', text);
-      fireEvent('onChange');
-    };
-
-    const clearFunc = async () => {
-      setValue('');
-      await setExposedVariable('value', '');
-      fireEvent('onChange');
-    };
-
     setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
+
+  useEffect(() => {
     setValue(properties.value);
     setExposedVariable('value', properties.value);
-    setExposedVariable('setFocus', setFocusFunc);
-    setExposedVariable('setBlur', setBlurFunc);
-    setExposedVariable('disable', async (value) => {
-      await setDisable(value);
-    });
-    setExposedVariable('visibility', async (value) => {
-      await setVisibility(value);
-    });
-    setExposedVariable('setText', setTextFunc);
-    setExposedVariable('clear', clearFunc);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid, properties.value]);
+  }, [properties.value]);
+
+  useEffect(() => {
+    setExposedVariable('setFocus', async function () {
+      textInputRef.current.focus();
+    });
+    setExposedVariable('setBlur', async function () {
+      textInputRef.current.blur();
+    });
+    setExposedVariable('disable', async function (value) {
+      setDisable(value);
+    });
+    setExposedVariable('visibility', async function (value) {
+      setVisibility(value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('setText', async function (text) {
+      setValue(text);
+      setExposedVariable('value', text).then(fireEvent('onChange'));
+    });
+    setExposedVariable('clear', async function () {
+      setValue('');
+      setExposedVariable('value', '').then(fireEvent('onChange'));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setValue]);
 
   return (
     <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
