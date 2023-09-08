@@ -26,7 +26,6 @@ describe("Data sources", () => {
       .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -102,6 +101,7 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource(postgreSqlText.postgreSQL);
 
     cy.clearAndType(

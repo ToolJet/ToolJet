@@ -19,11 +19,6 @@ describe("Data source SMTP", () => {
 
   it("Should verify elements on  SMTP connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -41,14 +36,8 @@ describe("Data source SMTP", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("SMTP");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "SMTP");
-    cy.get('[data-cy="data-source-smtp"]').click();
+    selectAndAddDataSource("apis", "SMTP", data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      "SMTP"
-    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -97,12 +86,8 @@ describe("Data source SMTP", () => {
   });
 
   it("Should verify the functionality of SMTP connection form.", () => {
-    selectAndAddDataSource("SMTP");
-
-    cy.clearAndType(
-      postgreSqlSelector.dataSourceNameInputField,
-      `cypress-${data.lastName}-smtp`
-    );
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    selectAndAddDataSource("apis", "SMTP", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -121,7 +106,9 @@ describe("Data source SMTP", () => {
       Cypress.env("smtp_user")
     );
 
-    cy.get(postgreSqlSelector.passwordTextField).type(
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "Enter password",
       Cypress.env("smtp_password")
     );
 
@@ -135,7 +122,7 @@ describe("Data source SMTP", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
