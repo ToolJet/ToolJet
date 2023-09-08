@@ -8,7 +8,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, noop } from 'lodash';
 import { shallow } from 'zustand/shallow';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
@@ -60,10 +60,11 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
 import { resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
+import RightSidebarTabManager from './RightSidebarTabManager';
 
 setAutoFreeze(false);
 enablePatches();
-
+export const EMPTY_ARRAY = [];
 class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -191,8 +192,6 @@ class EditorComponent extends React.Component {
     this.initRealtimeSave();
     this.initEventListeners();
     this.setState({
-      currentSidebarTab: 2,
-      selectedComponents: [],
       scrollOptions: {
         container: this.canvasContainerRef.current,
         throttleTime: 30,
@@ -634,16 +633,12 @@ class EditorComponent extends React.Component {
     );
   };
 
-  handleInspectorView = () => {
-    this.switchSidebarTab(2);
-  };
-
   handleSlugChange = (newSlug) => {
     this.setState({ slug: newSlug });
   };
 
   removeComponents = () => {
-    const selectedComponents = this.props?.selectedComponents;
+    const selectedComponents = useEditorStore.getState().selectedComponents;
 
     if (!this.props.isVersionReleased && selectedComponents?.length > 1) {
       let newDefinition = cloneDeep(this.state.appDefinition);
@@ -661,7 +656,6 @@ class EditorComponent extends React.Component {
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.props.isVersionReleased,
       });
-      this.handleInspectorView();
     } else if (this.props.isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
@@ -703,7 +697,7 @@ class EditorComponent extends React.Component {
       this.appDefinitionChanged(newDefinition, {
         skipAutoSave: this.props.isVersionReleased,
       });
-      this.handleInspectorView();
+      this.props.setSelectedComponents([]);
     } else {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
@@ -745,9 +739,8 @@ class EditorComponent extends React.Component {
   };
 
   handleEditorEscapeKeyPress = () => {
-    if (this.props?.selectedComponents?.length > 0) {
+    if (useEditorStore.getState().selectedComponents.length > 0) {
       this.props.setSelectedComponents([]);
-      this.handleInspectorView();
     }
   };
 
@@ -755,7 +748,7 @@ class EditorComponent extends React.Component {
     let appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
     let newComponents = appDefinition.pages[this.state.currentPageId].components;
 
-    for (const selectedComponent of this.props.selectedComponents) {
+    for (const selectedComponent of useEditorStore.getState().selectedComponents) {
       newComponents = produce(newComponents, (draft) => {
         let top = draft[selectedComponent.id].layouts[this.props.currentLayout].top;
         let left = draft[selectedComponent.id].layouts[this.props.currentLayout].left;
@@ -836,16 +829,13 @@ class EditorComponent extends React.Component {
   };
 
   setSelectedComponent = (id, component, multiSelect = false) => {
-    if (this.props.selectedComponents.length === 0 || !multiSelect) {
-      this.switchSidebarTab(1);
-    } else {
-      this.switchSidebarTab(2);
-    }
-
-    const isAlreadySelected = this.props.selectedComponents.find((component) => component.id === id);
+    const isAlreadySelected = useEditorStore.getState().selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
-      this.props.setSelectedComponents([...(multiSelect ? this.props.selectedComponents : []), { id, component }]);
+      this.props.setSelectedComponents([
+        ...(multiSelect ? useEditorStore.getState().selectedComponents : []),
+        { id, component },
+      ]);
     }
   };
 
@@ -940,10 +930,6 @@ class EditorComponent extends React.Component {
     return onComponentOptionsChanged(this, component, options);
   };
 
-  handleComponentClick = (id, component) => {
-    this.switchSidebarTab(1);
-  };
-
   sideBarDebugger = {
     error: (data) => {
       debuggerActions.error(this, data);
@@ -969,17 +955,16 @@ class EditorComponent extends React.Component {
   runQuery = (queryId, queryName) => runQuery(this, queryId, queryName);
 
   onAreaSelectionStart = (e) => {
-    const isMultiSelect = e.inputEvent.shiftKey || this.props.selectedComponents.length > 0;
+    const isMultiSelect = e.inputEvent.shiftKey || useEditorStore.getState().selectedComponents.length > 0;
     this.props.setSelectionInProgress(true);
-    this.props.setSelectedComponents([...(isMultiSelect ? this.props.selectedComponents : [])]);
+    this.props.setSelectedComponents([...(isMultiSelect ? useEditorStore.getState().selectedComponents : [])]);
   };
 
   onAreaSelection = (e) => {
     e.added.forEach((el) => {
       el.classList.add('resizer-select');
     });
-
-    if (this.props.selectionInProgress) {
+    if (useEditorStore.getState().selectionInProgress) {
       e.removed.forEach((el) => {
         el.classList.remove('resizer-select');
       });
@@ -1008,13 +993,13 @@ class EditorComponent extends React.Component {
   onAreaSelectionDrag = (e) => {
     if (this.selectionDragRef.current) {
       e.stop();
-      this.props.selectionInProgress && this.props.setSelectionInProgress(false);
+      useEditorStore.getState().selectionInProgress && this.props.setSelectionInProgress(false);
     }
   };
 
   onAreaSelectionDragEnd = () => {
     this.selectionDragRef.current = false;
-    this.props.selectionInProgress && this.props.setSelectionInProgress(false);
+    useEditorStore.getState().selectionInProgress && this.props.setSelectionInProgress(false);
   };
 
   addNewPage = ({ name, handle }) => {
@@ -1484,10 +1469,10 @@ class EditorComponent extends React.Component {
       return defaultCanvasMinWidth;
     }
   };
+
   handleCanvasContainerMouseUp = (e) => {
     if (['real-canvas', 'modal'].includes(e.target.className)) {
-      this.props.setSelectedComponents([]);
-      this.setState({ currentSidebarTab: 2 });
+      this.props.setSelectedComponents(EMPTY_ARRAY);
     }
   };
 
@@ -1495,7 +1480,6 @@ class EditorComponent extends React.Component {
 
   render() {
     const {
-      currentSidebarTab,
       appDefinition,
       appId,
       slug,
@@ -1508,7 +1492,6 @@ class EditorComponent extends React.Component {
       defaultComponentStateComputed,
       queryConfirmationList,
     } = this.state;
-    const selectedComponents = this?.props?.selectedComponents;
     const currentState = this.props?.currentState;
     const editingVersion = this.props?.editingVersion;
     const appVersionPreviewLink = editingVersion
@@ -1578,7 +1561,6 @@ class EditorComponent extends React.Component {
                 debuggerActions={this.sideBarDebugger}
                 appDefinition={{
                   components: appDefinition.pages[this.state.currentPageId]?.components ?? {},
-                  selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
                   pages: this.state.appDefinition.pages,
                   homePageId: this.state.appDefinition.homePageId,
                   showViewerNavigation: this.state.appDefinition.showViewerNavigation,
@@ -1715,7 +1697,7 @@ class EditorComponent extends React.Component {
                             handleUndo={this.handleUndo}
                             handleRedo={this.handleRedo}
                             removeComponent={this.removeComponent}
-                            onComponentClick={this.handleComponentClick}
+                            onComponentClick={noop} // Prop is used in Viewer hence using a dummy function to prevent error in editor
                             sideBarDebugger={this.sideBarDebugger}
                             currentPageId={this.state.currentPageId}
                           />
@@ -1752,41 +1734,36 @@ class EditorComponent extends React.Component {
                   handleEditorEscapeKeyPress={this.handleEditorEscapeKeyPress}
                   removeMultipleComponents={this.removeComponents}
                 />
-
-                {currentSidebarTab === 1 && (
-                  <div className="pages-container">
-                    {selectedComponents.length === 1 &&
-                    !isEmpty(appDefinition.pages[this.state.currentPageId]?.components) &&
-                    !isEmpty(appDefinition.pages[this.state.currentPageId]?.components[selectedComponents[0].id]) ? (
-                      <Inspector
-                        moveComponents={this.moveComponents}
-                        componentDefinitionChanged={this.componentDefinitionChanged}
-                        removeComponent={this.removeComponent}
-                        selectedComponentId={selectedComponents[0].id}
-                        allComponents={appDefinition.pages[this.state.currentPageId]?.components}
-                        key={selectedComponents[0].id}
-                        switchSidebarTab={this.switchSidebarTab}
-                        apps={apps}
-                        darkMode={this.props.darkMode}
-                        appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
-                        pages={this.getPagesWithIds()}
-                        cloneComponents={this.cloneComponents}
-                      ></Inspector>
-                    ) : (
-                      <center className="mt-5 p-2">
-                        {this.props.t('editor.inspectComponent', 'Please select a component to inspect')}
-                      </center>
-                    )}
-                  </div>
-                )}
-
-                {currentSidebarTab === 2 && (
-                  <WidgetManager
-                    componentTypes={componentTypes}
-                    zoomLevel={zoomLevel}
-                    darkMode={this.props.darkMode}
-                  ></WidgetManager>
-                )}
+                <RightSidebarTabManager
+                  inspectorTab={
+                    <div className="pages-container">
+                      {!isEmpty(appDefinition.pages[this.state.currentPageId]?.components) ? (
+                        <Inspector
+                          moveComponents={this.moveComponents}
+                          componentDefinitionChanged={this.componentDefinitionChanged}
+                          removeComponent={this.removeComponent}
+                          allComponents={appDefinition.pages[this.state.currentPageId]?.components}
+                          apps={apps}
+                          darkMode={this.props.darkMode}
+                          appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
+                          pages={this.getPagesWithIds()}
+                          cloneComponents={this.cloneComponents}
+                        />
+                      ) : (
+                        <center className="mt-5 p-2">
+                          {this.props.t('editor.inspectComponent', 'Please select a component to inspect')}
+                        </center>
+                      )}
+                    </div>
+                  }
+                  widgetManagerTab={
+                    <WidgetManager
+                      componentTypes={componentTypes}
+                      zoomLevel={zoomLevel}
+                      darkMode={this.props.darkMode}
+                    />
+                  }
+                />
               </div>
               {config.COMMENT_FEATURE_ENABLE && this.props.showComments && (
                 <CommentNotifications socket={this.socket} pageId={this.state.currentPageId} />
@@ -1800,20 +1777,11 @@ class EditorComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const {
-    showComments,
-    currentLayout,
-    selectionInProgress,
-    setSelectionInProgress,
-    selectedComponents,
-    setSelectedComponents,
-  } = useEditorStore(
+  const { showComments, currentLayout, setSelectionInProgress, setSelectedComponents } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
-      selectionInProgress: state?.selectionInProgress,
       setSelectionInProgress: state?.actions?.setSelectionInProgress,
-      selectedComponents: state?.selectedComponents,
       setSelectedComponents: state?.actions?.setSelectedComponents,
     }),
     shallow
@@ -1831,9 +1799,7 @@ const withStore = (Component) => (props) => {
       currentLayout={currentLayout}
       isVersionReleased={isVersionReleased}
       editingVersion={editingVersion}
-      selectionInProgress={selectionInProgress}
       setSelectionInProgress={setSelectionInProgress}
-      selectedComponents={selectedComponents}
       setSelectedComponents={setSelectedComponents}
       currentState={currentState}
     />
