@@ -4,7 +4,16 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const AddNewButton = ({ children, dataCy, onClick, className = '' }) => {
   return (
-    <ButtonSolid variant="tertiary" size="md" className={`add-new-btn ${className}`} onClick={onClick} data-cy={dataCy}>
+    <ButtonSolid
+      variant="secondary"
+      size="md"
+      className={`add-new-btn ${className}`}
+      onClick={onClick}
+      data-cy={dataCy}
+      leftIcon="plusrectangle"
+      fill={'var(--indigo9)'}
+      iconWidth={16}
+    >
       {children}
     </ButtonSolid>
   );

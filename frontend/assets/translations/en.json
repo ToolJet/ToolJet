@@ -718,7 +718,8 @@
             "buttonPosition": "Button Position",
             "remove": "Remove",
             "addButton": "+ Add button",
-            "addColumn": "+ Add column",
+            "addColumn": "Add column",
+            "addNewColumn": "Add new column",
             "noActionMessage": "This table doesn't have any action buttons",
             "horizontalAlignment":"horizontal alignment"
         },

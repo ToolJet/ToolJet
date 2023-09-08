@@ -1148,7 +1148,7 @@ export function Table({
                                       column.isSorted && (column.isSortedDesc ? '' : '')
                                     } ${column.isResizing && 'resizing-column'} ${
                                       column.Header === 'Actions' && 'has-actions'
-                                    } position-relative`}
+                                    } position-relative ${column.columnType === 'selector' && 'selector-header'}`}
                                   >
                                     <div
                                       className={`${
@@ -1370,7 +1370,7 @@ export function Table({
                           className={cx(
                             `table-text-align-${cell.column.horizontalAlignment} ${
                               wrapAction ? wrapAction : cell?.column?.Header === 'Actions' ? '' : 'wrap'
-                            }-wrapper`,
+                            }-wrapper td`,
                             {
                               'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
                               'has-left-actions': cell.column.id === 'leftActions',

@@ -17,6 +17,7 @@ export const Code = ({
   onFxPress,
   fxActive,
   component,
+  verticalLine,
 }) => {
   const currentState = useCurrentState();
 
@@ -79,9 +80,8 @@ export const Code = ({
   const getfieldName = React.useMemo(() => {
     return param.name;
   }, [param]);
-
   return (
-    <div className={`mb-2 field ${options.className}`}>
+    <div className={`field ${options.className}`} style={{ marginBottom: '20px' }}>
       <CodeHinter
         enablePreview={true}
         initialValue={initialValue}
@@ -98,6 +98,7 @@ export const Code = ({
         onFxPress={onFxPress}
         fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
         component={component}
+        verticalLine={verticalLine}
       />
     </div>
   );
