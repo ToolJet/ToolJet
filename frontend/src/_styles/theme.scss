@@ -269,6 +269,10 @@ button {
 .emoji-mart-scroll+.emoji-mart-bar {
   display: none;
 }
+.accordion-item{
+  border: solid var(--slate5);
+  border-width: 0px 0px 1px 0px;
+}
 
 .accordion-item,
 .accordion-button {
@@ -280,6 +284,7 @@ button {
   font-weight: 500 !important;
   box-shadow: none !important;
   color: var(--slate12) !important;
+  padding: 20px 16px !important;
 }
 
 .accordion-button::after {
@@ -291,10 +296,11 @@ button {
 }
 
 .accordion-button:not(.collapsed) {
-  padding-bottom: 0 !important;
+  // padding-bottom: 0 !important;
 }
 
 .accordion-body {
+  padding: 6px 16px 20px 16px !important;
   .form-label {
     font-weight: 400;
     font-size: 12px;
@@ -468,7 +474,7 @@ button {
     padding-top: 8px;
 
     .accordion-item {
-      border: solid rgba(101, 109, 119, 0.16);
+      border: solid var(--slate5);
       border-width: 1px 0px 1px 0px;
     }
 
@@ -730,7 +736,7 @@ button {
       }
 
       .canvas-area {
-        background: #edeff5;
+        background: #F9F9FB;
         margin: 0px auto;
 
         .resizer {
@@ -781,7 +787,7 @@ button {
 
       .canvas-area {
         width: 1280px;
-        background: #edeff5;
+        background: #F9F9FB;
         margin: 0px auto;
         background-size: 80px 80px;
         background-repeat: repeat;
@@ -2896,12 +2902,16 @@ input:focus-visible {
   border: 1px solid var(--slate5, #E6E8EB) !important;
   background: var(--slate1, #FBFCFD) !important;
   width: 210px !important; //adjusted with padding
-  // height: 296px !important;
   box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08) !important;
-
+  color: var(--slate12);
   .flexbox-fix:nth-child(3) {
-    div:nth-child(5) {
-      display: none;
+    div:nth-child(1) {
+      input{
+        width: 100% !important;
+      }
+      label{
+        color: var(--slate12) !important;
+      }
     }
   }
 }
@@ -3076,6 +3086,9 @@ input:focus-visible {
   .DateRangePickerInput__withBorder {
     border: 1px solid #1f2936;
   }
+  .main .canvas-container .canvas-area {
+    background: #2f3c4c;
+  }
 
 
   .main .navigation-area {
@@ -3107,9 +3120,11 @@ input:focus-visible {
     margin-bottom: 4px;
   }
 
-  .nav-tabs .nav-link:focus,
   .nav-tabs .nav-link:hover {
-    border-color: transparent !important;
+    border-left-color: transparent !important;
+    border-top-color: transparent !important;
+    border-right-color: transparent !important;
+
   }
 
   .modal-content,
@@ -3151,10 +3166,6 @@ input:focus-visible {
     }
   }
 
-  // .jet-table {
-  //   background-color: #1f2936 !important;
-  // }
-
   .jet-container {
     background-color: #1f2936;
   }
@@ -3162,7 +3173,6 @@ input:focus-visible {
   .nav-tabs .nav-item.show .nav-link,
   .nav-tabs .nav-link.active {
     background-color: #2f3c4c;
-    border-color: transparent !important;
   }
 
 
@@ -4913,7 +4923,7 @@ input[type="text"] {
 // comment styles ::override
 .editor-sidebar {
   .nav-tabs {
-    border-bottom: none !important;
+    border-bottom: 1px solid var(--slate5) !important;
   }
 
   .nav-tabs .nav-link.active {
@@ -5091,14 +5101,13 @@ div#driver-page-overlay {
   margin-top: 1px;
 
   .canvas-hinter-wrap {
-    width: 135px;
+    width: 126x;
     height: 32px !important;
     border: 1px solid var(--slate7);
   }
 }
 
 .hinter-canvas-input {
-  // width: 180px !important;
   display: flex;
   padding: 4px;
   height: 41.2px !important;
@@ -5122,7 +5131,7 @@ div#driver-page-overlay {
 }
 
 .fx-canvas {
-  background: #1c252f;
+  background:var(--slate4);
   padding: 0px;
   display: flex;
   height: 32px;
@@ -5134,7 +5143,7 @@ div#driver-page-overlay {
   align-items: center;
 
   div {
-    background: #1c252f !important;
+    background:var(--slate4) !important;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -5142,13 +5151,6 @@ div#driver-page-overlay {
     padding: 0px;
   }
 }
-
-.fx-canvas-light {
-  div {
-    background: #fff !important;
-  }
-}
-
 .org-name {
   color: var(--slate12) !important;
   font-size: 12px;
@@ -11595,4 +11597,11 @@ tbody {
 }
 .custom-gap-12{
   gap:12px
+}
+#inspector-tabpane-properties{
+  .accordion {
+    .accordion-item:last-child{
+      border-bottom: none !important;
+    }
+  }
 }
