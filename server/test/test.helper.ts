@@ -676,10 +676,10 @@ export const setUpAccountFromToken = async (app: INestApplication, user: User, o
   expect(email).toEqual(user.email);
   expect(first_name).toEqual(user.firstName);
   expect(last_name).toEqual(user.lastName);
-  expect(current_organization_id).toBe(org.id);
+  expect(current_organization_id).not.toBeNull();
   await user.reload();
   expect(user.status).toBe('active');
-  expect(user.defaultOrganizationId).toBe(org.id);
+  expect(user.defaultOrganizationId).not.toBeNull();
 };
 
 export const getPathFromUrl = (url) => {

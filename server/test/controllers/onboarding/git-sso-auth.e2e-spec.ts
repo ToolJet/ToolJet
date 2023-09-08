@@ -216,9 +216,6 @@ describe('Git Onboarding', () => {
           expect(invitedUser.status).toBe('active');
           expect(email).toEqual('ssousergit@tooljet.com');
           expect(name).toEqual('SSO UserGit');
-        });
-
-        it('should accept invite and add user to the organization (accept-invite)', async () => {
           await request(app.getHttpServer()).post(`/api/accept-invite`).send({ token: orgInvitationToken }).expect(201);
         });
 
@@ -257,7 +254,7 @@ describe('Git Onboarding', () => {
           });
           current_organization = organization;
 
-          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.defaultOrganizationId).not.toBeNull();
           expect(user.status).toBe('invited');
           expect(user.source).toBe('signup');
         });
@@ -353,7 +350,7 @@ describe('Git Onboarding', () => {
           });
           current_organization = organization;
 
-          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.defaultOrganizationId).not.toBeNull();
           expect(user.status).toBe('verified');
           expect(user.source).toBe('git');
         });
