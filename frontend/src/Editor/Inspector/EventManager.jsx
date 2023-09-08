@@ -127,7 +127,7 @@ export const EventManager = ({
     let componentOptions = [];
     Object.values(currentState?.components || {}).forEach((value) => {
       const targetComponentMeta = componentTypes.find(
-        (componentType) => components[value.id].component.component === componentType.component
+        (componentType) => components[value.id]?.component?.component === componentType?.component
       );
       if ((targetComponentMeta?.actions?.length ?? 0) > 0) {
         if (componentType === '' || components[value.id].component.component === componentType) {
