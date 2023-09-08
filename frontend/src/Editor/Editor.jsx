@@ -95,8 +95,8 @@ class EditorComponent extends React.Component {
       globalSettings: {
         hideHeader: false,
         appInMaintenance: false,
-        canvasMaxWidth: 1292,
-        canvasMaxWidthType: 'px',
+        canvasMaxWidth: 100,
+        canvasMaxWidthType: '%',
         canvasMaxHeight: 2400,
         canvasBackgroundColor: props.darkMode ? '#1B1B1F' : '#F9F9FB',
         backgroundFxQuery: '',
