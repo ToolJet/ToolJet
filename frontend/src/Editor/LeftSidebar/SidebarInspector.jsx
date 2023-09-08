@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
@@ -11,6 +11,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
@@ -37,15 +38,27 @@ export const LeftSidebarInspector = ({
     }),
     shallow
   );
-  const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
-  const selectedComponent = React.useMemo(() => {
-    return {
-      id: appDefinition['selectedComponent']?.id,
-      component: appDefinition['selectedComponent']?.component?.name,
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appDefinition['selectedComponent']]);
+  const { selectedComponents } = useEditorStore(
+    (state) => ({
+      selectedComponents: state.selectedComponents,
+    }),
+    shallow
+  );
   const currentState = useCurrentState();
+
+  const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
+
+  const selectedComponent = React.useMemo(() => {
+    const _selectedComponent = selectedComponents[selectedComponents.length - 1];
+    if (!isEmpty(_selectedComponent)) {
+      return {
+        id: _selectedComponent?.id,
+        component: _selectedComponent?.component?.name,
+      };
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedComponents]);
 
   const memoizedJSONData = React.useMemo(() => {
     const updatedQueries = {};

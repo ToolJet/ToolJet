@@ -16,7 +16,7 @@ import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
 import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
@@ -33,6 +33,8 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
+import { useEditorStore } from '@/_stores/editorStore';
+import { EMPTY_ARRAY } from '..';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -53,29 +55,36 @@ const INSPECTOR_HEADER_OPTIONS = [
 ];
 
 export const Inspector = ({
-  selectedComponentId,
   componentDefinitionChanged,
   allComponents,
   apps,
   darkMode,
-  switchSidebarTab,
   removeComponent,
   pages,
   cloneComponents,
 }) => {
   const dataQueries = useDataQueries();
+
+  const currentState = useCurrentState();
+  const { selectedComponentId, selectedComponents, setSelectedComponents } = useEditorStore(
+    (state) => ({
+      selectedComponentId: state.selectedComponents[0]?.id,
+      selectedComponents: state.selectedComponents,
+      setSelectedComponents: state.actions.setSelectedComponents,
+    }),
+    shallow
+  );
   const component = {
     id: selectedComponentId,
-    component: allComponents[selectedComponentId].component,
-    layouts: allComponents[selectedComponentId].layouts,
-    parent: allComponents[selectedComponentId].parent,
+    component: allComponents[selectedComponentId]?.component,
+    layouts: allComponents[selectedComponentId]?.layouts,
+    parent: allComponents[selectedComponentId]?.parent,
   };
-  const currentState = useCurrentState();
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [tabHeight, setTabHeight] = React.useState(0);
   const componentNameRef = useRef(null);
-  const [newComponentName, setNewComponentName] = useState(component.component.name);
+  const [newComponentName, setNewComponentName] = useState(component?.component?.name);
   const [inputRef, setInputFocus] = useFocus();
   const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
@@ -91,9 +100,9 @@ export const Inspector = ({
     if (isVersionReleased) return;
     setWidgetDeleteConfirmation(true);
   });
-  useHotkeys('escape', () => switchSidebarTab(2));
+  useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY));
 
-  const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
+  const componentMeta = componentTypes.find((comp) => component?.component?.component === comp?.component);
 
   const isMounted = useMounted();
 
@@ -110,10 +119,10 @@ export const Inspector = ({
 
   const validateComponentName = (name) => {
     const isValid = !Object.values(allComponents)
-      .map((component) => component.component.name)
+      .map((component) => component?.component?.name)
       .includes(name);
 
-    if (component.component.name === name) {
+    if (component?.component.name === name) {
       return true;
     }
     return isValid;
@@ -226,7 +235,7 @@ export const Inspector = ({
       componentDefinitionChanged(newComponent);
 
       //  Child components should also have a mobile layout
-      const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+      const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component?.id);
 
       childComponents.forEach((componentId) => {
         let newChild = {
@@ -379,109 +388,118 @@ export const Inspector = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
-
+  if (!selectedComponents.length) return null;
   return (
-    <div className="inspector">
-      <ConfirmDialog
-        show={showWidgetDeleteConfirmation}
-        message={'Widget will be deleted, do you want to continue?'}
-        onConfirm={() => {
-          switchSidebarTab(2);
-          removeComponent(component);
-        }}
-        onCancel={() => setWidgetDeleteConfirmation(false)}
-        darkMode={darkMode}
-      />
-      <div>
-        <div className="row inspector-component-title-input-holder">
-          <div className="col-1" onClick={() => switchSidebarTab(2)}>
-            <span data-cy={`inspector-close-icon`} className="cursor-pointer">
-              <ArrowLeft fill={'var(--slate12)'} width={'14'} />
-            </span>
-          </div>
-          <div className={`col-9 p-0 ${isVersionReleased && 'disabled'}`}>
-            <div className="input-icon" style={{ marginLeft: '8px' }}>
-              <input
-                onChange={(e) => setNewComponentName(e.target.value)}
-                type="text"
-                onBlur={() => handleComponentNameChange(newComponentName)}
-                className="w-100 inspector-edit-widget-name"
-                value={newComponentName}
-                ref={inputRef}
-                data-cy="edit-widget-name"
-              />
+    <>
+      {selectedComponents.length !== 1 && isEmpty(allComponents) && isEmpty(allComponents[selectedComponentId]) ? (
+        <center className="mt-5 p-2">
+          {this.props.t('editor.inspectComponent', 'Please select a component to inspect')}
+        </center>
+      ) : (
+        <div className="inspector">
+          <ConfirmDialog
+            show={showWidgetDeleteConfirmation}
+            message={'Widget will be deleted, do you want to continue?'}
+            onConfirm={() => {
+              setSelectedComponents(EMPTY_ARRAY);
+              EMPTY_ARRAY;
+              removeComponent(component);
+            }}
+            onCancel={() => setWidgetDeleteConfirmation(false)}
+            darkMode={darkMode}
+          />
+          <div>
+            <div className="row inspector-component-title-input-holder">
+              <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
+                <span data-cy={`inspector-close-icon`} className="cursor-pointer">
+                  <ArrowLeft fill={'var(--slate12)'} width={'14'} />
+                </span>
+              </div>
+              <div className={`col-9 p-0 ${isVersionReleased && 'disabled'}`}>
+                <div className="input-icon" style={{ marginLeft: '8px' }}>
+                  <input
+                    onChange={(e) => setNewComponentName(e.target.value)}
+                    type="text"
+                    onBlur={() => handleComponentNameChange(newComponentName)}
+                    className="w-100 inspector-edit-widget-name"
+                    value={newComponentName}
+                    ref={inputRef}
+                    data-cy="edit-widget-name"
+                  />
+                </div>
+              </div>
+              <div className="col-2">
+                <OverlayTrigger
+                  trigger={'click'}
+                  placement={'bottom-end'}
+                  rootClose={false}
+                  show={showHeaderActionsMenu}
+                  overlay={
+                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                      <Popover.Body bsPrefix="list-item-popover-body">
+                        {INSPECTOR_HEADER_OPTIONS.map((option) => (
+                          <div
+                            className="list-item-popover-option"
+                            key={option?.value}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleInspectorHeaderActions(option.value);
+                            }}
+                          >
+                            <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                            <div
+                              className={classNames('list-item-option-menu-label', {
+                                'color-tomato9': option.value === 'delete',
+                              })}
+                            >
+                              {option?.label}
+                            </div>
+                          </div>
+                        ))}
+                      </Popover.Body>
+                    </Popover>
+                  }
+                >
+                  <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
+                    <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
+                  </span>
+                </OverlayTrigger>
+              </div>
+            </div>
+            <div>
+              <Tabs defaultActiveKey={'properties'} id="inspector">
+                <Tab eventKey="properties" title="Properties">
+                  {propertiesTab}
+                </Tab>
+                <Tab eventKey="styles" title="Styles">
+                  {stylesTab}
+                </Tab>
+              </Tabs>
             </div>
           </div>
-          <div className="col-2">
-            <OverlayTrigger
-              trigger={'click'}
-              placement={'bottom-end'}
-              rootClose={false}
-              show={showHeaderActionsMenu}
-              overlay={
-                <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                  <Popover.Body bsPrefix="list-item-popover-body">
-                    {INSPECTOR_HEADER_OPTIONS.map((option) => (
-                      <div
-                        className="list-item-popover-option"
-                        key={option?.value}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleInspectorHeaderActions(option.value);
-                        }}
-                      >
-                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                        <div
-                          className={classNames('list-item-option-menu-label', {
-                            'color-tomato9': option.value === 'delete',
-                          })}
-                        >
-                          {option?.label}
-                        </div>
-                      </div>
-                    ))}
-                  </Popover.Body>
-                </Popover>
-              }
+          <span className="widget-documentation-link">
+            <a
+              href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
+              target="_blank"
+              rel="noreferrer"
+              data-cy="widget-documentation-link"
             >
-              <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
+              <span>
+                <Student width={13} fill={'#3E63DD'} />
+                <small className="widget-documentation-link-text">
+                  {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
+                    componentMeta: componentMeta.name,
+                  })}
+                </small>
               </span>
-            </OverlayTrigger>
-          </div>
-        </div>
-        <div>
-          <Tabs defaultActiveKey={'properties'} id="inspector">
-            <Tab eventKey="properties" title="Properties">
-              {propertiesTab}
-            </Tab>
-            <Tab eventKey="styles" title="Styles">
-              {stylesTab}
-            </Tab>
-          </Tabs>
-        </div>
-      </div>
-      <span className="widget-documentation-link">
-        <a
-          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
-          target="_blank"
-          rel="noreferrer"
-          data-cy="widget-documentation-link"
-        >
-          <span>
-            <Student width={13} fill={'#3E63DD'} />
-            <small className="widget-documentation-link-text">
-              {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                componentMeta: componentMeta.name,
-              })}
-            </small>
+              <span>
+                <ArrowRight width={20} fill={'#3E63DD'} />
+              </span>
+            </a>
           </span>
-          <span>
-            <ArrowRight width={20} fill={'#3E63DD'} />
-          </span>
-        </a>
-      </span>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 
@@ -499,7 +517,7 @@ const widgetsWithStyleConditions = {
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   return Object.keys(componentMeta.styles).map((style) => {
-    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
+    const conditionWidget = widgetsWithStyleConditions[component?.component?.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 
     if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
@@ -515,7 +533,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
         allComponents,
         style,
         propertyConditon,
-        component.component?.definition[widgetPropertyDefinition]
+        component?.component?.definition[widgetPropertyDefinition]
       );
     }
 

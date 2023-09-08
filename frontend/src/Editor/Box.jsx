@@ -295,69 +295,44 @@ export const Box = memo(
           }}
           role={preview ? 'BoxPreview' : 'Box'}
         >
-          {inCanvas ? (
-            !resetComponent ? (
-              <ComponentToRender
-                onComponentClick={onComponentClick}
-                onComponentOptionChanged={onComponentOptionChanged}
-                currentState={currentState}
-                onEvent={onEvent}
-                id={id}
-                paramUpdated={paramUpdated}
-                width={width}
-                changeCanDrag={changeCanDrag}
-                onComponentOptionsChanged={onComponentOptionsChanged}
-                height={height}
-                component={component}
-                containerProps={containerProps}
-                darkMode={darkMode}
-                removeComponent={removeComponent}
-                canvasWidth={canvasWidth}
-                properties={validatedProperties}
-                exposedVariables={exposedVariables}
-                styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
-                setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
-                setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
-                fireEvent={fireEvent}
-                validate={validate}
-                parentId={parentId}
-                customResolvables={customResolvables}
-                variablesExposedForPreview={variablesExposedForPreview}
-                exposeToCodeHinter={exposeToCodeHinter}
-                setProperty={(property, value) => {
-                  paramUpdated(id, property, { value });
-                }}
-                mode={mode}
-                resetComponent={() => setResetStatus(true)}
-                childComponents={childComponents}
-                dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
-              ></ComponentToRender>
-            ) : (
-              <></>
-            )
+          {!resetComponent ? (
+            <ComponentToRender
+              onComponentClick={onComponentClick}
+              onComponentOptionChanged={onComponentOptionChanged}
+              currentState={currentState}
+              onEvent={onEvent}
+              id={id}
+              paramUpdated={paramUpdated}
+              width={width}
+              changeCanDrag={changeCanDrag}
+              onComponentOptionsChanged={onComponentOptionsChanged}
+              height={height}
+              component={component}
+              containerProps={containerProps}
+              darkMode={darkMode}
+              removeComponent={removeComponent}
+              canvasWidth={canvasWidth}
+              properties={validatedProperties}
+              exposedVariables={exposedVariables}
+              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
+              setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
+              setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
+              fireEvent={fireEvent}
+              validate={validate}
+              parentId={parentId}
+              customResolvables={customResolvables}
+              variablesExposedForPreview={variablesExposedForPreview}
+              exposeToCodeHinter={exposeToCodeHinter}
+              setProperty={(property, value) => {
+                paramUpdated(id, property, { value });
+              }}
+              mode={mode}
+              resetComponent={() => setResetStatus(true)}
+              childComponents={childComponents}
+              dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
+            ></ComponentToRender>
           ) : (
-            <div className="component-image-wrapper" style={{ height: '56px', width: '72px' }}>
-              <div
-                className="component-image-holder d-flex flex-column justify-content-center"
-                style={{ height: '100%' }}
-                data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                <center>
-                  <div
-                    className="widget-svg-container"
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      backgroundSize: 'contain',
-                      backgroundRepeat: 'no-repeat',
-                    }}
-                  >
-                    <WidgetIcon name={component.name.toLowerCase()} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
-                  </div>
-                </center>
-              </div>
-              <div className="component-title">{t(`widget.${component.name}.displayName`, component.displayName)}</div>
-            </div>
+            <></>
           )}
         </div>
       </OverlayTrigger>
