@@ -63,218 +63,93 @@ There are a few different ways to set up ToolJet depending on how you intend to 
 - Data security is top priority at ToolJet, read about our **[data security here](/docs/security)**.
 :::
 
-<!-- ## The very quick quickstart
-
-Let's say you're an eCommerce company and your **Customer Support/Operations** team need a **Support Tool/Admin** panel for managing the orders, updating inventory, and track revenue and metrics. This quickstart will guide you through building your first custom internal tool in less than 5 minutes.
-
-You will:
-- **[Create a database](#create-a-tooljet-database)**
-- **[Create a new application](#create-a-new-application)**
-- **[Build the UI](#build-the-ui)**
-- **[Build queries and bind data to UI](#build-queries-and-bind-data-to-ui)**
-- **[Preview, Release and Share app](#preview-release-and-share-app)**
-
-:::tip
-Before getting into the quickstart, Sign up and create your account on **[ToolJet](https:///www.tooljet.com)**.
-::: 
-
-### Create a database
-
-1. Navigate to **ToolJet DB Editor** from the left sidebar on the dashboard
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/tooljetdbeditor.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-2. Click on **Create New Table** button, enter **Table name** and **Add columns** from the drawer that slides from the right. Click on **Create** to add the table.
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/createnewtable.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-3. Once the table is created, click on the **Add new row** button to add the data to the table and click **Create**.
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/addnewrow.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-:::info
-Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
-:::
-
-### Create a new application
-
-1. To create a new ToolJet application, go to the **Dashboard** -> **Create new application**. 
-
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/createnewapplication.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-    :::info
-    You can also use the existing UI **templates** for your application or **import** an application to your workspace.
-    :::
-
-2. When you click on create new app the **App-builder** will open up. You can rename your application from `untitled` to **Support Tool** from the top left of app-builder.
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/appbuilder.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-### Build the UI
-
-1. Let's build the UI of the application by dragging and dropping the components on the canvas.
-2. To build the UI, we will use:
-    1. **Table** for displaying the customers data 
-    2. **Text** components for the Title and description of the app as the header
-    3. **Text Input** component for getting product name input from the user
-    4. **Number Input** component for getting product quantity and price input from the user
-    5. **Button** component that will be used to trigger the query for inserting a row in the database using the button's **OnClick** event handler
-    
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/buildingui.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-:::info
-ToolJet application's User interface is constructed using Components like Tables, Forms, Charts, or Buttons etc. Check **[Components Catalog](/docs/widgets/overview)** to learn more.
-:::
-
-### Build queries and bind data to UI
-
-1. We can add a new datasource from the **[Global datasources](/docs/data-sources/overview)** page from the dashboard but since we are using **ToolJet Database** we don't need to add any external datasource. Go to the **Query Panel and select ToolJet Database**
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/tooljetdb.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-    :::info
-    ToolJet can connect to several databases, APIs and external services to fetch and modify data. Check **[Datasource Catalog](/docs/data-sources/overview)** to learn more.
-    :::
-
-2. Choose a **Table** from the dropdown, Select the **List rows** option from the **Operation** dropdown, You can leave other query parameters. Scroll down and enable **Run this query on application load** - this will trigger the query when the app is loaded. 
-
-3. Click on **Create** to create the query and then click **Run** to trigger the query and get response. You can also check the query response by clicking **Preview** button without firing the query.
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/createquery.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-4. Go to the **Table properties** by clicking on the component handle and bind the data returned by the query in the **Table data** property. When building apps in ToolJet anything inside `{{}}` is JavaScript and we javascript dot notation to get the data from query and populate the table using **{{queries.tooljetdb1.data}}**. The table will be auto-populated once the table data is entered.
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/tabledata.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-5. Let's create another query that will get the data from the **input fields** and will add a new row in the tooljet database. **Create New Query** -> **Select Table (Customers)** -> **Select Operation (Create row)** -> add the following columns with the respective value:
-    1. **id** - `{{components.textinput1.value}}`
-    2. **quantity** - `{{components.numberinput1.value}}`
-    3. **price** - `{{components.numberinput2.value}}`
-    4. **created_at** - `{{moment().format("DD/MM/YYYY hh:mm A")}}` (We are using **momentjs library** to get the current date from the system rather than getting input by the user )
-
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/selecttablecustomers.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-    :::tip
-    You can also add event handler to this query for **On Success** event to run the `tooljetdb1` query that populates the table, so that whenever this is successful the table is refreshed.
-    :::
-
-6. Now, let's bind this query to the **Add Product** button. Click on the button handle to open its properties, **Add an handler** -> **Select Event (On Click)** -> **Select Action (Run Query)** -> **Select Query (tooljetdb2)**. 
-    <div style={{textAlign: 'center'}}>
-
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/addproductbutton.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
-
-    </div>
-
-:::info
-- You can manipulate the data returned by the queries using **[Transformations](/docs/tutorial/transformations)**
-- You can also **[Run JavaScript code](/docs/data-sources/run-js)** or **[Run Python code](/docs/data-sources/run-py)** to perform custom behavior inside ToolJet
-:::
-
-### Preview, Release and Share app
-
-1. Click on the **Preview** on the top-right of app builder to immediately check the currently opened version of the app in production. 
-2. Click on the  **Release** button to publish the currently opened version of the app and push the changes to production.
-3. **Share** option allows you to share the **released version** of the application with other users or you can also make the app **public** and anyone with the URL will be able to use the app.
-
-:::tip
-You can control how much access to users have to your ToolJet apps and resources using **[Org Management](/docs/tutorial/manage-users-groups)**.
-::: -->
-
 ## Quickstart Guide
 
-We will be building a **Time Tracking Application** that will allow end users to record their daily working hours. The multi-page application will have a home page that will give a basic overview of all the pending and completed tasks for the month. The second page will display all the time tracker data related to the logged in user, along with the option to add new data or delete existing entries.
+In this quickstart guide, we will build a **Time Tracking Application** that will allow end-users to record their daily working hours with additional details. The multi-page application will have:
+
+- A basic summary of all pending and completed tasks for the month
+- A table displaying all time-tracking data for the logged-in user, along with options to add new entries and delete existing ones.
 
 ## Create a Database Table 
 
-We'll first create a table in ToolJet's built-in database. Navigate to the **database** tab from the left sidebar. 
-Click on the **Create New Table** button on the top-left. A drawer will slide from the right to configure the database table propertries. An **id** field will appear by default and 
+We'll first create a table in ToolJet's built-in database. Navigate to the **Database** tab from the left sidebar.
+Click on the **Create new table** button on the top-left. A dialog box will slide from the right to configure the database table properties. The `id` field will be present by default to create a unique identifier for each record in our database.
 
-In the **Table name** input field, enter *timeTracker*. Click on the add more columns button and add **employee** as the name and select **varchar** as the type. The **Default** field allows you to enter a default value that will be used if there is no input provided by the end user. We will add 4 more columns to our table:
-taskname(type:varchar, default:null),
-duration(type:integer, default:null),
-dateoftask(type:varchar, default:null) and
-taskdescription(type:varchar, default:null). 
+In the Table name field, enter *timeTracker*. Click on the **Add more columns** button and add **employee** in the name input field and select varchar as the type. The **Default** field allows you to enter a default value that will be used if no value is received from the frontend.
 
+We will add four more columns to our table:
+
+| Column Name     | Type     | Default Value |
+|:----------------|:---------|:--------------|
+| taskname        | varchar  | null          |
+| duration        | integer  | null          |
+| dateoftask      | varchar  | null          |
+| taskdescription | varchar  | null          |
+
+Add three rows of dummy data to the database. 
 
 ## Create UI for Home Page
 
-We'll now go ahead and build our application using the **ToolJet App Builder**. Click on the **Dashboard** button on the sidebar and click on the **Create new app** button. You'll be taken to a new application. You'll now see a an empty canvas with a **Component Library** on the right and a **Query Panel** at the bottom. You can drag and drop pre-built components from the **Component library** on the canvas to create the UI of your applications. The **Query Panel** can be used to create and manage queries to interact with the data sources.
+We'll now go ahead and build our application using the **ToolJet App Builder**. Click on the **Dashboard** button on the sidebar and click on the **Create new app** button. We'll be taken to a new application with an empty canvas. We can see the **Component Library** on the right, we can drag and drop pre-built components from the **Component library** on the canvas to create the UI. The **Query Panel** at the bottom can be used to create and manage queries to interact with the database. Minimize the Query Panel by clicking on the **Hide Query Panel** button on its top-left. 
 
-Minimize the Query Panel by clicking on the **Hide Query Panel** button. Click on the borders of the **Container** and expand it till it covers the visible portion of the canvas. 
+Click and drag a **Container** component to the canvas. Click on the borders of the **Container** and expand it till it covers the visible portion of the canvas. 
 
-Each time you click and select the **Container** or any other component on the canvas, a list of configuration related to the component will appear on the right. Right at the top is the name field. We'll click on it and rename the container to *Home* Below we have the **Properties** and **Styles** tab. **Properties** cover the functional behaviour of a component while the **Style** tab allows you to add custom styling. We'll name all the components in this application, we'll start seeing the benefits of it once the application grows and we need to refer to specific components in our application. 
+Each time you click and select the **Container** or any other component on the canvas, a list of configuration related to the component will appear on the right. Right at the top is the `name` field. We'll click on it and rename the container to *Home*. Below we have the **Properties** and **Styles** tab. **Properties** cover the functional behaviour of a component while the **Style** tab allows you to add custom styling to your components. 
 
-We'll start building the header of our application now. Click and drag an **Image component** to the canvas from the library. We'll also place a **Text** component next to it. We'll rename the Image component to *Logo* and Text component to *HeaderText*.
+We'll rename all the components in this application based on its function, we'll start seeing the benefits of it once the application grows and we need to refer to specific components in our application. 
 
-Select the Image component, you'll see its properties on the right. Enter the below value as URL:
-https://static-00.iconduck.com/assets.00/tooljet-icon-1024x908-0mi0u3op.png. 
+Let's build the header of our application. Click and drag an **Image** component to the canvas from the library and rename it to *Logo*.
+
+Select the Image component, you'll see its properties on the right. 
+Enter the below value as `URL`:
+
+```js
+https://static-00.iconduck.com/assets.00/tooljet-icon-1024x908-0mi0u3op.png
+```
 
 Feel free to add any other URL that you might wish to use as the logo.
 
-Select the **Text** component and following as the **Text** property:
-"Time Tracker Application⏳"
+Place a **Text** component next to it and rename the component to *HeaderText*. Paste following text under **Text** property:
 
-We are now ready with our Header. And since our application will have two pages, let's copy paste all the components in the other page. In the left side bar, click on the Pages button, a drawer will slide out from the left with the "Pages" header. Click on the `+` button to add a new page and name it  *LogTime*. Click on the **Container** and press Command + C(Mac)/Cntrl + C(Windows). Click on the Pages button from the left sidebar again and switch to the *LogTime* page and press Command + V(Mac)/Cntrl + V(Windows). 
+```js
+Time Tracker Application⏳
+```
 
-We'll work on the *LogTime* page later, we'll continue building the *Home* page for now. Click and drag a **Statistics** component on the canvas. Rename it to *completedTasks*. Under **Properties**, change the `Primary Label` to *Completed Tasks*. You can see the `Hide Secondary Value` property with a toggle button. Click on the toggle button to disable it. Now we only see one numerical value and one header in the component. We don't need a secondary value for our use-case. Copy and paste this component. Drag the pasted component and place it next to the *Completed Tasks* component. Rename it to *Pending Tasks*.
 
-## Create Queries and Use The Queried Data
+We are now ready with our Header. 
 
-We'll now add some real data to our two *Statistic* components. Click on the **REST API** button in the **Query Panel** at the bottom and rename it to *getSummary*. Leave the **Method** as **GET** and Add the below link in the URL input.
-https://64e3292bbac46e480e7848b3.mockapi.io/api/vi/tasksSummary. Click on the **Preview** button and you'll be able to see the preview of the reponse at the bottom. We are receiving an array with one object that has id, completedTasks and pendingsTasks as keys. Since we want this query to run every time the application is loaded, we'll eable the **Run this query on application load?** toggle. Now everytime we open our application, this query will automatically run and fetch the data. We'll generally use this setting for most of the **GET** requests. 
+Click and drag a **Statistics** component on the canvas. Rename it to *completedTasks*. Under **Properties**, change the `Primary Label` to *Completed Tasks*. Disable the `Hide Secondary Value` property using the toggle button. Now we only see one header and one numerical value in the component. We don't need a secondary value for our use-case. Copy and paste this component. Drag the pasted component and place it next to the *Completed Tasks* component. Rename it to *Pending Tasks*.
+
+## Create Your First Query in ToolJet 
+
+We'll now add some real data to our two **Statistic** components. Click on the **REST API** button in the **Query Panel** at the bottom and rename it to *getSummary*. Leave the **Method** as **GET** and add the below link in the URL input.
+
+```
+https://64e3292bbac46e480e7848b3.mockapi.io/api/vi/tasksSummary
+```
+
+Click on the **Preview** button and you'll be able to see the preview of the API reponse at the bottom. We are receiving an array with one object that has id, completedTasks and pendingsTasks as keys. Since we want this query to run every time the application is loaded, we'll enable the **Run this query on application load?** toggle. Now everytime we open our application, this query will automatically run and fetch the data. We'll generally use this setting for most of the **GET** requests. 
 
 To use custom JavaScript code, we need to use double curly braces. All the data returned by queries is stored in the **queries** object. We need to use the **queries** keyword to access it. The general format to access queries is 
 
 ```js
 {{queries.queryName.data}}
 ```
-Select the *completedTasks* component. Under `Primary Value`, paste the below code:
+
+Select the *completedTasks* component. For the `Primary Value` input, paste the below code:
 
 ```js
 {{queries.getTasksSummary.data[0].completedTasks}}
 ```
 
-In the above code, we are accessing the first array in the data using the index 0 and selecting the value of the **completedTasks** key. Our data has only one array, to access other arrays we would've used different indexes:
+In the above code, we are accessing the first array in the data using the index 0 and selecting the value of the **completedTasks** key. Our data has only one array, to access other arrays we would've used different indexes.
 
-```js
+<!-- ```js
 {{queries.getTasksSummary.data[0].completedTasks}}
 {{queries.getTasksSummary.data[1].completedTasks}}
 {{queries.getTasksSummary.data[2].completedTasks}}
 {{queries.getTasksSummary.data[3].completedTasks}}
-```
+``` -->
 
 A quick way to look at available queries would be to click on the inspector button in the left side bar and expand the queries dropdown. 
 
@@ -283,18 +158,32 @@ Let's also change the `Primary Value` for the pendingTasks component with the be
 ```js
 {{queries.getTasksSummary.data[0].pendingTasks}}
 ```
-We have replaced a static value in the `Primary Value` field with a dynamic value that is created based on the fetched data.   We have built a basic home page with the summary of completed and pending tasks.
 
-Now let's create a button that'll help us navigate to the *logData* page. 
+We have now replaced static values in the components with dynamic values. 
 
-Drag and drop a **Button** component to the canvas. Rename it to *logTimeButton*. Change its `Button Text` property to Log Time. We will now use an **Event Handler** to add some action to the button. Under the `Events` property, click on the *+ Add Handler* button and leave the **Event** as **On click** and select **Switch Page** for the **Action** dropdown. Select *LogTime* page for the **Page** dropdown. Now everytime you click on this button, it'll switch to the *LogTime* page.
+With this, we have successfully created a basic homepage for our application.
 
-# Use Tables To Display Data and Take Action on it.
+## Create Multiple Pages
 
-The **Table** component offers a simple and intuitive way to display and interact with data. Let's drag and drop a table component on the canvas. Adjust the width and make it slightly wider than the header. Rename it to *logTable*. We already have some dummy data in the **Table component**. Let's replace it with actual data. 
+<!-- Since our application will have two pages, let's copy paste all the common components from the **Home** page to a new page.  -->
 
-Create a new query by clicking on the **+Add** button and selecting **ToolJet Database**. Rename it to *getTrackerSummary*.
-Next we'll have to select the **Table name** and **Operations**. Select *timeTracker*(the database table that we had created at the start) as the Table name and **List Rows** as Operations. Just like the previous query that we had created, we will enable **Run this query on load?** toggle. Click on the **Run** button. 
+Let's create one more page that displays the time tracking data along with the option to add and delete entries.
+
+In the left side bar, click on the **Pages** button, a dialog box will slide out from the left with the **Pages** header. Click on the `+` button to add a new page and name it  *LogTime*. Click on the *homeContainer* on the *Home* page and press Command + C(Mac)/Cntrl + C(Windows) to copy the container along with all the components that are placed inside it. 
+
+Click on the **Pages** button from the left sidebar again and switch to the *LogTime* page and press Command + V(Mac)/Cntrl + V(Windows). Click on the component handle of the *homeContainer* and move it to the top-left corner. Leave the logo and header text, and delete the two statistic components. 
+
+Now let's create a button that'll help us navigate to the *logTime* page from the *Home* page. 
+
+Drag and drop a **Button** component to the canvas. Rename it to *logTimeButton*. Change its `Button Text` property to **Log Time**. We will now use an **Event Handler** to add some action to the button. Under the `Events` property, click on the *+ Add Handler* button and leave the **Event** as **On click** and select **Switch Page** for the **Action** dropdown. Select *LogTime* page for the **Page** dropdown. Now everytime you click on this button, it'll switch to the *LogTime* page.
+
+Next we'll create fetch the data from the database and display it using a **Table** component.
+
+## Use Table Component To Display And Manipulate Data
+
+The **Table** component offers a simple and intuitive way to display and interact with data. Let's drag and drop a table component on the canvas. Adjust the width and make it slightly wider than the header. Rename it to *trackerTable*. We already have some dummy data in the **Table** component. Let's replace it with actual data. 
+
+Click on the **+Add** button in the Query Panel at the bottom and select **ToolJet Database**. Rename it to *getTrackerSummary*. Next we'll have to select the **Table name** and **Operations**. Select *timeTracker*(the database table that we had created at the start) as the Table name and **List Rows** as Operations. Just like the previous query that we had created, we will enable **Run this query on load?** toggle. Click on the **Run** button. 
 
 Click on the Table component and under `Table data` properties, paste the below code:
 
@@ -302,11 +191,59 @@ Click on the Table component and under `Table data` properties, paste the below 
 {{{{queries.getTrackerSummary.data}}}}
 ```
 
-We've now replaced the static dummy data with dynamic data that we are fetching from the database. 
+We've now replaced the static data with dynamic data that we are fetching from the database. 
 
 Let's disable everything under **Options** except `Client-side pagination` and `Enable sorting`. `Client-side pagination` will allow us to restrict the number of rows that get displayed on the table at a time through the `Number of rows per page` property. `Enable sorting` allows us to sort the data in individual rows by clicking on the column headers. 
 
-We will now create a way to add data to the table. Drag a **Modal** component from the components library. You will notice that only a button with the label **Launch Modal** shows up on the screen when you add a Modal component to the canvas. 
+## Using A Modal Component
+
+We will now create a way to add data to the table. Drag a **Modal** component from the components library. You will notice that only a button with the label **Launch Modal** shows up on the screen when you add a Modal component to the canvas. We'll first change the name of the button to *logTimeModal* and **Trigger Button** label to **Log Time**. 
+
+To edit the modal click on the **Log Time** button(named *Launch Model* earlier) and you'll see a modal on your canvas. It'll stay open till you click on the `X` button/close button on the top-right. You can edit the modal while it is open. We will place components on our modal to create a form layout to submit the time tracker details.
+
+Let's change the `Title` property of the model to *Log Details* and click on the `X` on the top-right to close the properties of the Modal component and go back to the components library. Drag four **Text** components and align them vertically. We'll rename the first Text component to **taskName** and change its label to **Task Name:**.
+
+Similarly, we'll rename the other three Text components to *duration*, *dateOfTask* and *taskDescription* and change their labels to **Duration(In Hours)**, **Date Of Task** and **Task Description**. 
+
+Drag a **Text Input** component next to the *Task Name* label, and **Number Input** component next to *Duration* and **Date Picker** next to *Date of Task*. Below the **Task Description** label, add a **Textarea** component. The **Textarea** component can be useful if we are expecting an input of more than one line. 
+
+We will rename the input components to *taskNameInput*, *taskDurationInput*, *taskDateInput* and *taskDescriptionInput*.
+
+Let's also add a **Button** component at the bottom-right and rename it to *submit*, and change its `Button Text` property to **Submit**. We'll close the modal by clicking on the `X` on the top-right. Now every time we click on the *logTimeButton*, the **Modal** component will open up. 
+
+## Creating A Query To Write Data 
+
+We are ready with the form, but we also need to create a query that will write the data to our *timeTracker* database. Click on the **+ Add** button in the Query Panel. Select **ToolJet Database** from the list of available sources. 
+
+Rename the query to *addLog*, select *Create row* as Operations and use the below configuration for the columns. We will see how we can use custom code and use different keys to access the data available in the app-builder in the below table. 
+
+<!-- Column Name: Key: Description:
+1. employee {{globals.currentUser.email}} Click on the **Inspector** on the left-sidebar to look at the available options for global variables, we can pick the currentUser.email value to get the email of the logged-in user. 
+2. taskname {{components.taskNameInput.value}} We can access the data passed in the components using the components key, now whenever we run this query, the values present in the listed components will be written to the database table.
+duration {{components.durationInput.value}}
+dateoftask {{components.dateOfTaskInput.value}}
+taskdescription {{components.taskDescriptionInput.value}} -->
+
+| Column Name    | Key                               | Description |
+| :-------------- | :------------------------ |: ---------- |
+| 1. employee       | {{globals.currentUser.email}}     | Click on the **Inspector** on the left-sidebar to look at the available options for global variables.              |
+| 2. taskname <br/> 3. duration <br/> 4. dateoftask <br/> 5. taskdescription | {{components.taskNameInput.value}} <br/> {{components.durationInput.value}} <br/> {{components.dateOfTaskInput.value}} <br/> {{components.taskDescriptionInput.value}} | We can access the data passed in the components using the **components** key.  |
+
+We'll plug this query to the **Submit** button on *logTimeModal*.
+
+## Using Events
+
+Open the modal, click on the component handle of the *submit* button. Under `Events`, click on **+ Add Handler**, leave the Event as **On Click**, select the Action as **Run Query** and select *addLog* as the query. 
+
+Now whenever we click on the submit button, the *addLog* query will run and the values present in the listed components will be written to the related columns of the database table.
+
+We also need to show a prompt to indicate that the data has been added. Click on **+ Add Handler**, leave the Event as **On Click**, select the Action as **Show Alert** and enter "Log Added" as the Message and leave Alert Type as Info.
+
+Finally, we would want our modal to close once we click on **Submit** and the required query and alert is triggered. Add one more **Event**, select **Close Modal** as the action type and *logTimeModal* as **Modal**. 
+
+Now every time we click on the **Submit** button on the modal, the *addLog* query will run, followed by an alert and the modal being closed.
+
+## Adding Actions To Tables
 
 
 ## What Can I Do With ToolJet
