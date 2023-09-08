@@ -1082,7 +1082,7 @@ button {
       .launch-button {
         box-sizing: border-box;
         border-radius: 6px;
-        color: var(--base);
+        color: var(--slate12);
         width: 113px;
         height: 28px;
         background: var(--base);
@@ -3200,7 +3200,7 @@ input:focus-visible {
   }
 
   .app-title {
-    color: var(--base) !important;
+    color: var(--slate12) !important;
   }
 
   .RichEditor-root {
@@ -4968,7 +4968,7 @@ div#driver-page-overlay {
   border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
-    color: var(--base) !important;
+    color: var(--slate12) !important;
   }
 
   .driver-popover-tip {
@@ -11008,7 +11008,7 @@ tbody {
     }
 
     .search-box-wrapper input {
-      color: var(--base) !important;
+      color: var(--slate12) !important;
     }
   }
 }

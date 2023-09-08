@@ -98,7 +98,7 @@ class EditorComponent extends React.Component {
         canvasMaxWidth: 100,
         canvasMaxWidthType: '%',
         canvasMaxHeight: 2400,
-        canvasBackgroundColor: props.darkMode ? '#27282D' : '#F2F2F5',
+        canvasBackgroundColor: props.darkMode ? '#181818' : '#F2F2F5',
         backgroundFxQuery: '',
       },
     };
@@ -882,8 +882,8 @@ class EditorComponent extends React.Component {
 
   computeCanvasBackgroundColor = () => {
     const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#F2F2F5';
-    if (['#27282D', '#F2F2F5', '#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
-      return this.props.darkMode ? '#27282D' : '#F2F2F5';
+    if (['#181818', '#F2F2F5', '#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
+      return this.props.darkMode ? '#181818' : '#F2F2F5';
     }
     return canvasBackgroundColor;
   };
