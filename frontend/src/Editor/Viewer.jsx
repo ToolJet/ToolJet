@@ -485,10 +485,10 @@ class ViewerComponent extends React.Component {
     const bgColor =
       (this.state.appDefinition.globalSettings?.backgroundFxQuery ||
         this.state.appDefinition.globalSettings?.canvasBackgroundColor) ??
-      '#F9F9FB';
+      '#27282D';
     const resolvedBackgroundColor = resolveReferences(bgColor, this.props.currentState);
-    if (['#1B1B1F', '#F9F9FB'].includes(resolvedBackgroundColor)) {
-      return this.props.darkMode ? '#1B1B1F' : '#F9F9FB';
+    if (['#27282D', '#F2F2F5', '#2f3c4c', '#edeff5'].includes(resolvedBackgroundColor)) {
+      return this.props.darkMode ? '#27282D' : '#F2F2F5';
     }
     return resolvedBackgroundColor;
   };
@@ -641,9 +641,11 @@ class ViewerComponent extends React.Component {
                 <div className="main">
                   <div
                     className="canvas-container align-items-center"
-                    style={{ background: !this.props.darkMode ? '#EBEBEF' : '#2E3035' }}
+                    style={{
+                      background: this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
+                    }}
                   >
-                    <div className="areas d-flex flex-rows justify-content-center">
+                    <div className="areas d-flex flex-rows">
                       {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
                           isMobileDevice={this.props.currentLayout === 'mobile'}
@@ -654,54 +656,56 @@ class ViewerComponent extends React.Component {
                           darkMode={this.props.darkMode}
                         />
                       )}
-                      <div
-                        className="canvas-area"
-                        style={{
-                          width: currentCanvasWidth,
-                          maxWidth: canvasMaxWidth,
-                          backgroundColor: this.computeCanvasBackgroundColor(),
-                          margin: 0,
-                          padding: 0,
-                        }}
-                      >
-                        {defaultComponentStateComputed && (
-                          <>
-                            {isLoading ? (
-                              <div className="mx-auto mt-5 w-50 p-5">
-                                <center>
-                                  <div className="spinner-border text-azure" role="status"></div>
-                                </center>
-                              </div>
-                            ) : (
-                              <Container
-                                appDefinition={appDefinition}
-                                appDefinitionChanged={() => false} // function not relevant in viewer
-                                snapToGrid={true}
-                                appLoading={isLoading}
-                                darkMode={this.props.darkMode}
-                                onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
-                                mode="view"
-                                deviceWindowWidth={deviceWindowWidth}
-                                selectedComponent={this.state.selectedComponent}
-                                onComponentClick={(id, component) => {
-                                  this.setState({
-                                    selectedComponent: { id, component },
-                                  });
-                                  onComponentClick(this, id, component, 'view');
-                                }}
-                                onComponentOptionChanged={(component, optionName, value) => {
-                                  return onComponentOptionChanged(this, component, optionName, value);
-                                }}
-                                onComponentOptionsChanged={(component, options) =>
-                                  onComponentOptionsChanged(this, component, options)
-                                }
-                                canvasWidth={this.getCanvasWidth()}
-                                dataQueries={dataQueries}
-                                currentPageId={this.state.currentPageId}
-                              />
-                            )}
-                          </>
-                        )}
+                      <div className="flex-grow-1 d-flex justify-content-center">
+                        <div
+                          className="canvas-area"
+                          style={{
+                            width: currentCanvasWidth,
+                            maxWidth: canvasMaxWidth,
+                            backgroundColor: this.computeCanvasBackgroundColor(),
+                            margin: 0,
+                            padding: 0,
+                          }}
+                        >
+                          {defaultComponentStateComputed && (
+                            <>
+                              {isLoading ? (
+                                <div className="mx-auto mt-5 w-50 p-5">
+                                  <center>
+                                    <div className="spinner-border text-azure" role="status"></div>
+                                  </center>
+                                </div>
+                              ) : (
+                                <Container
+                                  appDefinition={appDefinition}
+                                  appDefinitionChanged={() => false} // function not relevant in viewer
+                                  snapToGrid={true}
+                                  appLoading={isLoading}
+                                  darkMode={this.props.darkMode}
+                                  onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
+                                  mode="view"
+                                  deviceWindowWidth={deviceWindowWidth}
+                                  selectedComponent={this.state.selectedComponent}
+                                  onComponentClick={(id, component) => {
+                                    this.setState({
+                                      selectedComponent: { id, component },
+                                    });
+                                    onComponentClick(this, id, component, 'view');
+                                  }}
+                                  onComponentOptionChanged={(component, optionName, value) => {
+                                    return onComponentOptionChanged(this, component, optionName, value);
+                                  }}
+                                  onComponentOptionsChanged={(component, options) =>
+                                    onComponentOptionsChanged(this, component, options)
+                                  }
+                                  canvasWidth={this.getCanvasWidth()}
+                                  dataQueries={dataQueries}
+                                  currentPageId={this.state.currentPageId}
+                                />
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

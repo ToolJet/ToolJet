@@ -82,7 +82,7 @@
     &:active {
         background: var(--slate1);
         border: 1px solid rgba(255, 255, 255, 0.00);
-        box-shadow: 0px 0px 0px 4px #C6D4F9;
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
         background: var(--indigo9);
     }
 
@@ -113,7 +113,7 @@
         background: var(--indigo3, #F0F4FF) !important;
 
         /* Focus rings/Indigo/light */
-        box-shadow: 0px 0px 0px 4px #C6D4F9;
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
     }}
 
 .tj-tertiary-btn {

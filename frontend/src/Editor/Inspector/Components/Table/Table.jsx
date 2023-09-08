@@ -997,7 +997,6 @@ class TableComponent extends React.Component {
     };
 
     let items = [];
-
     items.push({
       title: 'Data',
       children: renderElement(
@@ -1009,7 +1008,8 @@ class TableComponent extends React.Component {
         'properties',
         currentState,
         components,
-        darkMode
+        darkMode,
+        false
       ),
     });
 
@@ -1049,6 +1049,7 @@ class TableComponent extends React.Component {
                                 >
                                   <div key={resolvedItemName}>
                                     <List.Item
+                                      isDraggable={true}
                                       primaryText={resolvedItemName}
                                       secondaryText={capitalize(item?.columnType)}
                                       data-cy={`column-${resolvedItemName}`}
@@ -1077,11 +1078,11 @@ class TableComponent extends React.Component {
                   )}
                 </Droppable>
               </DragDropContext>
-              <div style={{ paddingTop: '8px' }}>
+              <div>
                 {columns?.value?.length === 0 && <NoListItem text={'There are no columns'} />}
-                <div style={{ marginTop: '8px' }}>
+                <div>
                   <AddNewButton data-cy={`button-add-column`} onClick={this.addNewColumn}>
-                    {this.props.t('widget.Table.addColumn', ' New column')}
+                    {this.props.t('widget.Table.addNewColumn', ' Add new column')}
                   </AddNewButton>
                 </div>
               </div>
@@ -1094,11 +1095,11 @@ class TableComponent extends React.Component {
     items.push({
       title: 'Action buttons',
       children: (
-        <div className="field mb-2 mt-2">
+        <div className="field">
           <div className="row g-2">
             <div>{actions.value.map((action, index) => this.renderActionButton(action, index))}</div>
             {actions.value.length === 0 && <NoListItem text={'There are no action buttons'} />}
-            <AddNewButton data-cy="button-add-new-action-button" onClick={this.addNewAction}>
+            <AddNewButton data-cy="button-add-new-action-button" onClick={this.addNewAction} className="mt-0">
               New action button
             </AddNewButton>
           </div>
@@ -1165,7 +1166,7 @@ class TableComponent extends React.Component {
     });
 
     items.push({
-      title: 'Devices',
+      title: 'Layout',
       isOpen: true,
       children: (
         <>
