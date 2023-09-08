@@ -17,7 +17,6 @@ import {
 } from '../../test.helper';
 import { getManager, Repository } from 'typeorm';
 import { OAuth2Client } from 'google-auth-library';
-import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 describe('Google SSO Onboarding', () => {
   let app: INestApplication;
@@ -133,11 +132,7 @@ describe('Google SSO Onboarding', () => {
             where: { userId: org_user.id },
           });
           const organization = await orgRepository.findOneOrFail({
-            where: {
-              id: org_user?.organizationUsers?.find(
-                (ou) => ou.status === WORKSPACE_USER_STATUS.INVITED && ou.invitationToken === orgInviteToken
-              )?.organizationId,
-            },
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
           });
 
           org_user_organization = organization;
@@ -241,7 +236,7 @@ describe('Google SSO Onboarding', () => {
           });
           current_organization = organization;
 
-          //expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('invited');
           expect(user.source).toBe('signup');
         });
@@ -311,7 +306,7 @@ describe('Google SSO Onboarding', () => {
           });
           current_organization = organization;
 
-          //expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('verified');
           expect(user.source).toBe('google');
         });
@@ -326,7 +321,7 @@ describe('Google SSO Onboarding', () => {
         it('should setup account for user using sso link', async () => {
           const { invitationToken } = current_user;
           const organization = await orgRepository.findOneOrFail({
-            where: { id: current_user.defaultOrganizationId },
+            where: { id: current_user?.organizationUsers?.[0]?.organizationId },
           });
 
           current_organization = organization;
@@ -389,11 +384,7 @@ describe('Google SSO Onboarding', () => {
             where: { userId: org_user.id },
           });
           const organization = await orgRepository.findOneOrFail({
-            where: {
-              id: org_user?.organizationUsers?.find(
-                (ou) => ou.status === WORKSPACE_USER_STATUS.INVITED && ou.invitationToken === orgInviteToken
-              )?.organizationId,
-            },
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
           });
 
           org_user_organization = organization;

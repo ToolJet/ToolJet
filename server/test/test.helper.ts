@@ -671,15 +671,15 @@ export const setUpAccountFromToken = async (app: INestApplication, user: User, o
   const { status } = response;
   expect(status).toBe(201);
 
-  const { email, first_name, last_name } = response.body;
+  const { email, first_name, last_name, current_organization_id } = response.body;
 
   expect(email).toEqual(user.email);
   expect(first_name).toEqual(user.firstName);
   expect(last_name).toEqual(user.lastName);
-  //expect(current_organization_id).toBe(org.id);
+  expect(current_organization_id).toBe(org.id);
   await user.reload();
   expect(user.status).toBe('active');
-  //expect(user.defaultOrganizationId).toBe(org.id);
+  expect(user.defaultOrganizationId).toBe(org.id);
 };
 
 export const getPathFromUrl = (url) => {
