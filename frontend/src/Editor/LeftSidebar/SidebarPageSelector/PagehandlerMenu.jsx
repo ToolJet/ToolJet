@@ -162,7 +162,7 @@ const Field = ({ id, text, iconSrc, customClass = '', closeMenu, disabled = fals
 
   return (
     <div className={`field ${customClass ? ` ${customClass}` : ''}`}>
-      <Button.UnstyledButton onMouseDown={handleOnClick} onClick={handleOnClick} styles={{ height: '28px' }} disabled={disabled}>
+      <Button.UnstyledButton onClick={handleOnClick} styles={{ height: '28px' }} disabled={disabled}>
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
       </Button.UnstyledButton>
     </div>
