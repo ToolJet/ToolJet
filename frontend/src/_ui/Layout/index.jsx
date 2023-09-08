@@ -134,6 +134,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <ToolTip message="Workflows" placement="right">
                       <Link
                         to={getPrivateRoute('workflows')}
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workflows'), event)}
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
                         }`}
@@ -218,7 +219,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <ToolTip message="Marketplace (Beta)" placement="right">
                       <Link
                         to="/integrations"
-                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('integrations'), event)}
+                        onClick={(event) => checkForUnsavedChanges('/integrations', event)}
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === '/integrations' && `current-seleted-route`
                         }`}

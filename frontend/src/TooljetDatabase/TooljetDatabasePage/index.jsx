@@ -9,6 +9,10 @@ import Sort from '../Sort';
 import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import ExportSchema from '../ExportSchema/ExportSchema';
+import { appService } from '@/_services/app.service';
+import { toast } from 'react-hot-toast';
+import { isEmpty } from 'lodash';
 
 const TooljetDatabasePage = ({ totalTables }) => {
   const {
@@ -22,6 +26,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
     setQueryFilters,
     sortFilters,
     setSortFilters,
+    organizationId,
   } = useContext(TooljetDatabaseContext);
 
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
@@ -51,19 +56,45 @@ const TooljetDatabasePage = ({ totalTables }) => {
     );
   };
 
+  const exportTable = () => {
+    appService
+      .exportResource({
+        tooljet_database: [{ table_id: selectedTable.id }],
+        organization_id: organizationId,
+      })
+      .then((data) => {
+        const tableName = selectedTable.table_name.replace(/\s+/g, '-').toLowerCase();
+        const fileName = `${tableName}-export-${new Date().getTime()}`;
+        // simulate link click download
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const href = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = fileName + '.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch(() => {
+        toast.error('Could not export table.', {
+          position: 'top-center',
+        });
+      });
+  };
+
   return (
     <div className="row gx-0">
       <Sidebar />
       <div className={cx('col animation-fade database-page-content-wrap')}>
         {totalTables === 0 && <EmptyState />}
-
-        {selectedTable && (
+        {!isEmpty(selectedTable) && (
           <>
             <div className="database-table-header-wrapper">
               <div className="card border-0">
                 <div className="card-body  tj-db-operaions-header">
                   <div className="row align-items-center">
-                    <div className="col">
+                    <div className="col d-flex">
                       <CreateColumnDrawer
                         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
                         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
@@ -82,6 +113,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
                             handleBuildSortQuery={handleBuildSortQuery}
                             resetSortQuery={resetSortQuery}
                           />
+                          <ExportSchema onClick={exportTable} />
                           <CreateRowDrawer
                             isCreateRowDrawerOpen={isCreateRowDrawerOpen}
                             setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
