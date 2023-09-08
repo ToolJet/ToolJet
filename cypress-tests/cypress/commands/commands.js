@@ -102,11 +102,11 @@ Cypress.Commands.add(
   },
   (subject, value) => {
     cy.wrap(subject)
-      .click()
+      .realClick()
       .find("pre.CodeMirror-line")
       .invoke("text")
       .then((text) => {
-        cy.wrap(subject).type(createBackspaceText(text)),
+        cy.wrap(subject).type(createBackspaceText(text), { delay: 0 }),
           {
             delay: 0,
           };

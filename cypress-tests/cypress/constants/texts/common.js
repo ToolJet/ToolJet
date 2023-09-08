@@ -184,6 +184,7 @@ export const commonWidgetText = {
   accordionGenaral: "General",
   accordionValidation: "Validation",
   accordionLayout: "Layout",
+  accordionDevices: "Devices",
 
   parameterCustomValidation: "Custom validation",
   parameterShowOnDesktop: "Show on desktop",
