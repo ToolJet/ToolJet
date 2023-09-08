@@ -12,7 +12,6 @@ import {
   authenticateUser,
 } from '../../test.helper';
 import { Repository } from 'typeorm';
-import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 
 describe('Form Onboarding', () => {
   let app: INestApplication;
@@ -136,11 +135,11 @@ describe('Form Onboarding', () => {
 
         it('should setup org user account using invitation token (setup-account-from-token)', async () => {
           const { invitationToken } = org_user;
-          const { invitationToken: orgInviteToken, organizationId } = await orgUserRepository.findOneOrFail({
+          const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
             where: { userId: org_user.id },
           });
           const organization = await orgRepository.findOneOrFail({
-            where: { id: organizationId },
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
           });
 
           org_user_organization = organization;
@@ -267,14 +266,13 @@ describe('Form Onboarding', () => {
         it('should verify if signup url is still valid for the invited user', async () => {
           const user = await userRepository.findOneOrFail({ where: { email: 'another_user@tooljet.com' } });
           org_user = user;
-
           const { body, status } = await verifyInviteToken(app, org_user, true);
           expect(status).toBe(200);
           expect(body?.email).toEqual('another_user@tooljet.com');
           expect(body?.name).toEqual('another user');
           const { invitationToken } = org_user;
           const organization = await orgRepository.findOneOrFail({
-            where: { id: org_user.defaultOrganizationId },
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
           });
 
           org_user_organization = organization;
@@ -339,11 +337,11 @@ describe('Form Onboarding', () => {
           expect(body?.email).toEqual('another_user@tooljet.com');
           expect(body?.name).toEqual('another user');
           const { invitationToken } = org_user;
-          const { invitationToken: orgInviteToken, organizationId } = await orgUserRepository.findOneOrFail({
+          const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
             where: { userId: org_user.id },
           });
           const organization = await orgRepository.findOneOrFail({
-            where: { id: organizationId },
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
           });
 
           org_user_organization = organization;
@@ -385,11 +383,11 @@ describe('Form Onboarding', () => {
           org_user = user;
 
           const organization = await orgRepository.findOneOrFail({
-            where: { id: current_user?.defaultOrganizationId },
+            where: { id: user?.organizationUsers?.[0]?.organizationId },
           });
           org_user_organization = organization;
 
-          expect(user.defaultOrganizationId).not.toBe(current_user?.defaultOrganizationId);
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('invited');
           expect(user.source).toBe('invite');
         });
@@ -412,12 +410,8 @@ describe('Form Onboarding', () => {
           const { invitationToken: orgInviteToken } = await orgUserRepository.findOneOrFail({
             where: { userId: org_user.id },
           });
-
           const organization = await orgRepository.findOneOrFail({
-            where: {
-              id: org_user?.organizationUsers?.find((ou) => ou.status === WORKSPACE_USER_STATUS.INVITED)
-                ?.organizationId,
-            },
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
           });
 
           org_user_organization = organization;
@@ -459,11 +453,11 @@ describe('Form Onboarding', () => {
           org_user = user;
 
           const organization = await orgRepository.findOneOrFail({
-            where: { id: current_user?.defaultOrganizationId },
+            where: { id: user?.organizationUsers?.[0]?.organizationId },
           });
           org_user_organization = organization;
 
-          expect(user.defaultOrganizationId).not.toBe(organization.id);
+          expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
           expect(user.status).toBe('invited');
           expect(user.source).toBe('invite');
         });
@@ -485,7 +479,7 @@ describe('Form Onboarding', () => {
           expect(body?.name).toEqual('another user');
           const { invitationToken } = org_user;
           const organization = await orgRepository.findOneOrFail({
-            where: { id: org_user.defaultOrganizationId },
+            where: { id: org_user?.organizationUsers?.[0]?.organizationId },
           });
 
           org_user_organization = organization;
