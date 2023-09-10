@@ -239,13 +239,6 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
-  const editorRef = {
-    appDefinition: appDefinition,
-    queryConfirmationList: queryConfirmationList,
-    updateQueryConfirmationList: updateQueryConfirmationList,
-    navigate: props.navigate,
-  };
-
   const handleMessage = (event) => {
     const { data } = event;
 
@@ -1441,6 +1434,14 @@ const EditorComponent = (props) => {
     ? `/applications/${appId}/versions/${editingVersion.id}/${currentState.page.handle}`
     : '';
   const deviceWindowWidth = 450;
+
+  const editorRef = {
+    appDefinition: appDefinition,
+    queryConfirmationList: queryConfirmationList,
+    updateQueryConfirmationList: updateQueryConfirmationList,
+    navigate: props.navigate,
+    switchPage: switchPage,
+  };
 
   if (isLoading) {
     return (
