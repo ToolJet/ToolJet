@@ -15,6 +15,7 @@ export function generateUIComponents(JSONSchema, advanced) {
       uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == itemType)));
     });
     Object.entries(JSONSchema?.properties).forEach(([key, value], index) => {
+      console.log('try--', index * 2 + 1);
       if (uiComponentsDraft?.length > 0 && uiComponentsDraft[index * 2 + 1]) {
         switch (typeResolver(value?.type)) {
           case 'TextInput':
@@ -408,8 +409,9 @@ export function generateUIComponents(JSONSchema, advanced) {
           default:
             return;
         }
-        // converting label/key as text input
+        // converting label/key as text ui element/component
         uiComponentsDraft[index * 2]['definition']['properties']['text']['value'] = value?.label ?? key;
+        uiComponentsDraft[index * 2]['formKey'] = key;
       }
     });
     // adding title as first item

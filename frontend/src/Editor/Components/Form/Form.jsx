@@ -72,7 +72,7 @@ export const Form = function Form(props) {
       const item = data[key];
 
       if (item.name === 'Text') {
-        const textKey = item?.keyValue ?? item?.text;
+        const textKey = item?.formKey ?? item?.text;
         const nextItem = data[parseInt(key) + 1];
 
         if (nextItem && nextItem.name !== 'Text') {
@@ -195,7 +195,7 @@ export const Form = function Form(props) {
       ...(childDataRef.current[componentId] ?? {}),
       name: component.name,
       [optionName]: value,
-      keyValue: keyValue, //adding this to use as exposed key
+      formKey: component?.formKey, //adding this to use as exposed key
     };
     childDataRef.current = { ...childDataRef.current, [componentId]: optionData };
     setChildrenData(childDataRef.current);
