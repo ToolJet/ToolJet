@@ -26,9 +26,9 @@ export const useDataQueriesStore = create(
       ...initialState,
       actions: {
         // TODO: Remove editor state while changing currentState
-        fetchDataQueries: async (appId, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
+        fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
           set({ loadingDataQueries: true });
-          const data = await dataqueryService.getAll(appId);
+          const data = await dataqueryService.getAll(appVersionId);
           set((state) => ({
             dataQueries: sortByAttribute(data.data_queries, state.sortBy, state.sortOrder),
             loadingDataQueries: false,

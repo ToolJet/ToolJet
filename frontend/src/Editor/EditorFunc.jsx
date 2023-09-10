@@ -1435,7 +1435,7 @@ const EditorComponent = (props) => {
   const currentState = props?.currentState;
   const editingVersion = props?.editingVersion;
   const appVersionPreviewLink = editingVersion
-    ? `/applications/${app.id}/versions/${editingVersion.id}/${currentState.page.handle}`
+    ? `/applications/${appId}/versions/${editingVersion.id}/${currentState.page.handle}`
     : '';
   const deviceWindowWidth = 450;
 
