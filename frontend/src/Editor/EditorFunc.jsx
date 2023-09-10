@@ -903,7 +903,9 @@ const EditorComponent = (props) => {
       removeUndefined(updatedAppDefinition);
 
       const _diffPatches = diff(updatedAppDefinition, appDefinition);
+      const undoDiff = diff(appDefinition, updatedAppDefinition);
 
+      updateAppDefinitionDiff(undoDiff);
       setUndoStack((prev) => prev.slice(0, prev.length - 1));
       setRedoStack((prev) => [...prev, diffToPatches(_diffPatches)]);
 
@@ -924,7 +926,8 @@ const EditorComponent = (props) => {
       handlePaths(patchesToRedo[0]?.value, [...patchesToRedo[0].path], updatedAppDefinition);
 
       const _diffPatches = diff(updatedAppDefinition, appDefinition);
-
+      const redoDiff = diff(appDefinition, updatedAppDefinition);
+      updateAppDefinitionDiff(redoDiff);
       setRedoStack((prev) => prev.slice(0, prev.length - 1));
       setUndoStack((prev) => [...prev, diffToPatches(_diffPatches)]);
 
