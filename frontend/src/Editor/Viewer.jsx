@@ -1,5 +1,11 @@
 import React from 'react';
-import { appService, authenticationService, orgEnvironmentVariableService, organizationService } from '@/_services';
+import {
+  appService,
+  authenticationService,
+  dataqueryService,
+  orgEnvironmentVariableService,
+  organizationService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -13,6 +19,7 @@ import {
   onEvent,
   runQuery,
   computeComponentState,
+  buildAppDefinition,
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
@@ -71,23 +78,20 @@ class ViewerComponent extends React.Component {
   }
 
   setStateForApp = (data) => {
-    const copyDefinition = _.cloneDeep(data.definition);
-    const pagesObj = copyDefinition.pages || {};
+    const appDefData = buildAppDefinition(data);
 
-    const newDefinition = {
-      ...copyDefinition,
-      pages: pagesObj,
-    };
-
+    // console.log('-----mohaan appDefData', { appDefData });
     this.setState({
       app: data,
       isLoading: false,
       isAppLoaded: true,
-      appDefinition: newDefinition || { components: {} },
+      appDefinition: { ...appDefData },
     });
   };
 
-  setStateForContainer = async (data) => {
+  setStateForContainer = async (data, appVersionId) => {
+    console.log('-----mohaan viewer2.0', { data });
+    const appDefData = buildAppDefinition(data);
     const currentUser = this.state.currentUser;
     let userVars = {};
 
@@ -110,30 +114,34 @@ class ViewerComponent extends React.Component {
     }
 
     let queryState = {};
-    data.data_queries.forEach((query) => {
-      if (query.pluginId || query?.plugin?.id) {
-        queryState[query.name] = {
-          ...query.plugin.manifestFile.data.source.exposedVariables,
-          ...this.props.currentState.queries[query.name],
-        };
-      } else {
-        const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
-        queryState[query.name] = {
-          ...dataSourceTypeDetail.exposedVariables,
-          ...this.props.currentState.queries[query.name],
-        };
-      }
-    });
+    const { data_queries } = await dataqueryService.getAll(appVersionId);
+
+    if (data_queries.length > 0) {
+      data_queries.forEach((query) => {
+        if (query.pluginId || query?.plugin?.id) {
+          queryState[query.name] = {
+            ...query.plugin.manifestFile.data.source.exposedVariables,
+            ...this.props.currentState.queries[query.name],
+          };
+        } else {
+          const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
+          queryState[query.name] = {
+            ...dataSourceTypeDetail.exposedVariables,
+            ...this.props.currentState.queries[query.name],
+          };
+        }
+      });
+    }
 
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
-    const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-    const homePageId = data.definition.homePageId;
+    const pages = data.pages;
+    const homePageId = data.editing_version.homePageId;
     const startingPageHandle = this.props?.params?.pageHandle;
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    useDataQueriesStore.getState().actions.setDataQueries(data.data_queries);
+    useDataQueriesStore.getState().actions.setDataQueries(data_queries);
     this.props.setCurrentState({
       queries: queryState,
       components: {},
@@ -163,21 +171,23 @@ class ViewerComponent extends React.Component {
             ? `${this.state.deviceWindowWidth}px`
             : '1292px',
         selectedComponent: null,
-        dataQueries: data.data_queries,
+        dataQueries: data_queries,
         currentPageId: currentPage.id,
         pages: {},
-        homepage: this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle,
+        homepage: appDefData?.pages?.[this.state.appDefinition?.homePageId]?.handle,
       },
       () => {
-        computeComponentState(data?.definition?.pages[currentPage.id]?.components).then(async () => {
-          this.setState({ initialComputationOfStateDone: true });
+        const components = appDefData?.pages[currentPageId]?.components || {};
+
+        computeComponentState(components).then(async () => {
+          this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
           console.log('Default component state computed and set');
-          this.runQueries(data.data_queries);
+          this.runQueries(data_queries);
           // eslint-disable-next-line no-unsafe-optional-chaining
-          const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
-          for (const event of events ?? []) {
-            await this.handleEvent(event.eventId, event);
-          }
+          // const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
+          // for (const event of events ?? []) {
+          //   await this.handleEvent(event.eventId, event);
+          // }
         });
       }
     );
@@ -234,7 +244,7 @@ class ViewerComponent extends React.Component {
       .getAppByVersion(appId, versionId)
       .then((data) => {
         this.setStateForApp(data);
-        this.setStateForContainer(data);
+        this.setStateForContainer(data, versionId);
       })
       .catch((error) => {
         this.setState({
