@@ -106,10 +106,10 @@ export class TooljetDbBulkUploadService {
     }
   }
 
-  async bulkInsertRows(tooljetDbManager: EntityManager, rowsToInsert: any[], internalTableId: string) {
+  async bulkInsertRows(tooljetDbManager: EntityManager, rowsToInsert: unknown[], internalTableId: string) {
     if (isEmpty(rowsToInsert)) return;
 
-    const rowsWithoutIdColumn = rowsToInsert.map((row) => {
+    const rowsWithoutIdColumn = rowsToInsert.map((row: { id: string }) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, ...rest } = row;
       return rest;
@@ -121,7 +121,7 @@ export class TooljetDbBulkUploadService {
     await tooljetDbManager.createQueryBuilder().insert().into(internalTableId, columns).values(rowValues).execute();
   }
 
-  async validateHeadersAsColumnSubset(internalTableColumnSchema, headers: string[]) {
+  async validateHeadersAsColumnSubset(internalTableColumnSchema: TableColumnSchema[], headers: string[]) {
     const internalTableColumns = new Set<string>(internalTableColumnSchema.map((c) => c.column_name));
     const columnsInCsv = new Set<string>(headers);
     const isSubset = (subset: Set<string>, superset: Set<string>) => [...subset].every((item) => superset.has(item));
@@ -133,7 +133,7 @@ export class TooljetDbBulkUploadService {
     }
   }
 
-  validateAndParseColumnDataType(internalTableColumnSchema: TableColumnSchema[], row: any, rowsProcessed) {
+  validateAndParseColumnDataType(internalTableColumnSchema: TableColumnSchema[], row: unknown, rowsProcessed: number) {
     if (rowsProcessed > MAX_ROW_COUNT)
       throw new BadRequestException(`Row count cannot be greater than ${MAX_ROW_COUNT}`);
 
