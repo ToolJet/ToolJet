@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -219,15 +219,13 @@ export const EventManager = ({
 
     newEvents[index] = updatedEvent;
 
-    const diffPatches = diff(currentEvents[index], updatedEvent);
-
     setEvents(newEvents);
 
     updateAppVersionEventHandlers(
       [
         {
           event_id: updatedEvent.id,
-          diff: diffPatches,
+          diff: updatedEvent,
         },
       ],
       'update'
@@ -263,16 +261,29 @@ export const EventManager = ({
   const onChangeHandlerForComponentSpecificActionHandle = (value, index, param, event) => {
     const newParam = { ...param, value: value };
     const params = event?.componentSpecificActionParams ?? [];
-    const newParams = params.map((paramOfParamList) =>
-      paramOfParamList.handle === param.handle ? newParam : paramOfParamList
-    );
+
+    const newParams =
+      params.length > 0
+        ? params.map((paramOfParamList) => {
+            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+          })
+        : [newParam];
+
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
   };
   const valueForComponentSpecificActionHandle = (event, param) => {
-    return (
-      event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)?.value ??
-      param.defaultValue
-    );
+    const componentSpecificActionParamsExits = Array.isArray(event?.componentSpecificActionParams);
+    const defaultValue = param.defaultValue ?? '';
+
+    if (componentSpecificActionParamsExits) {
+      const paramValue =
+        event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)?.value ??
+        defaultValue;
+
+      return paramValue;
+    }
+
+    return defaultValue;
   };
 
   function eventPopover(event, index) {
