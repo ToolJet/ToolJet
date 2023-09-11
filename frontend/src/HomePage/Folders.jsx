@@ -179,6 +179,12 @@ export const Folders = function Folders({
     setFilteredData(folders);
   }
 
+  const handleFolderInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      showUpdateForm ? executeEditFolder() : saveFolder()
+    }
+  }
+
   return (
     <div
       className={`w-100 folder-list ${!canCreateApp && 'folder-list-user'}`}
@@ -318,7 +324,7 @@ export const Folders = function Folders({
               placeholder={t('homePage.foldersSection.folderName', 'folder name')}
               disabled={isCreating || isUpdating}
               value={newFolderName}
-              onKeyDown={(e) => (e.key === 'Enter' ? (showUpdateForm ? executeEditFolder() : saveFolder()) : null)}
+              onKeyDown={handleFolderInputKeyDown}
               maxLength={50}
               data-cy="folder-name-input"
               autoFocus
