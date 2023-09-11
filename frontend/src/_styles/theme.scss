@@ -3115,7 +3115,7 @@ input:focus-visible {
   }
 
   .editor .editor-sidebar .components-container .component-image-holder {
-    background: var(--slate3) !important;
+    background: hsl(200, 7.0%, 8.8%); //slate1
     border-radius: 6px;
     margin-bottom: 4px;
   }
@@ -3250,7 +3250,6 @@ input:focus-visible {
   }
 
   .main .query-pane .data-pane .queries-container .queries-header {
-    border: solid #ffffff17 !important;
     border-width: 0px 0px 1px 0px !important;
 
     .text-muted {
