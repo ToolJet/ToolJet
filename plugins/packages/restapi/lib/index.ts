@@ -1,4 +1,6 @@
 const urrl = require('url');
+import { readFileSync } from 'fs';
+import * as tls from 'tls';
 import {
   QueryError,
   ForbiddenRequestError,
@@ -14,7 +16,6 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
   sanitizeSearchParams,
-  fetchHttpsCertsForCustomCA,
   getAuthUrl,
 } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
@@ -95,13 +96,13 @@ export default class RestapiQueryService implements QueryService {
 
     const _requestOptions: OptionsOfTextResponseBody = {
       method,
+      ...this.fetchHttpsCertsForCustomCA(sourceOptions),
       headers: sanitizeHeaders(sourceOptions, queryOptions, hasDataSource),
       searchParams: {
         ...paramsFromUrl,
         ...sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource),
       },
       ...(isUrlEncoded ? { form: json } : { json }),
-      ...fetchHttpsCertsForCustomCA(),
     };
 
     const authValidatedRequestOptions = validateAndSetRequestOptionsBasedOnAuthType(
@@ -174,6 +175,45 @@ export default class RestapiQueryService implements QueryService {
       response: responseObject,
       responseHeaders,
     };
+  }
+
+  fetchHttpsCertsForCustomCA(sourceOptions: any) {
+    let httpsParams: any = {};
+    switch (sourceOptions.ssl_certificate) {
+      case 'ca_certificate':
+        httpsParams = {
+          https: {
+            certificateAuthority: [sourceOptions.ca_cert],
+          },
+        };
+        break;
+      case 'client_certificate':
+        httpsParams = {
+          https: {
+            certificateAuthority: [sourceOptions.ca_cert],
+            key: [sourceOptions.client_key],
+            certificate: [sourceOptions.client_cert],
+          },
+        };
+        break;
+      default:
+        break;
+    }
+
+    if (process.env.NODE_EXTRA_CA_CERTS) {
+      'https' in httpsParams
+        ? (httpsParams.https.certificateAuthority = httpsParams.https?.certificateAuthority.concat([
+            ...tls.rootCertificates,
+            readFileSync(process.env.NODE_EXTRA_CA_CERTS),
+          ]))
+        : (httpsParams = {
+            https: {
+              certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
+            },
+          });
+    }
+
+    return httpsParams;
   }
 
   private getResponse(response) {

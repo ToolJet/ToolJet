@@ -22,10 +22,6 @@ describe("Data source BigQuery", () => {
 
   it("Should verify elements on BigQuery connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -44,24 +40,13 @@ describe("Data source BigQuery", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      bigqueryText.bigQuery
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(1)
-      .should("contain", bigqueryText.bigQuery);
-    cy.get('[data-cy="data-source-bigquery"]').click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      bigqueryText.bigQuery
-    );
+    selectAndAddDataSource("databases", bigqueryText.bigQuery, data.lastName);
 
     cy.get('[data-cy="label-private-key"]').verifyVisibleElement(
       "have.text",
       firestoreText.labelPrivateKey
     );
-
+    cy.get(".datasource-edit-btn").should("be.visible");
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
       postgreSqlText.whiteListIpText
@@ -96,12 +81,8 @@ describe("Data source BigQuery", () => {
   });
 
   it("Should verify the functionality of BigQuery connection form.", () => {
-    selectAndAddDataSource(bigqueryText.bigQuery);
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-bigquery`
-    );
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    selectAndAddDataSource("databases", bigqueryText.bigQuery, data.lastName);
 
     fillDataSourceTextField(
       firestoreText.privateKey,
@@ -118,7 +99,7 @@ describe("Data source BigQuery", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();

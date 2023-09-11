@@ -13,11 +13,11 @@ export const List = ({ updateSelectedDatasource }) => {
   const {
     dataSources,
     fetchDataSources,
-    environments,
     selectedDataSource,
-    toggleDataSourceManagerModal,
     setSelectedDataSource,
+    toggleDataSourceManagerModal,
     isLoading,
+    environments,
     setCurrentEnvironment,
     setActiveDatasourceList,
     setLoading,
@@ -31,24 +31,12 @@ export const List = ({ updateSelectedDatasource }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
-    if (environments.length > 0) {
-      fetchDataSources(true)
-        .then(() => {})
-        .catch(() => {
-          toast.error('Failed to fetch datasources');
-          return;
-        });
-    }
+    fetchDataSources(false).catch(() => {
+      toast.error('Failed to fetch datasources');
+      return;
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [environments]);
-
-  useEffect(() => {
-    setFilteredData([...dataSources]);
-  }, [dataSources]);
-
-  useEffect(() => {
-    setFilteredData([...dataSources]);
-  }, [dataSources]);
 
   useEffect(() => {
     setFilteredData([...dataSources]);
@@ -111,7 +99,7 @@ export const List = ({ updateSelectedDatasource }) => {
           <EmptyFoldersIllustration />
         </div>
         <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
-          No data sources added
+          No datasources added
         </div>
       </div>
     );

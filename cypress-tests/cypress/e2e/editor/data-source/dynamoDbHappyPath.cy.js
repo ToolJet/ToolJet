@@ -25,11 +25,6 @@ describe("Data source DynamoDB", () => {
 
   it("Should verify elements on DynamoDB connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -47,18 +42,8 @@ describe("Data source DynamoDB", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      dynamoDbText.dynamoDb
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(1)
-      .should("contain", dynamoDbText.dynamoDb);
-    cy.get('[data-cy="data-source-dynamodb"]').click();
+    selectAndAddDataSource("databases", dynamoDbText.dynamoDb, data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      dynamoDbText.dynamoDb
-    );
     cy.get('[data-cy="label-region"]').verifyVisibleElement(
       "have.text",
       dynamoDbText.region
@@ -106,12 +91,8 @@ describe("Data source DynamoDB", () => {
   });
 
   it("Should verify the functionality of DynamoDB connection form.", () => {
-    selectAndAddDataSource(dynamoDbText.dynamoDb);
-
-    cy.clearAndType(
-      postgreSqlSelector.dataSourceNameInputField,
-      `cypress-${data.lastName}-dynamodb`
-    );
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    selectAndAddDataSource("databases", dynamoDbText.dynamoDb, data.lastName);
 
     cy.get('[data-cy="label-region"]')
       .parent()
@@ -160,7 +141,7 @@ describe("Data source DynamoDB", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(
