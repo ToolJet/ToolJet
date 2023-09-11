@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+npm cache clean --force
+
 if [ -d "./server/dist" ]
 then
   SETUP_CMD='npm run db:setup:prod && npm run plugins:install:prod && npm run plugins:uninstall:prod'
@@ -8,7 +10,6 @@ else
   SETUP_CMD='npm run db:setup && npm run plugins:install && npm run plugins:uninstall'
 fi
 
-# Clean npm cache
 npm cache clean --force
 
 if [ -f "./.env" ]

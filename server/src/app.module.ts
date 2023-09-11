@@ -49,6 +49,7 @@ import { WorkerModule } from './modules/worker.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LicenseModule } from './modules/license/license.module';
 import { CustomStylesModule } from './modules/custom_styles/custom_styles.module';
+import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -112,6 +113,7 @@ const imports = [
   AppEnvironmentsModule,
   InstanceSettingsModule,
   LicenseModule,
+  ImportExportResourcesModule,
   CopilotModule,
   CustomStylesModule,
   WorkerModule,

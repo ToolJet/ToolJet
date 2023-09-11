@@ -29,11 +29,6 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -51,14 +46,8 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("InfluxDB");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "InfluxDB");
-    cy.get('[data-cy="data-source-influxdb"]').click();
+    selectAndAddDataSource("databases", "InfluxDB", data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      "InfluxDB"
-    );
     cy.get('[data-cy="label-api-token"]').verifyVisibleElement(
       "have.text",
       "API token"
@@ -109,15 +98,12 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectAndAddDataSource("InfluxDB");
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    selectAndAddDataSource("databases", "InfluxDB", data.lastName);
 
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-influxdb`
-    );
-
-    cy.clearAndType(
-      '[data-cy="api-token-text-field"]',
+    fillDataSourceTextField(
+      "API token",
+      "**************",
       Cypress.env("influxdb_token")
     );
 
@@ -137,7 +123,7 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(

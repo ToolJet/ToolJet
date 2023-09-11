@@ -38,6 +38,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
 
+  const { admin, super_admin, group_permissions } = authenticationService.currentSessionValue;
+
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);
     setIsManageVarDrawerOpen(false);
@@ -124,24 +126,15 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const canCreateVariable = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_constant_create',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return canAnyGroupPerformAction('org_environment_constant_create', group_permissions) || super_admin || admin;
   };
 
   const canUpdateVariable = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_constant_create',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return canAnyGroupPerformAction('org_environment_constant_create', group_permissions) || super_admin || admin;
   };
 
   const canDeleteVariable = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_constant_delete',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return canAnyGroupPerformAction('org_environment_constant_delete', group_permissions) || super_admin || admin;
   };
 
   const fetchEnvironments = () => {

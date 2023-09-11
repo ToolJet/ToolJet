@@ -34,7 +34,7 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
         <CreateColumnForm
           onCreate={() => {
-            tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
+            tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
                 return;
@@ -52,9 +52,9 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                 );
               }
             });
-            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
+            tooljetDatabaseService.findOne(organizationId, selectedTable.id).then(({ data = [], error }) => {
               if (error) {
-                toast.error(error?.message ?? `Failed to fetch table "${selectedTable}"`);
+                toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
                 return;
               }
 

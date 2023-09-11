@@ -42,9 +42,13 @@ export const addQueryOnGui = (queryName, query) => {
     `Query (${queryName}) completed.`
   );
 };
-export const selectAndAddDataSource = (dscategory, dataSource, dataSourceName) => {
+export const selectAndAddDataSource = (
+  dscategory,
+  dataSource,
+  dataSourceName
+) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
-  cy.get(`[data-cy="${dscategory}-datasource-button"]`).click();
+  cy.get(`[data-cy="${cyParamName(dscategory)}-datasource-button"]`).click();
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
   cy.get(`[data-cy="data-source-${String(dataSource).toLowerCase()}"]`)
     .parent()
@@ -54,26 +58,31 @@ export const selectAndAddDataSource = (dscategory, dataSource, dataSourceName) =
           dataSource
         ).toLowerCase()}"]>>>.datasource-card-title`
       ).realHover("mouse");
-      cy.get(
-        `[data-cy="${String(dataSource).toLowerCase()}-add-button"]`
-      ).click();
+      cy.get(`[data-cy="${cyParamName(dataSource)}-add-button"]`).click();
     });
-  cy.get(postgreSqlSelector.buttonSave).should("be.disabled")
-  cy.clearAndType(
-    '[data-cy="data-source-name-input-filed"]',
-    `cypress-${dataSourceName}-postgresql`
-  );
-  cy.get(postgreSqlSelector.buttonSave).click();
+  cy.get(postgreSqlSelector.buttonSave).should("be.disabled");
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     postgreSqlText.toastDSAdded
   );
+  cy.wait(1000);
+  cy.clearAndType(
+    '[data-cy="data-source-name-input-filed"]',
+    `cypress-${cyParamName(dataSourceName)}-${cyParamName(dataSource)}`
+  );
+  cy.get(postgreSqlSelector.buttonSave).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    postgreSqlText.toastDSSaved
+  );
 
   cy.get(
-    `[data-cy="cypress-${dataSourceName}-${cyParamName(dataSource)}-button"]`
+    `[data-cy="cypress-${cyParamName(dataSourceName)}-${cyParamName(
+      dataSource
+    )}-button"]`
   ).verifyVisibleElement(
     "have.text",
-    `cypress-${dataSourceName}-${cyParamName(dataSource)}`
+    `cypress-${cyParamName(dataSourceName)}-${cyParamName(dataSource)}`
   );
 };
 
@@ -116,9 +125,15 @@ export const fillDataSourceTextField = (
     `${assertionType}.text`,
     fieldName
   );
+  cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`).then(($field) => {
+    if ($field.is(":disabled")) {
+      cy.get(".datasource-edit-btn").click();
+    }
+  });
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
     .invoke("attr", "placeholder")
     .should("eq", placeholder.replace(/\u00a0/g, " "));
+
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
     .clear()
     .type(input, args);
@@ -169,4 +184,4 @@ export const addWidgetsToAddUser = () => {
   addEventHandlerToRunQuery("add_data_using_widgets");
 };
 
-export const addListviewToVerifyData = () => { };
+export const addListviewToVerifyData = () => {};

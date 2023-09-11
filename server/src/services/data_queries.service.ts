@@ -566,8 +566,7 @@ export class DataQueriesService {
         return resolvedvar;
       }
 
-      // check if more than two types of variables are present in a single line
-      if (object.match(/\{\{(.*?)\}\}/g)?.length > 1 && object.includes('{{constants.')) {
+      if (object.match(/\{\{(.*?)\}\}/g)?.length && object.includes('{{constants.')) {
         // find the constant variable from the string, {{constants.}} keyword
         const constantVariables = object.match(/\{\{(constants.*?)\}\}/g);
 
@@ -578,11 +577,6 @@ export class DataQueriesService {
             object = object.replace(variable, resolvedVariable);
           }
         }
-      }
-      if (object.includes('{{constants.')) {
-        const resolvingConstant = await this.resolveConstants(object, organization_id, environmentId);
-
-        options[object] = resolvingConstant;
       }
 
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {

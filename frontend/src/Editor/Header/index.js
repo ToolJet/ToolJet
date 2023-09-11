@@ -111,6 +111,7 @@ export default function EditorHeader({
                       toggleAppMaintenance={toggleAppMaintenance}
                       is_maintenance_on={is_maintenance_on}
                       shouldFreeze={isVersionReleased || isEditorFreezed}
+                      app={app}
                     />
                     <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
                   </div>

@@ -6,7 +6,7 @@ import { mongoDbText } from "Texts/mongoDb";
 import { commonSelectors } from "Selectors/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
 import { commonText } from "Texts/common";
 import { dataSourceSelector } from "Selectors/dataSource";
@@ -24,11 +24,6 @@ describe("Data source Azure Blob Storage", () => {
 
   it("Should verify elements on Azure Blob Storage connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
-
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -45,18 +40,10 @@ describe("Data source Azure Blob Storage", () => {
       "have.text",
       postgreSqlText.allCloudStorage
     );
-
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      azureBlobStorageText.azureBlobStorage
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(1)
-      .should("contain", azureBlobStorageText.azureBlobStorage);
-    cy.get('[data-cy="data-source-azure blob storage"]').click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      azureBlobStorageText.azureBlobStorage
+    selectAndAddDataSource(
+      "cloudstorage",
+      azureBlobStorageText.azureBlobStorage,
+      data.lastName
     );
 
     cy.get('[data-cy="label-connection-string"]').verifyVisibleElement(
@@ -98,11 +85,16 @@ describe("Data source Azure Blob Storage", () => {
   });
 
   it("Should verify the functionality of Azure Blob Storage connection form.", () => {
-    selectDataSource(azureBlobStorageText.azureBlobStorage);
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-azure-blob-storage`
+    data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDataSources
+    );
+    selectAndAddDataSource(
+      "cloudstorage",
+      azureBlobStorageText.azureBlobStorage,
+      data.lastName
     );
 
     fillDataSourceTextField(
@@ -142,7 +134,7 @@ describe("Data source Azure Blob Storage", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
