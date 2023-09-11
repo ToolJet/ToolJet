@@ -50,12 +50,11 @@ export const LeftSidebarInspector = ({
 
   const selectedComponent = React.useMemo(() => {
     const _selectedComponent = selectedComponents[selectedComponents.length - 1];
-    if (!isEmpty(_selectedComponent)) {
-      return {
-        id: _selectedComponent?.id,
-        component: _selectedComponent?.component?.name,
-      };
-    }
+
+    return {
+      id: _selectedComponent?.id,
+      component: _selectedComponent?.component?.name,
+    };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedComponents]);
