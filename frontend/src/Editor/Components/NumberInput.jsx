@@ -60,7 +60,7 @@ export const NumberInput = function NumberInput({
       setExposedVariable('value', 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, properties.placeholder]);
+  }, [value]);
 
   const computedStyles = {
     height,
