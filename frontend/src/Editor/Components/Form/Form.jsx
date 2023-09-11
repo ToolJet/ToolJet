@@ -91,6 +91,11 @@ export const Form = function Form(props) {
   }, [JSON.stringify(JSONSchema)]);
 
   useEffect(() => {
+    advanced && setExposedVariable('children', []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced]);
+
+  useEffect(() => {
     setUIComponents(generateUIComponents(JSONSchema, advanced));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema), advanced]);
@@ -106,7 +111,7 @@ export const Form = function Form(props) {
 
     if (childComponents === null) {
       setExposedVariable('data', formattedChildData);
-      setExposedVariable('children', formattedChildData);
+      !advanced && setExposedVariable('children', formattedChildData);
       setExposedVariable('isValid', childValidation);
       return setValidation(childValidation);
     }
@@ -124,10 +129,10 @@ export const Form = function Form(props) {
     }
     formattedChildData = Object.fromEntries(
       // eslint-disable-next-line no-unused-vars
-      Object.entries(formattedChildData).map(([key, { keyValue, ...rest }]) => [key, rest])
+      Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formkey from final exposed data
     );
     const formattedChildDataClone = _.cloneDeep(formattedChildData);
-    setExposedVariable('children', formattedChildDataClone);
+    !advanced && setExposedVariable('children', formattedChildDataClone);
     setExposedVariable('data', removeFunctionObjects(formattedChildData));
     setExposedVariable('isValid', childValidation);
     setValidation(childValidation);
@@ -184,13 +189,8 @@ export const Form = function Form(props) {
     onOptionChange({ component, optionName, value, componentId });
     return containerProps.onComponentOptionChanged(component, optionName, value);
   }
-  function findKeyByLabel(obj, label) {
-    const keys = Object.keys(obj);
-    return keys.find((key) => obj[key].label === label);
-  }
-  const onOptionChange = ({ component, optionName, value, componentId }) => {
-    let keyValue = JSONSchema?.properties && findKeyByLabel(JSONSchema.properties, value);
 
+  const onOptionChange = ({ component, optionName, value, componentId }) => {
     const optionData = {
       ...(childDataRef.current[componentId] ?? {}),
       name: component.name,

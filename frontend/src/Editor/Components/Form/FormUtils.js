@@ -15,7 +15,6 @@ export function generateUIComponents(JSONSchema, advanced) {
       uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == itemType)));
     });
     Object.entries(JSONSchema?.properties).forEach(([key, value], index) => {
-      console.log('try--', index * 2 + 1);
       if (uiComponentsDraft?.length > 0 && uiComponentsDraft[index * 2 + 1]) {
         switch (typeResolver(value?.type)) {
           case 'TextInput':

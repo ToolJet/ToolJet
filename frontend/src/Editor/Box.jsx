@@ -198,7 +198,6 @@ export const Box = memo(
         ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
         : [resolvedGeneralStyles, []];
 
-    const componentActions = useRef(new Set());
     const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
@@ -210,7 +209,6 @@ export const Box = memo(
 
     useEffect(() => {
       const currentPage = currentState?.page;
-
       const componentName = getComponentName(currentState, id);
       const errorLog = Object.fromEntries(
         [...propertyErrors, ...styleErrors, ...generalPropertiesErrors, ...generalStylesErrors].map((error) => [
