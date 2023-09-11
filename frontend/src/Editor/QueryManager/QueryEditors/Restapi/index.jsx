@@ -14,13 +14,7 @@ class Restapi extends React.Component {
     super(props);
     const options = defaults(
       { ...props.options },
-      {
-        headers: [['', '']],
-        url_params: [],
-        body: [],
-        json_body: null,
-        body_toggle: false,
-      }
+      { headers: [['', '']], url_params: [], body: [], json_body: null, body_toggle: false }
     );
     this.state = {
       options,
@@ -85,10 +79,7 @@ class Restapi extends React.Component {
     options[option][index][keyIndex] = value;
 
     this.setState({ options }, () => {
-      this.props.optionsChanged({
-        ...options,
-        arrayValuesChanged: prevValue !== value,
-      });
+      this.props.optionsChanged({ ...options, arrayValuesChanged: prevValue !== value });
     });
   };
 
@@ -139,10 +130,7 @@ class Restapi extends React.Component {
     const dataSourceURL = this.props.selectedDataSource?.options?.url?.value;
     const queryName = this.props.queryName;
 
-    const currentValue = {
-      label: options.method?.toUpperCase(),
-      value: options.method,
-    };
+    const currentValue = { label: options.method?.toUpperCase(), value: options.method };
 
     return (
       <div className={`d-flex`}>

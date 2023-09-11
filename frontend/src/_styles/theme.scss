@@ -12,7 +12,6 @@
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
-
 /* ibm-plex-sans-100 - latin */
 @font-face {
   font-display: swap;
@@ -270,8 +269,7 @@ button {
 .emoji-mart-scroll+.emoji-mart-bar {
   display: none;
 }
-
-.accordion-item {
+.accordion-item{
   border: solid var(--slate5);
   border-width: 0px 0px 1px 0px;
 }
@@ -303,7 +301,6 @@ button {
 
 .accordion-body {
   padding: 6px 16px 20px 16px !important;
-
   .form-label {
     font-weight: 400;
     font-size: 12px;
@@ -330,7 +327,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary !important;
+    border: solid 1px $primary  !important;
 
     .top-right,
     .top-left,
@@ -830,7 +827,7 @@ button {
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
-    background-color: $dark-background !important;
+    background-color: $dark-background  !important;
   }
 }
 
@@ -1562,7 +1559,7 @@ button {
   .select-search-dark input {
     width: 224px !important;
     height: 32px !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -1573,7 +1570,7 @@ button {
   .select-search__value input,
   .select-search-dark input {
     height: 32px !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -1634,7 +1631,7 @@ button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  border-radius: $border-radius !important;
+  border-radius: $border-radius  !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -1974,7 +1971,6 @@ button {
   text-align: center;
   color: #888;
 }
-
 // jet-table-footer is common class used in other components other than table
 .jet-table-footer {
   .table-footer {
@@ -2908,14 +2904,12 @@ input:focus-visible {
   width: 210px !important; //adjusted with padding
   box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08) !important;
   color: var(--slate12);
-
   .flexbox-fix:nth-child(3) {
     div:nth-child(1) {
-      input {
+      input{
         width: 100% !important;
       }
-
-      label {
+      label{
         color: var(--slate12) !important;
       }
     }
@@ -3092,7 +3086,6 @@ input:focus-visible {
   .DateRangePickerInput__withBorder {
     border: 1px solid #1f2936;
   }
-
   .main .canvas-container .canvas-area {
     background: #2f3c4c;
   }
@@ -3682,7 +3675,7 @@ input[type="text"] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: $primary !important;
+  color: $primary  !important;
 }
 
 .empty {
@@ -4208,7 +4201,7 @@ input[type="text"] {
 
 .tabs-inspector.dark {
   .nav-link.active {
-    border-bottom: 1px solid $primary !important;
+    border-bottom: 1px solid $primary  !important;
   }
 }
 
@@ -4444,7 +4437,7 @@ input[type="text"] {
   }
 
   input {
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
     padding-left: 1.75rem !important;
   }
 }
@@ -4613,20 +4606,20 @@ input[type="text"] {
 }
 
 .modal-content.home-modal-component.dark {
-  background-color: $bg-dark-light !important;
-  color: $white !important;
+  background-color: $bg-dark-light  !important;
+  color: $white  !important;
 
   .modal-title {
-    color: $white !important;
+    color: $white  !important;
   }
 
   .tj-version-wrap-sub-footer {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
     border-top: 1px solid #3A3F42 !important;
 
 
     p {
-      color: $white !important;
+      color: $white  !important;
     }
   }
 
@@ -4637,7 +4630,7 @@ input[type="text"] {
   }
 
   .modal-header {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
   }
 
   .btn-close {
@@ -4645,22 +4638,22 @@ input[type="text"] {
   }
 
   .form-control {
-    border-color: $border-grey-dark !important;
+    border-color: $border-grey-dark  !important;
     color: inherit;
   }
 
   input {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
   }
 
   .form-select {
-    background-color: $bg-dark !important;
-    color: $white !important;
-    border-color: $border-grey-dark !important;
+    background-color: $bg-dark  !important;
+    color: $white  !important;
+    border-color: $border-grey-dark  !important;
   }
 
   .text-muted {
-    color: $white !important;
+    color: $white  !important;
   }
 }
 
@@ -4971,7 +4964,7 @@ div#driver-page-overlay {
 }
 
 .dark-theme-walkthrough#driver-popover-item {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
   border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
@@ -4979,7 +4972,7 @@ div#driver-page-overlay {
   }
 
   .driver-popover-tip {
-    border-color: transparent transparent transparent $bg-dark-light !important;
+    border-color: transparent transparent transparent $bg-dark-light  !important;
   }
 
   .driver-popover-description {
@@ -5011,7 +5004,7 @@ div#driver-page-overlay {
 
   .driver-next-btn,
   .driver-prev-btn {
-    color: $primary !important;
+    color: $primary  !important;
   }
 
   .driver-disabled {
@@ -5138,7 +5131,7 @@ div#driver-page-overlay {
 }
 
 .fx-canvas {
-  background: var(--slate4);
+  background:var(--slate4);
   padding: 0px;
   display: flex;
   height: 32px;
@@ -5150,7 +5143,7 @@ div#driver-page-overlay {
   align-items: center;
 
   div {
-    background: var(--slate4) !important;
+    background:var(--slate4) !important;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -5158,7 +5151,6 @@ div#driver-page-overlay {
     padding: 0px;
   }
 }
-
 .org-name {
   color: var(--slate12) !important;
   font-size: 12px;
@@ -5487,7 +5479,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light !important;
+    border-color: $primary-light  !important;
   }
 
   .json-tree-icon-container .selected-node>svg:first-child {
@@ -5578,7 +5570,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light !important;
+    border-color: $primary-light  !important;
   }
 
   .selected-node .group-object-container .badge {
@@ -5896,7 +5888,7 @@ div#driver-page-overlay {
 
 //Kanban board
 .kanban-container.dark-themed {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
 
   .kanban-column {
     .card-header {
@@ -5942,7 +5934,7 @@ div#driver-page-overlay {
     }
 
     .dnd-card.card.card-dark {
-      background-color: $bg-dark !important;
+      background-color: $bg-dark  !important;
     }
   }
 
@@ -7184,7 +7176,7 @@ tbody {
 }
 
 .application-brand {
-  a {
+  a{
     height: 48px;
     position: relative;
     display: flex;
@@ -7941,9 +7933,8 @@ tbody {
       width: 240px;
       height: 28px;
       flex-direction: row;
-
-      div {
-        a {
+      div{
+        a{
           text-decoration: none;
         }
       }
@@ -10634,7 +10625,7 @@ tbody {
 
 
 #global-settings-popover.theme-dark {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
   border: 1px solid #2B2F31;
 
   .global-popover-text {
@@ -10642,7 +10633,7 @@ tbody {
   }
 
   .maximum-canvas-width-input-select {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
     border: 1px solid #324156;
     color: $white;
   }
@@ -11586,38 +11577,30 @@ tbody {
     width: 170px !important;
   }
 }
-
-.custom-gap-8 {
+.custom-gap-8{
   gap: 8px;
 }
-
-.color-slate-11 {
+.color-slate-11{
   color: var(--slate11) !important;
 }
-
-.custom-gap-6 {
-  gap: 6px
+.custom-gap-6{
+  gap:6px
 }
-
-.custom-gap-2 {
-  gap: 2px
+.custom-gap-2{
+  gap:2px
 }
-
-.custom-gap-4 {
+.custom-gap-4{
   gap: 4px;
 }
-
-.text-black-000 {
+.text-black-000{
   color: var(--text-black-000) !important;
 }
-
-.custom-gap-12 {
-  gap: 12px
+.custom-gap-12{
+  gap:12px
 }
-
-#inspector-tabpane-properties {
+#inspector-tabpane-properties{
   .accordion {
-    .accordion-item:last-child {
+    .accordion-item:last-child{
       border-bottom: none !important;
     }
   }
