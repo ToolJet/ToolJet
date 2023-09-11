@@ -1165,15 +1165,16 @@ export function Table({
                                       }}
                                     >
                                       <div
-                                        className={`w-100 d-flex 
+                                        className={`d-flex thead-editable-icon-header-text-wrapper
                                           ${
                                             column.columnType === 'selector'
                                               ? 'justify-content-center'
                                               : `justify-content-${determineJustifyContentValue(
                                                   column?.horizontalAlignment ?? ''
                                                 )}`
-                                          }                                     
-                                          ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
+                                          }
+                                          ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}
+                                          `}
                                       >
                                         <div>
                                           {column.columnType !== 'selector' && isEditable && (

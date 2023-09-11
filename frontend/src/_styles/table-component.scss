@@ -54,6 +54,19 @@
     }
     .tr{
       height: 32px; 
+      .th{
+        overflow: hidden;
+        .thead-editable-icon-header-text-wrapper{
+          max-width: 100%;
+          min-width: 70%;
+        }
+        .header-text{
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+      
     }
     .table-row{
       border-top: 0 !important;
@@ -552,6 +565,7 @@
       color: var(--slate9) !important;
       background-color: var(--slate4, #ECEEF0) !important; 
     }
+   
   }
   .warning-no-data{
     padding: 12px;
