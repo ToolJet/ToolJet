@@ -1157,7 +1157,7 @@ class TableComponent extends React.Component {
       children: rowSelectionsOptions.map((option) => renderCustomElement(option)),
     });
     items.push({
-      title: 'Search sort and filter',
+      title: 'Search, sort and filter',
       children: searchSortFilterOptions.map((option) => renderCustomElement(option)),
     });
 

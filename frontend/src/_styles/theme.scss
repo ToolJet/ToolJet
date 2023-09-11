@@ -7211,7 +7211,7 @@ tbody {
 
 .workspace-content-wrapper,
 .database-page-content-wrap {
-  background: var(--slate2);
+  // background: var(--slate2);
 }
 
 .workspace-variable-table-card {
@@ -7759,6 +7759,7 @@ tbody {
 .home-page-footer {
   height: 52px;
   background-color: var(--base) !important;
+  border-top: 1px solid var(--slate5) !important;
 }
 
 .pagination-container {
@@ -7859,7 +7860,7 @@ tbody {
 .home-page-content {
   height: calc(100vh - 64px) !important;
   overflow-y: auto;
-  background: var(--slate2);
+  // background: var(--slate2);
 }
 
 .application-folders-list {
@@ -10918,7 +10919,7 @@ tbody {
 .marketplace-body {
   height: calc(100vh - 64px) !important;
   overflow-y: auto;
-  background: var(--slate2);
+  // background: var(--slate2);
 }
 
 .plugins-card {
@@ -11503,7 +11504,6 @@ tbody {
 .popover-body {
   background-color: var(--base);
   color: var(--slate12);
-  border: 1px solid var(--slate3, #F1F3F5);
   border-radius: 6px;
 }
 

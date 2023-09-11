@@ -93,7 +93,7 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
 
   const eventPopover = () => {
     return (
-      <Popover id="popover-basic" style={{ width: '350px', maxWidth: '350px' }}>
+      <Popover className={`${darkMode && 'dark-theme'}`} style={{ width: '350px', maxWidth: '350px' }}>
         <Popover.Body className={`${darkMode && 'dark-theme'}`}>
           <>
             {input.map((item) => (
