@@ -111,9 +111,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).type(value, {
@@ -190,9 +190,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -284,3 +284,63 @@ Cypress.Commands.add("visitTheWorkspace", (workspaceName) => {
   });
   cy.wait(2000);
 });
+
+
+Cypress.Commands.add("hidetoolTip", () => {
+  cy.get("body").then(($body) => {
+    if ($body.find(".tooltip-inner").length > 0) {
+      cy.get(".tooltip-inner").invoke("hide");
+    }
+  });
+})
+
+Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request({
+      method: "POST",
+      url: url,
+      headers: {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: `tj_auth_token=${cookie.value}`,
+      },
+      body: {
+        name: name,
+        kind: kind,
+        options: options,
+        scope: "global",
+      },
+    }).then((response) => {
+      expect(response.status).to.equal(201);
+
+      Cypress.log({
+        name: "Create Data Source",
+        displayName: "Data source created",
+        message: `:\nDatasource: '${kind}',\nName: '${name}'`,
+      });
+    });
+  });
+});
+
+
+Cypress.Commands.add(
+  "apiLogin",
+  (userEmail = "dev@tooljet.io", userPassword = "password", workspaceId = '') => {
+    cy.request({
+      url: `http://localhost:3000/api/authenticate/${workspaceId}`,
+      method: "POST",
+      body: {
+        email: userEmail,
+        password: userPassword,
+      },
+    })
+      .its("body")
+      .then((res) => {
+        Cypress.env("workspaceId", res.current_organization_id);
+        Cypress.log({
+          name: "Api login",
+          displayName: "LOGIN: ",
+          message: `: Success`,
+        });
+      });
+  }
+);

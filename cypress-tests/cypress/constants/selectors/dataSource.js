@@ -1,3 +1,5 @@
+import { cyParamName } from "../../constants/selectors/common";
+
 export const dataSourceSelector = {
   leftSidebarDatasourceButton: "[data-cy='left-sidebar-database-button']",
   labelDataSources: "[data-cy='label-datasources']",
@@ -8,7 +10,7 @@ export const dataSourceSelector = {
   apiLabelAndCount: '[data-cy="apis-datasource-button"]',
   cloudStorageLabelAndCount: '[data-cy="cloudstorage-datasource-button"]',
   pluginsLabelAndCount: '[data-cy="plugins-datasource-button"]',
-  dataSourceSearchInputField: '[data-cy="datasource-search-input"]',
+  dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
   dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
@@ -92,5 +94,8 @@ export const dataSourceSelector = {
   unSavedModalTitle: '[data-cy="unsaved-changes-title"]',
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
   connectionAlertText: '[data-cy="connection-alert-text"]',
+  deleteDSButton: (datasourceName) => {
+    return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`
+  },
 };
 

@@ -927,7 +927,7 @@ class DataSourceManagerComponent extends React.Component {
                     {this.props.t('globals.readDocumentation', 'Read documentation')}
                   </a>
                 </div>
-                <div className="col-auto">
+                <div className="col-auto" data-cy="db-connection-save-button">
                   <ButtonSolid
                     leftIcon="floppydisk"
                     fill={'#FDFDFE'}

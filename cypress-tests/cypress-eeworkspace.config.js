@@ -76,10 +76,11 @@ module.exports = defineConfig({
         experimentalRunAllSpecs: true,
         baseUrl: "http://localhost:8082",
         specPattern: [
-            // "cypress/e2e/ee/globalDataSource/*.cy.js",
             "cypress/e2e/ee/workspace/*.cy.js",
             "cypress/e2e/ee/superadmin/*.cy.js",
             "cypress/e2e/workspace/*.cy.js",
+            "cypress/e2e/ee/globalDataSource/*.cy.js",
+            "cypress/e2e/ee/multi-env/*cy.js",
             "cypress/e2e/selfHost/*.cy.js",
             "cypress/e2e/authentication/*.cy.js",
         ],

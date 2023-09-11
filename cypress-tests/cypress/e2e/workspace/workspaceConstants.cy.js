@@ -35,237 +35,239 @@ describe("Workspace constants", () => {
         cy.appUILogin();
         cy.intercept("GET", "/api/library_apps").as("homePage");
     });
-    it("Verify workspace constants UI and CRUD operations", () => {
-        cy.get(commonSelectors.workspaceSettingsIcon).click();
-        cy.get(commonSelectors.workspaceConstantsOption)
-            .should(($el) => {
-                expect($el.contents().first().text().trim()).to.eq(
-                    "Workspace constants"
-                );
-            })
-            .click();
+    if (envVar === "Community") {
+        it("Verify workspace constants UI and CRUD operations", () => {
+            cy.get(commonSelectors.workspaceSettingsIcon).click();
+            cy.get(commonSelectors.workspaceConstantsOption)
+                .should(($el) => {
+                    expect($el.contents().first().text().trim()).to.eq(
+                        "Workspace constants"
+                    );
+                })
+                .click();
 
-        cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Workspace settings");
+            cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+                expect($el.contents().first().text().trim()).to.eq("Workspace settings");
+            });
+            cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+                "have.text",
+                " Workspace constants"
+            );
+
+            cy.get(
+                workspaceConstantsSelectors.workspaceConstantsHelperText
+            ).verifyVisibleElement(
+                "have.text",
+                workspaceConstantsText.workspaceConstantsHelperText
+            );
+
+            cy.get(commonSelectors.documentationLink).verifyVisibleElement(
+                "have.text",
+                commonText.documentationLink
+            );
+
+            cy.get("body").then(($body) => {
+                if ($body.find(workspaceConstantsSelectors.emptyStateImage).length > 0) {
+                    cy.get(workspaceConstantsSelectors.emptyStateImage).should(
+                        "be.visible"
+                    );
+                    cy.get(
+                        workspaceConstantsSelectors.emptyStateHeader
+                    ).verifyVisibleElement(
+                        "have.text",
+                        workspaceConstantsText.emptyStateHeader
+                    );
+                    cy.get(workspaceConstantsSelectors.emptyStateText).verifyVisibleElement(
+                        "have.text",
+                        workspaceConstantsText.emptyStateText
+                    );
+                    cy.get(
+                        workspaceConstantsSelectors.addNewConstantButton
+                    ).verifyVisibleElement(
+                        "have.text",
+                        workspaceConstantsText.addNewConstantButton
+                    );
+                }
+            });
+            cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
+            cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
+                "have.text",
+                workspaceConstantsText.addConstatntText
+            );
+            cy.get(commonSelectors.nameLabel).verifyVisibleElement("have.text", "Name");
+            cy.get(commonSelectors.nameInputField)
+                .invoke("attr", "placeholder")
+                .should("eq", "Enter Constant Name");
+            cy.get(commonSelectors.nameInputField).should("be.visible");
+            cy.get(commonSelectors.valueLabel).verifyVisibleElement(
+                "have.text",
+                "Value"
+            );
+            cy.get(commonSelectors.valueInputField)
+                .invoke("attr", "placeholder")
+                .should("eq", "Enter Value");
+            cy.get(commonSelectors.valueInputField).should("be.visible");
+            cy.get(commonSelectors.cancelButton).verifyVisibleElement(
+                "have.text",
+                "Cancel"
+            );
+            cy.get(workspaceConstantsSelectors.addConstantButton).verifyVisibleElement(
+                "have.text",
+                "Add constant"
+            );
+            cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
+
+            contantsNameValidation(" ", commonText.constantsNameError);
+            contantsNameValidation("9", commonText.constantsNameError);
+            contantsNameValidation("%", commonText.constantsNameError);
+            contantsNameValidation(
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`a",
+                "Maximum length has been reached"
+            );
+            contantsNameValidation(
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`afgg",
+                "Constant name should be between 1 and 32 characters"
+            );
+
+            cy.clearAndType(commonSelectors.valueInputField, " ");
+            cy.get(commonSelectors.valueErrorText).verifyVisibleElement(
+                "have.text",
+                commonText.constantsValueError
+            );
+            cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
+            cy.get(commonSelectors.cancelButton).click();
+            cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
+
+            cy.clearAndType(commonSelectors.nameInputField, data.constName);
+            cy.clearAndType(commonSelectors.valueInputField, data.constName);
+            cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
+            cy.get(commonSelectors.cancelButton).click();
+            cy.get(workspaceConstantsSelectors.constantName(data.constName)).should(
+                "not.exist"
+            );
+
+            cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
+            cy.clearAndType(commonSelectors.nameInputField, data.constName);
+            cy.clearAndType(commonSelectors.valueInputField, data.constName);
+            cy.get(workspaceConstantsSelectors.addConstantButton).click();
+            cy.verifyToastMessage(
+                commonSelectors.toastMessage,
+                workspaceConstantsText.constantCreatedToast
+            );
+
+            cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
+            contantsNameValidation(
+                data.constName,
+                "Constant with this name already exists in Production environment"
+            );
+            cy.get(commonSelectors.cancelButton).click();
+
+            cy.get(workspaceConstantsSelectors.envName).verifyVisibleElement(
+                "have.text",
+                "Production"
+            );
+            cy.get(
+                workspaceConstantsSelectors.addNewConstantButton
+            ).verifyVisibleElement("have.text", "Create new constant");
+            cy.get(
+                workspaceConstantsSelectors.constantsTableNameHeader
+            ).verifyVisibleElement("have.text", "Name");
+            cy.get(
+                workspaceConstantsSelectors.constantsTableValueHeader
+            ).verifyVisibleElement("have.text", "Value");
+            cy.get(
+                workspaceConstantsSelectors.constantName(data.constName)
+            ).verifyVisibleElement("have.text", data.constName);
+            cy.get(
+                workspaceConstantsSelectors.constantValue(data.constName)
+            ).verifyVisibleElement("have.text", data.constName);
+            cy.get(
+                workspaceConstantsSelectors.constEditButton(data.constName)
+            ).verifyVisibleElement("have.text", "Edit");
+            cy.get(
+                workspaceConstantsSelectors.constDeleteButton(data.constName)
+            ).verifyVisibleElement("have.text", "Delete");
+            cy.get(commonSelectors.pagination).should("be.visible");
+
+            cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
+
+            cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
+                "have.text",
+                "Update constant in production "
+            );
+            cy.get(commonSelectors.nameLabel).verifyVisibleElement("have.text", "Name");
+            cy.get(commonSelectors.nameInputField).should("have.value", data.constName);
+            cy.get(commonSelectors.nameInputField)
+                .should("be.visible")
+                .and("be.disabled");
+            cy.get(commonSelectors.valueLabel).verifyVisibleElement(
+                "have.text",
+                "Value"
+            );
+            cy.get(commonSelectors.valueInputField)
+                .should("be.visible")
+                .and("have.value", data.constName);
+            cy.get(commonSelectors.cancelButton).verifyVisibleElement(
+                "have.text",
+                "Cancel"
+            );
+            cy.get(workspaceConstantsSelectors.addConstantButton).verifyVisibleElement(
+                "have.text",
+                "Update"
+            );
+            cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
+
+            cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
+            cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
+            cy.get(commonSelectors.cancelButton).click();
+            cy.get(
+                workspaceConstantsSelectors.constantValue(data.constName)
+            ).verifyVisibleElement("have.text", data.constName);
+
+            cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
+            cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
+            cy.get(workspaceConstantsSelectors.addConstantButton).click();
+            cy.verifyToastMessage(
+                commonSelectors.toastMessage,
+                "Constant updated successfully"
+            );
+            cy.get(
+                workspaceConstantsSelectors.constantValue(data.constName)
+            ).verifyVisibleElement("have.text", data.newConstvalue);
+
+            cy.get(
+                workspaceConstantsSelectors.constDeleteButton(data.constName)
+            ).click();
+            cy.get(commonSelectors.modalMessage).verifyVisibleElement(
+                "have.text",
+                `Are you sure you want to delete ${data.constName} from production?`
+            );
+            cy.get(commonSelectors.cancelButton).verifyVisibleElement(
+                "have.text",
+                "Cancel"
+            );
+            cy.get(commonSelectors.yesButton).verifyVisibleElement("have.text", "Yes");
+            cy.get(commonSelectors.cancelButton).click();
+            cy.get(
+                workspaceConstantsSelectors.constantValue(data.constName)
+            ).verifyVisibleElement("have.text", data.newConstvalue);
+
+            cy.get(
+                workspaceConstantsSelectors.constDeleteButton(data.constName)
+            ).click();
+            cy.get(commonSelectors.yesButton).click();
+            cy.get(workspaceConstantsSelectors.constantValue(data.constName)).should(
+                "not.exist"
+            );
+
+            cy.verifyToastMessage(
+                commonSelectors.toastMessage,
+                "Constant deleted successfully"
+            );
         });
-        cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
-            "have.text",
-            " Workspace constants"
-        );
+    }
 
-        cy.get(
-            workspaceConstantsSelectors.workspaceConstantsHelperText
-        ).verifyVisibleElement(
-            "have.text",
-            workspaceConstantsText.workspaceConstantsHelperText
-        );
-
-        cy.get(commonSelectors.documentationLink).verifyVisibleElement(
-            "have.text",
-            commonText.documentationLink
-        );
-
-        cy.get("body").then(($body) => {
-            if ($body.find(workspaceConstantsSelectors.emptyStateImage).length > 0) {
-                cy.get(workspaceConstantsSelectors.emptyStateImage).should(
-                    "be.visible"
-                );
-                cy.get(
-                    workspaceConstantsSelectors.emptyStateHeader
-                ).verifyVisibleElement(
-                    "have.text",
-                    workspaceConstantsText.emptyStateHeader
-                );
-                cy.get(workspaceConstantsSelectors.emptyStateText).verifyVisibleElement(
-                    "have.text",
-                    workspaceConstantsText.emptyStateText
-                );
-                cy.get(
-                    workspaceConstantsSelectors.addNewConstantButton
-                ).verifyVisibleElement(
-                    "have.text",
-                    workspaceConstantsText.addNewConstantButton
-                );
-            }
-        });
-        cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-        cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
-            "have.text",
-            workspaceConstantsText.addConstatntText
-        );
-        cy.get(commonSelectors.nameLabel).verifyVisibleElement("have.text", "Name");
-        cy.get(commonSelectors.nameInputField)
-            .invoke("attr", "placeholder")
-            .should("eq", "Enter Constant Name");
-        cy.get(commonSelectors.nameInputField).should("be.visible");
-        cy.get(commonSelectors.valueLabel).verifyVisibleElement(
-            "have.text",
-            "Value"
-        );
-        cy.get(commonSelectors.valueInputField)
-            .invoke("attr", "placeholder")
-            .should("eq", "Enter Value");
-        cy.get(commonSelectors.valueInputField).should("be.visible");
-        cy.get(commonSelectors.cancelButton).verifyVisibleElement(
-            "have.text",
-            "Cancel"
-        );
-        cy.get(workspaceConstantsSelectors.addConstantButton).verifyVisibleElement(
-            "have.text",
-            "Add constant"
-        );
-        cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-
-        contantsNameValidation(" ", commonText.constantsNameError);
-        contantsNameValidation("9", commonText.constantsNameError);
-        contantsNameValidation("%", commonText.constantsNameError);
-        contantsNameValidation(
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`a",
-            "Maximum length has been reached"
-        );
-        contantsNameValidation(
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`afgg",
-            "Constant name should be between 1 and 32 characters"
-        );
-
-        cy.clearAndType(commonSelectors.valueInputField, " ");
-        cy.get(commonSelectors.valueErrorText).verifyVisibleElement(
-            "have.text",
-            commonText.constantsValueError
-        );
-        cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-        cy.get(commonSelectors.cancelButton).click();
-        cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-
-        cy.clearAndType(commonSelectors.nameInputField, data.constName);
-        cy.clearAndType(commonSelectors.valueInputField, data.constName);
-        cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
-        cy.get(commonSelectors.cancelButton).click();
-        cy.get(workspaceConstantsSelectors.constantName(data.constName)).should(
-            "not.exist"
-        );
-
-        cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-        cy.clearAndType(commonSelectors.nameInputField, data.constName);
-        cy.clearAndType(commonSelectors.valueInputField, data.constName);
-        cy.get(workspaceConstantsSelectors.addConstantButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            workspaceConstantsText.constantCreatedToast
-        );
-
-        cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-        contantsNameValidation(
-            data.constName,
-            "Constant with this name already exists in Production environment"
-        );
-        cy.get(commonSelectors.cancelButton).click();
-
-        cy.get(workspaceConstantsSelectors.envName).verifyVisibleElement(
-            "have.text",
-            "Production"
-        );
-        cy.get(
-            workspaceConstantsSelectors.addNewConstantButton
-        ).verifyVisibleElement("have.text", "Create new constant");
-        cy.get(
-            workspaceConstantsSelectors.constantsTableNameHeader
-        ).verifyVisibleElement("have.text", "Name");
-        cy.get(
-            workspaceConstantsSelectors.constantsTableValueHeader
-        ).verifyVisibleElement("have.text", "Value");
-        cy.get(
-            workspaceConstantsSelectors.constantName(data.constName)
-        ).verifyVisibleElement("have.text", data.constName);
-        cy.get(
-            workspaceConstantsSelectors.constantValue(data.constName)
-        ).verifyVisibleElement("have.text", data.constName);
-        cy.get(
-            workspaceConstantsSelectors.constEditButton(data.constName)
-        ).verifyVisibleElement("have.text", "Edit");
-        cy.get(
-            workspaceConstantsSelectors.constDeleteButton(data.constName)
-        ).verifyVisibleElement("have.text", "Delete");
-        cy.get(commonSelectors.pagination).should("be.visible");
-
-        cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
-
-        cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
-            "have.text",
-            "Update constant in production "
-        );
-        cy.get(commonSelectors.nameLabel).verifyVisibleElement("have.text", "Name");
-        cy.get(commonSelectors.nameInputField).should("have.value", data.constName);
-        cy.get(commonSelectors.nameInputField)
-            .should("be.visible")
-            .and("be.disabled");
-        cy.get(commonSelectors.valueLabel).verifyVisibleElement(
-            "have.text",
-            "Value"
-        );
-        cy.get(commonSelectors.valueInputField)
-            .should("be.visible")
-            .and("have.value", data.constName);
-        cy.get(commonSelectors.cancelButton).verifyVisibleElement(
-            "have.text",
-            "Cancel"
-        );
-        cy.get(workspaceConstantsSelectors.addConstantButton).verifyVisibleElement(
-            "have.text",
-            "Update"
-        );
-        cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-
-        cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
-        cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
-        cy.get(commonSelectors.cancelButton).click();
-        cy.get(
-            workspaceConstantsSelectors.constantValue(data.constName)
-        ).verifyVisibleElement("have.text", data.constName);
-
-        cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
-        cy.clearAndType(commonSelectors.valueInputField, data.newConstvalue);
-        cy.get(workspaceConstantsSelectors.addConstantButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "Constant updated successfully"
-        );
-        cy.get(
-            workspaceConstantsSelectors.constantValue(data.constName)
-        ).verifyVisibleElement("have.text", data.newConstvalue);
-
-        cy.get(
-            workspaceConstantsSelectors.constDeleteButton(data.constName)
-        ).click();
-        cy.get(commonSelectors.modalMessage).verifyVisibleElement(
-            "have.text",
-            `Are you sure you want to delete ${data.constName} from production?`
-        );
-        cy.get(commonSelectors.cancelButton).verifyVisibleElement(
-            "have.text",
-            "Cancel"
-        );
-        cy.get(commonSelectors.yesButton).verifyVisibleElement("have.text", "Yes");
-        cy.get(commonSelectors.cancelButton).click();
-        cy.get(
-            workspaceConstantsSelectors.constantValue(data.constName)
-        ).verifyVisibleElement("have.text", data.newConstvalue);
-
-        cy.get(
-            workspaceConstantsSelectors.constDeleteButton(data.constName)
-        ).click();
-        cy.get(commonSelectors.yesButton).click();
-        cy.get(workspaceConstantsSelectors.constantValue(data.constName)).should(
-            "not.exist"
-        );
-
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "Constant deleted successfully"
-        );
-    });
-
-    it.only("should verify the constants resolving value on components and query", () => {
+    it("should verify the constants resolving value on components and query", () => {
         common.navigateToworkspaceConstants();
         AddNewconstants(data.constantsName, data.constantsValue);
         cy.get(

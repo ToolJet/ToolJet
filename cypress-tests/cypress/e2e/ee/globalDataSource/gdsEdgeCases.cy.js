@@ -2,12 +2,17 @@ import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import {
     fillDataSourceTextField,
-    selectDataSource,
+    selectAndAddDataSource,
     fillConnectionForm,
-    addQuery,
 } from "Support/utils/postgreSql";
 import { commonText } from "Texts/common";
-import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+import {
+    closeDSModal,
+    deleteDatasource,
+    addQuery,
+    addQueryN,
+    verifyValueOnInspector,
+} from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
 import { addNewUserMW } from "Support/utils/userPermissions";
@@ -38,6 +43,7 @@ describe("Global Datasource Manager", () => {
         cy.appUILogin();
         cy.viewport(1200, 1300);
     });
+
     before(() => {
         cy.appUILogin();
         cy.createApp();
@@ -65,13 +71,8 @@ describe("Global Datasource Manager", () => {
     });
 
     it("Connect Data source and assign to user groups", () => {
-        selectDataSource(dataSourceText.postgreSQL);
-        cy.clearAndType(
-            '[data-cy="data-source-name-input-filed"]',
-            `cypress-${data.ds1}-postgresql`
-        );
+        selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds1);
 
-        cy.intercept("POST", "/api/v2/data_sources").as("ds");
         fillConnectionForm(
             {
                 Host: Cypress.env("pg_host"),
@@ -82,47 +83,25 @@ describe("Global Datasource Manager", () => {
             },
             ".form-switch"
         );
-        cy.wait("@ds");
-
-        cy.get(dataSourceSelector.buttonTestConnection).click();
-        cy.get(dataSourceSelector.textConnectionVerified, {
-            timeout: 10000,
-        }).should("have.text", dataSourceText.labelConnectionVerified);
-        cy.get(dataSourceSelector.buttonSave).click();
-
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            dataSourceText.toastDSAdded
-        );
 
         cy.get(commonSelectors.globalDataSourceIcon).click();
         cy.get(
             `[data-cy="cypress-${data.ds1}-postgresql-button"]`
         ).verifyVisibleElement("have.text", `cypress-${data.ds1}-postgresql`);
 
-        selectDataSource("REST Api");
-        cy.clearAndType(
-            '[data-cy="data-source-name-input-filed"]',
-            `cypress-${data.ds2}-restapi`
-        );
-
-        cy.intercept("POST", "/api/v2/data_sources").as("ds");
+        selectAndAddDataSource("apis", "rest api", data.ds2);
 
         cy.clearAndType(
             '[data-cy="base-url-text-field"]',
             "https://reqres.in/api/users?page=2"
         );
-        cy.get(".tj-base-btn").click();
-        cy.wait("@ds");
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            dataSourceText.toastDSAdded
-        );
-
+        cy.wait(100);
+        cy.get(dataSourceSelector.buttonSave).click();
+        cy.wait(500);
         cy.get(commonSelectors.globalDataSourceIcon).click();
         cy.get(
-            `[data-cy="cypress-${data.ds2}-restapi-button"]`
-        ).verifyVisibleElement("have.text", `cypress-${data.ds2}-restapi`);
+            `[data-cy="cypress-${data.ds2}-rest-api-button"]`
+        ).verifyVisibleElement("have.text", `cypress-${data.ds2}-rest-api`);
 
         cy.get('[data-cy="icon-dashboard"]').click();
         navigateToAppEditor(data.appName);
@@ -132,58 +111,45 @@ describe("Global Datasource Manager", () => {
             `cypress-${data.ds1}-postgresql`
         );
         cy.wait(500);
-        cy.get(dataSourceSelector.buttonAddNewQueries).click();
-        cy.get(`[data-cy="cypress-${data.ds2}-restapi-add-query-card"]`).click();
+        cy.intercept("POST", "/api/data_queries/**").as("run");
+        cy.get('[data-cy="show-ds-popover-button"]').click();
+        cy.get(".css-1rrkggf-Input").type(data.ds2);
+        cy.contains(`[id*="react-select-"]`, data.ds2).click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.wait("@run");
         cy.get(commonSelectors.editorPageLogo).click();
 
         AddDataSourceToGroup(data.userName1, `cypress-${data.ds1}-postgresql`);
-        AddDataSourceToGroup(data.userName2, `cypress-${data.ds2}-restapi`);
+        AddDataSourceToGroup(data.userName2, `cypress-${data.ds2}-rest-api`);
     });
-
     it("verify the first user permissions on assigned and unassigned datasource", () => {
         logout();
         cy.login(data.userEmail1, "password");
 
         navigateToAppEditor(data.appName);
-        cy.get('[data-cy="list-query-restapi1"]').verifyVisibleElement(
-            "have.text",
-            "restapi1"
-        );
+
+        cy.get('[data-cy="list-query-restapi1"]')
+            .verifyVisibleElement("have.text", "restapi1 ")
+            .click();
+        cy.get(".query-details").should("have.class", "disabled");
+
+        cy.get(".query-row-query-name")
+            .contains("restapi1 ")
+            .parent()
+            .within(() => {
+                cy.get(".query-rename-delete-btn").should("not.exist");
+            });
+
         cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
             "have.text",
-            "table_preview"
+            "table_preview "
         );
 
         pinInspector();
+        cy.hidetoolTip();
 
-        cy.get('[data-cy="list-query-table_preview"]').click();
-        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.get('[data-cy="inspector-node-queries"]')
-            .parent()
-            .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").dblclick();
-            });
-        cy.get('[data-cy="inspector-node-table_preview"] > .node-key').click();
-        cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
-            "have.text",
-            "7 items "
-        );
-
-        cy.get('[data-cy="list-query-restapi1"]').click();
-        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.get('[data-cy="inspector-node-queries"]')
-            .parent()
-            .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").dblclick();
-            });
-        cy.get('[data-cy="inspector-node-restapi1"] > .node-key').click();
-        cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
-            "have.text",
-            "6 entries "
-        );
-
-        addQuery(
+        cy.get('[data-cy="show-ds-popover-button"]').click();
+        addQueryN(
             "user_query",
             `SELECT * FROM Persons;`,
             `cypress-${data.ds1}-postgresql`
@@ -191,33 +157,34 @@ describe("Global Datasource Manager", () => {
 
         cy.get('[data-cy="list-query-user_query"]').verifyVisibleElement(
             "have.text",
-            "user_query"
+            "user_query "
         );
 
         cy.get('[data-cy="list-query-user_query"]').click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.get('[data-cy="inspector-node-queries"]')
-            .parent()
-            .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").dblclick();
-            });
-        cy.get('[data-cy="inspector-node-user_query"] > .node-key').click();
-        cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
-            "have.text",
-            "7 items "
-        );
+        verifyValueOnInspector("user_query", "7 items ");
 
-        cy.get(dataSourceSelector.buttonAddNewQueries).click();
-        cy.get(`[data-cy="cypress-${data.ds2}-restapi-add-query-card"]`).click();
+        cy.get('[data-cy="list-query-table_preview"]').click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        verifyValueOnInspector("table_preview", "7 entries ");
+
+        cy.get('[data-cy="list-query-restapi1"]').click();
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        verifyValueOnInspector("restapi1", "6 entries ");
+
+        cy.intercept("POST", "/api/data_queries/**").as("run");
+        cy.get('[data-cy="show-ds-popover-button"]').click();
+        cy.get(".css-1rrkggf-Input").type(data.ds2);
+        cy.contains(`[id*="react-select-"]`, data.ds2).click();
+
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.wait("@run");
 
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             "You do not have permissions to perform this action"
         );
-        //Need to add edit and query preview
     });
-
     it("verify the second user permissions on assigned ansd unassigned datasource", () => {
         logout();
         cy.login(data.userEmail2, "password");
@@ -225,64 +192,41 @@ describe("Global Datasource Manager", () => {
         navigateToAppEditor(data.appName);
         cy.get('[data-cy="list-query-restapi1"]').verifyVisibleElement(
             "have.text",
-            "restapi1"
+            "restapi1 "
         );
-        cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
-            "have.text",
-            "table_preview"
-        );
+        cy.get('[data-cy="list-query-table_preview"]')
+            .verifyVisibleElement("have.text", "table_preview ")
+            .click();
+        cy.get(".query-details").should("have.class", "disabled");
+
+        cy.get(".query-row-query-name")
+            .contains("table_preview ")
+            .parent()
+            .within(() => {
+                cy.get(".query-rename-delete-btn").should("not.exist");
+            });
 
         pinInspector();
+        cy.hidetoolTip();
+
+        cy.intercept("POST", "/api/data_queries/**").as("run");
+        cy.get('[data-cy="show-ds-popover-button"]').click();
+        cy.get(".css-1rrkggf-Input").type(data.ds2);
+        cy.contains(`[id*="react-select-"]`, data.ds2).click();
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        cy.wait("@run");
+        verifyValueOnInspector("restapi1", "6 entries ");
 
         cy.get('[data-cy="list-query-table_preview"]').click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.get('[data-cy="inspector-node-queries"]')
-            .parent()
-            .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").dblclick();
-            });
-        cy.get('[data-cy="inspector-node-table_preview"] > .node-key').click();
-        cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
-            "have.text",
-            "7 items "
-        );
+        verifyValueOnInspector("table_preview", "7 items ");
 
         cy.get('[data-cy="list-query-restapi1"]').click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.get('[data-cy="inspector-node-queries"]')
-            .parent()
-            .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").dblclick();
-            });
-        cy.get('[data-cy="inspector-node-restapi1"] > .node-key').click();
-        cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
-            "have.text",
-            "6 entries "
-        );
+        verifyValueOnInspector("restapi1", "6 entries ");
 
-        cy.get(dataSourceSelector.buttonAddNewQueries).click();
-        cy.get(`[data-cy="cypress-${data.ds2}-restapi-add-query-card"]`).click();
-        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-
-        cy.get('[data-cy="list-query-restapi2"]').verifyVisibleElement(
-            "have.text",
-            "restapi2"
-        );
-
-        cy.get('[data-cy="list-query-restapi2"]').click();
-        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.get('[data-cy="inspector-node-queries"]')
-            .parent()
-            .within(() => {
-                cy.get("span").first().scrollIntoView().contains("queries").dblclick();
-            });
-        cy.get('[data-cy="inspector-node-restapi2"] > .node-key').click();
-        cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
-            "have.text",
-            "6 entries "
-        );
-
-        addQuery(
+        cy.get('[data-cy="show-ds-popover-button"]').click();
+        addQueryN(
             "user_query",
             `SELECT * FROM Persons;`,
             `cypress-${data.ds1}-postgresql`
