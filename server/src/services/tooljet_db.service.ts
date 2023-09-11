@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
@@ -9,6 +9,7 @@ import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 export class TooljetDbService {
   constructor(
     private readonly manager: EntityManager,
+    @Optional()
     @InjectEntityManager('tooljetDb')
     private tooljetDbManager: EntityManager,
     private readonly postgrestProxyService: PostgrestProxyService
@@ -38,30 +39,47 @@ export class TooljetDbService {
   }
 
   private async viewTable(organizationId: string, params) {
-    const { table_name: tableName } = params;
+    const { table_name: tableName, id: id } = params;
+
     const internalTable = await this.manager.findOne(InternalTable, {
-      where: { organizationId, tableName },
+      where: {
+        organizationId,
+        ...(tableName && { tableName }),
+        ...(id && { id }),
+      },
     });
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     return await this.tooljetDbManager.query(
-      `SELECT  c.COLUMN_NAME, c.DATA_TYPE, c.Column_default, c.character_maximum_length, c.numeric_precision, c.is_nullable
-             ,CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
-       FROM INFORMATION_SCHEMA.COLUMNS c
-       LEFT JOIN (
-                   SELECT ku.TABLE_CATALOG,ku.TABLE_SCHEMA,ku.TABLE_NAME,ku.COLUMN_NAME
-                   FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
-                   INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
-                       ON tc.CONSTRAINT_TYPE = 'PRIMARY KEY'
-                       AND tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
-                )   pk
-       ON  c.TABLE_CATALOG = pk.TABLE_CATALOG
-                   AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
-                   AND c.TABLE_NAME = pk.TABLE_NAME
-                   AND c.COLUMN_NAME = pk.COLUMN_NAME
-       WHERE c.TABLE_NAME = '${internalTable.id}'
-       ORDER BY c.TABLE_SCHEMA,c.TABLE_NAME, c.ORDINAL_POSITION;
+      `
+        SELECT c.COLUMN_NAME, c.DATA_TYPE, 
+              CASE 
+                  WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' 
+                      THEN c.Column_default 
+                  WHEN c.Column_default LIKE '%::%' 
+                      THEN replace(substring(c.Column_default from '^''?(.*?)''?::'), '''', '')
+                  ELSE c.Column_default 
+              END AS Column_default, 
+              c.character_maximum_length, c.numeric_precision, c.is_nullable, 
+              pk.CONSTRAINT_TYPE,
+              CASE 
+                  WHEN pk.COLUMN_NAME IS NOT NULL THEN 'PRIMARY KEY' 
+                  ELSE '' 
+              END AS KeyType
+        FROM INFORMATION_SCHEMA.COLUMNS c
+        LEFT JOIN (
+                  SELECT ku.TABLE_CATALOG,ku.TABLE_SCHEMA,ku.TABLE_NAME,ku.COLUMN_NAME, tc.CONSTRAINT_TYPE
+                  FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+                  INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
+                      ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
+                ) pk
+        ON  c.TABLE_CATALOG = pk.TABLE_CATALOG
+                  AND c.TABLE_SCHEMA = pk.TABLE_SCHEMA
+                  AND c.TABLE_NAME = pk.TABLE_NAME
+                  AND c.COLUMN_NAME = pk.COLUMN_NAME
+        WHERE c.TABLE_NAME = '${internalTable.id}'
+        ORDER BY c.TABLE_SCHEMA,c.TABLE_NAME, c.ORDINAL_POSITION;
       `
     );
   }
@@ -69,7 +87,7 @@ export class TooljetDbService {
   private async viewTables(organizationId: string) {
     return await this.manager.find(InternalTable, {
       where: { organizationId },
-      select: ['tableName'],
+      select: ['id', 'tableName'],
       order: { tableName: 'ASC' },
     });
   }
@@ -80,27 +98,25 @@ export class TooljetDbService {
   }
 
   private async createTable(organizationId: string, params) {
+    let primaryKeyExist = false;
+
+    // primary keys are only supported as serial type
+    params.columns = params.columns.map((column) => {
+      if (column['constraint_type'] === 'PRIMARY KEY') {
+        primaryKeyExist = true;
+        return { ...column, data_type: 'serial', column_default: null };
+      }
+      return column;
+    });
+
+    if (!primaryKeyExist) {
+      throw new BadRequestException();
+    }
+
     const {
       table_name: tableName,
       columns: [column, ...restColumns],
     } = params;
-
-    // Validate first column -> should be primary key with name: id
-    if (
-      !(
-        column &&
-        column['column_name'] === 'id' &&
-        column['data_type'] === 'serial' &&
-        column['constraint'] === 'PRIMARY KEY'
-      )
-    ) {
-      throw new BadRequestException();
-    }
-
-    // Validate other columns -> should not be a primary key
-    if (restColumns && restColumns.some((rc) => rc['constraint'] === 'PRIMARY_KEY')) {
-      throw new BadRequestException();
-    }
 
     const queryRunner = this.manager.connection.createQueryRunner();
     await queryRunner.connect();
@@ -115,14 +131,14 @@ export class TooljetDbService {
 
       const createTableString = `CREATE TABLE "${internalTable.id}" `;
       let query = `${column['column_name']} ${column['data_type']}`;
-      if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(column['default'])}`;
-      if (column['constraint']) query += ` ${column['constraint']}`;
+      if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
+      if (column['constraint_type']) query += ` ${column['constraint_type']}`;
 
       if (restColumns)
         for (const col of restColumns) {
           query += `, ${col['column_name']} ${col['data_type']}`;
-          if (col['default']) query += ` DEFAULT ${this.addQuotesIfString(col['default'])}`;
-          if (col['constraint']) query += ` ${col['constraint']}`;
+          if (col['column_default']) query += ` DEFAULT ${this.addQuotesIfString(col['column_default'])}`;
+          if (col['constraint_type']) query += ` ${col['constraint_type']}`;
         }
 
       // if tooljetdb query fails in this connection, we must rollback internal table
@@ -130,7 +146,7 @@ export class TooljetDbService {
       await this.tooljetDbManager.query(createTableString + '(' + query + ');');
 
       await queryRunner.commitTransaction();
-      return true;
+      return { id: internalTable.id, table_name: tableName };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -198,7 +214,7 @@ export class TooljetDbService {
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     let query = `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']}`;
-    if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(column['default'])}`;
+    if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
     if (column['constraint']) query += ` ${column['constraint']};`;
 
     const result = await this.tooljetDbManager.query(query);

@@ -4,85 +4,79 @@ title: Text
 ---
 # Text
 
-Text widget can be used to display text.
+The **Text** component can be used to create headers/sub-headers, add labels next to various input fields and more. In this document, we'll go through all the configuration options for the **Text** component. 
 
-:::info
-Users cannot enter and edit text.
-::: 
+## How To Use Text Component
 
-## How To Use Text Widget
-
-<iframe height="500" src="https://www.youtube.com/embed/mcjYKw2VeAI" title="Text Widget" frameborder="0" allowfullscreen width="100%"></iframe>
+<iframe height="500" src="https://www.youtube.com/embed/mcjYKw2VeAI" title="Text Component" frameborder="0" allowfullscreen width="100%"></iframe>
 
 ## Properties
 
-### Text
+| Properties          | Description                           | Expected Value |
+|:--------------------|:--------------------------------------|:---------------|
+| Text                | This property sets the content/text inside the Text component. | Text input OR Refer query data with dynamic variables - `{{queries.datasource.data.text}}`|
+| Show loading state  | This property lets you set the condition for loading state of the text. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}` |
 
-This property sets the content/text inside the Text widget. Refer your query data with dynamic variables `{{queries.datasource.data.text}}` or populate it with sample values `Text goes here !`.
-
-### Show loading state
-
-Toggle `on` or `off` to show or hide the loading state. You can also click on the `Fx` next to it to set the value `{{true}}` and `{{false}}` dynamically. Shows a loading status if the value is `true`. This property is often used with the `isLoading` property of queries so that the table shows a spinner while the query is being run. Default value is `false`.
 
 ## General
-### Tooltip
+<font size="4"><b>Tooltip</b></font>
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+A **Tooltip** is commonly used to provide additional information about an element. This information becomes visible when the user hovers the mouse pointer over the respective component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+In the input field under **Tooltip**, you can enter some text and the component will show the specified text as a tooltip when it is hovered over. 
+
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Text" />
-
+    <img className="screenshot-full" src="/img/widgets/text/tooltip.png" alt="Tooltip Example" />
 </div>
 
 ## Layout
+<font size="4"><b>Show on desktop</b></font>
 
-### Show on desktop
+Use this toggle to show or hide the component in the desktop view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`.
 
-Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
-### Show on mobile
+<font size="4"><b>Show on mobile</b></font>
 
-Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Use this toggle to show or hide the component in the mobile view. You can dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, you can directly set the values to `{{true}}` or `{{false}}`. 
+
+---
 
 ## Styles
 
-| Style      | Description |
-| ----------- | ----------- | 
-| Font Weight | You can change the font weight of the text in following ways: **normal (default), bold, lighter, bolder** |
-| Text Decoration | You can change the text decoration in following ways : **none(default), overline, line-through, underline, overline underline** |
-| Text Transformation | You can transform the text in following ways: **none (default), uppercase, lowercase, capitalize** |
-| Font Style | You can change the font style in following ways: **normal(default), italic, oblique** |
-| Line Height | You can change the line height by providing number as input (example - 1.5) |
-| Text Indent | You can change the text indent by providing the number as input (example - 10) |
-| Letter Spacing | You can change the letter spacing by providing the number as input  (example - 2) |
-| Word Spacing  | You can change the letter spacing by providing the number as input  (example - 2) |
-| Font Variant | You can change the font variant of the text in the following ways: **normal (default), small-caps, initial, inherit** |
-| Text Size | By default, the text size is set to 14. You can enter any value from 1-100 to set custom text size. |
-| Background Color | You can change the background color of the text component by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Text Color |  You can change the color of the text by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Align Text | You can align the text inside the widget in following ways: left, right, center, justified |
-| Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
-| Disable | This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Style      | Description | Expected Value
+|:----------- |:----------- | :-------
+| Font Weight | Determines how bold or light your text will appear. | normal (default), bold, lighter, bolder |
+| Text Decoration | Adds an underline, overline, line-through, or a combination of lines to selected text. | none(default), overline, line-through, underline, overline underline |
+| Text Transformation | Dictates the capitalization of an element's text. It allows for all-uppercase or all-lowercase rendering. | none (default), uppercase, lowercase, capitalize |
+| Font Style | Allows you to apply styles like italic or normal, altering the overall look of the text content. | normal(default), italic, oblique |
+| Line Height | Determines the vertical space between lines of text within an element. It controls the amount of space above and below each line of text. | Enter a number as the value (example: **1.5**) |
+| Text Indent | Commonly used to create an indentation effect, like when starting a paragraph with some space before the first word. | Enter a number as the value (example: **10**) |
+| Letter Spacing | Refers to the adjustment of the space between individual characters within a block of text. | Enter a number as the value  (example: **2**) |
+| Word Spacing  | Controls the amount of space between words within a block of text. | Enter a number as the value (example: **2**) |
+| Font Variant | Allows you to customize the visual appearance of text and helps achieve specific typographic styles or formatting requirements. | normal (default), small-caps, initial, inherit |
+| Text Size | Dimensions of the characters in a font, typically measured in units like pixels, points, ems, or percentages. It determines how large or small the text appears on a screen or in print. | Any number between **1-100** |
+| Background Color | Sets the background color of the component. | Hex color code/choose a color using the color picker |
+| Text Color |  Sets the color of the text. |Hex color code/choose a color using the color picker |
+| Align Text | Sets the alignment of the text. | left, right, center, justified |
+| Visibility | Controls the visibility of the component. If set to {{false}}, the component will not be visible after the app is deployed.	| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+
+## General
+
+<font size="4"><b>Box Shadow</b></font>
+
+The **Box Shadow** property is used to add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/text/box-shadow.png" alt="Box-Shadow Example" />
+</div>
 
 
-:::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
-:::
+## Component Specific Actions (CSA)
 
-
-## Exposed Variables
-
-| Variables    | Description |
-| ----------- | ----------- |
-| text | This variable gets updated with HEX color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.colorpicker1.selectedColorHex}}`|
-
-## Component specific actions (CSA)
-
-Following actions of color picker component can be controlled using the component specific actions(CSA):
+Following actions of the **Text** component can be controlled using Component-Specific Actions(CSA):
 
 | Actions     | Description |
-| ----------- | ----------- |
-| visibility | Set a visibility of the text via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.text1.visibility(false)` |
-| setText | Set a text value on the text component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.text1.setText('this is a text')` |
+| :----------- | :----------- |
+| visibility | Sets the visibility of the text via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.text1.visibility(false)`. |
+| setText | Sets a text value on the text component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.text1.setText('this is a text')`. |

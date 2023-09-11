@@ -2,6 +2,7 @@ import { User } from 'src/entities/user.entity';
 import { AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { UsersService } from 'src/services/users.service';
+import { isEmpty } from 'lodash';
 
 export enum Action {
   ProxyPostgrest = 'proxyPostgrest',
@@ -25,7 +26,10 @@ export class TooljetDbAbilityFactory {
 
   async actions(user: User, params: any) {
     const { can, build } = new AbilityBuilder<Ability<[Action, Subjects]>>(Ability as AbilityClass<TooljetDbAbility>);
-    const isAdmin = await this.usersService.hasGroup(user, 'admin', params.oraganizationId);
+    const { organizationId, dataQuery } = params;
+    const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && dataQuery.app.isPublic;
+    const isUserLoggedin = !isEmpty(user) && !isEmpty(organizationId);
+    const isAdmin = !isEmpty(user) ? await this.usersService.hasGroup(user, 'admin', params.organizationId) : false;
 
     if (isAdmin) {
       can(Action.CreateTable, 'all');
@@ -34,7 +38,11 @@ export class TooljetDbAbilityFactory {
       can(Action.DropColumn, 'all');
       can(Action.RenameTable, 'all');
     }
-    can(Action.ProxyPostgrest, 'all');
+
+    if (isPublicAppRequest || isUserLoggedin) {
+      can(Action.ProxyPostgrest, 'all');
+    }
+
     can(Action.ViewTables, 'all');
     can(Action.ViewTable, 'all');
     can(Action.JoinTables, 'all');

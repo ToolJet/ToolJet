@@ -197,6 +197,7 @@ const sidebars = {
         },
       ],
     },
+    'dashboard',
     {
       'type': 'category',
       'label': 'App Builder',
@@ -211,6 +212,16 @@ const sidebars = {
         'tutorial/pages',
         'app-builder/customstyles',
         'tutorial/keyboard-shortcuts',
+      ],
+    },
+    {
+      'type': 'category',
+      'label': 'Workflows',
+      'items': [
+        'workflows/overview',
+        'workflows/nodes',
+        'workflows/permissions',
+        'workflows/logs',
       ],
     },
     {
@@ -336,6 +347,7 @@ const sidebars = {
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
         'how-to/bulk-update-multiple-rows',
+        'how-to/delete-multiple-rows',
         'how-to/use-server-side-pagination',
         'how-to/access-currentuser',
         'how-to/use-axios-in-runjs',

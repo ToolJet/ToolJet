@@ -145,13 +145,13 @@
             "advanced": "Advanced",
             "preview": "Preview",
             "Save": "Save",
-            "selectDatasource": "Select Datasource",
+            "selectDatasource": "Select Data Source",
             "addDatasource": "Add datasource",
             "dataSourceManager": {
                 "toast": {
                     "success": {
-                        "dataSourceAdded": "Datasource Added",
-                        "dataSourceSaved": "Datasource Saved"
+                        "dataSourceAdded": "Data Source Added",
+                        "dataSourceSaved": "Data Source Saved"
                     },
                     "error": {
                         "noEmptyDsName": "The name of datasource should not be empty"
@@ -259,7 +259,7 @@
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
                     "enterFullName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -921,7 +921,7 @@
             "tip": "Debugger",
             "errors": "Errors",
             "noErrors": "No errors found",
-            "noLogs" : "No logs found",
+            "noLogs": "No logs found",
             "clear": "clear"
         },
         "Comments": {
@@ -935,9 +935,10 @@
             "tip": "Global Settings",
             "hideHeader": "Hide header for launched apps",
             "maintenanceMode": "Maintenance mode",
-            "maxWidthOfCanvas": "Max width of canvas",
-            "maxHeightOfCanvas": "Max height of canvas",
-            "backgroundColorOfCanvas": "Background color of canvas"
+            "maxWidthOfCanvas": "Max canvas width",
+            "maxHeightOfCanvas": "Max canvas height",
+            "backgroundColorOfCanvas": "Canvas BG",
+            "exportApp": "Export app"
         },
         "Back": {
             "text": "Back",

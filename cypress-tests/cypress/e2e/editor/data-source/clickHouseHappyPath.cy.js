@@ -9,7 +9,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -27,9 +27,6 @@ describe("Data sources", () => {
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -48,15 +45,13 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("ClickHouse");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "ClickHouse");
-    cy.get('[data-cy="data-source-clickhouse"]').click();
+    selectAndAddDataSource("databases", "ClickHouse", data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      //username,password,host,port,protocol,dbname,usepost, trimquery,gzip,debug,raw
-      "have.value",
-      "ClickHouse"
-    );
+    // cy.get(postgreSqlSelector.dataSourceNameInputField).should(
+    //   //username,password,host,port,protocol,dbname,usepost, trimquery,gzip,debug,raw
+    //   "have.value",
+    //   "ClickHouse"
+    // );
     cy.get(postgreSqlSelector.labelUserName).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelUserName
@@ -65,6 +60,7 @@ describe("Data sources", () => {
       "have.text",
       "Password"
     );
+    cy.get(".datasource-edit-btn").should("be.visible");
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -126,15 +122,11 @@ describe("Data sources", () => {
     cy.get('[data-cy="connection-alert-text"]', { timeout: 60000 })
       .scrollIntoView()
       .verifyVisibleElement("have.text", "getaddrinfo ENOTFOUND undefined");
+    deleteDatasource(`cypress-${data.lastName}-clickhouse`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource("ClickHouse");
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-clickhouse`
-    );
+    selectAndAddDataSource("databases", "ClickHouse", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -152,7 +144,7 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterUserName,
       Cypress.env("clickhouse_user")
     );
-
+    cy.get(".datasource-edit-btn").should("be.visible").click();
     cy.get(postgreSqlSelector.passwordTextField).type(
       Cypress.env("clickhouse_password")
     );
@@ -166,7 +158,7 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(
