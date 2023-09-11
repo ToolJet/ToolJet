@@ -202,7 +202,9 @@ export const Box = memo(
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
     useEffect(() => {
-      onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
+      if (!component?.parent) {
+        onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
+      }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); /*computeComponentState was not getting the id on initial render therefore exposed variables were not set.
   computeComponentState was being executed before addNewWidgetToTheEditor was completed.*/
