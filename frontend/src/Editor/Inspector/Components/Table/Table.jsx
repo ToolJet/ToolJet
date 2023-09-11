@@ -1127,7 +1127,13 @@ class TableComponent extends React.Component {
       ...(enablePagination && serverSidePagination ? ['enableNextButton'] : []),
       ...(enablePagination && serverSidePagination ? ['totalRecords'] : []),
     ];
-    const additionalActions = ['showAddNewRowButton', 'showDownloadButton', 'hideColumnSelectorButton', 'loadingState'];
+    const additionalActions = [
+      'showAddNewRowButton',
+      'showDownloadButton',
+      'hideColumnSelectorButton',
+      'loadingState',
+      'showBulkUpdateActions',
+    ];
 
     items.push({
       title: 'Events',
