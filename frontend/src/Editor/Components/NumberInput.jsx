@@ -52,12 +52,15 @@ export const NumberInput = function NumberInput({
     setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
   };
 
+
   useEffect(() => {
     if (!isNaN(value)) {
       setExposedVariable('value', value);
+    } else {
+      setExposedVariable('value', 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value, properties.placeholder]);
 
   const computedStyles = {
     height,
@@ -68,6 +71,7 @@ export const NumberInput = function NumberInput({
     backgroundColor: darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#000000' : backgroundColor,
     boxShadow,
   };
+
 
   return (
     <>
