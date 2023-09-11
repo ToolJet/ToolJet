@@ -26,7 +26,7 @@ export class PostgrestProxyService {
 
   private httpProxy = proxy(this.configService.get<string>('PGRST_HOST'), {
     proxyReqPathResolver: function (req) {
-      const path = '/api/tooljet_db';
+      const path = '/api/tooljet-db';
       const pathRegex = new RegExp(`${maybeSetSubPath(path)}/proxy`);
       const parts = req.url.split('?');
       const queryString = parts[1];
@@ -85,7 +85,7 @@ export class PostgrestProxyService {
     return urlBeingReplaced;
   }
 
-  private async findOrFailAllInternalTableFromTableNames(requestedTableNames: Array<string>, organizationId: string) {
+  async findOrFailAllInternalTableFromTableNames(requestedTableNames: Array<string>, organizationId: string) {
     const internalTables = await this.manager.find(InternalTable, {
       where: {
         organizationId,
