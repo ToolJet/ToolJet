@@ -307,7 +307,7 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
 
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionDevices, []);
+    openAccordion(commonWidgetText.accordionLayout, []);
 
     verifyAndModifyToggleFx(
       "Show on desktop",

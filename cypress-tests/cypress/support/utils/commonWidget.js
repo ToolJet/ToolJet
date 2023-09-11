@@ -209,7 +209,8 @@ export const verifyAndModifyStylePickerFx = (
   paramName,
   defaultValue,
   value,
-  index = 0
+  index = 0,
+  boxShadow = ""
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
@@ -228,7 +229,7 @@ export const verifyAndModifyStylePickerFx = (
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".CodeMirror-line")
       .should("be.visible")
-      .and("have.text", defaultValue);
+      .and("have.text", `${boxShadow}${defaultValue}`);
   });
 
   cy.get(
@@ -309,11 +310,13 @@ export const verifyStylesGeneralAccordion = (
 ) => {
   openEditorSidebar(widgetName);
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-  openAccordion(commonWidgetText.accordionGenaral, []);
+  // openAccordion(commonWidgetText.accordionGenaral, []);
   verifyAndModifyStylePickerFx(
     commonWidgetText.parameterBoxShadow,
     commonWidgetText.boxShadowDefaultValue,
-    `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`
+    `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`,
+    0,
+    "0px 0px 0px 0px "
   );
   cy.get(
     commonWidgetSelector.parameterFxButton(commonWidgetText.parameterBoxShadow)

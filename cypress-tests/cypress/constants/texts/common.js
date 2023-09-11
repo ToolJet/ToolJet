@@ -195,7 +195,7 @@ export const commonWidgetText = {
   borderRadiusInput: ["{{", "20}}"],
   parameterOptionLabels: "Option labels",
   parameterBoxShadow: "Box Shadow",
-  boxShadowDefaultValue: "0px 0px 0px 0px #00000040",
+  boxShadowDefaultValue: "#00000040",
   parameterOptionvalues: "Option values",
   boxShadowColor: "Box Shadow Color",
   boxShadowFxValue: "-5px 6px 5px 8px #ee121240",
@@ -227,7 +227,7 @@ export const commonWidgetText = {
     return `Maximum ${value} characters is allowed`;
   },
 
-  datepickerDocumentationLink: "Datepicker documentation",
+  datepickerDocumentationLink: "Read documentation for Datepicker",
   text1: "text1",
   textinput1: "textinput1",
   toggleswitch1: "toggleswitch1",

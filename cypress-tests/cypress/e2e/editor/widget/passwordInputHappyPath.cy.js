@@ -171,7 +171,7 @@ describe("Password Input", () => {
 
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
-      "PasswordInput documentation"
+      "Read documentation for PasswordInput"
     );
   });
   it("should verify the styles of the password input widget", () => {
@@ -296,7 +296,7 @@ describe("Password Input", () => {
 
     openEditorSidebar(passwordInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
 
     fillBoxShadowParams(

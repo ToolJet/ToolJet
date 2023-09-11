@@ -43,6 +43,7 @@ describe("Editor- Global Settings", () => {
       "have.text",
       "Maintenance mode"
     );
+    cy.hideTooltip();
     cy.get('[data-cy="label-max-canvas-width"]').verifyVisibleElement(
       "have.text",
       "Max width of canvas"

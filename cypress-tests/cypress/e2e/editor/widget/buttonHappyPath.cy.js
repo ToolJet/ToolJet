@@ -278,7 +278,7 @@ describe("Editor- Test Button widget", () => {
         commonWidgetText.parameterBorderRadius
       )
     )
-      .last()
+      .first()
       .clear()
       .type(buttonText.borderRadiusInput);
 

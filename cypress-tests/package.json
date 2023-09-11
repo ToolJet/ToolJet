@@ -9,7 +9,7 @@
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.12.0",
     "@faker-js/faker": "^7.3.0",
-    "cypress": "^12.5.1"
+    "cypress": "^13.1.0"
   },
   "dependencies": {
     "cypress-real-events": "^1.7.6",

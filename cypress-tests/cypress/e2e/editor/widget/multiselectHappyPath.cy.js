@@ -228,7 +228,9 @@ describe("Multiselect widget", () => {
     verifyAndModifyStylePickerFx(
       commonWidgetText.parameterBoxShadow,
       commonWidgetText.boxShadowDefaultValue,
-      commonWidgetText.boxShadowFxValue
+      commonWidgetText.boxShadowFxValue,
+      0,
+      "0px 0px 0px 0px "
     );
     cy.get(
       commonWidgetSelector.parameterFxButton(
@@ -291,7 +293,7 @@ describe("Multiselect widget", () => {
 
     openEditorSidebar(data.widgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
 
     cy.get(
       commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
@@ -361,7 +363,7 @@ describe("Multiselect widget", () => {
     );
   });
 
-  it.only("should verify CSA", () => {
+  it("should verify CSA", () => {
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget("Number input", 600, 50);
     selectEvent("On change", "Control Component");
