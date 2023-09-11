@@ -40,7 +40,7 @@ export class TooljetDbBulkUploadService {
     internalTableId: string,
     internalTableColumnSchema: TableColumnSchema[],
     fileBuffer: Buffer
-  ): Promise<string> {
+  ): Promise<{ processedRows: number; rowsInserted: number; rowsUpdated: number }> {
     const csvStream = csv.parseString(fileBuffer.toString(), {
       headers: true,
       ignoreEmpty: true,
@@ -81,7 +81,7 @@ export class TooljetDbBulkUploadService {
       await this.bulkUpdateRows(tooljetDbManager, rowsToUpdate, internalTableId);
     });
 
-    return `Processed ${rowsProcessed} rows: ${rowsToInsert.length} created, ${rowsToUpdate.length} updated.`;
+    return { processedRows: rowsProcessed, rowsInserted: rowsToInsert.length, rowsUpdated: rowsToUpdate.length };
   }
 
   async bulkUpdateRows(tooljetDbManager: EntityManager, rowsToUpdate: unknown[], internalTableId: string) {

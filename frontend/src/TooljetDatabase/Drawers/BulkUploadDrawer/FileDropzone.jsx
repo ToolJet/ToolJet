@@ -3,15 +3,15 @@ import { useDropzone } from 'react-dropzone';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { toast } from 'react-hot-toast';
 
-export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileChange, inviteBulkUsers, onDrop }) {
+export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileChange, onButtonClick, onDrop }) {
   const [fileData, setFileData] = useState();
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
     accept: { parsedFileType: ['text/csv'] },
     onDrop,
     noClick: true,
     onDropRejected: (files) => {
-      if (files[0].size > 1048576) {
-        toast.error('File size cannot exceed more than 1MB');
+      if (Math.round(files[0].size / 1024) > 2 * 1024) {
+        handleFileChange(files[0]);
       } else {
         toast.error('Please upload a CSV file');
       }
@@ -26,10 +26,10 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
   return (
     <form
       {...getRootProps({ className: 'dropzone' })}
-      onSubmit={inviteBulkUsers}
+      onSubmit={onButtonClick}
       noValidate
       className="upload-user-form"
-      id="inviteBulkUsers"
+      id="onButtonClick"
     >
       <div className="form-group mb-3 ">
         <div>
@@ -49,24 +49,20 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
             onChange={(e) => {
               const file = e.target.files[0];
               setFileData(file);
-              if (Math.round(file.size / 1024) > 1024) {
-                toast.error('File size cannot exceed more than 1MB');
-                e.target.value = null;
-              } else {
-                handleFileChange(file);
-              }
+              handleFileChange(file);
             }}
             accept=".csv"
             type="file"
             className="form-control"
             data-cy="input-field-bulk-upload"
           />
-          <span className="file-upload-error" data-cy="file-error">
-            {errors['file']}
-          </span>
           <ul>{acceptedFiles}</ul>
           {fileData?.name && <ul data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
         </div>
+
+        <span className="file-upload-error" data-cy="file-error">
+          {errors['file']}
+        </span>
       </div>
     </form>
   );

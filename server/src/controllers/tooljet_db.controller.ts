@@ -130,6 +130,6 @@ export class TooljetDbController {
       throw new BadRequestException('File size cannot be greater than 2MB');
     }
     const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file.buffer);
-    return { message: result };
+    return decamelizeKeys({ result });
   }
 }

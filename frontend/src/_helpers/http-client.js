@@ -48,9 +48,13 @@ class HttpClient {
     }
 
     options.headers['tj-workspace-id'] = session?.current_organization_id;
+
     if (data) {
-      options.body = JSON.stringify(data);
+      // fetch library generates content type with boundary for form data
+      data instanceof FormData && delete options.headers['content-type'];
+      options.body = data instanceof FormData ? data : JSON.stringify(data);
     }
+
     const response = await fetch(endpoint, options);
     const payload = {
       status: response.status,

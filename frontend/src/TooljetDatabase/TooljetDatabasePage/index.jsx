@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
 import cx from 'classnames';
 import Table from '../Table';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
@@ -14,6 +14,7 @@ import ExportSchema from '../ExportSchema/ExportSchema';
 import { appService } from '@/_services/app.service';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
+import { tooljetDatabaseService } from '@/_services';
 
 const TooljetDatabasePage = ({ totalTables }) => {
   const {
@@ -28,12 +29,53 @@ const TooljetDatabasePage = ({ totalTables }) => {
     sortFilters,
     setSortFilters,
     organizationId,
+    setTotalRecords,
+    setSelectedTableData,
   } = useContext(TooljetDatabaseContext);
 
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isBulkUploadDrawerOpen, setIsBulkUploadDrawerOpen] = useState(false);
   const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
+  const [bulkUploadFile, setBulkUploadFile] = useState(null);
+  const [isBulkUploading, setIsBulkUploading] = useState(false);
+  const [errors, setErrors] = useState({ file: [] });
+  const [uploadResult, setUploadResult] = useState(null);
+
+  useEffect(() => {
+    handleFileValidation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bulkUploadFile]);
+
+  useEffect(() => {
+    if (!isBulkUploadDrawerOpen) {
+      setErrors({ file: [] });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isBulkUploadDrawerOpen]);
+
+  useEffect(() => {
+    const reloadTableData = async () => {
+      const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable.id);
+
+      if (error) {
+        toast.error(error?.message ?? 'Something went wrong');
+        return;
+      }
+      const totalRecords = headers['content-range'].split('/')[1] || 0;
+
+      if (Array.isArray(data)) {
+        setTotalRecords(totalRecords);
+        setSelectedTableData(data);
+      }
+    };
+
+    setIsBulkUploading(false);
+    setBulkUploadFile(null);
+    setIsBulkUploadDrawerOpen(false);
+    reloadTableData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploadResult]);
 
   const EmptyState = () => {
     return (
@@ -85,6 +127,53 @@ const TooljetDatabasePage = ({ totalTables }) => {
       });
   };
 
+  const handleFileValidation = () => {
+    const fileValidationErrors = [];
+
+    if (bulkUploadFile && bulkUploadFile.size / 1024 > 2 * 1024) {
+      fileValidationErrors.push('File size cannot exceed 2mb');
+    }
+
+    setErrors({ ...errors, ...{ file: fileValidationErrors } });
+  };
+
+  const handleBulkUpload = async (event) => {
+    event.preventDefault();
+    setIsBulkUploading(true);
+
+    const formData = new FormData();
+    formData.append('file', bulkUploadFile);
+    try {
+      const { error, data } = await tooljetDatabaseService.bulkUpload(
+        organizationId,
+        selectedTable.table_name,
+        formData
+      );
+
+      if (error) {
+        toast.error('Upload failed', { position: 'top-center' });
+
+        setIsBulkUploading(false);
+        return;
+      }
+
+      const { processed_rows: processedRows, rows_inserted: rowsInserted, rows_updated: rowsUpdated } = data.result;
+
+      toast.success(`${processedRows} successfully uploaded!`, {
+        position: 'top-center',
+      });
+
+      setUploadResult({ processedRows, rowsInserted, rowsUpdated });
+    } catch (error) {
+      toast.error(error.errors, { position: 'top-center' });
+      setIsBulkUploading(false);
+    }
+  };
+
+  const handleBulkUploadFileChange = (file) => {
+    setBulkUploadFile(file);
+  };
+
   return (
     <div className="row gx-0">
       <Sidebar />
@@ -114,6 +203,12 @@ const TooljetDatabasePage = ({ totalTables }) => {
                           <BulkUploadDrawer
                             isBulkUploadDrawerOpen={isBulkUploadDrawerOpen}
                             setIsBulkUploadDrawerOpen={setIsBulkUploadDrawerOpen}
+                            bulkUploadFile={bulkUploadFile}
+                            handleBulkUploadFileChange={handleBulkUploadFileChange}
+                            handleBulkUpload={handleBulkUpload}
+                            isBulkUploading={isBulkUploading}
+                            uploadResult={uploadResult}
+                            errors={errors}
                           />
                           <ExportSchema onClick={exportTable} />
                         </>
