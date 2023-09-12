@@ -119,7 +119,7 @@ export const Inspector = ({
     return null;
   };
 
-  function paramUpdated(param, attr, value, paramType) {
+  function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false) {
     console.log({ param, attr, value, paramType });
     let newComponent = JSON.parse(JSON.stringify(component));
     let newDefinition = _.cloneDeep(newComponent.component.definition);
@@ -146,7 +146,10 @@ export const Inspector = ({
     }
     newDefinition[paramType] = allParams;
     newComponent.component.definition = newDefinition;
-    componentDefinitionChanged(newComponent, { componentPropertyUpdated: true });
+    componentDefinitionChanged(newComponent, {
+      componentPropertyUpdated: true,
+      isParamFromTableColumn: isParamFromTableColumn,
+    });
   }
 
   function layoutPropertyChanged(param, attr, value, paramType) {
