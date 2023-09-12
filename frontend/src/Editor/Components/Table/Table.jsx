@@ -1303,7 +1303,7 @@ export function Table({
                   <button
                     className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
                     onClick={() =>
-                      onEvent('onBulkUpdate', { component }).then(() => {
+                      onEvent('onBulkUpdate', tableEvents, { component }).then(() => {
                         handleChangesSaved();
                       })
                     }
