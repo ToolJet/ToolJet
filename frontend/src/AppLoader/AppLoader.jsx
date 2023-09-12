@@ -13,10 +13,10 @@ import _ from 'lodash';
 const AppLoaderComponent = (props) => {
   const params = useParams();
   const appId = params.id;
+  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => loadAppDetails(), []);
-
   const [app, setApp] = useState(undefined);
 
   const loadAppDetails = () => {
@@ -65,8 +65,7 @@ const AppLoaderComponent = (props) => {
     }
   };
 
-  if (app?.type === 'front-end')
-    return config.ENABLE_MULTIPLAYER_EDITING ? <RealtimeEditor {...props} /> : <Editor {...props} />;
+  if (app?.type === 'front-end') return shouldEnableMultiplayer ? <RealtimeEditor {...props} /> : <Editor {...props} />;
   else if (app?.type === 'workflow') return <WorkflowEditor {...props} />;
 };
 

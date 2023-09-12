@@ -1,6 +1,7 @@
 import config from 'config';
 import { BehaviorSubject } from 'rxjs';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appService } from './app.service';
 
 const licenseTermsSubject = new BehaviorSubject({
   isExpired: null,
@@ -27,9 +28,14 @@ function get() {
   return fetch(`${config.apiUrl}/license`, requestOptions).then(handleResponse);
 }
 
-function update(body) {
+async function update(body) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  return fetch(`${config.apiUrl}/license`, requestOptions).then(handleResponse).then(getTerms);
+  const updatedData = await fetch(`${config.apiUrl}/license`, requestOptions).then(handleResponse).then(getTerms);
+  //update global settings of application
+  appService.getConfig().then((config) => {
+    window.public_config = config;
+  });
+  return updatedData;
 }
 
 function getFeatureAccess() {

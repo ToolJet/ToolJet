@@ -253,7 +253,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}
       />
-
       {config.COMMENT_FEATURE_ENABLE && (
         <div className={`${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
           <LeftSidebarComment

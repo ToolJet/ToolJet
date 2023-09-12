@@ -44,7 +44,7 @@ export class AppConfigService {
   }
 
   fetchDefaultInstanceConfig() {
-    return ['ALLOW_PERSONAL_WORKSPACE'];
+    return ['ALLOW_PERSONAL_WORKSPACE', 'ENABLE_MULTIPLAYER_EDITING'];
   }
 
   fetchAllowedConfigFromEnv() {

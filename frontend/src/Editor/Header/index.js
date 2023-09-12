@@ -14,10 +14,9 @@ import { ToolTip } from '@/_components/ToolTip';
 import PromoteConfirmationModal from '../EnvironmentsManager/PromoteConfirmationModal';
 import cx from 'classnames';
 import config from 'config';
-// eslint-disable-next-line import/no-unresolved
-import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import UpdatePresence from './UpdatePresence.jsx';
 
 export default function EditorHeader({
   darkMode,
@@ -56,23 +55,7 @@ export default function EditorHeader({
     shallow
   );
 
-  const updatePresence = useUpdatePresence();
-
-  useEffect(() => {
-    const initialPresence = {
-      firstName: currentUser?.first_name ?? '',
-      lastName: currentUser?.last_name ?? '',
-      email: currentUser?.email ?? '',
-      image: '',
-      editingVersionId: '',
-      x: 0,
-      y: 0,
-      color: '',
-    };
-    updatePresence(initialPresence);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
-
+  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
   const handlePromote = () => {
     setPromoteModalData({
       current: currentEnvironment,
@@ -81,7 +64,6 @@ export default function EditorHeader({
   };
 
   const currentAppEnvironmentId = editingVersion?.current_environment_id || editingVersion?.currentEnvironmentId;
-  // a flag to disable the release button if the current environment is not production
   const shouldDisablePromote = currentEnvironment?.id !== currentAppEnvironmentId || isSaving;
 
   return (
@@ -161,11 +143,12 @@ export default function EditorHeader({
                     />
                   )}
                 </div>
-                {config.ENABLE_MULTIPLAYER_EDITING && (
+                {shouldEnableMultiplayer && (
                   <div className="mx-2 p-2">
                     <RealtimeAvatars />
                   </div>
                 )}
+                {shouldEnableMultiplayer && <UpdatePresence currentUser={currentUser} />}
               </div>
               <div className="col-1"></div>
             </div>

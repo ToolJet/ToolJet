@@ -24,4 +24,5 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
 
 export const BASIC_PLAN_SETTINGS = {
   ALLOW_PERSONAL_WORKSPACE: 'true',
+  ENABLE_MULTIPLAYER_EDITING: 'false',
 };

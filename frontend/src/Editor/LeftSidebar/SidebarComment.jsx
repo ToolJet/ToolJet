@@ -1,11 +1,12 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState } from 'react';
 import cx from 'classnames';
 import { LeftSidebarItem } from './SidebarItem';
-import { commentsService } from '@/_services';
+import { commentsService, licenseService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPageId }, ref) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -24,6 +25,8 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
   const [isActive, toggleActive] = React.useState(false);
   const [notifications, setNotifications] = React.useState([]);
   const router = useRouter();
+  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+  const [isFreePlan, setIsFreePlan] = useState(true);
 
   React.useEffect(() => {
     if (appVersionsId) {
@@ -31,16 +34,45 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
         setNotifications(data);
       });
     }
+    async function fetchData() {
+      try {
+        const data = await licenseService.getFeatureAccess();
+        console.log('Data', data);
+        setIsFreePlan(!data.licenseStatus.isLicenseValid || data.licenseStatus.isExpired);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+    fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appVersionsId, currentPageId]);
-  return (
+  const tooltipContent = 'You can only access comments in our paid plans'; // Tooltip content
+
+  const tooltip = <Tooltip id="tooltip-disabled">{tooltipContent}</Tooltip>;
+
+  return !shouldEnableMultiplayer && isFreePlan ? (
+    <OverlayTrigger placement="bottom" overlay={tooltip} trigger="hover">
+      <LeftSidebarItem
+        commentBadge={notifications?.length > 0}
+        selectedSidebarItem={selectedSidebarItem}
+        title={tooltip}
+        icon={'comments-dark'}
+        className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
+          disabled: false,
+          active: isActive,
+          dark: darkMode,
+        })}
+        ref={ref}
+      />
+    </OverlayTrigger>
+  ) : (
     <LeftSidebarItem
       commentBadge={notifications?.length > 0}
       selectedSidebarItem={selectedSidebarItem}
       title={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
       icon={darkMode ? `comments-dark` : 'comments-light'}
       className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
-        disabled: !appVersionsId,
+        disabled: !appVersionsId || !shouldEnableMultiplayer,
         active: isActive,
         dark: darkMode,
       })}

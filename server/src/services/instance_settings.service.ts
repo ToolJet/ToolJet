@@ -26,6 +26,7 @@ export class InstanceSettingsService {
 
     const settings = await this.instanceSettingsRepository.find({
       where: { ...(key && key.length && { key: Array.isArray(key) ? In(key) : key }), ...(type && { type }) },
+      order: { createdAt: 'ASC' },
     });
 
     if ((Array.isArray(key) ? key : [key]).some((e) => Object.keys(BASIC_PLAN_SETTINGS).includes(e))) {

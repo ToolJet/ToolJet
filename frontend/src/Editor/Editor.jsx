@@ -72,7 +72,6 @@ class EditorComponent extends React.Component {
     super(props);
     resetAllStores();
     const appId = this.props.params.id;
-
     useAppDataStore.getState().actions.setAppId(appId);
     useEditorStore.getState().actions.setIsEditorActive(true);
     const { socket } = createWebsocketConnection(appId);
@@ -135,6 +134,7 @@ class EditorComponent extends React.Component {
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
     this.realtimeSave = debounce(this.appDefinitionChanged, 500);
+    this.shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
   }
 
   setWindowTitle(name) {
@@ -242,7 +242,7 @@ class EditorComponent extends React.Component {
    * current appDef is equal to the newAppDef then we do not trigger a realtimeSave
    */
   initRealtimeSave = () => {
-    if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
+    if (!this.shouldEnableMultiplayer) return null;
 
     this.props.ymap?.observe(() => {
       if (!isEqual(this.props.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId)) return;
@@ -331,7 +331,7 @@ class EditorComponent extends React.Component {
     document.title = 'Tooljet - Dashboard';
     this.socket && this.socket?.close();
     this.subscription && this.subscription.unsubscribe();
-    if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
+    if (this.shouldEnableMultiplayer) this.props?.provider?.disconnect();
     this.appDataStoreListner && this.appDataStoreListner();
     this.dataQueriesStoreListner && this.dataQueriesStoreListner();
     useEditorStore.getState().actions.setIsEditorActive(false);
@@ -622,7 +622,7 @@ class EditorComponent extends React.Component {
   appDefinitionChanged = (newDefinition, opts = {}) => {
     let currentPageId = this.state.currentPageId;
     if (isEqual(this.state.appDefinition, newDefinition)) return;
-    if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
+    if (this.shouldEnableMultiplayer && !opts.skipYmapUpdate) {
       this.props.ymap?.set('appDef', {
         newDefinition,
         editingVersionId: this.props.editingVersion?.id,
@@ -1728,7 +1728,7 @@ class EditorComponent extends React.Component {
                         transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                       }}
                     >
-                      {config.ENABLE_MULTIPLAYER_EDITING && (
+                      {this.shouldEnableMultiplayer && (
                         <RealtimeCursors
                           editingVersionId={editingVersion?.id}
                           editingPageId={this.state.currentPageId}
