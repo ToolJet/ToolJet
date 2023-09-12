@@ -7,7 +7,7 @@ import EditIcon from './Icons/Edit.svg';
 import DeleteIcon from './Icons/Delete.svg';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
+export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable }) => {
   const [open, setOpen] = React.useState(false);
 
   const popover = (
@@ -26,6 +26,21 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
             }}
           >
             Edit
+          </div>
+        </div>
+        <div className="row mt-3 cursor-pointer">
+          <div className="col-auto" data-cy="export-option-icon">
+            <SolidIcon name="arrowsortrectangle" width="13" viewBox="0 0 25 25" />
+          </div>
+          <div
+            className="col text-truncate"
+            data-cy="edit-option"
+            onClick={() => {
+              setOpen(false);
+              handleExportTable();
+            }}
+          >
+            Export table
           </div>
         </div>
         {/* <div className="row mt-3">
