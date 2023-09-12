@@ -172,7 +172,7 @@ export const PageHandler = ({
               </span>
             )}
           </div>
-          <div className="col-auto">
+          <div className="col-auto" data-cy="page-menu-option-icon">
             {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
