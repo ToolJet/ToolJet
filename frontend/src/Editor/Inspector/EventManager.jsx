@@ -184,7 +184,7 @@ export const EventManager = ({
 
   function getComponentActionDefaultParams(componentId, actionHandle) {
     const action = getAction(componentId, actionHandle);
-    const defaultParams = (action.params ?? []).map((param) => ({
+    const defaultParams = (action?.params ?? []).map((param) => ({
       handle: param.handle,
       value: param.defaultValue,
     }));
@@ -757,7 +757,7 @@ export const EventManager = ({
                 </div>
                 {event?.componentId &&
                   event?.componentSpecificActionHandle &&
-                  (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
+                  (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => (
                     <div className="row mt-2" key={param.handle}>
                       <div className="col-3 p-1" data-cy={`action-options-${param?.displayName}-field-label`}>
                         {param?.displayName}
