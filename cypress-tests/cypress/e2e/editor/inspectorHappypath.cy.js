@@ -129,7 +129,7 @@ describe("Editor- Inspector", () => {
     verifyValue("key", "String", `"value"`);
 
     cy.get(`[data-cy="inspector-node-key"] > .mx-1`).realHover();
-    cy.get(".mx-1 > img").realClick();
+    cy.get("[data-cy='copy-icon']").realClick();
     cy.realPress("Escape");
 
     cy.window().then((win) => {

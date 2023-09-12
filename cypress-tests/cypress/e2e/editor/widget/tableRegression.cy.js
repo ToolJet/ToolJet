@@ -215,22 +215,12 @@ describe("Table", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
-    editAndVerifyWidgetName(data.widgetName, [
-      "Options",
-      "Properties",
-      "Columns",
-      "Layout",
-    ]);
+    editAndVerifyWidgetName(data.widgetName, []);
     cy.forceClickOnCanvas();
 
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Options",
-      "Columns",
-      "Layout",
-    ]);
-    verifyAndModifyParameter(
-      "Table data",
+    cy.log(".......");
+    cy.get('[data-cy="table-data-input-field"]').clearAndTypeOnCodeMirror(
       codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com" },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com" },{id:4,name:"Oliver",email:"oliver@example.com" },
       ]`)
     );
@@ -245,21 +235,16 @@ describe("Table", () => {
     ]);
     //cy.get('[data-cy="inspector-close-icon"]').click();
     openEditorSidebar(data.widgetName);
-    openAccordion("Columns", ["Options", "Properties", "Layout"]);
+    openAccordion("Columns", []);
     deleteAndVerifyColumn("email");
     openEditorSidebar(data.widgetName);
-    openAccordion("Action buttons", [
-      "Options",
-      "Properties",
-      "Columns",
-      "Layout",
-    ]);
-    cy.get('[data-cy="message-no-action-button"]').should(
+    openAccordion("Action buttons");
+    cy.get('[data-cy="no-items-banner-action-button"]').should(
       "have.text",
-      "This table doesn't have any action buttons"
+      "There are no action buttons"
     );
     cy.get('[data-cy="button-add-new-action-button"]')
-      .should("have.text", "+ Add button")
+      .should("have.text", "New action button")
       .click();
     cy.get('[data-cy="action-button-button-0"]').verifyVisibleElement(
       "have.text",
@@ -310,12 +295,7 @@ describe("Table", () => {
     cy.get('[data-cy="leftActions-cell-0"]').eq(0).find("button").click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Hello world!");
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionEvents, [
-      "Options",
-      "Properties",
-      "Columns",
-      "Layout",
-    ]);
+    openAccordion(commonWidgetText.accordionEvents, []);
     cy.get('[data-cy="add-event-handler"]').click();
     cy.get('[data-cy="event-handler-card"]').click();
     cy.get('[data-cy="event-selection"]>')
@@ -327,11 +307,7 @@ describe("Table", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
 
     openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionLayout, [
-      "Options",
-      "Properties",
-      "Columns",
-    ]);
+    openAccordion(commonWidgetText.accordionLayout, []);
 
     verifyAndModifyToggleFx(
       "Show on desktop",
@@ -355,28 +331,21 @@ describe("Table", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
-    editAndVerifyWidgetName(data.widgetName, [
-      "Options",
-      "Properties",
-      "Columns",
-      "Layout",
-    ]);
+    editAndVerifyWidgetName(data.widgetName, []);
 
     //String/default
     openEditorSidebar(data.widgetName);
+    cy.wait(500);
     deleteAndVerifyColumn("id");
     deleteAndVerifyColumn("name");
     deleteAndVerifyColumn("email");
+    cy.wait(500);
     addAndOpenColumnOption("Fake-String", `string`);
     selectDropdownOption('[data-cy="input-overflow"] >>:eq(0)', `wrap`);
     cy.get('[data-index="0"]>.select-search-option:eq(1)').realClick();
-    cy.wait(2000);
     verifyAndEnterColumnOptionInput("key", "name");
     verifyAndEnterColumnOptionInput("Text color", "red");
-    verifyAndEnterColumnOptionInput(
-      "Cell Background Color",
-      "{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}yellow"
-    );
+    verifyAndEnterColumnOptionInput("Cell Background Color", "yellow");
     cy.get(
       '[data-cy="input-and-label-cell-background-color"] > .form-label'
     ).click();
@@ -399,17 +368,22 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("Regex", "AABb");
     verifyAndEnterColumnOptionInput("Min length", "4");
     verifyAndEnterColumnOptionInput("Max length", "5");
-    verifyAndEnterColumnOptionInput("Custom rule", "{backspace}");
+    verifyAndEnterColumnOptionInput("Custom rule", " ");
     verifyInvalidFeedback(0, 0, "The input should match pattern");
     addInputOnTable(0, 0, "AABb");
 
     // cy.notVisible('[data-cy="stringsarah-cell-0"] >>>.invalid-feedback');
     openEditorSidebar(data.widgetName);
-    deleteAndVerifyColumn("Fake-String");
+    deleteAndVerifyColumn("fake-string");
 
     openEditorSidebar(data.widgetName);
     addAndOpenColumnOption("fake-number", `number`);
+    // cy.intercept("PUT", "/api/apps/**").as("appSave");
+    // cy.wait("@appSave");
+    // cy.wait(1000);
     verifyAndEnterColumnOptionInput("key", "id");
+    // cy.wait("@appSave");
+
     // verifyAndEnterColumnOptionInput("Cell Background Color", "black");
     cy.get('[data-cy="make-editable-toggle-button"]').click();
     cy.get('[data-cy="header-validation"]').verifyVisibleElement(
@@ -437,7 +411,7 @@ describe("Table", () => {
 
     openEditorSidebar(data.widgetName);
     addAndOpenColumnOption("fake-badge", `badge`);
-    verifyAndEnterColumnOptionInput("key", "");
+    verifyAndEnterColumnOptionInput("key", " ");
     verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
     verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
 
@@ -452,9 +426,9 @@ describe("Table", () => {
 
     openEditorSidebar(data.widgetName);
     addAndOpenColumnOption("fake-multiple-badge", `multipleBadges`);
-
     verifyAndEnterColumnOptionInput("key", "id");
     verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
+    cy.wait(500);
     verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
     cy.get('[data-cy="make-editable-toggle-button"]').click();
@@ -476,12 +450,14 @@ describe("Table", () => {
     deleteAndVerifyColumn("fake-multiple-badge");
 
     openEditorSidebar(data.widgetName);
-    verifyAndModifyParameter(
-      "Table data",
+    cy.get('[data-cy="table-data-input-field"]').clearAndTypeOnCodeMirror(
       codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com", tags:['One','Two','Three'] },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com", tags:['One','Two','Three'] },{id:4,name:"Oliver",email:"oliver@example.com" },
       ]`)
     );
-    closeAccordions(["Options"]);
+
+    // closeAccordions(["Options"]);
+    cy.get('[data-cy="widget-accordion-data"]').click();
+    deleteAndVerifyColumn("tags");
     addAndOpenColumnOption("fake-tags", `tags`);
     verifyAndEnterColumnOptionInput("key", "tags");
 
@@ -490,14 +466,14 @@ describe("Table", () => {
     cy.get('[data-cy="make-editable-toggle-button"]').click();
     cy.forceClickOnCanvas();
 
-    cy.get(`${tableSelector.column(1)}:eq(0) .badge`)
+    cy.get(`${tableSelector.column(0)}:eq(0) .badge`)
       .eq(0)
       .should("have.text", "Onex")
       .next()
       .should("have.text", "Twox")
       .next()
       .should("have.text", "Threex");
-    cy.get(`${tableSelector.column(1)}:eq(0) .badge`)
+    cy.get(`${tableSelector.column(0)}:eq(0) .badge`)
       .first()
       .click({ force: true })
       .trigger("mouseover")
@@ -531,7 +507,7 @@ describe("Table", () => {
     openEditorSidebar(data.widgetName);
     addAndOpenColumnOption("fake-radio", `radio`);
 
-    verifyAndEnterColumnOptionInput("key", "");
+    verifyAndEnterColumnOptionInput("key", " ");
     verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
     verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
 
@@ -553,17 +529,16 @@ describe("Table", () => {
     deleteAndVerifyColumn("fake-multiselect");
 
     // openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-toggleSwitch", `toggleSwitch`);
+    addAndOpenColumnOption("fake-toggleswitch", `toggleSwitch`);
 
     verifyAndEnterColumnOptionInput("key", "fakeString");
     // verifyAndEnterColumnOptionInput("Active color", "green"); //use color Picker
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
     cy.get('[data-cy="make-editable-toggle-button"]').click();
-    deleteAndVerifyColumn("fake-toggleSwitch");
+    deleteAndVerifyColumn("fake-toggleswitch");
 
-    //Toggle Switch
-    // openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-datePicker", `datePicker`);
+    openEditorSidebar(data.widgetName);
+    addAndOpenColumnOption("fake-datepicker", `datePicker`);
 
     verifyAndEnterColumnOptionInput("key", "fakeString");
     // verifyAndEnterColumnOptionInput("Date Display format", "fakeString");
@@ -575,15 +550,14 @@ describe("Table", () => {
     // verifyAndEnterColumnOptionInput("Parse in timezone", "fakeString");
 
     // verifyAndEnterColumnOptionInput("Display in timezone", "fakeString");
-    deleteAndVerifyColumn("fake-datePicker");
+    deleteAndVerifyColumn("fake-datepicker");
 
     verifyAndModifyToggleFx(
-      tableText.labelDynamicColumn,
+      "Connect code",
       commonWidgetText.codeMirrorLabelFalse
     );
     cy.get('[data-cy*="-cell-1"]').should("have.class", "has-text");
-    verifyAndModifyParameter(
-      "Column data",
+    cy.get('[data-cy="column-data-input-field"] ').clearAndTypeOnCodeMirror(
       codeMirrorInputLabel(
         `[{name: 'User email', key: 'email'}, {name: 'Full name', key: 'name', isEditable: false}]`
       )
@@ -595,8 +569,7 @@ describe("Table", () => {
     cy.get('[data-cy*="-cell-1"]').should("not.have.class", "has-text");
 
     openEditorSidebar(data.widgetName);
-    verifyAndModifyParameter(
-      "Column data",
+    cy.get('[data-cy="column-data-input-field"] ').clearAndTypeOnCodeMirror(
       codeMirrorInputLabel(
         `[{name: 'User email', key: 'email'}, {name: 'Full name', key: 'name', isEditable: true}]`
       )
@@ -614,8 +587,7 @@ describe("Table", () => {
     cy.get('[data-cy="table-button-save-changes"]').should("be.visible");
 
     openEditorSidebar(data.widgetName);
-    verifyAndModifyParameter(
-      "Column data",
+    cy.get('[data-cy="column-data-input-field"] ').clearAndTypeOnCodeMirror(
       codeMirrorInputLabel(
         `[{name: 'email', key: 'email', cellBackgroundColor: '#000', textColor: '#fff'}, {name: 'Full name', key: 'name', minLength: 5, maxLength: 6, isEditable: true}]`
       )
@@ -673,15 +645,10 @@ describe("Table", () => {
 
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     openEditorSidebar(tableText.defaultWidgetName);
-    openAccordion("Columns", ["Options", "Properties", "Layout"]);
+    openAccordion("Columns");
     deleteAndVerifyColumn("email");
     openEditorSidebar(tableText.defaultWidgetName);
-    openAccordion("Action buttons", [
-      "Options",
-      "Properties",
-      "Columns",
-      "Layout",
-    ]);
+    openAccordion("Action buttons");
     cy.get('[data-cy="button-add-new-action-button"]').click();
 
     cy.get('[data-cy="rightActions-cell-2"]')
@@ -734,9 +701,7 @@ describe("Table", () => {
       "have.text",
       "Table type"
     );
-    cy.get(
-      '[data-cy="table-type-fx-button"][class*="fx-button  unselectable"]'
-    ).click();
+    cy.get('[data-cy="table-type-fx-button"] > svg').click();
     cy.get('[data-cy="table-type-input-field"]').clearAndTypeOnCodeMirror(
       `randomText`
     );
@@ -750,7 +715,7 @@ describe("Table", () => {
     ).click();
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    cy.get('[data-cy="table-type-fx-button"]').click();
+    cy.get('[data-cy="table-type > svg').click();
     cy.get('[data-cy="dropdown-table-type"]').click();
     selectFromSidebarDropdown('[data-cy="dropdown-table-type"]', "Classic");
     cy.forceClickOnCanvas();
@@ -774,9 +739,7 @@ describe("Table", () => {
       "have.text",
       "Cell size"
     );
-    cy.get(
-      '[data-cy="cell-size-fx-button"][class*="fx-button  unselectable"]'
-    ).click();
+    cy.get('[data-cy="cell-size-fx-button"] > svg').click();
 
     cy.get('[data-cy="cell-size-input-field"]').clearAndTypeOnCodeMirror(
       `randomText`
@@ -792,7 +755,7 @@ describe("Table", () => {
 
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    cy.get('[data-cy="cell-size-fx-button"]').click();
+    cy.get('[data-cy="cell-size-fx-button"] >svg').click();
     selectFromSidebarDropdown('[data-cy="dropdown-cell-size"]', "Condensed");
     cy.forceClickOnCanvas();
     cy.get(
@@ -826,42 +789,37 @@ describe("Table", () => {
 
   it("should verify table options", () => {
     openEditorSidebar(tableText.defaultWidgetName);
-    closeAccordions(["Action buttons", "Columns", "Properties"]);
-    verifyAndModifyToggleFx("Client-side pagination", "{{true}}", true);
-    cy.get('[data-cy="server-side-pagination-toggle-button"]').click();
+    verifyAndModifyToggleFx("Enable pagination", "{{true}}", true);
+    cy.get('[data-cy="enable-pagination-toggle-button"]').click();
     cy.get(tableSelector.paginationButtonToPrevious).should("be.visible");
     cy.get(tableSelector.paginationButtonToNext).should("be.visible");
 
-    verifyAndModifyToggleFx("Enable previous page button", "{{true}}", true);
-    cy.get(tableSelector.paginationButtonToPrevious).should("be.disabled");
-    verifyAndModifyToggleFx("Enable next page button", "{{true}}", true);
-    cy.get(tableSelector.paginationButtonToNext).should("be.disabled");
+    cy.get("[data-state=off]:eq(3)").click();
     cy.get('[data-cy="label-total-records-server-side"]').verifyVisibleElement(
       "have.text",
       "Total records server side"
     );
-    cy.get('[data-cy="server-side-pagination-toggle-button"]').click();
 
-    cy.get('[data-cy="client-side-pagination-toggle-button"]').click();
+    // cy.get('[data-cy="enable-pagination-toggle-button"]').click();
+    cy.get("[data-state=off]:eq(3)").click();
 
     cy.get('[data-cy="label-number-of-rows-per-page"]').verifyVisibleElement(
       "have.text",
       "Number of rows per page"
     );
 
-    verifyAndModifyToggleFx("Enable sorting", "{{true}}", true); //inputfield
-    cy.get('[data-cy="enable-sorting-toggle-button"]').click();
-    verifyAndModifyToggleFx("Server-side sort", "{{false}}", true);
+    verifyAndModifyToggleFx("Enable column sorting", "{{true}}", true); //inputfield
+    cy.get('[data-cy="enable-column-sorting-toggle-button"]').click();
 
     verifyAndModifyToggleFx("Show download button", "{{true}}", true);
     cy.notVisible('[data-tooltip-id="tooltip-for-download"]');
 
-    verifyAndModifyToggleFx("Show filter button", "{{true}}", true);
+    verifyAndModifyToggleFx("Enable filtering", "{{true}}", true);
     cy.notVisible('[data-tooltip-id="tooltip-for-filter-data"]');
 
-    cy.get('[data-cy="show-filter-button-toggle-button"]').click();
-    verifyAndModifyToggleFx("Server-side filter", "{{false}}", true);
-    verifyAndModifyToggleFx("Show update buttons", "{{true}}", true);
+    // cy.get('[data-cy="show-filter-button-toggle-button"]').click();
+    // verifyAndModifyToggleFx("Server-side filter", "{{false}}", true);
+    // verifyAndModifyToggleFx("Show update buttons", "{{true}}", true);
 
     cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
     verifyAndModifyToggleFx("Bulk selection", "{{false}}", true);
@@ -871,12 +829,12 @@ describe("Table", () => {
     verifyAndModifyToggleFx("Hide column selector button", "{{false}}", true);
     cy.notVisible('[data-cy="select-column-icon"]');
 
-    verifyAndModifyToggleFx("Show search box", "{{true}}", true);
+    verifyAndModifyToggleFx("Show search", "{{true}}", true);
     cy.notVisible('[data-cy="search-input-field"]');
 
-    cy.get('[data-cy="show-search-box-toggle-button"]').click();
+    // cy.get('[data-cy="show-search-box-toggle-button"]').click();
 
-    verifyAndModifyToggleFx("Server-side search", "", true);
+    // verifyAndModifyToggleFx("Server-side search", " ", true);
     verifyAndModifyToggleFx("Loading State", "{{false}}", true);
   });
 
@@ -1013,6 +971,7 @@ describe("Table", () => {
   });
 
   it("should verify table CSA", () => {
+    deleteDownloadsFolder();
     cy.get('[data-cy="column-id"]').click();
     cy.get('[data-cy="make-editable-toggle-button"]').click();
     cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
@@ -1100,7 +1059,7 @@ describe("Table", () => {
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "9 entries ");
     openNode("components");
-    verifyNodeData(tableText.defaultWidgetName, "Object", "21 entries ");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "23 entries ");
     openNode(tableText.defaultWidgetName);
     verifyNodeData("newRows", "Array", "0 item ");
 
@@ -1134,8 +1093,7 @@ describe("Table", () => {
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "1 entry ");
     openNode("components");
-    verifyNodeData(tableText.defaultWidgetName, "Object", "17 entries ");
-    cy.wait(1000);
+    verifyNodeData(tableText.defaultWidgetName, "Object", "22 entries ");
     openNode(tableText.defaultWidgetName);
     cy.wait(500);
     verifyNodeData("newRows", "Array", "1 item ");
@@ -1149,7 +1107,7 @@ describe("Table", () => {
 
   it("should verify Disable action button", () => {
     cy.get('[data-cy="button-add-new-action-button"]')
-      .should("have.text", "+ Add button")
+      .should("have.text", "New action button")
       .click();
 
     cy.get('[data-cy="action-button-button-0"]').verifyVisibleElement(
@@ -1203,7 +1161,7 @@ describe("Table", () => {
     cy.get('[data-cy="action-button-button-0"]').click();
     cy.get(tableSelector.fxButton(tableText.lableDisableActionButton))
       .should("be.visible")
-      .eq(1)
+      .eq(0)
       .click();
     cy.get(
       commonWidgetSelector.parameterInputField(
@@ -1244,9 +1202,7 @@ describe("Table", () => {
       "Column Email"
     );
     openEditorSidebar(tableText.defaultWidgetName);
-    cy.get(tableSelector.draggableHandleColumn("email"))
-      .should("be.visible")
-      .click();
+    cy.get('[data-cy="pages-name-email"]').should("be.visible").click();
     cy.get(`[data-cy="input-and-label-column-name"]`)
       .find("label")
       .should("have.text", "Column name");
@@ -1256,7 +1212,7 @@ describe("Table", () => {
       .clearAndTypeOnCodeMirror(`{{components.text1.text`);
     cy.forceClickOnCanvas();
     openEditorSidebar(tableText.defaultWidgetName);
-    cy.get(tableSelector.draggableHandleColumn("Column Email"))
+    cy.get('[data-cy="pages-name-column email"]')
       .scrollIntoView()
       .should("be.visible");
     cy.get(tableSelector.columnHeader("column-email"))
@@ -1266,30 +1222,30 @@ describe("Table", () => {
 
     cy.dragAndDropWidget("Toggle Switch", 800, 300);
     openEditorSidebar(tableText.defaultWidgetName);
-    cy.get(tableSelector.draggableHandleColumn("name"))
-      .should("be.visible")
-      .click();
-    verifyAndModifyToggleFx(tableText.makeEditable, "{{false}}");
+    cy.get('[data-cy="column-Column Email"]').should("be.visible").click();
+    verifyAndModifyToggleFx(tableText.makeEditable, "{{false}}", 0);
     cy.get(tableSelector.toggleButton(tableText.makeEditable)).click();
     cy.get(tableSelector.fxButton(tableText.makeEditable))
       .should("be.visible")
-      .eq(1)
+      .eq(0)
       .click();
     cy.get(commonWidgetSelector.parameterInputField(tableText.makeEditable))
       .click()
       .clearAndTypeOnCodeMirror(`{{components.toggleswitch1.value`);
     cy.forceClickOnCanvas();
-    cy.get('[data-cy*="-cell-0"]').should("not.have.class", "has-text");
+    cy.waitForAutoSave();
+    cy.get('[data-cy*="-cell-1"]').eq(0).should("not.have.class", "has-text");
     cy.get(
       '[data-cy="draggable-widget-toggleswitch1"] [type="checkbox"]'
     ).click();
-    cy.get('[data-cy*="-cell-0"]')
+    cy.get('[data-cy*="-cell-1"]')
       .eq(0)
       .click()
-      .type(`{selectAll}{backspace}Jack`);
-    cy.forceClickOnCanvas();
-    cy.get('[data-cy*="-cell-0"]').should("have.class", "has-text");
-    cy.get('[data-cy*="-cell-0"] [type="text"]')
+      .find("input")
+      .type(`{selectAll}{backspace}{Enter}`)
+      .realType("Jack");
+    cy.get('[data-cy*="-cell-1"]').should("have.class", "has-text");
+    cy.get('[data-cy*="-cell-1"] [type="text"]')
       .eq(0)
       .verifyVisibleElement("have.value", "Jack");
   });

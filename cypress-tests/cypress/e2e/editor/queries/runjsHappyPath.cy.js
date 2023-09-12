@@ -59,6 +59,7 @@ import {
   searchPage,
 } from "Support/utils/multipage";
 import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
+import { deleteDownloadsFolder } from "Support/utils/common";
 
 describe("RunJS", () => {
   beforeEach(() => {
@@ -90,6 +91,7 @@ describe("RunJS", () => {
 
   it("should verify actions", () => {
     const data = {};
+    deleteDownloadsFolder();
     data.customText = randomString(12);
 
     selectQueryFromLandingPage("runjs", "JavaScript");
