@@ -13,7 +13,7 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
     <>
       <button
         onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
-        className={`add-new-column-btn ghost-black-operation ${isCreateColumnDrawerOpen && 'open'}`}
+        className={`ghost-black-operation ${isCreateColumnDrawerOpen ? 'open' : ''}`}
         data-cy="add-new-column-button"
       >
         <SolidIcon name="column" width="14" fill={isCreateColumnDrawerOpen ? '#3E63DD' : '#889096'} />

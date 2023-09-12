@@ -63,7 +63,7 @@ function BulkUploadDrawer({
     <>
       <button
         onClick={() => setIsBulkUploadDrawerOpen(!isBulkUploadDrawerOpen)}
-        className={`ghost-black-operation ${isBulkUploadDrawerOpen && 'open'}`}
+        className={`ghost-black-operation ${isBulkUploadDrawerOpen ? 'open' : ''}`}
       >
         <SolidIcon name="fileupload" width="14" fill={isBulkUploadDrawerOpen ? '#3E63DD' : '#889096'} />
         <span className=" tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }}>

@@ -15,10 +15,12 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
         onClick={() => {
           setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen);
         }}
-        className="tj-db-header-add-new-row-btn tj-text-xsm font-weight-500"
+        className={`ghost-black-operation ${isCreateRowDrawerOpen ? 'open' : ''}`}
       >
-        <SolidIcon name="row" width="14" />
-        <span data-cy="add-new-row-button-text">Add new row</span>
+        <SolidIcon name="row" width="14" fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'} />
+        <span data-cy="add-new-row-button-text" className="tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }}>
+          Add new row
+        </span>
       </button>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
