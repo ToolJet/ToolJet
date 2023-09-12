@@ -59,7 +59,7 @@ export class TooljetDbBulkUploadService {
         rowsProcessed++;
         if (row.id) {
           if (idstoUpdate.has(row.id))
-            throw new BadRequestException(`Duplicate 'id' value found on line ${rowsProcessed + 1}: ${row.id}`);
+            throw new BadRequestException(`Duplicate 'id' value found on row [${rowsProcessed + 1}]: ${row.id}`);
 
           idstoUpdate.add(row.id);
           rowsToUpdate.push(row);
@@ -147,7 +147,7 @@ export class TooljetDbBulkUploadService {
 
       return transformedRow;
     } catch (error) {
-      throw `Error row[${rowsProcessed + 1}]: ${error.message}`;
+      throw new BadRequestException(`Data type error at row[${rowsProcessed + 1}]: ${error}`);
     } finally {
       rowsProcessed++;
     }
