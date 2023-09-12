@@ -228,7 +228,7 @@ describe("List view widget", () => {
     ).should("have.attr", "data-disabled", "true");
     cy.get("[data-cy='disable-toggle-button']").click();
 
-    cy.get("[data-cy='border-radius-fx-button']:eq(1)").click();
+    cy.get("[data-cy='border-radius-fx-button']:eq(0)").click();
     verifyAndModifyParameter(
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
@@ -240,15 +240,15 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
-      commonWidgetText.boxShadowDefaultValue,
+      "0px 0px 0px 0px #00000040",
       false
     );
 
-    cy.get('[data-cy="border-radius-fx-button"]').click();
+    cy.get('[data-cy="border-radius-fx-button"] > svg').click();
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
 
     fillBoxShadowParams(
@@ -373,7 +373,7 @@ describe("List view widget", () => {
       )
     ).click();
 
-    cy.get("[data-cy='border-radius-fx-button']:eq(1)").click();
+    cy.get("[data-cy='border-radius-fx-button']:eq(0)").click();
     verifyAndModifyParameter(
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
@@ -386,11 +386,11 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
-      commonWidgetText.boxShadowDefaultValue,
+      "0px 0px 0px 0px #00000040",
       false
     );
 

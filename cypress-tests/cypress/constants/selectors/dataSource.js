@@ -25,7 +25,7 @@ export const dataSourceSelector = {
   buttonTestConnection: '[data-cy="test-connection-button"]',
   connectionFailedText: '[data-cy="test-connection-failed-text"]',
   buttonSave: '[data-cy="db-connection-save-button"] > .tj-base-btn',
-  dangerAlertNotSupportSSL: '.go3958317564',
+  dangerAlertNotSupportSSL: ".go3958317564",
 
   passwordTextField: '[data-cy="password-text-field"]',
   textConnectionVerified: '[data-cy="test-connection-verified-text"]',
@@ -69,7 +69,7 @@ export const dataSourceSelector = {
   labelSuccessMessageInput: '[data-cy="label-success-message-input"]',
   notificationDurationInput: '[data-cy="label-notification-duration-input"]',
   addEventHandler: '[data-cy="add-event-handler"]',
-  noEventHandlerMessage: '[data-cy="no-event-handler-message"]',
+  noEventHandlerMessage: '[data-cy="no-items-banner"]',
   postgresqlQueryRunButton: '[data-cy="postgresql1-query-run-button"]',
   psqlQueryLabel: '[data-cy="postgresql1-query-label"]',
   psqlQueryDeleteButton: '[data-cy="postgresql1-query-delete-button"]',
@@ -93,4 +93,3 @@ export const dataSourceSelector = {
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
   connectionAlertText: '[data-cy="connection-alert-text"]',
 };
-

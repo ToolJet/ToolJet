@@ -32,11 +32,12 @@ export const selectDropdownOption = (inputSelector, option) => {
     multipleBadges: 5,
     tags: 6,
     dropdown: 7,
-    radio: 8,
-    multiselect: 9,
-    toggleSwitch: 10,
-    datePicker: 11,
-    image: 12,
+    link: 8,
+    radio: 9,
+    multiselect: 10,
+    toggleSwitch: 11,
+    datePicker: 12,
+    image: 13,
     wrap: 0,
     scroll: 1,
     hide: 2,
@@ -65,13 +66,13 @@ export const verifyAndEnterColumnOptionInput = (label, value) => {
     .find("label")
     .should("have.text", label);
   cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`)
-    .realClick()
-    .realPress(["Meta", "A"])
-    .realType(`{backspace}{backspace}{backspace}{backspace}`)
-    .realPress(["Meta", "A"])
-    .realType(
-      `{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}{backspace}{rightarrow}${value}`
-    );
+    .find(`[data-cy="-input-field"]`)
+    // .click({ force: true })
+    // .realClick()
+    // .realPress(["Meta", "A"])
+    // .realType(`{backspace}{backspace}{backspace}{backspace}`)
+    // .realPress(["Meta", "A"])
+    .clearAndTypeOnCodeMirror(`${value}`);
 };
 
 export const addAndOpenColumnOption = (name, type) => {
@@ -86,7 +87,13 @@ export const addAndOpenColumnOption = (name, type) => {
 };
 
 export const deleteAndVerifyColumn = (columnName) => {
-  cy.get(`[data-cy="button-delete-${columnName}"]`).click();
+  cy.get(`[data-cy="pages-name-${columnName}"]`)
+    .parent()
+    .realHover()
+    .click()
+    .find(".tj-base-btn")
+    .click();
+  cy.get(".list-item-popover-option").click();
   cy.notVisible(`[data-cy="column-${columnName}"]`);
   cy.notVisible(tableSelector.columnHeader(columnName));
 };
@@ -134,9 +141,8 @@ export const verifyAndModifyToggleFx = (
     "have.text",
     paramName
   );
-  cy.get(commonWidgetSelector.parameterFxButton(paramName, ":eq(1)"))
+  cy.get(commonWidgetSelector.parameterFxButton(paramName, "> svg"))
     .scrollIntoView()
-    .should("have.text", "Fx")
     .click();
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))

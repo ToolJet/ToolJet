@@ -33,11 +33,7 @@ export const verifyAndModifyParameter = (paramName, value) => {
 };
 
 export const openEditorSidebar = (widgetName = "") => {
-  cy.get("body").then(($body) => {
-    if ($body.find(".tooltip-inner").length > 0) {
-      cy.get(".tooltip-inner").invoke("css", "display", "none");
-    }
-  });
+  cy.hideTooltip();
 
   cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger(
     "mouseover"
@@ -54,14 +50,7 @@ export const verifyAndModifyToggleFx = (
     "have.text",
     paramName
   );
-  cy.get(
-    commonWidgetSelector.parameterFxButton(
-      paramName,
-      "[class*='fx-button  unselectable']"
-    )
-  )
-    .should("have.text", "Fx")
-    .click();
+  cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))
       .find("pre.CodeMirror-line")
@@ -220,7 +209,8 @@ export const verifyAndModifyStylePickerFx = (
   paramName,
   defaultValue,
   value,
-  index = 0
+  index = 0,
+  boxShadow = ""
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
@@ -234,19 +224,12 @@ export const verifyAndModifyStylePickerFx = (
   cy.get(commonWidgetSelector.stylePickerValue(paramName))
     .should("be.visible")
     .verifyVisibleElement("have.text", defaultValue);
-  cy.get(
-    commonWidgetSelector.parameterFxButton(
-      paramName,
-      "[class*='fx-button  unselectable']"
-    )
-  )
-    .should("have.text", "Fx")
-    .click();
+  cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
 
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".CodeMirror-line")
       .should("be.visible")
-      .and("have.text", defaultValue);
+      .and("have.text", `${boxShadow}${defaultValue}`);
   });
 
   cy.get(
@@ -327,11 +310,13 @@ export const verifyStylesGeneralAccordion = (
 ) => {
   openEditorSidebar(widgetName);
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-  openAccordion(commonWidgetText.accordionGenaral, []);
+  // openAccordion(commonWidgetText.accordionGenaral, []);
   verifyAndModifyStylePickerFx(
     commonWidgetText.parameterBoxShadow,
     commonWidgetText.boxShadowDefaultValue,
-    `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`
+    `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`,
+    0,
+    "0px 0px 0px 0px "
   );
   cy.get(
     commonWidgetSelector.parameterFxButton(commonWidgetText.parameterBoxShadow)

@@ -49,7 +49,7 @@ export const tableSelector = {
   fxButton: (action) => {
     return `[data-cy="${String(action)
       .toLowerCase()
-      .replace(/\s+/g, "-")}-fx-button"]`;
+      .replace(/\s+/g, "-")}-fx-button"] > svg`;
   },
 
   toggleButton: (action) => {

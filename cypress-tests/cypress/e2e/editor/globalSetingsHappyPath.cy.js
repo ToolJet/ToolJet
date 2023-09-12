@@ -43,13 +43,14 @@ describe("Editor- Global Settings", () => {
       "have.text",
       "Maintenance mode"
     );
+    cy.hideTooltip();
     cy.get('[data-cy="label-max-canvas-width"]').verifyVisibleElement(
       "have.text",
       "Max width of canvas"
     );
     cy.get('[data-cy="label-bg-canvas"]').verifyVisibleElement(
       "have.text",
-      "Background color of canvas"
+      "Canvas background"
     );
     // cy.get('[data-cy="canvas-bg-colour-picker"]').click();
     selectColourFromColourPicker(
