@@ -23,8 +23,7 @@ export const JoinTable = React.memo(({ darkMode }) => {
 
 const SelectTableMenu = ({ darkMode }) => {
   const {
-    selectedTable,
-    tables,
+    selectedTableId,
     joinOptions,
     setJoinOptions: setJoins,
     joinTableOptions,
@@ -33,31 +32,24 @@ const SelectTableMenu = ({ darkMode }) => {
   } = useContext(TooljetDatabaseContext);
 
   const joins = clone(joinOptions);
-  const tableList = tables.map((t) => ({ label: t, value: t }));
 
   const handleJoinChange = (newJoin, index) => {
     const updatedJoin = joinOptions.map((join, i) => {
-      if (i === index) {
-        return newJoin;
-      }
+      if (i === index) return newJoin;
       return join;
     });
+
     const cleanedJoin = [];
     const tableSet = new Set();
     (updatedJoin || []).forEach((join, i) => {
-      const { table, conditions } = join;
+      const { _table, conditions } = join;
       let leftTable, rightTable;
       conditions?.conditionsList?.forEach((condition) => {
         const { leftField, rightField } = condition;
-        if (leftField?.table) {
-          // tableSet.add(leftField?.table);
-          leftTable = leftField?.table;
-        }
-        if (rightField?.table) {
-          // tableSet.add(rightField?.table);
-          rightTable = rightField?.table;
-        }
+        if (leftField?.table) leftTable = leftField?.table;
+        if (rightField?.table) rightTable = rightField?.table;
       });
+
       if ((tableSet.has(leftTable) && !tableSet.has(rightTable)) || i === 0) {
         tableSet.add(leftTable);
         tableSet.add(rightTable);
@@ -72,7 +64,7 @@ const SelectTableMenu = ({ darkMode }) => {
     const cleanedJoin = [];
     const tableSet = new Set();
     (updatedJoin || []).forEach((join, i) => {
-      const { table, conditions } = join;
+      const { _table, conditions } = join;
       let leftTable, rightTable;
       conditions?.conditionsList?.forEach((condition) => {
         const { leftField, rightField } = condition;
@@ -93,17 +85,6 @@ const SelectTableMenu = ({ darkMode }) => {
     });
     return cleanedJoin;
   };
-
-  // const handleJoinChange = (newJoin, index) => {
-  //   setJoins(
-  //     joinOptions.map((join, i) => {
-  //       if (i === index) {
-  //         return newJoin;
-  //       }
-  //       return join;
-  //     })
-  //   );
-  // };
 
   return (
     <div>
@@ -130,7 +111,7 @@ const SelectTableMenu = ({ darkMode }) => {
                   ...joins,
                   {
                     id: new Date().getTime(),
-                    conditions: { conditionsList: [{ leftField: { table: selectedTable } }] },
+                    conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] },
                     joinType: 'INNER',
                   },
                 ])
@@ -211,7 +192,7 @@ const SelectTableMenu = ({ darkMode }) => {
 
 // Component to Render Filter Section
 const RenderFilterSection = ({ darkMode }) => {
-  const { tableInfo, joinTableOptions, joinTableOptionsChange, deleteJoinTableOptions, joinOptions } =
+  const { tableInfo, joinTableOptions, joinTableOptionsChange, deleteJoinTableOptions, joinOptions, findTableDetails } =
     useContext(TooljetDatabaseContext);
   const { conditions = {} } = joinTableOptions;
   const { conditionsList = [] } = conditions;
@@ -349,14 +330,20 @@ const RenderFilterSection = ({ darkMode }) => {
   const tables = [...tableSet];
   const tableList = [];
 
-  Object.entries(tableInfo).forEach(([key, value]) => {
-    if (tables.includes(key)) {
-      const tableDetails = {
-        label: key,
-        value: key,
-        options: value.map((columns) => ({ label: columns.Header, value: columns.Header + '-' + key, table: key })),
+  tables.forEach((tableId) => {
+    const tableDetails = findTableDetails(tableId);
+    if (tableDetails?.table_name && tableInfo[tableDetails.table_name]) {
+      const tableDetailsForDropDown = {
+        label: tableDetails.table_name,
+        value: tableId,
+        options:
+          tableInfo[tableDetails.table_name]?.map((columns) => ({
+            label: columns.Header,
+            value: columns.Header + '-' + tableId,
+            table: tableId,
+          })) || [],
       };
-      tableList.push(tableDetails);
+      tableList.push(tableDetailsForDropDown);
     }
   });
 
@@ -416,7 +403,7 @@ const RenderFilterSection = ({ darkMode }) => {
                 }
                 options={nullOperatorOptions}
                 darkMode={darkMode}
-                value={groupOperators.find((op) => op.value === operator)}
+                value={nullOperatorOptions.find((op) => op.value === rightField.value)}
               />
             ) : (
               <CodeHinter

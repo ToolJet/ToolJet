@@ -5,7 +5,8 @@ import DropDownSelect from './DropDownSelect';
 import { cloneDeep } from 'lodash';
 
 export default function JoinSelect({ darkMode }) {
-  const { joinOptions, tableInfo, joinTableOptions, joinTableOptionsChange } = useContext(TooljetDatabaseContext);
+  const { joinOptions, tableInfo, joinTableOptions, joinTableOptionsChange, findTableDetails } =
+    useContext(TooljetDatabaseContext);
   const joinSelectOptions = cloneDeep(joinTableOptions['fields']) || [];
   const setJoinSelectOptions = (fields) => {
     joinTableOptionsChange('fields', fields);
@@ -29,8 +30,15 @@ export default function JoinSelect({ darkMode }) {
   const tables = [...tableSet].filter((table) => !!table);
   const tableOptions = {};
   for (let index = 0; index < tables.length; index++) {
-    const table = tables[index];
-    tableOptions[table] = (tableInfo[table] || []).map((column) => ({ label: column.Header, value: column.Header }));
+    const tableId = tables[index];
+
+    const tableDetails = findTableDetails(tableId);
+    if (tableDetails?.table_name) {
+      tableOptions[tableId] = (tableInfo[tableDetails.table_name] || []).map((column) => ({
+        label: column.Header,
+        value: column.Header,
+      }));
+    }
   }
 
   // When column name are same, alias has been added
@@ -42,13 +50,13 @@ export default function JoinSelect({ darkMode }) {
       if (newSelectFields.filter(({ name }) => name === field.name).length > 1 && !('alias' in field)) {
         return {
           ...field,
-          alias: field.table + '_' + field.name,
+          // alias: field.table + '_' + field.name,
         };
       }
 
       return {
         ...field,
-        ...(!('alias' in field) && { alias: field.table + '_' + field.name }),
+        // ...(!('alias' in field) && { alias: field.table + '_' + field.name }),
       };
     });
     setJoinSelectOptions(newSelectFields);
@@ -59,7 +67,7 @@ export default function JoinSelect({ darkMode }) {
       {tables.map((table) => (
         <Row key={table} className="border rounded mb-2 mx-0">
           <Col sm="3" className="p-0 border-end">
-            <div className="tj-small-btn px-2">{table}</div>
+            <div className="tj-small-btn px-2">{findTableDetails(table)?.table_name ?? ''}</div>
           </Col>
           <Col sm="9" className="p-0 border-end">
             <DropDownSelect

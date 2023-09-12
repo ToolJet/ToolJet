@@ -9,15 +9,24 @@ import { isEmpty } from 'lodash';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export default function JoinSort({ darkMode }) {
-  const { tableInfo, joinOrderByOptions, setJoinOrderByOptions } = useContext(TooljetDatabaseContext);
+  const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, findTableDetailsByName } =
+    useContext(TooljetDatabaseContext);
 
-  const tableList = Object.entries(tableInfo).map(([key, value]) => {
-    const tableDetails = {
-      label: key,
-      value: key,
-      options: value.map((columns) => ({ label: columns.Header, value: columns.Header + '_' + key, table: key })),
-    };
-    return tableDetails;
+  let tableList = [];
+  Object.entries(tableInfo).forEach(([key, value]) => {
+    const tableDetail = findTableDetailsByName(key);
+    if (tableDetail && tableDetail?.table_name) {
+      const tableDetails = {
+        label: tableDetail.table_name,
+        value: tableDetail.table_id,
+        options: value.map((columns) => ({
+          label: columns.Header,
+          value: columns.Header + '_' + tableDetail.table_id,
+          table: tableDetail.table_id,
+        })),
+      };
+      tableList.push(tableDetails);
+    }
   });
 
   const sortbyConstants = [

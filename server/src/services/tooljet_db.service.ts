@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { isString } from 'lodash';
+import { isString, isEmpty } from 'lodash';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Injectable()
@@ -250,58 +250,59 @@ export class TooljetDbService {
     if (!Object.keys(queryJson).length) throw new BadRequestException('Input is empty');
     if (!queryJson?.tables?.length) throw new BadRequestException('Tables are not chosen');
 
-    const tableList = queryJson.tables
+    const tableIdList = queryJson.tables
       .filter((table) => table.type === 'Table')
       .map((filteredTable) => filteredTable.name);
 
-    const internalTables = await this.postgrestProxyService.findOrFailAllInternalTableFromTableNames(
-      tableList,
-      organizationId
-    );
+    const internalTables = await this.findOrFailInternalTableFromTableId(tableIdList, organizationId);
 
-    const internalTableNametoIdMap = tableList.reduce((acc, tableName) => {
+    const internalTableIdToNameMap = tableIdList.reduce((acc, tableId) => {
       return {
         ...acc,
-        [tableName]: internalTables.find((table) => table.tableName === tableName).id,
+        [tableId]: internalTables.find((table) => table.id === tableId).tableName,
       };
     }, {});
 
     // Constructing the Query - Based on Input JSON
     // @description: Only SELECT & FROM statement is Mandatory, else is Optional
     let finalQuery = ``;
-    finalQuery += `SELECT ${await this.constructSelectStatement(queryJson.fields, internalTableNametoIdMap)}`;
-    finalQuery += `\nFROM ${await this.constructFromStatement(queryJson, internalTableNametoIdMap)}`;
+    finalQuery += `SELECT ${await this.constructSelectStatement(queryJson.fields, internalTableIdToNameMap)}`;
+    finalQuery += `\nFROM ${await this.constructFromStatement(queryJson, internalTableIdToNameMap)}`;
     if (queryJson?.joins?.length)
-      finalQuery += `\n${await this.constructJoinStatements(queryJson.joins, internalTableNametoIdMap)}`;
+      finalQuery += `\n${await this.constructJoinStatements(queryJson.joins, internalTableIdToNameMap)}`;
     if (
       queryJson?.conditions &&
       Object.keys(queryJson?.conditions).length &&
       queryJson?.conditions?.conditionsList.length
     )
-      finalQuery += `\nWHERE ${await this.constructWhereStatement(queryJson.conditions, internalTableNametoIdMap)}`;
+      finalQuery += `\nWHERE ${await this.constructWhereStatement(queryJson.conditions, internalTableIdToNameMap)}`;
     if (queryJson?.group_by?.length)
-      finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(queryJson.group_by, internalTableNametoIdMap)}`;
+      finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(queryJson.group_by, internalTableIdToNameMap)}`;
     if (queryJson?.having && Object.keys(queryJson?.having).length)
-      finalQuery += `\nHAVING ${await this.constructWhereStatement(queryJson.having, internalTableNametoIdMap)}`;
+      finalQuery += `\nHAVING ${await this.constructWhereStatement(queryJson.having, internalTableIdToNameMap)}`;
     if (queryJson?.order_by?.length)
-      finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by, internalTableNametoIdMap)}`;
+      finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by, internalTableIdToNameMap)}`;
     if (queryJson?.limit && queryJson?.limit.length) finalQuery += `\nLIMIT ${queryJson.limit}`;
     if (queryJson?.offset && queryJson?.offset.length) finalQuery += `\nOFFSET ${queryJson.offset}`;
 
     return finalQuery;
   }
 
-  private constructSelectStatement(selectStatementInputList, internalTableNametoIdMap) {
+  // Assuming tableId is being passed, tableName to tableId mapping is removed
+  private constructSelectStatement(selectStatementInputList, internalTableIdToNameMap) {
     if (selectStatementInputList.length) {
       const selectQueryFields = selectStatementInputList
         .map((field) => {
           let fieldExpression = ``;
           if (field.function) fieldExpression += `${field.function}(`;
-          fieldExpression += `${field.table ? '"' + internalTableNametoIdMap[field.table] + '"' + '.' : ''}${
-            field.name
-          }`;
+          fieldExpression += `${field.table ? '"' + field.table + '"' + '.' : ''}${field.name}`;
           if (field.function) fieldExpression += `)`;
-          if (field.alias) fieldExpression += ` AS ${field.alias}`;
+          if (field.alias) {
+            fieldExpression += ` AS ${field.alias}`;
+          } else {
+            // By Default Alias has been added here for tooljetdb join flow
+            fieldExpression += ` AS ${internalTableIdToNameMap[field.table]}_${field.name}`;
+          }
           return fieldExpression;
         })
         .join(', ');
@@ -311,34 +312,34 @@ export class TooljetDbService {
     throw new BadRequestException('Select statement is empty');
   }
 
-  private constructFromStatement(queryJson, internalTableNametoIdMap) {
+  private constructFromStatement(queryJson, _internalTableIdToNameMap) {
     const { from } = queryJson;
     if (from.name) {
-      return `${'"' + internalTableNametoIdMap[from.name] + '"'} ${from.alias ? from.alias : ''}`;
+      return `${'"' + from.name + '"'} ${from.alias ? from.alias : ''}`;
     }
 
     throw new BadRequestException('From table is not selected');
   }
 
-  private constructJoinStatements(joinsInputList, internalTableNametoIdMap) {
+  private constructJoinStatements(joinsInputList, internalTableIdToNameMap) {
     const joinStatementOutput = joinsInputList
       .map((joinCondition) => {
         const { table, joinType, conditions } = joinCondition;
-        return `${joinType} JOIN ${'"' + internalTableNametoIdMap[table] + '"'} ${
+        return `${joinType} JOIN ${'"' + table + '"'} ${
           joinCondition.alias ? joinCondition.alias : ''
-        } ON ${this.constructWhereStatement(conditions, internalTableNametoIdMap)}`;
+        } ON ${this.constructWhereStatement(conditions, internalTableIdToNameMap)}`;
       })
       .join('\n');
     return joinStatementOutput;
   }
 
-  private constructWhereStatement(whereStatementConditions, internalTableNametoIdMap) {
+  private constructWhereStatement(whereStatementConditions, internalTableIdToNameMap) {
     const { operator = 'AND', conditionsList = [] } = whereStatementConditions;
     const whereConditionOutput = conditionsList
       .map((condition) => {
         // @description: Recursive call to build - Sub-condition
         if (condition.conditions)
-          return `(${this.constructWhereStatement(condition.conditions, internalTableNametoIdMap)})`;
+          return `(${this.constructWhereStatement(condition.conditions, internalTableIdToNameMap)})`;
         // @description: Building a Condition for 'WHERE & HAVING statements' - LHS, operator and RHS
         // @description: In LHS & RHS it is not mandatory to provide table name, but column name is mandatory
         // @description: In LHS & RHS - We get function only in HAVING statement
@@ -354,9 +355,7 @@ export class TooljetDbService {
           leftSideInput += dontAddQuotes ? leftField.value : this.addQuotesIfString(leftField.value);
         } else {
           if (leftField.function) leftSideInput += `${leftField.function}(`;
-          leftSideInput += `${leftField.table ? '"' + internalTableNametoIdMap[leftField.table] + '"' + '.' : ''}${
-            leftField.columnName
-          }`;
+          leftSideInput += `${leftField.table ? '"' + leftField.table + '"' + '.' : ''}${leftField.columnName}`;
           if (leftField.function) leftSideInput += `)`;
         }
 
@@ -368,9 +367,7 @@ export class TooljetDbService {
           rightSideInput += dontAddQuotes ? rightField.value : this.addQuotesIfString(rightField.value);
         } else {
           if (rightField.function) rightSideInput += `${rightField.function}(`;
-          rightSideInput += `${rightField.table ? '"' + internalTableNametoIdMap[rightField.table] + '"' + '.' : ''}${
-            rightField.columnName
-          }`;
+          rightSideInput += `${rightField.table ? '"' + rightField.table + '"' + '.' : ''}${rightField.columnName}`;
           if (rightField.function) rightSideInput += `)`;
         }
 
@@ -380,21 +377,35 @@ export class TooljetDbService {
     return whereConditionOutput;
   }
 
-  private constructGroupByStatement(groupByInputList, internalTableNametoIdMap) {
+  private constructGroupByStatement(groupByInputList, _internalTableIdToNameMap) {
     return groupByInputList
-      .map((groupByInput) => `${'"' + internalTableNametoIdMap[groupByInput.table] + '"'}.${groupByInput.columnName}`)
+      .map((groupByInput) => `${'"' + groupByInput.table + '"'}.${groupByInput.columnName}`)
       .join(', ');
   }
 
-  private constructOrderByStatement(orderByInputList, internalTableNametoIdMap) {
+  private constructOrderByStatement(orderByInputList, internalTableIdToNameMap) {
     // @description: For "ORDER BY" statement table field is optional. But column_name & order_by direction is mandatory
     return orderByInputList
       .map((orderByInput) => {
         const { columnName, direction } = orderByInput;
-        return `${
-          orderByInput.table ? '"' + internalTableNametoIdMap[orderByInput.table] + '"' + '.' : ''
-        }${columnName} ${direction}`;
+        return `${orderByInput.table ? '"' + orderByInput.table + '"' + '.' : ''}${columnName} ${direction}`;
       })
       .join(`, `);
+  }
+
+  private async findOrFailInternalTableFromTableId(requestedTableIdList: Array<string>, organizationId: string) {
+    const internalTables = await this.manager.find(InternalTable, {
+      where: {
+        organizationId,
+        id: In(requestedTableIdList),
+      },
+    });
+
+    const obtainedTableNames = internalTables.map((t) => t.id);
+    const tableNamesNotInOrg = requestedTableIdList.filter((tableId) => !obtainedTableNames.includes(tableId));
+
+    if (isEmpty(tableNamesNotInOrg)) return internalTables;
+
+    throw new NotFoundException('Some tables are not found');
   }
 }

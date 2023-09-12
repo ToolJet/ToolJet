@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import { Tooltip } from 'react-tooltip';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -16,18 +15,19 @@ import { useNavigate } from 'react-router-dom';
 import useConfirm from './Confirm';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
-  const { selectedTable, tables, joinOptions } = useContext(TooljetDatabaseContext);
+  const { selectedTableId, tables, joinOptions, findTableDetails } = useContext(TooljetDatabaseContext);
   const joinType = data?.joinType;
+  const baseTableDetails = (selectedTableId && findTableDetails(selectedTableId)) || {};
   const conditionsList = isEmpty(data?.conditions?.conditionsList) ? [{}] : data?.conditions?.conditionsList;
   const operator = data?.conditions?.operator;
-  const leftFieldTable = conditionsList?.[0]?.leftField?.table || selectedTable;
+  const leftFieldTable = conditionsList?.[0]?.leftField?.table || selectedTableId;
   const rightFieldTable = conditionsList?.[0]?.rightField?.table;
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
 
   const tableSet = new Set();
   (joinOptions || [])
-    .filter((join, i) => i < index)
+    .filter((_join, i) => i < index)
     .forEach((join) => {
       const { table, conditions } = join;
       tableSet.add(table);
@@ -41,12 +41,21 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         }
       });
     });
-  tableSet.add(selectedTable);
-  const leftTableList = [...tableSet].filter((table) => table !== rightFieldTable).map((t) => ({ label: t, value: t }));
+  tableSet.add(selectedTableId);
+
+  const leftTableList = [...tableSet]
+    .filter((table) => table !== rightFieldTable)
+    .map((t) => {
+      const tableDetails = findTableDetails(t);
+      return { label: tableDetails?.table_name ?? '', value: t };
+    });
 
   const tableList = tables
-    .filter((table) => ![...tableSet, leftFieldTable].includes(table))
-    .map((t) => ({ label: t, value: t }));
+    .filter((table) => ![...tableSet, leftFieldTable].includes(table.table_id))
+    .map((t) => {
+      const tableDetails = findTableDetails(t.table_id);
+      return { label: tableDetails?.table_name ?? '', value: t.table_id };
+    });
 
   return (
     <Container className="p-0">
@@ -119,7 +128,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               value={leftTableList.find((val) => val?.value === leftFieldTable)}
             />
           ) : (
-            <div className="tj-small-btn px-2">{selectedTable}</div>
+            <div className="tj-small-btn px-2">{baseTableDetails?.table_name ?? ''}</div>
           )}
         </Col>
         <Col sm="1" className="p-0 border-end">
@@ -194,7 +203,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             onChange(newData);
           }}
           onRemove={() => {
-            const newConditionsList = conditionsList.filter((cond, i) => i !== index);
+            const newConditionsList = conditionsList.filter((_cond, i) => i !== index);
             const newData = cloneDeep(data);
             set(newData, 'conditions.conditionsList', newConditionsList);
             onChange(newData);
@@ -233,24 +242,34 @@ const JoinOn = ({
   onOperatorChange,
   onRemove,
 }) => {
-  const { tableInfo } = useContext(TooljetDatabaseContext);
+  const { tableInfo, findTableDetails } = useContext(TooljetDatabaseContext);
   const { operator, leftField, rightField } = condition;
   const leftFieldColumn = leftField?.columnName;
   const rightFieldColumn = rightField?.columnName;
 
-  const leftFieldOptions = tableInfo[leftFieldTable]?.map((col) => ({ label: col.Header, value: col.Header })) || [];
-  const selectedLeftField = tableInfo[leftFieldTable]?.find((col) => col.Header === leftFieldColumn);
+  const leftFieldTableDetails = (leftFieldTable && findTableDetails(leftFieldTable)) || {};
+  const rightFieldTableDetails = (rightFieldTable && findTableDetails(rightFieldTable)) || {};
 
-  const rightFieldOptions =
-    tableInfo[rightFieldTable]
-      ?.filter((col) => {
-        if (selectedLeftField?.dataType) {
-          return col.dataType === selectedLeftField.dataType;
-        }
-        return true;
-      })
-      .map((col) => ({ label: col.Header, value: col.Header })) || [];
-  const operators = [{ label: '=', value: '=' }];
+  const leftFieldOptions = leftFieldTableDetails?.table_name
+    ? tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({ label: col.Header, value: col.Header })) ?? []
+    : [];
+  const selectedLeftField = leftFieldTableDetails?.table_name
+    ? tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? []
+    : {};
+
+  const rightFieldOptions = rightFieldTableDetails?.table_name
+    ? tableInfo[rightFieldTableDetails.table_name]
+        ?.filter((col) => {
+          if (selectedLeftField?.dataType) {
+            return col.dataType === selectedLeftField.dataType;
+          }
+          return true;
+        })
+        .map((col) => ({ label: col.Header, value: col.Header })) || []
+    : [];
+
+  const _operators = [{ label: '=', value: '=' }];
+
   const groupOperators = [
     { value: 'AND', label: 'AND' },
     { value: 'OR', label: 'OR' },
