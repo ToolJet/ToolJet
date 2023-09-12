@@ -1357,6 +1357,7 @@ export function Table({
           columns={columnsForAddNewRow}
           addNewRowsDetails={tableDetails.addNewRowsDetails}
           utilityForNestedNewRow={utilityForNestedNewRow}
+          tableEvents={tableEvents}
         />
       )}
     </div>
