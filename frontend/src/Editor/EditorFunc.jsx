@@ -501,7 +501,10 @@ const EditorComponent = (props) => {
   };
 
   //! Needs attention
-  const handleEvent = (eventName, event, options) => onEvent(editorRef, eventName, event, options, 'edit');
+  const handleEvent = (eventName, event, options) => {
+    console.log('--------arpit handleEvent:::', { eventName, event, options });
+    return onEvent(editorRef, eventName, event, options, 'edit');
+  };
 
   const handleRunQuery = (queryId, queryName) => runQuery(editorRef, queryId, queryName);
 
