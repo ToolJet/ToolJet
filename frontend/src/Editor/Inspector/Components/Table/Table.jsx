@@ -893,7 +893,8 @@ class TableComponent extends React.Component {
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
-    this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
+
+    this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
   };
 
   getItemStyle = (isDragging, draggableStyle) => ({
@@ -938,7 +939,7 @@ class TableComponent extends React.Component {
 
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
-
+    console.log('-arpit---newCol Inspector----', { columns, component });
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;

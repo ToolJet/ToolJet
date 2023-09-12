@@ -48,6 +48,57 @@ export const computeAppDiff = (appDiff, currentPageId, opts) => {
   return { updateDiff, type, operation };
 };
 
+// for table column diffs, we need to compute the diff for each column separately and send the the entire column data
+function generatePath(obj, targetKey, currentPath = '') {
+  for (const key in obj) {
+    const newPath = currentPath ? currentPath + '.' + key : key;
+
+    if (key === targetKey) {
+      return newPath;
+    }
+
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      const result = generatePath(obj[key], targetKey, newPath);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return null;
+}
+
+function getValueFromJson(json, path) {
+  let value = json;
+  path.split('.').forEach((key) => {
+    value = value[key];
+  });
+  return value;
+}
+
+function updateValueInJson(json, path, value) {
+  let obj = json;
+  const keys = path.split('.');
+  const lastKey = keys.pop();
+  keys.forEach((key) => {
+    obj = obj[key];
+  });
+  obj[lastKey] = value;
+  return json;
+}
+
+export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
+  if (!opts?.isParamFromTableColumn) {
+    return appDiff;
+  }
+  const path = generatePath(appDiff, 'columns');
+
+  const value2 = getValueFromJson(definition, path);
+
+  const _diff = updateValueInJson(_.cloneDeep(appDiff), path, value2);
+
+  return _diff;
+};
+
 const updateFor = (appDiff, currentPageId, opts) => {
   const updateTypeMappings = [
     {

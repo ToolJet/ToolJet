@@ -8,18 +8,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import _, {
-  defaults,
-  cloneDeep,
-  isEqual,
-  isEmpty,
-  debounce,
-  omit,
-  update,
-  difference,
-  isNull,
-  isUndefined,
-} from 'lodash';
+import _, { cloneDeep, isEqual, isEmpty, debounce, omit, isNull, isUndefined } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -47,7 +36,7 @@ import { WidgetManager } from './WidgetManager';
 import config from 'config';
 import queryString from 'query-string';
 import { toast } from 'react-hot-toast';
-const { produce, enablePatches, setAutoFreeze, applyPatches } = require('immer');
+const { produce, enablePatches, setAutoFreeze } = require('immer');
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
@@ -66,7 +55,7 @@ import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore'
 import { useAppVersionStore, useAppVersionActions } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
-import { computeAppDiff, resetAllStores } from '@/_stores/utils';
+import { computeAppDiff, computeComponentPropertyDiff, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { shallow } from 'zustand/shallow';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
@@ -820,7 +809,9 @@ const EditorComponent = (props) => {
         isUpdatingEditorStateInProcess: false,
       });
     } else if (!isEmpty(props?.editingVersion)) {
-      const updateDiff = computeAppDiff(appDefinitionDiff, currentPageId, appDiffOptions);
+      // param diff ofr table columns needs the complte column data or else the json structure is not correct computeComponentPropertyDiff function handles this
+      const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
+      const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions);
 
       updateAppVersion(appId, props.editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
