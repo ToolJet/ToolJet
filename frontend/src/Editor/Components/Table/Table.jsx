@@ -927,6 +927,7 @@ export function Table({
                 component={component}
                 onEvent={onEvent}
                 darkMode={darkMode}
+                tableEvents={tableEvents}
               />
             )}
             <div>
