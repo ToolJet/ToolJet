@@ -46,6 +46,7 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
+import { useAppInfo } from '@/_stores/appDataStore';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -89,7 +90,7 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
-  events,
+  // events,
   setProperty,
   mode,
   exposedVariables,
@@ -129,6 +130,9 @@ export function Table({
 
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
+  const { events: allAppEvents } = useAppInfo();
+
+  const tableEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -174,13 +178,14 @@ export function Table({
   );
 
   useEffect(() => {
-    const hoverEvent = component?.definition?.events?.find((event) => {
+    const hoverEvent = tableEvents?.find(({ event }) => {
       return event?.eventId == 'onRowHovered';
     });
-    if (hoverEvent?.eventId) {
+
+    if (hoverEvent?.event?.eventId) {
       setHoverAdded(true);
     }
-  }, [JSON.stringify(component.definition.events)]);
+  }, [JSON.stringify(tableEvents)]);
 
   function showFilters() {
     mergeToFilterDetails({ filtersVisible: true });
