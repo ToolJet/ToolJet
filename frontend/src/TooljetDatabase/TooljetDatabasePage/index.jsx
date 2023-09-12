@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useCallback } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import cx from 'classnames';
 import Table from '../Table';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
@@ -39,17 +39,18 @@ const TooljetDatabasePage = ({ totalTables }) => {
   const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
   const [bulkUploadFile, setBulkUploadFile] = useState(null);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
-  const [errors, setErrors] = useState({ file: [] });
+  const [errors, setErrors] = useState({ client: [], server: [] });
   const [uploadResult, setUploadResult] = useState(null);
 
   useEffect(() => {
+    setErrors({ client: [], server: [] });
     handleFileValidation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bulkUploadFile]);
 
   useEffect(() => {
     if (!isBulkUploadDrawerOpen) {
-      setErrors({ file: [] });
+      setErrors({ client: [], server: [] });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBulkUploadDrawerOpen]);
@@ -134,11 +135,12 @@ const TooljetDatabasePage = ({ totalTables }) => {
       fileValidationErrors.push('File size cannot exceed 2mb');
     }
 
-    setErrors({ ...errors, ...{ file: fileValidationErrors } });
+    setErrors({ server: [], client: fileValidationErrors });
   };
 
   const handleBulkUpload = async (event) => {
     event.preventDefault();
+    setErrors({ client: [], server: [] });
     setIsBulkUploading(true);
 
     const formData = new FormData();
@@ -151,9 +153,9 @@ const TooljetDatabasePage = ({ totalTables }) => {
       );
 
       if (error) {
-        toast.error('Upload failed', { position: 'top-center' });
-
+        setErrors({ ...errors, ...{ server: error.message } });
         setIsBulkUploading(false);
+        toast.error('Upload failed!', { position: 'top-center' });
         return;
       }
 
@@ -207,7 +209,6 @@ const TooljetDatabasePage = ({ totalTables }) => {
                             handleBulkUploadFileChange={handleBulkUploadFileChange}
                             handleBulkUpload={handleBulkUpload}
                             isBulkUploading={isBulkUploading}
-                            uploadResult={uploadResult}
                             errors={errors}
                           />
                           <ExportSchema onClick={exportTable} />

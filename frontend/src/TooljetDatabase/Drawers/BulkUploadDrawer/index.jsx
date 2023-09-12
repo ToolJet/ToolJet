@@ -13,7 +13,6 @@ function BulkUploadDrawer({
   handleBulkUploadFileChange,
   handleBulkUpload,
   isBulkUploading,
-  uploadResult,
   errors,
 }) {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
@@ -32,21 +31,28 @@ function BulkUploadDrawer({
 
   const handleTemplateDownload = () => {
     setIsDownloadingTemplate(true);
-    const columnNames = columns.map((col) => col.accessor).join(',');
-    const csvFileName = `${selectedTable.table_name}.csv`;
-    // generateFile(csvFileName, columnNames, 'csv');
 
-    const blob = new Blob([columnNames], { type: 'text/csv' });
-    const href = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = href;
-    link.download = csvFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(href);
+    return setTimeout(() => {
+      // Create a CSV content string with the column names as the header row
+      const headerRow = columns.map((col) => col.Header).join(',');
+      const csvContent = [headerRow].join('\n');
+      // Create a Blob with the CSV content
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      // Create a temporary URL for the Blob
+      const href = URL.createObjectURL(blob);
+      // Create a link element to trigger the download
+      const link = document.createElement('a');
+      link.href = href;
+      link.download = `${selectedTable.table_name}.csv`;
+      // Trigger the download
+      link.click();
 
-    setIsDownloadingTemplate(false);
+      setIsDownloadingTemplate(false);
+
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(href);
+    }, 500);
   };
 
   const handleClick = () => {
@@ -85,10 +91,8 @@ function BulkUploadDrawer({
                       won’t be able to recognise files in any other format.
                     </p>
                     <ButtonSolid
-                      download={`${selectedTable.table_name}.csv`}
                       variant="tertiary"
                       className="download-template-btn"
-                      as={'a'}
                       leftIcon="file01"
                       iconWidth="13"
                       data-cy="button-download-template"
@@ -111,21 +115,20 @@ function BulkUploadDrawer({
             </div>
           </div>
         </div>
-        <div>{JSON.stringify(uploadResult)}</div>
         <div className="position-sticky bottom-0 right-0 w-100  mt-auto">
           <div className="d-flex justify-content-end drawer-footer-btn-wrap">
             <ButtonSolid variant="tertiary" data-cy={`cancel-button`} onClick={() => setIsBulkUploadDrawerOpen(false)}>
               Cancel
             </ButtonSolid>
             <ButtonSolid
-              disabled={!bulkUploadFile || errors.file.length > 0}
+              disabled={!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0}
               data-cy={`save-changes-button`}
               onClick={handleBulkUpload}
               fill="#fff"
               leftIcon="floppydisk"
               loading={isBulkUploading}
             >
-              Upload Data
+              Upload data
             </ButtonSolid>
           </div>
         </div>

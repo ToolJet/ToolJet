@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { toast } from 'react-hot-toast';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileChange, onButtonClick, onDrop }) {
   const [fileData, setFileData] = useState();
@@ -59,10 +60,28 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
           <ul>{acceptedFiles}</ul>
           {fileData?.name && <ul data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
         </div>
-
-        <span className="file-upload-error" data-cy="file-error">
-          {errors['file']}
-        </span>
+        {errors.client.length > 0 && (
+          <>
+            <div>
+              <SolidIcon name="reloaderror" width="16" height="17" />
+              <span className="file-upload-error">Kindly check the file and try again!</span>
+            </div>
+            <div>
+              <span className="file-upload-error">{errors.client}</span>
+            </div>
+          </>
+        )}
+        {errors.server.length > 0 && (
+          <>
+            <div>
+              <SolidIcon name="reloaderror" width="16" height="17" />
+              <span className="file-upload-error">Kindly check the file and try again!</span>
+            </div>
+            <div>
+              <span className="file-upload-error">{errors.server}</span>
+            </div>
+          </>
+        )}
       </div>
     </form>
   );

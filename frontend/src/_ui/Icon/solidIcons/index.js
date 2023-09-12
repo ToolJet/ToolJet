@@ -74,6 +74,7 @@ import Play from './Play.jsx';
 import Plus from './Plus.jsx';
 import Plus01 from './Plus01.jsx';
 import Reload from './Reload.jsx';
+import ReloadError from './ReloadError.jsx';
 import Remove from './Remove.jsx';
 import Remove01 from './Remove01.jsx';
 import RemoveRectangle from './RemoveRectangle.jsx';
@@ -277,6 +278,8 @@ const Icon = (props) => {
       return <PlusRectangle {...props} />;
     case 'reload':
       return <Reload {...props} />;
+    case 'reloaderror':
+      return <ReloadError {...props} />;
     case 'remove':
       return <Remove {...props} />;
     case 'remove01':
