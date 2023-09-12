@@ -70,13 +70,13 @@ class TableComponent extends React.Component {
   onActionButtonPropertyChanged = (index, property, value) => {
     const actions = this.props.component.component.definition.properties.actions;
     actions.value[index][property] = value;
-    this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties', true);
   };
 
   actionButtonEventsChanged = (events, index) => {
     let actions = this.props.component.component.definition.properties.actions.value;
     actions[index]['events'] = events;
-    this.props.paramUpdated({ name: 'actions' }, 'value', actions, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', actions, 'properties', true);
   };
 
   actionButtonEventUpdated = (event, value, extraData) => {
@@ -88,7 +88,7 @@ class TableComponent extends React.Component {
       actionId: value,
     };
 
-    this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties', true);
   };
 
   actionButtonEventOptionUpdated = (event, option, value, extraData) => {
@@ -103,7 +103,7 @@ class TableComponent extends React.Component {
       [option]: value,
     };
 
-    this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties', true);
   };
 
   columnEventChanged = (columnForWhichEventsAreChanged, events) => {
@@ -870,20 +870,20 @@ class TableComponent extends React.Component {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
     newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4() });
-    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
+    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
   addNewAction = () => {
     const actions = this.props.component.component.definition.properties.actions;
     const newValue = actions ? actions.value : [];
     newValue.push({ name: computeActionName(actions), buttonText: 'Button', events: [] });
-    this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties', true);
   };
 
   removeAction = (index) => {
     const newValue = this.props.component.component.definition.properties.actions.value;
     newValue.splice(index, 1);
-    this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties', true);
   };
 
   onColumnItemChange = (index, item, value) => {
@@ -906,7 +906,7 @@ class TableComponent extends React.Component {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
     const removedColumns = newValue.splice(index, 1);
-    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
+    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
 
     const existingcolumnDeletionHistory =
       this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
@@ -914,14 +914,14 @@ class TableComponent extends React.Component {
       ...existingcolumnDeletionHistory,
       ...removedColumns.map((column) => column.key || column.name),
     ];
-    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties');
+    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties', true);
   };
 
   reorderColumns = (startIndex, endIndex) => {
     const result = this.props.component.component.definition.properties.columns.value;
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    this.props.paramUpdated({ name: 'columns' }, 'value', result, 'properties');
+    this.props.paramUpdated({ name: 'columns' }, 'value', result, 'properties', true);
   };
 
   onDragEnd({ source, destination }) {
@@ -939,7 +939,6 @@ class TableComponent extends React.Component {
 
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
-    console.log('-arpit---newCol Inspector----', { columns, component });
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;

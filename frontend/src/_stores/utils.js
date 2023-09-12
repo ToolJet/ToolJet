@@ -77,7 +77,12 @@ function getValueFromJson(json, path) {
 
 function updateValueInJson(json, path, value) {
   let obj = json;
-  const keys = path.split('.');
+  const keys = path?.split('.');
+
+  if (!keys) {
+    return null;
+  }
+
   const lastKey = keys.pop();
   keys.forEach((key) => {
     obj = obj[key];
@@ -90,7 +95,7 @@ export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
   if (!opts?.isParamFromTableColumn) {
     return appDiff;
   }
-  const path = generatePath(appDiff, 'columns');
+  const path = generatePath(appDiff, 'columns') || generatePath(appDiff, 'actions');
 
   const value2 = getValueFromJson(definition, path);
 
