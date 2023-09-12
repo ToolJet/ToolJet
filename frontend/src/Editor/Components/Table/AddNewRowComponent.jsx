@@ -16,6 +16,7 @@ export function AddNewRowComponent({
   columns,
   addNewRowsDetails,
   utilityForNestedNewRow,
+  tableEvents,
 }) {
   const getNewRowObject = () => {
     return allColumns.reduce((accumulator, column) => {
@@ -147,7 +148,7 @@ export function AddNewRowComponent({
         <button
           className="btn btn-primary btn-sm mx-2"
           onClick={() => {
-            onEvent('onNewRowsAdded', { component }).then(() => {
+            onEvent('onNewRowsAdded', tableEvents, { component }).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });
