@@ -49,15 +49,13 @@ export const NumberInput = function NumberInput({
     fireEvent('onChange');
   };
   const handleBlur = (e) => {
-    setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
+    setValue(Number(parseFloat(e.target.value ? e.target.value : 0).toFixed(properties.decimalPlaces)));
   };
 
 
   useEffect(() => {
     if (!isNaN(value)) {
       setExposedVariable('value', value);
-    } else {
-      setExposedVariable('value', 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
