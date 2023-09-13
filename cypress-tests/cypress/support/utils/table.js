@@ -135,7 +135,8 @@ export const verifySingleValueOnTable = (
 export const verifyAndModifyToggleFx = (
   paramName,
   defaultValue,
-  toggleModification = true
+  toggleModification = true,
+  helper = ""
 ) => {
   cy.get(`[data-cy="label-${cyParamName(paramName)}"]`).should(
     "have.text",
@@ -147,7 +148,7 @@ export const verifyAndModifyToggleFx = (
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))
       .find("pre.CodeMirror-line")
-      .should("have.text", defaultValue);
+      .should("have.text", `${helper}${defaultValue}`);
   cy.get(commonWidgetSelector.parameterFxButton(paramName)).click();
   if (toggleModification == true)
     cy.get(commonWidgetSelector.parameterTogglebutton(paramName)).click();
