@@ -142,8 +142,6 @@ const updateFor = (appDiff, currentPageId, opts) => {
     }
   }
 
-  // Handle case when no matching update type is found
-
   return null;
 };
 
@@ -214,6 +212,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
       result[id] = _.defaultsDeep(metaDiff, defaultComponent);
 
       result[id].type = componentMeta.component;
+      result[id].parent = component.component.parent ?? null;
       result[id].layouts = appDiff.pages[currentPageId].components[id].layouts;
       operation = 'create';
 

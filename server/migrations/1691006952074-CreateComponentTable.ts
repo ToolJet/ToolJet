@@ -28,6 +28,11 @@ export class CreateComponentTable1691006952074 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'parent',
+            type: 'uuid',
+            isNullable: true,
+          },
+          {
             name: 'properties',
             type: 'json',
             isNullable: true,

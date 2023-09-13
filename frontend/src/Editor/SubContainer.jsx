@@ -92,17 +92,19 @@ export const SubContainer = ({
     false;
 
   const getChildWidgets = (components) => {
-    let childWidgets = [];
+    let childWidgets = {};
     Object.keys(components).forEach((key) => {
-      if (components[key].parent === parent) {
+      const componentParent = components[key].component.parent;
+      if (componentParent === parent) {
         childWidgets[key] = { ...components[key], component: { ...components[key]['component'], parent } };
       }
     });
+
     return childWidgets;
   };
 
   const [boxes, setBoxes] = useState(allComponents);
-  const [childWidgets, setChildWidgets] = useState(() => getChildWidgets(allComponents));
+  const [childWidgets, setChildWidgets] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
@@ -111,6 +113,7 @@ export const SubContainer = ({
   useEffect(() => {
     setBoxes(allComponents);
     setChildWidgets(() => getChildWidgets(allComponents));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allComponents, parent]);
 
@@ -233,7 +236,19 @@ export const SubContainer = ({
           },
         },
       };
-      appDefinitionChanged(newDefinition);
+
+      const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
+      const newComponents = boxes;
+
+      const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
+
+      const opts = { containerChanges: true };
+
+      if (componendAdded) {
+        opts.componentAdded = true;
+      }
+
+      appDefinitionChanged(newDefinition, opts);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -306,8 +321,10 @@ export const SubContainer = ({
           setBoxes({
             ...boxes,
             [newComponent.id]: {
-              component: newComponent.component,
-              parent: parentRef.current.id,
+              component: {
+                ...newComponent.component,
+                parent: parentRef.current.id,
+              },
               layouts: {
                 ...newComponent.layout,
               },
@@ -518,11 +535,12 @@ export const SubContainer = ({
       {checkParentVisibility() &&
         Object.keys(childWidgets).map((key) => {
           const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
-
           const box = childWidgets[key];
+
           const canShowInCurrentLayout =
             box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-          if (box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+
+          if (box.component.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
             return (
               <DraggableBox
                 onComponentClick={onComponentClick}

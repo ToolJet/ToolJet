@@ -17,6 +17,9 @@ export class Component {
   @Column({ name: 'page_id' })
   pageId: string;
 
+  @Column({ name: 'parent', nullable: true })
+  parent: string;
+
   @Column('simple-json')
   properties: any;
 
