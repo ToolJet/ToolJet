@@ -4,7 +4,7 @@ import Popover from 'react-bootstrap/Popover';
 import Slider from 'rc-slider';
 import { Color } from './Color';
 
-export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
+export const BoxShadow = ({ value, onChange, cyLabel }) => {
   const defaultValue = { X: 0, Y: 0, Blur: 0, Spread: 0, Color: '#00000040' };
   const [showPicker, setShowPicker] = useState(false);
 
@@ -93,7 +93,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
 
   const eventPopover = () => {
     return (
-      <Popover id="popover-basic" style={{ width: '350px', maxWidth: '350px' }}>
+      <Popover className={`${darkMode && 'dark-theme'}`} style={{ width: '350px', maxWidth: '350px' }}>
         <Popover.Body className={`${darkMode && 'dark-theme'}`}>
           <>
             {input.map((item) => (
@@ -128,7 +128,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
               hideFx
               pickerStyle={colorPickerStyle}
               cyLabel={'box-shadow-color'}
-              customStyle={true}
+              asBoxShadowPopover={false}
             />
             <button
               data-cy={'box-shadow-clear-button'}

@@ -346,13 +346,17 @@ export const Box = memo(
                   <div
                     className="widget-svg-container"
                     style={{
-                      width: '24px',
-                      height: '24px',
+                      width: '32px',
+                      height: '32px',
                       backgroundSize: 'contain',
                       backgroundRepeat: 'no-repeat',
                     }}
                   >
-                    <WidgetIcon name={component.name.toLowerCase()} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
+                    <WidgetIcon
+                      name={component.name.toLowerCase()}
+                      width="32"
+                      fill={darkMode ? '#3A3F42' : '#D7DBDF'}
+                    />
                   </div>
                 </center>
               </div>
