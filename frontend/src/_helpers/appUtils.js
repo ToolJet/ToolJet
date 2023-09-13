@@ -354,7 +354,7 @@ function showModal(_ref, modal, show) {
     return Promise.resolve();
   }
 
-  const modalMeta = _ref.appDefinition.pages[_ref.state.currentPageId].components[modalId]; //! NeedToFix
+  const modalMeta = _ref.appDefinition.pages[_ref.currentPageId].components[modalId]; //! NeedToFix
 
   const _components = {
     ...getCurrentState().components,

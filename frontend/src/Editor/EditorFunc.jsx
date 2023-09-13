@@ -1435,6 +1435,7 @@ const EditorComponent = (props) => {
     updateQueryConfirmationList: updateQueryConfirmationList,
     navigate: props.navigate,
     switchPage: switchPage,
+    currentPageId: currentPageId,
   };
 
   if (isLoading) {
