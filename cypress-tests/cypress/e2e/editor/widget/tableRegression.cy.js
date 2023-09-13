@@ -221,7 +221,7 @@ describe("Table", () => {
     openEditorSidebar(data.widgetName);
     cy.get('[data-cy="table-data-input-field"]').clearAndTypeOnCodeMirror(
       codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com" },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com" },{id:4,name:"Oliver",email:"oliver@example.com" },
-      ]`)
+        ]`)
     );
     // cy.get('[data-cy="inspector-close-icon"]').click();
     cy.forceClickOnCanvas();
@@ -326,7 +326,7 @@ describe("Table", () => {
     );
   });
 
-  it.only("should verify column options", () => {
+  it("should verify column options", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
@@ -451,7 +451,7 @@ describe("Table", () => {
     openEditorSidebar(data.widgetName);
     cy.get('[data-cy="table-data-input-field"]').clearAndTypeOnCodeMirror(
       codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com", tags:['One','Two','Three'] },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com", tags:['One','Two','Three'] },{id:4,name:"Oliver",email:"oliver@example.com" },
-      ]`)
+        ]`)
     );
 
     // closeAccordions(["Options"]);
@@ -574,8 +574,10 @@ describe("Table", () => {
       )
     );
     cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get('[data-cy*="-cell-1"]')
       .eq(0)
+      .find("input")
       .click()
       .type(`{selectAll}{backspace}Mike Jon`);
     cy.forceClickOnCanvas();
@@ -675,7 +677,8 @@ describe("Table", () => {
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
       commonWidgetText.boxShadowDefaultValue,
-      false
+      false,
+      "0px 0px 0px 0px "
     );
 
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
@@ -714,7 +717,7 @@ describe("Table", () => {
     ).click();
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    cy.get('[data-cy="table-type > svg').click();
+    cy.get('[data-cy="table-type-fx-button"]>svg').click();
     cy.get('[data-cy="dropdown-table-type"]').click();
     selectFromSidebarDropdown('[data-cy="dropdown-table-type"]', "Classic");
     cy.forceClickOnCanvas();
