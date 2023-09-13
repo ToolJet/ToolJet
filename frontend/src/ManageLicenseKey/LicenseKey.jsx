@@ -36,7 +36,6 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
       .update({ key: license.value })
       .then(() => {
         fetchFeatureAccess();
-        licenseService.getTerms();
         setLoading(false);
         toast.success('License key has been updated', {
           position: 'top-center',
