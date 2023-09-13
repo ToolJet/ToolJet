@@ -8976,10 +8976,10 @@ tbody {
     width: 98%;
   }
 
-  .col {
+  .col-8 {
     padding-left: 0px;
     display: flex;
-    gap: 24px;
+    gap: 12px;
     align-items: center;
   }
 }
@@ -9016,7 +9016,7 @@ tbody {
   justify-content: center !important;
   align-items: center !important;
   padding: 4px 16px !important;
-  width: 171px !important;
+  width: 100% !important;
   height: 28px !important;
   background: var(--grass2) !important;
   border-radius: 6px !important;
@@ -9024,12 +9024,16 @@ tbody {
 
 .tj-db-filter-btn-active,
 .tj-db-sort-btn-active {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 4px 16px !important;
   width: 100% !important;
   height: 28px !important;
-  background: var(--indigo4) !important;
-  border: 1px solid var(--indigo9) !important;
   border-radius: 6px !important;
-  justify-content: center;
+  background: var(--indigo4) !important;
+  //border: 1px solid var(--indigo9) !important;
   color: var(--indigo9) !important;
 }
 
@@ -11500,4 +11504,11 @@ tbody {
     background-color: #F1F3F5;
     color: #C1C8CD;
   }
+}
+
+// ToolJet Database buttons
+
+.ghost-black-operation {
+  border: 1px solid transparent !important;
+  padding: 4px 10px;
 }

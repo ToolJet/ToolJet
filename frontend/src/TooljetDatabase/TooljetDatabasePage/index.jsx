@@ -160,7 +160,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
               <div className="card border-0">
                 <div className="card-body  tj-db-operations-header">
                   <div className="row align-items-center">
-                    <div className="col align-items-center p-3">
+                    <div className="col-8 align-items-center p-3">
                       <CreateColumnDrawer
                         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
                         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
@@ -187,9 +187,9 @@ const TooljetDatabasePage = ({ totalTables }) => {
                         </>
                       )}
                     </div>
-                    <div className="col-3 align-items-end">
+                    <div className="col-4 align-items-end">
                       <div className="row d-flex align-items-center justify-content-end">
-                        <div className="col-4 p-0">
+                        <div className="col-3 p-0">
                           <Filter
                             filters={queryFilters}
                             setFilters={setQueryFilters}

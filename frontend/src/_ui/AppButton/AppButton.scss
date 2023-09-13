@@ -114,7 +114,7 @@
 }
 
 .tj-tertiary-btn {
-    background: transparent;
+    background: var(--slate1);
     border: 1px solid var(--slate7);
     color: var(--slate12);
 
@@ -125,14 +125,14 @@
     }
 
     &:active {
-        background: transparent;
+        background: var(--slate1);
         box-shadow: none;
         border: 1px solid var(--slate12);
         color: var(--slate12);
     }
 
     &:focus-visible {
-        background: transparent;
+        background: var(--slate1);
         color: var(--slate11);
         outline: 1px solid var(--slate8);
         box-shadow: 0px 0px 0px 4px var(--slate6);
@@ -162,6 +162,7 @@
         box-shadow: 0px 0px 0px 4px var(--indigo6);
         outline: none;
     }
+
     &:focus {
         box-shadow: 0px 0px 0px 4px var(--indigo6);
     }

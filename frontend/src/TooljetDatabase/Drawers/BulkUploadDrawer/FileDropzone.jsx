@@ -31,10 +31,12 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
       noValidate
       className="upload-user-form"
       id="onButtonClick"
+      style={{ cursor: "pointer" }}
+      onClick={handleClick}
     >
       <div className="form-group">
         <div>
-          <div className="csv-upload-icon-wrap" onClick={handleClick} data-cy="icon-bulk-upload">
+          <div className="csv-upload-icon-wrap" data-cy="icon-bulk-upload">
             <BulkIcon name="fileupload" width="27" fill="#3E63DD" />
           </div>
           <p className="tj-text tj-text-md font-weight-500 select-csv-text" data-cy="helper-text-select-file">
