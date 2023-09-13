@@ -65,7 +65,6 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const admin = currentUserValue?.admin;
   const super_admin = currentUserValue?.super_admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
-  const { isExpired, isLicenseValid } = licenseService.licenseTermsValue;
   const hasCommonPermissions =
     canReadDataSource() ||
     canUpdateDataSource() ||
@@ -73,7 +72,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
     canDeleteDataSource() ||
     admin ||
     super_admin;
-  const licenseValid = !isExpired && isLicenseValid;
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isAuthorizedForGDS = (hasCommonPermissions && licenseValid) || (!licenseValid && (admin || super_admin));
 
   const {
