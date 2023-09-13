@@ -32,7 +32,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
       className="upload-user-form"
       id="onButtonClick"
     >
-      <div className="form-group mb-3 ">
+      <div className="form-group">
         <div>
           <div className="csv-upload-icon-wrap" onClick={handleClick} data-cy="icon-bulk-upload">
             <BulkIcon name="fileupload" width="27" fill="#3E63DD" />

@@ -16,7 +16,8 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
         className={`ghost-black-operation ${isCreateRowDrawerOpen ? 'open' : ''}`}
       >
         <SolidIcon name="editrectangle" width="14" fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'} />
-        <span data-cy="edit-row-button-text" className="tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }}>
+        &nbsp;&nbsp;
+        <span data-cy="edit-row-button-text" className="tj-text-xsm font-weight-500">
           Edit row
         </span>
       </button>

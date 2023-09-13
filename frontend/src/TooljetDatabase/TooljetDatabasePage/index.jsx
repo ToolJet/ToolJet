@@ -158,7 +158,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
               <div className="card border-0">
                 <div className="card-body  tj-db-operations-header">
                   <div className="row align-items-center">
-                    <div className="col p-3 align-items-start">
+                    <div className="col align-items-center p-3">
                       <CreateColumnDrawer
                         isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
                         setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
@@ -185,28 +185,30 @@ const TooljetDatabasePage = ({ totalTables }) => {
                         </>
                       )}
                     </div>
-                    <div className="col align-items-end">
-                      <div className="col-1 offset-10">
-                        <Filter
-                          filters={queryFilters}
-                          setFilters={setQueryFilters}
-                          handleBuildFilterQuery={handleBuildFilterQuery}
-                          resetFilterQuery={resetFilterQuery}
-                        />
-                      </div>
-                      <div className="col-1">
-                        <Sort
-                          filters={sortFilters}
-                          setFilters={setSortFilters}
-                          handleBuildSortQuery={handleBuildSortQuery}
-                          resetSortQuery={resetSortQuery}
-                        />
+                    <div className="col-3 align-items-end">
+                      <div className="row d-flex align-items-center justify-content-end">
+                        <div className="col-4 p-0">
+                          <Filter
+                            filters={queryFilters}
+                            setFilters={setQueryFilters}
+                            handleBuildFilterQuery={handleBuildFilterQuery}
+                            resetFilterQuery={resetFilterQuery}
+                          />
+                        </div>
+                        <div className="col-3 p-0">
+                          <Sort
+                            filters={sortFilters}
+                            setFilters={setSortFilters}
+                            handleBuildSortQuery={handleBuildSortQuery}
+                            resetSortQuery={resetSortQuery}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </div >
             <div className={cx('col')}>
               <Table
                 openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)}
@@ -215,8 +217,8 @@ const TooljetDatabasePage = ({ totalTables }) => {
             </div>
           </>
         )}
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 
