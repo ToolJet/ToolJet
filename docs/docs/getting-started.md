@@ -73,7 +73,7 @@ In this quickstart guide, we'll cover the fundamentals of ToolJet by building a 
 
 If you don't already have a ToolJet account, head over to **[tooljet.com](https://tooljet.com)** to sign up for free. Existing users can simply log in.
 
-### Create a Database Table
+### Create Database Table
 
 We'll first create a table in ToolJet's built-in **[database](/docs/tooljet-database)**. 
 
@@ -109,14 +109,13 @@ Navigate to the **Database** tab from the left sidebar. Click on the **Create ne
 
 For every column, you can choose from four data types - **varchar** for text, **integer** for numbers,  **float** for decimal or fractional numbers and **boolean** for true or false values. The **Default** field allows you to enter a default value that will be used if no value is received from the frontend.
 
-Add three rows of dummy data by clicking on the **Add New Row** button and entering the required values. We are entering email IDs for the employee column since each employee will have a unique email ID. Later, we'll use the 'employee' field to show only the data created by the user who is currently logged in.
-
+Add three rows of dummy data by clicking on the **Add New Row** button and entering the required values. We are entering email IDs for the employee column. Later, we'll use this **employee column** to display data specific to the logged-in user.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/quickstart-guide/dummy-data.png" alt="Add Dummy Data" />
 </div>
 
-### Create UI for Home page using ToolJet App-Builder
+### Create UI For Home Page Using ToolJet App-Builder
 
 We'll now go ahead and build the Home page of our application using the **ToolJet** **[App-Builder](/docs/app-builder/overview)**. 
 
@@ -217,7 +216,7 @@ To see the preview of the returned data, press on the **Preview** button in the 
 
 ### Adding Queried Data To The Table
 
-We need to use double curly braces `{{}}` to access query results, component-related values and other variables available in the ToolJet app-builder. For example, if you want to access data from queries, you can use the key **queries** inside the curly braces, as all query results are stored under the **queries** object.
+We need to use double curly braces `{{}}` to write custom JavaScript code or access values such as query results, component variables and other variables available in the ToolJet App-Builder.
 
 The general format to access queries is:
 
@@ -246,7 +245,7 @@ We've now replaced the static data with dynamic data that we are fetching from t
 
 Let's make some more changes in the **Table** configuration. Disable all the properties under **Search sort and filter** and **Additional Actions**. We don't need them for our use-case.
 
-### Creating a Form To Submit Data
+### Creating Form To Submit Data
 
 The **Modal** component can be used to create a pop-up form to submit data. 
 
@@ -299,7 +298,7 @@ We'll close the modal by clicking on the `X`/close button on the top-right.
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/quickstart-guide/open-close-modal.gif" alt="Open and Close the Modal Component" />
 </div>
 
-### Creating A Query To Write Data 
+### Creating Query To Write Data 
 
 We are ready with the form. Now we need to create a query that will help us add new entries to the *timeTracker* table in the database. Click on the **+ Add** button in the Query Manager. Select **ToolJet Database** from the list of available sources. 
 
