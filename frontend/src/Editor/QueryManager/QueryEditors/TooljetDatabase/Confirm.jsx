@@ -53,7 +53,12 @@ function useConfirm() {
             </svg>
           </Modal.Header>
           <Modal.Body data-cy={'tjdb-delete-confirmation-modal-message'}>{message}</Modal.Body>
-          <Modal.Footer className="mt-3">
+          <Modal.Footer
+            style={{
+              borderTop: '1px solid #e6e8e9',
+              padding: '0.875rem 1.5rem',
+            }}
+          >
             <button
               className="btn"
               onClick={() => handleConfirm(false)}

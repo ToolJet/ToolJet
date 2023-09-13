@@ -89,7 +89,7 @@ const SelectTableMenu = ({ darkMode }) => {
   return (
     <div>
       {/* Join Section */}
-      <div className="field-container d-flex mb-3">
+      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label">From</label>
         <div className="field flex-grow-1 mt-1">
           {joins.map((join, i) => (
@@ -124,21 +124,21 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Filter Section */}
-      <div className="tdb-join-filtersection field-container d-flex mb-4">
+      <div className="tdb-join-filtersection field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label">Filter</label>
         <div className="field flex-grow-1">
           <RenderFilterSection darkMode={darkMode} />
         </div>
       </div>
       {/* Sort Section */}
-      <div className="field-container d-flex mb-3">
+      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label">Sort</label>
         <div className="field flex-grow-1">
           <JoinSort darkMode={darkMode} />
         </div>
       </div>
       {/* Limit Section */}
-      <div className="field-container d-flex mb-3">
+      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label">Limit</label>
         <div className="field flex-grow-1">
           <CodeHinter
@@ -159,7 +159,7 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Offset Section */}
-      <div className="field-container d-flex mb-3">
+      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label">Offset</label>
         <div className="field flex-grow-1">
           <CodeHinter
@@ -180,7 +180,7 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Select Section */}
-      <div className="field-container d-flex mb-3">
+      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label">Select</label>
         <div className="field flex-grow-1">
           <JoinSelect darkMode={darkMode} />
@@ -455,7 +455,7 @@ const RenderFilterSection = ({ darkMode }) => {
         </Row>
       )}
       {filterComponents}
-      <Row className="mb-2 mx-0">
+      <Row className="mx-0">
         <Col className="p-0">
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewFilterConditionEntry()}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />

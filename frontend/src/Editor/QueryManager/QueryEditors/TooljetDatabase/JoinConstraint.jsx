@@ -60,23 +60,21 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
 
   return (
     <Container className="p-0">
-      <Row className="mx-0">
-        {index === 0 && (
-          <>
-            <Col sm="6" className="text-center px-2">
-              Selected Table
-            </Col>
-            <Col sm="6" className="text-center">
-              Joining Table
-            </Col>
-          </>
-        )}
+      <Row className={`mx-0 ${index === 0 && 'pb-2'}`}>
+        <Col sm="2"></Col>
+        <Col sm="4" className="text-left">
+          Selected Table
+        </Col>
+        <Col sm="1"></Col>
+        <Col sm="4" className="text-left">
+          Joining Table
+        </Col>
         {index !== 0 && (
-          <Col sm="12" className="justify-content-end d-flex pe-0">
+          <Col sm="1" className="justify-content-end d-flex pe-0">
             <ButtonSolid
               variant="ghostBlack"
               size="sm"
-              className="px-0"
+              className="p-0"
               onClick={async () => {
                 const result = await confirm(
                   'Deleting a join will also delete its associated conditions. Are you sure you want to continue ?',

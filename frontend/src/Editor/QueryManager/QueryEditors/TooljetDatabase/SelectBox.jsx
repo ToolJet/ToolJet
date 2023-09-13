@@ -1,18 +1,9 @@
-import React, { useState, useEffect, isValidElement, useCallback } from 'react';
+import React, { isValidElement, useCallback } from 'react';
 import Select, { components } from 'react-select';
-import { groupBy, isEmpty } from 'lodash';
-import { useNavigate } from 'react-router-dom';
-import DataSourceIcon from '../../Components/DataSourceIcon';
+import { isEmpty } from 'lodash';
 import { authenticationService } from '@/_services';
-import { getWorkspaceId } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
-import { staticDataSources } from '../../constants';
-import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
-import { Tooltip } from 'react-tooltip';
-import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
 import { Form } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -29,70 +20,10 @@ function DataSourceSelect({
   selected,
   emptyError,
 }) {
-  const dataSources = useDataSources();
-  const globalDataSources = useGlobalDataSources();
-  const [userDefinedSources, setUserDefinedSources] = useState([...dataSources, ...globalDataSources]);
-  const [dataSourcesKinds, setDataSourcesKinds] = useState([]);
-  const [userDefinedSourcesOpts, setUserDefinedSourcesOpts] = useState([]);
-  const { createDataQuery } = useDataQueriesActions();
-  const { setPreviewData } = useQueryPanelActions();
-  const hasIcons = options.some((option) => option.icon);
   const handleChangeDataSource = (source) => {
     onSelect && onSelect(source);
     closePopup && !isMulti && closePopup();
-    // createDataQuery(source);
-    // setPreviewData(null);
-    // closePopup();
   };
-
-  useEffect(() => {
-    const allDataSources = [...dataSources, ...globalDataSources];
-    setUserDefinedSources(allDataSources);
-    const dataSourceKindsList = [...DataBaseSources, ...ApiSources, ...CloudStorageSources];
-    allDataSources.forEach(({ plugin }) => {
-      //plugin names are fetched from list data source api call only
-      if (isEmpty(plugin)) {
-        return;
-      }
-      dataSourceKindsList.push({ name: plugin.name, kind: plugin.pluginId });
-    });
-    setDataSourcesKinds(dataSourceKindsList);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataSources]);
-
-  useEffect(() => {
-    setUserDefinedSourcesOpts(
-      Object.entries(groupBy(userDefinedSources, 'kind')).map(([kind, sources], index) => ({
-        label: (
-          <div>
-            {index === 0 && (
-              <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
-                Global datasources
-              </div>
-            )}
-            <DataSourceIcon source={sources?.[0]} height={16} />
-            <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
-          </div>
-        ),
-        options: sources.map((source) => ({
-          label: (
-            <div
-              className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
-              data-tooltip-id="tooltip-for-add-query-dd-option"
-              data-tooltip-content={source.name}
-            >
-              {source.name}
-              <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
-            </div>
-          ),
-          value: source.id,
-          isNested: true,
-          source,
-        })),
-      }))
-    );
-  }, [userDefinedSources]);
 
   let optionsCount = options.length;
 
@@ -251,8 +182,10 @@ function DataSourceSelect({
           }),
           group: (style) => ({
             ...style,
-            borderTop: '1px solid var(--slate-05, #E6E8EB)',
-            marginTop: '8px',
+            ':not(:first-child)': {
+              borderTop: '1px solid var(--slate-05, #E6E8EB)',
+              marginTop: '8px',
+            },
             paddingBottom: 0,
             '.dd-select-option': { marginLeft: '19px' },
           }),
@@ -299,20 +232,13 @@ function DataSourceSelect({
 }
 
 const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, emptyError, options, ...props }) => {
-  const navigate = useNavigate();
   const menuListStyles = getStyles('menuList', props);
-
   const { admin } = authenticationService.currentSessionValue;
-  const workspaceId = getWorkspaceId();
-
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
     menuListStyles.maxHeight = 400 - 48;
   }
-
   menuListStyles.padding = '4px';
-
-  const handleAddClick = () => navigate(`/${workspaceId}/global-datasources`);
 
   return (
     <>
@@ -363,7 +289,7 @@ const CustomGroupHeading = (props) => {
       onClick={() => handleHeaderClick(props.id)}
       style={{ cursor: 'pointer' }}
     >
-      <components.GroupHeading {...props} /> <SolidIcon name={hidden ? 'cheveronup' : 'cheverondown'} height={20} />
+      <components.GroupHeading {...props} /> <SolidIcon name={hidden ? 'cheverondown' : 'cheveronup'} height={20} />
     </div>
   );
 };

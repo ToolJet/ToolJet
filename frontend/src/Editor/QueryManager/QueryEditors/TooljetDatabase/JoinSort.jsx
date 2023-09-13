@@ -114,7 +114,7 @@ export default function JoinSort({ darkMode }) {
         ))
       )}
       {/* Dynamically render below Row */}
-      <Row className="mb-2 mx-0">
+      <Row className="mx-0">
         <Col className="p-0">
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => setJoinOrderByOptions([...joinOrderByOptions, {}])}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
