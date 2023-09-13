@@ -1,3 +1,5 @@
+import { cyParamName } from "../../constants/selectors/common";
+
 export const dataSourceSelector = {
   leftSidebarDatasourceButton: "[data-cy='left-sidebar-database-button']",
   labelDataSources: "[data-cy='label-datasources']",
@@ -8,7 +10,7 @@ export const dataSourceSelector = {
   apiLabelAndCount: '[data-cy="apis-datasource-button"]',
   cloudStorageLabelAndCount: '[data-cy="cloudstorage-datasource-button"]',
   pluginsLabelAndCount: '[data-cy="plugins-datasource-button"]',
-  dataSourceSearchInputField: '[data-cy="datasource-search-input"]',
+  dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
   dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
@@ -25,7 +27,7 @@ export const dataSourceSelector = {
   buttonTestConnection: '[data-cy="test-connection-button"]',
   connectionFailedText: '[data-cy="test-connection-failed-text"]',
   buttonSave: '[data-cy="db-connection-save-button"] > .tj-base-btn',
-  dangerAlertNotSupportSSL: ".go3958317564",
+  dangerAlertNotSupportSSL: '.go3958317564',
 
   passwordTextField: '[data-cy="password-text-field"]',
   textConnectionVerified: '[data-cy="test-connection-verified-text"]',
@@ -69,7 +71,7 @@ export const dataSourceSelector = {
   labelSuccessMessageInput: '[data-cy="label-success-message-input"]',
   notificationDurationInput: '[data-cy="label-notification-duration-input"]',
   addEventHandler: '[data-cy="add-event-handler"]',
-  noEventHandlerMessage: '[data-cy="no-items-banner"]',
+  noEventHandlerMessage: '[data-cy="no-event-handler-message"]',
   postgresqlQueryRunButton: '[data-cy="postgresql1-query-run-button"]',
   psqlQueryLabel: '[data-cy="postgresql1-query-label"]',
   psqlQueryDeleteButton: '[data-cy="postgresql1-query-delete-button"]',
@@ -92,4 +94,7 @@ export const dataSourceSelector = {
   unSavedModalTitle: '[data-cy="unsaved-changes-title"]',
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
   connectionAlertText: '[data-cy="connection-alert-text"]',
+  deleteDSButton: (datasourceName) => {
+    return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`
+  },
 };
