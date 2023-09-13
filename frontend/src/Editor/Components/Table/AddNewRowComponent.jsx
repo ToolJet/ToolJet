@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useTable, useBlockLayout } from 'react-table';
 import _ from 'lodash';
 import { Tooltip } from 'react-tooltip';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export function AddNewRowComponent({
   hideAddNewRowPopup,
@@ -49,7 +51,7 @@ export function AddNewRowComponent({
         accumulator[index] = nestedData;
         return accumulator;
       }, {});
-      setExposedVariable('newRows', newRowsState).then(() => {
+      setExposedVariable('newRows', newRowsState)?.then(() => {
         mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
       });
     }
@@ -59,10 +61,10 @@ export function AddNewRowComponent({
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = newRowData;
 
   return (
-    <div className="table-add-new-row card">
+    <div className={`table-add-new-row card ${darkMode && 'dark-theme'}`}>
       <div className="card-header row">
         <div className="col">
-          <h4 data-cy={`header-filters`} className="font-weight-normal">
+          <h4 data-cy={`header-filters`} className="font-weight-500 tj-text-lg">
             Add new rows
           </h4>
         </div>
@@ -75,7 +77,7 @@ export function AddNewRowComponent({
       <div className="table-responsive jet-data-table">
         <table
           {...getTableProps()}
-          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'}`}
+          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'dark-theme'}`}
         >
           <thead>
             {headerGroups.map((headerGroup, index) => {
@@ -84,7 +86,18 @@ export function AddNewRowComponent({
                   {headerGroup.headers.map((column, index) => {
                     return (
                       <th key={index} {...column.getHeaderProps()} className="th">
-                        <div>{column.render('Header')}</div>
+                        <div className="d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper">
+                          <div>
+                            <SolidIcon
+                              name="editable"
+                              width="16px"
+                              height="16px"
+                              fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                              vievBox="0 0 16 16"
+                            />
+                          </div>
+                          <div className="tj-text-xsm header-text">{column.render('Header')}</div>
+                        </div>
                       </th>
                     );
                   })}
@@ -131,7 +144,7 @@ export function AddNewRowComponent({
               accumulator.push(newRowDataUpdates[row]);
               return accumulator;
             }, []);
-            setExposedVariable('newRows', newRowAddedExposedVar).then(() => {
+            setExposedVariable('newRows', newRowAddedExposedVar)?.then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
               setNewRowsState(rowData);
             });
@@ -143,29 +156,35 @@ export function AddNewRowComponent({
         </button>
         <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
       </div>
-      <div className="card-footer">
-        <button
-          className="btn btn-primary btn-sm mx-2"
+      <div className="card-footer d-flex custom-gap-4">
+        <ButtonSolid
+          variant="primary"
+          className={`tj-text-xsm`}
           onClick={() => {
             onEvent('onNewRowsAdded', { component }).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });
           }}
+          size="sm"
+          customStyles={{ padding: '10px 20px' }}
         >
-          Save
-        </button>
-        <button
+          <span>Save</span>
+        </ButtonSolid>
+        <ButtonSolid
+          variant="tertiary"
+          className={`tj-text-xsm`}
           onClick={() => {
-            setExposedVariable('newRows', []).then(() => {
+            setExposedVariable('newRows', [])?.then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });
           }}
-          className="btn btn-light btn-sm"
+          size="sm"
+          customStyles={{ padding: '10px 20px' }}
         >
-          Discard
-        </button>
+          <span>Discard</span>
+        </ButtonSolid>
       </div>
     </div>
   );

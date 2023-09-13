@@ -103,7 +103,7 @@ describe("Data sources", () => {
     );
     cy.get('[data-cy="connection-alert-text"]').should(
       "have.text",
-      "A user name must be specified."
+      "Network error. Could not reach Snowflake."
     );
     deleteDatasource(`cypress-${data.lastName}-snowflake`);
   });
