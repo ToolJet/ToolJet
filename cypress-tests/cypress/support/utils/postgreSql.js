@@ -48,6 +48,7 @@ export const selectAndAddDataSource = (
   dataSourceName
 ) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
+  cy.wait(1000);
   cy.get(`[data-cy="${cyParamName(dscategory)}-datasource-button"]`).click();
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
   cy.get(`[data-cy="data-source-${String(dataSource).toLowerCase()}"]`)

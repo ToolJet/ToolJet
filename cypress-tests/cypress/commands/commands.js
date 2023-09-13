@@ -247,7 +247,7 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
-  cy.get(".text-muted");
+  // cy.get(".text-muted");
   cy.wait(1000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
