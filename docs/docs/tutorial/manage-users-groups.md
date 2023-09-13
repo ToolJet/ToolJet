@@ -172,7 +172,9 @@ This group contains admins by default. Admins can add more admins or remove the 
     
 </div>
 
-### Creating new group
+### Creating new group (Paid plans only)
+
+Option to create a new group is available in the **paid plans** only. To create a new group:
 
 - Click on `Create new group` button in the **Groups** page.
   <div style={{textAlign: 'center'}}>

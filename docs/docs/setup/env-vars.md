@@ -69,7 +69,7 @@ Use this environment variable to enable/disable the feature that allows you to a
 | ---------------------- | ----------------- |
 | COMMENT_FEATURE_ENABLE | `true` or `false` |
 
-### Multiplayer feature enable ( optional )
+### Multiplayer feature enable ( Only on paid plans )
 
 Use this environment variable to enable/disable the feature that allows users to collaboratively work on the canvas.
 
