@@ -73,6 +73,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Checkbox", () => {
+    resizeQueryPanel("0");
     cy.dragAndDropWidget("Checkbox", 200, 200);
     // cy.resizeWidget("checkbox1", 50, 200,false);
     cy.forceClickOnCanvas();
@@ -123,6 +124,7 @@ describe("Basic components", () => {
     deleteComponentAndVerify("radiobutton2");
   });
   it("Should verify Dropdown", () => {
+    resizeQueryPanel("0");
     cy.dragAndDropWidget("Dropdown", 200, 200);
     cy.resizeWidget("dropdown1", 400, 500, false);
     cy.forceClickOnCanvas();

@@ -79,7 +79,7 @@ module.exports = defineConfig({
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
     downloadsFolder: "cypress/downloads",
-    numTestsKeptInMemory: 2,
+    numTestsKeptInMemory: 10,
     redirectionLimit: 5,
     experimentalRunAllSpecs: true,
     trashAssetsBeforeRuns: true,
