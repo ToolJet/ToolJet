@@ -1096,8 +1096,9 @@ describe("Table", () => {
     verifyNodeData("components", "Object", "1 entry ");
     openNode("components");
     verifyNodeData(tableText.defaultWidgetName, "Object", "22 entries ");
-    openNode(tableText.defaultWidgetName);
-    cy.wait(500);
+    cy.wait(1000);
+    openNode(tableText.defaultWidgetName, 0, 1);
+    openNode(tableText.defaultWidgetName, 0, 1);
     verifyNodeData("newRows", "Array", "1 item ");
     openNode("newRows");
     verifyNodeData("0", "Object", "3 entries ");
