@@ -15,6 +15,7 @@ import {
   UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
+import { Express } from 'express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { ActiveWorkspaceGuard } from 'src/modules/auth/active-workspace.guard';
 import { TooljetDbService } from '@services/tooljet_db.service';
