@@ -1,8 +1,20 @@
+import { LicenseBanner } from '@/LicenseBanner';
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 
-const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUser, isUpdatingUser, updateUser }) => {
+const UserEditModal = ({
+  showModal,
+  darkMode,
+  hideModal,
+  translator,
+  updatingUser,
+  isUpdatingUser,
+  updateUser,
+  superadminsCount,
+}) => {
   const [options, setOptions] = React.useState({});
+  const { licenseStatus: { isExpired, isLicenseValid, licenseType } = {}, current, total } = superadminsCount ?? {};
+  const formEnabled = !isExpired && isLicenseValid && licenseType !== 'trial' && current < total;
 
   React.useEffect(() => {
     if (updatingUser) {
@@ -21,7 +33,7 @@ const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUse
     <>
       <Modal
         show={showModal}
-        size="md"
+        size="sm"
         backdrop="static"
         centered={true}
         keyboard={true}
@@ -30,8 +42,7 @@ const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUse
       >
         <Modal.Header>
           <Modal.Title className="text-center" data-cy="modal-title">
-            {translator('header.organization.menus.manageAllUsers.updateUser', 'Update User')}:{' '}
-            {`${updatingUser?.name} (${updatingUser?.email})`}
+            {translator('header.organization.menus.manageAllUsers.updateUser', 'Edit user details')}
           </Modal.Title>
           <div className="close-button cursor-pointer" onClick={hideModal} data-cy="modal-close-button">
             <svg
@@ -55,16 +66,18 @@ const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUse
 
         <Modal.Body>
           <form noValidate>
+            <div className="mb-3">{`${updatingUser?.name} (${updatingUser?.email})`}</div>
             <div className="form-group mb-3">
               <label className="form-check form-switch">
                 <input
+                  disabled={!formEnabled}
                   className="form-check-input"
                   type="checkbox"
                   onChange={(event) => changeOptions('userType', event.target.checked)}
                   checked={options?.userType === 'instance'}
                   data-cy="super-admin-form-check-input"
                 />
-                <span className="form-check-label" data-cy="super-admin-form-check-label">
+                <span className="form-check-label tj-text-xsm" data-cy="super-admin-form-check-label">
                   {translator(
                     'header.organization.menus.manageSSO.generalSettings.superadminSwitch',
                     'Make the user super admin'
@@ -73,14 +86,16 @@ const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUse
               </label>
             </div>
 
-            <div className="form-footer">
+            <LicenseBanner classes="mt-3 mb-3" limits={superadminsCount} type="super admins" size="xsmall" />
+
+            <div className="form-footer d-flex justify-content-end">
               <button type="button" onClick={hideModal} className="btn btn-light mr-2" data-cy="cancel-button">
-                {translator('globals.close', 'Close')}
+                {translator('globals.close', 'Cancel')}
               </button>
               <button
                 type="button"
                 className={`btn mx-2 btn-primary ${isUpdatingUser ? 'btn-loading' : ''}`}
-                disabled={isUpdatingUser}
+                disabled={isUpdatingUser || !formEnabled}
                 onClick={() => updateUser(options)}
                 data-cy="save-button"
               >

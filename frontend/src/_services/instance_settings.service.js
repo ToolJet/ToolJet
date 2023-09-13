@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { licenseService } from './license.service';
 import { appService } from './app.service';
 
 export const instanceSettingsService = {
@@ -17,7 +18,10 @@ async function update(settings) {
   const body = [...settings];
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  const updatedSettings = await fetch(`${config.apiUrl}/instance-settings`, requestOptions).then(handleResponse);
+
+  const updatedSettings = await fetch(`${config.apiUrl}/instance-settings`, requestOptions)
+    .then(handleResponse)
+    .then(licenseService.getTerms);
   //update global instance settings of application
   appService.getConfig().then((config) => {
     window.public_config = config;

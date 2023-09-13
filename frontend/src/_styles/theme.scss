@@ -9540,6 +9540,12 @@ tbody {
   border-right: 1px solid var(--slate5);
   overflow-y: auto;
   overflow-x: hidden;
+
+  .group-banner {
+    svg {
+      display: none;
+    }
+  }
 }
 
 .groups-header-wrap {
@@ -10839,7 +10845,7 @@ tbody {
 }
 
 .tj-user-table-wrapper {
-  height: calc(100vh - 270px); //52+64+40+32+20+62
+  height: calc(100vh - 392px); //52+64+40+32+20+62
   overflow-y: auto;
   background: var(--base);
   border-right: 1px solid var(--slate7);
@@ -12071,5 +12077,11 @@ tbody {
   .released-button {
     background-color: #F1F3F5;
     color: #C1C8CD;
+  }
+}
+
+.license-tooltip {
+  .nav-item {
+    line-height: 0px;
   }
 }

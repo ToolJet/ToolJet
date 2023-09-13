@@ -16,10 +16,11 @@ export function LicenseBanner({
   customMessage = '',
   children,
   isAvailable,
+  style = {},
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const currentUser = authenticationService.currentSessionValue;
-  const { percentage, total, current, licenseStatus } = limits;
+  const { percentage = '', total, current, licenseStatus } = limits ?? {};
   const { isExpired, isLicenseValid, licenseType, expiryDate } = licenseStatus ?? {};
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isWorkspaceAdmin = !currentUser.super_admin && currentUser.admin;
@@ -65,6 +66,9 @@ export function LicenseBanner({
       }
       case isLicenseValid && licenseType === 'enterprise' && daysLeft <= 14 && type === 'enterprise': {
         return `Your license expires in ${daysLeft} days!`;
+      }
+      case (isExpired || !isLicenseValid || licenseType === 'trial') && type === 'super admins': {
+        return `You've reached your limit for number of ${type}.`;
       }
       case !isExpired && percentage >= 100:
         return `You have reached your limit for number of ${type}.`;
@@ -168,7 +172,7 @@ export function LicenseBanner({
   );
 
   return currentUser.admin && message ? (
-    <div className={`license-banner d-flex ${classes}`}>
+    <div style={{ ...style }} className={`license-banner d-flex ${classes}`}>
       {!warningText && currentUser.admin && (
         <SolidIcon {...iconSize} fill={darkMode ? '#3F2200' : '#FFEDD4'} name="enterpriseGradient" />
       )}
@@ -179,12 +183,12 @@ export function LicenseBanner({
           {size === 'small' && (
             <>
               {!replaceText && 'For more, '}
-              <div
+              <span
                 onClick={handleClick}
                 className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
               >
                 {buttonText}
-              </div>
+              </span>
             </>
           )}
           {size === 'xsmall' && (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { groupPermissionService, userService } from '@/_services';
+import { groupPermissionService, licenseService, userService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { withTranslation } from 'react-i18next';
@@ -9,6 +9,8 @@ import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { Loader } from '../ManageSSO/Loader';
+import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseTooltip } from '@/LicenseTooltip';
 class ManageGroupPermissionsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -27,10 +29,12 @@ class ManageGroupPermissionsComponent extends React.Component {
       isSaveBtnDisabled: false,
       selectedGroupPermissionId: null,
       selectedGroup: 'All Users',
+      featureAccess: null,
     };
   }
 
   componentDidMount() {
+    this.fetchFeatureAccess();
     this.fetchGroups();
   }
 
@@ -40,6 +44,14 @@ class ManageGroupPermissionsComponent extends React.Component {
     });
     this.setState({ selectedGroup: currentUpdatedGroup.group });
     return currentUpdatedGroup.id;
+  };
+
+  fetchFeatureAccess = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      this.setState({
+        featureAccess: { ...data },
+      });
+    });
   };
 
   fetchGroups = (type = 'admin') => {
@@ -189,7 +201,14 @@ class ManageGroupPermissionsComponent extends React.Component {
       groups,
       isDeletingGroup,
       showGroupDeletionConfirmation,
+      featureAccess,
     } = this.state;
+
+    const isFeatureEnabled =
+      !featureAccess?.licenseStatus?.isExpired &&
+      featureAccess?.licenseStatus?.isLicenseValid &&
+      featureAccess?.licenseStatus?.licenseType !== 'basic';
+
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
@@ -218,6 +237,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                   isLoading={isLoading}
                   iconWidth="16"
                   fill={'#FDFDFE'}
+                  disabled={!isFeatureEnabled}
                 >
                   {this.props.t(
                     'header.organization.menus.manageGroups.permissions.createNewGroup',
@@ -308,29 +328,62 @@ class ManageGroupPermissionsComponent extends React.Component {
 
             {!showNewGroupForm && !showGroupNameUpdateForm && (
               <div className="org-users-page-card-wrap">
-                <div className="org-users-page-sidebar">
-                  {groups.map((permissionGroup) => {
-                    return (
-                      <FolderList
-                        key={permissionGroup.id}
-                        selectedItem={
-                          this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.group)
-                        }
-                        onClick={() => {
-                          this.setState({
-                            selectedGroupPermissionId: permissionGroup.id,
-                            selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.group),
-                          });
-                        }}
-                        className="groups-folder-list"
-                        dataCy={this.humanizeifDefaultGroupName(permissionGroup.group)
-                          .toLowerCase()
-                          .replace(/\s+/g, '-')}
-                      >
-                        <span>{this.humanizeifDefaultGroupName(permissionGroup.group)}</span>
-                      </FolderList>
-                    );
-                  })}
+                <div style={{ display: 'grid' }} className="org-users-page-sidebar">
+                  <div>
+                    {groups.map((permissionGroup, index) => {
+                      const Wrapper = ({ children }) =>
+                        !permissionGroup?.enabled ? (
+                          <LicenseTooltip
+                            limits={featureAccess}
+                            feature={'multiple groups'}
+                            isAvailable={true}
+                            noTooltipIfValid={true}
+                          >
+                            {children}
+                          </LicenseTooltip>
+                        ) : (
+                          <>{children}</>
+                        );
+                      return (
+                        <Wrapper key={index}>
+                          <FolderList
+                            key={permissionGroup.id}
+                            selectedItem={
+                              this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.group)
+                            }
+                            onClick={() => {
+                              if (
+                                (featureAccess.licenseStatus.isExpired ||
+                                  !featureAccess.licenseStatus.isLicenseValid) &&
+                                !permissionGroup?.enabled
+                              )
+                                return;
+                              this.setState({
+                                selectedGroupPermissionId: permissionGroup.id,
+                                selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.group),
+                              });
+                            }}
+                            className="groups-folder-list"
+                            dataCy={this.humanizeifDefaultGroupName(permissionGroup.group)
+                              .toLowerCase()
+                              .replace(/\s+/g, '-')}
+                          >
+                            <span>{this.humanizeifDefaultGroupName(permissionGroup.group)}</span>
+                          </FolderList>
+                        </Wrapper>
+                      );
+                    })}
+                  </div>
+                  {!isFeatureEnabled && (
+                    <LicenseBanner
+                      style={{ alignSelf: 'flex-end', margin: '0px !important' }}
+                      limits={featureAccess}
+                      classes="group-banner"
+                      size="xsmall"
+                      type={featureAccess?.licenseStatus?.licenseType}
+                      customMessage={'You can only create new groups in our paid plans.'}
+                    />
+                  )}
                 </div>
 
                 <div className="org-users-page-card-body">

@@ -205,7 +205,9 @@ export function generatePayloadForLimits(currentCount: number, totalCount: any, 
         licenseStatus: licenseStatus,
         label: label,
       }
-    : null;
+    : {
+        licenseStatus,
+      };
 }
 export class MigrationProgress {
   private progress = 0;

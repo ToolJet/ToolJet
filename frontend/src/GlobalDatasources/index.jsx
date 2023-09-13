@@ -50,7 +50,7 @@ export const GlobalDatasources = (props) => {
 
   useEffect(() => {
     if (!_.isEmpty(featureAccess)) {
-      if (!canCreateDataSource() && !canReadDataSource() && !canUpdateDataSource() && !canDeleteDataSource()) {
+      if (!(canReadDataSource() || canUpdateDataSource() || canCreateDataSource() || canDeleteDataSource())) {
         toast.error("You don't have access to GDS, contact your workspace admin to add data sources");
         return navigate('/');
       }

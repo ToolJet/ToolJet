@@ -639,10 +639,27 @@ export class UsersService {
 
   async groupPermissions(user: User, manager?: EntityManager): Promise<GroupPermission[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      let groupPermissions: GroupPermission[] = [];
+      const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
       const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
       const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
 
-      return await manager.findByIds(GroupPermission, groupIds);
+      const result = await manager.findByIds(GroupPermission, groupIds);
+      if (!isLicenseValid) {
+        for (const groupPermission of result) {
+          const updatedGroupPermission: GroupPermission = groupPermission;
+          Object.keys(groupPermission).forEach((key) => {
+            if (typeof groupPermission[key] == 'boolean' && !['all_users', 'admin'].includes(groupPermission.group)) {
+              updatedGroupPermission[key] = false;
+            }
+          });
+          groupPermissions.push(updatedGroupPermission);
+        }
+      } else {
+        groupPermissions = result;
+      }
+
+      return groupPermissions;
     }, manager);
   }
 
@@ -655,6 +672,7 @@ export class UsersService {
   async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
     if (!groupIds || groupIds.length === 0) {
       return [];
@@ -670,8 +688,11 @@ export class UsersService {
             organizationId: user.organizationId,
           }
         )
+        .innerJoinAndSelect('app_group_permissions.groupPermission', 'groupPermission')
         .where('app_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
-
+      if (!isLicenseValid) {
+        query.andWhere('groupPermission.group IN (:...groups)', { groups: ['admin', 'all_users'] });
+      }
       if (appId) {
         query.andWhere('app_group_permissions.appId = :appId', { appId });
       }
@@ -686,6 +707,7 @@ export class UsersService {
   ): Promise<DataSourceGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
     if (!groupIds || groupIds.length === 0) {
       return [];
@@ -701,7 +723,11 @@ export class UsersService {
             organizationId: user.organizationId,
           }
         )
+        .innerJoinAndSelect('data_source_group_permissions.groupPermission', 'groupPermission')
         .where('data_source_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
+      if (!isLicenseValid) {
+        query.andWhere('groupPermission.group IN (:...groups)', { groups: ['admin', 'all_users'] });
+      }
       if (dataSourceId) {
         query.andWhere('data_source_group_permissions.dataSourceId = :dataSourceId', { dataSourceId });
       }

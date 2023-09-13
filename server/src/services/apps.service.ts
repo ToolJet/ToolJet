@@ -185,7 +185,13 @@ export class AppsService {
   }
 
   async count(user: User, searchKey, type: string, from?: string): Promise<number> {
-    return await viewableAppsQuery(user, searchKey, [], type).getCount();
+    return await viewableAppsQuery(
+      user,
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      searchKey,
+      [],
+      type
+    ).getCount();
   }
 
   getAppVersionsCount = async (appId: string) => {
@@ -195,7 +201,13 @@ export class AppsService {
   };
 
   async all(user: User, page: number, searchKey: string, type: string): Promise<App[]> {
-    const viewableAppsQb = viewableAppsQuery(user, searchKey, undefined, type);
+    const viewableAppsQb = viewableAppsQuery(
+      user,
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      searchKey,
+      undefined,
+      type
+    );
 
     if (page) {
       return await viewableAppsQb

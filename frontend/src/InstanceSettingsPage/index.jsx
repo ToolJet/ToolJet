@@ -25,7 +25,7 @@ export function InstanceSettings(props) {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const sideBarNavs = ['All users', 'Manage instance settings', 'License'];
-  const protectedNavs = ['All users', 'Manage instance settings'];
+  const protectedNavs = ['Manage instance settings'];
 
   const defaultOrgName = (groupName) => {
     switch (groupName) {
@@ -61,7 +61,8 @@ export function InstanceSettings(props) {
   }, []);
 
   return (
-    load_app === true && (
+    load_app === true &&
+    licenseLoaded && (
       <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
         <div className="wrapper organization-settings-page">
           <div className="row gx-0">
@@ -88,7 +89,10 @@ export function InstanceSettings(props) {
                         <FolderList
                           className="workspace-settings-nav-items"
                           onClick={() => {
-                            if (featureAccess.licenseStatus.isExpired || !featureAccess.licenseStatus.isLicenseValid)
+                            if (
+                              (featureAccess.licenseStatus.isExpired || !featureAccess.licenseStatus.isLicenseValid) &&
+                              proctedNavIndex !== -1
+                            )
                               return;
                             setSelectedTab(defaultOrgName(item));
                             updateSidebarNAV(item);

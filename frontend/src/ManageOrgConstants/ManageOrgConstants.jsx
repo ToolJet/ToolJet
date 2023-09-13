@@ -38,7 +38,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
 
-  const { admin, super_admin, group_permissions } = authenticationService.currentSessionValue;
+  const { group_permissions, super_admin, admin } = authenticationService.currentSessionValue;
 
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);

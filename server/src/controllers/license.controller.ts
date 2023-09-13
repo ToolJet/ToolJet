@@ -30,8 +30,8 @@ export class LicenseController {
     const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.DOMAINS, LICENSE_FIELD.STATUS]);
     return { domains: [...licenseTerms[LICENSE_FIELD.DOMAINS]], licenseStatus: licenseTerms[LICENSE_FIELD.STATUS] };
   }
-
-  @UseGuards(JwtAuthGuard)
+  // TODO should add guards
+  // @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get('terms')
   async terms() {
     const licenseTerms = await this.licenseService.getLicenseTerms();

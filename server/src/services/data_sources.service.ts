@@ -40,7 +40,7 @@ export class DataSourcesService {
     const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
     const groupPermissions = await this.usersService.groupPermissions(user);
     const canPerformCreateOrDelete = groupPermissions?.some((gp) => gp['dataSourceCreate'] || gp['dataSourceDelete']);
-    const isValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
@@ -56,7 +56,7 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile');
 
       if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
-        if (!canPerformCreateOrDelete && isValid) {
+        if (!canPerformCreateOrDelete) {
           query
             .innerJoin('data_source.groupPermissions', 'group_permissions')
             .innerJoin(
@@ -64,17 +64,20 @@ export class DataSourcesService {
               'user_group_permissions',
               'data_source_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
             )
-            .leftJoin('data_source.dataQueries', 'data_queries')
-            .where(
-              new Brackets((qb) => {
-                qb.where('user_group_permissions.user_id = :userId', {
-                  userId: id,
-                }).andWhere('data_source_group_permissions.read = :value', { value: true });
-                if (appVersionId) {
-                  qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
-                }
-              })
-            );
+            .leftJoin('data_source.dataQueries', 'data_queries');
+          if (!isLicenseValid) {
+            query.andWhere('group_permissions.group IN (:...groups)', { groups: ['admin', 'all_users'] });
+          }
+          query.andWhere(
+            new Brackets((qb) => {
+              qb.where('user_group_permissions.user_id = :userId', {
+                userId: id,
+              }).andWhere('data_source_group_permissions.read = :value', { value: true });
+              if (appVersionId) {
+                qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
+              }
+            })
+          );
         }
       }
 
