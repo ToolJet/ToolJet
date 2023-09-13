@@ -211,7 +211,7 @@ export const commonSelectors = {
   editFolderOption: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
-  inspectorPinIcon: '[data-cy="null-option-icon"]',
+  inspectorPinIcon: '.d-flex > [data-cy="left-sidebar-inspector"]',
   groupInputFieldLabel: '[data-cy="label-group-input-field"]',
   pageSectionHeader: '[data-cy="dashboard-section-header"]',
   yesButton: '[data-cy="yes-button"]',

@@ -1,18 +1,15 @@
 Cypress.Commands.add(
   "apiLogin",
-  (userEmail = "dev@tooljet.io", userPassword = "password") => {
-    cy.request(
-      {
-        url: "http://localhost:3000/api/authenticate",
-        method: "POST",
-        body: {
-          email: userEmail,
-          password: userPassword,
-        },
+  (userEmail = "dev@tooljet.io", userPassword = "password", workspaceId = '') => {
+    cy.request({
+      url: `http://localhost:3000/api/authenticate/${workspaceId}`,
+      method: "POST",
+      body: {
+        email: userEmail,
+        password: userPassword,
       },
-      { log: false }
-    )
-      .its("body", { log: false })
+    })
+      .its("body")
       .then((res) => {
         Cypress.env("workspaceId", res.current_organization_id);
         Cypress.log({
@@ -140,3 +137,5 @@ Cypress.Commands.add(
 //     { key: "ssl_certificate", value: "none", encrypted: false },
 //   ]
 // );
+
+
