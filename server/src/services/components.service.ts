@@ -191,6 +191,7 @@ export class ComponentsService {
       transformedComponent.id = componentId;
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.type;
+      transformedComponent.parent = componentData.parent || null;
       transformedComponent.properties = componentData.properties || {};
       transformedComponent.styles = componentData.styles || {};
       transformedComponent.validations = componentData.validation || {};
@@ -202,7 +203,7 @@ export class ComponentsService {
   }
 
   createComponentWithLayout(componentData, layoutData) {
-    const { id, name, properties, styles, validations } = componentData;
+    const { id, name, properties, styles, validations, parent } = componentData;
     const { type, top, left, width, height } = layoutData;
 
     const componentWithLayout = {
@@ -215,6 +216,7 @@ export class ComponentsService {
             styles,
             validations,
           },
+          parent,
         },
         layouts: {
           [type]: {

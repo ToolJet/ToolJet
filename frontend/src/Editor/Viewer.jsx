@@ -80,7 +80,6 @@ class ViewerComponent extends React.Component {
   setStateForApp = (data) => {
     const appDefData = buildAppDefinition(data);
 
-    // console.log('-----mohaan appDefData', { appDefData });
     this.setState({
       app: data,
       isLoading: false,
@@ -90,7 +89,6 @@ class ViewerComponent extends React.Component {
   };
 
   setStateForContainer = async (data, appVersionId) => {
-    console.log('-----mohaan viewer2.0', { data });
     const appDefData = buildAppDefinition(data);
     const currentUser = this.state.currentUser;
     let userVars = {};

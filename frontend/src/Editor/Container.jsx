@@ -47,6 +47,10 @@ export const Container = ({
   sideBarDebugger,
   currentPageId,
 }) => {
+  // Dont update first time to skip
+  // redundant save on app definition load
+  const firstUpdate = useRef(true);
+
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -138,11 +142,6 @@ export const Container = ({
     return () => document.removeEventListener('click', handleClick);
   }, [isContainerFocused, canvasRef]);
 
-  useEffect(() => {
-    setBoxes(components);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(components)]);
-
   //listening to no of component change to handle addition/deletion of widgets
   const noOfBoxs = Object.values(boxes || []).length;
   useEffect(() => {
@@ -163,9 +162,6 @@ export const Container = ({
     [boxes]
   );
 
-  // Dont update first time to skip
-  // redundant save on app definition load
-  const firstUpdate = useRef(true);
   useEffect(() => {
     if (firstUpdate.current) {
       firstUpdate.current = false;
@@ -570,7 +566,8 @@ export const Container = ({
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
         const addDefaultChildren = box.withDefaultChildren;
-        if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+
+        if (!box.component.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
           return (
             <DraggableBox
               className={showComments && 'pointer-events-none'}
