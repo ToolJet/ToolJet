@@ -122,6 +122,11 @@ export const Container = ({
   );
 
   useEffect(() => {
+    setBoxes(components);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(components)]);
+
+  useEffect(() => {
     const handleClick = (e) => {
       if (canvasRef.current.contains(e.target) || document.getElementById('modal-container')?.contains(e.target)) {
         const elem = e.target.closest('.real-canvas').getAttribute('id');

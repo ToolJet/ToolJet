@@ -35,20 +35,23 @@ export const useAppDataStore = create(
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
         updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
-          useAppDataStore.getState().actions.setIsSaving(true);
-          appVersionService
-            .autoSaveApp(
-              appId,
-              versionId,
-              appDefinitionDiff.updateDiff,
-              appDefinitionDiff.type,
-              pageId,
-              appDefinitionDiff.operation,
-              isUserSwitchedVersion
-            )
-            .then(() => {
-              useAppDataStore.getState().actions.setIsSaving(false);
-            });
+          return new Promise((resolve) => {
+            useAppDataStore.getState().actions.setIsSaving(true);
+            appVersionService
+              .autoSaveApp(
+                appId,
+                versionId,
+                appDefinitionDiff.updateDiff,
+                appDefinitionDiff.type,
+                pageId,
+                appDefinitionDiff.operation,
+                isUserSwitchedVersion
+              )
+              .then(() => {
+                useAppDataStore.getState().actions.setIsSaving(false);
+              })
+              .finally(() => resolve());
+          });
         },
         updateAppVersionEventHandlers: async (events, updateType = 'update') => {
           useAppDataStore.getState().actions.setIsSaving(true);

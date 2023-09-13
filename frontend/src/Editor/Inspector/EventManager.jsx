@@ -830,18 +830,9 @@ export const EventManager = ({
         index: index,
       };
     });
-    console.log('----arpit reorder events:: ', { result, events, reorderedEvents });
+
     setEvents(result);
 
-    // updateAppVersionEventHandlers(
-    //   [
-    //     {
-    //       event_id: updatedEvent.id,
-    //       diff: updatedEvent,
-    //     },
-    //   ],
-    //   'update'
-    // );
     updateAppVersionEventHandlers(
       reorderedEvents.map((event) => ({
         event_id: event.id,
