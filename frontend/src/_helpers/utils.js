@@ -1109,3 +1109,7 @@ export const redirectToDashboard = () => {
   const subpath = getSubpath();
   window.location = `${subpath ? `${subpath}` : ''}/${getWorkspaceId()}`;
 };
+
+export const isUnlimited = (value) => {
+  return value === 'UNLIMITED' ? true : false;
+};

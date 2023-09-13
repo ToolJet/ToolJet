@@ -202,8 +202,8 @@ export function generatePayloadForLimits(currentCount: number, totalCount: any, 
         percentage: (currentCount / totalCount) * 100,
         total: totalCount,
         current: currentCount,
-        licenseStatus: licenseStatus,
-        label: label,
+        licenseStatus,
+        label,
         canAddUnlimited: false,
       }
     : {

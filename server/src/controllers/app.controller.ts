@@ -23,7 +23,6 @@ import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
-import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 import { EditorUserCountGuard } from '@ee/licensing/guards/editorUser.guard';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
@@ -161,12 +160,6 @@ export class AppController {
     const { token, password } = appAuthDto;
     await this.authService.resetPassword(token, password);
     return {};
-  }
-
-  @UseGuards(LicenseExpiryGuard)
-  @Get('/validate-license')
-  async validateLicense() {
-    return;
   }
 
   @Get(['/health', '/api/health'])

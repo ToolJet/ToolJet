@@ -1,51 +1,41 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons.jsx';
-import {
-  userService,
-  organizationService,
-  appService,
-  tooljetDatabaseService,
-  authenticationService,
-} from '@/_services';
+import { isUnlimited } from '@/_helpers/utils';
+import { LoadingScreen } from './LoadingScreen';
+import { userService, organizationService, appService, tooljetDatabaseService } from '@/_services';
 
 const Limits = () => {
   const [currentTab, setCurrentTab] = useState('apps');
   const [limitsData, setLimitsData] = useState([]);
-  const [licenseStatus, setLicenseStatus] = useState({});
-  const organizationId = authenticationService?.currentSessionValue?.current_organization_id;
+  const [loading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      let service;
-      if (currentTab === 'apps') {
-        service = await appService.getAppsLimit();
-      } else if (currentTab === 'workspaces') {
-        service = await organizationService.getWorkspacesLimit();
-      } else if (currentTab === 'users') {
-        service = await userService.getUserLimits('all');
-      } else if (currentTab === 'tables') {
-        const res = await tooljetDatabaseService.getTablesLimit();
-        service = res.data;
-      }
+    setIsLoading(true);
+    let service;
+    if (currentTab === 'apps') {
+      service = appService.getAppsLimit();
+    } else if (currentTab === 'workspaces') {
+      service = organizationService.getWorkspacesLimit();
+    } else if (currentTab === 'users') {
+      service = userService.getUserLimits('all');
+    } else if (currentTab === 'tables') {
+      service = tooljetDatabaseService.getTablesLimit();
+    }
 
-      try {
-        const data = await service;
-        setLimitsData(
-          Object.keys(data)
-            .filter((key) => data[key] !== null)
-            .map((limit) => data[limit])
-        );
-        setLicenseStatus({ licenseStatus: data?.licenseStatus });
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+    service.then((data) => {
+      setLimitsData([
+        ...Object.keys(data)
+          .filter((key) => data[key] !== null)
+          .map((limit) => data[limit]),
+      ]);
+      setIsLoading(false);
+    });
+  }, [currentTab]);
 
-    fetchData();
-  }, [currentTab, organizationId]);
-
-  return (
+  return loading ? (
+    <LoadingScreen />
+  ) : (
     <>
       <nav className="nav nav-tabs groups-sub-header-wrap">
         <a onClick={() => setCurrentTab('apps')} className={cx('nav-item nav-link', { active: currentTab === 'apps' })}>
@@ -110,7 +100,7 @@ const Limits = () => {
                       readOnly
                       type="text"
                       className={cx('form-control', { 'error-border': limit?.total === limit?.current })}
-                      value={`${limit?.current}/${limit?.total}`}
+                      value={isUnlimited(limit?.total) ? 'Unlimited' : `${limit?.current}/${limit?.total}`}
                     />
                     {limit?.total === limit?.current && <div className="error-text">Exceeding Limit</div>}
                   </div>

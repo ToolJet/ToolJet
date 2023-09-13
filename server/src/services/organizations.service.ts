@@ -931,9 +931,6 @@ export class OrganizationsService {
 
   async organizationsLimit() {
     const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.WORKSPACES, LICENSE_FIELD.STATUS]);
-    if (licenseTerms[LICENSE_FIELD.WORKSPACES] === LICENSE_LIMIT.UNLIMITED) {
-      return;
-    }
     const currentOrganizationsCount = await this.organizationsCount();
 
     return {

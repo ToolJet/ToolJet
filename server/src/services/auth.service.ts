@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -47,6 +48,8 @@ import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
 import { LicenseService } from './license.service';
+import got from 'got/dist/source';
+import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -400,11 +403,43 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
+      if (userCreateDto.requestedTrial) await this.activateTrial(userCreateDto);
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
     await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
     return result;
+  }
+
+  async activateTrial(userCreateDto: CreateAdminDto) {
+    const { companyName, companySize, name, role, email, phoneNumber } = userCreateDto;
+    /* generate trial license if needed */
+    const hostname = this.configService.get<string>('TOOLJET_HOST');
+    const subpath = this.configService.get<string>('SUB_PATH');
+
+    const metadata = await this.metadataService.getMetaData();
+    const { id: customerId } = metadata;
+    const otherData = { companySize, role, phoneNumber, name };
+
+    const body = {
+      hostname,
+      subpath,
+      customerId,
+      email,
+      companyName,
+      otherData,
+    };
+
+    try {
+      const licenseResponse = await got(LICENSE_TRIAL_API, {
+        method: 'POST',
+        json: body,
+      });
+      const { license_key } = JSON.parse(licenseResponse.body);
+      await this.licenseService.updateLicense({ key: license_key });
+    } catch (error) {
+      throw new HttpException(error?.error || 'Trial could not be activated. Please try again!', error?.status || 500);
+    }
   }
 
   async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {

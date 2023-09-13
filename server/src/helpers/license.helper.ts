@@ -61,3 +61,5 @@ export function decrypt(toDecrypt: string): Terms {
   const decrypted = publicDecrypt(publicKey, buffer);
   return JSON.parse(decrypted.toString('utf8'));
 }
+
+export const LICENSE_TRIAL_API = 'https://nlb.tooljet.com/api/license/trial';
