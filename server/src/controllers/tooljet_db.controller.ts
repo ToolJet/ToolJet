@@ -1,6 +1,7 @@
 import { All, Controller, Req, Res, Next, UseGuards, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { ActiveWorkspaceGuard } from 'src/modules/auth/active-workspace.guard';
+import { TableCountGuard } from '@ee/licensing/guards/table.guard';
 import { TooljetDbService } from '@services/tooljet_db.service';
 import { decamelizeKeys } from 'humps';
 import { PostgrestProxyService } from '@services/postgrest_proxy.service';
@@ -33,6 +34,14 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
+  @Get('/tables/limits')
+  @UseGuards(TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTables, 'all'))
+  async getTablesLimit(@Param('organizationId') organizationId) {
+    const data = await this.tooljetDbService.getTablesLimit();
+    return data;
+  }
+
   @Get('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTable, 'all'))
@@ -42,7 +51,7 @@ export class TooljetDbController {
   }
 
   @Post('/organizations/:organizationId/table')
-  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard, TableCountGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.CreateTable, 'all'))
   async createTable(@Body() createTableDto: CreatePostgrestTableDto, @Param('organizationId') organizationId) {
     const result = await this.tooljetDbService.perform(organizationId, 'create_table', createTableDto);

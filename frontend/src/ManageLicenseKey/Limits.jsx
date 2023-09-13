@@ -1,32 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons.jsx';
-import { userService, organizationService, appService } from '@/_services';
+import {
+  userService,
+  organizationService,
+  appService,
+  tooljetDatabaseService,
+  authenticationService,
+} from '@/_services';
 
 const Limits = () => {
   const [currentTab, setCurrentTab] = useState('apps');
   const [limitsData, setLimitsData] = useState([]);
   const [licenseStatus, setLicenseStatus] = useState({});
+  const organizationId = authenticationService?.currentSessionValue?.current_organization_id;
 
   useEffect(() => {
-    let service;
-    if (currentTab === 'apps') {
-      service = appService.getAppsLimit();
-    } else if (currentTab === 'workspaces') {
-      service = organizationService.getWorkspacesLimit();
-    } else if (currentTab === 'users') {
-      service = userService.getUserLimits('all');
-    }
+    const fetchData = async () => {
+      let service;
+      if (currentTab === 'apps') {
+        service = await appService.getAppsLimit();
+      } else if (currentTab === 'workspaces') {
+        service = await organizationService.getWorkspacesLimit();
+      } else if (currentTab === 'users') {
+        service = await userService.getUserLimits('all');
+      } else if (currentTab === 'tables') {
+        const res = await tooljetDatabaseService.getTablesLimit();
+        service = res.data;
+      }
 
-    service.then((data) => {
-      setLimitsData([
-        ...Object.keys(data)
-          .filter((key) => data[key] !== null)
-          .map((limit) => data[limit]),
-      ]);
-      setLicenseStatus({ licenseStatus: data?.licenseStatus });
-    });
-  }, [currentTab]);
+      try {
+        const data = await service;
+        setLimitsData(
+          Object.keys(data)
+            .filter((key) => data[key] !== null)
+            .map((limit) => data[limit])
+        );
+        setLicenseStatus({ licenseStatus: data?.licenseStatus });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [currentTab, organizationId]);
 
   return (
     <>
@@ -66,6 +83,19 @@ const Limits = () => {
             width="16"
           ></SolidIcon>
           Users
+        </a>
+        <a
+          onClick={() => setCurrentTab('tables')}
+          className={cx('nav-item nav-link', { active: currentTab === 'tables' })}
+          data-cy="tables-link"
+        >
+          <SolidIcon
+            className="manage-group-tab-icons"
+            fill={currentTab === 'tables' ? '#3E63DD' : '#C1C8CD'}
+            name="tablegroup"
+            width="16"
+          ></SolidIcon>
+          Tables
         </a>
       </nav>
       <div className="metrics-wrapper">

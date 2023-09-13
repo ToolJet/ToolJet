@@ -11,6 +11,11 @@ function findAll(organizationId) {
   return tooljetAdapter.get(`/tooljet_db/organizations/${organizationId}/tables`);
 }
 
+async function getTablesLimit() {
+  const res = await tooljetAdapter.get(`/tooljet_db/tables/limits`);
+  return res;
+}
+
 function createTable(organizationId, tableName, columns) {
   return tooljetAdapter.post(`/tooljet_db/organizations/${organizationId}/table`, {
     table_name: tableName,
@@ -81,4 +86,5 @@ export const tooljetDatabaseService = {
   deleteColumn,
   deleteTable,
   renameTable,
+  getTablesLimit,
 };

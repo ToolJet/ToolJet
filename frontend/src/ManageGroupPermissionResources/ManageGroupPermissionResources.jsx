@@ -599,6 +599,19 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       'Permissions'
                     )}
                   </a>
+                  <a
+                    onClick={() => this.setState({ currentTab: 'Tables' })}
+                    className={cx('nav-item nav-link', { active: currentTab === 'Tables' })}
+                    data-cy="tables-link"
+                  >
+                    <SolidIcon
+                      name="tablegroup"
+                      fill={currentTab === 'Tables' ? '#3E63DD' : '#C1C8CD'}
+                      className="manage-group-tab-icons"
+                      width="16"
+                    ></SolidIcon>
+                    {this.props.t('header.organization.menus.manageGroups.permissionResources.tables', 'tables')}
+                  </a>
                 </LicenseTooltip>
                 {groupPermission?.group !== 'admin' && (
                   <LicenseTooltip

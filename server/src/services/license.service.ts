@@ -32,6 +32,9 @@ export class LicenseService {
       case LICENSE_FIELD.APP_COUNT:
         return License.Instance().apps;
 
+      case LICENSE_FIELD.TABLE_COUNT:
+        return License.Instance().tables;
+
       case LICENSE_FIELD.TOTAL_USERS:
         return License.Instance().users;
 

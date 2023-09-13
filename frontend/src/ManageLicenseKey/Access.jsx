@@ -4,7 +4,7 @@ import SolidIcon from '../_ui/Icon/SolidIcons';
 
 const FeatureLabels = {
   auditLogs: 'Audit Logs',
-  openid: 'Open ID',
+  openid: 'Open ID Connect',
   ldap: 'LDAP',
   customStyling: 'Custom styles',
   multiEnvironment: 'Multi-Environment',

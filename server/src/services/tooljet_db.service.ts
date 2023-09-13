@@ -3,14 +3,17 @@ import { EntityManager } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString } from 'lodash';
-
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { generatePayloadForLimits } from 'src/helpers/utils.helper';
 @Injectable()
 export class TooljetDbService {
   constructor(
     private readonly manager: EntityManager,
     @Optional()
     @InjectEntityManager('tooljetDb')
-    private tooljetDbManager: EntityManager
+    private tooljetDbManager: EntityManager,
+    private licenseService: LicenseService
   ) {}
 
   async perform(organizationId: string, action: string, params = {}) {
@@ -231,5 +234,21 @@ export class TooljetDbService {
     const result = await this.tooljetDbManager.query(query);
     await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
     return result;
+  }
+
+  async getTablesLimit() {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS]);
+    if (licenseTerms[LICENSE_FIELD.TABLE_COUNT] === LICENSE_LIMIT.UNLIMITED) {
+      return;
+    }
+    const currentTablesCount = await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount();
+    return {
+      tablesCount: generatePayloadForLimits(
+        currentTablesCount,
+        licenseTerms[LICENSE_FIELD.TABLE_COUNT],
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.TABLES
+      ),
+    };
   }
 }

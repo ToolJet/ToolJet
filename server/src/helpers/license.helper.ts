@@ -6,6 +6,7 @@ import { resolve } from 'path';
 export enum LICENSE_FIELD {
   IS_EXPIRED = 'expired',
   APP_COUNT = 'appCount',
+  TABLE_COUNT = 'tableCount',
   TOTAL_USERS = 'usersCount',
   EDITORS = 'editorsCount',
   VIEWERS = 'viewersCount',
@@ -38,6 +39,9 @@ export enum LICENSE_LIMITS_LABEL {
 
   //Workspaces
   WORKSPACES = 'Workspaces',
+
+  //Tables
+  TABLES = 'tables',
 }
 
 export enum LICENSE_TYPE {

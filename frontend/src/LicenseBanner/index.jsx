@@ -67,17 +67,19 @@ export function LicenseBanner({
       case isLicenseValid && licenseType === 'enterprise' && daysLeft <= 14 && type === 'enterprise': {
         return `Your license expires in ${daysLeft} days!`;
       }
+      case type == 'tables' && (100 > percentage >= 90 || (total <= 10 && current === total - 1)):
+        return `You're reaching your limit for number of ${type} - ${current}/${total}.`;
+      case type == 'tables' && percentage >= 100:
+        return `You've reached your limit for number of ${type} - ${current}/${total}.`;
       case (isExpired || !isLicenseValid || licenseType === 'trial') && type === 'super admins': {
         return `You've reached your limit for number of ${type}.`;
       }
       case !isExpired && percentage >= 100:
         return `You have reached your limit for number of ${type}.`;
-
       case !isExpired && (percentage >= 90 || (total <= 10 && current === total - 1)):
         return `You're reaching your limit for number of ${type} - ${current}/${total}.`;
       case (!isLicenseValid || isExpired) && features.includes(type) && !isAvailable:
         return `You cannot access ${type}.`;
-
       default:
         return '';
     }
@@ -181,15 +183,21 @@ export function LicenseBanner({
           {warningText && <div className={warningText?.className}>{warningText?.text}</div>}
           {message}{' '}
           {size === 'small' && (
-            <>
-              {!replaceText && 'For more, '}
-              <span
-                onClick={handleClick}
-                className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
-              >
-                {buttonText}
-              </span>
-            </>
+            <div className={`cursor-pointer ${className}`}>
+              {!replaceText ? (
+                <>
+                  {!replaceText && 'For more, '}
+                  <span
+                    onClick={handleClick}
+                    className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
+                  >
+                    {buttonText}
+                  </span>
+                </>
+              ) : (
+                <span onClick={handleClick}>{buttonText}</span>
+              )}
+            </div>
           )}
           {size === 'xsmall' && (
             <span

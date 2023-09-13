@@ -5,6 +5,7 @@ import { BASIC_PLAN_TERMS } from './PlanTerms';
 export default class License {
   private static _instance: License;
   private _appsCount: number | string;
+  private _tablesCount: number | string;
   private _usersCount: number | string;
   private _isAuditLogs: boolean;
   private _isOidc: boolean;
@@ -40,6 +41,7 @@ export default class License {
 
         this._appsCount = licenseData?.apps;
         this._usersCount = licenseData?.users?.total;
+        this._tablesCount = licenseData?.database?.table;
         this._editorUsersCount = licenseData?.users?.editor;
         this._viewerUsersCount = licenseData?.users?.viewer;
         this._superadminUsersCount = licenseData?.users?.superadmin;
@@ -87,6 +89,13 @@ export default class License {
       return BASIC_PLAN_TERMS.apps || this._appsCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._appsCount || LICENSE_LIMIT.UNLIMITED;
+  }
+
+  public get tables(): number | string {
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.database?.table || this._tablesCount || LICENSE_LIMIT.UNLIMITED;
+    }
+    return this._tablesCount || LICENSE_LIMIT.UNLIMITED;
   }
 
   public get users(): number | string {
@@ -195,6 +204,7 @@ export default class License {
   public get terms(): object {
     return {
       appsCount: this.apps,
+      tablesCount: this.tables,
       usersCount: this.users,
       auditLogsEnabled: this.auditLogs,
       oidcEnabled: this.oidc,
