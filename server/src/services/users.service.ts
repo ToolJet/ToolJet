@@ -848,12 +848,7 @@ export class UsersService {
       superadmin = -1;
     const {
       allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
-      expired: isExpired,
-    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER, LICENSE_FIELD.IS_EXPIRED]);
-
-    if (isExpired) {
-      return;
-    }
+    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER]);
 
     if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (superadmin === -1) {

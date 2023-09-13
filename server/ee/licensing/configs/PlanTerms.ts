@@ -18,6 +18,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     oidc: false,
     customStyling: false,
     ldap: false,
+    multiEnvironment: false,
   },
   domains: [],
 };

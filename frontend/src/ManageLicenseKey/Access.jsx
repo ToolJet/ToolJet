@@ -7,6 +7,7 @@ const FeatureLabels = {
   openid: 'Open ID',
   ldap: 'LDAP',
   customStyling: 'Custom styles',
+  multiEnvironment: 'Multi-Environment',
 };
 
 const Access = () => {

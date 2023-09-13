@@ -580,7 +580,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   limits={featureAccess}
                   feature={'Permissions'}
                   isAvailable={true}
-                  noTooltipifValid={true}
+                  noTooltipIfValid={true}
                 >
                   <a
                     onClick={() => this.setState({ currentTab: 'permissions' })}
@@ -605,7 +605,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     limits={featureAccess}
                     feature={'Datasources'}
                     isAvailable={true}
-                    noTooltipifValid={true}
+                    noTooltipIfValid={true}
                   >
                     <a
                       onClick={() => !isExpired && isLicenseValid && this.setState({ currentTab: 'datasources' })}

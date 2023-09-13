@@ -255,7 +255,7 @@ class ManageAllUsersComponent extends React.Component {
                     Manage All Users
                   </div>
                   <div className="user-limits d-flex">
-                    {userLimits?.usersCount && (
+                    {userLimits?.usersCount && userLimits?.userCount?.total && (
                       <div className="limit">
                         <div>TOTAL USERS</div>
                         <div className="count">
@@ -263,7 +263,7 @@ class ManageAllUsersComponent extends React.Component {
                         </div>
                       </div>
                     )}
-                    {userLimits?.editorsCount && (
+                    {userLimits?.editorsCount && userLimits?.editorsCount?.total && (
                       <div className="limit">
                         <div>BUILDERS</div>
                         <div className="count">

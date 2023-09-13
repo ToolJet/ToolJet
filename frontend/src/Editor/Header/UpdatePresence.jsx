@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 

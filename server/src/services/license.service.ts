@@ -56,6 +56,9 @@ export class LicenseService {
       case LICENSE_FIELD.AUDIT_LOGS:
         return License.Instance().auditLogs;
 
+      case LICENSE_FIELD.MULTI_ENVIRONMENT:
+        return License.Instance().multiEnvironment;
+
       case LICENSE_FIELD.VALID:
         return License.Instance().isValid && !License.Instance().isExpired;
 

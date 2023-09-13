@@ -1,5 +1,5 @@
 import React from 'react';
-import { groupPermissionService, licenseService, userService } from '@/_services';
+import { groupPermissionService, licenseService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { withTranslation } from 'react-i18next';

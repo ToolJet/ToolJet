@@ -9,21 +9,20 @@ const LicenseTooltip = ({
   children,
   placement = 'right',
   noTooltipIfValid = false,
+  customMessage,
 }) => {
-  const { percentage, licenseStatus } = limits;
+  const { percentage, licenseStatus } = limits ?? {};
   const { isExpired, isLicenseValid } = licenseStatus ?? {};
-  const allowedFeaturesOnExpiry = ['workspaces', 'apps'];
+  const allowedFeaturesOnExpiry = ['workspaces', 'apps', 'workflows'];
 
   const currentUser = authenticationService.currentSessionValue;
 
   const generateMessage = () => {
     switch (true) {
-      case Object.keys(limits).length === 0:
-        return '';
       case !currentUser.admin && !isExpired && percentage >= 100:
         return `You have reached your limit for number of ${feature}`;
       case (!isLicenseValid || isExpired || !isAvailable) && !allowedFeaturesOnExpiry.includes(feature):
-        return `You can only access ${feature} in our paid plans`;
+        return customMessage ?? `You can only access ${feature} in our paid plans`;
       default:
         return '';
     }

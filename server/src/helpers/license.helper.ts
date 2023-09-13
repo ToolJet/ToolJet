@@ -13,6 +13,7 @@ export enum LICENSE_FIELD {
   LDAP = 'ldapEnabled',
   CUSTOM_STYLE = 'customStylingEnabled',
   AUDIT_LOGS = 'auditLogsEnabled',
+  MULTI_ENVIRONMENT = 'multiEnvironmentEnabled',
   UPDATED_AT = 'updatedAt',
   ALL = 'all',
   USER = 'allUsers',

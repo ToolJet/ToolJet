@@ -6,9 +6,13 @@ import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 import { OrganizationConstant } from 'src/entities/organization_constants.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Injectable()
 export class AppEnvironmentService {
+  constructor(private licenseService: LicenseService) {}
+
   async get(
     organizationId: string,
     id?: string,
@@ -85,6 +89,13 @@ export class AppEnvironmentService {
 
           appEnvironment['appVersionsCount'] = count;
         }
+      }
+
+      const multiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      for (const appEnvironment of appEnvironments) {
+        appEnvironment.priority !== 1 && !multiEnvironmentEnabled
+          ? (appEnvironment['enabled'] = false)
+          : (appEnvironment['enabled'] = true);
       }
 
       return appEnvironments;

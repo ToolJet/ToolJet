@@ -8599,6 +8599,10 @@ tbody {
   padding: 0.6rem;
 }
 
+.env-version-container{
+  padding-right: 100px;
+}
+
 // tooljet db fields styles [ query manager ]
 .tj-db-field-wrapper {
   .code-hinter-wrapper {
@@ -12078,6 +12082,10 @@ tbody {
     background-color: #F1F3F5;
     color: #C1C8CD;
   }
+}
+
+.share-disabled {
+  opacity: 0.4;
 }
 
 .license-tooltip {

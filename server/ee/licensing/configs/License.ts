@@ -10,6 +10,7 @@ export default class License {
   private _isOidc: boolean;
   private _isLdap: boolean;
   private _isCustomStyling: boolean;
+  private _isMultiEnvironment: boolean;
   private _expiryDate: Date;
   private _updatedDate: Date;
   private _editorUsersCount: number | string;
@@ -46,6 +47,7 @@ export default class License {
         this._isOidc = licenseData?.features?.oidc === false ? false : true;
         this._isLdap = licenseData?.features?.ldap === false ? false : true;
         this._isCustomStyling = licenseData?.features?.customStyling === false ? false : true;
+        this._isMultiEnvironment = licenseData?.features?.multiEnvironment === false ? false : true;
         this._expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
         this._updatedDate = updatedDate;
         this._isLicenseValid = true;
@@ -68,6 +70,7 @@ export default class License {
       this._isLdap = true;
       this._isCustomStyling = true;
       this._isLicenseValid = true;
+      this._isMultiEnvironment = true;
     }
   }
 
@@ -149,6 +152,13 @@ export default class License {
     return this._isLdap;
   }
 
+  public get multiEnvironment(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.multiEnvironment;
+    }
+    return this._isMultiEnvironment;
+  }
+
   public get customStyling(): boolean {
     if (this.IsBasicPlan) {
       return !!BASIC_PLAN_TERMS.features?.customStyling;
@@ -170,6 +180,7 @@ export default class License {
       auditLogs: this.auditLogs,
       ldap: this.ldap,
       customStyling: this.customStyling,
+      multiEnvironment: this.multiEnvironment,
     };
   }
 
@@ -189,6 +200,7 @@ export default class License {
       oidcEnabled: this.oidc,
       ldapEnabled: this.ldap,
       customStylingEnabled: this.customStyling,
+      multiEnvironmentEnabled: this.multiEnvironment,
       expiryDate: this._expiryDate,
       isExpired: this.isExpired,
       isLicenseValid: this._isLicenseValid,

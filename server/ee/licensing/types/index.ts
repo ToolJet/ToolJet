@@ -19,6 +19,7 @@ export interface Terms {
     auditLogs?: boolean;
     ldap?: boolean;
     customStyling?: boolean;
+    multiEnvironment?: boolean;
   };
   type?: LICENSE_TYPE;
   meta?: {
