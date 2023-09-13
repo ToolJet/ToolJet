@@ -103,9 +103,10 @@ function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwit
   return fetch(url, requestOptions).then(handleResponse);
 }
 
-function saveAppVersionEventHandlers(appId, versionId, events) {
+function saveAppVersionEventHandlers(appId, versionId, events, updateType = 'update') {
   const body = {
     events,
+    updateType,
   };
 
   const requestOptions = {

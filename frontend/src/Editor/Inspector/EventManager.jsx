@@ -22,7 +22,6 @@ import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
 
 export const EventManager = ({
   sourceId,
@@ -255,10 +254,10 @@ export const EventManager = ({
         actionId: 'show-alert',
         message: 'Hello world!',
         alertType: 'info',
-        eventIndex: eventIndex,
       },
       eventType: eventSourceType,
       attachedTo: sourceId,
+      index: eventIndex,
     });
   }
 
@@ -824,7 +823,32 @@ export const EventManager = ({
     const result = _.cloneDeep(events);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
+
+    const reorderedEvents = result.map((event, index) => {
+      return {
+        ...event,
+        index: index,
+      };
+    });
+    console.log('----arpit reorder events:: ', { result, events, reorderedEvents });
     setEvents(result);
+
+    // updateAppVersionEventHandlers(
+    //   [
+    //     {
+    //       event_id: updatedEvent.id,
+    //       diff: updatedEvent,
+    //     },
+    //   ],
+    //   'update'
+    // );
+    updateAppVersionEventHandlers(
+      reorderedEvents.map((event) => ({
+        event_id: event.id,
+        diff: event,
+      })),
+      'reorder'
+    );
   };
 
   const onDragEnd = ({ source, destination }) => {

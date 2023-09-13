@@ -52,6 +52,7 @@ export class EventsService {
       target: eventObj.eventType,
       event: eventObj.event,
       appVersionId: versionId,
+      index: eventObj.index,
     };
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -60,7 +61,7 @@ export class EventsService {
     });
   }
 
-  async updateEvent(events: []) {
+  async updateEvent(events: [], updateType: 'update' | 'reorder') {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await Promise.all(
         events.map(async (event) => {
@@ -81,6 +82,28 @@ export class EventsService {
               ...eventToUpdate.event,
               ...eventDiff,
             },
+          };
+
+          if (updateType === 'reorder') {
+            updatedEvent.index = diff.index;
+          }
+
+          return await manager.save(EventHandler, updatedEvent);
+        })
+      );
+    });
+  }
+
+  async updateEventsOrderOnDelete(sourceId: string, deletedIndex: number) {
+    const allEvents = await this.findAllEventsWithSourceId(sourceId);
+    const eventsToUpdate = allEvents.filter((event) => event.index > deletedIndex);
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await Promise.all(
+        eventsToUpdate.map(async (event) => {
+          const updatedEvent = {
+            ...event,
+            index: event.index - 1,
           };
 
           return await manager.save(EventHandler, updatedEvent);
@@ -104,6 +127,7 @@ export class EventsService {
       if (!deleteResponse?.affected) {
         throw new NotFoundException();
       }
+      await this.updateEventsOrderOnDelete(event.sourceId, event.index);
       return deleteResponse;
     });
   }

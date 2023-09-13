@@ -50,12 +50,12 @@ export const useAppDataStore = create(
               useAppDataStore.getState().actions.setIsSaving(false);
             });
         },
-        updateAppVersionEventHandlers: async (events) => {
+        updateAppVersionEventHandlers: async (events, updateType = 'update') => {
           useAppDataStore.getState().actions.setIsSaving(true);
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
-          const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events);
+          const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events, updateType);
 
           useAppDataStore.getState().actions.setIsSaving(false);
           const updatedEvents = get().events;
