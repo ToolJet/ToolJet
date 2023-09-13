@@ -331,27 +331,29 @@ export const Inspector = ({
   };
 
   const propertiesTab = isMounted && (
-    <GetAccordion
-      componentName={componentMeta.component}
-      layoutPropertyChanged={layoutPropertyChanged}
-      component={component}
-      paramUpdated={paramUpdated}
-      dataQueries={dataQueries}
-      componentMeta={componentMeta}
-      eventUpdated={eventUpdated}
-      eventOptionUpdated={eventOptionUpdated}
-      components={allComponents}
-      currentState={currentState}
-      darkMode={darkMode}
-      eventsChanged={eventsChanged}
-      apps={apps}
-      pages={pages}
-      allComponents={allComponents}
-    />
+    <div className={`${isVersionReleased && 'disabled'}`}>
+      <GetAccordion
+        componentName={componentMeta.component}
+        layoutPropertyChanged={layoutPropertyChanged}
+        component={component}
+        paramUpdated={paramUpdated}
+        dataQueries={dataQueries}
+        componentMeta={componentMeta}
+        eventUpdated={eventUpdated}
+        eventOptionUpdated={eventOptionUpdated}
+        components={allComponents}
+        currentState={currentState}
+        darkMode={darkMode}
+        eventsChanged={eventsChanged}
+        apps={apps}
+        pages={pages}
+        allComponents={allComponents}
+      />
+    </div>
   );
 
   const stylesTab = (
-    <div style={{ marginBottom: '6rem' }}>
+    <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
       <div className="p-3">
         <Inspector.RenderStyleOptions
           componentMeta={componentMeta}
@@ -393,7 +395,7 @@ export const Inspector = ({
         darkMode={darkMode}
       />
       <div>
-        <div className="row inspector-component-title-input-holder">
+        <div className={`row inspector-component-title-input-holder ${isVersionReleased && 'disabled'}`}>
           <div className="col-1" onClick={() => switchSidebarTab(2)}>
             <span data-cy={`inspector-close-icon`} className="cursor-pointer">
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
