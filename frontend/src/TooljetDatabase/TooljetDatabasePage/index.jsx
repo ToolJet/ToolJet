@@ -54,6 +54,8 @@ const TooljetDatabasePage = ({ totalTables }) => {
   }, [isBulkUploadDrawerOpen]);
 
   useEffect(() => {
+    if (isEmpty(selectedTable)) return;
+
     const reloadTableData = async () => {
       const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable.id);
 
@@ -208,7 +210,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
                   </div>
                 </div>
               </div>
-            </div >
+            </div>
             <div className={cx('col')}>
               <Table
                 openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)}
@@ -217,8 +219,8 @@ const TooljetDatabasePage = ({ totalTables }) => {
             </div>
           </>
         )}
-      </div >
-    </div >
+      </div>
+    </div>
   );
 };
 
