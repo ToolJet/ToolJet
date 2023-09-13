@@ -8,7 +8,7 @@
     "timestamp": "Thu, 02 Mar 2023 10:40:06 GMT"
   },
   {
-    "name": "github",
+    "name": "GitHub",
     "description": "Plugin for GitHub APIs",
     "version": "1.0.0",
     "id": "github",
@@ -16,7 +16,7 @@
     "timestamp": "Thu, 02 Mar 2023 11:52:32 GMT"
   },
   {
-    "name": "openai",
+    "name": "OpenAI",
     "description": "Plugin for OpenAI APIs",
     "version": "1.0.0",
     "id": "openai",
