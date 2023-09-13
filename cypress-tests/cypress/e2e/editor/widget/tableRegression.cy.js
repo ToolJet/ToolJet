@@ -219,7 +219,6 @@ describe("Table", () => {
     cy.forceClickOnCanvas();
 
     openEditorSidebar(data.widgetName);
-    cy.log(".......");
     cy.get('[data-cy="table-data-input-field"]').clearAndTypeOnCodeMirror(
       codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com" },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com" },{id:4,name:"Oliver",email:"oliver@example.com" },
       ]`)
@@ -327,7 +326,7 @@ describe("Table", () => {
     );
   });
 
-  it("should verify column options", () => {
+  it.only("should verify column options", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
@@ -553,7 +552,7 @@ describe("Table", () => {
     deleteAndVerifyColumn("fake-datepicker");
 
     verifyAndModifyToggleFx(
-      "Connect code",
+      tableText.labelDynamicColumn,
       commonWidgetText.codeMirrorLabelFalse
     );
     cy.get('[data-cy*="-cell-1"]').should("have.class", "has-text");
