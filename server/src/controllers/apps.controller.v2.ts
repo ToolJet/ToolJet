@@ -347,7 +347,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.eventService.updateEvent(body?.events);
+    return await this.eventService.updateEvent(body?.events, body?.updateType);
   }
 
   @UseGuards(JwtAuthGuard)

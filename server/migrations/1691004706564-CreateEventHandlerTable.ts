@@ -18,6 +18,11 @@ export class CreateEventHandlerTable1691004706564 implements MigrationInterface 
             isNullable: false,
           },
           {
+            name: 'index',
+            type: 'int',
+            isNullable: false,
+          },
+          {
             name: 'event',
             type: 'jsonb',
             isNullable: false,

@@ -15,6 +15,9 @@ export class EventHandler {
   @Column({ name: 'name' })
   name: string;
 
+  @Column()
+  index: number;
+
   @Column('simple-json')
   event: any;
 
