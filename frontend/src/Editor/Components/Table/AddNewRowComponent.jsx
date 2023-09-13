@@ -86,15 +86,17 @@ export function AddNewRowComponent({
                   {headerGroup.headers.map((column, index) => {
                     return (
                       <th key={index} {...column.getHeaderProps()} className="th">
-                        <div className="d-flex custom-gap-4 align-items-center">
-                          <SolidIcon
-                            name="editable"
-                            width="16px"
-                            height="16px"
-                            fill={darkMode ? '#4C5155' : '#C1C8CD'}
-                            vievBox="0 0 16 16"
-                          />
-                          <div className="tj-text-xsm">{column.render('Header')}</div>
+                        <div className="d-flex custom-gap-4 align-items-center thead-editable-icon-header-text-wrapper">
+                          <div>
+                            <SolidIcon
+                              name="editable"
+                              width="16px"
+                              height="16px"
+                              fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                              vievBox="0 0 16 16"
+                            />
+                          </div>
+                          <div className="tj-text-xsm header-text">{column.render('Header')}</div>
                         </div>
                       </th>
                     );
