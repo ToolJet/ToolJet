@@ -95,6 +95,7 @@ const imports = [
   SeedsModule,
   AuthModule,
   UsersModule,
+  LicenseModule,
   AppsModule,
   FoldersModule,
   OrgEnvironmentVariablesModule,

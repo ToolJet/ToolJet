@@ -63,7 +63,7 @@ export const BlankPage = function BlankPage({
     });
   }
 
-  const appCreationDisabled = appsLimit?.percentage >= 100 && !appsLimit?.licenseStatus?.isExpired;
+  const appCreationDisabled = !appsLimit?.canAddUnlimited && appsLimit?.percentage >= 100;
 
   const templateOptionsView = (
     <>

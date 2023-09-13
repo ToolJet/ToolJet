@@ -4,10 +4,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager, In, Repository } from 'typeorm';
 import { LicenseService } from './license.service';
-import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Injectable()
 export class InstanceSettingsService {

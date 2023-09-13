@@ -11,7 +11,7 @@ const LicenseTooltip = ({
   noTooltipIfValid = false,
   customMessage,
 }) => {
-  const { percentage, licenseStatus } = limits ?? {};
+  const { percentage, licenseStatus, canAddUnlimited } = limits ?? {};
   const { isExpired, isLicenseValid } = licenseStatus ?? {};
   const allowedFeaturesOnExpiry = ['workspaces', 'apps', 'workflows'];
 
@@ -19,7 +19,7 @@ const LicenseTooltip = ({
 
   const generateMessage = () => {
     switch (true) {
-      case !currentUser.admin && !isExpired && percentage >= 100:
+      case !currentUser.admin && !canAddUnlimited && percentage >= 100:
         return `You have reached your limit for number of ${feature}`;
       case (!isLicenseValid || isExpired || !isAvailable) && !allowedFeaturesOnExpiry.includes(feature):
         return customMessage ?? `You can only access ${feature} in our paid plans`;

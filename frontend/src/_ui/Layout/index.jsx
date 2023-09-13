@@ -282,12 +282,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       isAvailable={featureAccess?.auditLogs}
                     >
                       <Link
-                        to={
-                          featureAccess?.auditLogs &&
-                          !featureAccess?.licenseStatus?.isExpired &&
-                          featureAccess?.licenseStatus?.isLicenseValid &&
-                          getPrivateRoute('audit_logs')
-                        }
+                        to={featureAccess?.auditLogs && getPrivateRoute('audit_logs')}
                         onClick={(event) => checkForUnsavedChanges(getPrivateRoute('audit_logs'), event)}
                         className={`tj-leftsidebar-icon-items ${
                           router.pathname === getPrivateRoute('audit_logs') && `current-seleted-route`

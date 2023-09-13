@@ -26,7 +26,7 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
   const [notifications, setNotifications] = React.useState([]);
   const router = useRouter();
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
-  const [isFreePlan, setIsFreePlan] = useState(true);
+  const [isMultiPlayerEnabled, setIsMultiPlayerEnabled] = useState(true);
 
   React.useEffect(() => {
     if (appVersionsId) {
@@ -37,8 +37,7 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
     async function fetchData() {
       try {
         const data = await licenseService.getFeatureAccess();
-        console.log('Data', data);
-        setIsFreePlan(!data.licenseStatus.isLicenseValid || data.licenseStatus.isExpired);
+        setIsMultiPlayerEnabled(!!data?.multiPlayerEdit);
       } catch (error) {
         console.error('Error:', error);
       }
@@ -50,7 +49,7 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
 
   const tooltip = <Tooltip id="tooltip-disabled">{tooltipContent}</Tooltip>;
 
-  return !shouldEnableMultiplayer && isFreePlan ? (
+  return !shouldEnableMultiplayer && !isMultiPlayerEnabled ? (
     <OverlayTrigger placement="bottom" overlay={tooltip} trigger="hover">
       <LeftSidebarItem
         commentBadge={notifications?.length > 0}
@@ -72,7 +71,7 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
       title={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
       icon={darkMode ? `comments-dark` : 'comments-light'}
       className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
-        disabled: !appVersionsId || !shouldEnableMultiplayer,
+        disabled: !appVersionsId || !shouldEnableMultiplayer || !isMultiPlayerEnabled,
         active: isActive,
         dark: darkMode,
       })}

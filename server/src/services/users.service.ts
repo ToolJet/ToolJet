@@ -844,16 +844,13 @@ export class UsersService {
 
   async validateLicense(manager: EntityManager): Promise<void> {
     let editor = -1,
-      viewer = -1,
-      superadmin = -1;
+      viewer = -1;
     const {
       allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
     } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER]);
 
     if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
-      if (superadmin === -1) {
-        superadmin = await this.fetchTotalSuperadminCount(manager);
-      }
+      const superadmin = await this.fetchTotalSuperadminCount(manager);
       if (superadmin > superadminUsers) {
         throw new HttpException('You have reached your limit for number of super admins.', 451);
       }
@@ -920,9 +917,10 @@ export class UsersService {
       }
       case LIMIT_TYPE.ALL: {
         const currentUsersCount = await this.getCount(true, manager);
-        const currentEditorsCount = await this.fetchTotalEditorCount(manager);
         const currentSuperadminsCount = await this.fetchTotalSuperadminCount(manager);
-        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager);
+        const { viewer: currentViewersCount, editor: currentEditorsCount } = await this.fetchTotalViewerEditorCount(
+          manager
+        );
 
         return {
           usersCount: generatePayloadForLimits(currentUsersCount, users, licenseStatus, LICENSE_LIMITS_LABEL.USERS),

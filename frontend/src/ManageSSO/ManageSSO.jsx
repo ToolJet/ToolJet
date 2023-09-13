@@ -150,11 +150,7 @@ export function ManageSSO({ darkMode }) {
                         <Wrapper key={index}>
                           <FolderList
                             onClick={() => {
-                              if (
-                                featureAccess[item.id] &&
-                                !featureAccess?.licenseStatus?.isExpired &&
-                                featureAccess?.licenseStatus?.isLicenseValid
-                              ) {
+                              if (featureAccess[item.id]) {
                                 changePage(item.id);
                               } else if (!protectedMenuIndex) {
                                 changePage(item.id);

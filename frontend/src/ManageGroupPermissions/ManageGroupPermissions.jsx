@@ -352,12 +352,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                               this.state.selectedGroup == this.humanizeifDefaultGroupName(permissionGroup.group)
                             }
                             onClick={() => {
-                              if (
-                                (featureAccess.licenseStatus.isExpired ||
-                                  !featureAccess.licenseStatus.isLicenseValid) &&
-                                !permissionGroup?.enabled
-                              )
-                                return;
+                              if (!permissionGroup?.enabled) return;
                               this.setState({
                                 selectedGroupPermissionId: permissionGroup.id,
                                 selectedGroup: this.humanizeifDefaultGroupName(permissionGroup.group),

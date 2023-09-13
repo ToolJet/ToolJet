@@ -12,6 +12,7 @@ export default class License {
   private _isLdap: boolean;
   private _isCustomStyling: boolean;
   private _isMultiEnvironment: boolean;
+  private _isMultiPlayerEdit: boolean;
   private _expiryDate: Date;
   private _updatedDate: Date;
   private _editorUsersCount: number | string;
@@ -50,6 +51,7 @@ export default class License {
         this._isLdap = licenseData?.features?.ldap === false ? false : true;
         this._isCustomStyling = licenseData?.features?.customStyling === false ? false : true;
         this._isMultiEnvironment = licenseData?.features?.multiEnvironment === false ? false : true;
+        this._isMultiPlayerEdit = licenseData?.features?.multiPlayerEdit === false ? false : true;
         this._expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
         this._updatedDate = updatedDate;
         this._isLicenseValid = true;
@@ -175,6 +177,13 @@ export default class License {
     return this._isCustomStyling;
   }
 
+  public get multiPlayerEdit(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.multiPlayerEdit;
+    }
+    return this._isMultiPlayerEdit;
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -190,6 +199,7 @@ export default class License {
       ldap: this.ldap,
       customStyling: this.customStyling,
       multiEnvironment: this.multiEnvironment,
+      multiPlayerEdit: this.multiPlayerEdit,
     };
   }
 
@@ -211,6 +221,7 @@ export default class License {
       ldapEnabled: this.ldap,
       customStylingEnabled: this.customStyling,
       multiEnvironmentEnabled: this.multiEnvironment,
+      multiPlayerEditEnabled: this.multiPlayerEdit,
       expiryDate: this._expiryDate,
       isExpired: this.isExpired,
       isLicenseValid: this._isLicenseValid,

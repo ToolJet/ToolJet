@@ -20,6 +20,7 @@ export interface Terms {
     ldap?: boolean;
     customStyling?: boolean;
     multiEnvironment?: boolean;
+    multiPlayerEdit?: boolean;
   };
   type?: LICENSE_TYPE;
   meta?: {

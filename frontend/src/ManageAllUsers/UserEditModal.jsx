@@ -13,8 +13,8 @@ const UserEditModal = ({
   superadminsCount,
 }) => {
   const [options, setOptions] = React.useState({});
-  const { licenseStatus: { isExpired, isLicenseValid, licenseType } = {}, current, total } = superadminsCount ?? {};
-  const formEnabled = !isExpired && isLicenseValid && licenseType !== 'trial' && current < total;
+  const { current, total, canAddUnlimited } = superadminsCount ?? {};
+  const formEnabled = canAddUnlimited || current < total || updatingUser?.user_type === 'instance';
 
   React.useEffect(() => {
     if (updatingUser) {

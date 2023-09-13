@@ -8,7 +8,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     total: LICENSE_LIMIT.UNLIMITED,
     editor: LICENSE_LIMIT.UNLIMITED,
     viewer: LICENSE_LIMIT.UNLIMITED,
-    superadmin: LICENSE_LIMIT.UNLIMITED,
+    superadmin: 1,
   },
   database: {
     table: 5,
@@ -19,6 +19,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     customStyling: false,
     ldap: false,
     multiEnvironment: false,
+    multiPlayerEdit: false,
   },
   domains: [],
 };

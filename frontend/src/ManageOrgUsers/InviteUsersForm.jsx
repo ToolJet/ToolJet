@@ -107,7 +107,7 @@ function InviteUsersForm({
               <LicenseBanner classes="mb-3" limits={userLimits} type="users" size="small" />
               <div
                 className={`invite-user-by-email ${
-                  userLimits?.percentage === 100 && !userLimits?.licenseStatus?.isExpired && 'disabled'
+                  !userLimits?.canAddUnlimited && userLimits?.percentage >= 100 && 'disabled'
                 }`}
               >
                 <form onSubmit={handleCreateUser} noValidate className="invite-email-body" id="inviteByEmail">
@@ -223,10 +223,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={
-                uploadingUsers ||
-                (userLimits?.percentage === 100 && !userLimits?.licenseStatus?.isExpired && 'disabled')
-              }
+              disabled={uploadingUsers || (!userLimits?.canAddUnlimited && userLimits?.percentage >= 100 && 'disabled')}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

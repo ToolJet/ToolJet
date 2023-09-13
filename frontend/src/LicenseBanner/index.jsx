@@ -20,7 +20,7 @@ export function LicenseBanner({
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const currentUser = authenticationService.currentSessionValue;
-  const { percentage = '', total, current, licenseStatus } = limits ?? {};
+  const { percentage = '', total, current, licenseStatus, canAddUnlimited } = limits ?? {};
   const { isExpired, isLicenseValid, licenseType, expiryDate } = licenseStatus ?? {};
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isWorkspaceAdmin = !currentUser.super_admin && currentUser.admin;
@@ -67,16 +67,16 @@ export function LicenseBanner({
       case isLicenseValid && licenseType === 'enterprise' && daysLeft <= 14 && type === 'enterprise': {
         return `Your license expires in ${daysLeft} days!`;
       }
-      case type == 'tables' && (100 > percentage >= 90 || (total <= 10 && current === total - 1)):
+      case type == 'tables' && !canAddUnlimited && (100 > percentage >= 90 || (total <= 10 && current === total - 1)):
         return `You're reaching your limit for number of ${type} - ${current}/${total}.`;
-      case type == 'tables' && percentage >= 100:
+      case type == 'tables' && !canAddUnlimited && percentage >= 100:
         return `You've reached your limit for number of ${type} - ${current}/${total}.`;
-      case (isExpired || !isLicenseValid || licenseType === 'trial') && type === 'super admins': {
+      case !canAddUnlimited && type === 'super admins': {
         return `You've reached your limit for number of ${type}.`;
       }
-      case !isExpired && percentage >= 100:
+      case !canAddUnlimited && percentage >= 100:
         return `You have reached your limit for number of ${type}.`;
-      case !isExpired && (percentage >= 90 || (total <= 10 && current === total - 1)):
+      case !canAddUnlimited && (percentage >= 90 || (total <= 10 && current === total - 1)):
         return `You're reaching your limit for number of ${type} - ${current}/${total}.`;
       case (!isLicenseValid || isExpired) && features.includes(type) && !isAvailable:
         return `You cannot access ${type}.`;
