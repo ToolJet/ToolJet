@@ -3,7 +3,6 @@ import HttpClient from '@/_helpers/http-client';
 const tooljetAdapter = new HttpClient();
 
 function findOne(headers, tableId, query = '') {
-  console.log(headers);
   tooljetAdapter.headers = { ...tooljetAdapter.headers, ...headers };
   return tooljetAdapter.get(`/tooljet-db/proxy/${tableId}?${query}`, headers);
 }
