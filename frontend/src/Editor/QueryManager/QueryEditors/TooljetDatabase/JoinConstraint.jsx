@@ -19,9 +19,11 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const joinType = data?.joinType;
   const baseTableDetails = (selectedTableId && findTableDetails(selectedTableId)) || {};
   const conditionsList = isEmpty(data?.conditions?.conditionsList) ? [{}] : data?.conditions?.conditionsList;
+
   const operator = data?.conditions?.operator;
   const leftFieldTable = conditionsList?.[0]?.leftField?.table || selectedTableId;
   const rightFieldTable = conditionsList?.[0]?.rightField?.table;
+
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -53,8 +55,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const tableList = tables
     .filter((table) => ![...tableSet, leftFieldTable].includes(table.table_id))
     .map((t) => {
-      const tableDetails = findTableDetails(t.table_id);
-      return { label: tableDetails?.table_name ?? '', value: t.table_id };
+      return { label: t?.table_name ?? '', value: t.table_id };
     });
 
   return (

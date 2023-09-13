@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import Select, { components } from 'react-select';
+import React, { useEffect, useRef, useState } from 'react';
 import SelectBox from './SelectBox';
 import useShowPopover from '@/_hooks/useShowPopover';
 import { Badge, OverlayTrigger, Popover } from 'react-bootstrap';
@@ -34,7 +33,7 @@ const DropDownSelect = ({
   }, [showMenu]);
 
   useEffect(() => {
-    if (Array.isArray(value) || selected?.value !== value?.value) {
+    if (Array.isArray(value) || selected?.value !== value?.value || selected?.label !== value?.label) {
       setSelected(value);
     }
   }, [value]);
