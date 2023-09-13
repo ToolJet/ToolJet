@@ -148,8 +148,6 @@ export class TooljetDbBulkUploadService {
       return transformedRow;
     } catch (error) {
       throw new BadRequestException(`Data type error at row[${rowsProcessed + 1}]: ${error}`);
-    } finally {
-      rowsProcessed++;
     }
   }
 
