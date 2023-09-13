@@ -491,7 +491,6 @@ const EditorComponent = (props) => {
 
   //! Needs attention
   const handleEvent = (eventName, event, options) => {
-    console.log('--------arpit handleEvent:::', { eventName, event, options });
     return onEvent(editorRef, eventName, event, options, 'edit');
   };
 
@@ -981,7 +980,7 @@ const EditorComponent = (props) => {
         );
       } else {
         childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter(
-          (key) => newDefinition.pages[currentPageId].components[key].parent === componentId
+          (key) => newDefinition.pages[currentPageId].components[key].component.parent === componentId
         );
       }
 
