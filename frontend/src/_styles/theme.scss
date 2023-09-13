@@ -5090,18 +5090,16 @@ div#driver-page-overlay {
   display: flex;
   flex-direction: row;
   width: 158px;
-  height: 32px;
 }
 
 .hinter-canvas-input {
   display: flex;
   width: 120px;
-  height: 32px;
+  height: auto !important;
   margin-top: 1px;
 
   .canvas-hinter-wrap {
     width: 126x;
-    height: 32px !important;
     border: 1px solid var(--slate7);
   }
 }
@@ -5109,7 +5107,6 @@ div#driver-page-overlay {
 .hinter-canvas-input {
   display: flex;
   padding: 4px;
-  height: 41.2px !important;
   margin-top: 1px;
 
   .CodeMirror-sizer {
@@ -5125,7 +5122,7 @@ div#driver-page-overlay {
   .code-hinter-col {
     margin-bottom: 1px !important;
     width: 136px;
-    height: 32px;
+    height: auto !important;
   }
 }
 
