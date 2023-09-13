@@ -121,13 +121,13 @@ We'll now go ahead and build the Home page of our application using the **ToolJe
 
 Click on the **Dashboard** button on the sidebar and click on the **Create new app** button. A new application will be created with an empty canvas. 
 
-We can see the **Component Library** on the right, we can drag and drop pre-built components from the **Component Library** on the canvas to create the UI. The **Query Manager** at the bottom can be used to create and manage queries to interact with the database. 
+We can see the **Component Library** on the right, we can drag and drop pre-built components from the **Component Library** on the canvas to create the UI. The **Query Panel** at the bottom can be used to create and manage queries to interact with the database. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/quickstart-guide/app-builder-overview.png" alt="App-Builder Overview" />
 </div>
 
-Rename the application to *Time Tracker*. Minimize the Query Manager by clicking on the **Hide Query Panel** button on its top-left. 
+Rename the application to *Time Tracker*. Minimize the Query Panel by clicking on the **Hide Query Panel** button on its top-left. 
 
 Click and drag a **[Container](/docs/widgets/container)** component to the canvas. Adjust the borders of the **Container** and expand it till it covers the visible portion of the canvas. 
 
@@ -200,7 +200,7 @@ Drag and drop a table component on the canvas. Adjust the width and make it slig
 
 It's time to add some real data to our application. 
 
-Click on the **Show Query Panel** button on the top-left of the **Query Manager** to expand it. Click on the **+Add** button in the Query Manager and select **ToolJet Database** - a new query will be created. Rename the query to *getTrackerSummary*. Select *timeTracker* (the database table that we had created at the start) as the Table name and **List Rows** as Operations. 
+Click on the **Show Query Panel** button on the top-left of the **Query Panel** to expand it. Click on the **+Add** and select **ToolJet Database** - a new query will be created. Rename the query to *getTrackerSummary*. Select *timeTracker* (the database table that we had created at the start) as the Table name and **List Rows** as Operations. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/quickstart-guide/first-query.gif" alt="Create a Get Query" />
@@ -208,7 +208,7 @@ Click on the **Show Query Panel** button on the top-left of the **Query Manager*
 
 Enable **Run this query on load?** toggle, this will ensure that the query runs every time the application loads. We'll generally use this setting for queries that are used to fetch data. Click on the **Run** button to run the query. 
 
-To see the preview of the returned data, press on the **Preview** button in the **Query Manager**. 
+To see the preview of the returned data, press on the **Preview** button in the **Query Panel**. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/quickstart-guide/query-preview.png" alt="Query Preview" />
@@ -300,7 +300,7 @@ We'll close the modal by clicking on the `X`/close button on the top-right.
 
 ### Creating Query To Write Data 
 
-We are ready with the form. Now we need to create a query that will help us add new entries to the *timeTracker* table in the database. Click on the **+ Add** button in the Query Manager. Select **ToolJet Database** from the list of available sources. 
+We are ready with the form. Now we need to create a query that will help us add new entries to the *timeTracker* table in the database. Click on the **+ Add** button in the Query Panel. Select **ToolJet Database** from the list of available sources. 
 
 Rename the query to *addLog*, select **Create row** as Operations and use the below configuration for the columns. We'll see how we can use custom code and use different keys to access the data available in the app-builder in the below table. 
 
@@ -388,7 +388,7 @@ Now every time we click on the **Submit** button on the modal, the *addLog* quer
 
 Let's create a way to delete entries from the **Table** component using **Actions**. 
 
-We'll first create the required query to perform the action. Click on the **+ Add** button in the Query Manager. Select **ToolJet Database** from the list of available sources. Rename the query to *deleteLog*, select **Delete rows** as Operations. 
+We'll first create the required query to perform the action. Click on the **+ Add** button in the Query Panel. Select **ToolJet Database** from the list of available sources. Rename the query to *deleteLog*, select **Delete rows** as Operations. 
 
 For the **Filter**, select **id** as the column(first field), **equals** as the operation(second field) and paste the below code in the **key** input(third field):
 ```js
@@ -428,7 +428,7 @@ Now every time we click on the **Delete** action button, the *deleteLog* query w
 
 In a typical time-tracking application, we only need to show the data related to the logged-in user. To achieve that, we need to add a filter to our *getTrackerSummary* query. 
 
-Open the *getTrackerSummary* query in the **Query Manager**, click on the **+ Add Condition** button associated with **Filter**.
+Open the *getTrackerSummary* query in the **Query Panel**, click on the **+ Add Condition** button associated with **Filter**.
 
 For the **Filter**, select **employee** as the column(first field), **equals** as the operation(second field) and paste the below code in the **key** input(third field):
 ```js
