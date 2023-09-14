@@ -27,7 +27,7 @@
     font-family: 'IBM Plex Sans';
 
     .env-modal-footer {
-        border-top: 1px solid #e6e8e9;
+        border-top: 1px solid var(--slate5);
         height: 72px;
         display: flex;
         align-items: center;
@@ -112,7 +112,6 @@
     min-width: 176px;
     z-index: 1;
     color: #11181C;
-    border-right: 1px solid #E6E8EB;
     padding-right: 12px;
     height: 32px;
     border-top-left-radius: 4px;
@@ -207,4 +206,9 @@
         background-color: var(--base);
     }
     
+}
+.env-switch-text{
+    color: var(--purple9);
+    margin-left: 2px !important;
+    margin-right: 8px !important;
 }

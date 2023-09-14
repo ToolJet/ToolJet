@@ -296,6 +296,7 @@ describe("Workspace constants", () => {
         cy.waitForAutoSave();
 
         common.pinInspector();
+        cy.get(".tooltip-inner").invoke("hide");
         cy.get(commonWidgetSelector.sidebarinspector).click();
         cy.get(commonWidgetSelector.inspectorNodeComponents).click();
         cy.get(commonWidgetSelector.nodeComponent(data.constantsName)).click();

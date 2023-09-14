@@ -165,17 +165,16 @@ describe("dashboard", () => {
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
     verifyTooltip(commonSelectors.avatarImage, "Profile");
   });
-
   it("Should verify app card elements and app card operations", () => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.renameApp(data.appName);
     cy.dragAndDropWidget("Table", 250, 250);
 
     cy.get(commonSelectors.editorPageLogo).click();
 
     cy.wait(500);
-    cy.reloadAppForTheElement(data.appName);
     cy.get(commonSelectors.appCard(data.appName))
       .parent()
       .within(() => {
@@ -283,8 +282,8 @@ describe("dashboard", () => {
       commonSelectors.toastMessage,
       dashboardText.appClonedToast
     );
-    cy.waitForAppLoad();
-    cy.wait(2000);
+    // cy.waitForAppLoad();
+    cy.wait(3000);
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.dragAndDropWidget("button", 25, 25);
     cy.get(commonSelectors.editorPageLogo).click();
@@ -336,7 +335,6 @@ describe("dashboard", () => {
     );
     verifyAppDelete(data.appName);
   });
-
   it("Should verify the app CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
     cy.appUILogin();
@@ -363,7 +361,6 @@ describe("dashboard", () => {
     );
     verifyAppDelete(data.appName);
   });
-
   it("Should verify the folder CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
     cy.appUILogin();

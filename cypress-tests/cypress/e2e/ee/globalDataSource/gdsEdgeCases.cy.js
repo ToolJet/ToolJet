@@ -12,6 +12,7 @@ import {
     addQuery,
     addQueryN,
     verifyValueOnInspector,
+    resizeQueryPanel
 } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
@@ -105,6 +106,7 @@ describe("Global Datasource Manager", () => {
 
         cy.get('[data-cy="icon-dashboard"]').click();
         navigateToAppEditor(data.appName);
+        resizeQueryPanel()
         addQuery(
             "table_preview",
             `SELECT * FROM Persons;`,
@@ -148,7 +150,9 @@ describe("Global Datasource Manager", () => {
         pinInspector();
         cy.hidetoolTip();
 
+        resizeQueryPanel("80");
         cy.get('[data-cy="show-ds-popover-button"]').click();
+        cy.wait(2000);
         addQueryN(
             "user_query",
             `SELECT * FROM Persons;`,
@@ -176,9 +180,6 @@ describe("Global Datasource Manager", () => {
         cy.get('[data-cy="show-ds-popover-button"]').click();
         cy.get(".css-1rrkggf-Input").type(data.ds2);
         cy.contains(`[id*="react-select-"]`, data.ds2).click();
-
-        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.wait("@run");
 
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
@@ -215,7 +216,7 @@ describe("Global Datasource Manager", () => {
         cy.contains(`[id*="react-select-"]`, data.ds2).click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.wait("@run");
-        verifyValueOnInspector("restapi1", "6 entries ");
+        verifyValueOnInspector("restapi2", "6 entries ");
 
         cy.get('[data-cy="list-query-table_preview"]').click();
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
@@ -226,11 +227,8 @@ describe("Global Datasource Manager", () => {
         verifyValueOnInspector("restapi1", "6 entries ");
 
         cy.get('[data-cy="show-ds-popover-button"]').click();
-        addQueryN(
-            "user_query",
-            `SELECT * FROM Persons;`,
-            `cypress-${data.ds1}-postgresql`
-        );
+        cy.get(".css-1rrkggf-Input").type(data.ds1);
+        cy.contains(`[id*="react-select-"]`, data.ds1).click();
 
         cy.verifyToastMessage(
             commonSelectors.toastMessage,

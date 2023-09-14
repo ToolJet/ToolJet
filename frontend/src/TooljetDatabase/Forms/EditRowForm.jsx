@@ -90,7 +90,6 @@ const EditRowForm = ({ onEdit, onClose }) => {
                 value={selectedRow}
                 options={options}
                 onChange={handleOnSelect}
-                customWrap={true}
               />
             </div>
           </div>

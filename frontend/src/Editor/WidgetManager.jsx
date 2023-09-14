@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import { SearchBox } from '@/_components';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
@@ -42,10 +43,12 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   function renderList(header, items) {
     if (isEmpty(items)) return null;
     return (
-      <>
-        <span className="m-1 widget-header">{header}</span>
-        {items.map((component, i) => renderComponentCard(component, i))}
-      </>
+      <div className="component-card-group-container">
+        <span className="widget-header">{header}</span>
+        <div className="component-card-group-wrapper">
+          {items.map((component, i) => renderComponentCard(component, i))}
+        </div>
+      </div>
     );
   }
 
@@ -53,9 +56,6 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     if (filteredComponents.length === 0) {
       return (
         <div className="empty">
-          {/* <div class="empty-img">
-            <img src="./static/illustrations/undraw_printing_invoices_5r4r.svg" height="128" alt="" />
-          </div> */}
           <p className="empty-title">{t('widgetManager.noResults', 'No results found')}</p>
           <p className={`empty-subtitle ${darkMode ? 'text-white-50' : 'text-secondary'}`}>
             {t(
@@ -64,7 +64,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
             )}
           </p>
           <button
-            className="btn btn-sm btn-outline-azure mt-3"
+            className=" btn-sm tj-tertiary-btn mt-3"
             onClick={() => {
               setFilteredComponents(componentTypes);
               setSearchQuery('');
@@ -127,15 +127,21 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className={`components-container mx-3 ${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
-      <div className="input-icon">
-        <input
-          type="text"
-          className={`form-control mt-3 mb-2 ${darkMode && 'dark-theme-placeholder'}`}
-          placeholder={t('globals.search', 'Search') + '...'}
-          value={searchQuery}
-          onChange={(e) => handleSearchQueryChange(e)}
-          data-cy="widget-search-box"
+    <div className={`components-container ${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
+      <p className="widgets-manager-header">Components</p>
+      <div className="input-icon tj-app-input">
+        <SearchBox
+          dataCy={`widget-search-box`}
+          initialValue={''}
+          callBack={(e) => handleSearchQueryChange(e)}
+          onClearCallback={() => {
+            setSearchQuery('');
+            filterComponents('');
+          }}
+          placeholder={t('globals.searchComponents', 'Search widgets')}
+          customClass={`tj-widgets-search-input  tj-text-xsm`}
+          showClearButton={false}
+          width={266}
         />
       </div>
       <div className="widgets-list col-sm-12 col-lg-12 row">{segregateSections()}</div>
