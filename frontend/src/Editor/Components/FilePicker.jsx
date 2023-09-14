@@ -14,7 +14,7 @@ export const FilePicker = ({
   onEvent,
   darkMode,
   styles,
-  registerAction,
+  setExposedVariable,
   dataCy,
 }) => {
   const currentState = useCurrentState();
@@ -294,16 +294,11 @@ export const FilePicker = ({
       setShowSelectedFiles(false);
     }
     onComponentOptionChanged(component, 'file', selectedFiles, id);
+    setExposedVariable('clearFiles', async function () {
+      setSelectedFiles([]);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
-
-  registerAction(
-    'clearFiles',
-    async function () {
-      setSelectedFiles([]);
-    },
-    [setSelectedFiles]
-  );
 
   return (
     <section>

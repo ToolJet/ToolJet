@@ -152,10 +152,9 @@ export function Git({ settings, updateData }) {
                 {t('header.organization.menus.manageSSO.github.redirectUrl', 'Redirect URL')}
               </label>
               <div className="d-flex justify-content-between form-control align-items-center">
-                <p
-                  data-cy="redirect-url"
-                  id="redirect-url"
-                >{`${window.public_config?.TOOLJET_HOST}/sso/git/${configId}`}</p>
+                <p data-cy="redirect-url" id="redirect-url">{`${window.public_config?.TOOLJET_HOST}${
+                  window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                }sso/git/${configId}`}</p>
                 <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
               </div>
             </div>

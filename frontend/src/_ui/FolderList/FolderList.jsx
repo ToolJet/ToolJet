@@ -14,6 +14,8 @@ function FolderList({
   selectedItem,
   dataCy = '',
   isLoading = false,
+  renderBadgeForItems = [],
+  renderBadge = null,
   ...restProps
 }) {
   return (
@@ -37,6 +39,7 @@ function FolderList({
           {children}
 
           {RightIcon && <div className="tj-list-item-icon">{RightIcon && <SolidIcon name={RightIcon} />}</div>}
+          {renderBadgeForItems.includes(children) && renderBadge && renderBadge()}
         </button>
       ) : (
         <Skeleton count={4} />

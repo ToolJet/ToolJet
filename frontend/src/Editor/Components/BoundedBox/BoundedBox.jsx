@@ -45,6 +45,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         imageElement.removeEventListener('load', handleImageLoad);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
