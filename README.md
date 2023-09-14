@@ -91,7 +91,7 @@ docker run \
 
 ## Tutorials and examples
 
-[Time Tracker Application](https://docs.tooljet.com/docs/#quickstart-guide/)<br>
+[Time Tracker Application](https://docs.tooljet.com/docs/#quickstart-guide)<br>
 [Build your own CMS using low-code](https://blog.tooljet.com/build-cms-using-lowcode-and-mongodb/)<br>
 [AWS S3 Browser](https://blog.tooljet.com/build-an-aws-s3-broswer-with-tooljet/)<br>
 
