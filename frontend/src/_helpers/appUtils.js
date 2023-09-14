@@ -8,6 +8,7 @@ import {
   computeComponentName,
   generateAppActions,
   loadPyodide,
+  isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -31,6 +32,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -77,13 +79,20 @@ export function onComponentOptionsChanged(_ref, component, options) {
 export function onComponentOptionChanged(_ref, component, option_name, value) {
   const componentName = component.name;
   const components = getCurrentState().components;
-
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
-  useCurrentStateStore.getState().actions.setCurrentState({
-    components: { ...components, [componentName]: componentData },
-  });
+
+  if (option_name !== 'id') {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
+  } else if (!componentData?.id) {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
+  }
+
   return Promise.resolve();
 }
 
@@ -140,6 +149,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
       await pyodide.globals.set('tj_globals', currentState['globals']);
       await pyodide.globals.set('client', currentState['client']);
       await pyodide.globals.set('server', currentState['server']);
+      await pyodide.globals.set('constants', currentState['constants']);
       await pyodide.globals.set('variables', appStateVars);
       await pyodide.globals.set('actions', actions);
 
@@ -209,6 +219,7 @@ async function exceutePycode(payload, code, currentState, query, mode) {
           variables = currentState['variables']
           client = currentState['client']
           server = currentState['server']
+          constants = currentState['constants']
           page = currentState['page']
           code_to_execute = ${_code}
 
@@ -574,7 +585,27 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'switch-page': {
-        _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+        const { name, disabled } = _ref.state.appDefinition.pages[event.pageId];
+        // Don't allow switching to disabled page in editor as well as viewer
+        if (!disabled) {
+          _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+        }
+        if (_ref.state.appDefinition.pages[event.pageId]) {
+          if (disabled) {
+            const generalProps = {
+              navToDisablePage: {
+                type: 'navToDisablePage',
+                page: name,
+                data: {
+                  message: `Attempt to switch to disabled page ${name} blocked.`,
+                  status: true,
+                },
+              },
+            };
+            useCurrentStateStore.getState().actions.setErrors(generalProps);
+          }
+        }
+
         return Promise.resolve();
       }
     }
@@ -585,7 +616,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
 
   const { customVariables } = options;
-
   if (eventName === 'onPageLoad') {
     await executeActionsForEventId(_ref, 'onPageLoad', { definition: { events: [options] } }, mode, customVariables);
   }
@@ -688,6 +718,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onBoundsChange',
       'onCreateMarker',
       'onMarkerClick',
+      'onPolygonClick',
       'onPageChanged',
       'onSearch',
       'onChange',
@@ -753,11 +784,19 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      // check if {{var}} and %%var%% are present in the string
+      if (options.match(/\{\{(.*?)\}\}/g)?.length > 1 && options.includes('{{constants.')) {
+        const constantVariables = options.match(/\{\{(constants.*?)\}\}/g);
+
+        constantVariables.forEach((constant) => {
+          options = options.replace(constant, 'HiddenOrganizationConstant');
+        });
+      }
 
       if (options.includes('{{') && options.includes('%%')) {
-        const vars = resolveReferences(options, state);
-        console.log('queryVariables', { options, vars });
+        const vars =
+          options.includes('{{constants.') && !options.includes('%%')
+            ? 'HiddenOrganizationConstant'
+            : resolveReferences(options, state);
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
@@ -818,12 +857,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
         hasParamSupport
       );
     } else if (query.kind === 'tooljetdb') {
-      const currentSessionValue = authenticationService.currentSessionValue;
-      queryExecutionPromise = tooljetDbOperations.perform(
-        query.options,
-        currentSessionValue?.current_organization_id,
-        getCurrentState()
-      );
+      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState());
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
     } else {
@@ -879,7 +913,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           case 'Created':
           case 'Accepted':
           case 'No Content': {
-            toast(`Query completed.`, {
+            toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
               icon: '🚀',
             });
             break;
@@ -951,14 +985,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
     } else if (query.kind === 'tooljetdb') {
-      const currentSessionValue = authenticationService.currentSessionValue;
-      queryExecutionPromise = tooljetDbOperations.perform(
-        query.options,
-        currentSessionValue?.current_organization_id,
-        getCurrentState()
-      );
+      queryExecutionPromise = tooljetDbOperations.perform(query, getCurrentState());
     } else {
-      queryExecutionPromise = dataqueryService.run(queryId, options);
+      queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
     }
 
     queryExecutionPromise
@@ -1162,6 +1191,7 @@ export function computeComponentState(_ref, components = {}) {
       };
     }
   });
+
   useCurrentStateStore.getState().actions.setCurrentState({
     components: {
       ...componentState,
@@ -1176,8 +1206,8 @@ export function computeComponentState(_ref, components = {}) {
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
-  if (key === 'tooljetdb') return <RunTooljetDbIcon />;
-  if (key === 'runpy') return <RunPyIcon />;
+  if (key === 'tooljetdb') return <RunTooljetDbIcon style={{ height, width }} />;
+  if (key === 'runpy') return <RunPyIcon style={{ height, width }} />;
   const Icon = allSvgs[key];
 
   if (!Icon) return <></>;
@@ -1255,6 +1285,9 @@ export const debuggerActions = {
           generalProps.property = key.split('- ')[1];
           error.resolvedProperties = value.resolvedProperties;
           break;
+        case 'navToDisablePage':
+          generalProps.message = value.data.message;
+          break;
 
         default:
           break;
@@ -1313,7 +1346,8 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
 };
 
 export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCut = false) => {
-  const { selectedComponents, appDefinition, currentPageId } = _ref.state;
+  const { appDefinition, currentPageId } = _ref.state;
+  const selectedComponents = useEditorStore.getState().selectedComponents;
   if (selectedComponents.length < 1) return getSelectedText();
   const { components: allComponents } = appDefinition.pages[currentPageId];
   let newDefinition = _.cloneDeep(appDefinition);
@@ -1412,7 +1446,6 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 
 export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
-  console.log({ pageId, newComponentObj });
   const finalComponents = [];
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
@@ -1600,7 +1633,7 @@ export const checkExistingQueryName = (newName) =>
 
 export const runQueries = (queries, _ref) => {
   queries.forEach((query) => {
-    if (query.options.runOnPageLoad) {
+    if (query.options.runOnPageLoad && isQueryRunnable(query)) {
       runQuery(_ref, query.id, query.name);
     }
   });
@@ -1611,14 +1644,14 @@ export const computeQueryState = (queries, _ref) => {
   queries.forEach((query) => {
     if (query.plugin?.plugin_id) {
       queryState[query.name] = {
-        ...query.plugin.manifest_file.data.source.exposedVariables,
+        ...query.plugin.manifest_file.data?.source?.exposedVariables,
         kind: query.plugin.manifest_file.data.source.kind,
         ...getCurrentState().queries[query.name],
       };
     } else {
       queryState[query.name] = {
-        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-        kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+        ...DataSourceTypes.find((source) => source.kind === query.kind)?.exposedVariables,
+        kind: DataSourceTypes.find((source) => source.kind === query.kind)?.kind,
         ...getCurrentState()?.queries[query.name],
       };
     }
@@ -1631,4 +1664,15 @@ export const computeQueryState = (queries, _ref) => {
       },
     });
   }
+};
+
+export const removeFunctionObjects = (obj) => {
+  for (const key in obj) {
+    if (typeof obj[key] === 'function') {
+      delete obj[key];
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      removeFunctionObjects(obj[key]);
+    }
+  }
+  return obj;
 };

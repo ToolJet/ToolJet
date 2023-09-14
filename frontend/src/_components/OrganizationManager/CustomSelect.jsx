@@ -83,7 +83,6 @@ export const CustomSelect = ({ ...props }) => {
         setShowCreateOrg={setShowCreateOrg}
         styles={{ border: 0, cursor: 'pointer' }}
         {...props}
-        customWrap={true}
       />
     </>
   );

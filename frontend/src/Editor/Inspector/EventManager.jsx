@@ -12,13 +12,18 @@ import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
-
-import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
+import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
+import { isQueryRunnable } from '@/_helpers/utils';
+import { shallow } from 'zustand/shallow';
+import ManageEventButton from './ManageEventButton';
+import NoListItem from './Components/Table/NoListItem';
 
 export const EventManager = ({
   component,
   componentMeta,
+  currentState = {},
   components,
   eventsChanged,
   apps,
@@ -27,8 +32,15 @@ export const EventManager = ({
   popoverPlacement,
   pages,
   hideEmptyEventsAlert,
+  callerQueryId,
 }) => {
-  const dataQueries = useDataQueries();
+  const dataQueries = useDataQueriesStore(({ dataQueries = [] }) => {
+    if (callerQueryId) {
+      //filter the same query getting attached to itself
+      return dataQueries.filter((query) => query.id != callerQueryId);
+    }
+    return dataQueries;
+  }, shallow);
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
@@ -109,18 +121,19 @@ export const EventManager = ({
     });
     return componentOptions;
   }
-
+  // currently blocking items inside subcontainer because they can't be controlled through event manager
+  // use components instead of currentState?.components to get all the components in canvas
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
-    Object.keys(components || {}).forEach((key) => {
+    Object.values(currentState?.components || {}).forEach((value) => {
       const targetComponentMeta = componentTypes.find(
-        (componentType) => components[key].component.component === componentType.component
+        (componentType) => components[value.id]?.component?.component === componentType?.component
       );
       if ((targetComponentMeta?.actions?.length ?? 0) > 0) {
-        if (componentType === '' || components[key].component.component === componentType) {
+        if (componentType === '' || components[value.id].component.component === componentType) {
           componentOptions.push({
-            name: components[key].component.name,
-            value: key,
+            name: components[value.id].component.name,
+            value: value.id,
           });
         }
       }
@@ -180,11 +193,20 @@ export const EventManager = ({
     return appsOptionsList;
   }
 
-  function getPageOptions() {
-    return pages.map((page) => ({
-      name: page.name,
-      value: page.id,
-    }));
+  function getPageOptions(event) {
+    // If disabled page is already selected then don't remove from page options
+    if (pages.find((page) => page.id === event.pageId)?.disabled) {
+      return pages.map((page) => ({
+        name: page.name,
+        value: page.id,
+      }));
+    }
+    return pages
+      .filter((page) => !page.disabled)
+      .map((page) => ({
+        name: page.name,
+        value: page.id,
+      }));
   }
 
   function handlerChanged(index, param, value) {
@@ -239,7 +261,7 @@ export const EventManager = ({
       <Popover
         id="popover-basic"
         style={{ width: '350px', maxWidth: '350px' }}
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        className={`${darkMode && ' dark-theme'} shadow event-manager-popover`}
         data-cy="popover-card"
       >
         <Popover.Body>
@@ -294,7 +316,7 @@ export const EventManager = ({
             </div>
           </div>
 
-          {actionLookup[event.actionId].options?.length > 0 && (
+          {actionLookup[event.actionId]?.options?.length > 0 && (
             <div className="hr-text" data-cy="action-option">
               {t('editor.inspector.eventManager.actionOptions', 'Action options')}
             </div>
@@ -419,15 +441,18 @@ export const EventManager = ({
                   <div className="col-9" data-cy="query-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={dataQueries.map((query) => {
-                        return { name: query.name, value: query.id };
-                      })}
+                      options={dataQueries
+                        .filter((qry) => isQueryRunnable(qry))
+                        .map((qry) => ({ name: qry.name, value: qry.id }))}
                       value={event.queryId}
                       search={true}
                       onChange={(value) => {
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
                         const parameters = (query?.options?.parameters ?? []).reduce(
-                          (paramObj, param) => ({ ...paramObj, [param.name]: param.defaultValue }),
+                          (paramObj, param) => ({
+                            ...paramObj,
+                            [param.name]: param.defaultValue,
+                          }),
                           {}
                         );
                         handlerChanged(index, 'queryId', query.id);
@@ -647,7 +672,7 @@ export const EventManager = ({
                 event={event}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
-                getPages={getPageOptions}
+                getPages={() => getPageOptions(event)}
                 darkMode={darkMode}
               />
             )}
@@ -819,89 +844,14 @@ export const EventManager = ({
                             if (typeof popOverCallback === 'function') popOverCallback(showing);
                           }}
                         >
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className="mb-1"
-                          >
-                            <div className="card column-sort-row">
-                              <div className={rowClassName} data-cy="event-handler-card">
-                                <div className="row p-2" role="button">
-                                  <div className="col-auto" style={{ cursor: 'grab' }}>
-                                    <svg
-                                      width="8"
-                                      height="14"
-                                      viewBox="0 0 8 14"
-                                      fill="none"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        d="M0.666667 1.66667C0.666667 2.03486 0.965143 2.33333 1.33333 2.33333C1.70152 2.33333 2 2.03486 2 1.66667C2 1.29848 1.70152 1 1.33333 1C0.965143 1 0.666667 1.29848 0.666667 1.66667Z"
-                                        stroke="#8092AC"
-                                        strokeWidth="1.33333"
-                                      />
-                                      <path
-                                        d="M5.99992 1.66667C5.99992 2.03486 6.2984 2.33333 6.66659 2.33333C7.03478 2.33333 7.33325 2.03486 7.33325 1.66667C7.33325 1.29848 7.03478 1 6.66659 1C6.2984 1 5.99992 1.29848 5.99992 1.66667Z"
-                                        stroke="#8092AC"
-                                        strokeWidth="1.33333"
-                                      />
-                                      <path
-                                        d="M0.666667 7.00001C0.666667 7.3682 0.965143 7.66668 1.33333 7.66668C1.70152 7.66668 2 7.3682 2 7.00001C2 6.63182 1.70152 6.33334 1.33333 6.33334C0.965143 6.33334 0.666667 6.63182 0.666667 7.00001Z"
-                                        stroke="#8092AC"
-                                        strokeWidth="1.33333"
-                                      />
-                                      <path
-                                        d="M5.99992 7.00001C5.99992 7.3682 6.2984 7.66668 6.66659 7.66668C7.03478 7.66668 7.33325 7.3682 7.33325 7.00001C7.33325 6.63182 7.03478 6.33334 6.66659 6.33334C6.2984 6.33334 5.99992 6.63182 5.99992 7.00001Z"
-                                        stroke="#8092AC"
-                                        strokeWidth="1.33333"
-                                      />
-                                      <path
-                                        d="M0.666667 12.3333C0.666667 12.7015 0.965143 13 1.33333 13C1.70152 13 2 12.7015 2 12.3333C2 11.9651 1.70152 11.6667 1.33333 11.6667C0.965143 11.6667 0.666667 11.9651 0.666667 12.3333Z"
-                                        stroke="#8092AC"
-                                        strokeWidth="1.33333"
-                                      />
-                                      <path
-                                        d="M5.99992 12.3333C5.99992 12.7015 6.2984 13 6.66659 13C7.03478 13 7.33325 12.7015 7.33325 12.3333C7.33325 11.9651 7.03478 11.6667 6.66659 11.6667C6.2984 11.6667 5.99992 11.9651 5.99992 12.3333Z"
-                                        stroke="#8092AC"
-                                        strokeWidth="1.33333"
-                                      />
-                                    </svg>
-                                  </div>
-                                  <div className="col text-truncate" data-cy="event-handler">
-                                    {componentMeta.events[event.eventId]['displayName']}
-                                  </div>
-                                  <div className="col text-truncate" data-cy="event-name">
-                                    <small className="event-action font-weight-light text-truncate">
-                                      {actionMeta.name}
-                                    </small>
-                                  </div>
-                                  <div className="col-auto">
-                                    <span
-                                      className="text-danger"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeHandler(index);
-                                      }}
-                                      data-cy="delete-button"
-                                    >
-                                      <svg
-                                        width="10"
-                                        height="16"
-                                        viewBox="0 0 10 16"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                      >
-                                        <path
-                                          d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
-                                          fill="#8092AC"
-                                        />
-                                      </svg>
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
+                          <div>
+                            <ManageEventButton
+                              eventDisplayName={componentMeta.events[event.eventId]['displayName']}
+                              actionName={actionMeta.name}
+                              removeHandler={removeHandler}
+                              index={index}
+                              darkMode={darkMode}
+                            />
                           </div>
                         </OverlayTrigger>
                       );
@@ -917,49 +867,29 @@ export const EventManager = ({
     );
   };
 
-  const componentName = componentMeta.name ? componentMeta.name : 'query';
+  const renderAddHandlerBtn = () => {
+    return (
+      <AddNewButton onClick={addHandler} dataCy="add-event-handler" className="mt-0">
+        {t('editor.inspector.eventManager.addHandler', 'New event handler')}
+      </AddNewButton>
+    );
+  };
 
   if (events.length === 0) {
     return (
       <>
-        <div className="text-left mb-3">
-          <button
-            className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-            onClick={addHandler}
-            data-cy="add-event-handler"
-          >
-            {t('editor.inspector.eventManager.addEventHandler', '+ Add event handler')}
-          </button>
-        </div>
-        {!hideEmptyEventsAlert ? (
-          <div className="text-left">
-            <small className="color-disabled" data-cy="no-event-handler-message">
-              {t(
-                'editor.inspector.eventManager.emptyMessage',
-                "This {{componentName}} doesn't have any event handlers",
-                {
-                  componentName: componentName.toLowerCase(),
-                }
-              )}
-            </small>
-          </div>
-        ) : null}
+        {!hideEmptyEventsAlert && <NoListItem text={'No event handlers'} />}
+        {renderAddHandlerBtn()}
       </>
     );
   }
 
   return (
     <>
-      <div className="text-right mb-3">
-        <button
-          className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-          onClick={addHandler}
-          data-cy="add-more-event-handler"
-        >
-          {t('editor.inspector.eventManager.addHandler', '+ Add handler')}
-        </button>
+      <div className="mb-3">
+        {renderHandlers(events)}
+        {renderAddHandlerBtn()}
       </div>
-      {renderHandlers(events)}
     </>
   );
 };

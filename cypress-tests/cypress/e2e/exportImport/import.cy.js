@@ -55,8 +55,7 @@ describe("App Import Functionality", () => {
     });
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      importText.couldNotImportAppToastMessage,
-      false
+      importText.couldNotImportAppToastMessage
     );
 
     cy.get(importSelectors.importOptionInput).selectFile(appFile, {
@@ -120,13 +119,13 @@ describe("App Import Functionality", () => {
 
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
           "contain.value",
-          exportedAppData.appV2.name
+          exportedAppData.app[0].definition.appV2.name
         );
         cy.get(
           appVersionSelectors.currentVersionField((currentVersion = "v1"))
         ).verifyVisibleElement(
           "have.text",
-          exportedAppData.appV2.appVersions[0].name
+          exportedAppData.app[0].definition.appV2.appVersions[0].name
         );
       });
       cy.exec("cd ./cypress/downloads/ && rm -rf *");
@@ -196,7 +195,7 @@ describe("App Import Functionality", () => {
 
                 cy.get(commonSelectors.appNameInput).verifyVisibleElement(
                   "contain.value",
-                  exportedAppData.appV2.name
+                  exportedAppData.app[0].definition.appV2.name
                 );
                 cy.get(
                   appVersionSelectors.currentVersionField(
@@ -204,7 +203,7 @@ describe("App Import Functionality", () => {
                   )
                 ).verifyVisibleElement(
                   "have.text",
-                  exportedAppData.appV2.appVersions[1].name
+                  exportedAppData.app[0].definition.appV2.appVersions[1].name
                 );
               });
             });

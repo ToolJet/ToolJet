@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-var tinycolor = require('tinycolor2');
+const tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, registerAction, id, dataCy, setExposedVariable } = props;
+  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 
   const [label, setLabel] = useState(properties.text);
@@ -45,48 +45,31 @@ export const Button = function Button(props) {
     boxShadow: boxShadow,
   };
 
-  registerAction(
-    'click',
-    async function () {
+  useEffect(() => {
+    setExposedVariable('click', async function () {
       if (!disable) {
         fireEvent('onClick');
       }
-    },
-    [disable]
-  );
-
-  registerAction(
-    'setText',
-    async function (text) {
+    });
+    setExposedVariable('setText', async function (text) {
       setLabel(text);
       setExposedVariable('buttonText', text);
-    },
-    [setLabel]
-  );
+    });
 
-  registerAction(
-    'disable',
-    async function (value) {
+    setExposedVariable('disable', async function (value) {
       setDisable(value);
-    },
-    [setDisable]
-  );
+    });
 
-  registerAction(
-    'visibility',
-    async function (value) {
+    setExposedVariable('visibility', async function (value) {
       setVisibility(value);
-    },
-    [setVisibility]
-  );
+    });
 
-  registerAction(
-    'loading',
-    async function (value) {
+    setExposedVariable('loading', async function (value) {
       setLoading(value);
-    },
-    [setLoading]
-  );
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disable, setLabel, setDisable, setVisibility, setLoading]);
 
   const hasCustomBackground = backgroundColor?.charAt() === '#';
   if (hasCustomBackground) {
