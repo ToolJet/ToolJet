@@ -4,6 +4,7 @@ export const tableSelector = {
     return `[data-cy*="-cell-${index}"]`;
   },
   pageIndexDetails: '[data-cy="page-index-details"]',
+  currentPageIndexDetails: '[data-cy="page-index-details"] > .form-control',
 
   paginationButtonToFirst: '[data-cy="pagination-button-to-first"]',
   paginationButtonToPrevious: '[data-cy="pagination-button-to-previous"]',
@@ -48,7 +49,7 @@ export const tableSelector = {
   fxButton: (action) => {
     return `[data-cy="${String(action)
       .toLowerCase()
-      .replace(/\s+/g, "-")}-fx-button"]`;
+      .replace(/\s+/g, "-")}-fx-button"] > svg`;
   },
 
   toggleButton: (action) => {
@@ -76,4 +77,5 @@ export const tableSelector = {
   },
 
   addNewRowTooltip: '[data-tooltip-id="tooltip-for-add-new-row"]',
+  manageColumns: '[data-tooltip-id="tooltip-for-manage-columns"]',
 };
