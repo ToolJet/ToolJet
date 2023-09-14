@@ -831,7 +831,7 @@ class EditorComponent extends React.Component {
     const isAlreadySelected = useEditorStore.getState().selectedComponents.find((component) => component.id === id);
     if (!isAlreadySelected) {
       this.props.setSelectedComponents([
-        ...(multiSelect ? useEditorStore.getState().selectedComponents : []),
+        ...(multiSelect ? useEditorStore.getState().selectedComponents : EMPTY_ARRAY),
         { id, component },
       ]);
     }
@@ -955,7 +955,7 @@ class EditorComponent extends React.Component {
   onAreaSelectionStart = (e) => {
     const isMultiSelect = e.inputEvent.shiftKey || useEditorStore.getState().selectedComponents.length > 0;
     this.props.setSelectionInProgress(true);
-    this.props.setSelectedComponents([...(isMultiSelect ? useEditorStore.getState().selectedComponents : [])]);
+    this.props.setSelectedComponents([...(isMultiSelect ? useEditorStore.getState().selectedComponents : EMPTY_ARRAY)]);
   };
 
   onAreaSelection = (e) => {
