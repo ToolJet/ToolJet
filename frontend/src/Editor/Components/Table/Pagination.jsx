@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const Pagination = function Pagination({
   onPageIndexChanged,
@@ -12,6 +13,9 @@ export const Pagination = function Pagination({
   setPageIndex,
   enablePrevButton,
   enableNextButton,
+  // eslint-disable-next-line no-unused-vars
+  darkMode,
+  tableWidth,
 }) {
   const [pageCount, setPageCount] = useState(autoPageCount);
 
@@ -47,51 +51,137 @@ export const Pagination = function Pagination({
   }
 
   return (
-    <div className="pagination justify-content-start">
-      {!serverSide && (
-        <button
-          data-cy={`pagination-button-to-first`}
-          className={`btn btn-sm btn-light mx-2 ${pageIndex === 1 ? 'cursor-not-allowed' : ''}`}
-          onClick={() => gotoPage(1)}
-          disabled={pageIndex === 1}
-        >
-          {'<<'}
-        </button>
-      )}
-      <button
-        data-cy={`pagination-button-to-previous`}
-        className={`btn btn-sm btn-light ${pageIndex === 1 ? 'cursor-not-allowed' : ''}`}
-        onClick={() => goToPreviousPage()}
-        disabled={pageIndex === 1 || !enablePrevButton}
-      >
-        {'<'}
-      </button>{' '}
-      <small className="p-1 mx-2" data-cy={`page-index-details`}>
-        {serverSide && <strong>{pageIndex}</strong>}
-        {!serverSide && (
-          <strong>
-            {pageIndex} of {autoPageOptions.length || 1}
-          </strong>
+    <div className="pagination-container d-flex h-100 align-items-center custom-gap-4" data-cy="pagination-section">
+      <div className="d-flex">
+        {!serverSide && tableWidth > 460 && (
+          <ButtonSolid
+            variant="ghostBlack"
+            className="tj-text-xsm"
+            style={{
+              minWidth: '28px',
+              width: '28px',
+              height: '28px',
+              padding: '7px',
+              borderRadius: '6px',
+              display: 'flex',
+              justifyContent: 'center',
+              cursor: pageIndex === 1 ? 'not-allowed' : 'pointer',
+            }}
+            leftIcon="cheveronleftdouble"
+            fill={`var(--slate12)`}
+            iconWidth="14"
+            size="md"
+            disabled={pageIndex === 1}
+            onClick={(event) => {
+              event.stopPropagation();
+              gotoPage(1);
+            }}
+            data-cy={`pagination-button-to-first`}
+          ></ButtonSolid>
         )}
-      </small>
-      <button
-        data-cy={`pagination-button-to-next`}
-        className={`btn btn-light btn-sm ${!autoCanNextPage && !serverSide ? 'cursor-not-allowed' : ''}`}
-        onClick={() => goToNextPage()}
-        disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
+        <ButtonSolid
+          variant="ghostBlack"
+          className="tj-text-xsm"
+          style={{
+            minWidth: '28px',
+            width: '28px',
+            height: '28px',
+            padding: '7px',
+            borderRadius: '6px',
+            display: 'flex',
+            justifyContent: 'center',
+            cursor: pageIndex === 1 || !enablePrevButton ? 'not-allowed' : 'pointer',
+          }}
+          leftIcon="cheveronleft"
+          fill={`var(--slate12)`}
+          iconWidth="14"
+          size="md"
+          disabled={pageIndex === 1 || !enablePrevButton}
+          onClick={(event) => {
+            event.stopPropagation();
+            goToPreviousPage();
+          }}
+          data-cy={`pagination-button-to-previous`}
+        ></ButtonSolid>
+      </div>
+
+      <div
+        className="d-flex align-items-center tj-text-xsm h-100 page-info custom-gap-4"
+        data-cy={`page-index-details`}
       >
-        {'>'}
-      </button>{' '}
-      {!serverSide && (
-        <button
-          data-cy={`pagination-button-to-last`}
-          className={`btn btn-light btn-sm mx-2 ${!autoCanNextPage && !serverSide ? 'cursor-not-allowed' : ''}`}
-          onClick={() => gotoPage(pageCount)}
-          disabled={!autoCanNextPage && !serverSide}
-        >
-          {'>>'}
-        </button>
-      )}
+        {serverSide && <span className="color-slate-11">{pageIndex}</span>}
+        {!serverSide && (
+          <>
+            <input
+              type="text"
+              className={`form-control h-100`}
+              value={pageIndex}
+              onChange={(event) => {
+                if (event.target.value <= pageCount) gotoPage(event.target.value);
+              }}
+            />
+            <span
+              className="font-weight-500 total-page-number"
+              style={{ width: 'max-content' }}
+              data-cy={`total-page-number-${autoPageOptions.length || 1}`}
+            >
+              of {pageCount || 1}
+            </span>
+          </>
+        )}
+      </div>
+      <div className="d-flex">
+        <ButtonSolid
+          variant="ghostBlack"
+          className="tj-text-xsm"
+          style={{
+            minWidth: '28px',
+            width: '28px',
+            height: '28px',
+            padding: '7px',
+            borderRadius: '6px',
+            display: 'flex',
+            justifyContent: 'center',
+            cursor: (!autoCanNextPage && !serverSide) || !enableNextButton ? 'not-allowed' : 'pointer',
+          }}
+          leftIcon="cheveronright"
+          fill={`var(--slate12)`}
+          iconWidth="14"
+          size="md"
+          disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
+          onClick={(event) => {
+            event.stopPropagation();
+            goToNextPage();
+          }}
+          data-cy={`pagination-button-to-next`}
+        ></ButtonSolid>
+        {!serverSide && tableWidth > 460 && (
+          <ButtonSolid
+            variant="ghostBlack"
+            className="tj-text-xsm"
+            style={{
+              minWidth: '28px',
+              width: '28px',
+              height: '28px',
+              padding: '7px',
+              borderRadius: '6px',
+              display: 'flex',
+              justifyContent: 'center',
+              cursor: !autoCanNextPage && !serverSide ? 'not-allowed' : 'pointer',
+            }}
+            leftIcon="cheveronrightdouble"
+            fill={`var(--slate12)`}
+            iconWidth="14"
+            size="md"
+            onClick={(event) => {
+              event.stopPropagation();
+              gotoPage(pageCount);
+            }}
+            disabled={!autoCanNextPage && !serverSide}
+            data-cy={`pagination-button-to-last`}
+          ></ButtonSolid>
+        )}
+      </div>
     </div>
   );
 };

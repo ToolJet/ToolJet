@@ -1,6 +1,8 @@
 import React from 'react';
 import { ToolTip } from './Components/ToolTip';
-import SelectSearch from 'react-select-search';
+// import SelectSearch from 'react-select-search';
+import SelectSearch from 'react-select';
+
 // eslint-disable-next-line import/no-unresolved
 import { useTranslation } from 'react-i18next';
 
