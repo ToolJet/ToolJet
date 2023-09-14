@@ -14,13 +14,14 @@ import { multipageSelector } from "Selectors/multipage";
 
 describe("Editor- Inspector", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
   });
 
   it("should verify the values of inspector", () => {
     const countGlobal =
-      Cypress.env("environment") === "Community" ? "3 entries " : "5 entries ";
+      Cypress.env("environment") === "Community" ? "4 entries " : "5 entries ";
     const countUser =
       Cypress.env("environment") === "Community" ? "4 entries " : "5 entries ";
     cy.get(commonWidgetSelector.sidebarinspector).click();
@@ -58,13 +59,14 @@ describe("Editor- Inspector", () => {
         "have.text",
         "id"
       );
-      openNode("mode");
-      verifyValue("value", "String", `"edit"`);
     }
+    openNode("mode");
+    verifyValue("value", "String", `"edit"`);
 
     openNode("groups");
     verifyValue("0", "String", `"all_users"`);
     verifyValue("1", "String", `"admin"`);
+    verifyNodeData("constants", "Object", "0 entry ");
 
     openNode("globals");
     openNode("page");
@@ -127,7 +129,7 @@ describe("Editor- Inspector", () => {
     verifyValue("key", "String", `"value"`);
 
     cy.get(`[data-cy="inspector-node-key"] > .mx-1`).realHover();
-    cy.get(".mx-1 > img").realClick();
+    cy.get("[data-cy='copy-icon']").realClick();
     cy.realPress("Escape");
 
     cy.window().then((win) => {
@@ -152,5 +154,6 @@ describe("Editor- Inspector", () => {
     cy.get(`[data-cy="inspector-node-button1"] > .mx-1`).realHover();
     cy.get('[style="height: 13px; width: 13px;"] > img').click();
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+    cy.apiDeleteApp();
   });
 });

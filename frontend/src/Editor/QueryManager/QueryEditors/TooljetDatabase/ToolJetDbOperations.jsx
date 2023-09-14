@@ -22,7 +22,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
-  const [selectedTable, setSelectedTable] = useState(options['table_name']);
+  const [selectedTableId, setSelectedTableId] = useState(options['table_id']);
+  const [selectedTableName, setSelectedTableName] = useState(null);
   const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
   const [updateRowsOptions, setUpdateRowsOptions] = useState(
     options['update_rows'] || { columns: {}, where_filters: {} }
@@ -37,6 +38,19 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     fetchTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (tables.length > 0) {
+      const tableInfo = tables.find((table) => table.table_id == selectedTableId);
+      tableInfo && setSelectedTableName(tableInfo.table_name);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tables]);
+
+  useEffect(() => {
+    selectedTableName && fetchTableInformation(selectedTableName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTableName]);
 
   useEffect(() => {
     if (mounted) {
@@ -90,8 +104,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       setTables,
       columns,
       setColumns,
-      selectedTable,
-      setSelectedTable,
+      selectedTableId,
+      setSelectedTableId,
+      selectedTableName,
+      setSelectedTableName,
       listRowsOptions,
       setListRowsOptions,
       limitOptionChanged,
@@ -102,7 +118,16 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       updateRowsOptions,
       handleUpdateRowsOptionsChange,
     }),
-    [organizationId, tables, columns, selectedTable, listRowsOptions, deleteRowsOptions, updateRowsOptions]
+    [
+      organizationId,
+      tables,
+      columns,
+      selectedTableName,
+      selectedTableId,
+      listRowsOptions,
+      deleteRowsOptions,
+      updateRowsOptions,
+    ]
   );
 
   const fetchTables = async () => {
@@ -114,12 +139,14 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     }
 
     if (Array.isArray(data?.result)) {
-      setTables(data.result.map((table) => table.table_name) || []);
+      const selectedTableInfo = data.result.find((table) => table.id === options['table_id']);
 
-      if (selectedTable) {
-        console.log('fetchTableInformation');
-        fetchTableInformation(selectedTable);
-      }
+      selectedTableInfo && setSelectedTableId(selectedTableInfo.id);
+      setTables(
+        data.result.map((table) => {
+          return { table_name: table.table_name, table_id: table.id };
+        }) || []
+      );
     }
   };
 
@@ -144,21 +171,22 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     }
   };
 
-  const generateListForDropdown = (list) => {
-    return list.map((value) =>
+  const generateListForDropdown = (tableList) => {
+    return tableList.map((tableMap) =>
       Object.fromEntries([
-        ['name', value],
-        ['value', value],
+        ['name', tableMap.table_name],
+        ['value', tableMap.table_id],
       ])
     );
   };
 
-  const handleTableNameSelect = (tableName) => {
-    setSelectedTable(tableName);
-    fetchTableInformation(tableName);
+  const handleTableNameSelect = (tableId) => {
+    setSelectedTableId(tableId);
+    const { table_name: tableName } = tables.find((t) => t.table_id === tableId);
+    tableName && setSelectedTableName(tableName);
 
     optionchanged('organization_id', organizationId);
-    optionchanged('table_name', tableName);
+    optionchanged('table_id', tableId);
   };
 
   const getComponent = () => {
@@ -185,7 +213,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
           <div className={cx({ 'flex-grow-1': isHorizontalLayout })}>
             <Select
               options={generateListForDropdown(tables)}
-              value={selectedTable}
+              value={selectedTableId}
               onChange={(value) => handleTableNameSelect(value)}
               width="100%"
               // useMenuPortal={false}

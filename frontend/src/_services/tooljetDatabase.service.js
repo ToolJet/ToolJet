@@ -2,8 +2,9 @@ import HttpClient from '@/_helpers/http-client';
 
 const tooljetAdapter = new HttpClient();
 
-function findOne(organizationId, tableName, query = '') {
-  return tooljetAdapter.get(`/tooljet_db/organizations/${organizationId}/proxy/\${${tableName}}?${query}`);
+function findOne(headers, tableId, query = '') {
+  tooljetAdapter.headers = { ...tooljetAdapter.headers, ...headers };
+  return tooljetAdapter.get(`/tooljet_db/proxy/${tableId}?${query}`, headers);
 }
 
 function findAll(organizationId) {
@@ -21,16 +22,16 @@ function viewTable(organizationId, tableName) {
   return tooljetAdapter.get(`/tooljet_db/organizations/${organizationId}/table/${tableName}`);
 }
 
-function createRow(organizationId, tableName, data) {
-  return tooljetAdapter.post(`/tooljet_db/organizations/${organizationId}/proxy/\${${tableName}}`, data);
+function createRow(headers, tableId, data) {
+  return tooljetAdapter.post(`/tooljet_db/proxy/${tableId}`, data, headers);
 }
 
-function createColumn(organizationId, tableName, columnName, dataType, defaultValue) {
-  return tooljetAdapter.post(`/tooljet_db/organizations/${organizationId}/table/${tableName}/column`, {
+function createColumn(organizationId, tableId, columnName, dataType, defaultValue) {
+  return tooljetAdapter.post(`/tooljet_db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
       column_name: columnName,
       data_type: dataType,
-      default: defaultValue,
+      column_default: defaultValue,
     },
   });
 }
@@ -51,12 +52,12 @@ function renameTable(organizationId, tableName, newTableName) {
   });
 }
 
-function updateRows(organizationId, tableName, data, query = '') {
-  return tooljetAdapter.patch(`/tooljet_db/organizations/${organizationId}/proxy/\${${tableName}}?${query}`, data);
+function updateRows(headers, tableId, data, query = '') {
+  return tooljetAdapter.patch(`/tooljet_db/proxy/${tableId}?${query}`, data, headers);
 }
 
-function deleteRow(organizationId, tableName, query = '') {
-  return tooljetAdapter.delete(`/tooljet_db/organizations/${organizationId}/proxy/\${${tableName}}?${query}`);
+function deleteRows(headers, tableId, query = '') {
+  return tooljetAdapter.delete(`/tooljet_db/proxy/${tableId}?${query}`, headers);
 }
 
 function deleteColumn(organizationId, tableName, columnName) {
@@ -76,7 +77,7 @@ export const tooljetDatabaseService = {
   createColumn,
   updateTable,
   updateRows,
-  deleteRow,
+  deleteRows,
   deleteColumn,
   deleteTable,
   renameTable,

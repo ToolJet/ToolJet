@@ -142,7 +142,6 @@ const RenderColumnOptions = ({
             value={column}
             options={displayColumns}
             onChange={handleColumnChange}
-            customWrap={true}
           />
         </div>
 

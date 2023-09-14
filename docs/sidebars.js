@@ -197,6 +197,7 @@ const sidebars = {
         },
       ],
     },
+    'dashboard',
     {
       'type': 'category',
       'label': 'App Builder',
@@ -211,6 +212,16 @@ const sidebars = {
         'tutorial/pages',
         'app-builder/customstyles',
         'tutorial/keyboard-shortcuts',
+      ],
+    },
+    {
+      'type': 'category',
+      'label': 'Workflows',
+      'items': [
+        'workflows/overview',
+        'workflows/nodes',
+        'workflows/permissions',
+        'workflows/logs',
       ],
     },
     {
