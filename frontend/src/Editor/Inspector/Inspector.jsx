@@ -33,8 +33,7 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
-import { useEditorStore } from '@/_stores/editorStore';
-import { EMPTY_ARRAY } from '..';
+import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {

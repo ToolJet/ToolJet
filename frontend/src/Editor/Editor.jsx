@@ -54,7 +54,7 @@ import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError'
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
@@ -64,8 +64,7 @@ import RightSidebarTabManager from './RightSidebarTabManager';
 
 setAutoFreeze(false);
 enablePatches();
-export const EMPTY_ARRAY = [];
-class EditorComponent extends React.Component {
+class EditorComponent extends React.PureComponent {
   constructor(props) {
     super(props);
     resetAllStores();
@@ -830,10 +829,9 @@ class EditorComponent extends React.Component {
 
   setSelectedComponent = (id, component, multiSelect = false) => {
     const isAlreadySelected = useEditorStore.getState().selectedComponents.find((component) => component.id === id);
-
     if (!isAlreadySelected) {
       this.props.setSelectedComponents([
-        ...(multiSelect ? useEditorStore.getState().selectedComponents : []),
+        ...(multiSelect ? useEditorStore.getState().selectedComponents : EMPTY_ARRAY),
         { id, component },
       ]);
     }
@@ -957,7 +955,7 @@ class EditorComponent extends React.Component {
   onAreaSelectionStart = (e) => {
     const isMultiSelect = e.inputEvent.shiftKey || useEditorStore.getState().selectedComponents.length > 0;
     this.props.setSelectionInProgress(true);
-    this.props.setSelectedComponents([...(isMultiSelect ? useEditorStore.getState().selectedComponents : [])]);
+    this.props.setSelectedComponents([...(isMultiSelect ? useEditorStore.getState().selectedComponents : EMPTY_ARRAY)]);
   };
 
   onAreaSelection = (e) => {
@@ -1471,7 +1469,7 @@ class EditorComponent extends React.Component {
   };
 
   handleCanvasContainerMouseUp = (e) => {
-    if (['real-canvas', 'modal'].includes(e.target.className)) {
+    if (['real-canvas', 'modal'].includes(e.target.className) && useEditorStore.getState().selectedComponents.length) {
       this.props.setSelectedComponents(EMPTY_ARRAY);
     }
   };
