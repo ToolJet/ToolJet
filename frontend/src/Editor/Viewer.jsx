@@ -545,7 +545,6 @@ class ViewerComponent extends React.Component {
     const { handle } = this.state.appDefinition.pages[id];
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-
     if (this.state.slug) this.props.navigate(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
     else
       this.props.navigate(
@@ -638,7 +637,7 @@ class ViewerComponent extends React.Component {
           this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
         ) {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
+          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/environments/${this.state.environmentId}/${homeHandle}`;
           if (this.state.slug) {
             url = `/applications/${this.state.slug}/${homeHandle}`;
           }
@@ -651,7 +650,7 @@ class ViewerComponent extends React.Component {
           this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
         ) {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
+          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/environments/${this.state.environmentId}/${homeHandle}`;
           if (this.state.slug) {
             url = `/applications/${this.state.slug}/${homeHandle}`;
           }
