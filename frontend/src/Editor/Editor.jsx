@@ -1722,7 +1722,7 @@ class EditorComponent extends React.Component {
                     this.selectionRef.current.checkScroll();
                   }}
                 >
-                  <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }}>
+                  <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }} className={`app-${this.state.appId}`}>
                     <div
                       className={`canvas-area ${this.formCustomPageSelectorClass()}`}
                       style={{

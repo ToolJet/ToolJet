@@ -680,12 +680,12 @@ class ViewerComponent extends React.Component {
               <div className="sub-section">
                 <div className="main">
                   <div
-                    className="canvas-container align-items-center"
+                    className="canvas-container page-container align-items-center"
                     style={{
                       background: this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
                     }}
                   >
-                    <div className="areas d-flex flex-rows">
+                    <div className={`areas d-flex flex-rows app-${this.state.appId}`}>
                       {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
                           isMobileDevice={this.props.currentLayout === 'mobile'}
