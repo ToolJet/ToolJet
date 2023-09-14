@@ -1090,14 +1090,13 @@ describe("Table", () => {
 
   it("should verify add new row", () => {
     addNewRow();
-    cy.contains(".btn-primary", "Save").click();
+    cy.contains("Save").click();
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "1 entry ");
     openNode("components");
     verifyNodeData(tableText.defaultWidgetName, "Object", "22 entries ");
     cy.wait(1000);
-    openNode(tableText.defaultWidgetName, 0, 1);
     openNode(tableText.defaultWidgetName, 0, 1);
     verifyNodeData("newRows", "Array", "1 item ");
     openNode("newRows");
