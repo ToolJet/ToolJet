@@ -32,11 +32,15 @@ import {
 
 describe("Text Input", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget("Text");
   });
 
+  afterEach(() => {
+    cy.apiDeleteApp();
+  });
   it("should verify CSA", () => {
     const data = {};
     data.customText = randomString(12);

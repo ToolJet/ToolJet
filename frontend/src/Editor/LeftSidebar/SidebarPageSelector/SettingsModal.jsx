@@ -25,7 +25,7 @@ export const SettingsModal = ({
         onHide={handleClose}
         size="sm"
         centered
-        className={`${darkMode && 'theme-dark dark-theme'} page-handle-edit-modal`}
+        className={`${darkMode && 'dark-theme'} page-handle-edit-modal`}
         backdrop="static"
         enforceFocus={false}
       >
