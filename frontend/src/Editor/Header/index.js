@@ -144,7 +144,7 @@ export default function EditorHeader({
               </div>
               <div className="navbar-seperator"></div>
               <div className="d-flex align-items-center p-0" style={{ marginRight: '12px' }}>
-                <div className="d-flex version-manager-container p-0">
+                <div className="d-flex version-manager-container p-0  align-items-center ">
                   {editingVersion && (
                     <EnvironmentManager
                       editingVersion={editingVersion}
@@ -155,6 +155,8 @@ export default function EditorHeader({
                       setCurrentEnvironment={setCurrentEnvironment}
                     />
                   )}
+                  <div className="navbar-seperator"></div>
+
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}

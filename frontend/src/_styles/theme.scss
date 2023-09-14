@@ -7904,7 +7904,6 @@ tbody {
 
 .info-screen-description {
   margin-bottom: 0px !important;
-  font-family: 'Roboto';
   font-style: normal;
   font-weight: 400;
   font-size: 14px;
@@ -8356,8 +8355,8 @@ tbody {
 }
 
 .version-manager-container {
+  flex-direction: row-reverse;
   padding: 0.6rem;
-  width: 158px;
 }
 
 // tooljet db fields styles [ query manager ]
