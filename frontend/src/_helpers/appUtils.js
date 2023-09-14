@@ -870,6 +870,8 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
 
         switch (queryStatus) {
           case 'Bad Request':
+          case 'Not Found':
+          case 'Unprocessable Entity':
           case 'failed': {
             const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
             toast.error(`${err.message}`);
@@ -976,8 +978,25 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             ? data?.data?.status ?? 'ok'
             : data.status;
 
-        if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
-          const errorData = query.kind === 'runpy' ? data.data : data;
+        if (
+          promiseStatus === 'failed' ||
+          promiseStatus === 'Bad Request' ||
+          promiseStatus === 'Not Found' ||
+          promiseStatus === 'Unprocessable Entity'
+        ) {
+          let errorData = {};
+          switch (query.kind) {
+            case 'runpy':
+              errorData = data.data;
+              break;
+            case 'tooljetdb':
+              errorData = data?.error || data;
+              break;
+            default:
+              errorData = data;
+          }
+
+          // errorData = query.kind === 'runpy' ? data.data : data;
           useCurrentStateStore.getState().actions.setErrors({
             [queryName]: {
               type: 'query',
