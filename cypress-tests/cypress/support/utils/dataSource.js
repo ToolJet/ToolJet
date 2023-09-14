@@ -97,6 +97,7 @@ export const addQueryN = (queryName, query, dbName) => {
   cy.get(dataSourceSelector.queryInputField)
     .realMouseDown({ position: "center" })
     .realType(" ");
+  cy.wait(500)
   cy.get(dataSourceSelector.queryInputField).clearAndTypeOnCodeMirror(query);
   cy.get(dataSourceSelector.queryCreateAndRunButton).click();
 };
