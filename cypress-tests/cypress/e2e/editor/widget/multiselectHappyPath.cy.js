@@ -40,9 +40,13 @@ import {
 
 describe("Multiselect widget", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget(multiselectText.multiselect);
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the widget", () => {
@@ -219,12 +223,14 @@ describe("Multiselect widget", () => {
 
     openEditorSidebar(multiselectText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
 
     verifyAndModifyStylePickerFx(
       commonWidgetText.parameterBoxShadow,
       commonWidgetText.boxShadowDefaultValue,
-      commonWidgetText.boxShadowFxValue
+      commonWidgetText.boxShadowFxValue,
+      0,
+      "0px 0px 0px 0px "
     );
     cy.get(
       commonWidgetSelector.parameterFxButton(
@@ -287,7 +293,7 @@ describe("Multiselect widget", () => {
 
     openEditorSidebar(data.widgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
 
     cy.get(
       commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
