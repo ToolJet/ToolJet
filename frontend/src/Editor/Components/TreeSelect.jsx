@@ -72,10 +72,9 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
     });
     setExposedVariable('checkedPathArray', checkedPathArray);
     setExposedVariable('checkedPathStrings', checkedPathString);
-    setExposedVariable('checked', checked).then(() => {
-      updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
-      fireEvent('onChange');
-    });
+    setExposedVariable('checked', checked);
+    updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
+    fireEvent('onChange');
     setChecked(checked);
   };
 

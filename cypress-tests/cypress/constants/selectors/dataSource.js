@@ -98,4 +98,3 @@ export const dataSourceSelector = {
     return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`
   },
 };
-

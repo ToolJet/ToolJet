@@ -22,7 +22,7 @@ import SuccessNotificationInputs from './SuccessNotificationInputs';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
-export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDefinition, setOptions, appId }) => {
+export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDefinition, setOptions }) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
@@ -251,7 +251,9 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
     }
     return (
       <div className={cx('mt-2 d-flex px-4 mb-3', { 'disabled ': isVersionReleased })}>
-        <div className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500`}>
+        <div
+          className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
+        >
           Datasource
         </div>
         <div className="d-flex flex-grow-1">

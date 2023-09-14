@@ -1,8 +1,18 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu, isHome, isHidden }) => {
+export const PagehandlerMenu = ({
+  page,
+  darkMode,
+  handlePageCallback,
+  showMenu,
+  setShowMenu,
+  isHome,
+  isHidden,
+  isDisabled,
+}) => {
   const closeMenu = () => {
     setShowMenu(false);
   };
@@ -20,7 +30,6 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ page, showMenu })]);
-
   return (
     <OverlayTrigger
       trigger={'click'}
@@ -28,7 +37,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
       rootClose={false}
       show={showMenu}
       overlay={
-        <Popover key={page.id} id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
+        <Popover key={page.id} id="page-handler-menu" className={darkMode && 'dark-theme'}>
           <Popover.Body key={page.id} bsPrefix="popover-body">
             <div className="card-body">
               <PageHandleField page={page} updatePageHandle={handlePageCallback} />
@@ -41,30 +50,26 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
-                {/* <Field
-                  id="duplicate-page"
-                  text="Duplicate"
-                  iconSrc={'assets/images/icons/duplicate.svg'}
-                  closeMenu={closeMenu}
-                  callback={handlePageCallback}
-                /> */}
-                <Field
-                  id="mark-as-home-page"
-                  text="Mark home"
-                  iconSrc={'assets/images/icons/home.svg'}
-                  closeMenu={closeMenu}
-                  callback={handlePageCallback}
-                  disabled={isHidden}
-                />
+                {isDisabled || isHidden ? null : (
+                  <Field
+                    id="mark-as-home-page"
+                    text="Mark home"
+                    iconSrc={'assets/images/icons/home.svg'}
+                    closeMenu={closeMenu}
+                    callback={handlePageCallback}
+                  />
+                )}
 
-                <Field
-                  id={isHidden ? 'unhide-page' : 'hide-page'}
-                  text={isHidden ? 'Unhide page' : 'Hide page'}
-                  iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
-                  closeMenu={closeMenu}
-                  callback={handlePageCallback}
-                  disabled={isHome && !isHidden}
-                />
+                {!isDisabled && (
+                  <Field
+                    id={isHidden ? 'unhide-page' : 'hide-page'}
+                    text={isHidden ? 'Show page on app menu' : 'Hide page on app menu'}
+                    iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
+                    closeMenu={closeMenu}
+                    callback={handlePageCallback}
+                    disabled={isHome}
+                  />
+                )}
 
                 <Field
                   id="clone-page"
@@ -82,7 +87,15 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
-
+                <Field
+                  id={isDisabled ? 'enable-page' : 'disable-page'}
+                  text={isDisabled ? 'Enable' : 'Disable'}
+                  customClass={'delete-btn'}
+                  iconSrc={`assets/images/icons/editor/left-sidebar/${isDisabled ? 'file-accept' : 'file-remove'}.svg`}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                  disabled={isHome}
+                />
                 <Field
                   id="delete-page"
                   text="Delete page"
@@ -104,9 +117,8 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
             event.stopPropagation();
             setShowMenu(true);
           }}
-          styles={{ height: '20px', marginTop: '2px' }}
         >
-          <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
+          <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
         </Button.UnstyledButton>
       </span>
     </OverlayTrigger>
