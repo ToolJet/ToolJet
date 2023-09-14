@@ -1011,7 +1011,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           });
           if (mode !== 'view') {
             const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data;
-            toast.error(err?.message);
+            toast.error(err?.message === undefined ? 'Something went wrong' : err?.message)
           }
           return;
         } else {
