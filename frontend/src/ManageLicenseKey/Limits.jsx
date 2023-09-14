@@ -11,26 +11,28 @@ const Limits = () => {
   const [loading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
-    let service;
-    if (currentTab === 'apps') {
-      service = appService.getAppsLimit();
-    } else if (currentTab === 'workspaces') {
-      service = organizationService.getWorkspacesLimit();
-    } else if (currentTab === 'users') {
-      service = userService.getUserLimits('all');
-    } else if (currentTab === 'tables') {
-      service = tooljetDatabaseService.getTablesLimit();
-    }
+    const fetchData = async () => {
+      setIsLoading(true);
+      let service;
+      if (currentTab === 'apps') {
+        service = await appService.getAppsLimit();
+      } else if (currentTab === 'workspaces') {
+        service = await organizationService.getWorkspacesLimit();
+      } else if (currentTab === 'users') {
+        service = await userService.getUserLimits('all');
+      } else if (currentTab === 'tables') {
+        service = await tooljetDatabaseService.getTablesLimit();
+        service = service.data;
+      }
 
-    service.then((data) => {
-      setLimitsData([
-        ...Object.keys(data)
-          .filter((key) => data[key] !== null)
-          .map((limit) => data[limit]),
-      ]);
+      const data = Object.keys(service)
+        .filter((key) => service[key] !== null)
+        .map((limit) => service[limit]);
+      setLimitsData(data);
       setIsLoading(false);
-    });
+    };
+
+    fetchData();
   }, [currentTab]);
 
   return loading ? (
@@ -80,9 +82,9 @@ const Limits = () => {
           data-cy="tables-link"
         >
           <SolidIcon
+            name="grid"
             className="manage-group-tab-icons"
             fill={currentTab === 'tables' ? '#3E63DD' : '#C1C8CD'}
-            name="tablegroup"
             width="16"
           ></SolidIcon>
           Tables
