@@ -99,7 +99,7 @@ function BulkUploadDrawer({
                       isLoading={isDownloadingTemplate}
                       onClick={handleTemplateDownload}
                     >
-                      Generate Template
+                      Download Template
                     </ButtonSolid>
                   </div>
                 </div>
