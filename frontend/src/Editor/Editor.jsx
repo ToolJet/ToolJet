@@ -54,7 +54,7 @@ import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError'
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
@@ -64,7 +64,6 @@ import RightSidebarTabManager from './RightSidebarTabManager';
 
 setAutoFreeze(false);
 enablePatches();
-export const EMPTY_ARRAY = [];
 class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -830,7 +829,6 @@ class EditorComponent extends React.Component {
 
   setSelectedComponent = (id, component, multiSelect = false) => {
     const isAlreadySelected = useEditorStore.getState().selectedComponents.find((component) => component.id === id);
-
     if (!isAlreadySelected) {
       this.props.setSelectedComponents([
         ...(multiSelect ? useEditorStore.getState().selectedComponents : []),
@@ -1471,7 +1469,7 @@ class EditorComponent extends React.Component {
   };
 
   handleCanvasContainerMouseUp = (e) => {
-    if (['real-canvas', 'modal'].includes(e.target.className)) {
+    if (['real-canvas', 'modal'].includes(e.target.className) && useEditorStore.getState().selectedComponents.length) {
       this.props.setSelectedComponents(EMPTY_ARRAY);
     }
   };

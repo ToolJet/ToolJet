@@ -33,8 +33,7 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
-import { useEditorStore } from '@/_stores/editorStore';
-import { EMPTY_ARRAY } from '..';
+import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -83,10 +82,8 @@ export const Inspector = ({
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [tabHeight, setTabHeight] = React.useState(0);
-  const componentNameRef = useRef(null);
-  const [newComponentName, setNewComponentName] = useState(component?.component?.name);
+  const [newComponentName, setNewComponentName] = useState('');
   const [inputRef, setInputFocus] = useFocus();
-  const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -106,16 +103,10 @@ export const Inspector = ({
 
   const isMounted = useMounted();
 
+  //
   useEffect(() => {
-    componentNameRef.current = newComponentName;
-  }, [newComponentName]);
-
-  useEffect(() => {
-    return () => {
-      handleComponentNameChange(componentNameRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setNewComponentName(allComponents[selectedComponentId]?.component?.name);
+  }, [selectedComponentId, allComponents]);
 
   const validateComponentName = (name) => {
     const isValid = !Object.values(allComponents)

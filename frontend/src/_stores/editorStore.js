@@ -2,6 +2,8 @@ import { create, zustandDevTools } from './utils';
 
 const STORE_NAME = 'Editor';
 
+export const EMPTY_ARRAY = [];
+
 const ACTIONS = {
   SET_SHOW_COMMENTS: 'SET_SHOW_COMMENTS',
   SET_HOVERED_COMPONENT: 'SET_HOVERED_COMPONENT',
@@ -17,7 +19,7 @@ const initialState = {
   showComments: false,
   hoveredComponent: '',
   selectionInProgress: false,
-  selectedComponents: [],
+  selectedComponents: EMPTY_ARRAY,
   isEditorActive: false,
 };
 
