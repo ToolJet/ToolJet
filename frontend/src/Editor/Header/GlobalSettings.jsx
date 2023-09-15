@@ -9,7 +9,6 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import ExportAppModal from '../../HomePage/ExportAppModal';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -21,13 +20,13 @@ export const GlobalSettings = ({
   toggleAppMaintenance,
   is_maintenance_on,
   app,
+  backgroundFxQuery,
+  realState,
 }) => {
   const { t } = useTranslation();
-  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor } = globalSettings;
   const [showPicker, setShowPicker] = useState(false);
-  const currentState = useCurrentState();
   const [forceCodeBox, setForceCodeBox] = useState(true);
-  const [realState, setRealState] = useState(currentState);
   const [showConfirmation, setConfirmationShow] = useState(false);
   const [isExportingApp, setIsExportingApp] = React.useState(false);
   const { isVersionReleased } = useAppVersionStore(
@@ -44,17 +43,6 @@ export const GlobalSettings = ({
     bottom: '0px',
     left: '0px',
   };
-
-  useEffect(() => {
-    setRealState(currentState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components]);
-
-  useEffect(() => {
-    backgroundFxQuery &&
-      globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, realState));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
   const outerStyles = {
     width: '142px',
@@ -135,7 +123,7 @@ export const GlobalSettings = ({
                 <div className="position-relative">
                   <div className="global-settings-width-input-container">
                     <input
-                      style={{ width: '103px' }}
+                      style={{ width: '103px', borderRight: 'none' }}
                       data-cy="maximum-canvas-width-input-field"
                       type="text"
                       className={`form-control`}
