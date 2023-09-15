@@ -1509,6 +1509,7 @@ const EditorComponent = (props) => {
                 pages: appDefinition?.pages ?? {},
                 homePageId: appDefinition?.homePageId ?? null,
                 showViewerNavigation: appDefinition?.showViewerNavigation,
+                globalSettings: appDefinition?.globalSettings ?? {},
               }}
               setSelectedComponent={setSelectedComponent}
               removeComponent={removeComponent}
@@ -1528,6 +1529,7 @@ const EditorComponent = (props) => {
               showHideViewerNavigationControls={showHideViewerNavigation}
               updateOnSortingPages={updateOnSortingPages}
               setEditorMarginLeft={handleEditorMarginLeftChange}
+              isMaintenanceOn={isMaintenanceOn}
             />
             {!props.showComments && (
               <Selecto

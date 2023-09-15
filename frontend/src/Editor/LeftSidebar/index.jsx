@@ -52,8 +52,9 @@ export const LeftSidebar = forwardRef((props, ref) => {
     toggleAppMaintenance,
     app,
     disableEnablePage,
+    isMaintenanceOn,
   } = props;
-  const { is_maintenance_on } = app;
+  // const { isMaintenanceOn } = app;
 
   const dataSources = useDataSources();
   const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
@@ -134,6 +135,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
 
+  console.log('-----arpit::::: [gs]', { appDefinition });
+
   const SELECTED_ITEMS = {
     page: (
       <LeftSidebarPageSelector
@@ -211,7 +214,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
         globalSettings={appDefinition.globalSettings}
         darkMode={darkMode}
         toggleAppMaintenance={toggleAppMaintenance}
-        is_maintenance_on={is_maintenance_on}
+        // is_maintenance_on={is_maintenance_on}
+        isMaintenanceOn={isMaintenanceOn}
         app={app}
       />
     ),
