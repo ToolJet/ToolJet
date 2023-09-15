@@ -840,12 +840,19 @@ export class AppsService {
   async updateAppVersion(version: AppVersion, body: AppVersionUpdateDto) {
     const editableParams = {};
 
-    if (body?.homePageId) {
+    const { globalSettings, homePageId } = await this.appVersionsRepository.findOne({
+      where: { id: version.id },
+    });
+
+    if (body?.homePageId && homePageId !== body.homePageId) {
       editableParams['homePageId'] = body.homePageId;
     }
 
     if (body?.globalSettings) {
-      editableParams['globalSettings'] = body.globalSettings;
+      editableParams['globalSettings'] = {
+        ...globalSettings,
+        ...body.globalSettings,
+      };
     }
 
     return await this.appVersionsRepository.update(version.id, editableParams);
