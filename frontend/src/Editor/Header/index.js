@@ -18,7 +18,6 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export default function EditorHeader({
   M,
-  app,
   appVersionPreviewLink,
   canUndo,
   canRedo,
@@ -31,15 +30,13 @@ export default function EditorHeader({
   saveEditingVersion,
   onVersionDelete,
   isMaintenanceOn,
-  appName,
-  appId,
   slug,
   darkMode,
 }) {
   const currentUser = useCurrentUser();
 
   const { updateState } = useAppDataActions();
-  const { isSaving } = useAppInfo();
+  const { isSaving, appId, appName, app, currentVersionId, isPublic } = useAppInfo();
 
   const handleSlugChange = (newSlug) => {
     updateState({ slug: newSlug });
@@ -99,7 +96,7 @@ export default function EditorHeader({
                 }}
               >
                 <div className="global-settings-app-wrapper p-0 m-0 ">
-                  <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
+                  <EditAppName appId={appId} appName={appName} onNameChanged={onNameChanged} />
                 </div>
                 <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
                 <div className="d-flex align-items-center">
@@ -136,9 +133,10 @@ export default function EditorHeader({
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      releasedVersionId={app.current_version_id}
+                      releasedVersionId={currentVersionId}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       onVersionDelete={onVersionDelete}
+                      isPublic={isPublic ?? false}
                     />
                   )}
                 </div>
@@ -150,9 +148,10 @@ export default function EditorHeader({
             >
               <div className="navbar-nav flex-row order-md-last release-buttons ">
                 <div className="nav-item">
-                  {app.id && (
+                  {appId && (
                     <ManageAppUsers
                       app={app}
+                      appId={appId}
                       slug={slug}
                       M={M}
                       handleSlugChange={handleSlugChange}

@@ -1472,7 +1472,6 @@ const EditorComponent = (props) => {
           appDefinition={_.cloneDeep(appDefinition)}
           toggleAppMaintenance={toggleAppMaintenance}
           editingVersion={editingVersion}
-          app={app}
           appVersionPreviewLink={appVersionPreviewLink}
           canUndo={canUndo}
           canRedo={canRedo}

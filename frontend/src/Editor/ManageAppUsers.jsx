@@ -19,7 +19,8 @@ class ManageAppUsersComponent extends React.Component {
 
     this.state = {
       showModal: false,
-      app: { ...props.app },
+      isPublic: false,
+      appId: null,
       slugError: null,
       isLoading: true,
       isSlugVerificationInProgress: false,
@@ -29,14 +30,15 @@ class ManageAppUsersComponent extends React.Component {
   }
 
   componentDidMount() {
-    const appId = this.props.app.id;
-    this.fetchAppUsers();
-    this.setState({ appId });
+    const appId = this.props.appId;
+    this.fetchAppUsers(appId);
+    this.setState({ appId, isPublic: this.props.isPublic });
   }
 
-  fetchAppUsers = () => {
+  fetchAppUsers = (appId) => {
+    console.log('---arpit [manager users]:; ', { x: this.props });
     appService
-      .getAppUsers(this.props.app.id)
+      .getAppUsers(appId)
       .then((data) =>
         this.setState({
           users: data.users,
@@ -64,11 +66,11 @@ class ManageAppUsersComponent extends React.Component {
     const { organizationUserId, role } = this.state.newUser;
 
     appService
-      .createAppUser(this.state.app.id, organizationUserId, role)
+      .createAppUser(this.state.appId, organizationUserId, role)
       .then(() => {
         this.setState({ addingUser: false, newUser: {} });
         toast.success('Added user successfully');
-        this.fetchAppUsers();
+        this.fetchAppUsers(this.state.appId);
       })
       .catch(({ error }) => {
         this.setState({ addingUser: false });
@@ -77,14 +79,14 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   toggleAppVisibility = () => {
-    const newState = !this.state.app.is_public;
+    const newState = !this.state.isPublic;
     this.setState({
       ischangingVisibility: true,
     });
 
     // eslint-disable-next-line no-unused-vars
     appService
-      .setVisibility(this.state.app.id, newState)
+      .setVisibility(this.state.appId, newState)
       .then(() => {
         this.setState({
           ischangingVisibility: false,
@@ -109,11 +111,11 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   handleSetSlug = (event) => {
-    const newSlug = event.target.value || this.props.app.id;
+    const newSlug = event.target.value || this.props.appId;
     this.setState({ isSlugVerificationInProgress: true });
 
     appService
-      .setSlug(this.state.app.id, newSlug)
+      .setSlug(this.state.appId, newSlug)
       .then(() => {
         this.setState({
           slugError: null,
@@ -134,8 +136,8 @@ class ManageAppUsersComponent extends React.Component {
   }, 500);
 
   render() {
-    const { isLoading, app, slugError, isSlugVerificationInProgress } = this.state;
-    const appId = app.id;
+    const { isLoading, app, slugError, isSlugVerificationInProgress, appId } = this.state;
+
     const appLink = `${window.public_config?.TOOLJET_HOST}${getSubpath() ? getSubpath() : ''}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = isSlugVerificationInProgress ? '' : slugError !== null ? 'is-invalid' : 'is-valid';
@@ -176,7 +178,7 @@ class ManageAppUsersComponent extends React.Component {
                       className="form-check-input color-slate12"
                       type="checkbox"
                       onClick={this.toggleAppVisibility}
-                      checked={this.state.app.is_public}
+                      checked={this.state.isPublic}
                       disabled={this.state.ischangingVisibility}
                       data-cy="make-public-app-toggle"
                     />
@@ -223,7 +225,7 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                 </div>
                 <hr />
-                {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                {(this.state.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                   <div className="shareable-link mb-3">
                     <label className="form-label" data-cy="iframe-link-label">
                       <small>
