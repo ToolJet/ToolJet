@@ -253,7 +253,7 @@ describe("Text Input", () => {
     );
   });
 
-  it.only("should verify the app preview", () => {
+  it("should verify the app preview", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
@@ -410,29 +410,29 @@ describe("Text Input", () => {
     selectCSA("textinput1", "Visibility");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Text input", 500, 50);
+    cy.dragAndDropWidget("Text input", 50, 50);
     selectEvent("On change", "Control Component");
     selectCSA("textinput1", "Set text", "500");
     addSupportCSAData("text", "{{components.textinput2.value");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 275);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 200);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Clear", "500");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 350);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 400);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Disable", "500");
     cy.get('[data-cy="Value-toggle-button"]').click();
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 425);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 50);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Set blur", "500");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 200);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Set focus");
 

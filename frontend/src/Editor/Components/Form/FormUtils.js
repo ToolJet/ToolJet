@@ -408,8 +408,9 @@ export function generateUIComponents(JSONSchema, advanced) {
           default:
             return;
         }
-        // converting label/key as text input
+        // converting label/key as text ui element/component
         uiComponentsDraft[index * 2]['definition']['properties']['text']['value'] = value?.label ?? key;
+        uiComponentsDraft[index * 2]['formKey'] = key;
       }
     });
     // adding title as first item

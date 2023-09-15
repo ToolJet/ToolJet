@@ -80,9 +80,10 @@ describe("Number Input", () => {
       commonWidgetSelector.draggableWidget(data.widgetName),
       randomNumber(1, 4)
     );
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", `${data.minimumvalue}.00`);
+    ).verifyVisibleElement("have.value", `${data.minimumvalue}`);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
@@ -98,9 +99,10 @@ describe("Number Input", () => {
       commonWidgetSelector.draggableWidget(data.widgetName),
       randomNumber(100, 110)
     );
+    cy.forceClickOnCanvas;
     cy.get(
       commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", `${data.maximumValue}.00`);
+    ).verifyVisibleElement("have.value", `${data.maximumValue}`);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
@@ -235,7 +237,7 @@ describe("Number Input", () => {
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
 
     fillBoxShadowParams(
@@ -260,16 +262,18 @@ describe("Number Input", () => {
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName),
       randomNumber(1, 4)
     );
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", `${data.minimumvalue}.00`);
+    ).verifyVisibleElement("have.value", `${data.minimumvalue}`);
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName),
       randomNumber(100, 110)
     );
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", `${data.maximumValue}.00`);
+    ).verifyVisibleElement("have.value", `${data.maximumValue}`);
     cy.get(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
     )

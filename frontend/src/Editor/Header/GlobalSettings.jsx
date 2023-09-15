@@ -190,29 +190,8 @@ export const GlobalSettings = ({
                 </div>
               </div>
             </div> */}
-
-              <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
-                <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
-                <div>
-                  <ButtonSolid
-                    variant="secondary"
-                    style={{ width: '158px' }}
-                    size="md"
-                    onClick={() => {
-                      setIsExportingApp(true);
-                      document.getElementById('maintenance-app-modal').click();
-                    }}
-                    fill={`var(--indigo9)`}
-                    leftIcon="fileupload"
-                    iconWidth="16"
-                    data-cy="button-user-status-change"
-                  >
-                    Export this app
-                  </ButtonSolid>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between mb-3">
-                <span className="" data-cy={`label-bg-canvas`}>
+              <div className="d-flex justify-content-between mb-3">
+                <span className="pt-2" data-cy={`label-bg-canvas`}>
                   {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
                 </span>
                 <div className="canvas-codehinter-container">
@@ -284,6 +263,27 @@ export const GlobalSettings = ({
                       />
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
+                <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
+                <div>
+                  <ButtonSolid
+                    variant="secondary"
+                    style={{ width: '158px' }}
+                    size="md"
+                    onClick={() => {
+                      setIsExportingApp(true);
+                      document.getElementById('maintenance-app-modal').click();
+                    }}
+                    fill={`var(--indigo9)`}
+                    leftIcon="fileupload"
+                    iconWidth="16"
+                    data-cy="button-user-status-change"
+                  >
+                    Export this app
+                  </ButtonSolid>
                 </div>
               </div>
             </div>

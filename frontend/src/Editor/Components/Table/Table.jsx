@@ -983,7 +983,7 @@ export function Table({
                   className={`tj-text-xsm ${tableDetails.filterDetails.filtersVisible && 'always-active-btn'}`}
                   customStyles={{ minWidth: '32px' }}
                   leftIcon="filter"
-                  fill={`var(--slate12)`}
+                  fill={`var(--slate11)`}
                   iconWidth="16"
                   onClick={(e) => {
                     if (tableDetails?.filterDetails?.filtersVisible) {
@@ -1519,7 +1519,7 @@ export function Table({
                       size="md"
                       customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
                       leftIcon={width > 650 ? '' : 'cross'}
-                      fill={'var(--slate12)'}
+                      fill={'var(--slate11)'}
                       iconWidth="16"
                     >
                       {width > 650 ? <span>Discard</span> : ''}
@@ -1527,7 +1527,7 @@ export function Table({
                   </>
                 ) : (
                   !loadingState && (
-                    <span data-cy={`footer-number-of-records`} className="font-weight-500 text-black-000">
+                    <span data-cy={`footer-number-of-records`} className="font-weight-500 color-slate11">
                       {`${globalFilteredRows.length} Records`}
                     </span>
                   )
@@ -1571,12 +1571,12 @@ export function Table({
                   <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
                   <ButtonSolid
                     variant="ghostBlack"
+                    fill={`var(--slate11)`}
                     className={`tj-text-xsm ${
                       tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
                     }`}
                     customStyles={{ minWidth: '32px' }}
                     leftIcon="plus"
-                    fill={`var(--slate12)`}
                     iconWidth="16"
                     onClick={() => {
                       if (!tableDetails.addNewRowsDetails.addingNewRows) {
@@ -1605,7 +1605,7 @@ export function Table({
                         minWidth: '32px',
                       }}
                       leftIcon="filedownload"
-                      fill={`var(--slate12)`}
+                      fill={`var(--slate11)`}
                       iconWidth="16"
                       size="md"
                       data-tooltip-id="tooltip-for-download"
@@ -1633,7 +1633,7 @@ export function Table({
                       className={`tj-text-xsm `}
                       customStyles={{ minWidth: '32px' }}
                       leftIcon="eye1"
-                      fill={`var(--slate12)`}
+                      fill={`var(--slate11)`}
                       iconWidth="16"
                       size="md"
                       data-cy={`select-column-icon`}
