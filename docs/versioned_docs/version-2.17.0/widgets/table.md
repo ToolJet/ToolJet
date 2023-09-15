@@ -410,13 +410,9 @@ The **Link** column type enables cells to become clickable links that can be loa
 | Column property | Description |
 | ----------- | ----------- |
 | Column name | Specifies the name displayed on the table column header. |
-| Key | Specifies the key name associated with the loaded data in the table. The provided **key** can hold either a `string` or a `URL`. |
-| Horizontal alignment | Positions content left, center, or right within table column cells for improved readability and visual presentation. |
-| Href | Specifies the key that holds the URL. By default, it is set to `{{cellValue}}`, which sets the href to the data loaded from the specified key. |
+| Key | Specify the key that holds the URL. By default. The provided key should hold either a `string` or a `URL`. |
 | Link Target | Specifies whether the link should be loaded on the same window or a new window. The values can also be set dynamically to `_set` for same window and `_blank` for new window. |
 | Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
-
-In the screenshot below, the **key** is set to `Title`, this key holds the string values. In the **Href** field, we are using `{{rowData.image}}`, which retrieves the URLs from the image key for their respective row.
 
 :::info
 For more information on using cellValue and rowData, refer to the **[how-to guide](/docs/how-to/access-cellvalue-rowdata)**.
@@ -424,7 +420,7 @@ For more information on using cellValue and rowData, refer to the **[how-to guid
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/linktype.png" alt="ToolJet - Widget Reference - Table" />
+<img className="screenshot-full" src="/img/widgets/table/linkupd.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
