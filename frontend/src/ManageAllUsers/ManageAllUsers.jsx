@@ -175,26 +175,26 @@ class ManageAllUsersComponent extends React.Component {
     const { usersCount, editorsCount, viewersCount } = this.state.userLimits;
 
     if (usersCount?.percentage >= 100) {
-      return <LicenseBanner classes="mt-3" limits={usersCount} type="users" />;
+      return <LicenseBanner classes="mb-3" limits={usersCount} type="users" />;
     } else if (editorsCount?.percentage >= 100) {
-      return <LicenseBanner classes="mt-3" limits={editorsCount} type="editors" />;
+      return <LicenseBanner classes="mb-3" limits={editorsCount} type="editors" />;
     } else if (viewersCount?.percentage >= 100) {
-      return <LicenseBanner classes="mt-3" limits={viewersCount} type="viewers" />;
+      return <LicenseBanner classes="mb-3" limits={viewersCount} type="viewers" />;
     } else if (
       usersCount?.percentage >= 90 ||
       (usersCount?.total <= 10 && usersCount.current === usersCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mt-3" limits={usersCount} type="users" />;
+      return <LicenseBanner classes="mb-3" limits={usersCount} type="users" />;
     } else if (
       editorsCount?.percentage >= 90 ||
       (editorsCount?.total <= 10 && editorsCount.current === editorsCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mt-3" limits={editorsCount} type="editors" />;
+      return <LicenseBanner classes="mb-3" limits={editorsCount} type="editors" />;
     } else if (
       viewersCount?.percentage >= 90 ||
       (viewersCount?.total <= 10 && viewersCount.current === viewersCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mt-3" limits={viewersCount} type="viewers" />;
+      return <LicenseBanner classes="mb-3" limits={viewersCount} type="viewers" />;
     }
   }
 
@@ -254,7 +254,7 @@ class ManageAllUsersComponent extends React.Component {
                   <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
                     Manage All Users
                   </div>
-                  <div className="user-limits d-flex">
+                  <div className="user-limits d-flex mb-3">
                     {!userLimits?.usersCount?.canAddUnlimited && userLimits?.usersCount && (
                       <div className="limit">
                         <div>TOTAL USERS</div>

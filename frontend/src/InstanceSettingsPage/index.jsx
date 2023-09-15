@@ -44,19 +44,19 @@ export function InstanceSettings(props) {
 
   const paidFeatures = { 'White labelling': 'whiteLabelling' };
 
-  const fetchFeatureAccess = () => {
+  const fetchFeatureAccess = (loadingAtFirstTime = false) => {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess({ ...data });
       if (data.licenseStatus.isExpired || !data.licenseStatus.isLicenseValid) {
-        setSelectedTab('License');
-        updateSidebarNAV('License');
+        setSelectedTab(loadingAtFirstTime ? 'Users' : 'License');
+        updateSidebarNAV(loadingAtFirstTime ? 'All users' : 'License');
       }
       setLicenseLoaded(true);
     });
   };
 
   useEffect(() => {
-    fetchFeatureAccess();
+    fetchFeatureAccess(true);
     load_app && error === 'license' && toast.error('Your license key has expired. Please update your license key');
     load_app && updateSidebarNAV(selectedTab);
     searchParams.delete('error');
