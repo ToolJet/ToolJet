@@ -134,8 +134,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
 
-  console.log('-----arpit::::: [gs]', { appDefinition });
-
   const SELECTED_ITEMS = {
     page: (
       <LeftSidebarPageSelector
