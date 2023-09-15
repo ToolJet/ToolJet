@@ -579,10 +579,8 @@ export class AppImportExportService {
           name: event.eventId,
           sourceId: newQuery.id,
           target: Target.dataQuery,
-          event: {
-            ...event,
-            eventIndex: index,
-          },
+          event: event,
+          index: queryEvents.index || index,
           appVersionId: newQuery.appVersionId,
         };
 
@@ -655,10 +653,8 @@ export class AppImportExportService {
                 name: event.eventId,
                 sourceId: pageCreated.id,
                 target: Target.page,
-                event: {
-                  ...event,
-                  eventIndex: index,
-                },
+                event: event,
+                index: pageEvents.index || index,
                 appVersionId: appVersionMapping[appVersion.id],
               };
 
@@ -674,10 +670,8 @@ export class AppImportExportService {
                 name: event.eventId,
                 sourceId: eventObj.componentId,
                 target: Target.component,
-                event: {
-                  ...event,
-                  eventIndex: index,
-                },
+                event: event,
+                index: eventObj.index || index,
                 appVersionId: appVersionMapping[appVersion.id],
               };
 
