@@ -177,9 +177,9 @@ class ManageAllUsersComponent extends React.Component {
     if (usersCount?.percentage >= 100) {
       return <LicenseBanner classes="mb-3" limits={usersCount} type="users" />;
     } else if (editorsCount?.percentage >= 100) {
-      return <LicenseBanner classes="mb-3" limits={editorsCount} type="editors" />;
+      return <LicenseBanner classes="mb-3" limits={editorsCount} type="builders" />;
     } else if (viewersCount?.percentage >= 100) {
-      return <LicenseBanner classes="mb-3" limits={viewersCount} type="viewers" />;
+      return <LicenseBanner classes="mb-3" limits={viewersCount} type="end users" />;
     } else if (
       usersCount?.percentage >= 90 ||
       (usersCount?.total <= 10 && usersCount.current === usersCount?.total - 1)
@@ -189,12 +189,12 @@ class ManageAllUsersComponent extends React.Component {
       editorsCount?.percentage >= 90 ||
       (editorsCount?.total <= 10 && editorsCount.current === editorsCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mb-3" limits={editorsCount} type="editors" />;
+      return <LicenseBanner classes="mb-3" limits={editorsCount} type="builders" />;
     } else if (
       viewersCount?.percentage >= 90 ||
       (viewersCount?.total <= 10 && viewersCount.current === viewersCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mb-3" limits={viewersCount} type="viewers" />;
+      return <LicenseBanner classes="mb-3" limits={viewersCount} type="end users" />;
     }
   }
 
