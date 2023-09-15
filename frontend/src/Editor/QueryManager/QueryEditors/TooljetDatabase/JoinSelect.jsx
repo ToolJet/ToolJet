@@ -63,7 +63,7 @@ export default function JoinSelect({ darkMode }) {
   };
 
   return (
-    <Container className="p-0">
+    <Container fluid className="p-0">
       {tables.map((table) => (
         <Row key={table} className="border rounded mb-2 mx-0">
           <Col sm="3" className="p-0 border-end">

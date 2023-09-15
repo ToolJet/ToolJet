@@ -35,7 +35,7 @@ export default function JoinSort({ darkMode }) {
   ];
 
   return (
-    <Container className="p-0">
+    <Container fluid className="p-0">
       {isEmpty(joinOrderByOptions) ? (
         <Row className="mb-2 mx-0">
           <div

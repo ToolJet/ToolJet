@@ -438,7 +438,7 @@ const RenderFilterSection = ({ darkMode }) => {
   });
 
   return (
-    <Container className="p-0">
+    <Container fluid className="p-0">
       {conditionsList.length === 0 && (
         <Row className="mb-2 mx-0">
           <div
