@@ -71,9 +71,6 @@ export function LicenseBanner({
         return `You're reaching your limit for number of ${type} - ${current}/${total}.`;
       case type == 'tables' && !canAddUnlimited && percentage >= 100:
         return `You've reached your limit for number of ${type} - ${current}/${total}.`;
-      case !canAddUnlimited && type === 'super admins': {
-        return `You've reached your limit for number of ${type}.`;
-      }
       case !canAddUnlimited && percentage >= 100:
         return `You have reached your limit for number of ${type}.`;
       case !canAddUnlimited && (percentage >= 90 || (total <= 10 && current === total - 1)):
@@ -157,7 +154,6 @@ export function LicenseBanner({
   const message = customMessage || generateMessage();
   const buttonTextAndnClick = generateButtonTextAndLink();
   const { onClick: handleClick, text: buttonText, className, replaceText } = buttonTextAndnClick;
-
   const iconSize = {
     width: size === 'small' ? '40px' : '48px',
   };

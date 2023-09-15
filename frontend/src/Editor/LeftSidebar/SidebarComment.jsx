@@ -8,7 +8,8 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
-export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPageId }, ref) => {
+export const LeftSidebarComment = forwardRef(
+  ({ selectedSidebarItem, currentPageId, isVersionReleased, isEditorFreezed }, ref) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const { appVersionsId } = useAppVersionStore(
@@ -29,58 +30,60 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
   const [isMultiPlayerEnabled, setIsMultiPlayerEnabled] = useState(true);
 
-  React.useEffect(() => {
-    if (appVersionsId) {
-      commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }) => {
-        setNotifications(data);
-      });
-    }
-    async function fetchData() {
-      try {
-        const data = await licenseService.getFeatureAccess();
-        setIsMultiPlayerEnabled(!!data?.multiPlayerEdit);
-      } catch (error) {
-        console.error('Error:', error);
+    React.useEffect(() => {
+      if (appVersionsId) {
+        commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }) => {
+          setNotifications(data);
+        });
       }
-    }
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appVersionsId, currentPageId]);
-  const tooltipContent = 'You can only access comments in our paid plans'; // Tooltip content
+      async function fetchData() {
+        try {
+          const data = await licenseService.getFeatureAccess();
+          setIsMultiPlayerEnabled(!!data?.multiPlayerEdit);
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      }
+      fetchData();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [appVersionsId, currentPageId]);
+    const tooltipContent = 'You can only access comments in our paid plans'; // Tooltip content
 
-  const tooltip = <Tooltip id="tooltip-disabled">{tooltipContent}</Tooltip>;
-
-  return !shouldEnableMultiplayer && !isMultiPlayerEnabled ? (
-    <OverlayTrigger placement="bottom" overlay={tooltip} trigger="hover">
+    const tooltip = <Tooltip id="tooltip-disabled">{tooltipContent}</Tooltip>;
+    return !shouldEnableMultiplayer && !isMultiPlayerEnabled ? (
+      <OverlayTrigger placement="bottom" overlay={tooltip} trigger="hover">
+        <LeftSidebarItem
+          commentBadge={notifications?.length > 0}
+          selectedSidebarItem={selectedSidebarItem}
+          title={'toggle comments'}
+          icon={'comments-dark'}
+          className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
+            disabled: false,
+            active: isActive,
+            dark: darkMode,
+          })}
+          ref={ref}
+        />
+      </OverlayTrigger>
+    ) : (
       <LeftSidebarItem
         commentBadge={notifications?.length > 0}
         selectedSidebarItem={selectedSidebarItem}
-        title={tooltip}
-        icon={'comments-dark'}
+        title={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
+        icon={darkMode ? `comments-dark` : 'comments-light'}
         className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
-          disabled: false,
+          disabled:
+            !appVersionsId || !shouldEnableMultiplayer || !isMultiPlayerEnabled || isVersionReleased || isEditorFreezed,
           active: isActive,
           dark: darkMode,
         })}
+        onClick={() => {
+          toggleActive(!isActive);
+          toggleComments();
+        }}
+        tip="Comments"
         ref={ref}
       />
-    </OverlayTrigger>
-  ) : (
-    <LeftSidebarItem
-      commentBadge={notifications?.length > 0}
-      selectedSidebarItem={selectedSidebarItem}
-      title={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
-      icon={darkMode ? `comments-dark` : 'comments-light'}
-      className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
-        disabled: !appVersionsId || !shouldEnableMultiplayer || !isMultiPlayerEnabled,
-        active: isActive,
-      })}
-      onClick={() => {
-        toggleActive(!isActive);
-        toggleComments();
-      }}
-      tip="Comments"
-      ref={ref}
-    />
-  );
-});
+    );
+  }
+);
