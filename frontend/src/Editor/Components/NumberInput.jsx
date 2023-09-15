@@ -32,24 +32,21 @@ export const NumberInput = function NumberInput({
       !isNaN(parseFloat(properties.maxValue)) &&
       parseFloat(properties.minValue) > parseFloat(properties.maxValue)
     ) {
-      setValue(Number(parseFloat(properties.maxValue)).toFixed(properties.decimalPlaces));
+      setValue(Number(parseFloat(properties.maxValue)));
     } else if (
       !isNaN(parseFloat(properties.maxValue)) &&
       parseFloat(e.target.value) > parseFloat(properties.maxValue)
     ) {
-      setValue(Number(parseFloat(properties.maxValue)).toFixed(properties.decimalPlaces));
-    } else if (
-      !isNaN(parseFloat(properties.minValue)) &&
-      parseFloat(e.target.value) < parseFloat(properties.minValue)
-    ) {
-      setValue(Number(parseFloat(properties.minValue)).toFixed(properties.decimalPlaces));
+      setValue(Number(parseFloat(properties.maxValue)));
     } else {
       setValue(Number(parseFloat(e.target.value)));
     }
     fireEvent('onChange');
   };
   const handleBlur = (e) => {
-    setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
+    if (!isNaN(parseFloat(properties.minValue)) && parseFloat(e.target.value) < parseFloat(properties.minValue)) {
+      setValue(Number(parseFloat(properties.minValue)));
+    } else setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
   };
 
   useEffect(() => {
@@ -83,6 +80,8 @@ export const NumberInput = function NumberInput({
           style={computedStyles}
           value={value}
           data-cy={dataCy}
+          min={properties.minValue}
+          max={properties.maxValue}
         />
       )}
       {properties.loadingState === true && (
