@@ -2,7 +2,7 @@ import React from 'react';
 
 export const Link = ({ cellValue, linkTarget }) => {
   return (
-    <div>
+    <div className="w-100">
       <a
         href={cellValue}
         target={linkTarget}

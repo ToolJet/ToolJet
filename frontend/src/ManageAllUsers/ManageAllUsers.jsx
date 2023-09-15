@@ -9,7 +9,6 @@ import OrganizationsModal from './OrganizationsModal';
 import UserEditModal from './UserEditModal';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { LicenseBanner } from '@/LicenseBanner';
-import { isUnlimited } from '@/_helpers/utils';
 
 class ManageAllUsersComponent extends React.Component {
   constructor(props) {
@@ -256,7 +255,7 @@ class ManageAllUsersComponent extends React.Component {
                     Manage All Users
                   </div>
                   <div className="user-limits d-flex">
-                    {!isUnlimited(userLimits?.usersCount?.total) && userLimits?.usersCount && (
+                    {!userLimits?.usersCount?.canAddUnlimited && userLimits?.usersCount && (
                       <div className="limit">
                         <div>TOTAL USERS</div>
                         <div className="count">
@@ -264,7 +263,7 @@ class ManageAllUsersComponent extends React.Component {
                         </div>
                       </div>
                     )}
-                    {!isUnlimited(userLimits?.editorsCount?.total) && userLimits?.editorsCount && (
+                    {!userLimits?.editorsCount?.canAddUnlimited && userLimits?.editorsCount && (
                       <div className="limit">
                         <div>BUILDERS</div>
                         <div className="count">

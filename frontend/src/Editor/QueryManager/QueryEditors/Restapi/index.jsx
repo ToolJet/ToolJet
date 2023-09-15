@@ -134,8 +134,8 @@ class Restapi extends React.Component {
 
     return (
       <div className={`${this.props?.queryName !== 'workflowNode' && 'd-flex'}`}>
-        <div className="form-label">Request</div>
-        <div className="flex-grow-1">
+        <div className="form-label flex-shrink-0">Request</div>
+        <div className="flex-grow-1 overflow-hidden">
           <div className="rest-api-methods-select-element-container">
             <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
               <label className="font-weight-bold color-slate12">Method</label>
@@ -166,7 +166,7 @@ class Restapi extends React.Component {
                 {dataSourceURL && (
                   <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
-                <div className={`flex-grow-1 ${dataSourceURL ? 'url-input-group' : ''}`}>
+                <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
                   <CodeHinter
                     currentState={this.props.currentState}
                     initialValue={options.url}
@@ -185,7 +185,7 @@ class Restapi extends React.Component {
             </div>
           </div>
 
-          <div className={`query-pane-restapi-tabs  ${this.props.darkMode ? 'dark' : ''}`}>
+          <div className={`query-pane-restapi-tabs`}>
             <Tabs
               theme={this.props.darkMode ? 'monokai' : 'default'}
               options={this.state.options}

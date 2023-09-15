@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons.jsx';
-import { isUnlimited } from '@/_helpers/utils';
 import { LoadingScreen } from './LoadingScreen';
 import { userService, organizationService, appService, tooljetDatabaseService } from '@/_services';
 
@@ -102,7 +101,7 @@ const Limits = () => {
                       readOnly
                       type="text"
                       className={cx('form-control', { 'error-border': limit?.total === limit?.current })}
-                      value={isUnlimited(limit?.total) ? 'Unlimited' : `${limit?.current}/${limit?.total}`}
+                      value={limit?.canAddUnlimited ? 'Unlimited' : `${limit?.current}/${limit?.total}`}
                     />
                     {limit?.total === limit?.current && <div className="error-text">Exceeding Limit</div>}
                   </div>

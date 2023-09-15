@@ -121,7 +121,7 @@ describe("dashboard", () => {
     cy.reload();
     verifyTooltip('[data-cy="icon-dashboard"]', "Dashboard");
     verifyTooltip('[data-cy="icon-database"]', "Database");
-    verifyTooltip(commonSelectors.globalDataSourceIcon, "Global Datasources");
+    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data Sources");
     verifyTooltip(commonSelectors.workspaceSettingsIcon, "Workspace settings");
     verifyTooltip(commonEeSelectors.instanceSettingIcon, "Instance settings");
     verifyTooltip(commonEeSelectors.auditLogIcon, "Audit Logs");

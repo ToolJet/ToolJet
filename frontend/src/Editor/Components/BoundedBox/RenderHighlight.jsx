@@ -51,7 +51,8 @@ export const RenderHighlight = ({
               const annotations = prevState.filter((annotation) => {
                 return annotation.data.id !== data.id;
               });
-              setExposedVariable('annotations', getExposedAnnotations(annotations)).then(() => fireEvent('onChange'));
+              setExposedVariable('annotations', getExposedAnnotations(annotations));
+              fireEvent('onChange');
               return annotations;
             });
           }}
@@ -95,7 +96,8 @@ export const RenderHighlight = ({
                   }
                   return acc;
                 }, []);
-                setExposedVariable('annotations', getExposedAnnotations(annotations)).then(() => fireEvent('onChange'));
+                setExposedVariable('annotations', getExposedAnnotations(annotations));
+                fireEvent('onChange');
 
                 return annotations;
               });

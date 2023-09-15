@@ -60,10 +60,9 @@ export const Item = React.memo(
               target?.parent?.classList?.contains('resizer-active')
             )
               return;
-            setExposedVariable('lastSelectedCard', cardDataAsObj[value]).then(() => {
-              setShowModal(true);
-              fireEvent('onCardSelected');
-            });
+            setExposedVariable('lastSelectedCard', cardDataAsObj[value]);
+            setShowModal(true);
+            fireEvent('onCardSelected');
           }}
         >
           <div

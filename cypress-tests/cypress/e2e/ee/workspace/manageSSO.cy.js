@@ -23,6 +23,8 @@ describe("Manage SSO for multi workspace", () => {
     disableSSO(ssoSelector.google, ssoSelector.googleEnableToggle);
     disableSSO(ssoSelector.git, ssoSelector.gitEnableToggle);
     disableSSO(ssoEeSelector.oidc, ssoEeSelector.oidcToggle);
+    disableSSO('[data-cy="ldap-list-item"]', ssoEeSelector.ldapToggle);
+
 
     SSO.visitWorkspaceLoginPage();
     SSO.workspaceLoginPageElements("My workspace");

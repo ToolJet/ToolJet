@@ -9,4 +9,5 @@ export const TypeMapping = {
   alignButtons: 'AlignButtons',
   number: 'Number',
   boxShadow: 'BoxShadow',
+  clientServerSwitch: 'ClientServerSwitch',
 };

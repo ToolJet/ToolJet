@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { Tooltip } from 'react-tooltip';
 import { checkExistingQueryName } from '@/_helpers/appUtils';
 import { Confirm } from '../Viewer/Confirm';
@@ -73,7 +72,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
   return (
     <>
       <div
-        className={'row query-row pe-2' + (isSeletedQuery ? ' query-row-selected' : '')}
+        className={`row query-row pe-2 ${darkMode && 'dark-theme'}` + (isSeletedQuery ? ' query-row-selected' : '')}
         key={dataQuery.id}
         onClick={() => {
           if (selectedQuery?.id === dataQuery?.id) return;
@@ -105,24 +104,17 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
               }}
             />
           ) : (
-            <OverlayTrigger
-              trigger={['hover', 'focus']}
-              placement="top"
-              delay={{ show: 800, hide: 100 }}
-              overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
-            >
-              <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-                <span
-                  className="text-truncate"
-                  data-tooltip-id="query-card-name-tooltip"
-                  data-tooltip-content={dataQuery.name}
-                >
-                  {dataQuery.name}
-                </span>{' '}
-                <Tooltip id="query-card-name-tooltip" className="tooltip query-manager-tooltip" />
-                {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
-              </div>
-            </OverlayTrigger>
+            <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
+              <span
+                className="text-truncate"
+                data-tooltip-id="query-card-name-tooltip"
+                data-tooltip-content={dataQuery.name}
+              >
+                {dataQuery.name}
+              </span>{' '}
+              <Tooltip id="query-card-name-tooltip" className="tooltip query-manager-tooltip" />
+              {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
+            </div>
           )}
         </div>
         {!(isVersionReleased || isEditorFreezed) && selectedQuery?.id === dataQuery.id && (

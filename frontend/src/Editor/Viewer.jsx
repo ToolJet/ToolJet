@@ -520,10 +520,10 @@ class ViewerComponent extends React.Component {
     const bgColor =
       (this.state.appDefinition.globalSettings?.backgroundFxQuery ||
         this.state.appDefinition.globalSettings?.canvasBackgroundColor) ??
-      '#edeff5';
+      '#2f3c4c';
     const resolvedBackgroundColor = resolveReferences(bgColor, this.props.currentState);
-    if (['#2f3c4c', '#edeff5'].includes(resolvedBackgroundColor)) {
-      return this.props.darkMode ? '#2f3c4c' : '#edeff5';
+    if (['#2f3c4c', '#F2F2F5', '#edeff5'].includes(resolvedBackgroundColor)) {
+      return this.props.darkMode ? '#2f3c4c' : '#F2F2F5';
     }
     return resolvedBackgroundColor;
   };
@@ -549,7 +549,6 @@ class ViewerComponent extends React.Component {
     const { handle } = this.state.appDefinition.pages[id];
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-
     if (this.state.slug) this.props.navigate(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
     else
       this.props.navigate(
@@ -634,6 +633,34 @@ class ViewerComponent extends React.Component {
           this.handleError(errorDetails, errorAppId, errorVersionId);
         }
 
+        const pageArray = Object.values(this.state.appDefinition?.pages || {});
+        //checking if page is disabled
+        if (
+          pageArray.find((page) => page.handle === this.props.params.pageHandle)?.disabled &&
+          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is disabled
+          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+        ) {
+          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/environments/${this.state.environmentId}/${homeHandle}`;
+          if (this.state.slug) {
+            url = `/applications/${this.state.slug}/${homeHandle}`;
+          }
+          return <Navigate to={url} replace />;
+        }
+
+        //checking if page exists
+        if (
+          !pageArray.find((page) => page.handle === this.props.params.pageHandle) &&
+          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+        ) {
+          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/environments/${this.state.environmentId}/${homeHandle}`;
+          if (this.state.slug) {
+            url = `/applications/${this.state.slug}/${homeHandle}`;
+          }
+          return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
+        }
+
         return (
           <div className="viewer wrapper">
             <Confirm
@@ -656,8 +683,13 @@ class ViewerComponent extends React.Component {
               />
               <div className="sub-section">
                 <div className="main">
-                  <div className="canvas-container page-container align-items-center">
-                    <div className="areas d-flex flex-rows justify-content-center">
+                  <div
+                    className="canvas-container page-container align-items-center"
+                    style={{
+                      background: this.computeCanvasBackgroundColor() || (!this.props.darkMode ? '#EBEBEF' : '#2E3035'),
+                    }}
+                  >
+                    <div className={`areas d-flex flex-rows app-${this.state.appId}`}>
                       {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
                           isMobileDevice={this.props.currentLayout === 'mobile'}
@@ -668,54 +700,56 @@ class ViewerComponent extends React.Component {
                           darkMode={this.props.darkMode}
                         />
                       )}
-                      <div
-                        className={`canvas-area ${this.formCustomPageSelectorClass()}`}
-                        style={{
-                          width: currentCanvasWidth,
-                          maxWidth: canvasMaxWidth,
-                          backgroundColor: this.computeCanvasBackgroundColor(),
-                          margin: 0,
-                          padding: 0,
-                        }}
-                      >
-                        {defaultComponentStateComputed && (
-                          <>
-                            {isLoading ? (
-                              <div className="mx-auto mt-5 w-50 p-5">
-                                <center>
-                                  <div className="spinner-border text-azure" role="status"></div>
-                                </center>
-                              </div>
-                            ) : (
-                              <Container
-                                appDefinition={appDefinition}
-                                appDefinitionChanged={() => false} // function not relevant in viewer
-                                snapToGrid={true}
-                                appLoading={isLoading}
-                                darkMode={this.props.darkMode}
-                                onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
-                                mode="view"
-                                deviceWindowWidth={deviceWindowWidth}
-                                selectedComponent={this.state.selectedComponent}
-                                onComponentClick={(id, component) => {
-                                  this.setState({
-                                    selectedComponent: { id, component },
-                                  });
-                                  onComponentClick(this, id, component, 'view');
-                                }}
-                                onComponentOptionChanged={(component, optionName, value) => {
-                                  return onComponentOptionChanged(this, component, optionName, value);
-                                }}
-                                onComponentOptionsChanged={(component, options) =>
-                                  onComponentOptionsChanged(this, component, options)
-                                }
-                                canvasWidth={this.getCanvasWidth()}
-                                dataQueries={dataQueries}
-                                currentPageId={this.state.currentPageId}
-                              />
-                            )}
-                          </>
-                        )}
+                      <div className="flex-grow-1 d-flex justify-content-center">
+                        <div
+                          className={`canvas-area ${this.formCustomPageSelectorClass()}`}
+                          style={{
+                            width: currentCanvasWidth,
+                            maxWidth: canvasMaxWidth,
+                            backgroundColor: this.computeCanvasBackgroundColor(),
+                            margin: 0,
+                            padding: 0,
+                          }}
+                        >
+                          {defaultComponentStateComputed && (
+                            <>
+                              {isLoading ? (
+                                <div className="mx-auto mt-5 w-50 p-5">
+                                  <center>
+                                    <div className="spinner-border text-azure" role="status"></div>
+                                  </center>
+                                </div>
+                              ) : (
+                                <Container
+                                  appDefinition={appDefinition}
+                                  appDefinitionChanged={() => false} // function not relevant in viewer
+                                  snapToGrid={true}
+                                  appLoading={isLoading}
+                                  darkMode={this.props.darkMode}
+                                  onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
+                                  mode="view"
+                                  deviceWindowWidth={deviceWindowWidth}
+                                  selectedComponent={this.state.selectedComponent}
+                                  onComponentClick={(id, component) => {
+                                    this.setState({
+                                      selectedComponent: { id, component },
+                                    });
+                                    onComponentClick(this, id, component, 'view');
+                                  }}
+                                  onComponentOptionChanged={(component, optionName, value) => {
+                                    return onComponentOptionChanged(this, component, optionName, value);
+                                  }}
+                                  onComponentOptionsChanged={(component, options) =>
+                                    onComponentOptionsChanged(this, component, options)
+                                  }
+                                  canvasWidth={this.getCanvasWidth()}
+                                  dataQueries={dataQueries}
+                                  currentPageId={this.state.currentPageId}
+                                />
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

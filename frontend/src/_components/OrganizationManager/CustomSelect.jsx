@@ -107,7 +107,6 @@ export const CustomSelect = ({ workspacesLimit, ...props }) => {
         workspacesLimit={workspacesLimit}
         styles={{ border: 0, cursor: 'pointer' }}
         {...props}
-        customWrap={true}
       />
     </>
   );
