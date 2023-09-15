@@ -11,7 +11,9 @@ This comprehensive guide aims to assist you in the process of configuring paid p
 
 Let's look into three types of licenses:
 
-1. **Trial License**: This is a free license that grants access to premium features for a 14-day trial period. In order to get this, please reach out to our team. 
+1. **Trial License**: This is a free license that grants access to premium features for a 14-day trial period.
+ - **New Users**: Can opt for free 14-day trial during onboarding.
+ - **Existing Users**: Can contact us for a trial license key.
 2. **Business License**: This is a paid license that you can purchase **[directly](https://www.tooljet.com/pricing)**.
 3. **Enterprise License**: This is a paid license with customizable options. To obtain this license, you have to contact our sales team.
 
