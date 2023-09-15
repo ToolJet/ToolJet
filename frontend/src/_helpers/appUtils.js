@@ -935,6 +935,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
+  const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  if (parameters?.executeRunQueryFromRunButton) setPreviewLoading(true);
+
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
@@ -1045,7 +1048,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         } else {
           let rawData = data.data;
           let finalData = data.data;
-
+          if (parameters?.executeRunQueryFromRunButton) {
+            setPreviewLoading(false);
+            setPreviewData(finalData);
+          }
           if (dataQuery.options.enableTransformation) {
             finalData = await runTransformation(
               _ref,
@@ -1116,7 +1122,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           });
           resolve({ status: 'ok', data: finalData });
           onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
-          previewQuery(_self, query, false, undefined, query?.options?.hasParamSupport);
         }
       })
       .catch(({ error }) => {
