@@ -78,8 +78,8 @@ export default function JoinSort({ darkMode }) {
                 }}
               />
             </Col>
-            <Col sm="5" className="p-0 border-end d-flex">
-              <div className="flex-grow-1">
+            <Col sm="6" className="p-0 d-flex">
+              <div className="flex-grow-1 border-end">
                 <DropDownSelect
                   options={sortbyConstants}
                   darkMode={darkMode}
@@ -99,12 +99,10 @@ export default function JoinSort({ darkMode }) {
                   }}
                 />
               </div>
-            </Col>
-            <Col sm="1" className="p-0">
               <ButtonSolid
                 size="sm"
                 variant="ghostBlack"
-                className="px-1 w-100 rounded-0"
+                className="px-1 rounded-0"
                 onClick={() => setJoinOrderByOptions(joinOrderByOptions.filter((opt, idx) => idx !== i))}
               >
                 <Trash fill="var(--slate9)" style={{ height: '16px' }} />

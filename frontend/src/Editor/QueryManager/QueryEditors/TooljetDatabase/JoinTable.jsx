@@ -111,7 +111,15 @@ const SelectTableMenu = ({ darkMode }) => {
                   ...joins,
                   {
                     id: new Date().getTime(),
-                    conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] },
+                    conditions: {
+                      operator: 'AND',
+                      conditionsList: [
+                        {
+                          operator: '=',
+                          leftField: { table: selectedTableId },
+                        },
+                      ],
+                    },
                     joinType: 'INNER',
                   },
                 ])
@@ -204,7 +212,7 @@ const RenderFilterSection = ({ darkMode }) => {
   function addNewFilterConditionEntry() {
     let editedFilterCondition = {};
 
-    const emptyConditionTemplate = { operator: '', leftField: {}, rightField: {} };
+    const emptyConditionTemplate = { operator: '=', leftField: {}, rightField: {} };
 
     // First time populate operator & conditionList details
     if (!Object.keys(conditions).length) {
@@ -354,6 +362,7 @@ const RenderFilterSection = ({ darkMode }) => {
 
   const filterComponents = conditionsList.map((conditionDetail, index) => {
     const { operator = '', leftField = {}, rightField = {} } = conditionDetail;
+    const LeftSideTableDetails = leftField?.table ? findTableDetails(leftField?.table) : '';
     return (
       <Row className="border rounded mb-2 mx-0" key={index}>
         <Col sm="2" className="p-0 border-end">
@@ -378,7 +387,9 @@ const RenderFilterSection = ({ darkMode }) => {
               })
             }
             value={{
-              label: leftField?.columnName,
+              label: LeftSideTableDetails?.table_name
+                ? LeftSideTableDetails?.table_name + '.' + leftField?.columnName
+                : leftField?.columnName,
               value: leftField?.columnName + '-' + leftField?.table,
               table: leftField?.table,
             }}

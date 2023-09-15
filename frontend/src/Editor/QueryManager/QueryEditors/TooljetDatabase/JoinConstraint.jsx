@@ -152,14 +152,12 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             options={tableList}
             darkMode={darkMode}
             onChange={async (value) => {
-              let result = false;
+              let result = true;
               if (rightFieldTable?.length) {
                 result = await confirm(
                   'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
                   'Change table?'
                 );
-              } else {
-                result = true;
               }
 
               if (result) {
@@ -231,7 +229,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           </ButtonSolid>
         </Col>
       </Row>
-      <ConfirmDialog confirmButtonText="Delete" darkMode={darkMode} />
+      <ConfirmDialog confirmButtonText="Continue" darkMode={darkMode} />
     </Container>
   );
 };
