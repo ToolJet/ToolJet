@@ -239,7 +239,7 @@ const NameInput = ({ onInput, value, darkMode, isDiabled }) => {
               className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
               style={{ minWidth: 14 }}
             >
-              {!isDiabled && <RenameIcon />}
+              {!isDiabled && <RenameIcon fill="var(--slate12)" />}
             </span>
           </Button>
         )}

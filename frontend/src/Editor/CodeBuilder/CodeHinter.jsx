@@ -259,7 +259,8 @@ export function CodeHinter({
         onMouseLeave={() => unFocusPreview()}
       >
         <div ref={heightRef} className="dynamic-variable-preview bg-green-lt px-1 py-1">
-          <div>
+          {/* The css added to below div is a hack to prevent it from overflowing if the preview data is insanely huge and not properly formatted */}
+          <div style={{ maxWidth: '100vh' }}>
             <div className="d-flex my-1">
               <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
                 {previewType}
