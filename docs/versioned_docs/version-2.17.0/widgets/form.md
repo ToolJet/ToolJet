@@ -54,6 +54,86 @@ This **[list](/docs/widgets/form#custom-schema-examples)** provides examples of 
 }}
 ```
 
+Here's an example using the custom schema of **Text Input**, **Number Input** and **Dropdown** components:
+
+```js
+{{{
+   "title":"Event Registration",
+   "properties":{
+      "textinput1":{
+         "type":"textinput",
+         "value":"",
+         "placeholder":"Enter Full Name",
+         "label":"Full Name",
+         "validation":{
+            "maxLength":30,
+            "minLength":5
+         },
+         "styles":{
+            "backgroundColor":"#00000000",
+            "borderRadius":5,
+            "borderColor":"#4299e1",
+            "errorTextColor":"#4299e1",
+            "disabled":false,
+            "visibility":"true",
+            "textColor":"#4299e1"
+         }
+      },
+      "numberInput1":{
+         "type":"number",
+         "styles":{
+            "backgroundColor":"#f6f5ff",
+            "borderRadius":5,
+            "textColor":"#4299e1",
+            "borderColor":"#4299e1",
+            "disabled":false,
+            "visibility":"true"
+         },
+         "value":22,
+         "maxValue":100,
+         "minValue":14,
+         "placeholder":"Enter your age",
+         "label":"Age"
+      },
+      "dropdown1":{
+         "type":"dropdown",
+         "values":[
+            1,
+            2,
+            3
+         ],
+         "displayValues":[
+            "Male",
+            "Female",
+            "Perfer not to Answer"
+         ],
+         "loading":false,
+         "value":3,
+         "label":"Gender",
+         "styles":{
+            "disabled":false,
+            "visibility":"true",
+            "borderRadius":5,
+            "borderColor":"#4299e1",
+            "justifyContent":"center"
+         }
+      }
+   },
+   "submitButton":{
+      "value":"Submit",
+      "styles":{
+         "backgroundColor":"#3A433B",
+         "borderColor":"#595959"
+      }
+   }
+}
+}}
+```
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/form/customform.png" alt="Example form schema" />
+</div>
+
 ## Events
 
 To add an event to the **Form** component, go to the **Events** section and click on **Add handler**.
