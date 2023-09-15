@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import cx from 'classnames';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -145,8 +146,15 @@ class ManageAppUsersComponent extends React.Component {
     }" title="${retrieveWhiteLabelText()} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     return (
+      <ToolTip
+          message="You can only share apps in production"
+          placement="left"
+          show={this.props.currentEnvironment?.is_default ? false : true}
+        >
       <div title="Share" className="editor-header-icon tj-secondary-btn" data-cy="share-button-link">
-        <span className="d-flex" onClick={() => {
+        <span className={cx('d-flex', {
+          'share-disabled': !this.props?.currentEnvironment?.is_default,
+        })}  onClick={() => {
           this.props?.currentEnvironment?.is_default &&
           this.props.multiEnvironmentEnabled &&
           this.setState({ showModal: true })
@@ -274,6 +282,7 @@ class ManageAppUsersComponent extends React.Component {
           </Modal.Footer>
         </Modal>
       </div>
+      </ToolTip>
     );
   }
 }
