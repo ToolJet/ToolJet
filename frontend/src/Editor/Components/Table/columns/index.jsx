@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import SelectSearch from 'react-select-search';
-import { resolveReferences, validateWidget } from '@/_helpers/utils';
+import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
 import { CustomSelect } from '../CustomSelect';
 import { Tags } from '../Tags';
 import { Radio } from '../Radio';
@@ -9,7 +9,6 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
-
 export default function generateColumnsData({
   columnProperties,
   columnSizes,
@@ -94,7 +93,8 @@ export default function generateColumnsData({
       customRule: column?.customRule,
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
-      Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
+      horizontalAlignment: column?.horizontalAlignment ?? 'left',
+      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
@@ -183,7 +183,12 @@ export default function generateColumnsData({
               );
             }
             return (
-              <div className="d-flex align-items-center h-100" style={cellStyles}>
+              <div
+                className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
+                style={cellStyles}
+              >
                 {String(cellValue)}
               </div>
             );
@@ -251,7 +256,12 @@ export default function generateColumnsData({
               );
             }
             return (
-              <div className="d-flex align-items-center h-100" style={cellStyles}>
+              <div
+                className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
+                style={cellStyles}
+              >
                 {cellValue}
               </div>
             );

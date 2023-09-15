@@ -152,13 +152,7 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      serverSidePagination: {
-        type: 'toggle',
-        displayName: 'Server-side pagination',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
+
       enableNextButton: {
         type: 'toggle',
         displayName: 'Enable next page button',
@@ -168,7 +162,7 @@ export const widgets = [
       },
       enabledSort: {
         type: 'toggle',
-        displayName: 'Enable sorting',
+        displayName: 'Enable column sorting',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -194,33 +188,67 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      clientSidePagination: {
+      // clientSidePagination: {
+      //   type: 'toggle',
+      //   displayName: 'Enable pagination',
+      //   validation: {
+      //     schema: { type: 'boolean' },
+      //   },
+      // },
+      enablePagination: {
         type: 'toggle',
-        displayName: 'Client-side pagination',
+        displayName: 'Enable pagination',
         validation: {
           schema: { type: 'boolean' },
         },
       },
+      serverSidePagination: {
+        type: 'clientServerSwitch',
+        displayName: 'Type',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        // defaultValue: 'clientSide',
+      },
       serverSideSearch: {
-        type: 'toggle',
-        displayName: 'Server-side search',
+        type: 'clientServerSwitch',
+        displayName: 'Type',
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        // defaultValue: 'clientSide',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       serverSideSort: {
-        type: 'toggle',
-        displayName: 'Server-side sort',
+        type: 'clientServerSwitch',
+        displayName: 'Type',
         validation: {
           schema: { type: 'boolean' },
         },
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        // defaultValue: 'clientSide',
       },
       serverSideFilter: {
-        type: 'toggle',
-        displayName: 'Server-side filter',
+        type: 'clientServerSwitch',
+        displayName: 'Type',
         validation: {
           schema: { type: 'boolean' },
         },
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        defaultValue: 'clientSide',
       },
       actionButtonBackgroundColor: {
         type: 'color',
@@ -238,7 +266,7 @@ export const widgets = [
       },
       displaySearchBox: {
         type: 'toggle',
-        displayName: 'Show search box',
+        displayName: 'Show search',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -252,7 +280,7 @@ export const widgets = [
       },
       showFilterButton: {
         type: 'toggle',
-        displayName: 'Show filter button',
+        displayName: 'Enable filtering',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -308,8 +336,8 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     defaultSize: {
-      width: 20,
-      height: 358,
+      width: 28.86,
+      height: 456,
     },
     events: {
       onRowHovered: { displayName: 'Row hovered' },
@@ -343,10 +371,8 @@ export const widgets = [
         displayName: 'Table type',
         options: [
           { name: 'Bordered', value: 'table-bordered' },
-          { name: 'Borderless', value: 'table-borderless' },
-          { name: 'Classic', value: 'table-classic' },
+          { name: 'Regular', value: 'table-classic' },
           { name: 'Striped', value: 'table-striped' },
-          { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -356,8 +382,8 @@ export const widgets = [
         type: 'select',
         displayName: 'Cell size',
         options: [
-          { name: 'Compact', value: 'compact' },
-          { name: 'Spacious', value: 'spacious' },
+          { name: 'Condensed', value: 'condensed' },
+          { name: 'Regular', value: 'regular' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -466,7 +492,7 @@ export const widgets = [
         enableNextButton: { value: '{{true}}' },
         enablePrevButton: { value: '{{true}}' },
         totalRecords: { value: '' },
-        clientSidePagination: { value: '{{true}}' },
+        enablePagination: { value: '{{true}}' },
         serverSideSort: { value: '{{false}}' },
         serverSideFilter: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
@@ -509,9 +535,9 @@ export const widgets = [
         actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        cellSize: { value: 'compact' },
+        cellSize: { value: 'regular' },
         borderRadius: { value: '0' },
-        tableType: { value: 'table-bordered' },
+        tableType: { value: 'table-classic' },
       },
     },
   },
@@ -2608,6 +2634,7 @@ export const widgets = [
     },
     events: {
       onSelect: { displayName: 'On select' },
+      onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
       borderRadius: {
@@ -2634,6 +2661,7 @@ export const widgets = [
     },
     exposedVariables: {
       values: {},
+      searchText: '',
     },
     definition: {
       others: {

@@ -27,9 +27,6 @@ describe("Data sources", () => {
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -48,14 +45,8 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("SQL Server");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "SQL Server");
-    cy.get('[data-cy="data-source-sql server"]').click();
+    selectAndAddDataSource("databases", "SQL Server", data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      "SQL Server"
-    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -116,15 +107,11 @@ describe("Data sources", () => {
       "have.text",
       "Failed to connect to localhost:1433 - Could not connect (sequence)"
     );
+    deleteDatasource(`cypress-${data.lastName}-sql-server`);
   });
 
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectAndAddDataSource("SQL Server");
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-sqlserver`
-    );
+  it("Should verify the functionality of SQL Server connection form.", () => {
+    selectAndAddDataSource("databases", "SQL Server", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -152,7 +139,9 @@ describe("Data sources", () => {
       Cypress.env("sqlserver_user")
     );
 
-    cy.get(postgreSqlSelector.passwordTextField).type(
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "Enter password",
       Cypress.env("sqlserver_password")
     );
 
@@ -164,13 +153,13 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.lastName}-sqlserver-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-sqlserver`);
-    deleteDatasource(`cypress-${data.lastName}-sqlserver`);
+      `[data-cy="cypress-${data.lastName}-sql-server-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-sql-server`);
+    deleteDatasource(`cypress-${data.lastName}-sql-server`);
   });
 });

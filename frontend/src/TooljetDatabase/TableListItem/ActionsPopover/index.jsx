@@ -12,7 +12,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
 
   const popover = (
     <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>
-      <Popover.Body className={`${darkMode && 'theme-dark'}`}>
+      <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         <div className={`row cursor-pointer`}>
           <div className="col-auto" data-cy="edit-option-icon">
             <EditIcon />

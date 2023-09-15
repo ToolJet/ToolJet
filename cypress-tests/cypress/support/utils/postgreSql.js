@@ -42,38 +42,47 @@ export const addQueryOnGui = (queryName, query) => {
     `Query (${queryName}) completed.`
   );
 };
-export const selectAndAddDataSource = (dscategory, dataSource, dataSourceName) => {
+export const selectAndAddDataSource = (
+  dscategory,
+  dataSource,
+  dataSourceName
+) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
-  cy.get(`[data-cy="${dscategory}-datasource-button"]`).click();
+  cy.wait(1000)
+  cy.get(`[data-cy="${cyParamName(dscategory)}-datasource-button"]`).click();
+  cy.wait(500)
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
-  cy.get(`[data-cy="data-source-${String(dataSource).toLowerCase()}"]`)
+  cy.get(`[data-cy="data-source-${(dataSource).toLowerCase()}"]`)
     .parent()
     .within(() => {
       cy.get(
-        `[data-cy="data-source-${String(
+        `[data-cy="data-source-${(
           dataSource
         ).toLowerCase()}"]>>>.datasource-card-title`
       ).realHover("mouse");
       cy.get(
-        `[data-cy="${String(dataSource).toLowerCase()}-add-button"]`
+        `[data-cy="${cyParamName(dataSource).toLowerCase()}-add-button"]`
       ).click();
     });
+
+  cy.wait(1000)
   cy.get(postgreSqlSelector.buttonSave).should("be.disabled")
   cy.clearAndType(
     '[data-cy="data-source-name-input-filed"]',
-    `cypress-${dataSourceName}-postgresql`
+    cyParamName(`cypress-${dataSourceName}-${dataSource}`)
   );
   cy.get(postgreSqlSelector.buttonSave).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     postgreSqlText.toastDSAdded
   );
-
   cy.get(
-    `[data-cy="cypress-${dataSourceName}-${cyParamName(dataSource)}-button"]`
+    `[data-cy="cypress-${cyParamName(dataSourceName)}-${cyParamName(
+      dataSource
+    )}-button"]`
   ).verifyVisibleElement(
     "have.text",
-    `cypress-${dataSourceName}-${cyParamName(dataSource)}`
+    `cypress-${cyParamName(dataSourceName)}-${cyParamName(dataSource)}`
   );
 };
 
@@ -116,9 +125,15 @@ export const fillDataSourceTextField = (
     `${assertionType}.text`,
     fieldName
   );
+  cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`).then(($field) => {
+    if ($field.is(":disabled")) {
+      cy.get(".datasource-edit-btn").click();
+    }
+  });
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
     .invoke("attr", "placeholder")
     .should("eq", placeholder.replace(/\u00a0/g, " "));
+
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
     .clear()
     .type(input, args);
