@@ -102,7 +102,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
         <button
           onClick={() =>
             runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {
-              executeRunQueryFromRunButton: true,
+              shouldSetPreviewData: true,
             })
           }
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}

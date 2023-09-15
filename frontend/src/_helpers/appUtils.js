@@ -936,7 +936,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   let dataQuery = {};
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
-  if (parameters?.executeRunQueryFromRunButton) setPreviewLoading(true);
+  if (parameters?.shouldSetPreviewData) setPreviewLoading(true);
 
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
@@ -1048,10 +1048,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         } else {
           let rawData = data.data;
           let finalData = data.data;
-          if (parameters?.executeRunQueryFromRunButton) {
+
+          if (parameters?.shouldSetPreviewData) {
             setPreviewLoading(false);
             setPreviewData(finalData);
           }
+
           if (dataQuery.options.enableTransformation) {
             finalData = await runTransformation(
               _ref,
