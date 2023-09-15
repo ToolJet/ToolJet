@@ -11,6 +11,7 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import { Loader } from '../ManageSSO/Loader';
 import { LicenseBanner } from '@/LicenseBanner';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import _ from 'lodash';
 class ManageGroupPermissionsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -369,7 +370,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                       );
                     })}
                   </div>
-                  {!isFeatureEnabled && (
+                  {!_.isEmpty(featureAccess) && !isFeatureEnabled && (
                     <LicenseBanner
                       style={{ alignSelf: 'flex-end', margin: '0px !important' }}
                       limits={featureAccess}
