@@ -2,6 +2,7 @@ import React from 'react';
 
 const Home = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
   <svg
+    data-cy="home-page-icon"
     width={width}
     height={width}
     viewBox={viewBox}

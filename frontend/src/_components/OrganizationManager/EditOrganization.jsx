@@ -13,7 +13,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   const { t } = useTranslation();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setNewOrgName(currentValue?.name), currentValue);
+  useEffect(() => setNewOrgName(currentValue?.name), [currentValue]);
 
   const editOrganization = () => {
     const trimmedName = newOrgName?.trim();
@@ -66,7 +66,6 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       show={showEditOrg}
       closeModal={closeModal}
       title={t('header.organization.editWorkspace', 'Edit workspace')}
-      checkForBackground={false}
     >
       <div className="row mb-3 workspace-folder-modal">
         <div className="col modal-main tj-app-input">

@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
 import { useAppDataActions } from '@/_stores/appDataStore';
 import Spinner from '@/_ui/Spinner';
+import _ from 'lodash';
 
 const AppLoaderComponent = (props) => {
   const params = useParams();
@@ -63,9 +64,9 @@ const AppLoaderComponent = (props) => {
           }
           redirectToDashboard();
         } else if (statusCode === 401) {
-          window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${
-            this.props.location.pathname
-          }`;
+          window.location = `${getSubpath() ?? ''}/login${
+            !_.isEmpty(getWorkspaceId()) ? `/${getWorkspaceId()}` : ''
+          }?redirectTo=${this.props.location.pathname}`;
           return;
         } else if (statusCode === 404 || statusCode === 422) {
           toast.error(error?.error ?? 'App not found');

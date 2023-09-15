@@ -101,9 +101,16 @@ export class DataQueriesService {
     return dataQuery;
   }
 
-  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id) {
-    const sourceOptions = await this.parseSourceOptions(dataSource.options, organization_id);
-    const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
+  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id, environmentId = undefined) {
+    const sourceOptions = await this.parseSourceOptions(dataSource.options, organization_id, environmentId);
+
+    const parsedQueryOptions = await this.parseQueryOptions(
+      dataQuery.options,
+      queryOptions,
+      organization_id,
+      environmentId
+    );
+
     const service = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
 
     return { service, sourceOptions, parsedQueryOptions };
@@ -124,6 +131,7 @@ export class DataQueriesService {
 
   async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
     const dataSource: DataSource = dataQuery?.dataSource;
+
     const app: App = dataQuery?.app;
     if (!(dataSource && app)) {
       throw new UnauthorizedException();
@@ -137,7 +145,8 @@ export class DataQueriesService {
       dataSource,
       dataQuery,
       queryOptions,
-      organizationId
+      organizationId,
+      environmentId
     );
 
     try {
@@ -223,7 +232,8 @@ export class DataQueriesService {
             dataSource,
             dataQuery,
             queryOptions,
-            organizationId
+            organizationId,
+            environmentId
           ));
 
           return await service.run(
@@ -349,7 +359,7 @@ export class DataQueriesService {
     environmentId?: string,
     organizationId?: string
   ): Promise<void> {
-    const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId);
+    const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
     const tokenData = this.getCurrentToken(
@@ -371,7 +381,7 @@ export class DataQueriesService {
     return;
   }
 
-  async parseSourceOptions(options: any, organization_id: string): Promise<object> {
+  async parseSourceOptions(options: any, organization_id: string, environmentId: string): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
 
@@ -379,9 +389,15 @@ export class DataQueriesService {
       const currentOption = options[key]?.['value'];
       const variablesMatcher = /(%%.+?%%)/g;
       const matched = variablesMatcher.exec(currentOption);
+      const constantMatcher = /{{constants\..+?}}/g;
       if (matched) {
         const resolved = await this.resolveVariable(currentOption, organization_id);
 
+        options[key]['value'] = resolved;
+      }
+
+      if (constantMatcher.test(currentOption)) {
+        const resolved = await this.resolveConstants(currentOption, organization_id, environmentId);
         options[key]['value'] = resolved;
       }
     }
@@ -397,6 +413,10 @@ export class DataQueriesService {
 
         if (value.includes('%%server')) {
           const resolved = await this.resolveVariable(value, organization_id);
+          parsedOptions[key] = resolved;
+          continue;
+        } else if (value.includes('{{constants')) {
+          const resolved = await this.resolveConstants(value, organization_id, environmentId);
           parsedOptions[key] = resolved;
           continue;
         } else {
@@ -444,7 +464,33 @@ export class DataQueriesService {
     return result;
   }
 
-  async parseQueryOptions(object: any, options: object, organization_id: string): Promise<object> {
+  async resolveConstants(str: string, organization_id: string, environmentId: string) {
+    const tempStr: string = str.match(/\{\{(.*?)\}\}/g)[0].replace(/[{}]/g, '');
+    let result = tempStr;
+    if (new RegExp('^constants.').test(tempStr)) {
+      const splitArray = tempStr.split('.');
+      const constantName = splitArray[splitArray.length - 1];
+
+      const constant = await this.appEnvironmentService.getOrgEnvironmentConstant(
+        constantName,
+        organization_id,
+        environmentId
+      );
+
+      if (constant) {
+        result = constant.value;
+      }
+    }
+
+    return result;
+  }
+
+  async parseQueryOptions(
+    object: any,
+    options: object,
+    organization_id: string,
+    environmentId?: string
+  ): Promise<object> {
     if (typeof object === 'object' && object !== null) {
       for (const key of Object.keys(object)) {
         object[key] = await this.parseQueryOptions(object[key], options, organization_id);
@@ -482,6 +528,25 @@ export class DataQueriesService {
         }
 
         return resolvedvar;
+      }
+
+      // check if more than two types of variables are present in a single line
+      if (object.match(/\{\{(.*?)\}\}/g)?.length > 1 && object.includes('{{constants.')) {
+        // find the constant variable from the string, {{constants.}} keyword
+        const constantVariables = object.match(/\{\{(constants.*?)\}\}/g);
+
+        if (constantVariables.length > 0) {
+          for (const variable of constantVariables) {
+            const resolvedVariable = await this.resolveConstants(variable, organization_id, environmentId);
+
+            object = object.replace(variable, resolvedVariable);
+          }
+        }
+      }
+      if (object.includes('{{constants.')) {
+        const resolvingConstant = await this.resolveConstants(object, organization_id, environmentId);
+
+        options[object] = resolvingConstant;
       }
 
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {

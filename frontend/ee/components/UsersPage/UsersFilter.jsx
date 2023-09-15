@@ -65,7 +65,6 @@ const UsersFilter = ({ filterList }) => {
               height="32px"
               useMenuPortal={true}
               closeMenuOnSelect={true}
-              customWrap={true}
               width="161.25px"
             />
           </div>
