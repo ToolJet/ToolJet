@@ -64,7 +64,7 @@ export default function EditorHeader({
   }, [currentUser]);
 
   return (
-    <div className="header">
+    <div className="header" style={{ width: "100%", position: 'fixed' }}>
       <header className="navbar navbar-expand-md navbar-light d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
