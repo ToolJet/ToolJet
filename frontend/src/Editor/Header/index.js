@@ -180,12 +180,12 @@ export default function EditorHeader({
               <div className="navbar-nav flex-row order-md-last release-buttons ">
                 <div className="nav-item">
                   <LicenseTooltip
-                      placement="left"
-                      limits={featureAccess}
-                      customMessage={'You can only share apps in our paid plans'}
-                      isAvailable={featureAccess?.multiEnvironment}
-                      noTooltipIfValid={true}
-                    >
+                    placement="left"
+                    limits={featureAccess}
+                    customMessage={'You can only share apps in our paid plans'}
+                    isAvailable={featureAccess?.multiEnvironment}
+                    noTooltipIfValid={true}
+                  >
                     {app.id && (
                       <ManageAppUsers
                         currentEnvironment={currentEnvironment}
