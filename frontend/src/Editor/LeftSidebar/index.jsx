@@ -300,15 +300,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}
       />
-      {config.COMMENT_FEATURE_ENABLE && (
-        <div className={`${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
-          <LeftSidebarComment
-            selectedSidebarItem={showComments ? 'comments' : ''}
-            currentPageId={currentPageId}
-            ref={setSideBarBtnRefs('comments')}
-          />
-        </div>
-      )}
+
       <ConfirmDialog
         show={showLeaveDialog}
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
@@ -320,7 +312,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         <div className="">
           {config.COMMENT_FEATURE_ENABLE && (
             <div
-              className={`${isVersionReleased && 'disabled'}`}
+              className={`${(isVersionReleased || isEditorFreezed) && 'disabled'}`}
               style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}
             >
               <LeftSidebarComment

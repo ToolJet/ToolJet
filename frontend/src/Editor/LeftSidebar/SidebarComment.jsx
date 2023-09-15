@@ -9,6 +9,8 @@ import { shallow } from 'zustand/shallow';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPageId }, ref) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
   const { appVersionsId } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
