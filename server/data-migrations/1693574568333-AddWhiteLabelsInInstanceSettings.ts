@@ -1,6 +1,6 @@
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
+import { INSTANCE_SETTINGS_TYPE } from 'src/helpers/instance_settings.constants';
 
 export class AddWhiteLabelsInInstanceSettings1693574568333 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -10,17 +10,17 @@ export class AddWhiteLabelsInInstanceSettings1693574568333 implements MigrationI
       {
         value: process.env?.WHITE_LABEL_LOGO || '',
         key: 'WHITE_LABEL_LOGO',
-        type: InstanceSettingsType.SYSTEM,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
       },
       {
         value: process.env?.WHITE_LABEL_TEXT || '',
         key: 'WHITE_LABEL_TEXT',
-        type: InstanceSettingsType.SYSTEM,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
       },
       {
         value: process.env?.WHITE_LABEL_FAVICON || '',
         key: 'WHITE_LABEL_FAVICON',
-        type: InstanceSettingsType.SYSTEM,
+        type: INSTANCE_SETTINGS_TYPE.SYSTEM,
       },
     ];
 

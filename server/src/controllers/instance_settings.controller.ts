@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { InstanceSettingsService } from '@services/instance_settings.service';
 import { CreateInstanceSettingsDto } from '@dto/create_instance_settings.dto';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
-import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
+import { INSTANCE_SETTINGS_TYPE } from 'src/helpers/instance_settings.constants';
 
 @Controller('instance-settings')
 @UseGuards(JwtAuthGuard, SuperAdminGuard)
@@ -13,7 +13,7 @@ export class InstanceSettingsController {
 
   @Get()
   async index() {
-    const settings = await this.instanceSettingsService.listSettings(InstanceSettingsType.USER);
+    const settings = await this.instanceSettingsService.listSettings(INSTANCE_SETTINGS_TYPE.USER);
     return decamelizeKeys({ settings });
   }
 

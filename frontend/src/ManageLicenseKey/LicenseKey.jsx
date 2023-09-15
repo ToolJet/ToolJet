@@ -43,9 +43,9 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
       .then(() => {
         fetchFeatureAccess();
         setLoading(false);
-        toast.success('License key has been updated', {
-          position: 'top-center',
-        });
+        window.location = `${window.public_config?.TOOLJET_HOST}${
+          window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+        }instance-settings?save_license=success`;
         fetchLicenseSettings();
       })
       .catch(({ error }) => {

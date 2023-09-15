@@ -9,6 +9,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 describe('Authentication', () => {
   let app: INestApplication;
@@ -21,7 +22,10 @@ describe('Authentication', () => {
 
   beforeEach(async () => {
     await clearDB();
-    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
+    await instanceSettingsRepository.update(
+      { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
+      { value: 'false' }
+    );
   });
 
   beforeAll(async () => {

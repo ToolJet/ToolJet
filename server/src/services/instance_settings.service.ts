@@ -3,7 +3,7 @@ import { BASIC_PLAN_SETTINGS } from '@ee/licensing/configs/PlanTerms';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
-import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
+import { INSTANCE_SETTINGS_TYPE } from 'src/helpers/instance_settings.constants';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager, In, Repository } from 'typeorm';
@@ -20,7 +20,7 @@ export class InstanceSettingsService {
   async getSettings(
     key?: string | string[],
     getAllData = false,
-    type?: InstanceSettingsType.USER | InstanceSettingsType.SYSTEM
+    type?: INSTANCE_SETTINGS_TYPE.USER | INSTANCE_SETTINGS_TYPE.SYSTEM
   ): Promise<any> {
     let isLicenseValid = true;
     let licenseTerms;
@@ -76,7 +76,7 @@ export class InstanceSettingsService {
       : BASIC_PLAN_SETTINGS[currentConfigs.key].value;
   }
 
-  async listSettings(type = InstanceSettingsType.USER): Promise<any> {
+  async listSettings(type = INSTANCE_SETTINGS_TYPE.USER): Promise<any> {
     return Object.values(await this.getSettings([], true, type));
   }
 
@@ -104,7 +104,7 @@ export class InstanceSettingsService {
           const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
           const config = await manager.findOneOrFail(InstanceSettings, {
             id: param.id,
-            type: InstanceSettingsType.USER,
+            type: INSTANCE_SETTINGS_TYPE.USER,
           });
           if (!isLicenseValid) {
             if (!Object.keys(BASIC_PLAN_SETTINGS).includes(config.key)) {
@@ -125,7 +125,7 @@ export class InstanceSettingsService {
       for (const key of keysToUpdate) {
         const config = await manager.findOneOrFail(InstanceSettings, {
           key,
-          type: InstanceSettingsType.SYSTEM,
+          type: INSTANCE_SETTINGS_TYPE.SYSTEM,
         });
         config.value = params[key];
         await manager.save(InstanceSettings, config);

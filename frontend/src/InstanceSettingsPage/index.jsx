@@ -20,7 +20,10 @@ export function InstanceSettings(props) {
   const [featureAccess, setFeatureAccess] = useState({});
   const [licenseLoaded, setLicenseLoaded] = useState(false);
   const error = searchParams.get('error');
-  const [selectedTab, setSelectedTab] = useState(error === 'license' ? 'License' : 'Users');
+  const licenseCheck = searchParams.get('save_license');
+  const [selectedTab, setSelectedTab] = useState(
+    error === 'license' || licenseCheck === 'success' ? 'License' : 'Users'
+  );
   const { load_app } = authenticationService.currentSessionValue;
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
@@ -58,6 +61,11 @@ export function InstanceSettings(props) {
   useEffect(() => {
     fetchFeatureAccess(true);
     load_app && error === 'license' && toast.error('Your license key has expired. Please update your license key');
+    load_app &&
+      licenseCheck === 'success' &&
+      toast.success('License key has been updated', {
+        position: 'top-center',
+      });
     load_app && updateSidebarNAV(selectedTab);
     searchParams.delete('error');
     setSearchParams(searchParams);

@@ -52,6 +52,7 @@ import got from 'got/dist/source';
 import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class AuthService {
@@ -121,7 +122,8 @@ export class AuthService {
     const user = await this.validateUser(email, password, organizationId);
 
     const allowPersonalWorkspace =
-      isSuperAdmin(user) || (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+      isSuperAdmin(user) ||
+      (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!organizationId) {
@@ -456,7 +458,7 @@ export class AuthService {
 
       const allowPersonalWorkspace =
         (await this.usersRepository.count()) === 0 ||
-        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+        (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
       if (!(allowPersonalWorkspace || organizationToken)) {
         throw new BadRequestException('Invalid invitation link');

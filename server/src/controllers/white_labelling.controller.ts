@@ -4,7 +4,7 @@ import { InstanceSettingsService } from '@services/instance_settings.service';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { WhiteLabellingGuard } from '@ee/licensing/guards/whiteLabelling.guard';
 import { UpdateWhiteLabellingDto } from '@dto/update_white_labelling.dto';
-import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
+import { INSTANCE_SETTINGS_TYPE } from 'src/helpers/instance_settings.constants';
 
 @Controller('white-labelling')
 @UseGuards(JwtAuthGuard, SuperAdminGuard, WhiteLabellingGuard)
@@ -13,7 +13,7 @@ export class WhiteLabellingController {
 
   @Get()
   async index() {
-    const settings = await this.instanceSettingsService.listSettings(InstanceSettingsType.SYSTEM);
+    const settings = await this.instanceSettingsService.listSettings(INSTANCE_SETTINGS_TYPE.SYSTEM);
 
     const whiteLabellingOptions = {
       WHITE_LABEL_LOGO: 'App Logo',

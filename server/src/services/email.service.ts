@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
 import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
 import { InstanceSettingsService } from './instance_settings.service';
-import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
+import { INSTANCE_SETTINGS_TYPE } from 'src/helpers/instance_settings.constants';
 
 const path = require('path');
 const fs = require('fs');
@@ -208,7 +208,7 @@ export class EmailService {
     const whiteLabelTextSetting = await this.instancesettingsService.getSettings(
       ['WHITE_LABEL_TEXT'],
       false,
-      InstanceSettingsType.SYSTEM
+      INSTANCE_SETTINGS_TYPE.SYSTEM
     );
 
     return whiteLabelTextSetting?.WHITE_LABEL_TEXT !== '' ? whiteLabelTextSetting?.WHITE_LABEL_TEXT : 'ToolJet';
@@ -218,7 +218,7 @@ export class EmailService {
     const whiteLabelLogoSetting = await this.instancesettingsService.getSettings(
       ['WHITE_LABEL_LOGO'],
       false,
-      InstanceSettingsType.SYSTEM
+      INSTANCE_SETTINGS_TYPE.SYSTEM
     );
 
     return whiteLabelLogoSetting?.WHITE_LABEL_LOGO !== ''

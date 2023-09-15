@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../../test.helper';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 describe('organizations controller', () => {
   let app: INestApplication;
@@ -10,7 +11,10 @@ describe('organizations controller', () => {
 
   beforeEach(async () => {
     await clearDB();
-    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
+    await instanceSettingsRepository.update(
+      { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
+      { value: 'false' }
+    );
   });
 
   beforeAll(async () => {

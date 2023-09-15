@@ -40,6 +40,7 @@ import { AppEnvironmentService } from './app_environments.service';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 const MAX_ROW_COUNT = 500;
 
@@ -127,7 +128,9 @@ export class OrganizationsService {
   }
 
   async constructSSOConfigs() {
-    const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE');
+    const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings(
+      INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
+    );
     const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
     return {
       google: {
@@ -683,7 +686,9 @@ export class OrganizationsService {
         // User not exist
         shouldSendWelcomeMail = true;
         // Create default organization if user not exist
-        if ((await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
+        if (
+          (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true'
+        ) {
           // Create default organization if user not exist
           const organizationName = generateNextName('My workspace');
           defaultOrganization = await this.create(organizationName, null, manager);

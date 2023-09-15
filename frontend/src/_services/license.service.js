@@ -17,10 +17,6 @@ function get() {
 async function update(body) {
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   const updatedData = await fetch(`${config.apiUrl}/license`, requestOptions).then(handleResponse);
-  //update global settings of application
-  appService.getConfig().then((config) => {
-    window.public_config = config;
-  });
   return updatedData;
 }
 

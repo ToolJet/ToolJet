@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InstanceSettingsService } from './instance_settings.service';
+import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class AppConfigService {
@@ -42,11 +43,11 @@ export class AppConfigService {
 
   fetchDefaultInstanceConfig() {
     return [
-      'ALLOW_PERSONAL_WORKSPACE',
-      'ENABLE_MULTIPLAYER_EDITING',
-      'WHITE_LABEL_LOGO',
-      'WHITE_LABEL_TEXT',
-      'WHITE_LABEL_FAVICON',
+      INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE,
+      INSTANCE_USER_SETTINGS.ENABLE_MULTIPLAYER_EDITING,
+      INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO,
+      INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT,
+      INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_FAVICON,
     ];
   }
 
