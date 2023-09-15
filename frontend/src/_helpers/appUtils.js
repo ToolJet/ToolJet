@@ -1116,6 +1116,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           });
           resolve({ status: 'ok', data: finalData });
           onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+          previewQuery(_self, query, false, undefined, query?.options?.hasParamSupport);
         }
       })
       .catch(({ error }) => {
