@@ -34,6 +34,9 @@ import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import ClientServerSwitch from './Elements/ClientServerSwitch';
+
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
 const AllElements = {
   Color,
@@ -43,6 +46,7 @@ const AllElements = {
   AlignButtons,
   Number,
   BoxShadow,
+  ClientServerSwitch,
 };
 
 export function CodeHinter({
@@ -73,6 +77,7 @@ export function CodeHinter({
   callgpt = () => null,
   isCopilotEnabled = false,
   currentState: _currentState,
+  verticalLine = true,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -89,6 +94,11 @@ export function CodeHinter({
   const currentState = useCurrentState();
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
+
+  const [prevCurrentValue, setPrevCurrentValue] = useState(null);
+  const [resolvedValue, setResolvedValue] = useState(null);
+  const [resolvingError, setResolvingError] = useState(null);
+
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
@@ -140,6 +150,28 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
+  useEffect(() => {
+    if (JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+      const customResolvables = getCustomResolvables();
+      const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+      setPrevCurrentValue(currentValue);
+
+      if (error) {
+        setResolvingError(error);
+        setResolvedValue(null);
+      } else {
+        setResolvingError(null);
+        setResolvedValue(preview);
+      }
+    }
+
+    return () => {
+      setPrevCurrentValue(null);
+      setResolvedValue(null);
+      setResolvingError(null);
+    };
+  }, [JSON.stringify({ currentValue, realState })]);
+
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
       handleChange(editor, onChange, ignoreBraces, realState, componentName);
@@ -186,13 +218,18 @@ export function CodeHinter({
 
   const getPreview = () => {
     if (!enablePreview) return;
-    const customResolvables = getCustomResolvables();
-    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+    // const customResolvables = getCustomResolvables();
+    // const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
+    const preview = resolvedValue;
+    const error = resolvingError;
 
     if (error) {
       const err = String(error);
-      const errorMessage = err.includes('.run()') ? `${err} in ${componentName.split('::')[0]}'s field` : err;
+      const errorMessage = err.includes('.run()')
+        ? `${err} in ${componentName ? componentName.split('::')[0] + "'s" : 'fx'} field`
+        : err;
       return (
         <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
           <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
@@ -290,26 +327,60 @@ export function CodeHinter({
 
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        {paramLabel && (
-          <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+      <div className={cx('d-flex align-items-center justify-content-between')}>
+        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
+        {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
+          <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`form-label ${darkMode && 'color-whitish-darkmode'}`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
             />
           </div>
         )}
-        <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
-          <div style={{ width: width, display: codeShow ? 'flex' : 'none', marginTop: '-1px' }}>
-            <FxButton
-              active={true}
-              onPress={() => {
-                setForceCodeBox(false);
-                onFxPress(false);
-              }}
-              dataCy={cyLabel}
-            />
+        <div className={`${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
+          <div
+            style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
+            className="d-flex align-items-center"
+          >
+            <div className="col-auto pt-0 fx-common">
+              {paramLabel !== 'Type' && (
+                <FxButton
+                  active={codeShow}
+                  onPress={() => {
+                    if (codeShow) {
+                      setForceCodeBox(false);
+                      onFxPress(false);
+                    } else {
+                      setForceCodeBox(true);
+                      onFxPress(true);
+                    }
+                  }}
+                  dataCy={cyLabel}
+                />
+              )}
+            </div>
+            {!codeShow && (
+              <ElementToRender
+                value={resolveReferences(initialValue, realState)}
+                onChange={(value) => {
+                  if (value !== currentValue) {
+                    onChange(value);
+                    setCurrentValue(value);
+                  }
+                }}
+                paramName={paramName}
+                paramLabel={paramLabel}
+                forceCodeBox={() => {
+                  setForceCodeBox(true);
+                  onFxPress(true);
+                }}
+                meta={fieldMeta}
+                cyLabel={cyLabel}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -318,92 +389,75 @@ export function CodeHinter({
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`}>
-          <div
-            className="code-hinter-wrapper position-relative"
-            style={{ width: '100%', backgroundColor: darkMode && '#272822' }}
-          >
-            <div
-              className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
-              key={componentName}
-              style={{
-                height: height || 'auto',
-                minHeight,
-                maxHeight: '320px',
-                overflow: 'auto',
-                fontSize: ' .875rem',
-              }}
-              data-cy={`${cyLabel}-input-field`}
-            >
-              {usePortalEditor && (
-                <CodeHinter.PopupIcon
-                  callback={handleToggle}
-                  icon="portal-open"
-                  tip="Pop out code editor into a new window"
-                  transformation={componentName === 'transformation'}
-                />
-              )}
-              <CodeHinter.Portal
-                isCopilotEnabled={isCopilotEnabled}
-                isOpen={isOpen}
-                callback={setIsOpen}
-                componentName={componentName}
+          <div className="d-flex">
+            <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
+            <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
+              <div
+                className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
                 key={componentName}
-                customComponent={getPreview}
-                forceUpdate={forceUpdate}
-                optionalProps={{ styles: { height: 300 }, cls: className }}
-                darkMode={darkMode}
-                selectors={{ className: 'preview-block-portal' }}
-                dragResizePortal={true}
-                callgpt={callgpt}
+                style={{
+                  height: height || 'auto',
+                  minHeight,
+                  maxHeight: '320px',
+                  overflow: 'auto',
+                  fontSize: ' .875rem',
+                }}
+                data-cy={`${cyLabel}-input-field`}
               >
-                <CodeMirror
-                  value={typeof initialValue === 'string' ? initialValue : ''}
-                  realState={realState}
-                  scrollbarStyle={null}
-                  height={'100%'}
-                  onFocus={() => setFocused(true)}
-                  onBlur={(editor, e) => {
-                    e.stopPropagation();
-                    const value = editor.getValue()?.trimEnd();
-                    onChange(value);
-                    if (!isPreviewFocused.current) {
-                      setFocused(false);
-                    }
-                  }}
-                  onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
-                  onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
-                  options={options}
-                  viewportMargin={Infinity}
-                />
-              </CodeHinter.Portal>
+                {usePortalEditor && (
+                  <CodeHinter.PopupIcon
+                    callback={handleToggle}
+                    icon="portal-open"
+                    tip="Pop out code editor into a new window"
+                    transformation={componentName === 'transformation'}
+                  />
+                )}
+                <CodeHinter.Portal
+                  isCopilotEnabled={isCopilotEnabled}
+                  isOpen={isOpen}
+                  callback={setIsOpen}
+                  componentName={componentName}
+                  key={componentName}
+                  customComponent={getPreview}
+                  forceUpdate={forceUpdate}
+                  optionalProps={{ styles: { height: 300 }, cls: className }}
+                  darkMode={darkMode}
+                  selectors={{ className: 'preview-block-portal' }}
+                  dragResizePortal={true}
+                  callgpt={callgpt}
+                >
+                  <CodeMirror
+                    value={typeof initialValue === 'string' ? initialValue : ''}
+                    realState={realState}
+                    scrollbarStyle={null}
+                    height={'100%'}
+                    onFocus={() => setFocused(true)}
+                    onBlur={(editor, e) => {
+                      e.stopPropagation();
+                      const value = editor.getValue()?.trimEnd();
+                      onChange(value);
+                      if (!isPreviewFocused.current) {
+                        setFocused(false);
+                      }
+                    }}
+                    onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
+                    onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+                    options={options}
+                    viewportMargin={Infinity}
+                  />
+                </CodeHinter.Portal>
+              </div>
+              {enablePreview && !isOpen && getPreview()}
             </div>
-            {enablePreview && !isOpen && getPreview()}
           </div>
         </div>
       </div>
-      {!codeShow && (
-        <div style={{ display: !codeShow ? 'block' : 'none' }}>
-          <ElementToRender
-            value={resolveReferences(initialValue, realState)}
-            onChange={(value) => {
-              if (value !== currentValue) {
-                onChange(value);
-                setCurrentValue(value);
-              }
-            }}
-            paramName={paramName}
-            paramLabel={paramLabel}
-            forceCodeBox={() => {
-              setForceCodeBox(true);
-              onFxPress(true);
-            }}
-            meta={fieldMeta}
-            cyLabel={cyLabel}
-          />
-        </div>
-      )}
     </div>
   );
+}
+
+function CodeHinterInputField() {
+  return <></>;
 }
 
 const PopupIcon = ({ callback, icon, tip, transformation = false }) => {

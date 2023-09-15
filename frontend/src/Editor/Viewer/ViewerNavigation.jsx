@@ -15,25 +15,23 @@ export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchP
   if (isMobileDevice) {
     return null;
   }
-
   return (
     <div
-      className={`navigation-area ${darkMode && 'dark'}`}
+      className={`navigation-area`}
       style={{
         width: 200,
         // backgroundColor: canvasBackgroundColor,
       }}
     >
       <div className="page-handler-wrapper">
-        {pages.map(
-          ([id, page]) =>
-            !page.hidden && (
-              <FolderList key={page.handle} onClick={() => switchPage(id)} selectedItem={id === currentPageId}>
-                <span data-cy={`pages-name-${String(page.name).toLowerCase()}`} className="mx-3 text-wrap">
-                  {_.truncate(page.name, { length: 18 })}
-                </span>
-              </FolderList>
-            )
+        {pages.map(([id, page]) =>
+          page.hidden || page.disabled ? null : (
+            <FolderList key={page.handle} onClick={() => switchPage(id)} selectedItem={id === currentPageId}>
+              <span data-cy={`pages-name-${String(page.name).toLowerCase()}`} className="mx-3 text-wrap">
+                {_.truncate(page.name, { length: 18 })}
+              </span>
+            </FolderList>
+          )
         )}
       </div>
     </div>
@@ -121,21 +119,20 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
 
         <div className="p-2 w-100">
           <div className={`pages-container ${darkMode && 'dark'}`}>
-            {pages.map(
-              ([id, page]) =>
-                !page.hidden && (
-                  <div
-                    key={page.handle}
-                    onClick={() => handlepageSwitch(id)}
-                    className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
-                  >
-                    <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
-                      <div className="card-body">
-                        <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
-                      </div>
+            {pages.map(([id, page]) =>
+              page.hidden || page.disabled ? null : (
+                <div
+                  key={page.handle}
+                  onClick={() => handlepageSwitch(id)}
+                  className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
+                >
+                  <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
+                    <div className="card-body">
+                      <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
                     </div>
                   </div>
-                )
+                </div>
+              )
             )}
           </div>
         </div>
@@ -159,7 +156,7 @@ const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, cu
   return (
     <Header
       styles={{
-        height: '45px',
+        height: '48px',
       }}
     >
       {showHeader && (

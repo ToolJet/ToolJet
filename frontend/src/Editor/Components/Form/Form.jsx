@@ -7,7 +7,7 @@ import _, { omit } from 'lodash';
 import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
-
+import { removeFunctionObjects } from '@/_helpers/appUtils';
 export const Form = function Form(props) {
   const {
     id,
@@ -22,7 +22,6 @@ export const Form = function Form(props) {
     currentState,
     fireEvent,
     properties,
-    registerAction,
     resetComponent,
     childComponents,
     onEvent,
@@ -51,20 +50,20 @@ export const Form = function Form(props) {
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
-  registerAction('resetForm', async function () {
-    resetComponent();
-  });
-  registerAction(
-    'submitForm',
-    async function () {
+
+  useEffect(() => {
+    setExposedVariable('resetForm', async function () {
+      resetComponent();
+    });
+    setExposedVariable('submitForm', async function () {
       if (isValid) {
         onEvent('onSubmit', { component }).then(() => resetComponent());
       } else {
         fireEvent('onInvalid');
       }
-    },
-    [isValid]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
   const extractData = (data) => {
     const result = {};
@@ -73,7 +72,7 @@ export const Form = function Form(props) {
       const item = data[key];
 
       if (item.name === 'Text') {
-        const textKey = item?.keyValue ?? item?.text;
+        const textKey = item?.formKey ?? item?.text;
         const nextItem = data[parseInt(key) + 1];
 
         if (nextItem && nextItem.name !== 'Text') {
@@ -87,10 +86,14 @@ export const Form = function Form(props) {
   };
 
   useEffect(() => {
-    // resetComponent()
     if (mounted) resetComponent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema)]);
+
+  useEffect(() => {
+    advanced && setExposedVariable('children', []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced]);
 
   useEffect(() => {
     setUIComponents(generateUIComponents(JSONSchema, advanced));
@@ -108,6 +111,7 @@ export const Form = function Form(props) {
 
     if (childComponents === null) {
       setExposedVariable('data', formattedChildData);
+      !advanced && setExposedVariable('children', formattedChildData);
       setExposedVariable('isValid', childValidation);
       return setValidation(childValidation);
     }
@@ -125,10 +129,11 @@ export const Form = function Form(props) {
     }
     formattedChildData = Object.fromEntries(
       // eslint-disable-next-line no-unused-vars
-      Object.entries(formattedChildData).map(([key, { keyValue, ...rest }]) => [key, rest])
+      Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formkey from final exposed data
     );
-
-    setExposedVariable('data', formattedChildData);
+    const formattedChildDataClone = _.cloneDeep(formattedChildData);
+    !advanced && setExposedVariable('children', formattedChildDataClone);
+    setExposedVariable('data', removeFunctionObjects(formattedChildData));
     setExposedVariable('isValid', childValidation);
     setValidation(childValidation);
 
@@ -184,18 +189,13 @@ export const Form = function Form(props) {
     onOptionChange({ component, optionName, value, componentId });
     return containerProps.onComponentOptionChanged(component, optionName, value);
   }
-  function findKeyByLabel(obj, label) {
-    const keys = Object.keys(obj);
-    return keys.find((key) => obj[key].label === label);
-  }
-  const onOptionChange = ({ component, optionName, value, componentId }) => {
-    let keyValue = JSONSchema?.properties && findKeyByLabel(JSONSchema.properties, value);
 
+  const onOptionChange = ({ component, optionName, value, componentId }) => {
     const optionData = {
       ...(childDataRef.current[componentId] ?? {}),
       name: component.name,
       [optionName]: value,
-      keyValue: keyValue, //adding this to use as exposed key
+      formKey: component?.formKey, //adding this to use as exposed key
     };
     childDataRef.current = { ...childDataRef.current, [componentId]: optionData };
     setChildrenData(childDataRef.current);

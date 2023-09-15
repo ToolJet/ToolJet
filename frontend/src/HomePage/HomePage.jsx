@@ -577,7 +577,6 @@ class HomePageComponent extends React.Component {
                     value={appOperations?.selectedFolder}
                     placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
                     closeMenuOnSelect={true}
-                    customWrap={true}
                   />
                 </div>
               </div>

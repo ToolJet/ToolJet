@@ -1,3 +1,4 @@
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import React, { forwardRef } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -12,10 +13,9 @@ export const LeftSidebarItem = forwardRef(
   ) => {
     const { t } = useTranslation();
     const router = useRouter();
-    const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
 
-    const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
-
+    let displayIcon = icon;
+    if (icon == 'page') displayIcon = 'file01';
     const content = (
       <div
         {...rest}
@@ -28,10 +28,16 @@ export const LeftSidebarItem = forwardRef(
       >
         {icon && (
           <div
-            className={`sidebar-svg-icon position-relative ${displayIcon === 'settings' && 'img-invert'}`}
+            className={`sidebar-svg-icon  position-relative ${
+              selectedSidebarItem === icon && selectedSidebarItem != 'comments' && 'sidebar-item'
+            }`}
             data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
           >
-            <Icon.default />
+            <SolidIcon
+              name={displayIcon}
+              width={icon == 'settings' ? 22.4 : 20}
+              fill={selectedSidebarItem === icon ? '#3E63DD' : 'var(--slate8)'}
+            />
             {commentBadge && <LeftSidebarItem.CommentBadge />}
           </div>
         )}
