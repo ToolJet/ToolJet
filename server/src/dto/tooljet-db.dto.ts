@@ -140,7 +140,7 @@ export class PostgrestTableColumnDto {
   @Transform(({ value }) => sanitizeInput(value))
   @IsOptional()
   @Validate(SQLInjectionValidator)
-  constraint: string;
+  constraint_type: string;
 
   @IsOptional()
   @Transform(({ value, obj }) => {
@@ -151,7 +151,7 @@ export class PostgrestTableColumnDto {
     message: 'Default value must match the data type',
   })
   @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
-  default: string | number | boolean;
+  column_default: string | number | boolean;
 }
 
 export class RenamePostgrestTableDto {

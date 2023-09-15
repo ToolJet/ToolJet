@@ -8,15 +8,33 @@ import RunpySchema from './Runpy.schema.json';
 import { allManifests } from '@tooljet/plugins/client';
 
 export const DataBaseSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (allManifests[currentValue].type === 'database') accumulator.push(allManifests[currentValue].source);
+  if (allManifests[currentValue].type === 'database') {
+    const _source = allManifests[currentValue].source;
+    const def = allManifests[currentValue]?.defaults ?? {};
+
+    accumulator.push({ ..._source, defaults: def });
+  }
+
   return accumulator;
 }, []);
 export const ApiSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (allManifests[currentValue].type === 'api') accumulator.push(allManifests[currentValue].source);
+  if (allManifests[currentValue].type === 'api') {
+    const _source = allManifests[currentValue].source;
+    const def = allManifests[currentValue]?.defaults ?? {};
+
+    accumulator.push({ ..._source, defaults: def });
+  }
+
   return accumulator;
 }, []);
 export const CloudStorageSources = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  if (allManifests[currentValue].type === 'cloud-storage') accumulator.push(allManifests[currentValue].source);
+  if (allManifests[currentValue].type === 'cloud-storage') {
+    const _source = allManifests[currentValue].source;
+    const def = allManifests[currentValue]?.defaults ?? {};
+
+    accumulator.push({ ..._source, defaults: def });
+  }
+
   return accumulator;
 }, []);
 

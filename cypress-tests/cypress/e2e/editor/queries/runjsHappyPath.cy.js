@@ -59,11 +59,13 @@ import {
   searchPage,
 } from "Support/utils/multipage";
 import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
+import { deleteDownloadsFolder } from "Support/utils/common";
 
 describe("RunJS", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
     resizeQueryPanel("80");
@@ -84,10 +86,12 @@ describe("RunJS", () => {
     openNode("runjs1");
     verifyValue("data", "Boolean", "true");
     verifyValue("rawData", "Boolean", "true");
+    cy.apiDeleteApp();
   });
 
   it("should verify actions", () => {
     const data = {};
+    deleteDownloadsFolder();
     data.customText = randomString(12);
 
     selectQueryFromLandingPage("runjs", "JavaScript");
@@ -195,6 +199,11 @@ describe("RunJS", () => {
     addInputOnQueryField("runjs", "actions.logout()");
     query("run");
     cy.get('[data-cy="sign-in-header"]').should("be.visible");
+    cy.apiLogin();
+    cy.openApp(
+      Cypress.env("appId"),
+      '[data-cy="draggable-widget-modal1-launch-button"]'
+    );
   });
 
   it("should verify global and page data", () => {
@@ -232,10 +241,6 @@ describe("RunJS", () => {
     query("preview");
     verifypreview("raw", `["all_users","admin"]`);
     if (Cypress.env("environment") != "Community") {
-      addInputOnQueryField("runjs", "return globals.mode");
-      query("preview");
-      verifypreview("raw", `{"value":"edit"}`);
-
       addInputOnQueryField("runjs", "return globals.environment.name");
       query("preview");
       verifypreview("raw", `development`);
@@ -247,6 +252,15 @@ describe("RunJS", () => {
       query("preview");
       verifypreview("raw", `true`);
     }
+
+    addInputOnQueryField("runjs", "return globals.mode");
+    query("preview");
+    verifypreview("raw", `{"value":"edit"}`);
+
+    addInputOnQueryField("runjs", "return constants");
+    query("preview");
+    verifypreview("raw", `{}`);
+    cy.apiDeleteApp();
   });
 
   it("should verify action by button", () => {
@@ -272,6 +286,7 @@ describe("RunJS", () => {
     cy.get('[data-cy="query-selection-field"]').should("have.text", "newrunjs");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+    cy.apiDeleteApp();
   });
 
   it("should verify runjs toggle options", () => {
@@ -288,7 +303,11 @@ describe("RunJS", () => {
     cy.wait(`@editQuery`);
     cy.waitForAutoSave();
     cy.reload();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "alert from runjs",
+      false
+    );
 
     changeQueryToggles("confirmation-before-run");
     cy.wait(`@editQuery`);
@@ -313,5 +332,6 @@ describe("RunJS", () => {
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Success alert");
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+    cy.apiDeleteApp();
   });
 });

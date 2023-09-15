@@ -507,6 +507,23 @@ export const SubContainer = ({
     backgroundSize: `${gridWidth}px 10px`,
   };
 
+  const checkParent = (box) => {
+    let isListView = false,
+      isForm = false;
+    try {
+      isListView =
+        appDefinition.pages[currentPageId].components[box?.component?.parent]?.component?.component === 'Listview';
+      isForm = appDefinition.pages[currentPageId].components[box?.component?.parent]?.component?.component === 'Form';
+    } catch {
+      console.log('error');
+    }
+    if (!isListView && !isForm) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
     if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
       return Promise.resolve();
@@ -548,7 +565,16 @@ export const SubContainer = ({
               <DraggableBox
                 onComponentClick={onComponentClick}
                 onEvent={onEvent}
-                onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
+                onComponentOptionChanged={
+                  checkParent(box)
+                    ? onComponentOptionChangedForSubcontainer
+                    : (component, optionName, value, componentId = '') => {
+                        if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
+                          return Promise.resolve();
+                        }
+                        onOptionChange && onOptionChange({ component, optionName, value, componentId });
+                      }
+                }
                 onComponentOptionsChanged={onComponentOptionsChanged}
                 key={key}
                 onResizeStop={onResizeStop}
@@ -565,9 +591,6 @@ export const SubContainer = ({
                 setSelectedComponent={setSelectedComponent}
                 selectedComponent={selectedComponent}
                 deviceWindowWidth={deviceWindowWidth}
-                isSelectedComponent={
-                  mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
-                }
                 removeComponent={customRemoveComponent}
                 canvasWidth={_containerCanvasWidth}
                 readOnly={readOnly}
@@ -577,7 +600,6 @@ export const SubContainer = ({
                 hoveredComponent={hoveredComponent}
                 parentId={parentComponent?.name}
                 sideBarDebugger={sideBarDebugger}
-                isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
                 exposedVariables={exposedVariables ?? {}}
                 childComponents={childComponents[key]}
                 containerProps={{

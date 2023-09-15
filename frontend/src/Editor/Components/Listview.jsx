@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
 import { Pagination } from '@/_components/Pagination';
+import { removeFunctionObjects } from '@/_helpers/appUtils';
 
 export const Listview = function Listview({
   id,
@@ -46,14 +47,9 @@ export const Listview = function Listview({
   };
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [positiveColumns, setPositiveColumns] = useState(columns);
+  const parentRef = useRef(null);
+  const [childrenData, setChildrenData] = useState({});
 
-  function onRowClicked(index) {
-    setSelectedRowIndex(index);
-    setExposedVariable('selectedRowId', index);
-    setExposedVariable('selectedRow', childrenData[index]);
-    fireEvent('onRowClicked');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }
   function onRecordClicked(index) {
     setSelectedRowIndex(index);
     setExposedVariable('selectedRecordId', index);
@@ -61,10 +57,13 @@ export const Listview = function Listview({
     fireEvent('onRecordClicked');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
-
-  const parentRef = useRef(null);
-
-  const [childrenData, setChildrenData] = useState({});
+  function onRowClicked(index) {
+    setSelectedRowIndex(index);
+    setExposedVariable('selectedRowId', index);
+    setExposedVariable('selectedRow', childrenData[index]);
+    fireEvent('onRowClicked');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
 
   useEffect(() => {
     if (columns < 1) {
@@ -73,12 +72,9 @@ export const Listview = function Listview({
   }, [columns]);
 
   useEffect(() => {
-    setExposedVariable('data', {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    setExposedVariable('data', childrenData);
+    const childrenDataClone = _.cloneDeep(childrenData);
+    setExposedVariable('data', removeFunctionObjects(childrenDataClone));
+    setExposedVariable('children', childrenData);
     if (selectedRowIndex != undefined) {
       setExposedVariable('selectedRowId', selectedRowIndex);
       setExposedVariable('selectedRow', childrenData[selectedRowIndex]);
