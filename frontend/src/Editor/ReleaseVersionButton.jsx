@@ -29,7 +29,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
   const releaseVersion = (editingVersion) => {
     setShowPageDeletionConfirmation(false);
     setIsReleasing(true);
-    saveEditingVersion();
+
     appService
       .saveApp(appId, {
         name: appName,
