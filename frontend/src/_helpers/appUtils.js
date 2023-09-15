@@ -586,12 +586,12 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'switch-page': {
-        const { name, disabled } = _ref.state.appDefinition.pages[event.pageId];
+        const { name, disabled } = _ref.appDefinition.pages[event.pageId];
         // Don't allow switching to disabled page in editor as well as viewer
         if (!disabled) {
           _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
         }
-        if (_ref.state.appDefinition.pages[event.pageId]) {
+        if (_ref.appDefinition.pages[event.pageId]) {
           if (disabled) {
             const generalProps = {
               navToDisablePage: {
@@ -948,7 +948,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
   if (dataQuery.options.requestConfirmation) {
     // eslint-disable-next-line no-unsafe-optional-chaining
-    const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
+    const queryConfirmationList = _ref?.queryConfirmationList ? [..._ref?.queryConfirmationList] : [];
     const queryConfirmation = {
       queryId,
       queryName,
@@ -958,6 +958,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     }
 
     if (confirmed === undefined) {
+      //!check
       _ref.setState({
         queryConfirmationList,
       });
