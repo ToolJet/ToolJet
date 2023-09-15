@@ -232,7 +232,7 @@ async function joinTables(dataQuery, currentState) {
     return {
       status: 'failed',
       statusText: 'failed',
-      message: `Empty values are found in the following section - ${mandatoryFieldsButEmpty.join(',')}.`,
+      message: `Empty values are found in the following section - ${mandatoryFieldsButEmpty.join(', ')}.`,
       description: 'Mandatory fields are not empty',
       data: {},
     };

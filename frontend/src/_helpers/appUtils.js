@@ -990,12 +990,21 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               errorData = data.data;
               break;
             case 'tooljetdb':
-              errorData = data?.error || data;
+              if (data?.error) {
+                errorData = {
+                  message: data?.error?.message || 'Something went wrong',
+                  description: data?.error?.message || 'Something went wrong',
+                  status: data?.statusText || 'Failed',
+                  data: data?.error || {},
+                };
+              } else {
+                errorData = data;
+              }
               break;
             default:
               errorData = data;
+              break;
           }
-
           // errorData = query.kind === 'runpy' ? data.data : data;
           useCurrentStateStore.getState().actions.setErrors({
             [queryName]: {
