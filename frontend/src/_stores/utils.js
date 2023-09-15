@@ -205,11 +205,23 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
     updateDiff = _.toPairs(currentPageComponents ?? []).reduce((result, [id, component]) => {
+      if (_.keys(component).length === 1 && component.withDefaultChildren !== undefined) {
+        return result;
+      }
+
       const componentMeta = componentTypes.find((comp) => comp.component === component.component.component);
 
       const metaDiff = diff(componentMeta, component.component);
 
       result[id] = _.defaultsDeep(metaDiff, defaultComponent);
+
+      if (metaDiff.definition && !_.isEmpty(metaDiff.definition)) {
+        const metaAttributes = _.keys(metaDiff.definition);
+
+        metaAttributes.forEach((attribute) => {
+          result[id][attribute] = metaDiff.definition[attribute];
+        });
+      }
 
       result[id].type = componentMeta.component;
       result[id].parent = component.component.parent ?? null;
