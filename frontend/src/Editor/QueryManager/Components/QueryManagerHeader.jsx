@@ -1,6 +1,5 @@
 import React, { useState, forwardRef, useRef, useEffect } from 'react';
 import RenameIcon from '../Icons/RenameIcon';
-import FloppyDisk from '@/_ui/Icon/solidIcons/FloppyDisk';
 import Eye1 from '@/_ui/Icon/solidIcons/Eye1';
 import Play from '@/_ui/Icon/solidIcons/Play';
 import cx from 'classnames';
@@ -8,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
 
-import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
+import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import {
   useSelectedQuery,
   useSelectedDataSource,
@@ -146,10 +145,11 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
       <div className="col font-weight-500">
         {selectedQuery && (
           <NameInput
-            selectedQuery={selectedQuery}
             onInput={executeQueryNameUpdation}
+            selectedQuery={selectedQuery}
             value={queryName}
             darkMode={darkMode}
+            isDiabled={isVersionReleased || isEditorFreezed}
           />
         )}
       </div>
@@ -186,7 +186,7 @@ const PreviewButton = ({ buttonLoadingState, onClick, selectedQuery }) => {
   );
 };
 
-const NameInput = ({ onInput, value, darkMode, selectedQuery }) => {
+const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   const [isFocussed, setIsFocussed] = useNameInputFocussed(false);
   const [name, setName] = useState(value);
   const selectedDataSource = useSelectedDataSource();
@@ -261,7 +261,8 @@ const NameInput = ({ onInput, value, darkMode, selectedQuery }) => {
         ) : (
           <Button
             size="sm"
-            onClick={() => setIsFocussed(true)}
+            onClick={isDiabled ? null : () => setIsFocussed(true)}
+            disabled={isDiabled}
             className={cx(
               'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500',
               {
@@ -274,7 +275,7 @@ const NameInput = ({ onInput, value, darkMode, selectedQuery }) => {
               className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
               style={{ minWidth: 14 }}
             >
-              {!(isVersionReleased || isEditorFreezed || !hasPermissions) && <RenameIcon />}
+              {(!isDiabled || !hasPermissions) && <RenameIcon />}
             </span>
           </Button>
         )}

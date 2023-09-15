@@ -3,7 +3,7 @@ export const buttonText = {
   defaultWidgetName: "button1",
   buttonTextLabel: "Button Text",
   loadingState: "Loading State",
-  buttonDocumentationLink: "Button documentation",
+  buttonDocumentationLink: "Read documentation for Button",
   backgroundColor: "Background Color",
   textColor: "Text color",
   loaderColor: "Loader color",

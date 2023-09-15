@@ -391,7 +391,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   }
 
   const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
-  if (typeof resolvedCustomRule === 'string') {
+  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
@@ -1110,6 +1110,15 @@ export const redirectToDashboard = () => {
   window.location = `${subpath ? `${subpath}` : ''}/${getWorkspaceId()}`;
 };
 
-export const isUnlimited = (value) => {
-  return value === 'UNLIMITED' ? true : false;
+export const determineJustifyContentValue = (value) => {
+  switch (value) {
+    case 'left':
+      return 'start';
+    case 'right':
+      return 'end';
+    case 'center':
+      return 'center';
+    default:
+      return 'start';
+  }
 };

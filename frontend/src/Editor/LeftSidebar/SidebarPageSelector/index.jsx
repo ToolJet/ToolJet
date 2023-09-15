@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Fuse from 'fuse.js';
-import { Button, HeaderSection } from '@/_ui/LeftSidebar';
+import { HeaderSection } from '@/_ui/LeftSidebar';
 import { PageHandler, AddingPageHandler } from './PageHandler';
 import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
@@ -10,6 +10,7 @@ import EmptyIllustration from '@assets/images/no-results.svg';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -22,6 +23,7 @@ const LeftSidebarPageSelector = ({
   clonePage,
   hidePage,
   unHidePage,
+  disableEnablePage,
   updateHomePage,
   updatePageHandle,
   pages,
@@ -45,6 +47,11 @@ const LeftSidebarPageSelector = ({
       isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
+  );
+
+  const sortedAllPages = useMemo(
+    () => [...allpages.filter((c) => !c.disabled), ...allpages.filter((c) => c.disabled)],
+    [allpages]
   );
 
   const filterPages = (value) => {
@@ -87,8 +94,8 @@ const LeftSidebarPageSelector = ({
               />
             }
           >
-            <div className="d-flex justify-content-end">
-              <Button
+            <div className="d-flex justify-content-end" style={{ gap: '2px' }}>
+              <ButtonSolid
                 title={'Add Page'}
                 onClick={() => {
                   if (isVersionReleased || isEditorFreezed) {
@@ -97,37 +104,36 @@ const LeftSidebarPageSelector = ({
                   }
                   setNewPageBeingCreated(true);
                 }}
+                className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
                 darkMode={darkMode}
-                size="sm"
-                styles={{ width: '28px', padding: 0 }}
-              >
-                <Button.Content dataCy={`add-page`} iconSrc={'assets/images/icons/plus.svg'} direction="left" />
-              </Button>
-              <Button
+                leftIcon="plus"
+                iconWidth="14"
+                variant="tertiary"
+              ></ButtonSolid>
+              <ButtonSolid
                 title={'Search'}
                 onClick={() => setShowSearch(!showSearch)}
                 darkMode={darkMode}
-                size="sm"
-                styles={{ width: '28px', padding: 0 }}
-              >
-                <Button.Content dataCy={'search-page'} iconSrc={'assets/images/icons/search.svg'} direction="left" />
-              </Button>
-              <Button
+                className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
+                leftIcon="search"
+                iconWidth="14"
+                variant="tertiary"
+              ></ButtonSolid>
+              <ButtonSolid
                 title={`${pinned ? 'Unpin' : 'Pin'}`}
                 onClick={() => {
                   setPinned(!pinned);
                   !haveUserPinned && setHaveUserPinned(true);
                 }}
+                variant="tertiary"
+                className="left-sidebar-header-btn"
+                fill={`var(--slate12)`}
                 darkMode={darkMode}
-                size="sm"
-                styles={{ width: '28px', padding: 0 }}
-              >
-                <Button.Content
-                  dataCy={'pin-panel'}
-                  iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
-                  direction="left"
-                />
-              </Button>
+                leftIcon={pinned ? 'unpin' : 'pin'}
+                iconWidth="14"
+              ></ButtonSolid>
             </div>
           </HeaderSection.PanelHeader>
           {showSearch && (
@@ -140,13 +146,13 @@ const LeftSidebarPageSelector = ({
           )}
         </HeaderSection>
 
-        <div className={`${darkMode && 'dark theme-dark'} page-selector-panel-body`}>
+        <div className={`${darkMode && 'dark-theme'} page-selector-panel-body`}>
           <div>
-            {allpages.length > 0 ? (
+            {sortedAllPages.length > 0 ? (
               <SortableList
-                data={allpages}
+                data={sortedAllPages}
                 Element={PageHandler}
-                pages={allpages}
+                pages={sortedAllPages}
                 darkMode={darkMode}
                 switchPage={switchPage}
                 deletePage={deletePage}
@@ -154,6 +160,7 @@ const LeftSidebarPageSelector = ({
                 clonePage={clonePage}
                 hidePage={hidePage}
                 unHidePage={unHidePage}
+                disableEnablePage={disableEnablePage}
                 homePageId={homePageId}
                 currentPageId={currentPageId}
                 updateHomePage={updateHomePage}
@@ -172,7 +179,7 @@ const LeftSidebarPageSelector = ({
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
                 <div>
                   <EmptyIllustration />
-                  <p data-cy={`label-no-pages-found`} className="mt-3">
+                  <p data-cy={`label-no-pages-found`} className="mt-3  color-slate12">
                     No pages found
                   </p>
                 </div>

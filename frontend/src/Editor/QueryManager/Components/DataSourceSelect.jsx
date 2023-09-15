@@ -14,7 +14,7 @@ import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
 import { canCreateDataSource } from '@/_helpers';
 
-function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
+function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const [userDefinedSources, setUserDefinedSources] = useState([...dataSources, ...globalDataSources]);

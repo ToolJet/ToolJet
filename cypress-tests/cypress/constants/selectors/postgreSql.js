@@ -25,7 +25,7 @@ export const postgreSqlSelector = {
   buttonTestConnection: '[data-cy="test-connection-button"]',
   connectionFailedText: '[data-cy="test-connection-failed-text"]',
   buttonSave: '[data-cy="db-connection-save-button"] > .tj-base-btn',
-  dangerAlertNotSupportSSL: '.go3958317564',
+  dangerAlertNotSupportSSL: ".go3958317564",
 
   passwordTextField: '[data-cy="password-text-field"]',
   textConnectionVerified: '[data-cy="test-connection-verified-text"]',
@@ -50,7 +50,7 @@ export const postgreSqlSelector = {
   toggleTransformation: '[data-cy="transformation-toggle-switch"]',
   inputFieldTransformation: '[data-cy="transformation-input-input-field"]',
 
-  headerQueryPreview: '.py-2',
+  headerQueryPreview: ".py-2",
   previewTabJson: '[data-cy="preview-tab-json"]',
   previewTabRaw: '[data-cy="preview-tab-raw"]',
 
@@ -69,7 +69,7 @@ export const postgreSqlSelector = {
   labelSuccessMessageInput: '[data-cy="label-success-message-input"]',
   notificationDurationInput: '[data-cy="label-notification-duration-input"]',
   addEventHandler: '[data-cy="add-event-handler"]',
-  noEventHandlerMessage: '[data-cy="no-event-handler-message"]',
+  noEventHandlerMessage: '[data-cy="no-items-banner"]',
   postgresqlQueryRunButton: '[data-cy="postgresql1-query-run-button"]',
   psqlQueryLabel: '[data-cy="postgresql1-query-label"]',
   psqlQueryDeleteButton: '[data-cy="postgresql1-query-delete-button"]',
