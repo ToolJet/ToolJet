@@ -100,9 +100,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
         })}
       >
         <button
-          onClick={() => {
-            runQuery(editorRef, selectedQuery?.id, selectedQuery?.name);
-          }}
+          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
           data-cy="query-run-button"
           disabled={isInDraft}
