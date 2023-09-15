@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
@@ -81,7 +81,6 @@ export const Inspector = ({
   };
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   // eslint-disable-next-line no-unused-vars
-  const [tabHeight, setTabHeight] = React.useState(0);
   const [newComponentName, setNewComponentName] = useState('');
   const [inputRef, setInputFocus] = useFocus();
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
