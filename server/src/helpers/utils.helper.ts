@@ -84,10 +84,6 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
-export const retrieveWhiteLabelText = () => {
-  return process.env?.WHITE_LABEL_TEXT ? process.env.WHITE_LABEL_TEXT : 'ToolJet';
-};
-
 export const defaultAppEnvironments = [
   { name: 'development', isDefault: false, priority: 1 },
   { name: 'staging', isDefault: false, priority: 2 },

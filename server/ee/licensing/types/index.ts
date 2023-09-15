@@ -19,6 +19,7 @@ export interface Terms {
     auditLogs?: boolean;
     ldap?: boolean;
     customStyling?: boolean;
+    whiteLabelling?: boolean;
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
   };

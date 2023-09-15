@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
-import { generateInviteURL, generateOrgInviteURL, retrieveWhiteLabelText } from 'src/helpers/utils.helper';
+import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import { InstanceSettingsService } from './instance_settings.service';
+import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
+
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
@@ -19,11 +22,18 @@ export class EmailService {
   private FROM_EMAIL;
   private TOOLJET_HOST;
   private NODE_ENV;
+  private WHITE_LABEL_TEXT;
+  private WHITE_LABEL_LOGO;
 
-  constructor() {
+  constructor(private readonly instancesettingsService: InstanceSettingsService) {
     this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io';
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
     this.NODE_ENV = process.env.NODE_ENV || 'development';
+  }
+
+  async init() {
+    this.WHITE_LABEL_TEXT = await this.retrieveWhiteLabelText();
+    this.WHITE_LABEL_LOGO = await this.retrieveWhiteLabelLogo();
   }
 
   async sendEmail(to: string, subject: string, html: string) {
@@ -41,7 +51,7 @@ export class EmailService {
     });
 
     const message = {
-      from: `"${retrieveWhiteLabelText()}" <${this.FROM_EMAIL}>`,
+      from: `"${this.WHITE_LABEL_TEXT}" <${this.FROM_EMAIL}>`,
       to,
       subject,
       html,
@@ -75,7 +85,8 @@ export class EmailService {
     organizationName?: string,
     sender?: string
   ) {
-    const subject = `Welcome to ${retrieveWhiteLabelText()}`;
+    await this.init();
+    const subject = `Welcome to ${this.WHITE_LABEL_TEXT}`;
     const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId);
     const html = `
       <!DOCTYPE html>
@@ -88,7 +99,7 @@ export class EmailService {
           ${
             organizationInvitationToken && sender && organizationName
               ? `<span>
-              ${sender} has invited you to use ${retrieveWhiteLabelText()} workspace: ${organizationName}.
+              ${sender} has invited you to use ${this.WHITE_LABEL_TEXT} workspace: ${organizationName}.
             </span>`
               : ''
           }
@@ -100,7 +111,7 @@ export class EmailService {
           <br>
           <p>
             Welcome aboard,<br>
-            ${retrieveWhiteLabelText()} Team
+            ${this.WHITE_LABEL_TEXT} Team
           </p>
         </body>
       </html>
@@ -116,7 +127,8 @@ export class EmailService {
     invitationtoken: string,
     organizationName: string
   ) {
-    const subject = `Welcome to ${retrieveWhiteLabelText()}`;
+    await this.init();
+    const subject = `Welcome to ${this.WHITE_LABEL_TEXT}`;
     const inviteUrl = generateOrgInviteURL(invitationtoken);
     const html = `
       <!DOCTYPE html>
@@ -128,7 +140,9 @@ export class EmailService {
           <p>Hi ${name || ''},</p>
           <br>
           <span>
-          ${sender} has invited you to use ${retrieveWhiteLabelText()} workspace: ${organizationName}. Use the link below to set up your account and get started.
+          ${sender} has invited you to use ${
+      this.WHITE_LABEL_TEXT
+    } workspace: ${organizationName}. Use the link below to set up your account and get started.
           </span>
           <br>
           <a href="${inviteUrl}">${inviteUrl}</a>
@@ -136,7 +150,7 @@ export class EmailService {
           <br>
           <p>
             Welcome aboard,<br>
-            ${retrieveWhiteLabelText()} Team
+            ${this.WHITE_LABEL_TEXT} Team
           </p>
         </body>
       </html>
@@ -164,13 +178,14 @@ export class EmailService {
     comment: string,
     fromAvatar: string
   ) {
+    await this.init();
     const filePath = path.join(__dirname, '../assets/email-templates/comment-mention.html');
     const source = fs.readFileSync(filePath, 'utf-8').toString();
     const template = handlebars.compile(source);
-    const companyName = retrieveWhiteLabelText();
-    const companyLogo = process.env?.WHITE_LABEL_LOGO
-      ? process.env.WHITE_LABEL_LOGO
-      : 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg';
+    const companyName = this.WHITE_LABEL_TEXT || 'ToolJet';
+    const companyLogo =
+      this.WHITE_LABEL_LOGO ||
+      'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg';
     const replacements = {
       to,
       from,
@@ -188,5 +203,26 @@ export class EmailService {
     const html = htmlToSend;
 
     await this.sendEmail(to, subject, html);
+  }
+  async retrieveWhiteLabelText() {
+    const whiteLabelTextSetting = await this.instancesettingsService.getSettings(
+      ['WHITE_LABEL_TEXT'],
+      false,
+      InstanceSettingsType.SYSTEM
+    );
+
+    return whiteLabelTextSetting?.WHITE_LABEL_TEXT !== '' ? whiteLabelTextSetting?.WHITE_LABEL_TEXT : 'ToolJet';
+  }
+
+  async retrieveWhiteLabelLogo() {
+    const whiteLabelLogoSetting = await this.instancesettingsService.getSettings(
+      ['WHITE_LABEL_LOGO'],
+      false,
+      InstanceSettingsType.SYSTEM
+    );
+
+    return whiteLabelLogoSetting?.WHITE_LABEL_LOGO !== ''
+      ? whiteLabelLogoSetting?.WHITE_LABEL_LOGO
+      : 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg';
   }
 }

@@ -179,8 +179,8 @@ function InviteUsersForm({
                   </div>
                   <div>
                     <p className="tj-text tj-text-sm" data-cy="helper-text-bulk-upload">
-                      Download the ToolJet template to add user details or format your file in the same as the template.
-                      ToolJet won’t be able to recognise files in any other format.{' '}
+                      Download the template to add user details or format your file in the same way as the template.
+                      Files in any other format may not be recognized.{' '}
                     </p>
                     <ButtonSolid
                       href="../../assets/csv/sample_upload.csv"

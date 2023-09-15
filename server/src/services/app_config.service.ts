@@ -34,9 +34,6 @@ export class AppConfigService {
       'SUB_PATH',
       'ENABLE_MARKETPLACE_FEATURE',
       'ENABLE_WORKFLOWS_FEATURE',
-      'WHITE_LABEL_LOGO',
-      'WHITE_LABEL_TEXT',
-      'WHITE_LABEL_FAVICON',
       'ENABLE_TOOLJET_DB',
       'LANGUAGE',
       'ENABLE_PRIVATE_APP_EMBED',
@@ -44,7 +41,13 @@ export class AppConfigService {
   }
 
   fetchDefaultInstanceConfig() {
-    return ['ALLOW_PERSONAL_WORKSPACE', 'ENABLE_MULTIPLAYER_EDITING'];
+    return [
+      'ALLOW_PERSONAL_WORKSPACE',
+      'ENABLE_MULTIPLAYER_EDITING',
+      'WHITE_LABEL_LOGO',
+      'WHITE_LABEL_TEXT',
+      'WHITE_LABEL_FAVICON',
+    ];
   }
 
   fetchAllowedConfigFromEnv() {

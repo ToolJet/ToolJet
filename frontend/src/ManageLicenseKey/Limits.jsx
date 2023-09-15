@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons.jsx';
-import { LoadingScreen } from './LoadingScreen';
 import { userService, organizationService, appService, tooljetDatabaseService } from '@/_services';
+import { LoadingScreen } from './LoadingScreen';
 
 const Limits = () => {
   const [currentTab, setCurrentTab] = useState('apps');

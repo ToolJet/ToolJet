@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { ManageAllUsers } from '@/ManageAllUsers';
-import { ManageInstanceSettings } from '@/ManageInstanceSettings';
+import { ManageInstanceSettings, ManageWhiteLabelling } from '@/ManageInstanceSettings';
 import { authenticationService } from '@/_services/authentication.service';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
@@ -24,8 +24,8 @@ export function InstanceSettings(props) {
   const { load_app } = authenticationService.currentSessionValue;
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['All users', 'Manage instance settings', 'License'];
-  const protectedNavs = ['Manage instance settings'];
+  const sideBarNavs = ['All users', 'Manage instance settings', 'License', 'White labelling'];
+  const protectedNavs = ['Manage instance settings', 'White labelling'];
 
   const defaultOrgName = (groupName) => {
     switch (groupName) {
@@ -35,10 +35,14 @@ export function InstanceSettings(props) {
         return 'Settings';
       case 'License':
         return 'License';
+      case 'White labelling':
+        return 'White labelling';
       default:
         return groupName;
     }
   };
+
+  const paidFeatures = { 'White labelling': 'whiteLabelling' };
 
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
@@ -90,8 +94,10 @@ export function InstanceSettings(props) {
                           className="workspace-settings-nav-items"
                           onClick={() => {
                             if (
-                              (featureAccess.licenseStatus.isExpired || !featureAccess.licenseStatus.isLicenseValid) &&
-                              proctedNavIndex !== -1
+                              (featureAccess.licenseStatus.isExpired ||
+                                !featureAccess.licenseStatus.isLicenseValid ||
+                                featureAccess?.[paidFeatures?.[item]] === false) &&
+                              protectedNavs.includes(item) === true
                             )
                               return;
                             setSelectedTab(defaultOrgName(item));
@@ -126,6 +132,7 @@ export function InstanceSettings(props) {
                   {selectedTab === 'License' && (
                     <ManageLicenseKey fetchFeatureAccessForInstanceSettings={fetchFeatureAccess} />
                   )}
+                  {selectedTab === 'White labelling' && featureAccess?.whiteLabelling && <ManageWhiteLabelling />}
                 </div>
               </div>
             ) : (

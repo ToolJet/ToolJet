@@ -68,6 +68,9 @@ export class LicenseService {
       case LICENSE_FIELD.WORKSPACES:
         return License.Instance().workspaces;
 
+      case LICENSE_FIELD.WHITE_LABEL:
+        return License.Instance().whiteLabelling;
+
       case LICENSE_FIELD.USER:
         return {
           total: License.Instance().users,

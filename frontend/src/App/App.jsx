@@ -93,13 +93,15 @@ class AppComponent extends React.Component {
 
   setFaviconAndTitle() {
     const favicon_url = window.public_config?.WHITE_LABEL_FAVICON;
-    let link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
-    }
-    link.href = favicon_url ? favicon_url : 'assets/images/logo.svg';
+    let links = document.querySelectorAll("link[rel='icon']");
+    links.forEach((link) => {
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = favicon_url ? favicon_url : 'assets/images/logo.svg';
+    });
     document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 

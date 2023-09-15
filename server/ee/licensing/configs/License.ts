@@ -11,6 +11,7 @@ export default class License {
   private _isOidc: boolean;
   private _isLdap: boolean;
   private _isCustomStyling: boolean;
+  private _isWhiteLabelling: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
   private _expiryDate: Date;
@@ -50,6 +51,7 @@ export default class License {
         this._isOidc = licenseData?.features?.oidc === false ? false : true;
         this._isLdap = licenseData?.features?.ldap === false ? false : true;
         this._isCustomStyling = licenseData?.features?.customStyling === false ? false : true;
+        this._isWhiteLabelling = licenseData?.features?.whiteLabelling === false ? false : true;
         this._isMultiEnvironment = licenseData?.features?.multiEnvironment === false ? false : true;
         this._isMultiPlayerEdit = licenseData?.features?.multiPlayerEdit === false ? false : true;
         this._expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
@@ -73,6 +75,7 @@ export default class License {
       this._isOidc = true;
       this._isLdap = true;
       this._isCustomStyling = true;
+      this._isWhiteLabelling = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
     }
@@ -177,6 +180,13 @@ export default class License {
     return this._isCustomStyling;
   }
 
+  public get whiteLabelling(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.whiteLabelling;
+    }
+    return this._isWhiteLabelling;
+  }
+
   public get multiPlayerEdit(): boolean {
     if (this.IsBasicPlan) {
       return !!BASIC_PLAN_TERMS.features?.multiPlayerEdit;
@@ -198,6 +208,7 @@ export default class License {
       auditLogs: this.auditLogs,
       ldap: this.ldap,
       customStyling: this.customStyling,
+      whiteLabelling: this.whiteLabelling,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
     };
