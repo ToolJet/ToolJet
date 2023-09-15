@@ -14,7 +14,6 @@ import PromoteConfirmationModal from '../EnvironmentsManager/PromoteConfirmation
 import cx from 'classnames';
 import config from 'config';
 // eslint-disable-next-line import/no-unresolved
-import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { LicenseTooltip } from '@/LicenseTooltip';
@@ -58,23 +57,9 @@ export default function EditorHeader({
     shallow
   );
 
-  const updatePresence = useUpdatePresence();
-
-  useEffect(() => {
-    const initialPresence = {
-      firstName: currentUser?.first_name ?? '',
-      lastName: currentUser?.last_name ?? '',
-      email: currentUser?.email ?? '',
-      image: '',
-      editingVersionId: '',
-      x: 0,
-      y: 0,
-      color: '',
-    };
-    updatePresence(initialPresence);
+  useEffect(()=> {
     fetchFeatureAccess();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
+  }, [currentUser])
 
   const handlePromote = () => {
     setPromoteModalData({
@@ -155,6 +140,7 @@ export default function EditorHeader({
                       <RealtimeAvatars />
                     </div>
                   )}
+                  {shouldEnableMultiplayer && <UpdatePresence currentUser={currentUser} />}
                 </div>
               </div>
               <div className="navbar-seperator"></div>
