@@ -1,18 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
 import { HeaderSection } from '@/_ui/LeftSidebar';
-import { LeftSidebarItem } from '../LeftSidebar/SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
-import Popover from '@/_ui/Popover';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import ExportAppModal from '../../HomePage/ExportAppModal';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -20,15 +19,16 @@ export const GlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   isMaintenanceOn,
+  app,
+  backgroundFxQuery,
+  realState,
 }) => {
   const { t } = useTranslation();
-  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
-  const [showPicker, setShowPicker] = React.useState(false);
-  const currentState = useCurrentState();
-  const [forceCodeBox, setForceCodeBox] = React.useState(true);
-  const [realState, setRealState] = React.useState(currentState);
-  const [showConfirmation, setConfirmationShow] = React.useState(false);
-  const [show, setShow] = React.useState('');
+  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor } = globalSettings;
+  const [showPicker, setShowPicker] = useState(false);
+  const [forceCodeBox, setForceCodeBox] = useState(true);
+  const [showConfirmation, setConfirmationShow] = useState(false);
+  const [isExportingApp, setIsExportingApp] = React.useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -44,180 +44,18 @@ export const GlobalSettings = ({
     left: '0px',
   };
 
-  React.useEffect(() => {
-    setRealState(currentState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components]);
-
-  const popoverContent = (
-    <div id="global-settings-popover" className={cx({ 'theme-dark': darkMode, disabled: isVersionReleased })}>
-      <div bsPrefix="global-settings-popover">
-        <HeaderSection darkMode={darkMode}>
-          <HeaderSection.PanelHeader title="Global settings" />
-        </HeaderSection>
-        <div className="card-body">
-          <div>
-            <div className="d-flex mb-3">
-              <span data-cy={`label-hide-header-for-launched-apps`}>
-                {t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}
-              </span>
-              <div className="ms-auto form-check form-switch position-relative">
-                <input
-                  data-cy={`toggle-hide-header-for-launched-apps`}
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={hideHeader}
-                  onChange={(e) => globalSettingsChanged({ hideHeader: e.target.checked })}
-                />
-              </div>
-            </div>
-            <div className="d-flex mb-3">
-              <span data-cy={`label-maintenance-mode`}>
-                {t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}
-              </span>
-              <div className="ms-auto form-check form-switch position-relative">
-                <input
-                  data-cy={`toggle-maintenance-mode`}
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={isMaintenanceOn}
-                  onChange={() => setConfirmationShow(true)}
-                />
-              </div>
-            </div>
-            <div className="d-flex mb-3">
-              <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
-                {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
-              </span>
-              <div className="position-relative">
-                <div className="input-with-icon">
-                  <input
-                    data-cy="maximum-canvas-width-input-field"
-                    type="text"
-                    className={`form-control form-control-sm`}
-                    placeholder={'0'}
-                    onChange={(e) => {
-                      const width = e.target.value;
-                      if (!Number.isNaN(width) && width >= 0) globalSettingsChanged({ canvasMaxWidth: width });
-                    }}
-                    value={canvasMaxWidth}
-                  />
-                  <select
-                    data-cy={`dropdown-max-canvas-width-type`}
-                    className="form-select"
-                    aria-label="Select canvas width type"
-                    onChange={(event) => {
-                      const newCanvasMaxWidthType = event.currentTarget.value;
-
-                      const options = {
-                        canvasMaxWidthType: newCanvasMaxWidthType,
-                      };
-
-                      if (newCanvasMaxWidthType === '%') {
-                        options.canvasMaxWidth = 100;
-                      } else if (newCanvasMaxWidthType === 'px') {
-                        options.canvasMaxWidth = 1292;
-                      }
-                      globalSettingsChanged(options);
-                    }}
-                  >
-                    <option value="%" selected={canvasMaxWidthType === '%'}>
-                      %
-                    </option>
-                    <option value="px" selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}>
-                      px
-                    </option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="d-flex align-items-center">
-              <span className="w-full" data-cy={`label-bg-canvas`}>
-                {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
-              </span>
-              <div className="canvas-codehinter-container">
-                {showPicker && (
-                  <div>
-                    <div style={coverStyles} onClick={() => setShowPicker(false)} />
-                    <SketchPicker
-                      data-cy={`color-picker-canvas`}
-                      className="canvas-background-picker"
-                      onFocus={() => setShowPicker(true)}
-                      color={canvasBackgroundColor}
-                      onChangeComplete={(color) => {
-                        const options = {
-                          canvasBackgroundColor: [color.hex, color.rgb],
-                          backgroundFxQuery: color.hex,
-                        };
-
-                        globalSettingsChanged(options);
-                      }}
-                    />
-                  </div>
-                )}
-                {forceCodeBox && (
-                  <div
-                    className="row mx-0 form-control form-control-sm canvas-background-holder"
-                    onClick={() => setShowPicker(true)}
-                  >
-                    <div
-                      data-cy={`canvas-bg-color-picker`}
-                      className="col-auto"
-                      style={{
-                        float: 'right',
-                        width: '20px',
-                        height: '20px',
-                        backgroundColor: canvasBackgroundColor,
-                        border: `0.25px solid ${
-                          ['#ffffff', '#fff', '#1f2936'].includes(canvasBackgroundColor) && '#c5c8c9'
-                        }`,
-                      }}
-                    ></div>
-                    <div className="col">{canvasBackgroundColor}</div>
-                  </div>
-                )}
-                <div
-                  className={`${!forceCodeBox && 'hinter-canvas-input'} ${!darkMode && 'hinter-canvas-input-light'} `}
-                >
-                  {!forceCodeBox && (
-                    <CodeHinter
-                      cyLabel={`canvas-bg-colour`}
-                      currentState={realState}
-                      initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                      value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
-                      theme={darkMode ? 'monokai' : 'duotone-light'}
-                      mode="javascript"
-                      className="canvas-hinter-wrap"
-                      lineNumbers={false}
-                      onChange={(color) => {
-                        const options = {
-                          canvasBackgroundColor: resolveReferences(color, realState),
-                          backgroundFxQuery: color,
-                        };
-
-                        globalSettingsChanged(options);
-                      }}
-                    />
-                  )}
-                  <div className={`fx-canvas ${!darkMode && 'fx-canvas-light'} `}>
-                    <FxButton
-                      dataCy={`canvas-bg-color`}
-                      active={!forceCodeBox ? true : false}
-                      onPress={() => {
-                        setForceCodeBox(!forceCodeBox);
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
+  const outerStyles = {
+    width: '142px',
+    height: '32px',
+    borderRadius: ' 6px',
+    display: 'flex',
+    paddingLeft: '4px',
+    alignItems: 'center',
+    gap: '4px',
+    background: showPicker && 'var(--indigo2)',
+    outline: showPicker && '1px solid var(--indigo9)',
+    boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
+  };
   return (
     <>
       <Confirm
@@ -231,26 +69,208 @@ export const GlobalSettings = ({
         onCancel={() => setConfirmationShow(false)}
         darkMode={darkMode}
       />
-      <Popover
-        handleToggle={(show) => {
-          if (show) setShow('settings');
-          else {
-            setShow('');
-            setShowPicker(false);
-          }
-        }}
-        popoverContentClassName="p-0 sidebar-h-100-popover global-settings-popover-content"
-        side="bottom"
-        popoverContent={popoverContent}
-        popoverContentHeight="auto"
-      >
-        <LeftSidebarItem
-          selectedSidebarItem={show}
-          icon="settings"
-          className={cx(`cursor-pointer sidebar-global-settings`)}
-          tip="Settings"
+      {isExportingApp && app.hasOwnProperty('id') && (
+        <ExportAppModal
+          show={isExportingApp}
+          closeModal={() => {
+            setIsExportingApp(false);
+          }}
+          customClassName="modal-version-lists"
+          title={'Select a version to export'}
+          app={app}
+          darkMode={darkMode}
         />
-      </Popover>
+      )}
+      <div id="" className={cx({ 'dark-theme': darkMode, disabled: isVersionReleased })}>
+        <div bsPrefix="global-settings-popover">
+          <HeaderSection darkMode={darkMode}>
+            <HeaderSection.PanelHeader title="Global settings" />
+          </HeaderSection>
+          <div style={{ padding: '12px 16px' }}>
+            <div className="tj-text-xsm color-slate12 ">
+              <div className="d-flex mb-3">
+                <span data-cy={`label-hide-header-for-launched-apps`}>
+                  {t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}
+                </span>
+                <div className="ms-auto form-check form-switch position-relative">
+                  <input
+                    data-cy={`toggle-hide-header-for-launched-apps`}
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={hideHeader}
+                    onChange={(e) => globalSettingsChanged({ hideHeader: e.target.checked })}
+                  />
+                </div>
+              </div>
+              <div className="d-flex mb-3">
+                <span data-cy={`label-maintenance-mode`}>
+                  {t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}
+                </span>
+                <div className="ms-auto form-check form-switch position-relative">
+                  <input
+                    data-cy={`toggle-maintenance-mode`}
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={isMaintenanceOn}
+                    onChange={() => setConfirmationShow(true)}
+                  />
+                </div>
+              </div>
+              <div className="d-flex mb-3">
+                <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
+                  {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
+                </span>
+                <div className="position-relative">
+                  <div className="global-settings-width-input-container">
+                    <input
+                      style={{ width: '103px', borderRight: 'none' }}
+                      data-cy="maximum-canvas-width-input-field"
+                      type="text"
+                      className={`form-control`}
+                      placeholder={'0'}
+                      onChange={(e) => {
+                        const width = e.target.value;
+                        if (!Number.isNaN(width) && width >= 0) globalSettingsChanged({ canvasMaxWidth: width });
+                      }}
+                      value={canvasMaxWidth}
+                    />
+                    <select
+                      data-cy={`dropdown-max-canvas-width-type`}
+                      className="dropdown-max-canvas-width-type"
+                      aria-label="Select canvas width type"
+                      onChange={(event) => {
+                        const newCanvasMaxWidthType = event.currentTarget.value;
+                        const options = {
+                          canvasMaxWidthType: newCanvasMaxWidthType,
+                        };
+
+                        if (newCanvasMaxWidthType === '%') {
+                          options.canvasMaxWidth = 100;
+                        } else if (newCanvasMaxWidthType === 'px') {
+                          options.canvasMaxWidth = 1292;
+                        }
+                        globalSettingsChanged(options);
+                      }}
+                    >
+                      <option value="%" selected={canvasMaxWidthType === '%'}>
+                        %
+                      </option>
+                      <option value="px" selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}>
+                        px
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex justify-content-between mb-3">
+                <span className="pt-2" data-cy={`label-bg-canvas`}>
+                  {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
+                </span>
+                <div className="canvas-codehinter-container">
+                  {showPicker && (
+                    <div>
+                      <div style={coverStyles} onClick={() => setShowPicker(false)} />
+                      <SketchPicker
+                        data-cy={`color-picker-canvas`}
+                        className="canvas-background-picker"
+                        onFocus={() => setShowPicker(true)}
+                        color={canvasBackgroundColor}
+                        onChangeComplete={(color) => {
+                          const options = {
+                            canvasBackgroundColor: [color.hex, color.rgb],
+                            backgroundFxQuery: color.hex,
+                          };
+
+                          globalSettingsChanged(options);
+                        }}
+                      />
+                    </div>
+                  )}
+                  {forceCodeBox && (
+                    <div
+                      className="row mx-0 color-picker-input d-flex"
+                      onClick={() => setShowPicker(true)}
+                      style={outerStyles}
+                    >
+                      <div
+                        data-cy={`canvas-bg-color-picker`}
+                        className="col-auto"
+                        style={{
+                          float: 'right',
+                          width: '24px',
+                          height: '24px',
+                          backgroundColor: canvasBackgroundColor,
+                          borderRadius: ' 6px',
+                          border: `1px solid var(--slate7, #D7DBDF)`,
+                          boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
+                        }}
+                      ></div>
+                      <div style={{ height: '20px' }} className="col">
+                        {canvasBackgroundColor}
+                      </div>
+                    </div>
+                  )}
+                  <div
+                    className={`${!forceCodeBox && 'hinter-canvas-input'} ${!darkMode && 'hinter-canvas-input-light'} `}
+                  >
+                    {!forceCodeBox && (
+                      <CodeHinter
+                        cyLabel={`canvas-bg-colour`}
+                        currentState={realState}
+                        initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                        value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                        theme={darkMode ? 'monokai' : 'duotone-light'}
+                        mode="javascript"
+                        className="canvas-hinter-wrap"
+                        lineNumbers={false}
+                        onChange={(color) => {
+                          const options = {
+                            canvasBackgroundColor: resolveReferences(color, realState),
+                            backgroundFxQuery: color,
+                          };
+
+                          globalSettingsChanged(options);
+                        }}
+                      />
+                    )}
+                    <div className={`fx-canvas ${!darkMode && 'fx-canvas-light'} `}>
+                      <FxButton
+                        dataCy={`canvas-bg-color`}
+                        active={!forceCodeBox ? true : false}
+                        onPress={() => {
+                          setForceCodeBox(!forceCodeBox);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
+                <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
+                <div>
+                  <ButtonSolid
+                    variant="secondary"
+                    style={{ width: '158px' }}
+                    size="md"
+                    onClick={() => {
+                      setIsExportingApp(true);
+                      document.getElementById('maintenance-app-modal').click();
+                    }}
+                    fill={`var(--indigo9)`}
+                    leftIcon="fileupload"
+                    iconWidth="16"
+                    data-cy="button-user-status-change"
+                  >
+                    Export this app
+                  </ButtonSolid>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

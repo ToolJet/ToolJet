@@ -54,7 +54,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     disableEnablePage,
     isMaintenanceOn,
   } = props;
-  // const { isMaintenanceOn } = app;
 
   const dataSources = useDataSources();
   const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
@@ -214,7 +213,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         globalSettings={appDefinition.globalSettings}
         darkMode={darkMode}
         toggleAppMaintenance={toggleAppMaintenance}
-        // is_maintenance_on={is_maintenance_on}
         isMaintenanceOn={isMaintenanceOn}
         app={app}
       />

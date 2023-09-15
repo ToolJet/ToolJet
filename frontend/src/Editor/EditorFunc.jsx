@@ -1469,7 +1469,6 @@ const EditorComponent = (props) => {
       <EditorContextWrapper>
         <EditorHeader
           darkMode={props.darkMode}
-          globalSettingsChanged={globalSettingsChanged}
           appDefinition={_.cloneDeep(appDefinition)}
           toggleAppMaintenance={toggleAppMaintenance}
           editingVersion={editingVersion}
@@ -1493,6 +1492,7 @@ const EditorComponent = (props) => {
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
             <LeftSidebar
+              globalSettingsChanged={globalSettingsChanged}
               errorLogs={currentState.errors}
               components={currentState.components}
               appId={appId}
