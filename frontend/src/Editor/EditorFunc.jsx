@@ -956,15 +956,6 @@ const EditorComponent = (props) => {
         appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
       }
     }
-
-    // Other actions can be performed here if needed, like autoSave, ymap, etc.
-    // computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
-    // autoSave();
-    // props.ymap?.set('appDef', {
-    //   newDefinition: updatedAppDefinition,
-    //   editingVersionId: props.editingVersion?.id,
-    // });
-    // }
   };
 
   const removeComponent = (componentId) => {

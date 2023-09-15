@@ -186,8 +186,11 @@ export const SubContainer = ({
           );
 
           _.set(childrenBoxes, newComponent.id, {
-            component: newComponent.component,
-            parent: parentComponent.component === 'Tabs' ? parentId + '-' + tab : parentId,
+            component: {
+              ...newComponent.component,
+              parent: parentComponent.component === 'Tabs' ? parentId + '-' + tab : parentId,
+            },
+
             layouts: {
               [currentLayout]: {
                 ...layout,
