@@ -94,6 +94,7 @@ class ViewerComponent extends React.Component {
       isLoading: false,
       isAppLoaded: true,
       appDefinition: { ...appDefData },
+      pages: appDefData.pages,
     });
   };
 
@@ -194,7 +195,6 @@ class ViewerComponent extends React.Component {
         selectedComponent: null,
         dataQueries: dataQueries,
         currentPageId: currentPage.id,
-        pages: {},
         homepage: appDefData?.pages?.[this.state.appDefinition?.homePageId]?.handle,
         event: data.events ?? [],
       },
@@ -572,7 +572,7 @@ class ViewerComponent extends React.Component {
 
     if (appDefinition.globalSettings?.canvasMaxWidthType === 'px')
       computedCanvasMaxWidth =
-        (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - (appDefinition?.showViewerNavigation ? 200 : 0);
+        (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - (appDefinition?.showHideViewerNavigation ? 200 : 0);
     else if (appDefinition.globalSettings?.canvasMaxWidthType === '%')
       computedCanvasMaxWidth = +appDefinition.globalSettings?.canvasMaxWidth + '%';
 
@@ -688,7 +688,7 @@ class ViewerComponent extends React.Component {
                     }}
                   >
                     <div className="areas d-flex flex-rows">
-                      {appDefinition?.showViewerNavigation && (
+                      {appDefinition?.showHideViewerNavigation && (
                         <ViewerNavigation
                           isMobileDevice={this.props.currentLayout === 'mobile'}
                           canvasBackgroundColor={this.computeCanvasBackgroundColor()}
