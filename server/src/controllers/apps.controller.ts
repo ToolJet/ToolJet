@@ -136,6 +136,9 @@ export class AppsController {
       ? await this.appsService.findVersion(app.currentVersionId)
       : await this.appsService.findVersion(app.editingVersion?.id);
 
+    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
+    const eventsForVersion = app.editingVersion ? await this.eventsService.findEventsForVersion(versionToLoad.id) : [];
+
     // serialize
     return {
       current_version_id: app['currentVersionId'],
@@ -145,6 +148,11 @@ export class AppsController {
       is_maintenance_on: app.isMaintenanceOn,
       name: app.name,
       slug: app.slug,
+      events: eventsForVersion,
+      pages: pagesForVersion,
+      homePageId: versionToLoad.homePageId,
+      globalSettings: versionToLoad.globalSettings,
+      showHideViewerNavigation: versionToLoad.showViewerNavigation,
     };
   }
 
