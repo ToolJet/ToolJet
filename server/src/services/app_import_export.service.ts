@@ -305,13 +305,6 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping
       );
 
-      console.log(
-        '---arpit--- importingAppVersion',
-        JSON.stringify({
-          updatedDefinition,
-        })
-      );
-
       // !-----
 
       let updateHomepageId = null;

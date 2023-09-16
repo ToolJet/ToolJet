@@ -80,8 +80,14 @@ class ViewerComponent extends React.Component {
     };
   }
 
-  setStateForApp = (data) => {
+  setStateForApp = (data, byAppSlug = false) => {
     const appDefData = buildAppDefinition(data);
+
+    if (byAppSlug) {
+      appDefData.globalSettings = data.globalSettings;
+      appDefData.homePageId = data.homePageId;
+      appDefData.showHideViewerNavigation = data.showHideViewerNavigation;
+    }
 
     this.setState({
       app: data,
@@ -116,10 +122,17 @@ class ViewerComponent extends React.Component {
     }
 
     let queryState = {};
-    const { data_queries } = await dataqueryService.getAll(appVersionId);
+    let dataQueries = [];
 
-    if (data_queries.length > 0) {
-      data_queries.forEach((query) => {
+    if (appVersionId) {
+      const { data_queries } = await dataqueryService.getAll(appVersionId);
+      dataQueries = data_queries;
+    } else {
+      dataQueries = data.data_queries;
+    }
+
+    if (dataQueries.length > 0) {
+      dataQueries.forEach((query) => {
         if (query.pluginId || query?.plugin?.id) {
           queryState[query.name] = {
             ...query.plugin.manifestFile.data.source.exposedVariables,
@@ -139,12 +152,12 @@ class ViewerComponent extends React.Component {
     const constants = await this.fetchOrgEnvironmentConstants(data.slug, data.is_public);
 
     const pages = data.pages;
-    const homePageId = data.editing_version.homePageId;
+    const homePageId = appVersionId ? data.editing_version.homePageId : data?.homePageId;
     const startingPageHandle = this.props?.params?.pageHandle;
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    useDataQueriesStore.getState().actions.setDataQueries(data_queries);
+    useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
     this.props.setCurrentState({
       queries: queryState,
       components: {},
@@ -179,10 +192,11 @@ class ViewerComponent extends React.Component {
             ? `${this.state.deviceWindowWidth}px`
             : '1292px',
         selectedComponent: null,
-        dataQueries: data_queries,
+        dataQueries: dataQueries,
         currentPageId: currentPage.id,
         pages: {},
         homepage: appDefData?.pages?.[this.state.appDefinition?.homePageId]?.handle,
+        event: data.events ?? [],
       },
       () => {
         const components = appDefData?.pages[currentPageId]?.components || {};
@@ -190,7 +204,7 @@ class ViewerComponent extends React.Component {
         computeComponentState(components).then(async () => {
           this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
           console.log('Default component state computed and set');
-          this.runQueries(data_queries);
+          this.runQueries(dataQueries);
           // eslint-disable-next-line no-unsafe-optional-chaining
           // const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
           // for (const event of events ?? []) {
@@ -264,7 +278,7 @@ class ViewerComponent extends React.Component {
     appService
       .getAppBySlug(slug)
       .then((data) => {
-        this.setStateForApp(data);
+        this.setStateForApp(data, true);
         this.setStateForContainer(data);
         this.setWindowTitle(data.name);
       })

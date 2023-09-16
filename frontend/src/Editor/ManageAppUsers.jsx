@@ -36,7 +36,6 @@ class ManageAppUsersComponent extends React.Component {
   }
 
   fetchAppUsers = (appId) => {
-    console.log('---arpit [manager users]:; ', { x: this.props });
     appService
       .getAppUsers(appId)
       .then((data) =>
