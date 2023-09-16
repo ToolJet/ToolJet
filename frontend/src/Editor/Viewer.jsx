@@ -74,7 +74,9 @@ class ViewerComponent extends React.Component {
       errorVersionId: null,
       errorDetails: null,
       pages: {},
+      events: [],
       homepage: null,
+      currentPageId: null,
     };
   }
 
@@ -91,6 +93,7 @@ class ViewerComponent extends React.Component {
 
   setStateForContainer = async (data, appVersionId) => {
     const appDefData = buildAppDefinition(data);
+
     const currentUser = this.state.currentUser;
     let userVars = {};
 
@@ -179,6 +182,7 @@ class ViewerComponent extends React.Component {
         currentPageId: currentPage.id,
         pages: {},
         homepage: appDefData?.pages?.[this.state.appDefinition?.homePageId]?.handle,
+        events: data.events ?? [],
       },
       () => {
         const components = appDefData?.pages[currentPageId]?.components || {};
@@ -456,9 +460,20 @@ class ViewerComponent extends React.Component {
         async () => {
           computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
             // eslint-disable-next-line no-unsafe-optional-chaining
-            const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
-            for (const event of events ?? []) {
-              await this.handleEvent(event.eventId, event);
+            const currentPageEvents = this.state.events.filter(
+              (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
+            );
+            const viewerRef = {
+              appDefinition: this.state.appDefinition,
+              queryConfirmationList: this.state.queryConfirmationList,
+              updateQueryConfirmationList: null,
+              navigate: this.props.navigate,
+              switchPage: this.switchPage,
+              currentPageId: currentPageId,
+            };
+
+            for (const currentEvent of currentPageEvents ?? []) {
+              await this.handleEvent(viewerRef, event.eventId, currentEvent.name, currentPageEvents);
             }
           });
         }
@@ -523,7 +538,18 @@ class ViewerComponent extends React.Component {
       );
   };
 
-  handleEvent = (eventName, options) => onEvent(this, eventName, options, 'view');
+  handleEvent = (eventName, event, options) => {
+    const { appDefinition, queryConfirmationList, currentPageId } = this.state;
+    const viewerRef = {
+      appDefinition: appDefinition,
+      queryConfirmationList: queryConfirmationList,
+      updateQueryConfirmationList: null,
+      navigate: this.props.navigate,
+      switchPage: this.switchPage,
+      currentPageId: currentPageId,
+    };
+    onEvent(viewerRef, eventName, event, options, 'view');
+  };
 
   computeCanvasMaxWidth = () => {
     const { appDefinition } = this.state;
@@ -683,7 +709,7 @@ class ViewerComponent extends React.Component {
                                   snapToGrid={true}
                                   appLoading={isLoading}
                                   darkMode={this.props.darkMode}
-                                  onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
+                                  onEvent={this.handleEvent}
                                   mode="view"
                                   deviceWindowWidth={deviceWindowWidth}
                                   selectedComponent={this.state.selectedComponent}
@@ -694,11 +720,9 @@ class ViewerComponent extends React.Component {
                                     onComponentClick(this, id, component, 'view');
                                   }}
                                   onComponentOptionChanged={(component, optionName, value) => {
-                                    return onComponentOptionChanged(this, component, optionName, value);
+                                    return onComponentOptionChanged(component, optionName, value);
                                   }}
-                                  onComponentOptionsChanged={(component, options) =>
-                                    onComponentOptionsChanged(this, component, options)
-                                  }
+                                  onComponentOptionsChanged={onComponentOptionsChanged}
                                   canvasWidth={this.getCanvasWidth()}
                                   dataQueries={dataQueries}
                                   currentPageId={this.state.currentPageId}
