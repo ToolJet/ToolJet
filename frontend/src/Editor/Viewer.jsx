@@ -46,6 +46,7 @@ import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
+import { useAppDataActions } from '@/_stores/appDataStore';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -74,7 +75,6 @@ class ViewerComponent extends React.Component {
       errorVersionId: null,
       errorDetails: null,
       pages: {},
-      events: [],
       homepage: null,
       currentPageId: null,
     };
@@ -167,6 +167,7 @@ class ViewerComponent extends React.Component {
       ...constants,
     });
     useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
+    this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
         currentUser,
@@ -182,7 +183,6 @@ class ViewerComponent extends React.Component {
         currentPageId: currentPage.id,
         pages: {},
         homepage: appDefData?.pages?.[this.state.appDefinition?.homePageId]?.handle,
-        events: data.events ?? [],
       },
       () => {
         const components = appDefData?.pages[currentPageId]?.components || {};
@@ -548,6 +548,7 @@ class ViewerComponent extends React.Component {
       switchPage: this.switchPage,
       currentPageId: currentPageId,
     };
+
     onEvent(viewerRef, eventName, event, options, 'view');
   };
 
@@ -752,12 +753,15 @@ const withStore = (Component) => (props) => {
     shallow
   );
 
+  const { updateState } = useAppDataActions();
+
   return (
     <Component
       {...props}
       currentState={currentState}
       setCurrentState={currentState?.actions?.setCurrentState}
       currentLayout={currentLayout}
+      updateState={updateState}
     />
   );
 };
