@@ -30,3 +30,4 @@ export const useAppVersionStore = create(
 );
 
 export const useAppVersionActions = () => useAppVersionStore((state) => state.actions);
+export const useAppVersionState = () => useAppVersionStore((state) => state);

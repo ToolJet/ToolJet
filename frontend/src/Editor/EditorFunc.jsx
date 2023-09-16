@@ -52,7 +52,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useAppVersionStore, useAppVersionActions } from '@/_stores/appVersionStore';
+import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
 import { computeAppDiff, computeComponentPropertyDiff, resetAllStores } from '@/_stores/utils';
@@ -82,6 +82,7 @@ const EditorComponent = (props) => {
   const { updateEditorState, updateQueryConfirmationList } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
+  const { isVersionReleased, editingVersion, releasedVersionId } = useAppVersionState();
 
   const {
     noOfVersionsSupported,
@@ -305,9 +306,9 @@ const EditorComponent = (props) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') fetchApp();
       else if (data === 'dataQueriesChanged') {
-        fetchDataQueries(props.editingVersion?.id);
+        fetchDataQueries(editingVersion?.id);
       } else if (data === 'dataSourcesChanged') {
-        fetchDataSources(props.editingVersion?.id);
+        fetchDataSources(editingVersion?.id);
       }
     });
   };
@@ -387,7 +388,7 @@ const EditorComponent = (props) => {
         })
       );
     } else {
-      fetchDataSources(props.editingVersion?.id);
+      fetchDataSources(editingVersion?.id);
     }
   };
 
@@ -404,7 +405,7 @@ const EditorComponent = (props) => {
         })
       );
     } else {
-      fetchDataQueries(props.editingVersion?.id);
+      fetchDataQueries(editingVersion?.id);
     }
   };
 
@@ -550,10 +551,6 @@ const EditorComponent = (props) => {
   const onVersionRelease = (versionId) => {
     useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
 
-    updateState({
-      currentVersionId: versionId,
-    });
-
     socket.send(
       JSON.stringify({
         event: 'events',
@@ -625,9 +622,11 @@ const EditorComponent = (props) => {
   };
 
   //!--------
-  const callBack = async (data, startingPageHandle) => {
+  const callBack = async (data, startingPageHandle, versionSwitched = false) => {
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
-    useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
+    if (!releasedVersionId || !versionSwitched) {
+      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
+    }
 
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
     setAppVersions(appVersions.appVersions);
@@ -694,9 +693,9 @@ const EditorComponent = (props) => {
   };
 
   // !--------
-  const setAppDefinitionFromVersion = (appData, shouldWeEditVersion = true) => {
+  const setAppDefinitionFromVersion = (appData, isCurrentVersionReleased = true) => {
     const version = appData?.editing_version?.id;
-    if (version?.id !== props.editingVersion?.id) {
+    if (version?.id !== editingVersion?.id) {
       // !Need to fix this
       // appDefinitionChanged(defaults(version.definition, defaultDefinition(props.darkMode)), {
       //   skipAutoSave: true,
@@ -714,7 +713,7 @@ const EditorComponent = (props) => {
         isLoading: true,
       });
 
-      callBack(appData);
+      callBack(appData, null, true);
 
       initComponentVersioning();
     }
@@ -795,7 +794,7 @@ const EditorComponent = (props) => {
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       props.ymap?.set('appDef', {
         newDefinition: updatedAppDefinition,
-        editingVersionId: props.editingVersion?.id,
+        editingVersionId: editingVersion?.id,
         currentSessionId,
         areOthersOnSameVersionAndPage,
       });
@@ -803,19 +802,19 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
-    if (props.isVersionReleased && !isUserSwitchedVersion) {
+    if (isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
       });
-    } else if (!isEmpty(props?.editingVersion)) {
+    } else if (!isEmpty(editingVersion)) {
       // param diff ofr table columns needs the complte column data or else the json structure is not correct computeComponentPropertyDiff function handles this
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
       const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions);
 
-      updateAppVersion(appId, props.editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
+      updateAppVersion(appId, editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {
-            ...props.editingVersion,
+            ...editingVersion,
             ...{ definition: appDefinition },
           };
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
@@ -933,7 +932,7 @@ const EditorComponent = (props) => {
   }, [JSON.stringify(undoStack), JSON.stringify(redoStack)]);
 
   const componentDefinitionChanged = (componentDefinition, props) => {
-    if (props?.isVersionReleased) {
+    if (isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
       return;
     }
@@ -959,7 +958,7 @@ const EditorComponent = (props) => {
   };
 
   const removeComponent = (componentId) => {
-    if (!props.isVersionReleased) {
+    if (!isVersionReleased) {
       let newDefinition = cloneDeep(appDefinition);
       // Delete child components when parent is deleted
 
@@ -1037,7 +1036,7 @@ const EditorComponent = (props) => {
     cloneComponents(selectedComponents, appDefinition, currentPageId, appDefinitionChanged, false);
 
   const cutComponents = () => {
-    if (props.isVersionReleased) {
+    if (isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
 
       return;
@@ -1056,7 +1055,7 @@ const EditorComponent = (props) => {
   };
 
   const removeComponents = () => {
-    if (!props.isVersionReleased && selectedComponents?.length >= 1) {
+    if (!isVersionReleased && selectedComponents?.length >= 1) {
       let newDefinition = cloneDeep(appDefinition);
 
       removeSelectedComponent(currentPageId, newDefinition, selectedComponents, appDefinitionChanged);
@@ -1072,7 +1071,7 @@ const EditorComponent = (props) => {
       }
       // appDefinitionChanged(newDefinition);
       handleInspectorView();
-    } else if (props.isVersionReleased) {
+    } else if (isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
   };
@@ -1413,7 +1412,7 @@ const EditorComponent = (props) => {
   // !-------
 
   const currentState = props?.currentState;
-  const editingVersion = props?.editingVersion;
+
   const appVersionPreviewLink = editingVersion
     ? `/applications/${appId}/versions/${editingVersion.id}/${currentState.page.handle}`
     : '';
@@ -1465,7 +1464,7 @@ const EditorComponent = (props) => {
         onCancel={() => cancelDeletePageRequest()}
         darkMode={props.darkMode}
       />
-      {props.isVersionReleased && <ReleasedVersionError />}
+      {isVersionReleased && <ReleasedVersionError />}
       <EditorContextWrapper>
         <EditorHeader
           darkMode={props.darkMode}
@@ -1727,23 +1726,10 @@ const withStore = (Component) => (props) => {
     }),
     shallow
   );
-  const { isVersionReleased, editingVersion } = useAppVersionStore(
-    (state) => ({ isVersionReleased: state.isVersionReleased, editingVersion: state.editingVersion }),
-    shallow
-  );
 
   const currentState = useCurrentState();
 
-  return (
-    <Component
-      {...props}
-      isVersionReleased={isVersionReleased}
-      editingVersion={editingVersion}
-      currentState={currentState}
-      showComments={showComments}
-      currentLayout={currentLayout}
-    />
-  );
+  return <Component {...props} currentState={currentState} showComments={showComments} currentLayout={currentLayout} />;
 };
 
 export const EditorFunc = withTranslation()(withRouter(withStore(EditorComponent)));
