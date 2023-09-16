@@ -36,7 +36,7 @@ export default function EditorHeader({
   const currentUser = useCurrentUser();
 
   const { updateState } = useAppDataActions();
-  const { isSaving, appId, appName, app, currentVersionId, isPublic } = useAppInfo();
+  const { isSaving, appId, appName, app, isPublic } = useAppInfo();
 
   const handleSlugChange = (newSlug) => {
     updateState({ slug: newSlug });
@@ -133,7 +133,6 @@ export default function EditorHeader({
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      releasedVersionId={currentVersionId}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       onVersionDelete={onVersionDelete}
                       isPublic={isPublic ?? false}

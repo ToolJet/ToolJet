@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { appVersionService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
@@ -6,34 +6,48 @@ import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 
-export const AppVersionsManager = function ({
-  appId,
-  releasedVersionId,
-  setAppDefinitionFromVersion,
-  onVersionDelete,
-}) {
-  const [appVersionStatus, setGetAppVersionStatus] = useState('');
+const appVersionLoadingStatus = Object.freeze({
+  loading: 'loading',
+  loaded: 'loaded',
+  error: 'error',
+});
+
+export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion, onVersionDelete }) {
+  const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
   const [deleteVersion, setDeleteVersion] = useState({
     versionId: '',
     versionName: '',
     showModal: false,
   });
 
-  const { editingVersion, appVersions, setAppVersions } = useAppVersionStore(
+  const { releasedVersionId, editingVersion, appVersions, setAppVersions } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
       appVersions: state.appVersions,
       setAppVersions: state.actions?.setAppVersions,
+      releasedVersionId: state.releasedVersionId,
     }),
     shallow
   );
+
+  useEffect(() => {
+    if (appVersions && appVersions.length > 0) {
+      setGetAppVersionStatus(appVersionLoadingStatus.loaded);
+    }
+
+    return () => {
+      setGetAppVersionStatus(appVersionLoadingStatus.loading);
+    };
+  }, [appVersions]);
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const selectVersion = (id) => {
     appVersionService
       .getOne(appId, id)
       .then((data) => {
-        setAppDefinitionFromVersion(data, true);
+        const isCurrentVersionReleased = data.currentVersionId ? true : false;
+        setAppDefinitionFromVersion(data, isCurrentVersionReleased);
       })
       .catch((error) => {
         toast.error(error);
@@ -57,6 +71,7 @@ export const AppVersionsManager = function ({
         toast.dismiss(deleteingToastId);
         toast.success(`Version - ${versionName} Deleted`);
         resetDeleteModal();
+        setGetAppVersionStatus(appVersionLoadingStatus.loading);
         appVersionService.getAll(appId).then((data) => {
           setAppVersions(data.versions);
         });
@@ -64,6 +79,7 @@ export const AppVersionsManager = function ({
       .catch((error) => {
         toast.dismiss(deleteingToastId);
         toast.error(error?.error ?? 'Oops, something went wrong');
+        setGetAppVersionStatus(appVersionLoadingStatus.error);
         resetDeleteModal();
       });
   };
