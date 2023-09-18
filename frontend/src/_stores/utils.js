@@ -223,9 +223,14 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
         });
       }
 
+      if (result[id]?.definition) {
+        delete result[id].definition;
+      }
+
       result[id].type = componentMeta.component;
       result[id].parent = component.component.parent ?? null;
       result[id].layouts = appDiff.pages[currentPageId].components[id].layouts;
+
       operation = 'create';
 
       return result;
