@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import React, { useCallback, useRef, useContext, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Modal } from 'react-bootstrap';

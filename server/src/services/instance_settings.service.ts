@@ -68,8 +68,10 @@ export class InstanceSettingsService {
     licenseTerms: any
   ): any {
     if (
-      !((currentConfigs.key in BASIC_PLAN_SETTINGS) &&
-      settingsWithLicenseFeature.map((e) => e.key).includes(currentConfigs.key))
+      !(
+        currentConfigs.key in BASIC_PLAN_SETTINGS &&
+        settingsWithLicenseFeature.map((e) => e.key).includes(currentConfigs.key)
+      )
     ) {
       return currentConfigs.value;
     }

@@ -34,6 +34,7 @@ const UsersFilter = ({ filterList }) => {
     setOptions(newOptions);
   };
   useEffect(() => {
+    if (!options.searchText && !options.status) return;
     const debouncedFilter = debounce(() => {
       filterList(options);
     }, 500);
