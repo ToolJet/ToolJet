@@ -233,8 +233,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
-  console.log('config.COMMENT_FEATURE_ENABLE--- ', config?.COMMENT_FEATURE_ENABLE);
-
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
       <LeftSidebarItem
