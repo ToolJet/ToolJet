@@ -10,9 +10,10 @@ export const EditVersion = ({
   setAppVersions,
   setShowEditAppVersion,
   showEditAppVersion,
-  editingVersion,
+  appVersions,
 }) => {
   const [isEditingVersion, setIsEditingVersion] = useState(false);
+  const editingVersion = appVersions?.find((version) => version.id === editingVersionId);
   const [versionName, setVersionName] = useState(editingVersion?.name || '');
   const { t } = useTranslation();
 
