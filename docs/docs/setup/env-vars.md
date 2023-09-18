@@ -63,19 +63,11 @@ Self-hosted version of ToolJet pings our server to fetch the latest product upda
 
 ### Comment feature enable ( optional )
 
-Use this environment variable to enable/disable the feature that allows you to add comments on the canvas.
+Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. To configure this environment variable, ensure that multiplayer editing is enabled in the instance settings.
 
 | variable               | value             |
 | ---------------------- | ----------------- |
 | COMMENT_FEATURE_ENABLE | `true` or `false` |
-
-### Multiplayer feature enable ( Only on paid plans )
-
-Use this environment variable to enable/disable the feature that allows users to collaboratively work on the canvas.
-
-| variable                   | value             |
-| -------------------------- | ----------------- |
-| ENABLE_MULTIPLAYER_EDITING | `true` or `false` |
 
 ### Marketplace
 #### Marketplace feature enable ( optional )

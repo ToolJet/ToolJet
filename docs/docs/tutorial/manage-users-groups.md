@@ -90,7 +90,7 @@ Every group on ToolJet has **four** sections:
 - [Apps](#apps)
 - [Users](#users)
 - [Permissions](#permissions)
-- [Datasources](#datasources)
+- [Data Sources](#data-sources)
 
 #### Apps: 
 
@@ -117,8 +117,8 @@ Admins and Super Admins can add or remove any numbers of users in a group. Just 
 Admins and Super Admins can set granular permission for the users added in that particular group, such as:
 - **Create** and **Delete** Apps
 - **Create**, **Update**, and **Delete** Folders
-- **Create**, **Update**, and **Delete** [Workspace Variables](/docs/tutorial/workspace-variables)
-- **Create** and **Delete** [Global Datasources](/docs/widgets/overview)
+- **Create**, **Update**, and **Delete** [Workspace Constants](/docs/org-management/workspaces/workspace_constants/)
+- **Create** and **Delete** [Data Sources](/docs/data-sources/overview)
 
 <div style={{textAlign: 'center'}}>
     
@@ -126,9 +126,9 @@ Admins and Super Admins can set granular permission for the users added in that 
     
 </div>
 
-#### Datasources: 
+#### Data Sources
 
-Only Admins and Super Admins can define what datasources can be **viewed** or **edited** by the users of that group.
+Only Admins and Super Admins can define what data sources can be **viewed** or **edited** by the users of that group.
 
 <div style={{textAlign: 'center'}}>
     

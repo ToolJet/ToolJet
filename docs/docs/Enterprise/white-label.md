@@ -5,7 +5,7 @@ title: White Label
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-The White Label feature allows you to completely remove ToolJet's branding from the ToolJet platform, allowing you to replace it with your own customized logo and text. This feature grants you full control over the visual identity of your ToolJet-powered application, ensuring a seamless and personalized user experience.
+The White Label feature allows you to completely remove ToolJet's branding from the ToolJet platform, allowing you to replace it with your own customized logo, favicon and page title. This feature grants you full control over the visual identity of your ToolJet-powered application, ensuring a seamless and personalized user experience.
 
 With this feature, you gain the ability to rebrand the following key elements:
 
@@ -39,7 +39,7 @@ To enable white labelling, you'll need to go to the **Instance Settings** from t
 
 - **Application Logo**: Add the URL of the image you want to use as your application logo. Preferred dimensions of the logo are: width `130px` and height `26px`.
 - **Favicon**: Enter the URL of the image you want to use as your application's favicon. Preferred dimensions of the favicon are: width `32px` and height `32px` or `16px` and height `16px`.
-- **Page Title**: Enter the text you want to display as your application's title.
+- **Page Title**: Enter the text you want to display as your application's title. Preferred title length are 50-60 characters.
 
 <div style={{textAlign: 'center'}}>
 

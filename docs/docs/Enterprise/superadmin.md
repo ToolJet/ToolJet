@@ -26,7 +26,8 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | [Manage all users from all the workspaces in the instance](#manage-all-users-in-the-instance) | ❌ | ✅ |
 | [Make any user Super Admin](#make-the-user-super-admin) | ❌ | ✅ |
 | [Restrict creation of personal workspace of users](#restrict-creation-of-personal-workspace-of-users) | ❌ | ✅ |
-| [Enable multiplayer editing](#enable-multiplayer-editing) | ❌ | ✅ |
+| [Enable Multiplayer editing](#enable-multiplayer-editing) | ❌ | ✅ |
+| [Implement White Labelling](#white-labelling) | ❌ | ✅ |
 
 <div style={{textAlign: 'center'}}>
 
@@ -38,9 +39,9 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 
 ### Access any workspace
 
-If a user is a Super Admin then they can switch to any workspace created by any user in the instance from the **Workspace Switcher** dropdown in the bottom left corner of the screen.
+If a user has Super Admin privileges, they can switch to any workspace created by any user within the instance using the Workspace Switcher located in the bottom left corner of the screen.
 
-The dropdown will list all the workspaces including workspaces created by the Super Admin or Any User.
+The dropdown will display all workspaces, including those created by both Super Admins and any other users.
 
 <div style={{textAlign: 'center'}}>
 
@@ -103,7 +104,7 @@ Only Super Admins can access the Instance Settings:
 
 ### Archiving a user from workspace
 
-Super Admins have the privilege to remove any user from any of the workspace they belong.
+Super Admins have the privilege to remove any user from any workspace to which they belong.
 
 Super Admins can go to **All Users** page, Under the **Workspaces** column they'll see the number of workspaces a user belongs to. Click on the **`View(n)`**, a modal will pop up that will have the list of **`n`** number the workspaces, click on the **Archive/Unarchive** button next to the workspace name to remove the user from the workspace.
 
@@ -147,7 +148,7 @@ Super Admins can enable multiplayer editing from the Manage Instance Settings pa
 
 ## License
 
-Manage the license of the instance from the Manage Instance Settings page. Super Admins can **update** the license of the instance from this page.
+Manage the instance license via the **Instance Settings** page. Super Admins have the capability to update the instance's license key from this page.
 
 Check out the [License](/docs/licensing) page for more details.
 
