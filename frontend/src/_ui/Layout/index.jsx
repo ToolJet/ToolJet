@@ -265,6 +265,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       limits={featureAccess}
                       feature={'Audit Logs'}
                       isAvailable={featureAccess?.auditLogs}
+                      customMessage={'Audit logs are available only in paid plans'}
                     >
                       <Link
                         to={featureAccess?.auditLogs && getPrivateRoute('audit_logs')}

@@ -10,25 +10,25 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 export const LeftSidebarComment = forwardRef(
   ({ selectedSidebarItem, currentPageId, isVersionReleased, isEditorFreezed }, ref) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
+    const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  const { appVersionsId } = useAppVersionStore(
-    (state) => ({
-      appVersionsId: state?.editingVersion?.id,
-    }),
-    shallow
-  );
-  const { toggleComments } = useEditorStore(
-    (state) => ({
-      toggleComments: state?.actions.toggleComments,
-    }),
-    shallow
-  );
-  const [isActive, toggleActive] = React.useState(false);
-  const [notifications, setNotifications] = React.useState([]);
-  const router = useRouter();
-  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
-  const [isMultiPlayerEnabled, setIsMultiPlayerEnabled] = useState(true);
+    const { appVersionsId } = useAppVersionStore(
+      (state) => ({
+        appVersionsId: state?.editingVersion?.id,
+      }),
+      shallow
+    );
+    const { toggleComments } = useEditorStore(
+      (state) => ({
+        toggleComments: state?.actions.toggleComments,
+      }),
+      shallow
+    );
+    const [isActive, toggleActive] = React.useState(false);
+    const [notifications, setNotifications] = React.useState([]);
+    const router = useRouter();
+    const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+    const [isMultiPlayerEnabled, setIsMultiPlayerEnabled] = useState(true);
 
     React.useEffect(() => {
       if (appVersionsId) {
@@ -47,7 +47,7 @@ export const LeftSidebarComment = forwardRef(
       fetchData();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appVersionsId, currentPageId]);
-    const tooltipContent = 'You can only access comments in our paid plans'; // Tooltip content
+    const tooltipContent = 'Comments are available only in paid plans'; // Tooltip content
 
     const tooltip = <Tooltip id="tooltip-disabled">{tooltipContent}</Tooltip>;
     return !shouldEnableMultiplayer && !isMultiPlayerEnabled ? (

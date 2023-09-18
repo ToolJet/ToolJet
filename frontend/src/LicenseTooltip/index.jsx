@@ -22,8 +22,14 @@ const LicenseTooltip = ({
     switch (true) {
       case !currentUser.admin && !canAddUnlimited && percentage >= 100:
         return `${customMessage ?? `You have reached your limit for number of ${feature}`}`;
-      case (!isLicenseValid || isExpired || !isAvailable) && !allowedFeaturesOnExpiry.includes(feature):
-        return `${customMessage ?? `You can only access ${feature} in our paid plans`}`;
+      case (!isLicenseValid || isExpired || !isAvailable || limits?.[paidFeatures?.[feature]] === false) &&
+        !allowedFeaturesOnExpiry.includes(feature):
+        return `${
+          customMessage ??
+          `${feature} is available only
+        in paid plans`
+        }`;
+      //handle in next phase
       case limits?.[paidFeatures?.[feature]] === false:
         return (
           customMessage ??

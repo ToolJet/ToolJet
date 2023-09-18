@@ -60,11 +60,12 @@ export function InstanceSettings(props) {
 
   useEffect(() => {
     fetchFeatureAccess(true);
-    if(load_app){
+    if (load_app) {
       error === 'license' && toast.error('Your license key has expired. Please update your license key');
-      licenseCheck === 'success' && toast.success('License key has been updated', {
-        position: 'top-center',
-      });
+      licenseCheck === 'success' &&
+        toast.success('License key has been updated', {
+          position: 'top-center',
+        });
       updateSidebarNAV(selectedTab);
     }
     searchParams.delete('error');

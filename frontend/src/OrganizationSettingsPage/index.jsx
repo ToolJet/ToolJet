@@ -90,6 +90,8 @@ export function OrganizationSettings(props) {
                       feature={item}
                       isAvailable={featureAccess[protectedNavs[protectedNavIndex].id]}
                       noTooltipIfValid={true}
+                      customMessage={`${item} are available only
+                      in paid plans`}
                     >
                       {children}
                     </LicenseTooltip>

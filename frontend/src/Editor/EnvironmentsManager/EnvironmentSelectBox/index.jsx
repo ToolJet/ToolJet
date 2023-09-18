@@ -46,7 +46,7 @@ function EnvironmentSelectBox(props) {
     >
       <div className={`d-inline-flex align-items-center env-header`} onClick={() => setShowOptions(!showOptions)}>
         <XenvSvg />
-       <span className='tj-text-xsm env-switch-text'>Env</span> 
+        <span className="tj-text-xsm env-switch-text">Env</span>
         <div data-cy="list-current-env-name">{capitalize(currentEnv.name)}</div>
         <div className={`env-arrow ${showOptions ? 'env-arrow-roate' : ''} `}>
           <svg
@@ -76,7 +76,12 @@ function EnvironmentSelectBox(props) {
             {options.map((option, index) => {
               const Wrapper = ({ children }) =>
                 !option.enabled ? (
-                  <LicenseTooltip feature={'multi-environments'} isAvailable={option.enabled} noTooltipIfValid={true}>
+                  <LicenseTooltip
+                    feature={'multi-environments'}
+                    isAvailable={option.enabled}
+                    noTooltipIfValid={true}
+                    customMessage={'Multi-environments are available only in paid plans'}
+                  >
                     {children}
                   </LicenseTooltip>
                 ) : (

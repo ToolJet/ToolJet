@@ -465,6 +465,7 @@ const RenderEnvironmentsTab = ({
                 feature={'multi-environments'}
                 isAvailable={item?.enabled}
                 noTooltipIfValid={true}
+                customMessage={'Multi-environments are available only in paid plans'}
               >
                 {children}
               </LicenseTooltip>
