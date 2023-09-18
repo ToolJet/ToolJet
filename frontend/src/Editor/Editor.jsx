@@ -64,7 +64,7 @@ import RightSidebarTabManager from './RightSidebarTabManager';
 
 setAutoFreeze(false);
 enablePatches();
-class EditorComponent extends React.Component {
+class EditorComponent extends React.PureComponent {
   constructor(props) {
     super(props);
     resetAllStores();
@@ -1495,6 +1495,7 @@ class EditorComponent extends React.Component {
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/${currentState.page.handle}`
       : '';
+    console.log('render');
     return (
       <div className="editor wrapper">
         <Confirm

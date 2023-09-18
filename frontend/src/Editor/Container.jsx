@@ -62,15 +62,15 @@ export const Container = ({
     }),
     shallow
   );
-  const { showComments, currentLayout, selectedComponents } = useEditorStore(
+  const { showComments, currentLayout } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
-      selectedComponents: state?.selectedComponents,
+      // selectedComponents: state?.selectedComponents,
     }),
     shallow
   );
-
+  console.log('Container render');
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -297,7 +297,7 @@ export const Container = ({
 
       let newBoxes = { ...boxes };
 
-      for (const selectedComponent of selectedComponents) {
+      for (const selectedComponent of useEditorStore.getState().selectedComponents) {
         newBoxes = produce(newBoxes, (draft) => {
           if (draft[selectedComponent.id]) {
             const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
@@ -312,7 +312,14 @@ export const Container = ({
       setBoxes(newBoxes);
       updateCanvasHeight(newBoxes);
     },
-    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, selectedComponents, updateCanvasHeight]
+    [
+      isVersionReleased,
+      enableReleasedVersionPopupState,
+      boxes,
+      setBoxes,
+      useEditorStore.getState().selectedComponents,
+      updateCanvasHeight,
+    ]
   );
 
   const onResizeStop = useCallback(
@@ -540,7 +547,7 @@ export const Container = ({
       removeComponent,
       currentLayout,
       deviceWindowWidth,
-      selectedComponents,
+      selectedComponents: useEditorStore.getState().selectedComponents,
       darkMode,
       sideBarDebugger,
       currentPageId,
@@ -562,7 +569,7 @@ export const Container = ({
     removeComponent,
     currentLayout,
     deviceWindowWidth,
-    selectedComponents,
+    useEditorStore.getState().selectedComponents,
     darkMode,
     sideBarDebugger,
     currentPageId,
