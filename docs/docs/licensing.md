@@ -17,9 +17,12 @@ Let's look into three types of licenses:
 2. **Business License**: This is a paid license that you can purchase **[directly](https://www.tooljet.com/pricing)**.
 3. **Enterprise License**: This is a paid license with customizable options. To obtain this license, you have to contact our sales team.
 
-After selecting the appropriate license that aligns with your needs, the next step is to proceed with the purchase. Once you have completed the onboarding process, we will generate a unique license key specifically tailored to your chosen specifications. Keep reading to gain a more comprehensive understanding of this process.
+---
 
-**To update your trial license key, please follow these steps:**
+## Updating Your Trial License Key (For Existing Users)
+
+If you are an existing user and wish to update your trial license key, follow these steps:
+
 1. Set up the instance and log in as a **[Super Admin](/docs/Enterprise/superadmin)**.
 2. Navigate to the instance settings page.
 3. In the license key tab, make the necessary updates to the provided license key.
@@ -36,6 +39,10 @@ The trial license key will be valid for 14 days. To fully enjoy ToolJet, we reco
 </div>
 
 **Ref: Screenshot to update license key**
+
+## Purchasing a Paid License
+
+When you've identified the ideal paid license to meet your needs, the next step is to complete the purchase process, ensuring seamless access to premium features.
 
 ## A) Chosen Plan: Business Plan
 
@@ -67,15 +74,12 @@ As a super admin, you can conveniently view the remaining days of your enterpris
 The business license key will be valid for 3 months only. You can renew it to continue using ToolJet to its fullest potential.
 :::
 
+
 ## B) Chosen Plan: Enterprise Plan
 
-If you choose to move forward with the Enterprise Plan and have completed the purchase process with our sales team, kindly anticipate a response from our team within 24-48 hours to facilitate your onboarding process.
-
-**To update the enterprise license key, follow these steps:**
-1. Log in as a **[Super Admin](/docs/Enterprise/superadmin)**, ensuring that you are on the correct instance URL.
-2. Go to the instance settings page.
-3. In the license key tab, update the provided license key.
-4. Within the license tab of the instance settings page, you can access the limit tab, which provides details about available super admins, builders, and end users.
+- If you've selected the Enterprise Plan, expect a response from our team within 24-48 hours for onboarding.
+- To update the enterprise license key, follow the steps outlined previously.
+- The remaining days of your enterprise edition period can be conveniently viewed on the dashboard. (refer screenshots added above)
 
 :::info Note
 As a super admin, you can conveniently view the remaining days of your enterprise edition period on the dashboard.
