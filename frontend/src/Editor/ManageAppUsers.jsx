@@ -145,10 +145,14 @@ class ManageAppUsersComponent extends React.Component {
 
     return (
       <div title="Share" className="editor-header-icon tj-secondary-btn" data-cy="share-button-link">
-        <span className="d-flex" onClick={() => this.setState({
+        <span className="d-flex" 
+          onClick={() => {
             posthog.capture('click_share', { appId }); //posthog event
-            showModal: true 
-          })}>
+            this.setState({
+              showModal: true 
+            })
+          }}
+        >
           <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
         </span>
         <Modal

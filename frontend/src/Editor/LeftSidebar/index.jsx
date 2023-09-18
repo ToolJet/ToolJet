@@ -309,19 +309,21 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
       />
       <div className="left-sidebar-stack-bottom">
-        <div className="left-sidebar-item no-border">
+        <div className="">
           <a
             type="button"
             onClick={() => {
               window.fcWidget.open();
             }}
           >
-            <img src="/assets/images/icons/editor/chat.svg" width="24" height="24" className="svg-icon" />
+            <img 
+              src="/assets/images/icons/editor/chat.svg" 
+              width="24" 
+              height="24" 
+              className="svg-icon" 
+              style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}
+            />
           </a>
-        </div>
-
-        <div className="left-sidebar-item no-border">
-        <div className="">
           {config.COMMENT_FEATURE_ENABLE && (
             <div
               className={`${isVersionReleased && 'disabled'}`}
