@@ -183,7 +183,7 @@ export default function EditorHeader({
                   <LicenseTooltip
                     placement="left"
                     limits={featureAccess}
-                    customMessage={'You can only share apps in our paid plans'}
+                    customMessage={'Sharing apps is available only in paid plans'}
                     isAvailable={featureAccess?.multiEnvironment}
                     noTooltipIfValid={true}
                   >

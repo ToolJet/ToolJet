@@ -336,7 +336,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                         !permissionGroup?.enabled ? (
                           <LicenseTooltip
                             limits={featureAccess}
-                            feature={'multiple groups'}
+                            feature={'Custom groups'}
                             isAvailable={true}
                             noTooltipIfValid={true}
                           >

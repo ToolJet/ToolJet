@@ -92,6 +92,11 @@ export function InstanceSettings(props) {
                           feature={item}
                           isAvailable={true}
                           noTooltipIfValid={true}
+                          customMessage={
+                            item === 'Manage instance settings'
+                              ? 'Manage instance settings are available only in paid plans'
+                              : undefined
+                          }
                         >
                           {children}
                         </LicenseTooltip>
