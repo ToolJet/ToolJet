@@ -1514,6 +1514,7 @@ class EditorComponent extends React.Component {
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/${currentState.page.handle}`
       : '';
+    console.log('config.COMMENT_FEATURE_ENABLE--- ', config?.COMMENT_FEATURE_ENABLE);
     return (
       <div className="editor wrapper">
         <Confirm
