@@ -46,7 +46,6 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
         window.location = `${window.public_config?.TOOLJET_HOST}${
           window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
         }instance-settings?save_license=success`;
-        fetchLicenseSettings();
       })
       .catch(({ error }) => {
         setLoading(false);

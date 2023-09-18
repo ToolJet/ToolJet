@@ -45,6 +45,7 @@ const Limits = () => {
             fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
             name="grid"
             width="16"
+            viewBox={'0 0 29 29'}
           ></SolidIcon>
           Apps
         </a>
@@ -81,10 +82,11 @@ const Limits = () => {
           data-cy="tables-link"
         >
           <SolidIcon
-            name="grid"
-            className="manage-group-tab-icons"
+            name="table"
             fill={currentTab === 'tables' ? '#3E63DD' : '#C1C8CD'}
+            className="manage-group-tab-icons"
             width="16"
+            viewBox={'0 0 28 28'}
           ></SolidIcon>
           Tables
         </a>
