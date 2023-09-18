@@ -61,7 +61,7 @@ tar xJf postgrest-v10.1.1-linux-static-x64.tar.xz
 sudo mv ./postgrest /bin/postgrest
 sudo rm postgrest-v10.1.1-linux-static-x64.tar.xz
 
-# Download and setup redis binary
+# Install redis
 sudo apt-get update
 sudo apt-get install redis -y
 sudo systemctl daemon-reload
@@ -69,12 +69,12 @@ sudo systemctl daemon-reload
 # Setup app and postgrest as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
 sudo cp /tmp/postgrest.service /lib/systemd/system/postgrest.service
-sudo cp /tmp/redis.service /lib/systemd/system/redis-server.service
+sudo cp /tmp/redis-server.service /lib/systemd/system/redis-server.service
 
 # Start and enable Redis service
 sudo systemctl daemon-reload
-sudo systemctl start redis
-sudo systemctl enable redis
+sudo systemctl start redis-server
+sudo systemctl enable redis-server
 
 # Setup app directory
 mkdir -p ~/app

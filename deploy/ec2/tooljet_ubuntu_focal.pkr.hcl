@@ -58,8 +58,8 @@ build {
   }
 
   provisioner "file" {
-    source      = "redis.service"
-    destination = "/tmp/redis.service"
+    source      = "redis-server.service"
+    destination = "/tmp/redis-server.service"
   }  
 
   provisioner "shell" {

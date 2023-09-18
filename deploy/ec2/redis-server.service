@@ -3,14 +3,15 @@ Description=Redis Server
 After=network.target
 
 [Service]
-Type=simple
-User=ubuntu
-
-WorkingDirectory=/bin
+WorkingDirectory=/usr/bin
 EnvironmentFile=/home/ubuntu/app/.env
-RestartSec=1
-ExecStart=/bin/redis
+ExecStart=/usr/bin/redis-server /etc/redis/redis.conf
+ExecReload=/bin/kill -USR2 $MAINPID
 Restart=always
+User=redis
+Group=redis
+ExecStop=/bin/kill -s TERM $MAINPID
 
 [Install]
 WantedBy=multi-user.target
+Alias=redis.service
