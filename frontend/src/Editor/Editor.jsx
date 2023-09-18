@@ -61,6 +61,7 @@ import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateSto
 import { resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import RightSidebarTabManager from './RightSidebarTabManager';
+import EditorSelecto from './EditorSelecto';
 
 setAutoFreeze(false);
 enablePatches();
@@ -952,54 +953,6 @@ class EditorComponent extends React.PureComponent {
 
   runQuery = (queryId, queryName) => runQuery(this, queryId, queryName);
 
-  onAreaSelectionStart = (e) => {
-    const isMultiSelect = e.inputEvent.shiftKey || useEditorStore.getState().selectedComponents.length > 0;
-    this.props.setSelectionInProgress(true);
-    this.props.setSelectedComponents([...(isMultiSelect ? useEditorStore.getState().selectedComponents : EMPTY_ARRAY)]);
-  };
-
-  onAreaSelection = (e) => {
-    e.added.forEach((el) => {
-      el.classList.add('resizer-select');
-    });
-    if (useEditorStore.getState().selectionInProgress) {
-      e.removed.forEach((el) => {
-        el.classList.remove('resizer-select');
-      });
-    }
-  };
-
-  onAreaSelectionEnd = (e) => {
-    const currentPageId = this.state.currentPageId;
-    this.props.setSelectionInProgress(false);
-    e.selected.forEach((el, index) => {
-      const id = el.getAttribute('widgetid');
-      const component = this.state.appDefinition.pages[currentPageId].components[id].component;
-      const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
-      this.setSelectedComponent(id, component, isMultiSelect);
-    });
-  };
-
-  onAreaSelectionDragStart = (e) => {
-    if (e.inputEvent.target.getAttribute('id') !== 'real-canvas') {
-      this.selectionDragRef.current = true;
-    } else {
-      this.selectionDragRef.current = false;
-    }
-  };
-
-  onAreaSelectionDrag = (e) => {
-    if (this.selectionDragRef.current) {
-      e.stop();
-      useEditorStore.getState().selectionInProgress && this.props.setSelectionInProgress(false);
-    }
-  };
-
-  onAreaSelectionDragEnd = () => {
-    this.selectionDragRef.current = false;
-    useEditorStore.getState().selectionInProgress && this.props.setSelectionInProgress(false);
-  };
-
   addNewPage = ({ name, handle }) => {
     // check for unique page handles
     const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.name === name);
@@ -1587,25 +1540,15 @@ class EditorComponent extends React.PureComponent {
                 apps={apps}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
               />
-
               {!this.props.showComments && (
-                <Selecto
-                  dragContainer={'.canvas-container'}
-                  selectableTargets={['.react-draggable']}
-                  hitRate={0}
-                  selectByClick={true}
-                  toggleContinueSelect={['shift']}
-                  ref={this.selectionRef}
+                <EditorSelecto
+                  selectionRef={this.selectionRef}
                   scrollOptions={this.state.scrollOptions}
-                  onSelectStart={this.onAreaSelectionStart}
-                  onSelectEnd={this.onAreaSelectionEnd}
-                  onSelect={this.onAreaSelection}
-                  onDragStart={this.onAreaSelectionDragStart}
-                  onDrag={this.onAreaSelectionDrag}
-                  onDragEnd={this.onAreaSelectionDragEnd}
-                  onScroll={(e) => {
-                    this.canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
-                  }}
+                  canvasContainerRef={this.canvasContainerRef}
+                  setSelectedComponent={this.setSelectedComponent}
+                  selectionDragRef={this.selectionDragRef}
+                  appDefinition={this.state.appDefinition}
+                  currentPageId={this.state.currentPageId}
                 />
               )}
               <div
@@ -1780,7 +1723,7 @@ const withStore = (Component) => (props) => {
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
-      setSelectionInProgress: state?.actions?.setSelectionInProgress,
+      // setSelectionInProgress: state?.actions?.setSelectionInProgress,
       setSelectedComponents: state?.actions?.setSelectedComponents,
     }),
     shallow
@@ -1798,7 +1741,7 @@ const withStore = (Component) => (props) => {
       currentLayout={currentLayout}
       isVersionReleased={isVersionReleased}
       editingVersion={editingVersion}
-      setSelectionInProgress={setSelectionInProgress}
+      // setSelectionInProgress={setSelectionInProgress}
       setSelectedComponents={setSelectedComponents}
       currentState={currentState}
     />
