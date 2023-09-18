@@ -44,7 +44,7 @@ function EnvironmentSelectBox(props) {
     >
       <div className={`d-inline-flex align-items-center env-header`} onClick={() => setShowOptions(!showOptions)}>
         <XenvSvg />
-       <span className='tj-text-xsm env-switch-text'>Env</span> 
+        <span className="tj-text-xsm env-switch-text">Env</span>
         <div data-cy="list-current-env-name">{capitalize(currentEnv.name)}</div>
         <div className={`env-arrow ${showOptions ? 'env-arrow-roate' : ''} `}>
           <svg

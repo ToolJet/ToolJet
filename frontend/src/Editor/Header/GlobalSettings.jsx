@@ -21,7 +21,7 @@ export const GlobalSettings = ({
   is_maintenance_on,
   app,
   backgroundFxQuery,
-  realState
+  realState,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor } = globalSettings;
@@ -124,7 +124,7 @@ export const GlobalSettings = ({
                 <div className="position-relative">
                   <div className="global-settings-width-input-container">
                     <input
-                      style={{ width: '103px',borderRight:'none' }}
+                      style={{ width: '103px', borderRight: 'none' }}
                       data-cy="maximum-canvas-width-input-field"
                       type="text"
                       className={`form-control`}

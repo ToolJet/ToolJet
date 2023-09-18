@@ -22,7 +22,6 @@ import { GlobalSettings } from '../Header/GlobalSettings';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { resolveReferences } from '@/_helpers/utils';
 
-
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
   const {
@@ -85,7 +84,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const currentState = useCurrentState();
   const [realState, setRealState] = useState(currentState);
 
-  
   const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
     currentPageId,
     isDebuggerOpen: !!selectedSidebarItem,
@@ -147,7 +145,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     setRealState(currentState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
-  const backgroundFxQuery=appDefinition?.globalSettings?.backgroundFxQuery;
+  const backgroundFxQuery = appDefinition?.globalSettings?.backgroundFxQuery;
 
   const SELECTED_ITEMS = {
     page: (

@@ -849,7 +849,12 @@ export const EventManager = ({
                             if (typeof popOverCallback === 'function') popOverCallback(showing);
                           }}
                         >
-                          <div>
+                          <div
+                            key={index}
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
                             <ManageEventButton
                               eventDisplayName={componentMeta.events[event.eventId]['displayName']}
                               actionName={actionMeta.name}
