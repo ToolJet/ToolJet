@@ -1,30 +1,36 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { App } from '../entities/app.entity';
 import { User } from '../entities/user.entity';
-import { AppImportExportService } from './app_import_export.service';
 import { readFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
+import { ImportExportResourcesService } from './import_export_resources.service';
+import { ImportResourcesDto } from '@dto/import-resources.dto';
 
 @Injectable()
 export class LibraryAppCreationService {
-  constructor(private readonly appImportExportService: AppImportExportService, private readonly logger: Logger) {}
+  constructor(
+    private readonly importExportResourcesService: ImportExportResourcesService,
+    private readonly logger: Logger
+  ) {}
 
-  async perform(currentUser: User, identifier: string): Promise<App> {
-    const newApp = await this.appImportExportService.import(currentUser, this.findAppDefinition(identifier));
+  async perform(currentUser: User, identifier: string) {
+    const templateDefinition = this.findTemplateDefinition(identifier);
 
-    return newApp;
+    const importDto = new ImportResourcesDto();
+    importDto.organization_id = currentUser.organizationId;
+    importDto.app = templateDefinition.app || templateDefinition.appV2;
+    importDto.tooljet_database = templateDefinition.tooljet_database;
+
+    const result = await this.importExportResourcesService.import(currentUser, importDto);
+
+    return result;
   }
 
-  findAppDefinition(identifier: string) {
-    let appDefinition: object;
-
+  findTemplateDefinition(identifier: string) {
     try {
-      appDefinition = JSON.parse(readFileSync(`templates/${identifier}/definition.json`, 'utf-8'));
+      return JSON.parse(readFileSync(`templates/${identifier}/definition.json`, 'utf-8'));
     } catch (err) {
       this.logger.error(err);
       throw new BadRequestException('App definition not found');
     }
-
-    return appDefinition;
   }
 }

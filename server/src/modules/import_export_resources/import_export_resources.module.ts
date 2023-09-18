@@ -46,5 +46,6 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
     AppsService,
     CredentialsService,
   ],
+  exports: [ImportExportResourcesService],
 })
 export class ImportExportResourcesModule {}
