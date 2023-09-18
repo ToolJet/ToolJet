@@ -19,6 +19,7 @@ import { shallow } from 'zustand/shallow';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { licenseService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import UpdatePresence from './UpdatePresence';
 
 export default function EditorHeader({
   M,

@@ -60,14 +60,15 @@ export function InstanceSettings(props) {
 
   useEffect(() => {
     fetchFeatureAccess(true);
-    load_app && error === 'license' && toast.error('Your license key has expired. Please update your license key');
-    load_app &&
-      licenseCheck === 'success' &&
-      toast.success('License key has been updated', {
+    if(load_app){
+      error === 'license' && toast.error('Your license key has expired. Please update your license key');
+      licenseCheck === 'success' && toast.success('License key has been updated', {
         position: 'top-center',
       });
-    load_app && updateSidebarNAV(selectedTab);
+      updateSidebarNAV(selectedTab);
+    }
     searchParams.delete('error');
+    searchParams.delete('save_license');
     setSearchParams(searchParams);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
