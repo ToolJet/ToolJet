@@ -71,13 +71,13 @@ sudo make
 sudo make install
 
 # Move Redis binary to /bin
-sudo mv src/redis-server /bin/
-sudo mv src/redis-cli /bin/
+sudo mv src/redis-server /bin/redis
+sudo mv src/redis-cli /bin/redis
 
-# Cleanup
-cd ..
-rm -rf redis-6.2.5
-rm redis-6.2.5.tar.gz
+# # Cleanup
+# cd ..
+# rm -rf redis-6.2.5
+# rm redis-6.2.5.tar.gz
 
 # Setup app and postgrest as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
@@ -90,7 +90,7 @@ sudo systemctl enable redis
 
 # Setup app directory
 mkdir -p ~/app
-git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b redis-deployment https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
 
 
 mv /tmp/.env ~/app/.env
