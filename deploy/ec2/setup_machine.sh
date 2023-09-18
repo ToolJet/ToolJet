@@ -61,9 +61,32 @@ tar xJf postgrest-v10.1.1-linux-static-x64.tar.xz
 sudo mv ./postgrest /bin/postgrest
 sudo rm postgrest-v10.1.1-linux-static-x64.tar.xz
 
+# Download and setup redis binary
+curl -OL http://download.redis.io/releases/redis-6.2.5.tar.gz
+tar xzf redis-6.2.5.tar.gz
+cd redis-6.2.5
+
+# Compile and install Redis
+sudo make
+sudo make install
+
+# Move Redis binary to /bin
+sudo mv src/redis-server /bin/
+sudo mv src/redis-cli /bin/
+
+# Cleanup
+cd ..
+rm -rf redis-6.2.5
+rm redis-6.2.5.tar.gz
+
 # Setup app and postgrest as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
 sudo cp /tmp/postgrest.service /lib/systemd/system/postgrest.service
+sudo cp /tmp/redis.service /etc/systemd/system/redis.service
+
+# Start and enable Redis service
+sudo systemctl start redis
+sudo systemctl enable redis
 
 # Setup app directory
 mkdir -p ~/app

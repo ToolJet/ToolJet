@@ -1,0 +1,16 @@
+[Unit]
+Description=Redis Server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+
+WorkingDirectory=/bin
+EnvironmentFile=/home/ubuntu/app/.env
+RestartSec=1
+ExecStart=/bin/redis
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
