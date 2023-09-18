@@ -40,7 +40,6 @@ class ManageAllUsersComponent extends React.Component {
   componentDidMount() {
     this.fetchAllUserLimits();
     this.fetchFeatureAccesss();
-    this.fetchUsers(1);
   }
 
   fetchUsers = (page = 1, options = {}) => {
