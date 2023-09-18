@@ -72,7 +72,7 @@ function ContinueButtonSelfHost({
             return;
           }
         }
-        if (page < 5) setPage((currPage) => currPage + 1);
+        if (page <= 5) setPage((currPage) => currPage + 1);
         if (page == 6) {
           setFormData({ ...formData, requestedTrial: true });
           setIsLoading(true);
