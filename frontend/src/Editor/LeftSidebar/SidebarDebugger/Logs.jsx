@@ -16,7 +16,7 @@ function Logs({ logProps, idx }) {
         ? 'Completed'
         : logProps?.type === 'component'
           ? `Invalid property detected: ${logProps?.message}.`
-          : `${startCase(logProps?.type)} failed: ${logProps?.message === undefined ? logProps?.error?.message : logProps?.message}`;
+          : `${startCase(logProps?.type)} failed: ${logProps?.message ? logProps?.message : logProps?.error?.message}`;
 
   const defaultStyles = {
     transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
