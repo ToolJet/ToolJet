@@ -1211,6 +1211,7 @@ function transformComponentData(data: object, componentEvents: any[]): Component
     transformedComponent.properties = componentData.definition.properties || {};
     transformedComponent.styles = componentData.definition.styles || {};
     transformedComponent.validations = componentData.definition.validation || {};
+    transformedComponent.parent = data[componentId].parent || null;
 
     transformedComponents.push(transformedComponent);
 
