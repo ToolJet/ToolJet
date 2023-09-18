@@ -194,7 +194,6 @@ export const Container = ({
     if (componendAdded) {
       opts.componentAdded = true;
     }
-
     appDefinitionChanged(newDefinition, opts);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -522,8 +521,8 @@ export const Container = ({
     const componentWithChildren = {};
     Object.keys(components).forEach((key) => {
       const component = components[key];
-      const { parent } = component;
-      if (parent) {
+
+      if (component?.parent) {
         componentWithChildren[parent] = {
           ...componentWithChildren[parent],
           [key]: component,

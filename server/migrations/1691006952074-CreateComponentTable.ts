@@ -29,7 +29,7 @@ export class CreateComponentTable1691006952074 implements MigrationInterface {
           },
           {
             name: 'parent',
-            type: 'uuid',
+            type: 'varchar',
             isNullable: true,
           },
           {
