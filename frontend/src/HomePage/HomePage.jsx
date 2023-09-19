@@ -472,7 +472,6 @@ class HomePageComponent extends React.Component {
   hideTemplateLibraryModal = () => {
     this.setState({ showTemplateLibraryModal: false });
   };
-
   render() {
     const {
       apps,
@@ -759,6 +758,9 @@ class HomePageComponent extends React.Component {
                       appActionModal={this.appActionModal}
                       removeAppFromFolder={this.removeAppFromFolder}
                       appType={this.props.appType}
+                      basicPlan={
+                        featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid
+                      }
                     />
                   ))}
               </div>

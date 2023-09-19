@@ -104,10 +104,14 @@ const Limits = () => {
                     <input
                       readOnly
                       type="text"
-                      className={cx('form-control', { 'error-border': limit?.total === limit?.current })}
+                      className={cx('form-control', {
+                        'error-border': !limit?.canAddUnlimited && limit?.current > limit?.total,
+                      })}
                       value={limit?.canAddUnlimited ? 'Unlimited' : `${limit?.current}/${limit?.total}`}
                     />
-                    {limit?.total === limit?.current && <div className="error-text">Exceeding Limit</div>}
+                    {!limit?.canAddUnlimited && limit?.current > limit?.total && (
+                      <div className="error-text">Exceeding Limit</div>
+                    )}
                   </div>
                 </div>
               ))}
