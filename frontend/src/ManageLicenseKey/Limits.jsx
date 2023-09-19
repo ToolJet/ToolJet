@@ -76,20 +76,22 @@ const Limits = () => {
           ></SolidIcon>
           Users
         </a>
-        <a
-          onClick={() => setCurrentTab('tables')}
-          className={cx('nav-item nav-link', { active: currentTab === 'tables' })}
-          data-cy="tables-link"
-        >
-          <SolidIcon
-            name="table"
-            fill={currentTab === 'tables' ? '#3E63DD' : '#C1C8CD'}
-            className="manage-group-tab-icons"
-            width="16"
-            viewBox={'0 0 28 28'}
-          ></SolidIcon>
-          Tables
-        </a>
+        {window.public_config?.ENABLE_TOOLJET_DB === 'true' && (
+          <a
+            onClick={() => setCurrentTab('tables')}
+            className={cx('nav-item nav-link', { active: currentTab === 'tables' })}
+            data-cy="tables-link"
+          >
+            <SolidIcon
+              name="table"
+              fill={currentTab === 'tables' ? '#3E63DD' : '#C1C8CD'}
+              className="manage-group-tab-icons"
+              width="16"
+              viewBox={'0 0 28 28'}
+            ></SolidIcon>
+            Tables
+          </a>
+        )}
       </nav>
       <div className="metrics-wrapper">
         <div className="tab-content">

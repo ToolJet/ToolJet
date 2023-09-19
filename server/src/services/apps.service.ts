@@ -29,7 +29,7 @@ import { AppEnvironmentService } from './app_environments.service';
 import { decode } from 'js-base64';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { LicenseService } from './license.service';
-import { LICENSE_FIELD, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 @Injectable()
@@ -717,10 +717,9 @@ export class AppsService {
 
   async getAppsLimit() {
     const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.APP_COUNT, LICENSE_FIELD.STATUS]);
-    const currentAppsCount = await this.appsCount();
     return {
       appsCount: generatePayloadForLimits(
-        currentAppsCount,
+        licenseTerms[LICENSE_FIELD.APP_COUNT] !== LICENSE_LIMIT.UNLIMITED ? await this.appsCount() : 0,
         licenseTerms[LICENSE_FIELD.APP_COUNT],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.APPS

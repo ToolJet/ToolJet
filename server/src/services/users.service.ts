@@ -329,7 +329,7 @@ export class UsersService {
     }
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
-      if (updatableParams.userType) {
+      if (updatableParams.userType === USER_TYPE.INSTANCE) {
         await this.validateLicense(manager);
       }
     }, manager);

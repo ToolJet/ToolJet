@@ -121,7 +121,7 @@ export class OrganizationsService {
 
         await this.usersService.validateLicense(manager);
       }
-      await this.validateLicense(manager);
+      await this.organizationUserService.validateLicense(manager);
     }, manager);
 
     return organization;
@@ -715,7 +715,7 @@ export class OrganizationsService {
       if (defaultOrganization) {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
-        await this.validateLicense(manager);
+        await this.organizationUserService.validateLicense(manager);
         await this.usersService.attachUserGroup(
           ['all_users', 'admin'],
           defaultOrganization.id,
@@ -928,35 +928,18 @@ export class OrganizationsService {
       });
   }
 
-  async organizationsCount(manager?: EntityManager) {
-    return dbTransactionWrap(async (manager) => {
-      return await manager.createQueryBuilder(Organization, 'organizations').getCount();
-    }, manager);
-  }
-
   async organizationsLimit() {
     const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.WORKSPACES, LICENSE_FIELD.STATUS]);
-    const currentOrganizationsCount = await this.organizationsCount();
 
     return {
       workspacesCount: generatePayloadForLimits(
-        currentOrganizationsCount,
+        licenseTerms[LICENSE_FIELD.WORKSPACES] !== LICENSE_LIMIT.UNLIMITED
+          ? await this.organizationUserService.organizationsCount()
+          : 0,
         licenseTerms[LICENSE_FIELD.WORKSPACES],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.WORKSPACES
       ),
     };
-  }
-
-  async validateLicense(manager: EntityManager): Promise<void> {
-    const workspacesCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.WORKSPACES);
-
-    if (workspacesCount === LICENSE_LIMIT.UNLIMITED) {
-      return;
-    }
-
-    if ((await this.organizationsCount(manager)) > workspacesCount) {
-      throw new HttpException('You have reached your limit for number of workspaces.', 451);
-    }
   }
 }

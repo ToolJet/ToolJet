@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
 import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
 import { InstanceSettingsService } from './instance_settings.service';
-import { INSTANCE_SETTINGS_TYPE } from 'src/helpers/instance_settings.constants';
+import { INSTANCE_SETTINGS_TYPE, INSTANCE_SYSTEM_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 const path = require('path');
 const fs = require('fs');
@@ -32,8 +32,9 @@ export class EmailService {
   }
 
   async init() {
-    this.WHITE_LABEL_TEXT = await this.retrieveWhiteLabelText();
-    this.WHITE_LABEL_LOGO = await this.retrieveWhiteLabelLogo();
+    const whiteLabelSettings = await this.retrieveWhiteLabelSettings();
+    this.WHITE_LABEL_TEXT = await this.retrieveWhiteLabelText(whiteLabelSettings);
+    this.WHITE_LABEL_LOGO = await this.retrieveWhiteLabelLogo(whiteLabelSettings);
   }
 
   async sendEmail(to: string, subject: string, html: string) {
@@ -160,6 +161,7 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string) {
+    await this.init();
     const subject = 'password reset instructions';
     const url = `${this.TOOLJET_HOST}/reset-password/${token}`;
     const html = `
@@ -182,10 +184,8 @@ export class EmailService {
     const filePath = path.join(__dirname, '../assets/email-templates/comment-mention.html');
     const source = fs.readFileSync(filePath, 'utf-8').toString();
     const template = handlebars.compile(source);
-    const companyName = this.WHITE_LABEL_TEXT || 'ToolJet';
-    const companyLogo =
-      this.WHITE_LABEL_LOGO ||
-      'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg';
+    const companyName = this.WHITE_LABEL_TEXT;
+    const companyLogo = this.WHITE_LABEL_LOGO;
     const replacements = {
       to,
       from,
@@ -204,25 +204,26 @@ export class EmailService {
 
     await this.sendEmail(to, subject, html);
   }
-  async retrieveWhiteLabelText() {
-    const whiteLabelTextSetting = await this.instancesettingsService.getSettings(
-      ['WHITE_LABEL_TEXT'],
+
+  async retrieveWhiteLabelSettings() {
+    const whiteLabelSetting = await this.instancesettingsService.getSettings(
+      [INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO, INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT],
       false,
       INSTANCE_SETTINGS_TYPE.SYSTEM
     );
 
-    return whiteLabelTextSetting?.WHITE_LABEL_TEXT !== '' ? whiteLabelTextSetting?.WHITE_LABEL_TEXT : 'ToolJet';
+    return whiteLabelSetting;
   }
 
-  async retrieveWhiteLabelLogo() {
-    const whiteLabelLogoSetting = await this.instancesettingsService.getSettings(
-      ['WHITE_LABEL_LOGO'],
-      false,
-      INSTANCE_SETTINGS_TYPE.SYSTEM
-    );
+  async retrieveWhiteLabelText(whiteLabelSetting) {
+    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT] !== ''
+      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT]
+      : 'ToolJet';
+  }
 
-    return whiteLabelLogoSetting?.WHITE_LABEL_LOGO !== ''
-      ? whiteLabelLogoSetting?.WHITE_LABEL_LOGO
+  async retrieveWhiteLabelLogo(whiteLabelSetting) {
+    return whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO] !== ''
+      ? whiteLabelSetting?.[INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO]
       : 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg';
   }
 }

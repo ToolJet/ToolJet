@@ -4,7 +4,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString } from 'lodash';
 import { LicenseService } from './license.service';
-import { LICENSE_FIELD, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { generatePayloadForLimits } from 'src/helpers/utils.helper';
 @Injectable()
 export class TooljetDbService {
@@ -238,10 +238,11 @@ export class TooljetDbService {
 
   async getTablesLimit() {
     const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS]);
-    const currentTablesCount = await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount();
     return {
       tablesCount: generatePayloadForLimits(
-        currentTablesCount,
+        licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
+          ? await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount()
+          : 0,
         licenseTerms[LICENSE_FIELD.TABLE_COUNT],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.TABLES

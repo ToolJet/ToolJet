@@ -83,10 +83,7 @@ export class UsersController {
         throw new Error('At least one super admin is required');
       }
     }
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      await this.usersService.updateUser(userId, { userType }, manager);
-      await this.usersService.validateLicense(manager);
-    });
+    await this.usersService.updateUser(userId, { userType });
   }
 
   @UseGuards(JwtAuthGuard, UserCountGuard)

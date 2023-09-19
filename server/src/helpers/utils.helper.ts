@@ -205,8 +205,6 @@ export function generatePayloadForLimits(currentCount: number, totalCount: any, 
     : {
         canAddUnlimited: true,
         licenseStatus,
-        total: totalCount,
-        current: currentCount,
         label,
       };
 }
