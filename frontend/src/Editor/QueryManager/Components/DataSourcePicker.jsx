@@ -52,7 +52,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
         Connect to a data source
       </h4>
-      <p className="mb-3" style={{ textAlign: 'center' }}>
+      <p className="mb-3" style={{ textAlign: 'center' }} data-cy="querymanager-description">
         Select a data source to start creating a new query. To know more about queries in ToolJet, you can read our
         &nbsp;
         <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
@@ -143,7 +143,7 @@ const EmptyDataSourceBanner = () => (
     <div className="me-2">
       <Information fill="var(--slate9)" />
     </div>
-    <div>No global data sources have been added yet.</div>
+    <div data-cy="label-no-ds-added">No global data sources have been added yet.</div>
   </div>
 );
 
