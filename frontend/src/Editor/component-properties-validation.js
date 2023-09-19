@@ -105,6 +105,6 @@ export const validateProperty = (resolvedProperty, propertyDefinitions, paramNam
   const schema = _.isUndefined(validationDefinition)
     ? any()
     : generateSchemaFromValidationDefinition(validationDefinition);
-  const [_valid, error] = paramName ? validate(value, schema, defaultValue) : [true, []];
-  return [_valid, error];
+  const [_valid, errors] = paramName ? validate(value, schema, defaultValue) : [true, []];
+  return [_valid, errors];
 };

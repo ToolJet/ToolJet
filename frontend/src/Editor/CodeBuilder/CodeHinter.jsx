@@ -152,10 +152,19 @@ export function CodeHinter({
     if (JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
       const customResolvables = getCustomResolvables();
       const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
-      setPrevCurrentValue(currentValue);
 
-      if (error) {
-        setResolvingError(error);
+      // checking type error if any in run time
+      const propertyDefinition = getPropertyDefinition(paramName, component?.component);
+      const resolvedProperty = Object.keys(component?.component?.definition || {}).reduce((accumulator, currentKey) => {
+        if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
+          accumulator[`${paramName}`] = preview;
+        return accumulator;
+      }, {});
+      const [_valid, errorMessages] = validateProperty(resolvedProperty, propertyDefinition, paramName);
+
+      setPrevCurrentValue(currentValue);
+      if (error || !_valid) {
+        setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
         setResolvedValue(null);
       } else {
         setResolvingError(null);
@@ -214,7 +223,7 @@ export function CodeHinter({
     return {};
   };
 
-  const getPropertyDefinition = (paramName, component) => {
+  function getPropertyDefinition(paramName, component) {
     if (component?.properties?.hasOwnProperty(`${paramName}`)) {
       return component.properties?.[paramName];
     } else if (component?.styles?.hasOwnProperty(`${paramName}`)) {
@@ -226,29 +235,15 @@ export function CodeHinter({
     } else {
       return {};
     }
-  };
+  }
 
   const getPreview = () => {
     if (!enablePreview) return;
-    // const customResolvables = getCustomResolvables();
-    // const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
-
-    const propertyDefinition = getPropertyDefinition(paramName, component?.component);
-    const resolvedProperty = Object.keys(component?.component?.definition).reduce((accumulator, currentKey) => {
-      if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
-        accumulator[`${paramName}`] = resolveReferences(
-          component?.component?.definition?.[currentKey]?.[paramName]?.value,
-          currentState
-        );
-      return accumulator;
-    }, {});
-    const [_valid, errorMessage] = validateProperty(resolvedProperty, propertyDefinition, paramName);
-
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
     const preview = resolvedValue;
-    const error = resolvingError || errorMessage[0];
+    const error = resolvingError;
 
-    if (error) {
+    if (error || resolvedValue === null) {
       const err = String(error);
       const errorMessage = err.includes('.run()')
         ? `${err} in ${componentName ? componentName.split('::')[0] + "'s" : 'fx'} field`
