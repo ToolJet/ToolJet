@@ -240,9 +240,32 @@ export class TooljetDbService {
   private async joinTable(organizationId: string, params) {
     const { joinQueryJson } = params;
     if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
-    if (!joinQueryJson?.tables?.length) throw new BadRequestException('Tables are not chosen');
 
-    const tableIdList = joinQueryJson.tables
+    // Gathering tables used, from Join coditions
+    const tableSet = new Set();
+    const joinOptions = joinQueryJson?.['joins'];
+    (joinOptions || []).forEach((join) => {
+      const { table, conditions } = join;
+      tableSet.add(table);
+      conditions?.conditionsList?.forEach((condition) => {
+        const { leftField, rightField } = condition;
+        if (leftField?.table) {
+          tableSet.add(leftField?.table);
+        }
+        if (rightField?.table) {
+          tableSet.add(rightField?.table);
+        }
+      });
+    });
+
+    const tables = [...tableSet].map((tableId: string) => ({
+      name: tableId,
+      type: 'Table',
+    }));
+
+    if (!tables?.length) throw new BadRequestException('Tables are not chosen');
+
+    const tableIdList: Array<string> = tables
       .filter((table) => table.type === 'Table')
       .map((filteredTable) => filteredTable.name);
 

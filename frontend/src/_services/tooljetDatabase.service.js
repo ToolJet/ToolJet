@@ -69,7 +69,7 @@ function deleteTable(organizationId, tableName) {
 }
 
 function joinTables(organizationId, data) {
-  return tooljetAdapter.post(`tooljet_db/organizations/${organizationId}/getDetailsOnJoin`, data);
+  return tooljetAdapter.post(`tooljet_db/organizations/${organizationId}/join`, data);
 }
 
 export const tooljetDatabaseService = {
