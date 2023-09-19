@@ -239,8 +239,29 @@ export class TooljetDbService {
 
   private async joinTable(organizationId: string, params) {
     const { joinQueryJson } = params;
-    const finalQuery = await this.buildJoinQuery(organizationId, joinQueryJson);
+    // Gathering tables used, from Join coditions
+    const tableSet = new Set();
+    const joinOptions = joinQueryJson?.['joins'];
+    (joinOptions || []).forEach((join) => {
+      const { table, conditions } = join;
+      tableSet.add(table);
+      conditions?.conditionsList?.forEach((condition) => {
+        const { leftField, rightField } = condition;
+        if (leftField?.table) {
+          tableSet.add(leftField?.table);
+        }
+        if (rightField?.table) {
+          tableSet.add(rightField?.table);
+        }
+      });
+    });
 
+    const tables = [...tableSet].map((tableId) => ({
+      name: tableId,
+      type: 'Table',
+    }));
+
+    const finalQuery = await this.buildJoinQuery(organizationId, { ...joinQueryJson, tables: tables });
     return await this.tooljetDbManager.query(finalQuery);
   }
 

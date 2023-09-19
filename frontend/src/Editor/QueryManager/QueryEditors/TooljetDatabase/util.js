@@ -41,7 +41,6 @@ export const isOperatorOptions = [
   { value: 'notNull', label: 'not null' },
 ];
 
-// Discuss with Akshay whether in operator is needed, because we dont support array type
 export const filterOperatorOptions = [
   { label: 'equals', value: '=' },
   { label: 'greater than', value: '>' },
