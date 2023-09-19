@@ -35,7 +35,7 @@ import cx from 'classnames';
 import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
-
+import { validateProperty } from '../component-properties-validation';
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
 const AllElements = {
@@ -214,14 +214,39 @@ export function CodeHinter({
     return {};
   };
 
+  const getPropertyDefinition = (paramName, component) => {
+    if (component?.properties?.hasOwnProperty(`${paramName}`)) {
+      return component.properties?.[paramName];
+    } else if (component?.styles?.hasOwnProperty(`${paramName}`)) {
+      return component?.styles?.[paramName];
+    } else if (component?.generalProperties?.hasOwnProperty(`${paramName}`)) {
+      return component?.generalProperties?.[paramName];
+    } else if (component?.generalStyles?.hasOwnProperty(`${paramName}`)) {
+      return component?.generalStyles?.[paramName];
+    } else {
+      return {};
+    }
+  };
+
   const getPreview = () => {
     if (!enablePreview) return;
     // const customResolvables = getCustomResolvables();
     // const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
 
+    const propertyDefinition = getPropertyDefinition(paramName, component?.component);
+    const resolvedProperty = Object.keys(component?.component?.definition).reduce((accumulator, currentKey) => {
+      if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
+        accumulator[`${paramName}`] = resolveReferences(
+          component?.component?.definition?.[currentKey]?.[paramName]?.value,
+          currentState
+        );
+      return accumulator;
+    }, {});
+    const [_valid, errorMessage] = validateProperty(resolvedProperty, propertyDefinition, paramName);
+
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
     const preview = resolvedValue;
-    const error = resolvingError;
+    const error = resolvingError || errorMessage[0];
 
     if (error) {
       const err = String(error);
@@ -250,7 +275,6 @@ export function CodeHinter({
       previewType = typeof previewContent;
     }
     const content = getPreviewContent(previewContent, previewType);
-
     return (
       <animated.div
         className={isOpen ? themeCls : null}
@@ -454,6 +478,7 @@ export function CodeHinter({
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function CodeHinterInputField() {
   return <></>;
 }

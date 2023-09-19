@@ -96,3 +96,15 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
   );
   return [coercedProperties, allErrors];
 };
+
+export const validateProperty = (resolvedProperty, propertyDefinitions, paramName) => {
+  const validationDefinition = propertyDefinitions?.validation?.schema;
+  const value = resolvedProperty?.[paramName];
+  const defaultValue = propertyDefinitions?.validation?.defaultValue;
+
+  const schema = _.isUndefined(validationDefinition)
+    ? any()
+    : generateSchemaFromValidationDefinition(validationDefinition);
+  const [_valid, error] = paramName ? validate(value, schema, defaultValue) : [true, []];
+  return [_valid, error];
+};
