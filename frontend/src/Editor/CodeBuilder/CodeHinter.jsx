@@ -149,6 +149,8 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   useEffect(() => {
+    let globalPreviewCopy = null;
+    let globalErrorCopy = null;
     if (JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
       const customResolvables = getCustomResolvables();
       const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
@@ -164,9 +166,13 @@ export function CodeHinter({
 
       setPrevCurrentValue(currentValue);
       if (error || !_valid) {
+        globalPreviewCopy = null;
+        globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
         setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
         setResolvedValue(null);
       } else {
+        globalPreviewCopy = preview;
+        globalErrorCopy = null;
         setResolvingError(null);
         setResolvedValue(preview);
       }
@@ -174,8 +180,8 @@ export function CodeHinter({
 
     return () => {
       setPrevCurrentValue(null);
-      setResolvedValue(null);
-      setResolvingError(null);
+      setResolvedValue(globalPreviewCopy);
+      setResolvingError(globalErrorCopy);
     };
   }, [JSON.stringify({ currentValue, realState })]);
 
@@ -243,7 +249,7 @@ export function CodeHinter({
     const preview = resolvedValue;
     const error = resolvingError;
 
-    if (error || resolvedValue === null) {
+    if (resolvingError !== null && resolvedValue === null && error) {
       const err = String(error);
       const errorMessage = err.includes('.run()')
         ? `${err} in ${componentName ? componentName.split('::')[0] + "'s" : 'fx'} field`
