@@ -55,7 +55,12 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
       <p className="mb-3" style={{ textAlign: 'center' }} data-cy="querymanager-description">
         Select a data source to start creating a new query. To know more about queries in ToolJet, you can read our
         &nbsp;
-        <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
+        <a
+          data-cy="querymanager-doc-link"
+          target="_blank"
+          href="https://docs.tooljet.com/docs/app-builder/query-panel"
+          rel="noreferrer"
+        >
           documentation
         </a>
       </p>
