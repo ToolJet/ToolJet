@@ -26,11 +26,10 @@ const EditorSelecto = memo(
         const isMultiSelect = e.inputEvent.shiftKey || useEditorStore.getState().selectedComponents.length > 0;
         setSelectionInProgress(true);
         setSelectedComponents([...(isMultiSelect ? useEditorStore.getState().selectedComponents : EMPTY_ARRAY)]);
-        console.log('onAreaSelectionStart');
       },
       [setSelectionInProgress, setSelectedComponents]
     );
-    console.log('render');
+
     const onAreaSelection = useCallback((e) => {
       e.added.forEach((el) => {
         el.classList.add('resizer-select');
@@ -40,7 +39,6 @@ const EditorSelecto = memo(
           el.classList.remove('resizer-select');
         });
       }
-      console.log('onAreaSelection');
     }, []);
 
     const onAreaSelectionEnd = useCallback(
@@ -52,7 +50,6 @@ const EditorSelecto = memo(
           const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
           setSelectedComponent(id, component, isMultiSelect);
         });
-        console.log('onAreaSelectionEnd');
       },
       [appDefinition, currentPageId, setSelectedComponent, setSelectionInProgress]
     );

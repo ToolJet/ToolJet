@@ -70,8 +70,6 @@ export const DraggableBox = React.memo(
     className,
     mode,
     title,
-    _left,
-    _top,
     parent,
     allComponents,
     component,
@@ -122,7 +120,6 @@ export const DraggableBox = React.memo(
       shallow
     );
     const currentState = useCurrentState();
-    // console.log(component, 'component');
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
         type: ItemTypes.BOX,

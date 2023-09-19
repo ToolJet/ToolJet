@@ -1443,12 +1443,8 @@ class EditorComponent extends React.PureComponent {
       defaultComponentStateComputed,
       queryConfirmationList,
     } = this.state;
-    const currentState = this.props?.currentState;
     const editingVersion = this.props?.editingVersion;
-    const appVersionPreviewLink = editingVersion
-      ? `/applications/${app.id}/versions/${editingVersion.id}/${currentState.page.handle}`
-      : '';
-    console.log('render');
+
     return (
       <div className="editor wrapper">
         <Confirm
@@ -1478,7 +1474,6 @@ class EditorComponent extends React.PureComponent {
             toggleAppMaintenance={this.toggleAppMaintenance}
             editingVersion={editingVersion}
             app={app}
-            appVersionPreviewLink={appVersionPreviewLink}
             slug={slug}
             appId={appId}
             canUndo={this.canUndo}
@@ -1501,8 +1496,6 @@ class EditorComponent extends React.PureComponent {
                 globalSettingsChanged={this.globalSettingsChanged}
                 toggleAppMaintenance={this.toggleAppMaintenance}
                 app={app}
-                errorLogs={currentState.errors}
-                components={currentState.components}
                 appId={appId}
                 darkMode={this.props.darkMode}
                 dataSourcesChanged={this.dataSourcesChanged}
@@ -1719,11 +1712,10 @@ class EditorComponent extends React.PureComponent {
 }
 
 const withStore = (Component) => (props) => {
-  const { showComments, currentLayout, setSelectionInProgress, setSelectedComponents } = useEditorStore(
+  const { showComments, currentLayout, setSelectedComponents } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
-      // setSelectionInProgress: state?.actions?.setSelectionInProgress,
       setSelectedComponents: state?.actions?.setSelectedComponents,
     }),
     shallow
@@ -1741,7 +1733,6 @@ const withStore = (Component) => (props) => {
       currentLayout={currentLayout}
       isVersionReleased={isVersionReleased}
       editingVersion={editingVersion}
-      // setSelectionInProgress={setSelectionInProgress}
       setSelectedComponents={setSelectedComponents}
       currentState={currentState}
     />

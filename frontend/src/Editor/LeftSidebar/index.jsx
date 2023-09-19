@@ -76,6 +76,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }),
     shallow
   );
+
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
 
   const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({

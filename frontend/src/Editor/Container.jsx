@@ -66,11 +66,9 @@ export const Container = ({
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
-      // selectedComponents: state?.selectedComponents,
     }),
     shallow
   );
-  console.log('Container render');
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);

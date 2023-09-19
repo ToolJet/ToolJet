@@ -14,11 +14,11 @@ import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 export default function EditorHeader({
   M,
   app,
-  appVersionPreviewLink,
   slug,
   appId,
   canUndo,
@@ -44,6 +44,10 @@ export default function EditorHeader({
     shallow
   );
 
+  const { pageHandle } = useCurrentStateStore((state) => ({
+    pageHandle: state?.page?.handle,
+  }));
+
   const updatePresence = useUpdatePresence();
   useEffect(() => {
     const initialPresence = {
@@ -59,6 +63,10 @@ export default function EditorHeader({
     updatePresence(initialPresence);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
+
+  const appVersionPreviewLink = editingVersion
+    ? `/applications/${app.id}/versions/${editingVersion.id}/${pageHandle}`
+    : '';
 
   return (
     <div className="header">
