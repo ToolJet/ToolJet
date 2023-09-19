@@ -140,6 +140,7 @@ export function ManageSSO({ darkMode }) {
                             limits={featureAccess}
                             feature={item?.label}
                             isAvailable={featureAccess[item.id]}
+                            noTooltipIfValid={true}
                           >
                             {children}
                           </LicenseTooltip>

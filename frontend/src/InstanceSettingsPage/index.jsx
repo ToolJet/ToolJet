@@ -27,7 +27,7 @@ export function InstanceSettings(props) {
   const { load_app } = authenticationService.currentSessionValue;
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['All users', 'Manage instance settings', 'License', 'White labelling'];
+  const sideBarNavs = ['All users', 'Manage instance settings', 'White labelling', 'License'];
   const protectedNavs = ['Manage instance settings', 'White labelling'];
 
   const defaultOrgName = (groupName) => {
@@ -36,10 +36,10 @@ export function InstanceSettings(props) {
         return 'Users';
       case 'Manage instance settings':
         return 'Settings';
-      case 'License':
-        return 'License';
       case 'White labelling':
         return 'White labelling';
+      case 'License':
+        return 'License';
       default:
         return groupName;
     }
@@ -144,10 +144,10 @@ export function InstanceSettings(props) {
                 <div className="w-100">
                   {selectedTab === 'Users' && <ManageAllUsers darkMode={props.darkMode} />}
                   {selectedTab === 'Settings' && <ManageInstanceSettings />}
+                  {selectedTab === 'White labelling' && featureAccess?.whiteLabelling && <ManageWhiteLabelling />}
                   {selectedTab === 'License' && (
                     <ManageLicenseKey fetchFeatureAccessForInstanceSettings={fetchFeatureAccess} />
                   )}
-                  {selectedTab === 'White labelling' && featureAccess?.whiteLabelling && <ManageWhiteLabelling />}
                 </div>
               </div>
             ) : (
