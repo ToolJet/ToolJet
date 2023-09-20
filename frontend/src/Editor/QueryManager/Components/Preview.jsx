@@ -39,13 +39,11 @@ const Preview = ({ darkMode }) => {
   }, [queryPreviewData]);
 
   const renderRawData = () => {
-    if (queryPreviewData === null || queryPreviewData === undefined || queryPreviewData === false) {
+    if (!queryPreviewData) {
       return `${queryPreviewData}`;
-    }
-    if (queryPreviewData) {
+    } else {
       return isJson ? JSON.stringify(queryPreviewData).toString() : queryPreviewData.toString();
     }
-    return '';
   };
 
   return (
