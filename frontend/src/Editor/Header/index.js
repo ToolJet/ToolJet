@@ -44,9 +44,12 @@ export default function EditorHeader({
     shallow
   );
 
-  const { pageHandle } = useCurrentStateStore((state) => ({
-    pageHandle: state?.page?.handle,
-  }));
+  const { pageHandle } = useCurrentStateStore(
+    (state) => ({
+      pageHandle: state?.page?.handle,
+    }),
+    shallow
+  );
 
   const updatePresence = useUpdatePresence();
   useEffect(() => {
