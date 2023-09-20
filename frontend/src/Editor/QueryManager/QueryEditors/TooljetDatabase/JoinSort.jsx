@@ -9,23 +9,41 @@ import { isEmpty } from 'lodash';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export default function JoinSort({ darkMode }) {
-  const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, findTableDetailsByName } =
+  const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, joinOptions, findTableDetails } =
     useContext(TooljetDatabaseContext);
 
-  let tableList = [];
-  Object.entries(tableInfo).forEach(([key, value]) => {
-    const tableDetail = findTableDetailsByName(key);
-    if (tableDetail && tableDetail?.table_name) {
-      const tableDetails = {
-        label: tableDetail.table_name,
-        value: tableDetail.table_id,
-        options: value.map((columns) => ({
-          label: columns.Header,
-          value: columns.Header + '_' + tableDetail.table_id,
-          table: tableDetail.table_id,
-        })),
+  const tableSet = new Set();
+  (joinOptions || []).forEach((join) => {
+    const { table, conditions } = join;
+    tableSet.add(table);
+    conditions?.conditionsList?.forEach((condition) => {
+      const { leftField, rightField } = condition;
+      if (leftField?.table) {
+        tableSet.add(leftField?.table);
+      }
+      if (rightField?.table) {
+        tableSet.add(rightField?.table);
+      }
+    });
+  });
+
+  const tables = [...tableSet];
+  const tableList = [];
+
+  tables.forEach((tableId) => {
+    const tableDetails = findTableDetails(tableId);
+    if (tableDetails?.table_name && tableInfo[tableDetails.table_name]) {
+      const tableDetailsForDropDown = {
+        label: tableDetails.table_name,
+        value: tableId,
+        options:
+          tableInfo[tableDetails.table_name]?.map((columns) => ({
+            label: columns.Header,
+            value: columns.Header + '_' + tableId,
+            table: tableId,
+          })) || [],
       };
-      tableList.push(tableDetails);
+      tableList.push(tableDetailsForDropDown);
     }
   });
 
