@@ -360,7 +360,6 @@ const sidebars = {
         'how-to/access-users-location',
         'how-to/use-s3-signed-url-to-upload-docs',
         'how-to/s3-custom-endpoints',
-        'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',
