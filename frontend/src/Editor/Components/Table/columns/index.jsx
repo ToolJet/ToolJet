@@ -94,7 +94,7 @@ export default function generateColumnsData({
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
       horizontalAlignment: column?.horizontalAlignment ?? 'left',
-      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment }) {
+      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment, globalFilter }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
@@ -110,6 +110,22 @@ export default function generateColumnsData({
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
         cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
+
+        const createStringifyHtmlElement = (cellValue) => {
+          let htmlElement = cellValue;
+          if (globalFilter && cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
+            let normReq = globalFilter
+              .toLowerCase()
+              .replace(/\s+/g, ' ')
+              .trim()
+              .split(' ')
+              .sort((a, b) => b.length - a.length);
+            htmlElement = cellValue
+              .toString()
+              .replace(new RegExp(`(${normReq.join('|')})`, 'gi'), (match) => `<mark>${match}</mark>`);
+          }
+          return htmlElement;
+        };
 
         switch (columnType) {
           case 'string':
@@ -149,35 +165,44 @@ export default function generateColumnsData({
 
               return (
                 <div className="h-100 d-flex flex-column justify-content-center">
-                  <input
-                    type="text"
-                    style={{ ...cellStyles, maxWidth: width }}
+                  <div
+                    style={{ ...cellStyles, maxWidth: width, outline: 'none' }}
+                    contentEditable={true}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        if (e.target.defaultValue !== e.target.value) {
+                        if (
+                          e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
+                          e.target.textContent
+                        ) {
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
-                            e.target.value,
+                            e.target.textContent,
                             cell.row.original
                           );
                         }
                       }
                     }}
                     onBlur={(e) => {
-                      if (e.target.defaultValue !== e.target.value) {
+                      //while comparing data-defaultvalue and newly edited value, we are removing html tags if any from the default value and then comparing
+                      if (
+                        e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
+                        e.target.textContent
+                      ) {
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          e.target.value,
+                          e.target.textContent,
                           cell.row.original
                         );
                       }
                     }}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
-                    defaultValue={cellValue}
+                    data-defaultValue={createStringifyHtmlElement(cellValue)}
                     onFocus={(e) => e.stopPropagation()}
-                  />
+                  >
+                    <div dangerouslySetInnerHTML={{ __html: createStringifyHtmlElement(cellValue) }} />
+                  </div>
                   <div className="invalid-feedback">{validationError}</div>
                 </div>
               );
@@ -189,7 +214,7 @@ export default function generateColumnsData({
                 )}`}
                 style={cellStyles}
               >
-                {String(cellValue)}
+                <div dangerouslySetInnerHTML={{ __html: createStringifyHtmlElement(cellValue) }} />
               </div>
             );
           }
@@ -222,35 +247,63 @@ export default function generateColumnsData({
 
               return (
                 <div className="h-100 d-flex flex-column justify-content-center">
-                  <input
-                    type="number"
-                    style={{ ...cellStyles, maxWidth: width }}
+                  <div
+                    style={{ ...cellStyles, maxWidth: width, outline: 'none' }}
                     onKeyDown={(e) => {
+                      const textContent = e?.target?.textContent?.replace(/[^0-9.]/g, '');
+                      const keyCode = event.keyCode || event.which;
+
+                      // Check if the pressed key is a number (0-9) or allowed control keys (e.g., backspace, delete, arrow keys)
+                      const isAllowedKey =
+                        (keyCode >= 48 && keyCode <= 57) || // Numbers 0-9
+                        (keyCode >= 96 && keyCode <= 105) || // Numpad numbers
+                        keyCode === 8 ||
+                        keyCode === 46 || // Backspace or Delete
+                        keyCode === 37 ||
+                        keyCode === 39 || // Left or Right Arrow
+                        keyCode === 189 || // Dash (-)
+                        keyCode === 190 || // Decimal point (.)
+                        keyCode === 9;
+
+                      // If the pressed key is not allowed, prevent it from being entered
+                      if (!isAllowedKey) {
+                        event.preventDefault();
+                      }
                       if (e.key === 'Enter') {
-                        if (e.target.defaultValue !== e.target.value) {
+                        //while comparing data-defaultvalue and newly edited value, we are removing html tags if any from the default value and then comparing
+                        if (
+                          e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
+                          e.target.textContent
+                        ) {
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
-                            Number(e.target.value),
+                            Number(textContent),
                             cell.row.original
                           );
                         }
                       }
                     }}
                     onBlur={(e) => {
-                      if (e.target.defaultValue !== e.target.value) {
+                      if (
+                        e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
+                        e.target.textContent
+                      ) {
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          Number(e.target.value),
+                          Number(e.target.textContent),
                           cell.row.original
                         );
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
+                    data-defaultValue={createStringifyHtmlElement(cellValue)}
+                    contentEditable={true}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
-                    defaultValue={cellValue}
-                  />
+                  >
+                    <div dangerouslySetInnerHTML={{ __html: createStringifyHtmlElement(cellValue) }} />
+                  </div>
                   <div className="invalid-feedback">{validationError}</div>
                 </div>
               );
@@ -262,7 +315,7 @@ export default function generateColumnsData({
                 )}`}
                 style={cellStyles}
               >
-                {cellValue}
+                <div dangerouslySetInnerHTML={{ __html: createStringifyHtmlElement(cellValue) }} />
               </div>
             );
           }

@@ -600,7 +600,7 @@ export function Table({
             },
             Cell: ({ row }) => {
               return (
-                <div className="d-flex flex-column align-items-center">
+                <div className="d-flex flex-column align-items-center h-100 justify-content-center">
                   <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
                 </div>
               );
@@ -1402,7 +1402,14 @@ export function Table({
                               cell.column.columnType === 'image' && 'jet-table-image-column'
                             } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
                           >
-                            <GenerateEachCellValue
+                            {cell.render('Cell', {
+                              cell,
+                              actionButtonsArray,
+                              isEditable,
+                              horizontalAlignment,
+                              globalFilter,
+                            })}
+                            {/* <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
                               cellRender={cell.render('Cell', {
@@ -1410,6 +1417,7 @@ export function Table({
                                 actionButtonsArray,
                                 isEditable,
                                 horizontalAlignment,
+                                globalFilter,
                               })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
@@ -1418,7 +1426,7 @@ export function Table({
                               cellTextColor={cellTextColor}
                               cell={cell}
                               currentState={currentState}
-                            />
+                            /> */}
                           </div>
                         </td>
                       );
