@@ -831,8 +831,14 @@ export function getQueryVariables(options, state) {
 export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}, hasParamSupport = false) {
   const options = getQueryVariables(query.options, getCurrentState());
 
-  const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  const queryPanelState = useQueryPanelStore.getState();
+  const { queryPreviewData } = queryPanelState;
+  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+
   setPreviewLoading(true);
+  if (queryPreviewData) {
+    setPreviewData('');
+  }
 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
@@ -935,10 +941,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
-  const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  const queryPanelState = useQueryPanelStore.getState();
+  const { queryPreviewData } = queryPanelState;
+  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
   if (parameters?.shouldSetPreviewData) {
     setPreviewLoading(true);
-    setPreviewData(null);
+    queryPreviewData && setPreviewData('');
   }
 
   if (query) {
