@@ -5,6 +5,7 @@ import { Badge, OverlayTrigger, Popover } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
+import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 
 const DropDownSelect = ({
@@ -19,8 +20,8 @@ const DropDownSelect = ({
   renderSelected,
   emptyError,
 }) => {
-  const popoverId = useRef(`dd-select-${generateRandomId(10)}`);
-  const popoverBtnId = useRef(`dd-select-btn-${generateRandomId(10)}`);
+  const popoverId = useRef(`dd-select-${uuidv4()}`);
+  const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
   const [showMenu, setShowMenu] = useShowPopover(false, `#${popoverId.current}`, `#${popoverBtnId.current}`);
   const [selected, setSelected] = useState(value);
   const selectRef = useRef();
@@ -126,38 +127,41 @@ const DropDownSelect = ({
           className="tdb-dropdown-btn px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0 position-relative font-weight-normal"
           data-cy={`show-ds-popover-button`}
         >
-          {renderSelected && renderSelected(selected)}
-          {!renderSelected && selected
-            ? Array.isArray(selected)
-              ? !isOverflown && (
-                  <MultiSelectValueBadge
-                    options={options}
-                    selected={selected}
-                    setSelected={setSelected}
-                    onChange={onChange}
-                  />
-                )
-              : selected?.label
-            : ''}
-          {!renderSelected && isOverflown && !Array.isArray(selected) && (
-            <Badge className="me-1 dd-select-value-badge" bg="secondary">
-              {selected?.length} selected
-              <span
-                role="button"
-                onClick={(e) => {
-                  setSelected([]);
-                  onChange && onChange([]);
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <Remove fill="var(--slate12)" />
-              </span>
-            </Badge>
-          )}
-          <span className="dd-select-control-chevron">
+          <div className="text-truncate">
+            {renderSelected && renderSelected(selected)}
+
+            {!renderSelected && selected
+              ? Array.isArray(selected)
+                ? !isOverflown && (
+                    <MultiSelectValueBadge
+                      options={options}
+                      selected={selected}
+                      setSelected={setSelected}
+                      onChange={onChange}
+                    />
+                  )
+                : selected?.label
+              : ''}
+            {!renderSelected && isOverflown && !Array.isArray(selected) && (
+              <Badge className="me-1 dd-select-value-badge" bg="secondary">
+                {selected?.length} selected
+                <span
+                  role="button"
+                  onClick={(e) => {
+                    setSelected([]);
+                    onChange && onChange([]);
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                >
+                  <Remove fill="var(--slate12)" width="12px" />
+                </span>
+              </Badge>
+            )}
+          </div>
+          <div className="dd-select-control-chevron">
             <CheveronDown />
-          </span>
+          </div>
         </ButtonSolid>
       </span>
     </OverlayTrigger>
@@ -202,18 +206,6 @@ function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
       </span>
     </Badge>
   ));
-}
-
-function generateRandomId(length) {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let randomId = '';
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    randomId += characters.charAt(randomIndex);
-  }
-
-  return randomId;
 }
 
 export default DropDownSelect;

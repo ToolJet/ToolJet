@@ -7,6 +7,7 @@ import { cloneDeep } from 'lodash';
 export default function JoinSelect({ darkMode }) {
   const { joinOptions, tableInfo, joinTableOptions, joinTableOptionsChange, findTableDetails } =
     useContext(TooljetDatabaseContext);
+
   const joinSelectOptions = cloneDeep(joinTableOptions['fields']) || [];
   const setJoinSelectOptions = (fields) => {
     joinTableOptionsChange('fields', fields);
