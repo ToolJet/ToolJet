@@ -127,7 +127,7 @@ const DropDownSelect = ({
           className="tdb-dropdown-btn px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0 position-relative font-weight-normal"
           data-cy={`show-ds-popover-button`}
         >
-          <div className="text-truncate">
+          <div className="pe-1 text-truncate">
             {renderSelected && renderSelected(selected)}
 
             {!renderSelected && selected
