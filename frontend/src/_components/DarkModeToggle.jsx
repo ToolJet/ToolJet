@@ -61,22 +61,25 @@ export const DarkModeToggle = function DarkModeToggle({
         </Tooltip>
       }
     >
-      <div className="unstyled-button dark-theme-toggle-btn" onClick={toggleDarkMode}>
+      <div
+        className="unstyled-button dark-theme-toggle-btn  sidebar-svg-icon  left-sidebar-item "
+        onClick={toggleDarkMode}
+      >
         <animated.svg
           xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
           fill="none"
-          color={darkMode ? '#fff' : '#808080'}
+          color={'var(--slate8)'}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
           stroke="currentColor"
           style={{
             cursor: 'pointer',
-            opacity: 0.6,
             ...svgContainerProps,
+            transform: 'rotate(315deg)',
           }}
         >
           <mask id="myMask2">
@@ -84,13 +87,7 @@ export const DarkModeToggle = function DarkModeToggle({
             <animated.circle style={maskedCircleProps} r="9" fill="black" />
           </mask>
 
-          <animated.circle
-            cx="12"
-            cy="12"
-            style={centerCircleProps}
-            fill={darkMode ? 'white' : '#808080'}
-            mask="url(#myMask2)"
-          />
+          <animated.circle cx="12" cy="12" style={centerCircleProps} fill={'var(--slate8)'} mask="url(#myMask2)" />
           <animated.g stroke="currentColor" style={linesProps}>
             <line x1="12" y1="1" x2="12" y2="3" />
             <line x1="12" y1="21" x2="12" y2="23" />

@@ -102,11 +102,11 @@ Cypress.Commands.add(
   },
   (subject, value) => {
     cy.wrap(subject)
-      .click()
+      .realClick()
       .find("pre.CodeMirror-line")
       .invoke("text")
       .then((text) => {
-        cy.wrap(subject).type(createBackspaceText(text)),
+        cy.wrap(subject).type(createBackspaceText(text), { delay: 0 }),
           {
             delay: 0,
           };
@@ -247,7 +247,7 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
-  cy.get(".text-muted");
+  // cy.get(".text-muted");
   cy.wait(1000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
@@ -282,4 +282,12 @@ Cypress.Commands.add("visitTheWorkspace", (workspaceName) => {
     cy.visit(workspaceId);
   });
   cy.wait(2000);
+});
+
+Cypress.Commands.add("hideTooltip", () => {
+  cy.get("body").then(($body) => {
+    if ($body.find(".tooltip-inner").length > 0) {
+      cy.get(".tooltip-inner").invoke("css", "display", "none");
+    }
+  });
 });

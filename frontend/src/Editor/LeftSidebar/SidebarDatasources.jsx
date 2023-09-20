@@ -1,7 +1,7 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { HeaderSection, Button } from '@/_ui/LeftSidebar';
+import { HeaderSection } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -17,6 +17,7 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -132,7 +133,7 @@ export const LeftSidebarDataSources = ({
 
     const popover = (
       <PopoverBS key={dataSource.id} id="popover-change-scope">
-        <PopoverBS.Body key={dataSource.id} className={`${darkMode && 'theme-dark popover-dark-themed'}`}>
+        <PopoverBS.Body key={dataSource.id} className={`${darkMode && 'dark-theme'}`}>
           <div className={`row cursor-pointer`}>
             <div className="col text-truncate cursor-pointer" onClick={() => convertToGlobalDataSource(dataSource)}>
               Change scope
@@ -242,18 +243,18 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Data sources">
           <div className="d-flex justify-content-end">
-            <Button
+            <ButtonSolid
               title={`${pinned ? 'Unpin' : 'Pin'}`}
               onClick={() => setPinned(!pinned)}
               darkMode={darkMode}
-              size="sm"
               styles={{ width: '28px', padding: 0 }}
-            >
-              <Button.Content
-                iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
-                direction="left"
-              />
-            </Button>
+              data-cy={`left-sidebar-inspector`}
+              variant="tertiary"
+              className="left-sidebar-header-btn"
+              leftIcon={pinned ? 'unpin' : 'pin'}
+              iconWidth="14"
+              fill={`var(--slate12)`}
+            ></ButtonSolid>
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>
@@ -263,7 +264,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
             {dataSources.length ? (
               <>
                 <div className="tj-text-sm my-2 datasources-category">Local Data Sources</div>
-                <div className="mt-2 w-100" data-cy="datasource-Label">
+                <div className="mt-2 w-100 color-slate12" data-cy="datasource-Label">
                   {dataSources?.map((source, idx) => (
                     <RenderDataSource
                       key={idx}

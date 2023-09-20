@@ -52,10 +52,10 @@ export default function EnvironmontConfirmationModal(props) {
       size="sm"
       animation={false}
       centered={true}
-      contentClassName={`promote-confirm-dialogue-modal ${darkMode ? 'theme-dark' : ''}`}
+      contentClassName={`promote-confirm-dialogue-modal ${darkMode ? 'dark-theme' : ''}`}
     >
       <Modal.Header>
-        <Modal.Title className={`confirmation-header ${darkMode ? 'theme-dark' : ''}`} data-cy="modal-title">
+        <Modal.Title className={`confirmation-header ${darkMode ? 'dark-theme' : ''}`} data-cy="modal-title">
           Promote {editingVersion.name}
         </Modal.Title>
         <svg
@@ -72,7 +72,7 @@ export default function EnvironmontConfirmationModal(props) {
             fillRule="evenodd"
             clipRule="evenodd"
             d="M11.5996 11.6201C11.8599 11.3597 12.282 11.3597 12.5424 11.6201L16.071 15.1487L19.5996 11.6201C19.8599 11.3597 20.282 11.3597 20.5424 11.6201C20.8027 11.8804 20.8027 12.3025 20.5424 12.5629L17.0138 16.0915L20.5424 19.6201C20.8027 19.8804 20.8027 20.3025 20.5424 20.5629C20.282 20.8232 19.8599 20.8232 19.5996 20.5629L16.071 17.0343L12.5424 20.5629C12.282 20.8232 11.8599 20.8232 11.5996 20.5629C11.3392 20.3025 11.3392 19.8804 11.5996 19.6201L15.1282 16.0915L11.5996 12.5629C11.3392 12.3025 11.3392 11.8804 11.5996 11.6201Z"
-            fill="#11181C"
+            fill={`var(--slate12)`}
           />
         </svg>
       </Modal.Header>

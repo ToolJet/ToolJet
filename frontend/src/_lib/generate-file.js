@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-
 export default function generateFile(filename, data, fileType) {
   if (fileType === 'pdf') {
     generatePDF(filename, data);
@@ -28,7 +27,7 @@ function generatePDF(filename, data) {
   const x = margin;
   let y = margin;
 
-  const processValue = (value, indentLevel = 0) => {
+  const processValue = (value = 0) => {
     const valueType = typeof value;
 
     if (valueType === 'string') {

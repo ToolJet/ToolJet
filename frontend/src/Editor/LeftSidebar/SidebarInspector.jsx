@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Button, HeaderSection } from '@/_ui/LeftSidebar';
+import { HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
@@ -10,6 +10,7 @@ import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
@@ -177,19 +178,18 @@ export const LeftSidebarInspector = ({
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Inspector">
           <div className="d-flex justify-content-end">
-            <Button
+            <ButtonSolid
               title={`${pinned ? 'Unpin' : 'Pin'}`}
               onClick={() => setPinned(!pinned)}
               darkMode={darkMode}
-              size="sm"
               styles={{ width: '28px', padding: 0 }}
               data-cy={`left-sidebar-inspector`}
-            >
-              <Button.Content
-                iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
-                direction="left"
-              />
-            </Button>
+              variant="tertiary"
+              className="left-sidebar-header-btn"
+              leftIcon={pinned ? 'unpin' : 'pin'}
+              iconWidth="14"
+              fill={`var(--slate12)`}
+            ></ButtonSolid>
           </div>
         </HeaderSection.PanelHeader>
       </HeaderSection>
@@ -206,6 +206,7 @@ export const LeftSidebarInspector = ({
           expandWithLabels={true}
           selectedComponent={selectedComponent}
           treeType="inspector"
+          darkMode={darkMode}
         />
       </div>
     </div>

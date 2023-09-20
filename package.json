@@ -54,6 +54,7 @@
     "plugins:uninstall:prod": "npm --prefix server run plugins:uninstall:prod",
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "./heroku-postbuild.sh",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "update-version": "node update-version.js"
   }
 }

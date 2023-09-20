@@ -1,8 +1,8 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import MenuIcon from '@assets/images/icons/3dots-menu.svg';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
   const { isVersionReleased, enableReleasedVersionPopupState, isEditorFreezed } = useAppVersionStore(
@@ -28,7 +28,7 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
       placement={'bottom-end'}
       rootClose={true}
       overlay={
-        <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'popover-dark-themed'}`}>
+        <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'dark-theme'}`}>
           <Popover.Body bsPrefix="popover-body">
             <div className="card-body">
               <label htmlFor="pin" className="form-label" data-cy={`page-settings-header`}>
@@ -44,7 +44,7 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
       }
     >
       <span>
-        <MenuIcon width="10" height="16" data-cy={'menu-icon'} />
+        <SolidIcon data-cy={'menu-icon'} name="morevertical" width="28" />
       </span>
     </OverlayTrigger>
   );
