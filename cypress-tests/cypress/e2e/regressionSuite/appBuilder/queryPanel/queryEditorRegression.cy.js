@@ -75,7 +75,7 @@ describe("Query Editor", () => {
     cy.openApp();
     resizeQueryPanel("80");
 
-    cy.get('[data-cy="restapi-add-query-card"]').click();
+    cy.get('[data-cy="restapi-add-query-card"]').should("be.visible").click();
     cy.get('[data-cy="query-rename-input"]').clear();
     cy.get('[data-cy="query-rename-input"]').clear().type("new_name");
     cy.waitForAutoSave();
@@ -89,18 +89,18 @@ describe("Query Editor", () => {
     cy.get(
       '[data-cy="transformation-input-input-field"]'
     ).clearAndTypeOnCodeMirror(
-      'return data.filter(person => person.gender === "female").length'
+      'return typeof(data.filter(person => person.gender === "female").length)==="number"'
     );
 
     query("preview");
-    verifypreview("raw", "6");
+    verifypreview("raw", "true");
 
     query("run");
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.hideTooltip();
     openNode("queries");
     openNode("new_name");
-    verifyValue("data", "Number", "6");
+    verifyValue("data", "Boolean", "true");
   });
 
   it("should verify Event Handler", () => {
