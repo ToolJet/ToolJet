@@ -3,6 +3,8 @@ import { dashboardSelector } from "Selectors/dashboard";
 import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
 import { passwordInputText } from "Texts/passwordInput";
+import { importSelectors } from "Selectors/exportImport";
+import { importText } from "Texts/exportImport";
 
 Cypress.Commands.add(
   "login",
@@ -106,18 +108,19 @@ Cypress.Commands.add(
       .find("pre.CodeMirror-line")
       .invoke("text")
       .then((text) => {
-        cy.wrap(subject).type(createBackspaceText(text), { delay: 0 }),
-        {
-          delay: 0,
-        };
+        cy.wrap(subject).realType(`${createBackspaceText(text)}`, { delay: 0 }),
+          {
+            delay: 0,
+          };
       });
     if (!Array.isArray(value)) {
-      cy.wrap(subject).type(value, {
+      cy.wrap(subject).as("element").realClick().type(value, {
         parseSpecialCharSequences: false,
         delay: 0,
       });
     } else {
       cy.wrap(subject)
+        .as("element")
         .type(value[1], {
           parseSpecialCharSequences: false,
           delay: 0,
@@ -179,14 +182,14 @@ Cypress.Commands.add(
   },
   (subject, value) => {
     cy.wrap(subject)
-      .click()
+      .realClick()
       .find("pre.CodeMirror-line")
       .invoke("text")
       .then((text) => {
-        cy.wrap(subject).type(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+        cy.wrap(subject).realType(createBackspaceText(text)),
+          {
+            delay: 0,
+          };
       });
   }
 );
@@ -290,4 +293,15 @@ Cypress.Commands.add("hideTooltip", () => {
       cy.get(".tooltip-inner").invoke("css", "display", "none");
     }
   });
+});
+
+Cypress.Commands.add("importApp", (appFile) => {
+  cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+  cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
+    force: true,
+  });
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    importText.appImportedToastMessage
+  );
 });
