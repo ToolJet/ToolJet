@@ -120,18 +120,24 @@ export function OpenId({ settings, updateData }) {
         <div className="card-body">
           <form noValidate className="sso-form-wrap">
             <div className="form-group mb-3">
-              <label className="form-label" data-cy="redirect-url-label">
-                {t('header.organization.menus.manageSSO.openid.redirectUrl', 'Redirect URL')}
+              <label className="form-label" data-cy="name-label">
+                Name
               </label>
-              <div className="d-flex justify-content-between form-control align-items-center">
-                <p data-cy="redirect-url" id="redirect-url">{`${window.public_config?.TOOLJET_HOST}${
-                  getSubpath() ?? ''
-                }/sso/openid/${configId}`}</p>
-                <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
+              <div>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Enter Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  data-cy="name-input"
+                />
               </div>
             </div>
             <div className="form-group mb-3">
-              <label className="form-label">Client Id</label>
+              <label className="form-label" data-cy="client-id-label">
+                Client Id
+              </label>
               <div>
                 <input
                   type="text"
@@ -139,6 +145,7 @@ export function OpenId({ settings, updateData }) {
                   placeholder="Enter Client Id"
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
+                  data-cy="client-id-input"
                 />
               </div>
             </div>
@@ -157,11 +164,14 @@ export function OpenId({ settings, updateData }) {
                   placeholder="Enter Client Secret"
                   value={clientSecret}
                   onChange={(e) => setClientSecret(e.target.value)}
+                  data-cy="client-secret-input"
                 />
               </div>
             </div>
             <div className="form-group mb-3">
-              <label className="form-label">Well Known URL</label>
+              <label className="form-label" data-cy="well-known-url-label">
+                Well Known URL
+              </label>
               <div>
                 <input
                   type="text"
@@ -169,6 +179,7 @@ export function OpenId({ settings, updateData }) {
                   placeholder="Enter Well Known URL"
                   value={wellKnownUrl}
                   onChange={(e) => setWellKnownUrl(e.target.value)}
+                  data-cy="well-known-url-input"
                 />
               </div>
             </div>
