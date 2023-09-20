@@ -310,14 +310,7 @@ export const Container = ({
       setBoxes(newBoxes);
       updateCanvasHeight(newBoxes);
     },
-    [
-      isVersionReleased,
-      enableReleasedVersionPopupState,
-      boxes,
-      setBoxes,
-      useEditorStore.getState().selectedComponents,
-      updateCanvasHeight,
-    ]
+    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, updateCanvasHeight]
   );
 
   const onResizeStop = useCallback(
@@ -545,7 +538,6 @@ export const Container = ({
       removeComponent,
       currentLayout,
       deviceWindowWidth,
-      selectedComponents: useEditorStore.getState().selectedComponents,
       darkMode,
       sideBarDebugger,
       currentPageId,
@@ -567,7 +559,6 @@ export const Container = ({
     removeComponent,
     currentLayout,
     deviceWindowWidth,
-    useEditorStore.getState().selectedComponents,
     darkMode,
     sideBarDebugger,
     currentPageId,

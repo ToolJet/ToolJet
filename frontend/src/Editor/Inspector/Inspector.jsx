@@ -91,7 +91,6 @@ export const Inspector = ({
     shallow
   );
   const { t } = useTranslation();
-
   useHotkeys('backspace', () => {
     if (isVersionReleased) return;
     setWidgetDeleteConfirmation(true);
@@ -350,7 +349,6 @@ export const Inspector = ({
       />
     </div>
   );
-
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
       <div className="p-3">
@@ -380,118 +378,110 @@ export const Inspector = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
-  if (!selectedComponents.length) return null;
+
   return (
-    <>
-      {selectedComponents.length !== 1 && isEmpty(allComponents) && isEmpty(allComponents[selectedComponentId]) ? (
-        <center className="mt-5 p-2">
-          {this.props.t('editor.inspectComponent', 'Please select a component to inspect')}
-        </center>
-      ) : (
-        <div className="inspector">
-          <ConfirmDialog
-            show={showWidgetDeleteConfirmation}
-            message={'Widget will be deleted, do you want to continue?'}
-            onConfirm={() => {
-              setSelectedComponents(EMPTY_ARRAY);
-              EMPTY_ARRAY;
-              removeComponent(component);
-            }}
-            onCancel={() => setWidgetDeleteConfirmation(false)}
-            darkMode={darkMode}
-          />
-          <div>
-            <div className="row inspector-component-title-input-holder">
-              <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
-                <span data-cy={`inspector-close-icon`} className="cursor-pointer">
-                  <ArrowLeft fill={'var(--slate12)'} width={'14'} />
-                </span>
-              </div>
-              <div className={`col-9 p-0 ${isVersionReleased && 'disabled'}`}>
-                <div className="input-icon" style={{ marginLeft: '8px' }}>
-                  <input
-                    onChange={(e) => setNewComponentName(e.target.value)}
-                    type="text"
-                    onBlur={() => handleComponentNameChange(newComponentName)}
-                    className="w-100 inspector-edit-widget-name"
-                    value={newComponentName}
-                    ref={inputRef}
-                    data-cy="edit-widget-name"
-                  />
-                </div>
-              </div>
-              <div className="col-2">
-                <OverlayTrigger
-                  trigger={'click'}
-                  placement={'bottom-end'}
-                  rootClose={false}
-                  show={showHeaderActionsMenu}
-                  overlay={
-                    <Popover id="list-menu" className={darkMode && 'dark-theme'}>
-                      <Popover.Body bsPrefix="list-item-popover-body">
-                        {INSPECTOR_HEADER_OPTIONS.map((option) => (
-                          <div
-                            className="list-item-popover-option"
-                            key={option?.value}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleInspectorHeaderActions(option.value);
-                            }}
-                          >
-                            <div className="list-item-popover-menu-option-icon">{option.icon}</div>
-                            <div
-                              className={classNames('list-item-option-menu-label', {
-                                'color-tomato9': option.value === 'delete',
-                              })}
-                            >
-                              {option?.label}
-                            </div>
-                          </div>
-                        ))}
-                      </Popover.Body>
-                    </Popover>
-                  }
-                >
-                  <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
-                    <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
-                  </span>
-                </OverlayTrigger>
-              </div>
-            </div>
-            <div>
-              <Tabs defaultActiveKey={'properties'} id="inspector">
-                <Tab eventKey="properties" title="Properties">
-                  {propertiesTab}
-                </Tab>
-                <Tab eventKey="styles" title="Styles">
-                  {stylesTab}
-                </Tab>
-              </Tabs>
+    <div className="inspector">
+      <ConfirmDialog
+        show={showWidgetDeleteConfirmation}
+        message={'Widget will be deleted, do you want to continue?'}
+        onConfirm={() => {
+          setSelectedComponents(EMPTY_ARRAY);
+          EMPTY_ARRAY;
+          removeComponent(component);
+        }}
+        onCancel={() => setWidgetDeleteConfirmation(false)}
+        darkMode={darkMode}
+      />
+      <div>
+        <div className="row inspector-component-title-input-holder">
+          <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
+            <span data-cy={`inspector-close-icon`} className="cursor-pointer">
+              <ArrowLeft fill={'var(--slate12)'} width={'14'} />
+            </span>
+          </div>
+          <div className={`col-9 p-0 ${isVersionReleased && 'disabled'}`}>
+            <div className="input-icon" style={{ marginLeft: '8px' }}>
+              <input
+                onChange={(e) => setNewComponentName(e.target.value)}
+                type="text"
+                onBlur={() => handleComponentNameChange(newComponentName)}
+                className="w-100 inspector-edit-widget-name"
+                value={newComponentName}
+                ref={inputRef}
+                data-cy="edit-widget-name"
+              />
             </div>
           </div>
-          <span className="widget-documentation-link">
-            <a
-              href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
-              target="_blank"
-              rel="noreferrer"
-              data-cy="widget-documentation-link"
+          <div className="col-2">
+            <OverlayTrigger
+              trigger={'click'}
+              placement={'bottom-end'}
+              rootClose={false}
+              show={showHeaderActionsMenu}
+              overlay={
+                <Popover id="list-menu" className={darkMode && 'dark-theme'}>
+                  <Popover.Body bsPrefix="list-item-popover-body">
+                    {INSPECTOR_HEADER_OPTIONS.map((option) => (
+                      <div
+                        className="list-item-popover-option"
+                        key={option?.value}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleInspectorHeaderActions(option.value);
+                        }}
+                      >
+                        <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                        <div
+                          className={classNames('list-item-option-menu-label', {
+                            'color-tomato9': option.value === 'delete',
+                          })}
+                        >
+                          {option?.label}
+                        </div>
+                      </div>
+                    ))}
+                  </Popover.Body>
+                </Popover>
+              }
             >
-              <span>
-                <Student width={13} fill={'#3E63DD'} />
-                <small className="widget-documentation-link-text">
-                  {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
-                    componentMeta: componentMeta.name,
-                  })}
-                </small>
+              <span className="cursor-pointer" onClick={() => setShowHeaderActionsMenu(true)}>
+                <SolidIcon data-cy={'menu-icon'} name="morevertical" width="24" fill={'var(--slate12)'} />
               </span>
-              <span>
-                <ArrowRight width={20} fill={'#3E63DD'} />
-              </span>
-            </a>
-          </span>
+            </OverlayTrigger>
+          </div>
         </div>
-      )}
-    </>
+        <div>
+          <Tabs defaultActiveKey={'properties'} id="inspector">
+            <Tab eventKey="properties" title="Properties">
+              {propertiesTab}
+            </Tab>
+            <Tab eventKey="styles" title="Styles">
+              {stylesTab}
+            </Tab>
+          </Tabs>
+        </div>
+      </div>
+      <span className="widget-documentation-link">
+        <a
+          href={`https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.name ?? '')}`}
+          target="_blank"
+          rel="noreferrer"
+          data-cy="widget-documentation-link"
+        >
+          <span>
+            <Student width={13} fill={'#3E63DD'} />
+            <small className="widget-documentation-link-text">
+              {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
+                componentMeta: componentMeta.name,
+              })}
+            </small>
+          </span>
+          <span>
+            <ArrowRight width={20} fill={'#3E63DD'} />
+          </span>
+        </a>
+      </span>
+    </div>
   );
 };
 

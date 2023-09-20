@@ -553,6 +553,13 @@ class EditorComponent extends React.PureComponent {
           this.autoSave();
         }
       );
+
+      // if the component is newly added, on undo click it will delete the component, At that time we want
+      // our selected components to be in correct state i.e empty state.
+      const selectedComponents = useEditorStore.getState().selectedComponents;
+      if (!appDefinition.pages[this.state.currentPageId]?.components[selectedComponents[0]?.id]) {
+        useEditorStore.getState().actions.setSelectedComponents(EMPTY_ARRAY);
+      }
     }
   };
 
@@ -1444,7 +1451,6 @@ class EditorComponent extends React.PureComponent {
       queryConfirmationList,
     } = this.state;
     const editingVersion = this.props?.editingVersion;
-
     return (
       <div className="editor wrapper">
         <Confirm
@@ -1672,23 +1678,17 @@ class EditorComponent extends React.PureComponent {
                 <RightSidebarTabManager
                   inspectorTab={
                     <div className="pages-container">
-                      {!isEmpty(appDefinition.pages[this.state.currentPageId]?.components) ? (
-                        <Inspector
-                          moveComponents={this.moveComponents}
-                          componentDefinitionChanged={this.componentDefinitionChanged}
-                          removeComponent={this.removeComponent}
-                          allComponents={appDefinition.pages[this.state.currentPageId]?.components}
-                          apps={apps}
-                          darkMode={this.props.darkMode}
-                          appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
-                          pages={this.getPagesWithIds()}
-                          cloneComponents={this.cloneComponents}
-                        />
-                      ) : (
-                        <center className="mt-5 p-2">
-                          {this.props.t('editor.inspectComponent', 'Please select a component to inspect')}
-                        </center>
-                      )}
+                      <Inspector
+                        moveComponents={this.moveComponents}
+                        componentDefinitionChanged={this.componentDefinitionChanged}
+                        removeComponent={this.removeComponent}
+                        allComponents={appDefinition.pages[this.state.currentPageId]?.components}
+                        apps={apps}
+                        darkMode={this.props.darkMode}
+                        appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
+                        pages={this.getPagesWithIds()}
+                        cloneComponents={this.cloneComponents}
+                      />
                     </div>
                   }
                   widgetManagerTab={
@@ -1698,6 +1698,7 @@ class EditorComponent extends React.PureComponent {
                       darkMode={this.props.darkMode}
                     />
                   }
+                  allComponents={appDefinition.pages[this.state.currentPageId]?.components}
                 />
               </div>
               {config.COMMENT_FEATURE_ENABLE && this.props.showComments && (
