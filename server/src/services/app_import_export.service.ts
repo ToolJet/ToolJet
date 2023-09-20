@@ -468,7 +468,6 @@ export class AppImportExportService {
     externalResourceMappings: { [x: string]: any }
   ) {
     appResourceMappings = { ...appResourceMappings };
-    const newDataQueries = [];
     const importingQueriesForSource = importingDataQueriesForAppVersion.filter(
       (dq: { dataSourceId: any }) => dq.dataSourceId === importingDataSource.id
     );
@@ -487,7 +486,6 @@ export class AppImportExportService {
         appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
       });
       await manager.save(newQuery);
-      newDataQueries.push(newQuery);
       appResourceMappings.dataQueryMapping[importingQuery.id] = newQuery.id;
     }
 
