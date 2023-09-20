@@ -42,6 +42,7 @@ export default function EditorHeader({
   onVersionDelete,
   currentUser,
   darkMode,
+  setCurrentAppVersionPromoted,
 }) {
   const { is_maintenance_on } = app;
   const [environments, setEnvironments] = useState([]);
@@ -169,6 +170,7 @@ export default function EditorHeader({
                       currentEnvironment={currentEnvironment}
                       multiEnvironmentEnabled={featureAccess?.multiEnvironment}
                       setCurrentEnvironment={setCurrentEnvironment}
+                      setCurrentAppVersionPromoted={setCurrentAppVersionPromoted}
                     />
                   )}
                 </div>

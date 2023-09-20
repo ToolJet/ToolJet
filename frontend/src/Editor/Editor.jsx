@@ -128,6 +128,7 @@ class EditorComponent extends React.Component {
       isUnsavedQueriesAvailable: false,
       scrollOptions: {},
       currentAppEnvironmentId: null,
+      isCurrentVersionPromoted: false,
       currentPageId: defaultPageId,
       pages: {},
       selectedDataSource: null,
@@ -661,7 +662,11 @@ class EditorComponent extends React.Component {
         appDefinitionLocalVersion: uuid(),
       },
       () => {
-        if (!opts.skipAutoSave) this.autoSave();
+        if (!opts.skipAutoSave) {
+          this.autoSave();
+        } else {
+          useAppDataStore.getState().actions.setIsSaving(false);
+        }
       }
     );
   };
@@ -934,7 +939,7 @@ class EditorComponent extends React.Component {
   saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (this.props.isVersionReleased && !isUserSwitchedVersion) {
       useAppDataStore.getState().actions.setIsSaving(false);
-    } else if (!isEmpty(this.props?.editingVersion)) {
+    } else if (!isEmpty(this.props?.editingVersion) && !this.state.isCurrentVersionPromoted) {
       appVersionService
         .save(
           this.state.appId,
@@ -1635,6 +1640,7 @@ class EditorComponent extends React.Component {
             appEnvironmentChanged={this.appEnvironmentChanged}
             onVersionDelete={this.onVersionDelete}
             currentUser={this.state.currentUser}
+            setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => this.setState({ isCurrentVersionPromoted })}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">

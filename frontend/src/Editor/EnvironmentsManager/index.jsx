@@ -16,6 +16,7 @@ const EnvironmentManager = (props) => {
     currentEnvironment,
     setCurrentEnvironment,
     multiEnvironmentEnabled,
+    setCurrentAppVersionPromoted,
   } = props;
 
   // TODO: fix naming with the current environment id
@@ -40,11 +41,13 @@ const EnvironmentManager = (props) => {
     const currentPromotedEnvironment = currentAppEnvironmentId
       ? environments.find((env) => env.id === currentAppEnvironmentId)
       : environments.find((env) => env.name === 'development');
+    setCurrentAppVersionPromoted(currentPromotedEnvironment.priority > 1);
     if (currentPromotedEnvironment.name === 'production' || currentPromotedEnvironment.name === 'staging') {
       // we don't want to allow editing of production and staging environments
       // so let's freeze the editor
       onEditorFreeze(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentEnvironment, onEditorFreeze, editingVersion.id]);
 
   const fetchEnvironments = (isEnvIdNotAvailableYet) => {
