@@ -1,6 +1,10 @@
 Cypress.Commands.add(
   "apiLogin",
-  (userEmail = "dev@tooljet.io", userPassword = "password", workspaceId = '') => {
+  (
+    userEmail = "dev@tooljet.io",
+    userPassword = "password",
+    workspaceId = ""
+  ) => {
     cy.request({
       url: `http://localhost:3000/api/authenticate/${workspaceId}`,
       method: "POST",
@@ -40,7 +44,11 @@ Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
       },
       { log: false }
     ).then((response) => {
+      {
+        log: false;
+      }
       expect(response.status).to.equal(201);
+      Cypress.env(`${name}-id`, response.body.id);
 
       Cypress.log({
         name: "Create Data Source",
@@ -75,6 +83,9 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
         user_id: "",
       },
     }).then((response) => {
+      {
+        log: false;
+      }
       expect(response.status).to.equal(201);
       Cypress.env("appId", response.allRequestResponses[0]["Response Body"].id);
       Cypress.log({
@@ -121,21 +132,24 @@ Cypress.Commands.add(
   }
 );
 
-// cy.apiLogin();
-// cy.apiCreateApp();
-// cy.apiCreateGDS(
-//   "http://localhost:3000/api/v2/data_sources",
-//   "aaaaaadish",
-//   "postgresql",
-//   [
-//     { key: "host", value: "localhost" },
-//     { key: "port", value: 5432 },
-//     { key: "database", value: "" },
-//     { key: "username", value: "dev@tooljet.io" },
-//     { key: "password", value: "password", encrypted: true },
-//     { key: "ssl_enabled", value: true, encrypted: false },
-//     { key: "ssl_certificate", value: "none", encrypted: false },
-//   ]
-// );
-
-
+Cypress.Commands.add("apiDeleteDS", (name) => {
+  const dsId = Cypress.env(`${name}-id`);
+  cy.request(
+    {
+      method: "DELETE",
+      url: `http://localhost:3000/api/v2/data_sources/${dsId}`,
+      headers: {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: Cypress.env("authToken"),
+      },
+    },
+    { log: false }
+  ).then((response) => {
+    expect(response.status).to.equal(200);
+    Cypress.log({
+      name: "DS Delete",
+      displayName: "DS DELETED",
+      message: `: ${dsId} (${name})`,
+    });
+  });
+});
