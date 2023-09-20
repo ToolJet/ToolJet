@@ -106,7 +106,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       return {
         ...prevJoinOptions,
         joins: values,
-        conditions: { conditionsList: newConditionsList },
+        conditions: {
+          ...(conditions?.operator && { operator: conditions.operator }),
+          conditionsList: newConditionsList,
+        },
         order_by: newOrderBy,
         fields: updatedFields,
       };
