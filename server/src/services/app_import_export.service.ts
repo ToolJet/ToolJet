@@ -412,6 +412,19 @@ export class AppImportExportService {
         );
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
+
+      const newDataQueries = await manager.find(DataQuery, {
+        where: { appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id] },
+      });
+
+      for (const newQuery of newDataQueries) {
+        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+          newQuery.options,
+          appResourceMappings.dataQueryMapping
+        );
+        newQuery.options = newOptions;
+        await manager.save(newQuery);
+      }
     }
 
     return appResourceMappings;
@@ -455,37 +468,29 @@ export class AppImportExportService {
     externalResourceMappings: { [x: string]: any }
   ) {
     appResourceMappings = { ...appResourceMappings };
-    const newDataQueries = importingDataQueriesForAppVersion
-      .filter((dq: { dataSourceId: any }) => dq.dataSourceId === importingDataSource.id)
-      .map((importingQuery: { options: any; name: any }) => {
-        const options =
-          importingDataSource.kind === 'tooljetdb'
-            ? this.replaceTooljetDbTableIds(importingQuery.options, externalResourceMappings['tooljet_database'])
-            : importingQuery.options;
+    const newDataQueries = [];
+    const importingQueriesForSource = importingDataQueriesForAppVersion.filter(
+      (dq: { dataSourceId: any }) => dq.dataSourceId === importingDataSource.id
+    );
+    if (isEmpty(importingDataQueriesForAppVersion)) return appResourceMappings;
 
-        return manager.create(DataQuery, {
-          name: importingQuery.name,
-          options,
-          dataSourceId: dataSourceForAppVersion.id,
-          appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-        });
+    for (const importingQuery of importingQueriesForSource) {
+      const options =
+        importingDataSource.kind === 'tooljetdb'
+          ? this.replaceTooljetDbTableIds(importingQuery.options, externalResourceMappings['tooljet_database'])
+          : importingQuery.options;
+
+      const newQuery = manager.create(DataQuery, {
+        name: importingQuery.name,
+        options,
+        dataSourceId: dataSourceForAppVersion.id,
+        appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
       });
-
-    await Promise.all(newDataQueries.map((newQuery: any) => manager.save(newQuery)));
-
-    newDataQueries.forEach((newQuery, index) => {
-      const importingDataQuery = importingDataQueriesForAppVersion[index];
-      appResourceMappings.dataQueryMapping[importingDataQuery.id] = newQuery.id;
-    });
-
-    for (const newQuery of newDataQueries) {
-      const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-        newQuery.options,
-        appResourceMappings.dataQueryMapping
-      );
-      newQuery.options = newOptions;
       await manager.save(newQuery);
+      newDataQueries.push(newQuery);
+      appResourceMappings.dataQueryMapping[importingQuery.id] = newQuery.id;
     }
+
     return appResourceMappings;
   }
 
