@@ -55,28 +55,30 @@ export function LicenseBanner({
       case !currentUser.admin && size === 'large':
         return '';
       case isExpired && type === 'enterprise':
-        return 'Your license has expired';
+        return 'Your license has expired!';
       case isExpired && type === 'trial':
-        return 'Your trial has expired';
+        return 'Your trial has expired!';
+      case !isLicenseValid && size === 'large':
+        return `Try ToolJet's premium features now!`;
       case isLicenseValid && licenseType === 'trial' && daysLeft > 3 && type === 'trial': {
-        return `Your ${daysLeft}-day trial has started.`;
+        return `Your ${daysLeft}-day trial has started!`;
       }
       case isLicenseValid && licenseType === 'trial' && daysLeft < 14 && type === 'trial': {
-        return `Your trial ends in ${daysLeft} days.`;
+        return `Your trial ends in ${daysLeft} days!`;
       }
       case isLicenseValid && licenseType === 'enterprise' && daysLeft <= 14 && type === 'enterprise': {
         return `Your license expires in ${daysLeft} days!`;
       }
       case type == 'tables' && !canAddUnlimited && (100 > percentage >= 90 || (total <= 10 && current === total - 1)):
-        return `You're reaching your limit for number of ${type} - ${current}/${total}.`;
+        return `You're reaching your limit for number of ${type} - ${current}/${total}`;
       case type == 'tables' && !canAddUnlimited && percentage >= 100:
-        return `You've reached your limit for number of ${type} - ${current}/${total}.`;
+        return `You've reached your limit for number of ${type} - ${current}/${total}`;
       case !canAddUnlimited && percentage >= 100:
         return `You have reached your limit for number of ${type}.`;
       case !canAddUnlimited && (percentage >= 90 || (total <= 10 && current === total - 1)):
-        return `You're reaching your limit for number of ${type} - ${current}/${total}.`;
+        return `You're reaching your limit for number of ${type} - ${current}/${total}`;
       case (!isLicenseValid || isExpired) && features.includes(type) && !isAvailable:
-        return `You cannot access ${type}.`;
+        return `You cannot access ${type}`;
       default:
         return '';
     }
@@ -84,12 +86,18 @@ export function LicenseBanner({
 
   const generateInfo = () => {
     switch (true) {
-      case !isLicenseValid || licenseType === 'basic' || (licenseType === 'trial' && (isEndUser || isWorkspaceAdmin)):
-        return `Contact superadmin to keep leveraging ToolJet to the fullest!`;
-      case !isLicenseValid || licenseType === 'basic' || licenseType === 'trial':
-        return `Unlock ToolJet's full potential by upgrading to one of our paid plans.`;
-      case isExpired && licenseType === 'enterprise':
-        return `To continue enjoying the full benefits of ToolJet, renew your subscription.`;
+      case isExpired && licenseType === 'basic' && isWorkspaceAdmin:
+        return `Contact super admin to continue using ToolJet's premium features`;
+      case licenseType === 'trial' && isWorkspaceAdmin:
+        return `Contact super admin to continue using ToolJet's premium features`;
+      case !isLicenseValid && licenseType === 'basic' && isWorkspaceAdmin:
+        return `Contact your super admin to upgrade ToolJet from the free plan to a paid plan`;
+      case isExpired && licenseType === 'basic':
+        return `Renew your subscription to continue accessing ToolJet's premium features`;
+      case licenseType === 'trial':
+        return `Upgrade to a paid plan to continue accessing premium features`;
+      case !isLicenseValid && licenseType === 'basic':
+        return `Upgrade to a paid plan to try out our premium features and build better apps faster`;
       default:
         return '';
     }
@@ -169,6 +177,13 @@ export function LicenseBanner({
     </div>
   );
 
+  const commonMessage =
+    isEndUser || isWorkspaceAdmin
+      ? `Contact your super admin to ${buttonText.toLowerCase()} your ToolJet subscription.`
+      : ` ${
+          buttonText.charAt(0).toUpperCase() + buttonText.slice(1)
+        } your subscription to continue accessing ToolJet's premium features`;
+
   return currentUser.admin && message ? (
     <div style={{ ...style }} className={`license-banner d-flex ${classes}`}>
       {!warningText && currentUser.admin && (
@@ -204,12 +219,7 @@ export function LicenseBanner({
             </span>
           )}
         </div>
-        {size === 'large' && (
-          <span>
-            {generateInfo() ||
-              `To continue enjoying the full benefits of ToolJet, ${buttonText.toLowerCase()} your subscription.`}
-          </span>
-        )}
+        {size === 'large' && <span>{generateInfo() || commonMessage}</span>}
         {type === licenseType && daysLeft <= 14 && !isExpired && (
           <ProgressBar
             parentStyles={{ width: size === 'xsmall' ? '100%' : '50%' }}
