@@ -668,6 +668,10 @@ export class AppsService {
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
+      if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        throw new BadRequestException('You do not have permissions to perform this action');
+      }
+
       if (version.currentEnvironmentId !== currentEnvironmentId) {
         throw new NotAcceptableException();
       }
