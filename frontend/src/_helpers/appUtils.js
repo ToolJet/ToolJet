@@ -936,7 +936,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   let dataQuery = {};
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
-  if (parameters?.shouldSetPreviewData) setPreviewLoading(true);
+  if (parameters?.shouldSetPreviewData) {
+    setPreviewLoading(true);
+    setPreviewData(null);
+  }
 
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
