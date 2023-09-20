@@ -10,8 +10,9 @@ import {
   getSubpath,
   pathnameWithoutSubpath,
   retrieveWhiteLabelText,
+  redirectToDashboard,
 } from '@/_helpers/utils';
-import { authenticationService, tooljetService, organizationService } from '@/_services';
+import { authenticationService, tooljetService, organizationService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
@@ -116,10 +117,10 @@ class AppComponent extends React.Component {
         const appId = isApplicationsPath ? pathnameWithoutSubpath(window.location.pathname).split('/')[2] : null;
         authenticationService
           .validateSession(appId)
-          .then(({ current_organization_id }) => {
+          .then(({ current_organization_id, app_data }) => {
             //check if the page is not switch-workspace, if then redirect to the page
             if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
-              this.authorizeUserAndHandleErrors(current_organization_id);
+              this.authorizeUserAndHandleErrors(current_organization_id, isApplicationsPath, app_data);
             } else {
               this.updateCurrentSession({
                 current_organization_id,
@@ -132,10 +133,25 @@ class AppComponent extends React.Component {
                 authentication_status: false,
               });
             } else if (isApplicationsPath) {
-              this.updateCurrentSession({
-                authentication_failed: true,
-                load_app: true,
-              });
+              if (!window.location.pathname.includes('/versions/')) {
+                /* Redirect to login page if the license is expired */
+                licenseService.getLicenseStatus().then((data) => {
+                  const { isBasicPlan } = data;
+                  if (isBasicPlan) {
+                    return (window.location = `${getSubpath() ?? ''}/login`);
+                  }
+
+                  this.updateCurrentSession({
+                    authentication_failed: true,
+                    load_app: true,
+                  });
+                });
+              } else {
+                this.updateCurrentSession({
+                  authentication_failed: true,
+                  load_app: true,
+                });
+              }
             }
           });
       }
@@ -152,7 +168,7 @@ class AppComponent extends React.Component {
     return (justLoginPage && pathnames[0] === 'login') || (pathnames.length === 2 && pathnames[0] === 'login');
   };
 
-  authorizeUserAndHandleErrors = (workspaceId) => {
+  authorizeUserAndHandleErrors = (workspaceId, isApplicationsPath = false, appData = null) => {
     const subpath = getSubpath();
     this.updateCurrentSession({
       current_organization_id: workspaceId,
@@ -160,6 +176,18 @@ class AppComponent extends React.Component {
     authenticationService
       .authorize()
       .then((data) => {
+        if (isApplicationsPath && appData) {
+          if (appData.is_released) {
+            licenseService.getLicenseStatus().then((data) => {
+              const { isBasicPlan } = data;
+              if (isBasicPlan) {
+                /* License expired for the users. now they can't access released apps */
+                redirectToDashboard();
+              }
+            });
+          }
+        }
+
         organizationService.getOrganizations().then(async (response) => {
           const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
           // this will add the other details like permission and user previlliage details to the subject

@@ -597,7 +597,7 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
-  async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {
+  async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean; isReleased: boolean }> {
     let app: App;
     try {
       app = await this.appsRepository.findOneOrFail(slug);
@@ -607,7 +607,11 @@ export class UsersService {
       });
     }
 
-    return { organizationId: app?.organizationId, isPublic: app?.isPublic };
+    return {
+      organizationId: app?.organizationId,
+      isPublic: app?.isPublic,
+      isReleased: app?.currentVersionId ? true : false,
+    };
   }
 
   async addAvatar(userId: string, imageBuffer: Buffer, filename: string, manager?: EntityManager) {

@@ -1,13 +1,18 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
-import { appService } from './app.service';
 
 export const licenseService = {
   get,
   update,
   getFeatureAccess,
   getDomainsList,
+  getLicenseStatus,
 };
+
+function getLicenseStatus() {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/license/status`, requestOptions).then(handleResponse);
+}
 
 function get() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };

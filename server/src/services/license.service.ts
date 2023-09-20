@@ -160,4 +160,6 @@ export class LicenseService {
       throw new BadRequestException(err?.message || 'License key is invalid');
     }
   }
+
+  isBasicPlan = async () => !(await this.getLicenseFieldValue(LICENSE_FIELD.VALID));
 }

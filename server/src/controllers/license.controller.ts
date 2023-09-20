@@ -44,4 +44,10 @@ export class LicenseController {
     await this.licenseService.updateLicense(licenseUpdateDto);
     return;
   }
+
+  @Get('status')
+  async isBasicPlan() {
+    const isBasicPlan = await this.licenseService.isBasicPlan();
+    return { isBasicPlan };
+  }
 }

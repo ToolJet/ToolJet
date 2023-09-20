@@ -62,15 +62,16 @@ export class AppController {
   @Get('session')
   async getSessionDetails(@User() user, @Query('appId') appId: string) {
     let appOrganizationId: string;
+    let appData: any;
     if (appId) {
-      const app = await this.userService.returnOrgIdOfAnApp(appId);
+      appData = await this.userService.returnOrgIdOfAnApp(appId);
       //if the user has a session and the app is public, we don't need to authorize the app organization id
-      if (!app?.isPublic) appOrganizationId = app.organizationId;
+      if (!appData?.isPublic) appOrganizationId = appData.organizationId;
       if (appOrganizationId && user.organizationIds?.includes(appOrganizationId)) {
         user.organization_id = appOrganizationId;
       }
     }
-    return this.authService.generateSessionPayload(user, appOrganizationId);
+    return this.authService.generateSessionPayload(user, appOrganizationId, appData);
   }
 
   @UseGuards(JwtAuthGuard)
