@@ -326,11 +326,36 @@ describe("Table", () => {
     );
   });
 
+
   it("should verify column options", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
     editAndVerifyWidgetName(data.widgetName, []);
+
+    openEditorSidebar(data.widgetName);
+    cy.wait(500);
+    addAndOpenColumnOption("Fake-Link", `link`);
+    verifyAndEnterColumnOptionInput("key", "name");
+    cy.get('[data-cy="dropdown-link-target"] >>:eq(0)')
+      .click()
+      .find("input")
+      .type(`{selectAll}{backspace}new window{enter}`);
+
+    cy.forceClickOnCanvas();
+    cy.get('[data-cy="linksarah-cell-3"]').contains('a', 'Sarah').should('have.attr', 'target', '_blank');
+
+    openEditorSidebar(data.widgetName);
+    cy.get('[data-cy*="column-Fake-Link"]').click();
+
+
+    cy.get('[data-cy="dropdown-link-target"] >>:eq(0)')
+      .click()
+      .find("input")
+      .type(`{selectAll}{backspace}same window{enter}`);
+    cy.forceClickOnCanvas();
+    cy.get('[data-cy="linksarah-cell-3"]').contains('a', 'Sarah').should('have.attr', 'target', '_self');
+
 
     //String/default
     openEditorSidebar(data.widgetName);
@@ -783,8 +808,7 @@ describe("Table", () => {
       .should(
         "have.css",
         "color",
-        `rgba(${data.color[0]}, ${data.color[1]}, ${data.color[2]}, ${
-          data.color[3] / 100
+        `rgba(${data.color[0]}, ${data.color[1]}, ${data.color[2]}, ${data.color[3] / 100
         })`
       );
   });
