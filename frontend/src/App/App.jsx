@@ -125,11 +125,23 @@ class AppComponent extends React.Component {
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
+  // check if its getting routed from dashboard routes iteself
+  checkPreviousRoute = (route) => {
+    const dashboardRoutes = ['database', 'data-sources', 'integrations', 'workspace-settings', 'settings'];
+    for (const item of dashboardRoutes) {
+      if (route.includes(item)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   componentDidUpdate(prevProps) {
     // Check if the current location is the dashboard (homepage)
     if (
       this.props.location.pathname === `/${getWorkspaceIdFromURL()}` &&
-      prevProps.location.pathname !== `/${getWorkspaceIdFromURL()}`
+      prevProps.location.pathname !== `/${getWorkspaceIdFromURL()}` &&
+      !this.checkPreviousRoute(prevProps.location.pathname)
     ) {
       // Reload the page for clearing already set intervals
       window.location.reload();
