@@ -66,7 +66,7 @@ export class DataSourcesService {
             )
             .leftJoin('data_source.dataQueries', 'data_queries');
           if (!isLicenseValid) {
-            query.andWhere('group_permissions.group IN (:...groups)', { groups: ['admin', 'all_users'] });
+            query.andWhere('group_permissions.group  = :group', { group: 'admin' });
           }
           query.andWhere(
             new Brackets((qb) => {

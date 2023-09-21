@@ -23,6 +23,7 @@ const currentSessionSubject = new BehaviorSubject({
   authentication_failed: null,
   isUserUpdated: false,
   load_app: false, //key is used only in the viewer mode
+  instance_id: null,
 });
 
 export const authenticationService = {

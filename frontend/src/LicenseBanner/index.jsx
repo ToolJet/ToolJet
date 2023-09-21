@@ -25,7 +25,7 @@ export function LicenseBanner({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isWorkspaceAdmin = !currentUser.super_admin && currentUser.admin;
   const isEndUser = !currentUser.admin;
-  const DEMO_LINK = 'https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none';
+  const DEMO_LINK = `https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=onpremise&instance_id=${currentUser?.instance_id}`;
 
   const features = ['Instance Settings', 'Audit Log', 'Open ID Connect'];
 

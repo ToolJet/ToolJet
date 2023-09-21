@@ -722,6 +722,7 @@ class HomePageComponent extends React.Component {
                 )}
                 {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
                   <BlankPage
+                    canCreateApp={this.canCreateApp}
                     createApp={this.createApp}
                     isImportingApp={isImportingApp}
                     fileInput={this.fileInput}

@@ -100,8 +100,10 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
           <div className={cx('col license-content-wrapper')}>
             <div className="col tj-dashboard-header-wrap font-weight-500 license-header-wrap">
               <div>{sidebarNavs.find((nav) => selectedTab === defaultOrgName(nav))}</div>
-              {expiryDate && !isLoading ? (
-                <div className={`status-container ${licenseExpiryStatus.className}`}>{licenseExpiryStatus.text}</div>
+              {!isLoading ? (
+                expiryDate && (
+                  <div className={`status-container ${licenseExpiryStatus.className}`}>{licenseExpiryStatus.text}</div>
+                )
               ) : (
                 <Skeleton width="150px" height="20px" />
               )}

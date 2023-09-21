@@ -583,7 +583,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   noTooltipIfValid={true}
                 >
                   <a
-                    onClick={() => this.setState({ currentTab: 'permissions' })}
+                    onClick={() => !isExpired && isLicenseValid && this.setState({ currentTab: 'permissions' })}
                     className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
                     data-cy="permissions-link"
                   >

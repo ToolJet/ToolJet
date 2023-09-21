@@ -653,7 +653,7 @@ export class UsersService {
         for (const groupPermission of result) {
           const updatedGroupPermission: GroupPermission = groupPermission;
           Object.keys(groupPermission).forEach((key) => {
-            if (typeof groupPermission[key] == 'boolean' && !['all_users', 'admin'].includes(groupPermission.group)) {
+            if (typeof groupPermission[key] == 'boolean' && !['admin'].includes(groupPermission.group)) {
               updatedGroupPermission[key] = false;
             }
           });
@@ -730,7 +730,7 @@ export class UsersService {
         .innerJoinAndSelect('data_source_group_permissions.groupPermission', 'groupPermission')
         .where('data_source_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
       if (!isLicenseValid) {
-        query.andWhere('groupPermission.group IN (:...groups)', { groups: ['admin', 'all_users'] });
+        query.andWhere('groupPermission.group = :group', { group: 'admin' });
       }
       if (dataSourceId) {
         query.andWhere('data_source_group_permissions.dataSourceId = :dataSourceId', { dataSourceId });
