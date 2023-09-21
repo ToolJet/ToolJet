@@ -157,4 +157,4 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 | Actions | Description |
 | -------- | ----------- |
-| selectOption | You can set an option on the dropdown component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.dropdown1.setOption(1)` |
+| selectOption | You can set an option on the dropdown component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.dropdown1.selectOption(1)` |
