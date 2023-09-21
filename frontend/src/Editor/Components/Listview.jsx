@@ -53,22 +53,16 @@ export const Listview = function Listview({
 
   function onRecordClicked(index) {
     setSelectedRowIndex(index);
-    // setExposedVariable('selectedRecordId', index);
-    // setExposedVariable('selectedRecord', childrenData[index]);
-
     const exposedVariables = {
       selectedRecordId: index,
       selectedRecord: childrenData[index],
     };
     setExposedVariables(exposedVariables);
     fireEvent('onRecordClicked');
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
   function onRowClicked(index) {
     setSelectedRowIndex(index);
-    // setExposedVariable('selectedRowId', index);
-    // setExposedVariable('selectedRow', childrenData[index]);
     const exposedVariables = {
       selectedRowId: index,
       selectedRow: childrenData[index],
