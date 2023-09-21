@@ -39,7 +39,7 @@ describe("Editor- Test Button widget", () => {
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
   });
 
-  it.only("should use the numbers returned by the custom command", () => {
+  it("should use the numbers returned by the custom command", () => {
     const data = {};
     data.widgetName = buttonText.defaultWidgetName;
 
