@@ -92,6 +92,10 @@ describe("Editor- Test Button widget", () => {
     verifyAndModifyParameter(buttonText.buttonTextLabel, data.widgetName);
     verifyComponentFromInspector(data.widgetName);
 
+    verifyAndModifyToggleFx(
+      buttonText.loadingState,
+      commonWidgetText.codeMirrorLabelFalse
+    );
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
       "have.class",
       "btn-loading"
