@@ -125,6 +125,17 @@ class AppComponent extends React.Component {
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
+  componentDidUpdate(prevProps) {
+    console.log('this.props.location.pathname ', this.props.location.pathname);
+    // Check if the current location is the dashboard (homepage)
+    if (
+      this.props.location.pathname === `/${getWorkspaceIdFromURL()}` &&
+      prevProps.location.pathname !== `/${getWorkspaceIdFromURL()}`
+    ) {
+      // Reload the page for clearing already set intervals
+      window.location.reload();
+    }
+  }
 
   isThisWorkspaceLoginPage = (justLoginPage = false) => {
     const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
