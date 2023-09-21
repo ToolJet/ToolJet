@@ -126,7 +126,6 @@ class AppComponent extends React.Component {
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
   componentDidUpdate(prevProps) {
-    console.log('this.props.location.pathname ', this.props.location.pathname);
     // Check if the current location is the dashboard (homepage)
     if (
       this.props.location.pathname === `/${getWorkspaceIdFromURL()}` &&

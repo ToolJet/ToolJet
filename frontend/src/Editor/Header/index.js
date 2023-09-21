@@ -70,7 +70,7 @@ export default function EditorHeader({
         <div className="container-xl header-container">
           <div className="d-flex w-100">
             <h1 className="navbar-brand d-none-navbar-horizontal p-0">
-              <Link to={'/'} data-cy="editor-page-logo" onClick={handleLogoClick}>
+              <Link data-cy="editor-page-logo" onClick={handleLogoClick}>
                 <AppLogo isLoadingFromHeader={true} />
               </Link>
             </h1>
