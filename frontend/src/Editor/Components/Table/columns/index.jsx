@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import _ from 'lodash';
 import SelectSearch from 'react-select-search';
 import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
@@ -98,7 +98,7 @@ export default function generateColumnsData({
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
-
+        let clickCount = useRef(0);
         const rowData = tableData?.[cell?.row?.index];
         if (
           cell.row.index === 0 &&
@@ -184,6 +184,7 @@ export default function generateColumnsData({
                       }
                     }}
                     onBlur={(e) => {
+                      clickCount.current = 0;
                       //while comparing data-defaultvalue and newly edited value, we are removing html tags if any from the default value and then comparing
                       if (
                         e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
@@ -199,7 +200,12 @@ export default function generateColumnsData({
                     }}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
                     data-defaultValue={createStringifyHtmlElement(cellValue)}
-                    onFocus={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      clickCount.current++;
+                      if (clickCount.current > 1) {
+                        e.stopPropagation();
+                      }
+                    }}
                   >
                     <div dangerouslySetInnerHTML={{ __html: createStringifyHtmlElement(cellValue) }} />
                   </div>
@@ -285,6 +291,7 @@ export default function generateColumnsData({
                       }
                     }}
                     onBlur={(e) => {
+                      clickCount.current = 0;
                       if (
                         e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
                         e.target.textContent
@@ -298,6 +305,12 @@ export default function generateColumnsData({
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      clickCount.current++;
+                      if (clickCount.current > 1) {
+                        e.stopPropagation();
+                      }
+                    }}
                     data-defaultValue={createStringifyHtmlElement(cellValue)}
                     contentEditable={true}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
