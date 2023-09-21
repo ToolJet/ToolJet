@@ -64,7 +64,7 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
         };
       default:
         return {
-          text: `Valid till ${convertDateFormat(expiryDate)}`,
+          text: `Valid till ${convertDateFormat(expiryDate)} (UTC)`,
           className: 'valid-status',
         };
     }
