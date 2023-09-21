@@ -407,6 +407,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       return {
         joins: [
           {
+            id: new Date().getTime(),
             conditions: {
               operator: 'AND',
               conditionsList: [

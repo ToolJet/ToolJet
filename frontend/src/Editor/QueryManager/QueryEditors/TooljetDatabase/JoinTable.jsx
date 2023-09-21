@@ -42,17 +42,17 @@ const SelectTableMenu = ({ darkMode }) => {
     const cleanedJoin = [];
     const tableSet = new Set();
     (updatedJoin || []).forEach((join, i) => {
-      const { _table, conditions } = join;
+      const { conditions } = join;
       let leftTable, rightTable;
       conditions?.conditionsList?.forEach((condition) => {
-        const { leftField, rightField } = condition;
+        const { leftField = {}, rightField = {} } = condition;
         if (leftField?.table) leftTable = leftField?.table;
         if (rightField?.table) rightTable = rightField?.table;
       });
 
       if ((tableSet.has(leftTable) && !tableSet.has(rightTable)) || i === 0) {
-        tableSet.add(leftTable);
-        tableSet.add(rightTable);
+        if (leftTable) tableSet.add(leftTable);
+        if (rightTable) tableSet.add(rightTable);
         cleanedJoin.push({ ...join });
       }
     });
@@ -92,14 +92,14 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label">From</label>
         <div className="field flex-grow-1 mt-1">
-          {joins.map((join, i) => (
+          {joins.map((join, joinIndex) => (
             <JoinConstraint
               darkMode={darkMode}
-              key={join.id}
-              index={i}
+              key={join?.id}
+              index={joinIndex}
               data={join}
-              onChange={(value) => handleJoinChange(value, i)}
-              onRemove={() => setJoins(calcUpdatedJoins(joins.filter((join, index) => index !== i)))}
+              onChange={(value) => handleJoinChange(value, joinIndex)}
+              onRemove={() => setJoins(calcUpdatedJoins(joins.filter((join, index) => index !== joinIndex)))}
             />
           ))}
           <Row className="mx-0">

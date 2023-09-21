@@ -70,7 +70,7 @@ export default function JoinSort({ darkMode }) {
         </Row>
       ) : (
         joinOrderByOptions.map((options, i) => (
-          <Row className="border rounded mb-1 mx-0" key={i}>
+          <Row className="border rounded mb-2 mx-0" key={i}>
             <Col sm="6" className="p-0 border-end">
               <DropDownSelect
                 options={tableList}
