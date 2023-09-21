@@ -170,9 +170,11 @@ const DropDownSelect = ({
 
 function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
   if (options?.length === selected?.length && selected?.length !== 0) {
+    // Filter Options without 'Select All'
+    const optionsWithoutSelectAll = options.filter((option) => option.value !== 'SELECT ALL');
     return (
       <Badge className={`me-1 dd-select-value-badge`} bg="secondary">
-        All {options?.length} selected
+        All {optionsWithoutSelectAll?.length} selected
         <span
           role="button"
           onClick={(e) => {
