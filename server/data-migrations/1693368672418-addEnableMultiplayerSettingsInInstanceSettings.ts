@@ -8,7 +8,7 @@ export class AddEnableMultiplayerSettingsInInstanceSettings1693368672418 impleme
     const enableMultiplayer = 'true';
 
     await entityManager.insert(InstanceSettings, {
-      label: 'Enable multiplayer editing',
+      label: 'Multiplayer editing',
       labelKey: 'header.organization.menus.manageSSO.generalSettings.enableMultiplayerEditing',
       dataType: 'boolean',
       value: process.env?.ENABLE_MULTIPLAYER_EDITING || enableMultiplayer,

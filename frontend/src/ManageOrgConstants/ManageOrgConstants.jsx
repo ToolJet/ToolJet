@@ -462,7 +462,7 @@ const RenderEnvironmentsTab = ({
             !item.enabled ? (
               <LicenseTooltip
                 placement="bottom"
-                feature={'multi-environments'}
+                feature={'Multi-environments'}
                 isAvailable={item?.enabled}
                 noTooltipIfValid={true}
                 customMessage={'Multi-environments are available only in paid plans'}

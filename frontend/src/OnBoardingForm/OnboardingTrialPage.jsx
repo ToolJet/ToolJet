@@ -9,27 +9,32 @@ function OnboardingTrialPage(props) {
 
   const FEATURES_MAP = [
     {
-      title: 'Unlimited Applications',
+      title: 'Unlimited applications',
       free: true,
       paid: true,
     },
     {
-      title: 'Custom React components',
+      title: 'Unlimited users',
       free: true,
       paid: true,
     },
     {
-      title: 'Google & GitHub Sign-in',
+      title: 'Custom react components',
       free: true,
       paid: true,
     },
     {
-      title: 'Okta, AzureAD & OpenId Connect',
+      title: 'Google & GitHub sign-in',
+      free: true,
+      paid: true,
+    },
+    {
+      title: 'Okta, AzureAD & OpenID Connect',
       free: false,
       paid: true,
     },
     {
-      title: 'Custom branding white labelling',
+      title: 'White labelling',
       free: false,
       paid: true,
     },
@@ -44,17 +49,17 @@ function OnboardingTrialPage(props) {
       paid: true,
     },
     {
-      title: 'Multiplayer Editing',
+      title: 'Multiplayer editing',
       free: false,
       paid: true,
     },
     {
-      title: 'Multiple environments',
+      title: 'Multi-environments',
       free: false,
       paid: true,
     },
     {
-      title: 'Git-sync (coming soon)',
+      title: 'GitSync (coming soon)',
       free: false,
       paid: true,
     },
@@ -88,7 +93,7 @@ function OnboardingTrialPage(props) {
         <div className="tj-text-md mb-4">Build internal tools faster than ever with our advanced features.</div>
         <ContinueButtonSelfHost buttonName="Start your free trial" {...btnProps} setFormData={setFormData} />
         <ButtonSolid onClick={skipHandler} variant="tertiary">
-          Skip
+          <span style={{ marginRight: 'auto' }}>Skip</span>
         </ButtonSolid>
       </div>
       <div className="features">

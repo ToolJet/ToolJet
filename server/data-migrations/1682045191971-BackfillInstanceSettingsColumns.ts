@@ -9,7 +9,7 @@ export class BackfillInstanceSettingsColumns1682045191971 implements MigrationIn
     await instanceSettingsRepository.update(
       { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
       {
-        label: 'Allow Personal Workspace',
+        label: 'Allow personal workspace',
         labelKey: 'header.organization.menus.manageSSO.generalSettings.allowPersonalWorkspace',
         dataType: 'boolean',
         helperText: 'This feature will enable users to create their own workspace',

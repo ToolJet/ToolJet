@@ -77,7 +77,7 @@ function EnvironmentSelectBox(props) {
               const Wrapper = ({ children }) =>
                 !option.enabled ? (
                   <LicenseTooltip
-                    feature={'multi-environments'}
+                    feature={'Multi-environments'}
                     isAvailable={option.enabled}
                     noTooltipIfValid={true}
                     customMessage={'Multi-environments are available only in paid plans'}
