@@ -316,13 +316,7 @@ export const Box = memo(
                 properties={validatedProperties}
                 exposedVariables={exposedVariables}
                 styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
-                setExposedVariable={(variable, value, check = false) => {
-                  if (check == true) {
-                    //temperory check
-                    Object.keys(variable).forEach((item) => {
-                      onComponentOptionChanged(component, item, variable[item], id);
-                    });
-                  }
+                setExposedVariable={(variable, value) => {
                   onComponentOptionChanged(component, variable, value, id);
                 }}
                 setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}

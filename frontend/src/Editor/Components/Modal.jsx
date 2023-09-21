@@ -14,6 +14,7 @@ export const Modal = function Modal({
   styles,
   exposedVariables,
   setExposedVariable,
+  setExposedVariables,
   fireEvent,
   dataCy,
   height,
@@ -46,14 +47,17 @@ export const Modal = function Modal({
   const size = properties.size ?? 'lg';
 
   useEffect(() => {
-    setExposedVariable('open', async function () {
-      setExposedVariable('show', true);
-      setShowModal(true);
-    });
-    setExposedVariable('close', async function () {
-      setShowModal(false);
-      setExposedVariable('show', false);
-    });
+    const exposedVariables = {
+      open: async function () {
+        setExposedVariables('show', true);
+        setShowModal(true);
+      },
+      close: async function () {
+        setShowModal(false);
+        setExposedVariable('show', false);
+      },
+    };
+    setExposedVariable(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setShowModal]);
 

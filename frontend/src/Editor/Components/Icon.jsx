@@ -10,6 +10,7 @@ export const Icon = ({
   width,
   height,
   setExposedVariable,
+  setExposedVariables,
   darkMode,
   dataCy,
   component,
@@ -31,12 +32,15 @@ export const Icon = ({
   }, [visibility]);
 
   useEffect(() => {
-    setExposedVariable('setVisibility', async function (visibility) {
-      setIconVisibility(visibility);
-    });
-    setExposedVariable('click', async function () {
-      fireEvent('onClick');
-    });
+    const exposedVariables = {
+      setVisibility: async function (visibility) {
+        setIconVisibility(visibility);
+      },
+      click: async function () {
+        fireEvent('onClick');
+      },
+    };
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIconVisibility]);
 

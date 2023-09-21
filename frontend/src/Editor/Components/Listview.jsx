@@ -15,6 +15,7 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariable,
+  setExposedVariables,
   darkMode,
   dataCy,
 }) {
@@ -52,15 +53,27 @@ export const Listview = function Listview({
 
   function onRecordClicked(index) {
     setSelectedRowIndex(index);
-    setExposedVariable('selectedRecordId', index);
-    setExposedVariable('selectedRecord', childrenData[index]);
+    // setExposedVariable('selectedRecordId', index);
+    // setExposedVariable('selectedRecord', childrenData[index]);
+
+    const exposedVariables = {
+      selectedRecordId: index,
+      selectedRecord: childrenData[index],
+    };
+    setExposedVariables(exposedVariables);
     fireEvent('onRecordClicked');
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
   function onRowClicked(index) {
     setSelectedRowIndex(index);
-    setExposedVariable('selectedRowId', index);
-    setExposedVariable('selectedRow', childrenData[index]);
+    // setExposedVariable('selectedRowId', index);
+    // setExposedVariable('selectedRow', childrenData[index]);
+    const exposedVariables = {
+      selectedRowId: index,
+      selectedRow: childrenData[index],
+    };
+    setExposedVariables(exposedVariables);
     fireEvent('onRowClicked');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
@@ -73,11 +86,18 @@ export const Listview = function Listview({
 
   useEffect(() => {
     const childrenDataClone = _.cloneDeep(childrenData);
-    setExposedVariable('data', removeFunctionObjects(childrenDataClone));
-    setExposedVariable('children', childrenData);
+
+    const exposedVariables = {
+      data: removeFunctionObjects(childrenDataClone),
+      children: childrenData,
+    };
+    setExposedVariables(exposedVariables);
     if (selectedRowIndex != undefined) {
-      setExposedVariable('selectedRowId', selectedRowIndex);
-      setExposedVariable('selectedRow', childrenData[selectedRowIndex]);
+      const exposedVariables = {
+        selectedRowId: selectedRowIndex,
+        selectedRow: childrenData[selectedRowIndex],
+      };
+      setExposedVariables(exposedVariables);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData]);
