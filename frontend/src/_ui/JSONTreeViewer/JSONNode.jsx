@@ -276,10 +276,10 @@ export const JSONNode = ({ data, ...restProps }) => {
 
         {moreActions.actions?.length > 0 && (
           <OverlayTrigger
-            rootClose={true}
+            rootClose
             rootCloseEvent="mousedown"
             trigger="click"
-            placement={'right'}
+            placement={'left'}
             overlay={moreActionsPopover(moreActions?.actions)}
           >
             <span>
