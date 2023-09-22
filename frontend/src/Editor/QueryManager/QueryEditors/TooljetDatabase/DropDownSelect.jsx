@@ -138,7 +138,7 @@ const DropDownSelect = ({
             'rounded-0',
             'position-relative',
             'font-weight-normal',
-            'px-10'
+            'px-1'
           )}
           data-cy={`show-ds-popover-button`}
         >
@@ -175,7 +175,7 @@ const DropDownSelect = ({
             )}
           </div>
           <div className="dd-select-control-chevron">
-            <CheveronDown />
+            <CheveronDown width="15" height="15" />
           </div>
         </ButtonSolid>
       </span>
