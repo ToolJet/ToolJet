@@ -152,21 +152,30 @@ export class TooljetDbBulkUploadService {
   }
 
   convertToDataType(columnValue: string, supportedDataType: SupportedDataTypes) {
+    if (!columnValue) return null;
+
     switch (supportedDataType) {
       case 'boolean':
         return this.stringToBoolean(columnValue);
       case 'integer':
       case 'double precision':
-        return +columnValue;
+        return this.stringToNumber(columnValue);
       default:
         return columnValue;
     }
   }
 
   stringToBoolean(str: string) {
-    if (str === 'true') return true;
-    if (str === 'false') return false;
+    const parsedString = str.toLowerCase().trim();
+    if (parsedString === 'true' || parsedString === 'false') return parsedString === 'true';
 
     throw `${str} is not a valid boolean string`;
+  }
+
+  stringToNumber(str: string) {
+    const parsedString = parseFloat(str);
+    if (typeof parsedString === 'number') return parsedString;
+
+    throw `${str} is not a valid number`;
   }
 }
