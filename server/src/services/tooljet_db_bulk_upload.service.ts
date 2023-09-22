@@ -142,7 +142,10 @@ export class TooljetDbBulkUploadService {
       const columnsInCsv = Object.keys(row);
       const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
         const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === columnInCsv);
-        result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
+        const convertedValue = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
+
+        if (convertedValue) result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
+
         return result;
       }, {});
 
