@@ -16,7 +16,7 @@ spec:
         "kubernetes.io/os": linux
       containers:
       - name: tooljet-ce
-        image: tooljet/tooljet-ce:latest
+        image: tooljet/tooljet:latest
         imagePullPolicy: Always
         args: ["npm", "run", "start:prod"]
         resources:

@@ -21,7 +21,7 @@ spec:
         - name: docker-secret
       containers:
         - name: container
-          image: tooljet/tooljet-ce:latest
+          image: tooljet/tooljet:latest
           imagePullPolicy: Always
           args: ["npm", "run", "start:prod"]
           resources:

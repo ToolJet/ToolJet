@@ -5,7 +5,7 @@ services:
     tty: true
     stdin_open: true
     container_name: Tooljet-app
-    image: tooljet/tooljet-ce:latest
+    image: tooljet/tooljet:latest
     restart: always
     env_file: .env
     ports:
