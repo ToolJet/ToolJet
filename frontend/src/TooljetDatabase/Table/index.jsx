@@ -109,6 +109,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     switch (type) {
       case 'integer':
         return 'int';
+      case 'bigint':
+        return 'bigint';
       case 'character varying':
         return 'varchar';
       case 'boolean':

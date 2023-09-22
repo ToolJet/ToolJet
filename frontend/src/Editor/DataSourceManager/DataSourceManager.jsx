@@ -117,7 +117,7 @@ class DataSourceManagerComponent extends React.Component {
       return dataSourceMeta;
     }
 
-    return DataSourceTypes.find((source) => source?.kind === dataSource?.kind);
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
   };
 
   selectDataSource = (source) => {
@@ -193,7 +193,7 @@ class DataSourceManagerComponent extends React.Component {
   createDataSource = () => {
     const { appId, options, selectedDataSource, selectedDataSourcePluginId } = this.state;
     const name = selectedDataSource.name;
-    const kind = selectedDataSource?.kind;
+    const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
     const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentEnvironment = this.props.currentEnvironment?.id;
@@ -314,7 +314,7 @@ class DataSourceManagerComponent extends React.Component {
   renderSourceComponent = (kind, isPlugin = false) => {
     const { options, isSaving } = this.state;
 
-    const sourceComponentName = kind?.charAt(0).toUpperCase() + kind?.slice(1);
+    const sourceComponentName = kind.charAt(0).toUpperCase() + kind.slice(1);
     const ComponentToRender = isPlugin ? SourceComponent : SourceComponents[sourceComponentName] || SourceComponent;
     return (
       <ComponentToRender
@@ -539,7 +539,7 @@ class DataSourceManagerComponent extends React.Component {
       const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
         const src = datasource?.iconFile?.data
           ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
-          : datasource?.kind?.toLowerCase();
+          : datasource.kind.toLowerCase();
 
         return {
           ...datasource,
@@ -572,21 +572,21 @@ class DataSourceManagerComponent extends React.Component {
       const databases = source.databases.map((datasource) => {
         return {
           ...datasource,
-          src: datasource?.kind?.toLowerCase(),
+          src: datasource.kind.toLowerCase(),
           title: datasource.name,
         };
       });
       const apis = source.apis.map((datasource) => {
         return {
           ...datasource,
-          src: datasource?.kind?.toLowerCase(),
+          src: datasource.kind.toLowerCase(),
           title: datasource.name,
         };
       });
       const cloudStorages = source.cloudStorages.map((datasource) => {
         return {
           ...datasource,
-          src: datasource?.kind?.toLowerCase(),
+          src: datasource.kind.toLowerCase(),
           title: datasource.name,
         };
       });
@@ -648,7 +648,7 @@ class DataSourceManagerComponent extends React.Component {
     const datasources = source.map((datasource) => {
       const src = datasource?.iconFile?.data
         ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
-        : datasource?.kind?.toLowerCase();
+        : datasource.kind.toLowerCase();
 
       return {
         ...datasource,
@@ -791,7 +791,7 @@ class DataSourceManagerComponent extends React.Component {
               {this.renderEnvironmentsTab(selectedDataSource)}
             </Modal.Header>
             <Modal.Body>
-              {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource?.kind, isPlugin)}</div>}
+              {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>}
               {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
             </Modal.Body>
 
@@ -856,7 +856,7 @@ class DataSourceManagerComponent extends React.Component {
                   <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                   <a
                     className="color-primary tj-docs-link tj-text-sm"
-                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource?.kind}`}
+                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
                     target="_blank"
                     rel="noreferrer"
                     data-cy="link-read-documentation"
@@ -866,7 +866,7 @@ class DataSourceManagerComponent extends React.Component {
                 </div>
                 <div className="col-auto" data-cy="button-test-connection">
                   <TestConnection
-                    kind={selectedDataSource?.kind}
+                    kind={selectedDataSource.kind}
                     pluginId={selectedDataSource?.pluginId ?? this.state.selectedDataSourcePluginId}
                     options={options}
                     onConnectionTestFailed={this.onConnectionTestFailed}
@@ -878,7 +878,7 @@ class DataSourceManagerComponent extends React.Component {
                   <ButtonSolid
                     className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
                     isLoading={isSaving}
-                    disabled={isSaving || this.props.isVersionReleased}
+                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
                     variant="primary"
                     onClick={this.createDataSource}
                     leftIcon="floppydisk"
@@ -896,7 +896,7 @@ class DataSourceManagerComponent extends React.Component {
                   <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                   <a
                     className="color-primary tj-docs-link tj-text-sm"
-                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource?.kind}`}
+                    href={`https://docs.tooljet.io/docs/data-sources/${selectedDataSource.kind}`}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -908,7 +908,7 @@ class DataSourceManagerComponent extends React.Component {
                     leftIcon="floppydisk"
                     fill={'#FDFDFE'}
                     className="m-2"
-                    disabled={isSaving || this.props.isVersionReleased}
+                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
                     variant="primary"
                     onClick={this.createDataSource}
                   >
