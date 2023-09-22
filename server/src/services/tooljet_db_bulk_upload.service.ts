@@ -175,7 +175,7 @@ export class TooljetDbBulkUploadService {
 
   stringToNumber(str: string) {
     const parsedString = parseFloat(str);
-    if (typeof parsedString === 'number') return parsedString;
+    if (!isNaN(parsedString)) return parsedString;
 
     throw `${str} is not a valid number`;
   }
