@@ -138,13 +138,11 @@ const DropDownSelect = ({
             'rounded-0',
             'position-relative',
             'font-weight-normal',
-            'px-1',
-            'pe-3',
-            'ps-2'
+            'px-10'
           )}
           data-cy={`show-ds-popover-button`}
         >
-          <div className={`pe-1 text-truncate`}>
+          <div className={`text-truncate`}>
             {renderSelected && renderSelected(selected)}
 
             {!renderSelected && selected
