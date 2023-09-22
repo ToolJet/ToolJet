@@ -135,7 +135,6 @@ class AppComponent extends React.Component {
 
   componentDidUpdate(prevProps) {
     // Check if the current location is the dashboard (homepage)
-    console.log('pathname', this.props.location.pathname);
     if (
       this.props.location.pathname === `/${getWorkspaceIdFromURL()}` &&
       prevProps.location.pathname !== `/${getWorkspaceIdFromURL()}` &&
