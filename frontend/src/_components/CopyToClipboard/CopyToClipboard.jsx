@@ -2,7 +2,6 @@ import React from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components/ToolTip';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const CopyToClipboardComponent = ({ data, callback }) => {
   const [copied, setCopied] = React.useState(false);

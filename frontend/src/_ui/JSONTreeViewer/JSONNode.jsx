@@ -3,8 +3,6 @@ import _ from 'lodash';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import CopyToClipboardComponent from '@/_components/CopyToClipboard';
-import { Popover } from 'react-bootstrap';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import JSONNodeObject from './JSONNodeObject';
 import JSONNodeArray from './JSONNodeArray';
 import JSONNodeValue from './JSONNodeValue';
@@ -214,35 +212,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     expandable &&
     (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array' || typeofCurrentNode === 'Map');
 
-  function moreActionsPopover(actions) {
-    //Todo: For adding more actions to the menu popover!
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-
-    return (
-      <Popover
-        id="popover-basic popover-positioned-right json-tree-popover"
-        style={{ maxWidth: '350px', padding: '0px' }}
-        className={`shadow ${darkMode && 'popover-dark-themed theme-dark'}`}
-      >
-        <div className="list-group">
-          {actions?.map((action, index) => (
-            <span
-              key={index}
-              type="button"
-              className="list-group-item list-group-item-action popover-more-actions"
-              aria-current="true"
-              onClick={() => {
-                action.dispatchAction(data, currentNode);
-              }}
-            >
-              {action.name}
-            </span>
-          ))}
-        </div>
-      </Popover>
-    );
-  }
-
   const renderHiddenOptionsForNode = () => {
     const moreActions = actionsList.filter((action) => action.for === 'all')[0];
 
@@ -272,14 +241,6 @@ export const JSONNode = ({ data, ...restProps }) => {
         {enableCopyToClipboard && (
           <CopyToClipboardComponent data={currentNodePath} path={true} callback={getAbsoluteNodePath} />
         )}
-        {/* {moreActions.actions?.length > 0 && (
-          <OverlayTrigger
-            rootClose
-            rootCloseEvent="mousedown"
-            trigger="click"
-            placement={'left'}
-            overlay={moreActionsPopover(moreActions?.actions)}
-          > */}
         <ToolTip message={'Copy value'}>
           <span
             onClick={() => {
@@ -290,8 +251,6 @@ export const JSONNode = ({ data, ...restProps }) => {
           </span>
         </ToolTip>
         {renderOptions()}
-        {/* </OverlayTrigger>
-        )} */}
       </div>
     );
   };
