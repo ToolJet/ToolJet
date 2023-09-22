@@ -236,7 +236,7 @@ const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, emptyErro
   const { admin } = authenticationService.currentSessionValue;
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
-    menuListStyles.maxHeight = 400 - 48;
+    menuListStyles.maxHeight = 225 - 48;
   }
   menuListStyles.padding = '4px';
 
