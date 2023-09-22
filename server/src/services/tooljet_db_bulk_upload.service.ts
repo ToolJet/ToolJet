@@ -134,7 +134,7 @@ export class TooljetDbBulkUploadService {
   }
 
   validateAndParseColumnDataType(internalTableColumnSchema: TableColumnSchema[], row: unknown, rowsProcessed: number) {
-    if (rowsProcessed > MAX_ROW_COUNT)
+    if (rowsProcessed >= MAX_ROW_COUNT)
       throw new BadRequestException(`Row count cannot be greater than ${MAX_ROW_COUNT}`);
 
     try {
