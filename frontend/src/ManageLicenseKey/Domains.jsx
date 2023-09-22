@@ -45,7 +45,7 @@ const DomainsListEmptyContainer = () => {
         <SolidIcon name="warning" width="30" />
       </div>
       <div className="tj-text-md mb-2 font-weight-500">No Domain Linked</div>
-      <div className="tj-text-sm">Please contanct ToolJet team to link your domain</div>
+      <div className="tj-text-sm">Please contact ToolJet team to link your domain</div>
     </div>
   );
 };

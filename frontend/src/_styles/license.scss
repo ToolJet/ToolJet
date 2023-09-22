@@ -6,6 +6,11 @@
         margin: auto;
         border-radius: 6px;
 
+        .body-wrapper {
+            min-height: 620px;
+            border: 1px solid var(--slate5);
+        }
+
         .license-page-sidebar {
             max-width: 220px;
             background-color: var(--base);

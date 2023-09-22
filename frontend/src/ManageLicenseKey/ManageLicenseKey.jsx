@@ -75,7 +75,7 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
   return (
     <div className="wrapper enterprise-page">
       <div className="wrapper license-page">
-        <div style={{ minHeight: '620px' }} className="row gx-0">
+        <div className="row gx-0 body-wrapper">
           <div className="license-page-sidebar col ">
             <div className="license-nav-list-wrap">
               {sidebarNavs.map((item, index) => {
