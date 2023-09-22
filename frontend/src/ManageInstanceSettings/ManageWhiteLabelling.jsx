@@ -64,9 +64,9 @@ class ManageWhiteLabellingComponent extends React.Component {
     whiteLabellingService
       .update(transformedSettings)
       .then(() => {
-        toast.success('White labelling has been updated', {
-          position: 'top-center',
-        });
+        window.location = `${window.public_config?.TOOLJET_HOST}${
+          window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+        }instance-settings?save_whiteLabelling=success`;
         this.setState({ isSaving: false });
         this.fetchSettings();
       })
@@ -127,18 +127,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                     {Object.keys(settings).length !== 0 ? (
                       <form noValidate>
                         <div key="App Logo" className="form-group mb-3">
-                          <label
-                            className="form-label"
-                            data-cy="name-label"
-                            style={{
-                              color: 'var(--light-slate-12, var(--slate-12, #11181C))',
-                              fontFamily: 'IBM Plex Sans',
-                              fontSize: '12px',
-                              fontStyle: 'normal',
-                              fontWeight: 500,
-                              lineHeight: '20px',
-                            }}
-                          >
+                          <label className="form-label" data-cy="name-label">
                             App Logo
                           </label>
                           <div className="tj-app-input">
@@ -174,18 +163,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                         </div>
 
                         <div key="Page Title" className="form-group mb-3">
-                          <label
-                            className="form-label"
-                            data-cy="name-label"
-                            style={{
-                              color: 'var(--light-slate-12, var(--slate-12, #11181C))',
-                              fontFamily: 'IBM Plex Sans',
-                              fontSize: '12px',
-                              fontStyle: 'normal',
-                              fontWeight: 500,
-                              lineHeight: '20px',
-                            }}
-                          >
+                          <label className="form-label" data-cy="name-label">
                             Page Title
                           </label>
                           <div className="tj-app-input">
@@ -220,18 +198,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                         </div>
 
                         <div key="Favicon" className="form-group mb-3">
-                          <label
-                            className="form-label"
-                            data-cy="label-option-field"
-                            style={{
-                              color: 'var(--light-slate-12, var(--slate-12, #11181C))',
-                              fontFamily: 'IBM Plex Sans',
-                              fontSize: '12px',
-                              fontStyle: 'normal',
-                              fontWeight: 500,
-                              lineHeight: '20px',
-                            }}
-                          >
+                          <label className="form-label" data-cy="label-option-field">
                             Favicon
                           </label>
                           <div className="tj-app-input">

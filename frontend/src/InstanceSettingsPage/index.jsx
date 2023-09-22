@@ -21,9 +21,17 @@ export function InstanceSettings(props) {
   const [licenseLoaded, setLicenseLoaded] = useState(false);
   const error = searchParams.get('error');
   const licenseCheck = searchParams.get('save_license');
-  const [selectedTab, setSelectedTab] = useState(
-    error === 'license' || licenseCheck === 'success' ? 'License' : 'Users'
-  );
+  const whiteLabelsCheck = searchParams.get('save_whiteLabelling');
+  const [selectedTab, setSelectedTab] = useState(() => {
+    switch (true) {
+      case whiteLabelsCheck === 'success':
+        return 'White labelling';
+      case error === 'license' || licenseCheck === 'success':
+        return 'License';
+      default:
+        return 'Users';
+    }
+  });
   const { load_app } = authenticationService.currentSessionValue;
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
@@ -61,11 +69,23 @@ export function InstanceSettings(props) {
   useEffect(() => {
     fetchFeatureAccess(true);
     if (load_app) {
-      error === 'license' && toast.error('Your license key has expired. Please update your license key');
-      licenseCheck === 'success' &&
-        toast.success('License key has been updated', {
-          position: 'top-center',
-        });
+      switch (true) {
+        case error === 'license':
+          toast.error('Your license key has expired. Please update your license key');
+          break;
+        case licenseCheck === 'success':
+          toast.success('License key has been updated', {
+            position: 'top-center',
+          });
+          break;
+        case whiteLabelsCheck === 'success':
+          toast.success('White labelling has been updated', {
+            position: 'top-center',
+          });
+          break;
+        default:
+          break;
+      }
       updateSidebarNAV(selectedTab);
     }
     searchParams.delete('error');

@@ -11539,6 +11539,13 @@ tbody {
       border-top-left-radius: 6px;
       border-top-right-radius: 6px;
     }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 500px;
+      margin-bottom: 4px !important;
+      color: var(--slate12);
+    }
   }
 }
 
