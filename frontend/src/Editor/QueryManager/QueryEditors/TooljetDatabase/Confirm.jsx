@@ -31,7 +31,7 @@ function useConfirm() {
           onHide={() => handleConfirm(false)}
           centered
           size="sm"
-          contentClassName={darkMode ? 'theme-dark' : ''}
+          contentClassName={darkMode ? 'theme-dark dark-theme' : ''}
         >
           <Modal.Header>
             <Modal.Title>{heading || 'Confirm action ?'}</Modal.Title>
@@ -48,14 +48,14 @@ function useConfirm() {
                 fillRule="evenodd"
                 clipRule="evenodd"
                 d="M11.5996 11.6201C11.8599 11.3597 12.282 11.3597 12.5424 11.6201L16.071 15.1487L19.5996 11.6201C19.8599 11.3597 20.282 11.3597 20.5424 11.6201C20.8027 11.8804 20.8027 12.3025 20.5424 12.5629L17.0138 16.0915L20.5424 19.6201C20.8027 19.8804 20.8027 20.3025 20.5424 20.5629C20.282 20.8232 19.8599 20.8232 19.5996 20.5629L16.071 17.0343L12.5424 20.5629C12.282 20.8232 11.8599 20.8232 11.5996 20.5629C11.3392 20.3025 11.3392 19.8804 11.5996 19.6201L15.1282 16.0915L11.5996 12.5629C11.3392 12.3025 11.3392 11.8804 11.5996 11.6201Z"
-                fill="#11181C"
+                fill="var(--slate12)"
               />
             </svg>
           </Modal.Header>
           <Modal.Body data-cy={'tjdb-delete-confirmation-modal-message'}>{message}</Modal.Body>
           <Modal.Footer
             style={{
-              borderTop: '1px solid #e6e8e9',
+              borderTop: '1px solid var(--slate5)',
               padding: '0.875rem 1.5rem',
             }}
           >

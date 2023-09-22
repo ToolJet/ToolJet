@@ -42,17 +42,17 @@ const SelectTableMenu = ({ darkMode }) => {
     const cleanedJoin = [];
     const tableSet = new Set();
     (updatedJoin || []).forEach((join, i) => {
-      const { _table, conditions } = join;
+      const { conditions } = join;
       let leftTable, rightTable;
       conditions?.conditionsList?.forEach((condition) => {
-        const { leftField, rightField } = condition;
+        const { leftField = {}, rightField = {} } = condition;
         if (leftField?.table) leftTable = leftField?.table;
         if (rightField?.table) rightTable = rightField?.table;
       });
 
       if ((tableSet.has(leftTable) && !tableSet.has(rightTable)) || i === 0) {
-        tableSet.add(leftTable);
-        tableSet.add(rightTable);
+        if (leftTable) tableSet.add(leftTable);
+        if (rightTable) tableSet.add(rightTable);
         cleanedJoin.push({ ...join });
       }
     });
@@ -92,14 +92,14 @@ const SelectTableMenu = ({ darkMode }) => {
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label">From</label>
         <div className="field flex-grow-1 mt-1">
-          {joins.map((join, i) => (
+          {joins.map((join, joinIndex) => (
             <JoinConstraint
               darkMode={darkMode}
-              key={join.id}
-              index={i}
+              key={join?.id}
+              index={joinIndex}
               data={join}
-              onChange={(value) => handleJoinChange(value, i)}
-              onRemove={() => setJoins(calcUpdatedJoins(joins.filter((join, index) => index !== i)))}
+              onChange={(value) => handleJoinChange(value, joinIndex)}
+              onRemove={() => setJoins(calcUpdatedJoins(joins.filter((join, index) => index !== joinIndex)))}
             />
           ))}
           <Row className="mx-0">
@@ -111,7 +111,15 @@ const SelectTableMenu = ({ darkMode }) => {
                   ...joins,
                   {
                     id: new Date().getTime(),
-                    conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] },
+                    conditions: {
+                      operator: 'AND',
+                      conditionsList: [
+                        {
+                          operator: '=',
+                          leftField: { table: selectedTableId },
+                        },
+                      ],
+                    },
                     joinType: 'INNER',
                   },
                 ])
@@ -204,7 +212,7 @@ const RenderFilterSection = ({ darkMode }) => {
   function addNewFilterConditionEntry() {
     let editedFilterCondition = {};
 
-    const emptyConditionTemplate = { operator: '', leftField: {}, rightField: {} };
+    const emptyConditionTemplate = { operator: '=', leftField: {}, rightField: {} };
 
     // First time populate operator & conditionList details
     if (!Object.keys(conditions).length) {
@@ -354,6 +362,7 @@ const RenderFilterSection = ({ darkMode }) => {
 
   const filterComponents = conditionsList.map((conditionDetail, index) => {
     const { operator = '', leftField = {}, rightField = {} } = conditionDetail;
+    const LeftSideTableDetails = leftField?.table ? findTableDetails(leftField?.table) : '';
     return (
       <Row className="border rounded mb-2 mx-0" key={index}>
         <Col sm="2" className="p-0 border-end">
@@ -378,7 +387,9 @@ const RenderFilterSection = ({ darkMode }) => {
               })
             }
             value={{
-              label: leftField?.columnName,
+              label: LeftSideTableDetails?.table_name
+                ? LeftSideTableDetails?.table_name + '.' + leftField?.columnName
+                : leftField?.columnName,
               value: leftField?.columnName + '-' + leftField?.table,
               table: leftField?.table,
             }}
@@ -438,7 +449,7 @@ const RenderFilterSection = ({ darkMode }) => {
   });
 
   return (
-    <Container className="p-0">
+    <Container fluid className="p-0">
       {conditionsList.length === 0 && (
         <Row className="mb-2 mx-0">
           <div

@@ -59,7 +59,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
     });
 
   return (
-    <Container className="p-0">
+    <Container fluid className="p-0">
       <Row className={`mx-0 ${index === 0 && 'pb-2'}`}>
         <Col sm="2"></Col>
         <Col sm="4" className="text-left">
@@ -132,12 +132,19 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         </Col>
         <Col sm="1" className="p-0 border-end">
           <DropDownSelect
+            shouldCenterAlignText
             options={staticJoinOperationsList}
             darkMode={darkMode}
             onChange={(value) => onChange({ ...data, joinType: value?.value })}
             value={staticJoinOperationsList.find((val) => val.value === joinType)}
             renderSelected={(selected) =>
-              selected ? <Icon name={selected?.icon} height={20} width={20} viewBox="" /> : ''
+              selected ? (
+                <div className="w-100">
+                  <Icon name={selected?.icon} height={20} width={20} viewBox="" />
+                </div>
+              ) : (
+                ''
+              )
             }
           />
         </Col>
@@ -146,14 +153,12 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             options={tableList}
             darkMode={darkMode}
             onChange={async (value) => {
-              let result = false;
+              let result = true;
               if (rightFieldTable?.length) {
                 result = await confirm(
                   'Changing the table will also delete its associated conditions. Are you sure you want to continue?',
                   'Change table?'
                 );
-              } else {
-                result = true;
               }
 
               if (result) {
@@ -225,7 +230,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           </ButtonSolid>
         </Col>
       </Row>
-      <ConfirmDialog confirmButtonText="Delete" darkMode={darkMode} />
+      <ConfirmDialog confirmButtonText="Continue" darkMode={darkMode} />
     </Container>
   );
 };

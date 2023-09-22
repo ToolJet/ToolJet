@@ -9,23 +9,41 @@ import { isEmpty } from 'lodash';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export default function JoinSort({ darkMode }) {
-  const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, findTableDetailsByName } =
+  const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, joinOptions, findTableDetails } =
     useContext(TooljetDatabaseContext);
 
-  let tableList = [];
-  Object.entries(tableInfo).forEach(([key, value]) => {
-    const tableDetail = findTableDetailsByName(key);
-    if (tableDetail && tableDetail?.table_name) {
-      const tableDetails = {
-        label: tableDetail.table_name,
-        value: tableDetail.table_id,
-        options: value.map((columns) => ({
-          label: columns.Header,
-          value: columns.Header + '_' + tableDetail.table_id,
-          table: tableDetail.table_id,
-        })),
+  const tableSet = new Set();
+  (joinOptions || []).forEach((join) => {
+    const { table, conditions } = join;
+    tableSet.add(table);
+    conditions?.conditionsList?.forEach((condition) => {
+      const { leftField, rightField } = condition;
+      if (leftField?.table) {
+        tableSet.add(leftField?.table);
+      }
+      if (rightField?.table) {
+        tableSet.add(rightField?.table);
+      }
+    });
+  });
+
+  const tables = [...tableSet];
+  const tableList = [];
+
+  tables.forEach((tableId) => {
+    const tableDetails = findTableDetails(tableId);
+    if (tableDetails?.table_name && tableInfo[tableDetails.table_name]) {
+      const tableDetailsForDropDown = {
+        label: tableDetails.table_name,
+        value: tableId,
+        options:
+          tableInfo[tableDetails.table_name]?.map((columns) => ({
+            label: columns.Header,
+            value: columns.Header + '_' + tableId,
+            table: tableId,
+          })) || [],
       };
-      tableList.push(tableDetails);
+      tableList.push(tableDetailsForDropDown);
     }
   });
 
@@ -35,7 +53,7 @@ export default function JoinSort({ darkMode }) {
   ];
 
   return (
-    <Container className="p-0">
+    <Container fluid className="p-0">
       {isEmpty(joinOrderByOptions) ? (
         <Row className="mb-2 mx-0">
           <div
@@ -51,46 +69,29 @@ export default function JoinSort({ darkMode }) {
           </div>
         </Row>
       ) : (
-        joinOrderByOptions.map((options, i) => (
-          <Row className="border rounded mb-1 mx-0" key={i}>
-            <Col sm="6" className="p-0 border-end">
-              <DropDownSelect
-                options={tableList}
-                darkMode={darkMode}
-                value={{
-                  value: options.columnName + '_' + options.table,
-                  label: options.columnName,
-                  table: options.table,
-                }}
-                onChange={(option) => {
-                  setJoinOrderByOptions(
-                    joinOrderByOptions.map((sortBy, index) => {
-                      if (i === index) {
-                        return {
-                          ...sortBy,
-                          columnName: option?.label,
-                          table: option.table,
-                        };
-                      }
-                      return sortBy;
-                    })
-                  );
-                }}
-              />
-            </Col>
-            <Col sm="5" className="p-0 border-end d-flex">
-              <div className="flex-grow-1">
+        joinOrderByOptions.map((options, i) => {
+          const tableDetails = options?.table ? findTableDetails(options?.table) : '';
+          return (
+            <Row className="border rounded mb-2 mx-0" key={i}>
+              <Col sm="6" className="p-0 border-end">
                 <DropDownSelect
-                  options={sortbyConstants}
+                  options={tableList}
                   darkMode={darkMode}
-                  value={sortbyConstants.find((opt) => opt.value === options.direction)}
+                  value={{
+                    value: options.columnName + '_' + options.table,
+                    label: tableDetails?.table_name
+                      ? tableDetails?.table_name + '.' + options.columnName
+                      : options.columnName,
+                    table: options.table,
+                  }}
                   onChange={(option) => {
                     setJoinOrderByOptions(
                       joinOrderByOptions.map((sortBy, index) => {
                         if (i === index) {
                           return {
                             ...sortBy,
-                            direction: option?.value,
+                            columnName: option?.label,
+                            table: option.table,
                           };
                         }
                         return sortBy;
@@ -98,20 +99,40 @@ export default function JoinSort({ darkMode }) {
                     );
                   }}
                 />
-              </div>
-            </Col>
-            <Col sm="1" className="p-0">
-              <ButtonSolid
-                size="sm"
-                variant="ghostBlack"
-                className="px-1 w-100 rounded-0"
-                onClick={() => setJoinOrderByOptions(joinOrderByOptions.filter((opt, idx) => idx !== i))}
-              >
-                <Trash fill="var(--slate9)" style={{ height: '16px' }} />
-              </ButtonSolid>
-            </Col>
-          </Row>
-        ))
+              </Col>
+              <Col sm="6" className="p-0 d-flex">
+                <div className="flex-grow-1 border-end">
+                  <DropDownSelect
+                    options={sortbyConstants}
+                    darkMode={darkMode}
+                    value={sortbyConstants.find((opt) => opt.value === options.direction)}
+                    onChange={(option) => {
+                      setJoinOrderByOptions(
+                        joinOrderByOptions.map((sortBy, index) => {
+                          if (i === index) {
+                            return {
+                              ...sortBy,
+                              direction: option?.value,
+                            };
+                          }
+                          return sortBy;
+                        })
+                      );
+                    }}
+                  />
+                </div>
+                <ButtonSolid
+                  size="sm"
+                  variant="ghostBlack"
+                  className="px-1 rounded-0"
+                  onClick={() => setJoinOrderByOptions(joinOrderByOptions.filter((opt, idx) => idx !== i))}
+                >
+                  <Trash fill="var(--slate9)" style={{ height: '16px' }} />
+                </ButtonSolid>
+              </Col>
+            </Row>
+          );
+        })
       )}
       {/* Dynamically render below Row */}
       <Row className="mx-0">

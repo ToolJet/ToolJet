@@ -7,18 +7,21 @@ import { CreateRow } from './CreateRow';
 import { UpdateRows } from './UpdateRows';
 import { DeleteRows } from './DeleteRows';
 import { toast } from 'react-hot-toast';
-import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { JoinTable } from './JoinTable';
 import { cloneDeep, difference } from 'lodash';
+import DropDownSelect from './DropDownSelect';
+import { getPrivateRoute } from '@/_helpers/routes';
+import { useNavigate } from 'react-router-dom';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
   const currentState = useCurrentState();
+  const navigate = useNavigate();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
   const mounted = useMounted();
   const [operation, setOperation] = useState(options['operation'] || '');
@@ -106,7 +109,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       return {
         ...prevJoinOptions,
         joins: values,
-        conditions: { conditionsList: newConditionsList },
+        conditions: {
+          ...(conditions?.operator && { operator: conditions.operator }),
+          conditionsList: newConditionsList,
+        },
         order_by: newOrderBy,
         fields: updatedFields,
       };
@@ -388,7 +394,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const generateListForDropdown = (tableList) => {
     return tableList.map((tableMap) =>
       Object.fromEntries([
-        ['name', tableMap.table_name],
+        ['label', tableMap.table_name],
         ['value', tableMap.table_id],
       ])
     );
@@ -402,7 +408,21 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
     setJoinTableOptions(() => {
       return {
-        joins: [{ conditions: { conditionsList: [{ leftField: { table: tableId } }] }, joinType: 'INNER' }],
+        joins: [
+          {
+            id: new Date().getTime(),
+            conditions: {
+              operator: 'AND',
+              conditionsList: [
+                {
+                  operator: '=',
+                  leftField: { table: tableId },
+                },
+              ],
+            },
+            joinType: 'INNER',
+          },
+        ],
         from: {
           name: tableId,
           type: 'Table',
@@ -427,6 +447,14 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     }
   };
 
+  const tooljetDbOperationList = [
+    { label: 'List rows', value: 'list_rows' },
+    { label: 'Create row', value: 'create_row' },
+    { label: 'Update rows', value: 'update_rows' },
+    { label: 'Delete rows', value: 'delete_rows' },
+    { label: 'Join tables', value: 'join_tables' },
+  ];
+
   const ComponentToRender = getComponent(operation);
 
   return (
@@ -435,15 +463,16 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       <div className={cx({ row: !isHorizontalLayout })}>
         <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
           <label className={cx('form-label')}>Table name</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout })}>
-            <Select
+          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded')}>
+            <DropDownSelect
               options={generateListForDropdown(tables)}
-              value={selectedTableId}
-              onChange={(value) => handleTableNameSelect(value)}
-              width="100%"
-              // useMenuPortal={false}
-              useCustomStyles={true}
-              styles={computeSelectStyles(darkMode, '100%')}
+              darkMode={darkMode}
+              onChange={(value) => {
+                value?.value && handleTableNameSelect(value?.value);
+              }}
+              onAdd={() => navigate(getPrivateRoute('database'))}
+              addBtnLabel={'Add new table'}
+              value={generateListForDropdown(tables).find((val) => val?.value === selectedTableId)}
             />
           </div>
         </div>
@@ -456,21 +485,14 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
           className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
         >
           <label className={cx('form-label')}>Operations</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout })}>
-            <Select
-              options={[
-                { name: 'List rows', value: 'list_rows' },
-                { name: 'Create row', value: 'create_row' },
-                { name: 'Update rows', value: 'update_rows' },
-                { name: 'Delete rows', value: 'delete_rows' },
-                { name: 'Join tables', value: 'join_tables' },
-              ]}
-              value={operation}
-              onChange={(value) => setOperation(value)}
-              width="100%"
-              // useMenuPortal={false}
-              useCustomStyles={true}
-              styles={computeSelectStyles(darkMode, '100%')}
+          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded')}>
+            <DropDownSelect
+              options={tooljetDbOperationList}
+              darkMode={darkMode}
+              onChange={(value) => {
+                value?.value && setOperation(value?.value);
+              }}
+              value={tooljetDbOperationList.find((val) => val?.value === operation)}
             />
           </div>
         </div>

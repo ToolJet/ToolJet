@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import { EntityManager, In } from 'typeorm';
+import { BadRequestException, HttpException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { EntityManager, In, QueryFailedError } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty } from 'lodash';
@@ -239,6 +239,8 @@ export class TooljetDbService {
 
   private async joinTable(organizationId: string, params) {
     const { joinQueryJson } = params;
+    if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
+
     // Gathering tables used, from Join coditions
     const tableSet = new Set();
     const joinOptions = joinQueryJson?.['joins'];
@@ -256,27 +258,18 @@ export class TooljetDbService {
       });
     });
 
-    const tables = [...tableSet].map((tableId) => ({
+    const tables = [...tableSet].map((tableId: string) => ({
       name: tableId,
       type: 'Table',
     }));
 
-    const finalQuery = await this.buildJoinQuery(organizationId, { ...joinQueryJson, tables: tables });
-    return await this.tooljetDbManager.query(finalQuery);
-  }
+    if (!tables?.length) throw new BadRequestException('Tables are not chosen');
 
-  private async buildJoinQuery(organizationId: string, queryJson) {
-    // Pending: For Subquery, Alias is its table name. Need to handle it on Internal Table details mapping
-    // Pending: SELECT Statement - Nested params --> SUM( price * quantity )
-    if (!Object.keys(queryJson).length) throw new BadRequestException('Input is empty');
-    if (!queryJson?.tables?.length) throw new BadRequestException('Tables are not chosen');
-
-    const tableIdList = queryJson.tables
+    const tableIdList: Array<string> = tables
       .filter((table) => table.type === 'Table')
       .map((filteredTable) => filteredTable.name);
 
     const internalTables = await this.findOrFailInternalTableFromTableId(tableIdList, organizationId);
-
     const internalTableIdToNameMap = tableIdList.reduce((acc, tableId) => {
       return {
         ...acc,
@@ -284,7 +277,27 @@ export class TooljetDbService {
       };
     }, {});
 
-    // Constructing the Query - Based on Input JSON
+    const finalQuery = await this.buildJoinQuery(organizationId, joinQueryJson, internalTableIdToNameMap);
+
+    try {
+      return await this.tooljetDbManager.query(finalQuery);
+    } catch (error) {
+      // custom error handling - for Query error
+      if (error instanceof QueryFailedError) {
+        let customErrorMessage: string = (error as QueryFailedError).message;
+        Object.entries(internalTableIdToNameMap).forEach(([key, value]) => {
+          customErrorMessage = customErrorMessage.replace(key, value as string);
+        });
+        throw new HttpException(customErrorMessage, 422);
+      }
+      throw error;
+    }
+  }
+
+  private async buildJoinQuery(_organizationId: string, queryJson, internalTableIdToNameMap) {
+    // Pending: For Subquery, Alias is its table name. Need to handle it on Internal Table details mapping
+    // Pending: SELECT Statement - Nested params --> SUM( price * quantity )
+
     // @description: Only SELECT & FROM statement is Mandatory, else is Optional
     let finalQuery = ``;
     finalQuery += `SELECT ${await this.constructSelectStatement(queryJson.fields, internalTableIdToNameMap)}`;

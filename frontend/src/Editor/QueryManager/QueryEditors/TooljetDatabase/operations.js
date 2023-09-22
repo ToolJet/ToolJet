@@ -210,40 +210,44 @@ async function joinTables(dataQuery, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
   const { join_table = {} } = resolvedOptions;
 
+  // Empty Input is restricted
   if (Object.keys(join_table).length === 0) {
     return {
       status: 'failed',
       statusText: 'failed',
-      message: `Empty JSON is not allowed`,
+      message: `Input can't be empty`,
       description: 'Empty inputs are not allowed',
       data: {},
     };
   }
+
   const sanitizedJoinTableJson = { ...join_table };
-  // If mandatory fields are empty throw error
+  // If mandatory fields ( Select, JOin & From section ), are empty throw error
   let mandatoryFieldsButEmpty = [];
   if (!sanitizedJoinTableJson?.fields.length) mandatoryFieldsButEmpty.push('Select');
   if (sanitizedJoinTableJson?.from && !Object.keys(sanitizedJoinTableJson?.from).length)
     mandatoryFieldsButEmpty.push('From');
+  // if (join_table?.joins && !validateInputJsonHasEmptyFields(join_table?.joins)) mandatoryFieldsButEmpty.push('Joins');
   if (mandatoryFieldsButEmpty.length) {
     return {
       status: 'failed',
       statusText: 'failed',
-      message: `Empty values are found in the following section - ${mandatoryFieldsButEmpty.join(',')}.`,
+      message: `Empty values are found in the following section - ${mandatoryFieldsButEmpty.join(', ')}.`,
       description: 'Mandatory fields are not empty',
       data: {},
     };
   }
 
-  // If non-mandatory fields are empty - remove the particular field
+  // If non-mandatory fields ( Filter & Sort ) are empty - remove the particular field
   if (
     sanitizedJoinTableJson?.conditions &&
-    (!Object.keys(sanitizedJoinTableJson?.conditions).length ||
-      !sanitizedJoinTableJson?.conditions?.conditionsList.length)
+    (!Object.keys(sanitizedJoinTableJson?.conditions)?.length ||
+      !sanitizedJoinTableJson?.conditions?.conditionsList?.length)
   ) {
     delete sanitizedJoinTableJson.conditions;
   }
-  if (!sanitizedJoinTableJson?.order_by.length) delete sanitizedJoinTableJson.order_by;
+  if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
+    delete sanitizedJoinTableJson.order_by;
 
   return await tooljetDatabaseService.joinTables(organizationId, sanitizedJoinTableJson);
 }

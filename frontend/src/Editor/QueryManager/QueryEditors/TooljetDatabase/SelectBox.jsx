@@ -1,4 +1,4 @@
-import React, { isValidElement, useCallback } from 'react';
+import React, { isValidElement, useCallback, useState } from 'react';
 import Select, { components } from 'react-select';
 import { isEmpty } from 'lodash';
 import { authenticationService } from '@/_services';
@@ -211,10 +211,10 @@ function DataSourceSelect({
         value={selected}
         // onKeyDown={handleKeyDown}
         onInputChange={() => {
-          const queryDsSelectMenu = document.getElementById('query-ds-select-menu');
-          if (queryDsSelectMenu && !queryDsSelectMenu?.style?.height) {
-            queryDsSelectMenu.style.height = queryDsSelectMenu.offsetHeight + 'px';
-          }
+          const _queryDsSelectMenu = document.getElementById('query-ds-select-menu');
+          // if (queryDsSelectMenu && !queryDsSelectMenu?.style?.height) {
+          //   queryDsSelectMenu.style.height = queryDsSelectMenu.offsetHeight + 'px';
+          // }
         }}
         // filterOption={(data, search) => {
         //   if (data?.data?.source) {
@@ -236,7 +236,7 @@ const MenuList = ({ children, getStyles, innerRef, onAdd, addBtnLabel, emptyErro
   const { admin } = authenticationService.currentSessionValue;
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
-    menuListStyles.maxHeight = 400 - 48;
+    menuListStyles.maxHeight = 225 - 48;
   }
   menuListStyles.padding = '4px';
 
@@ -271,14 +271,18 @@ const DropdownIndicator = (props) => {
 };
 
 const CustomGroupHeading = (props) => {
-  const node = document.querySelector(`#${props.id}`)?.parentElement?.nextElementSibling;
-  const classes = node?.classList;
-  const hidden = classes?.contains('d-none');
+  const [isGroupListCollapsed, setIsGroupListCollapsed] = useState(false);
 
   const handleHeaderClick = (id) => {
+    const node = document.querySelector(`#${id}`)?.parentElement?.nextElementSibling;
+    const classes = node?.classList;
+    const hidden = classes?.contains('d-none');
+
     if (hidden) {
+      setIsGroupListCollapsed(false);
       node.classList.remove('d-none');
     } else {
+      setIsGroupListCollapsed(true);
       node.classList.add('d-none');
     }
   };
@@ -289,7 +293,8 @@ const CustomGroupHeading = (props) => {
       onClick={() => handleHeaderClick(props.id)}
       style={{ cursor: 'pointer' }}
     >
-      <components.GroupHeading {...props} /> <SolidIcon name={hidden ? 'cheverondown' : 'cheveronup'} height={20} />
+      <components.GroupHeading {...props} />{' '}
+      <SolidIcon name={isGroupListCollapsed ? 'cheverondown' : 'cheveronup'} height={20} />
     </div>
   );
 };
