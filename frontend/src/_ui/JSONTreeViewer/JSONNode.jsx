@@ -272,7 +272,6 @@ export const JSONNode = ({ data, ...restProps }) => {
         {enableCopyToClipboard && (
           <CopyToClipboardComponent data={currentNodePath} path={true} callback={getAbsoluteNodePath} />
         )}
-        {renderOptions()}
         {/* {moreActions.actions?.length > 0 && (
           <OverlayTrigger
             rootClose
@@ -290,6 +289,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             <SolidIcon width="12" height="12" name="copy" />
           </span>
         </ToolTip>
+        {renderOptions()}
         {/* </OverlayTrigger>
         )} */}
       </div>
