@@ -55,8 +55,7 @@ export const usersText = {
   buttonInviteWithEmail: " Invite with email",
   buttonUploadCsvFile: "Upload CSV file",
 
-  helperTextBulkUpload:
-  "Download the template to add user details or format your file in the same way as the template. Files in any other format may not be recognized.",
+  helperTextBulkUpload: "Download the template to add user details or format your file in the same way as the template. Files in any other format may not be recognized. ",
   helperTextSelectFile: "Select a CSV file to upload",
   helperTextDropFile: "Or drag and drop it here",
 };

@@ -729,6 +729,7 @@ class DataSourceManagerComponent extends React.Component {
                   }
                   disabled={!env?.enabled}
                   className={cx('nav-item nav-link', { active: this.props.currentEnvironment?.name === env.name })}
+                  data-cy={`${env.name}-label`}
                 >
                   {capitalize(env.name)}
                 </a>

@@ -222,7 +222,7 @@ export default function EditorHeader({
                         onClick={handlePromote}
                         size="md"
                         disabled={shouldDisablePromote}
-                        data-cy="promte-button"
+                        data-cy="promote-button"
                       >
                         {' '}
                         <ToolTip

@@ -148,7 +148,7 @@ describe("Global Datasource Manager", () => {
         );
 
         pinInspector();
-        cy.hidetoolTip();
+        cy.hideTooltip();
 
         resizeQueryPanel("80");
         cy.get('[data-cy="show-ds-popover-button"]').click();
@@ -208,7 +208,7 @@ describe("Global Datasource Manager", () => {
             });
 
         pinInspector();
-        cy.hidetoolTip();
+        cy.hideTooltip();
 
         cy.intercept("POST", "/api/data_queries/**").as("run");
         cy.get('[data-cy="show-ds-popover-button"]').click();
