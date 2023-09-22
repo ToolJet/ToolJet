@@ -127,7 +127,7 @@ export class TooljetDbBulkUploadService {
     const columnsInCsv = new Set<string>(headers);
     const isSubset = (subset: Set<string>, superset: Set<string>) => [...subset].every((item) => superset.has(item));
 
-    if (!isSubset(new Set<string>(headers), internalTableColumns)) {
+    if (!isSubset(columnsInCsv, internalTableColumns)) {
       const columnsNotIntable = [...columnsInCsv].filter((element) => !internalTableColumns.has(element));
 
       throw new BadRequestException(`Columns ${columnsNotIntable.join(',')} not found in table`);
