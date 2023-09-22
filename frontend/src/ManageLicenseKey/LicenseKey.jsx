@@ -13,6 +13,7 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
   const [loading, setLoading] = useState(false);
   const [licenseKey, setLicenseKey] = useState(false);
   const [generatingLicense, setGeneratingLicense] = useState(false);
+  const hasKeyChanged = licenseKey !== license?.value;
 
   const optionChanged = (value) => {
     setLicenseKey(value);
@@ -58,8 +59,6 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
     fetchLicenseSettings();
   }, []);
 
-  const hasKeyChanged = licenseKey !== license?.value || !licenseKey;
-
   return licenseLoading ? (
     <LoadingScreen />
   ) : (
@@ -70,7 +69,7 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
             <label className="form-label mt-3">License</label>
             <div style={{ position: 'relative' }}>
               <Textarea
-                placehlder="Enter your license key"
+                placeholder="Enter license key"
                 className={cx('form-control', { 'errored-textarea': featureAccess?.licenseStatus?.isExpired })}
                 rows="12"
                 value={licenseKey}

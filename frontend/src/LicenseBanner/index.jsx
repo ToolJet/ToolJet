@@ -58,7 +58,7 @@ export function LicenseBanner({
         return 'Your license has expired!';
       case isExpired && type === 'trial':
         return 'Your trial has expired!';
-      case !isLicenseValid && size === 'large':
+      case !isLicenseValid && size === 'large' && !features?.includes(type):
         return `Try ToolJet's premium features now!`;
       case isLicenseValid && licenseType === 'trial' && daysLeft > 3 && type === 'trial': {
         return `Your ${daysLeft}-day trial has started!`;

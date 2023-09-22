@@ -41,10 +41,8 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
     setIsLoading(true);
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess(data);
-      if (data?.licenseStatus?.isLicenseValid) {
-        fetchFeatureAccessForInstanceSettings();
-        setSidebarNavs(['License Key', 'Limits', 'Access', 'Domain']);
-      }
+      fetchFeatureAccessForInstanceSettings();
+      setSidebarNavs(['License Key', 'Limits', 'Access', 'Domain']);
       setIsLoading(false);
     });
   };
@@ -113,13 +111,11 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
                 <LicenseKey fetchFeatureAccess={fetchFeatureAccess} featureAccess={featureAccess} />
               )}
             </div>
-            {featureAccess?.licenseStatus?.isLicenseValid && (
-              <>
-                <div className="content-wrapper">{selectedTab === 'limits' && <Limits />}</div>
-                <div className="content-wrapper">{selectedTab === 'access' && <Access />}</div>
-                <div className="content-wrapper">{selectedTab === 'domain' && <Domains />}</div>
-              </>
-            )}
+            <>
+              <div className="content-wrapper">{selectedTab === 'limits' && <Limits />}</div>
+              <div className="content-wrapper">{selectedTab === 'access' && <Access />}</div>
+              <div className="content-wrapper">{selectedTab === 'domain' && <Domains />}</div>
+            </>
           </div>
         </div>
       </div>
