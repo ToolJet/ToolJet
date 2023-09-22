@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SelectBox from './SelectBox';
+import cx from 'classnames';
 import useShowPopover from '@/_hooks/useShowPopover';
 import { Badge, OverlayTrigger, Popover } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -19,6 +20,7 @@ const DropDownSelect = ({
   value,
   renderSelected,
   emptyError,
+  shouldCenterAlignText = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -124,10 +126,25 @@ const DropDownSelect = ({
             }
             setShowMenu((show) => !show);
           }}
-          className="tdb-dropdown-btn px-1 pe-3 ps-2 gap-0 w-100 border-0 justify-content-start rounded-0 position-relative font-weight-normal"
+          className={cx(
+            {
+              'justify-content-start': !shouldCenterAlignText,
+              'justify-content-centre': shouldCenterAlignText,
+            },
+            'tdb-dropdown-btn',
+            'gap-0',
+            'w-100',
+            'border-0',
+            'rounded-0',
+            'position-relative',
+            'font-weight-normal',
+            'px-1',
+            'pe-3',
+            'ps-2'
+          )}
           data-cy={`show-ds-popover-button`}
         >
-          <div className="pe-1 text-truncate">
+          <div className={`pe-1 text-truncate`}>
             {renderSelected && renderSelected(selected)}
 
             {!renderSelected && selected

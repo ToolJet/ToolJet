@@ -132,6 +132,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         </Col>
         <Col sm="1" className="p-0 border-end">
           <DropDownSelect
+            shouldCenterAlignText
             options={staticJoinOperationsList}
             darkMode={darkMode}
             onChange={(value) => onChange({ ...data, joinType: value?.value })}
