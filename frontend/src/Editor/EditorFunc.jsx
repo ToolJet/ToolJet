@@ -908,7 +908,7 @@ const EditorComponent = (props) => {
       const updatedAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
       handlePaths(patchesToRedo[0]?.value, [...patchesToRedo[0].path], updatedAppDefinition);
-
+      removeUndefined(updatedAppDefinition);
       const _diffPatches = diff(updatedAppDefinition, appDefinition);
       const redoDiff = diff(appDefinition, updatedAppDefinition);
       updateAppDefinitionDiff(redoDiff);
