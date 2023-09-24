@@ -196,7 +196,7 @@ class ViewerComponent extends React.Component {
         dataQueries: dataQueries,
         currentPageId: currentPage.id,
         homepage: appDefData?.pages?.[this.state.appDefinition?.homePageId]?.handle,
-        event: data.events ?? [],
+        events: data.events ?? [],
       },
       () => {
         const components = appDefData?.pages[currentPageId]?.components || {};
@@ -205,11 +205,14 @@ class ViewerComponent extends React.Component {
           this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
           console.log('Default component state computed and set');
           this.runQueries(dataQueries);
-          // eslint-disable-next-line no-unsafe-optional-chaining
-          // const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
-          // for (const event of events ?? []) {
-          //   await this.handleEvent(event.eventId, event);
-          // }
+
+          const currentPageEvents = this.state.events.filter(
+            (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
+          );
+
+          for (const currentEvent of currentPageEvents ?? []) {
+            await this.handleEvent(currentEvent.name, currentPageEvents);
+          }
         });
       }
     );
@@ -477,17 +480,9 @@ class ViewerComponent extends React.Component {
             const currentPageEvents = this.state.events.filter(
               (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
             );
-            const viewerRef = {
-              appDefinition: this.state.appDefinition,
-              queryConfirmationList: this.state.queryConfirmationList,
-              updateQueryConfirmationList: null,
-              navigate: this.props.navigate,
-              switchPage: this.switchPage,
-              currentPageId: currentPageId,
-            };
 
             for (const currentEvent of currentPageEvents ?? []) {
-              await this.handleEvent(viewerRef, event.eventId, currentEvent.name, currentPageEvents);
+              await this.handleEvent(currentEvent.name, currentPageEvents);
             }
           });
         }
@@ -552,7 +547,7 @@ class ViewerComponent extends React.Component {
       );
   };
 
-  handleEvent = (eventName, event, options) => {
+  handleEvent = (eventName, events, options) => {
     const { appDefinition, queryConfirmationList, currentPageId } = this.state;
     const viewerRef = {
       appDefinition: appDefinition,
@@ -563,7 +558,7 @@ class ViewerComponent extends React.Component {
       currentPageId: currentPageId,
     };
 
-    onEvent(viewerRef, eventName, event, options, 'view');
+    onEvent(viewerRef, eventName, events, options, 'view');
   };
 
   computeCanvasMaxWidth = () => {
