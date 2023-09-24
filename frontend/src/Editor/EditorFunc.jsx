@@ -1441,7 +1441,7 @@ const EditorComponent = (props) => {
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
-          toggleAppMaintenance={toggleAppMaintenance}
+          // toggleAppMaintenance={toggleAppMaintenance}
           editingVersion={editingVersion}
           appVersionPreviewLink={appVersionPreviewLink}
           canUndo={canUndo}
@@ -1501,6 +1501,7 @@ const EditorComponent = (props) => {
               updateOnSortingPages={updateOnSortingPages}
               setEditorMarginLeft={handleEditorMarginLeftChange}
               isMaintenanceOn={isMaintenanceOn}
+              toggleAppMaintenance={toggleAppMaintenance}
             />
             {!props.showComments && (
               <Selecto
