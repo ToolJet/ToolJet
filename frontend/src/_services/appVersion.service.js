@@ -11,6 +11,7 @@ export const appVersionService = {
   saveAppVersionEventHandlers,
   createAppVersionEventHandler,
   deleteAppVersionEventHandler,
+  clonePage,
 };
 
 function getAll(appId) {
@@ -139,6 +140,17 @@ function deleteAppVersionEventHandler(appId, versionId, eventId) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events/${eventId}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function clonePage(appId, versionId, pageId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/pages/${pageId}/clone`, requestOptions).then(
     handleResponse
   );
 }

@@ -1262,74 +1262,31 @@ const EditorComponent = (props) => {
     });
   };
 
-  const clonePage = (pageId) => {
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+  const clonePage = async (pageId) => {
+    await appVersionService.clonePage(appId, editingVersion?.id, pageId).then((data) => {
+      const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-    updateEditorState({
-      isUpdatingEditorStateInProcess: true,
-    });
+      const pages = data.pages.reduce((acc, page) => {
+        const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
 
-    const currentPage = copyOfAppDefinition.pages[pageId];
-    const newPageId = uuid();
-    let newPageName = `${currentPage.name} (copy)`;
-    let newPageHandle = `${currentPage.handle}-copy`;
-    let i = 1;
-    while (
-      !isNull(copyOfAppDefinition.pages[pageId]?.pages) &&
-      !isUndefined(copyOfAppDefinition.pages[pageId]?.pages) &&
-      Object.values(copyOfAppDefinition.pages[pageId]?.pages)?.some((page) => page.handle === newPageHandle)
-    ) {
-      newPageName = `${currentPage.name} (copy ${i})`;
-      newPageHandle = `${currentPage.handle}-copy-${i}`;
-      i++;
-    }
+        page.components = currentComponents;
 
-    const newPageData = cloneDeep(currentPage);
-    const oldToNewIdMapping = {};
-    if (!isEmpty(currentPage?.components)) {
-      newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
-        const newComponentId = uuid();
-        acc[newComponentId] = newPageData.components[key];
-        acc[newComponentId].id = newComponentId;
-        oldToNewIdMapping[key] = newComponentId;
+        acc[page.id] = page;
+
         return acc;
       }, {});
 
-      Object.values(newPageData.components).map((comp) => {
-        if (comp.parent) {
-          let newParentId = oldToNewIdMapping[comp.parent];
-          if (newParentId) {
-            comp.parent = newParentId;
-          } else {
-            const oldParentId = Object.keys(oldToNewIdMapping).find(
-              (parentId) =>
-                comp.parent.startsWith(parentId) &&
-                ['Tabs', 'Calendar'].includes(currentPage?.components[parentId]?.component?.component)
-            );
-            const childTabId = comp.parent.split('-').at(-1);
-            comp.parent = `${oldToNewIdMapping[oldParentId]}-${childTabId}`;
-          }
-        }
-        return comp;
+      const newAppDefinition = {
+        ...copyOfAppDefinition,
+        pages: {
+          ...copyOfAppDefinition.pages,
+          ...pages,
+        },
+      };
+      updateState({
+        events: data.events,
       });
-    }
-
-    const newPage = {
-      ...newPageData,
-      name: newPageName,
-      handle: newPageHandle,
-    };
-
-    const newAppDefinition = {
-      ...copyOfAppDefinition,
-      pages: {
-        ...copyOfAppDefinition.pages,
-        [newPageId]: newPage,
-      },
-    };
-
-    appDefinitionChanged(newAppDefinition, {
-      pageDefinitionChanged: true,
+      appDefinitionChanged(newAppDefinition);
     });
   };
 

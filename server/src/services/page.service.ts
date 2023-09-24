@@ -8,6 +8,9 @@ import { CreatePageDto, UpdatePageDto } from '@dto/pages.dto';
 import { AppsService } from './apps.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EventsService } from './events_handler.service';
+import { Component } from 'src/entities/component.entity';
+import { Layout } from 'src/entities/layout.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
 
 @Injectable()
 export class PageService {
@@ -47,6 +50,74 @@ export class PageService {
     newPage.appVersionId = appVersionId;
 
     return this.pageRepository.save(newPage);
+  }
+
+  async clonePage(pageId: string, appVersionId: string) {
+    const pageToClone = await this.pageRepository.findOne(pageId);
+
+    if (!pageToClone) {
+      throw new Error('Page not found');
+    }
+
+    const newPage = new Page();
+    newPage.name = `${pageToClone.name} copy`;
+    newPage.handle = `${pageToClone.handle}-copy`;
+    newPage.index = pageToClone.index + 1;
+    newPage.appVersionId = appVersionId;
+
+    const clonedpage = await this.pageRepository.save(newPage);
+
+    await this.clonePageEventsAndComponents(pageId, clonedpage.id, appVersionId);
+
+    const pages = await this.findPagesForVersion(appVersionId);
+    const events = await this.eventHandlerService.findEventsForVersion(appVersionId);
+
+    return { pages, events };
+  }
+
+  async clonePageEventsAndComponents(pageId: string, clonePageId: string, appVersionId: string) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const pageComponents = await manager.find(Component, { pageId });
+      const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
+
+      // Clone events
+      await Promise.all(
+        pageEvents.map(async (event) => {
+          const clonedEvent = { ...event, id: undefined, sourceId: clonePageId };
+          await manager.save(EventHandler, clonedEvent);
+        })
+      );
+
+      // Clone components
+      const clonedComponents = await Promise.all(
+        pageComponents.map(async (component) => {
+          const clonedComponent = { ...component, id: undefined, pageId: clonePageId };
+          const newComponent = await manager.save(Component, clonedComponent);
+
+          const componentLayouts = await manager.find(Layout, { componentId: component.id });
+          const clonedLayouts = componentLayouts.map((layout) => ({
+            ...layout,
+            id: undefined,
+            componentId: newComponent.id,
+          }));
+
+          // Clone component events
+          const clonedComponentEvents = await this.eventHandlerService.findAllEventsWithSourceId(component.id);
+          const clonedEvents = clonedComponentEvents.map((event) => ({
+            ...event,
+            id: undefined,
+            sourceId: newComponent.id,
+          }));
+
+          await manager.save(Layout, clonedLayouts);
+          await manager.save(EventHandler, clonedEvents);
+
+          return newComponent;
+        })
+      );
+
+      return clonedComponents;
+    });
   }
 
   async updatePage(pageUpdates: UpdatePageDto) {

@@ -263,6 +263,22 @@ export class AppsControllerV2 {
 
     await this.pageService.createPage(createPageDto, versionId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Post(':id/versions/:versionId/pages/:pageId/clone')
+  async clonePage(@User() user, @Param('id') id, @Param('versionId') versionId, @Param('pageId') pageId) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return await this.pageService.clonePage(pageId, versionId);
+  }
+
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id/versions/:versionId/pages')
