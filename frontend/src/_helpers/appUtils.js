@@ -1159,6 +1159,8 @@ export function computeComponentState(components = {}) {
   const currentComponents = getCurrentState().components;
 
   Object.keys(components).forEach((key) => {
+    if (!components[key]) return;
+
     const { component } = components[key];
     const componentMeta = componentTypes.find((comp) => component.component === comp.component);
 
