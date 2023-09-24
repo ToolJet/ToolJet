@@ -1230,6 +1230,22 @@ const EditorComponent = (props) => {
     switchPage(newCurrentPageId);
   };
 
+  const disableEnablePage = ({ pageId, isDisabled }) => {
+    updateEditorState({
+      isUpdatingEditorStateInProcess: true,
+    });
+
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    newAppDefinition.pages[pageId].disabled = isDisabled ?? false;
+
+    appDefinitionChanged(newAppDefinition, {
+      pageDefinitionChanged: true,
+    });
+  };
+
   const hidePage = (pageId) => {
     updateEditorState({
       isUpdatingEditorStateInProcess: true,
@@ -1478,6 +1494,7 @@ const EditorComponent = (props) => {
               clonePage={clonePage}
               hidePage={hidePage}
               unHidePage={unHidePage}
+              disableEnablePage={disableEnablePage}
               updateHomePage={updateHomePage}
               updatePageHandle={updatePageHandle}
               showHideViewerNavigationControls={showHideViewerNavigation}
