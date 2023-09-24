@@ -410,6 +410,7 @@ export class AppsService {
 
     const newComponents = [];
     const newComponentLayouts = [];
+    const oldComponentToNewComponentMapping = {};
 
     for (const page of pages) {
       const savedPage = await manager.save(
@@ -446,12 +447,16 @@ export class AppsService {
         const componentEvents = allEvents.filter((event) => event.sourceId === component.id);
 
         newComponent.id = uuid.v4();
+
+        oldComponentToNewComponentMapping[component.id] = newComponent.id;
+
         newComponent.name = component.name;
         newComponent.type = component.type;
         newComponent.pageId = savedPage.id;
         newComponent.properties = component.properties;
         newComponent.styles = component.styles;
         newComponent.validations = component.validations;
+        newComponent.parent = component.parent ? oldComponentToNewComponentMapping[component.parent] : null;
         newComponent.page = savedPage;
 
         newComponents.push(newComponent);
