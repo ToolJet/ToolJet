@@ -300,9 +300,9 @@ We'll close the modal by clicking on the `X`/close button on the top-right.
 
 ### Creating Query To Write Data 
 
-We are ready with the form. Now we need to create a query that will help us add new entries to the *timeTracker* table in the database. Click on the **+ Add** button in the Query Panel. Select **ToolJet Database** from the list of available sources. 
+We are ready with the form. Now we need to create a query that will help us add new entries to the *timeTracker* table in the database. Click on the **+ Add** button in the Query Panel. Select **ToolJet Database** from the list of available sources and *timeTracker* as the Table name. 
 
-Rename the query to *addLog*, select **Create row** as Operations and use the below configuration for the columns. We'll see how we can use custom code and use different keys to access the data available in the app-builder in the below table. 
+Rename the query to *addLog* and select **Create row** as Operations. Click on **+ Add column** and add columns and configure them according to the below table. 
 
 | Column Name    | Keys                | 
 | :-------------- | :------------------------ |
@@ -311,6 +311,8 @@ Rename the query to *addLog*, select **Create row** as Operations and use the be
 | duration       | {{components.taskDurationInput.value}}  |
 | dateoftask       | {{components.taskDateInput.value}}  |
 | taskdescription       | {{components.taskDescriptionInput.value}}  |
+
+We are using custom code for **Keys** to access the data available in the App-Builder. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/quickstart-guide/add-log-config.png" alt="Configuration for the addLog query" />

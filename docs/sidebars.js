@@ -216,6 +216,16 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'ToolJet Concepts',
+      'items': [
+        'tooljet-concepts/what-are-components',
+        'tooljet-concepts/styling-components',
+        'tooljet-concepts/working-with-queries',
+
+      ],
+    },
+    {
+      'type': 'category',
       'label': 'Workflows',
       'items': [
         'workflows/overview',
