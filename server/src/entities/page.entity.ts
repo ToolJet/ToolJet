@@ -19,6 +19,9 @@ export class Page {
   @Column()
   disabled: boolean;
 
+  @Column()
+  hidden: boolean;
+
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 

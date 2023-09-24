@@ -33,6 +33,11 @@ export class CreatePageTable1691004576333 implements MigrationInterface {
             isNullable: true,
           },
           {
+            name: 'hidden',
+            type: 'boolean',
+            isNullable: true,
+          },
+          {
             name: 'app_version_id',
             type: 'uuid',
             isNullable: false,
