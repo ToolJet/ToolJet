@@ -16,6 +16,9 @@ export class Page {
   @Column()
   index: number;
 
+  @Column()
+  disabled: boolean;
+
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
