@@ -193,7 +193,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
                     </div>
                     <div className="col-4 align-items-end">
                       <div className="row d-flex align-items-center justify-content-end">
-                        <div className="col-3 p-0">
+                        <div className="col-3 p-1">
                           <Filter
                             filters={queryFilters}
                             setFilters={setQueryFilters}
@@ -201,7 +201,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
                             resetFilterQuery={resetFilterQuery}
                           />
                         </div>
-                        <div className="col-3 p-0">
+                        <div className="col-3 p-1">
                           <Sort
                             filters={sortFilters}
                             setFilters={setSortFilters}
