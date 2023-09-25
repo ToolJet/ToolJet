@@ -65,7 +65,7 @@ export default function AppCard({
   }
 
   return (
-    <div className="card homepage-app-card animation-fade">
+    <div className="card homepage-app-card">
       <div key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
@@ -144,8 +144,7 @@ export default function AppCard({
               <button
                 type="button"
                 className={cx(
-                  ` launch-button tj-text-xsm ${
-                    app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+                  ` launch-button tj-text-xsm ${app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
                   }`
                 )}
                 onClick={() => {
@@ -166,8 +165,8 @@ export default function AppCard({
                     app?.current_version_id === null || app?.is_maintenance_on
                       ? '#4C5155'
                       : darkMode
-                      ? '#FDFDFE'
-                      : '#11181C'
+                        ? '#FDFDFE'
+                        : '#11181C'
                   }
                 />
 
