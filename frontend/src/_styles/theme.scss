@@ -2582,18 +2582,23 @@ hr {
       color: var(--slate1);
       background: var(--slate12);
        .delete-icon {
-         fill : var(--slate1);
-         &:hover {
-          fill : var(--tomato9);
-         }
+        svg {
+          fill : var(--slate1) !important;
+        }
          path {
           fill : var(--slate1) !important;
-          &:hover {
-            fill : var(--tomato9) !important;
-           }
          }
-       }
+        &:hover {
+          svg {
+            fill : var(--tomato9) !important;
+            }
+          path {
+            fill : var(--tomato9) !important;
+          }
+        }
+      }
     }
+  
 
     .badge {
       font-size: 12px;
