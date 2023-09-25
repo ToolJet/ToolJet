@@ -95,8 +95,7 @@ export function InstanceSettings(props) {
   }, []);
 
   return (
-    load_app === true &&
-    licenseLoaded && (
+    load_app === true && (
       <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
         <div className="wrapper organization-settings-page">
           <div className="row gx-0">
