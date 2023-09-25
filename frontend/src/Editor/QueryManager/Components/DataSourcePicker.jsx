@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import Information from '@/_ui/Icon/solidIcons/Information';
-import Search from '@/_ui/Icon/solidIcons/Search';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId } from '@/_helpers/utils';
@@ -40,6 +39,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
     } else {
       setFilteredUserDefinedDataSources(allUserDefinedSources);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, globalDataSources, dataSources]);
 
   const handleAddClick = () => {
@@ -50,12 +50,17 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
   return (
     <>
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
-        Connect to a datasource
+        Connect to a data source
       </h4>
-      <p className="mb-3" style={{ textAlign: 'center' }}>
-        Select a datasource to start creating a new query. To know more about queries in ToolJet, you can read our
+      <p className="mb-3" style={{ textAlign: 'center' }} data-cy="querymanager-description">
+        Select a data source to start creating a new query. To know more about queries in ToolJet, you can read our
         &nbsp;
-        <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
+        <a
+          data-cy="querymanager-doc-link"
+          target="_blank"
+          href="https://docs.tooljet.com/docs/app-builder/query-panel"
+          rel="noreferrer"
+        >
           documentation
         </a>
       </p>
@@ -83,7 +88,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </div>
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
-            {`Available Datasources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
+            {`Available data sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
           {admin && (
             <ButtonSolid
@@ -143,10 +148,7 @@ const EmptyDataSourceBanner = () => (
     <div className="me-2">
       <Information fill="var(--slate9)" />
     </div>
-    <div>
-      No global datasources have been added yet. <br />
-      Add new datasources to connect to your app! 🚀
-    </div>
+    <div data-cy="label-no-ds-added">No global data sources have been added yet.</div>
   </div>
 );
 

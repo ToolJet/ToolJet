@@ -3,6 +3,8 @@ import { dashboardSelector } from "Selectors/dashboard";
 import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
 import { passwordInputText } from "Texts/passwordInput";
+import { importSelectors } from "Selectors/exportImport";
+import { importText } from "Texts/exportImport";
 
 Cypress.Commands.add(
   "login",
@@ -102,22 +104,23 @@ Cypress.Commands.add(
   },
   (subject, value) => {
     cy.wrap(subject)
-      .click()
+      .realClick()
       .find("pre.CodeMirror-line")
       .invoke("text")
       .then((text) => {
-        cy.wrap(subject).type(createBackspaceText(text)),
+        cy.wrap(subject).realType(`${createBackspaceText(text)}`, { delay: 0 }),
           {
             delay: 0,
           };
       });
     if (!Array.isArray(value)) {
-      cy.wrap(subject).type(value, {
+      cy.wrap(subject).as("element").realClick().type(value, {
         parseSpecialCharSequences: false,
         delay: 0,
       });
     } else {
       cy.wrap(subject)
+        .as("element")
         .type(value[1], {
           parseSpecialCharSequences: false,
           delay: 0,
@@ -179,11 +182,11 @@ Cypress.Commands.add(
   },
   (subject, value) => {
     cy.wrap(subject)
-      .click()
+      .realClick()
       .find("pre.CodeMirror-line")
       .invoke("text")
       .then((text) => {
-        cy.wrap(subject).type(createBackspaceText(text)),
+        cy.wrap(subject).realType(createBackspaceText(text)),
           {
             delay: 0,
           };
@@ -247,7 +250,7 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
-  cy.get(".text-muted");
+  // cy.get(".text-muted");
   cy.wait(1000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
@@ -282,4 +285,23 @@ Cypress.Commands.add("visitTheWorkspace", (workspaceName) => {
     cy.visit(workspaceId);
   });
   cy.wait(2000);
+});
+
+Cypress.Commands.add("hideTooltip", () => {
+  cy.get("body").then(($body) => {
+    if ($body.find(".tooltip-inner").length > 0) {
+      cy.get(".tooltip-inner").invoke("css", "display", "none");
+    }
+  });
+});
+
+Cypress.Commands.add("importApp", (appFile) => {
+  cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+  cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
+    force: true,
+  });
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    importText.appImportedToastMessage
+  );
 });

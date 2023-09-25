@@ -17,6 +17,8 @@ import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import FolderEmpty from '@/_ui/Icon/solidIcons/FolderEmpty';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, toggleQueryEditor }) => {
   const { t } = useTranslation();
@@ -116,7 +118,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
             />
             <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
           </div>
-          <AddDataSourceButton darkMode={darkMode} disabled={isEmpty(dataQueries)} />
+          <AddDataSourceButton darkMode={darkMode} />
         </div>
         <div
           className={cx('queries-header row d-flex align-items-center justify-content-between', {
@@ -200,13 +202,21 @@ const EmptyDataSource = () => (
         <FolderEmpty style={{ height: '16px' }} />
       </span>
     </div>
-    <span>No queries have been added. </span>
+    <span data-cy="label-no-queries">No queries have been added. </span>
   </div>
 );
 
-const AddDataSourceButton = ({ darkMode, disabled }) => {
+const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersionId: state.editingVersion?.id,
+    }),
+    shallow
+  );
+  const disabled = isVersionReleased || _disabled;
 
   useEffect(() => {
     if (showMenu) {
