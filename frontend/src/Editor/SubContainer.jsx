@@ -487,6 +487,7 @@ export const SubContainer = ({
     backgroundSize: `${gridWidth}px 10px`,
   };
 
+  //check if parent is listview or form return false is so
   const checkParent = (box) => {
     let isListView = false,
       isForm = false;
@@ -553,7 +554,19 @@ export const SubContainer = ({
                         onOptionChange && onOptionChange({ component, optionName, value, componentId });
                       }
                 }
-                onComponentOptionsChanged={onComponentOptionsChanged}
+                onComponentOptionsChanged={(component, variableSet, id) => {
+                  checkParent(box)
+                    ? onComponentOptionsChanged(component, variableSet)
+                    : variableSet.map((item) => {
+                        onOptionChange &&
+                          onOptionChange({
+                            component,
+                            optionName: item[0],
+                            value: item[1],
+                            componentId: id,
+                          });
+                      });
+                }}
                 key={key}
                 onResizeStop={onResizeStop}
                 onDragStop={onDragStop}

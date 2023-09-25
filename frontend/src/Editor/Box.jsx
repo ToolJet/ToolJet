@@ -319,7 +319,9 @@ export const Box = memo(
                 setExposedVariable={(variable, value) => {
                   onComponentOptionChanged(component, variable, value, id);
                 }}
-                setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
+                setExposedVariables={(variableSet) =>
+                  onComponentOptionsChanged(component, Object.entries(variableSet), id)
+                }
                 fireEvent={fireEvent}
                 validate={validate}
                 parentId={parentId}

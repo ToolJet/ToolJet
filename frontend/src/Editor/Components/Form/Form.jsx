@@ -192,6 +192,7 @@ export const Form = function Form(props) {
       fireSubmissionEvent();
     }
   };
+  //for custom json
   function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
     if (typeof value === 'function' && _.findKey({}, optionName)) {
       return Promise.resolve();
