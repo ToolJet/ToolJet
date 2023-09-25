@@ -110,16 +110,18 @@ export class TooljetDbBulkUploadService {
   async bulkInsertRows(tooljetDbManager: EntityManager, rowsToInsert: unknown[], internalTableId: string) {
     if (isEmpty(rowsToInsert)) return;
 
-    const rowsWithoutIdColumn = rowsToInsert.map((row: { id: string }) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...rest } = row;
-      return rest;
+    const insertQueries = rowsToInsert.map((row, index) => {
+      return {
+        text: `INSERT INTO "${internalTableId}" (${Object.keys(row).join(', ')}) VALUES (${Object.values(row).map(
+          (_, index) => `$${index + 1}`
+        )})`,
+        values: Object.values(row),
+      };
     });
 
-    const columns = Object.keys(rowsWithoutIdColumn[0]);
-    const rowValues = rowsWithoutIdColumn.map((r) => Object.values(r));
-
-    await tooljetDbManager.createQueryBuilder().insert().into(internalTableId, columns).values(rowValues).execute();
+    for (const insertQuery of insertQueries) {
+      await tooljetDbManager.query(insertQuery.text, insertQuery.values);
+    }
   }
 
   async validateHeadersAsColumnSubset(internalTableColumnSchema: TableColumnSchema[], headers: string[]) {
@@ -142,9 +144,9 @@ export class TooljetDbBulkUploadService {
       const columnsInCsv = Object.keys(row);
       const transformedRow = columnsInCsv.reduce((result, columnInCsv) => {
         const columnDetails = internalTableColumnSchema.find((colDetails) => colDetails.column_name === columnInCsv);
-        const convertedValue = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
+        const convertedValue = this.validateDataType(row[columnInCsv], columnDetails.data_type);
 
-        if (convertedValue) result[columnInCsv] = this.convertToDataType(row[columnInCsv], columnDetails.data_type);
+        if (convertedValue) result[columnInCsv] = this.validateDataType(row[columnInCsv], columnDetails.data_type);
 
         return result;
       }, {});
@@ -155,31 +157,33 @@ export class TooljetDbBulkUploadService {
     }
   }
 
-  convertToDataType(columnValue: string, supportedDataType: SupportedDataTypes) {
+  validateDataType(columnValue: string, supportedDataType: SupportedDataTypes) {
     if (!columnValue) return null;
 
     switch (supportedDataType) {
       case 'boolean':
-        return this.stringToBoolean(columnValue);
+        return this.validateBoolean(columnValue);
       case 'integer':
       case 'double precision':
-        return this.stringToNumber(columnValue);
+      case 'bigint':
+        return this.validateNumber(columnValue, supportedDataType);
       default:
         return columnValue;
     }
   }
 
-  stringToBoolean(str: string) {
+  validateBoolean(str: string) {
     const parsedString = str.toLowerCase().trim();
-    if (parsedString === 'true' || parsedString === 'false') return parsedString === 'true';
+    if (parsedString === 'true' || parsedString === 'false') return str;
 
     throw `${str} is not a valid boolean string`;
   }
 
-  stringToNumber(str: string) {
-    const parsedString = parseFloat(str);
-    if (!isNaN(parsedString)) return parsedString;
+  validateNumber(str: string, dataType: 'integer' | 'bigint' | 'double precision') {
+    if (dataType === 'integer' && !isNaN(parseInt(str, 10))) return str;
+    if (dataType === 'double precision' && !isNaN(parseFloat(str))) return str;
+    if (dataType === 'bigint' && typeof BigInt(str) === 'bigint') return str;
 
-    throw `${str} is not a valid number`;
+    throw `${str} is not a valid ${dataType}`;
   }
 }

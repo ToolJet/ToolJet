@@ -15,7 +15,7 @@ export type TableColumnSchema = {
   keytype: string | null;
 };
 
-export type SupportedDataTypes = 'character varying' | 'integer' | 'serial' | 'double precision' | 'boolean';
+export type SupportedDataTypes = 'character varying' | 'integer' | 'bigint' | 'serial' | 'double precision' | 'boolean';
 
 @Injectable()
 export class TooljetDbService {
