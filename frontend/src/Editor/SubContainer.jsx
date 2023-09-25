@@ -70,10 +70,6 @@ export const SubContainer = ({
     shallow
   );
 
-  const { selectedComponents } = useEditorStore((state) => ({
-    selectedComponents: state.selectedComponents,
-  }));
-
   const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
@@ -376,6 +372,7 @@ export const SubContainer = ({
     let newBoxes = { ...boxes };
 
     const subContainerHeight = canvasBounds.height - 30;
+    const selectedComponents = useEditorStore.getState().selectedComponents;
 
     if (selectedComponents) {
       for (const selectedComponent of selectedComponents) {

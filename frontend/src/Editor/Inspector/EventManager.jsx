@@ -846,7 +846,7 @@ export const EventManager = ({
                         >
                           <div>
                             <ManageEventButton
-                              eventDisplayName={componentMeta.events[event.eventId]['displayName']}
+                              eventDisplayName={componentMeta.events[event.eventId]?.['displayName']}
                               actionName={actionMeta.name}
                               removeHandler={removeHandler}
                               index={index}
