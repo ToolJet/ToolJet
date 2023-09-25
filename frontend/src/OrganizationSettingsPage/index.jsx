@@ -78,59 +78,66 @@ export function OrganizationSettings(props) {
     setSelectedTab('manageOrgConstants');
   };
 
-  return featuresLoaded ? (
+  return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">
         <div className="row gx-0">
           <div className="organization-page-sidebar col ">
             <div className="workspace-nav-list-wrap">
-              {sideBarNavs.map((item, index) => {
-                const protectedNavIndex = protectedNavs.findIndex((nav) => nav.label === item);
-                const Wrapper = ({ children }) =>
-                  protectedNavIndex >= 0 && featureAccess?.[protectedNavs?.[protectedNavIndex]?.id] === false ? (
-                    <LicenseTooltip
-                      limits={featureAccess}
-                      feature={item}
-                      isAvailable={false}
-                      noTooltipIfValid={true}
-                      customMessage={`${item} are available only
+              {featuresLoaded ? (
+                sideBarNavs.map((item, index) => {
+                  const protectedNavIndex = protectedNavs.findIndex((nav) => nav.label === item);
+                  const Wrapper = ({ children }) =>
+                    protectedNavIndex >= 0 && featureAccess?.[protectedNavs?.[protectedNavIndex]?.id] === false ? (
+                      <LicenseTooltip
+                        limits={featureAccess}
+                        feature={item}
+                        isAvailable={false}
+                        noTooltipIfValid={true}
+                        customMessage={`${item} are available only
                       in paid plans`}
-                    >
-                      {children}
-                    </LicenseTooltip>
-                  ) : (
-                    <>{children}</>
-                  );
-                return (
-                  <Wrapper key={index}>
-                    {(admin || item == 'Workspace variables' || item == 'Copilot' || item == 'Workspace constants') && (
-                      <FolderList
-                        className="workspace-settings-nav-items"
-                        key={index}
-                        onClick={() => {
-                          if (protectedNavIndex >= 0 && !featureAccess[protectedNavs[protectedNavIndex].id]) return;
-                          setSelectedTab(defaultOrgName(item));
-                          if (item == 'Users') updateSidebarNAV('Users & permissions');
-                          else updateSidebarNAV(item);
-                        }}
-                        selectedItem={selectedTab == defaultOrgName(item)}
-                        renderBadgeForItems={['Workspace constants']}
-                        renderBadge={() => (
-                          <span
-                            style={{ width: '40px', textTransform: 'lowercase' }}
-                            className="badge bg-color-primary badge-pill"
-                          >
-                            new
-                          </span>
-                        )}
-                        dataCy={item.toLowerCase().replace(/\s+/g, '-')}
                       >
-                        {item}
-                      </FolderList>
-                    )}
-                  </Wrapper>
-                );
-              })}
+                        {children}
+                      </LicenseTooltip>
+                    ) : (
+                      <>{children}</>
+                    );
+                  return (
+                    <Wrapper key={index}>
+                      {(admin ||
+                        item == 'Workspace variables' ||
+                        item == 'Copilot' ||
+                        item == 'Workspace constants') && (
+                        <FolderList
+                          className="workspace-settings-nav-items"
+                          key={index}
+                          onClick={() => {
+                            if (protectedNavIndex >= 0 && !featureAccess[protectedNavs[protectedNavIndex].id]) return;
+                            setSelectedTab(defaultOrgName(item));
+                            if (item == 'Users') updateSidebarNAV('Users & permissions');
+                            else updateSidebarNAV(item);
+                          }}
+                          selectedItem={selectedTab == defaultOrgName(item)}
+                          renderBadgeForItems={['Workspace constants']}
+                          renderBadge={() => (
+                            <span
+                              style={{ width: '40px', textTransform: 'lowercase' }}
+                              className="badge bg-color-primary badge-pill"
+                            >
+                              new
+                            </span>
+                          )}
+                          dataCy={item.toLowerCase().replace(/\s+/g, '-')}
+                        >
+                          {item}
+                        </FolderList>
+                      )}
+                    </Wrapper>
+                  );
+                })
+              ) : (
+                <Skeleton count={7} height={22} />
+              )}
             </div>
             <LicenseBanner
               limits={featureAccess}
@@ -141,23 +148,36 @@ export function OrganizationSettings(props) {
             <OrganizationList />
           </div>
 
-          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
-            <div className="w-100">
-              {selectedTab === 'Users & permissions' && <ManageOrgUsers darkMode={props.darkMode} />}
-              {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
-              {selectedTab === 'manageSSO' && <ManageSSO />}
-              {selectedTab === 'manageEnvVars' && (
-                <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
-              )}
-              {selectedTab === 'manageCopilot' && <CopilotSetting />}
-              {selectedTab === 'manageCustomstyles' && <CustomStylesEditor darkMode={props.darkMode} />}
-              {selectedTab === 'manageOrgConstants' && <ManageOrgConstants darkMode={props.darkMode} />}
+          {featuresLoaded ? (
+            <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
+              <div className="w-100">
+                {selectedTab === 'Users & permissions' && <ManageOrgUsers darkMode={props.darkMode} />}
+                {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
+                {selectedTab === 'manageSSO' && <ManageSSO />}
+                {selectedTab === 'manageEnvVars' && (
+                  <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
+                )}
+                {selectedTab === 'manageCopilot' && <CopilotSetting />}
+                {selectedTab === 'manageCustomstyles' && <CustomStylesEditor darkMode={props.darkMode} />}
+                {selectedTab === 'manageOrgConstants' && <ManageOrgConstants darkMode={props.darkMode} />}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="col workspace-content-wrapper">
+              <div style={{ width: '880px', margin: 'auto', marginTop: '150px' }}>
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton className="mb-2" />
+                <Skeleton />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Layout>
-  ) : (
-    <Skeleton count={7} height={22} />
   );
 }
