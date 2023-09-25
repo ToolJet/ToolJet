@@ -15,11 +15,13 @@ import { licenseService } from '../_services/license.service';
 import { LicenseBanner } from '@/LicenseBanner';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { ManageOrgConstants } from '@/ManageOrgConstants';
+import Skeleton from 'react-loading-skeleton';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const [featureAccess, setFeatureAccess] = useState({});
+  const [featuresLoaded, setFeaturesLoaded] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const protectedNavs = [{ id: 'customStyling', label: 'Custom styles' }];
@@ -57,6 +59,7 @@ export function OrganizationSettings(props) {
   const fetchFeatureAccess = () => {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess(data);
+      setFeaturesLoaded(true);
     });
   };
 
@@ -75,7 +78,7 @@ export function OrganizationSettings(props) {
     setSelectedTab('manageOrgConstants');
   };
 
-  return (
+  return featuresLoaded ? (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">
         <div className="row gx-0">
@@ -84,11 +87,11 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 const protectedNavIndex = protectedNavs.findIndex((nav) => nav.label === item);
                 const Wrapper = ({ children }) =>
-                  protectedNavIndex >= 0 ? (
+                  protectedNavIndex >= 0 && featureAccess?.[protectedNavs?.[protectedNavIndex]?.id] === false ? (
                     <LicenseTooltip
                       limits={featureAccess}
                       feature={item}
-                      isAvailable={featureAccess[protectedNavs[protectedNavIndex].id]}
+                      isAvailable={false}
                       noTooltipIfValid={true}
                       customMessage={`${item} are available only
                       in paid plans`}
@@ -154,5 +157,7 @@ export function OrganizationSettings(props) {
         </div>
       </div>
     </Layout>
+  ) : (
+    <Skeleton count={7} height={22} />
   );
 }

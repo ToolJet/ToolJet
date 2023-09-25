@@ -42,7 +42,7 @@ export enum LICENSE_LIMITS_LABEL {
   WORKSPACES = 'Workspaces',
 
   //Tables
-  TABLES = 'tables',
+  TABLES = 'Tables',
 }
 
 export enum LICENSE_TYPE {
