@@ -1,3 +1,4 @@
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import React from 'react';
 
 export const ConfigHandle = function ConfigHandle({
@@ -19,7 +20,7 @@ export const ConfigHandle = function ConfigHandle({
       className={`config-handle ${customClassName}`}
       ref={dragRef}
       style={{
-        top: position === 'top' ? '-22px' : widgetTop + widgetHeight - 10,
+        top: position === 'top' ? '-30px' : widgetTop + widgetHeight - 10,
       }}
     >
       <span
@@ -38,28 +39,16 @@ export const ConfigHandle = function ConfigHandle({
           role="button"
           data-cy={`${component.name.toLowerCase()}-config-handle`}
         >
-          <img
-            style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
-            src="assets/images/icons/settings.svg"
-            width="12"
-            height="12"
-            draggable="false"
-          />
           <span>{component.name}</span>
         </div>
         {!isMultipleComponentsSelected && !isVersionReleased && (
-          <div className="delete-part">
-            <img
-              style={{ cursor: 'pointer', marginLeft: '5px' }}
-              src="assets/images/icons/trash-light.svg"
-              width="12"
-              role="button"
-              height="12"
-              draggable="false"
-              onClick={() => removeComponent({ id })}
-              data-cy={`${component.name.toLowerCase()}-delete-button`}
-              className="delete-icon"
-            />
+          <div
+            className="d-flex ml-2"
+            style={{ cursor: 'pointer', marginLeft: '4px' }}
+            onClick={() => removeComponent({ id })}
+            data-cy={`${component.name.toLowerCase()}-delete-button`}
+          >
+            <SolidIcon name="trash" width="14" fill="var(--slate1)" />
           </div>
         )}
       </span>

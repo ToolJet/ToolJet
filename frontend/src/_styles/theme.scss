@@ -327,15 +327,15 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary  !important;
+    border: solid 1px var(--indigo9) !important;
 
     .top-right,
     .top-left,
     .bottom-right,
     .bottom-left {
       background: white;
-      border-radius: 10px;
-      border: solid 1px $primary;
+      border-radius: 2px;
+      border: solid 1px var(--indigo9);
     }
   }
 
@@ -2580,28 +2580,17 @@ hr {
     .handle-content {
       cursor: move;
       color: #ffffff;
-      background: $primary;
+      background: var(--slate12);
     }
 
     .badge {
-      font-size: 9px;
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-
-      .delete-part {
-        margin-left: 10px;
-        float: right;
-      }
-
-      .delete-part::before {
-        height: 12px;
-        display: inline-block;
-        width: 2px;
-        background-color: rgba(255, 255, 255, 0.8);
-        opacity: 0.5;
-        content: "";
-        vertical-align: middle;
-      }
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 6px;
+      line-height : 20px;
+      text-transform: capitalize;
+      height: unset;
+      padding: 2px 6px;
     }
   }
 }
