@@ -50,10 +50,10 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
   return (
     <>
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
-        Connect to a data source
+        Connect to a Data Source
       </h4>
       <p className="mb-3" style={{ textAlign: 'center' }}>
-        Select a data source to start creating a new query. To know more about queries in ToolJet, you can read our
+        Select a Data Source to start creating a new query. To know more about queries in ToolJet, you can read our
         &nbsp;
         <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
           documentation
@@ -83,7 +83,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </div>
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
-            {`Available data sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
+            {`Available Data Sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
           {admin && (
             <ButtonSolid
