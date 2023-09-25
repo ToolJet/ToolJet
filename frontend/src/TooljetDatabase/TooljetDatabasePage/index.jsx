@@ -74,6 +74,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
     setIsBulkUploading(false);
     setBulkUploadFile(null);
     setIsBulkUploadDrawerOpen(false);
+    setQueryFilters({});
+    resetFilterQuery();
+    setSortFilters({});
+    resetSortQuery();
     reloadTableData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadResult]);
