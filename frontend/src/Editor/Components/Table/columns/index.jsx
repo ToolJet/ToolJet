@@ -174,12 +174,8 @@ export default function generateColumnsData({
                           e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
                           e.target.textContent
                         ) {
-                          handleCellValueChange(
-                            cell.row.index,
-                            column.key || column.name,
-                            e.target.textContent,
-                            cell.row.original
-                          );
+                          const value = e.target.textContent.replace(/<[^>]*>/g, '');
+                          handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                         }
                       }
                     }}
@@ -190,12 +186,8 @@ export default function generateColumnsData({
                         e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
                         e.target.textContent
                       ) {
-                        handleCellValueChange(
-                          cell.row.index,
-                          column.key || column.name,
-                          e.target.textContent,
-                          cell.row.original
-                        );
+                        const value = e.target.textContent.replace(/<[^>]*>/g, '');
+                        handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                       }
                     }}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
@@ -281,10 +273,12 @@ export default function generateColumnsData({
                           e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
                           e.target.textContent
                         ) {
+                          const value = textContent.replace(/<[^>]*>/g, '');
+
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
-                            Number(textContent),
+                            Number(value),
                             cell.row.original
                           );
                         }
@@ -296,10 +290,11 @@ export default function generateColumnsData({
                         e.target.attributes['data-defaultValue'].value.replace(/<[^>]*>/g, '').trim() !==
                         e.target.textContent
                       ) {
+                        const value = e.target.textContent.replace(/<[^>]*>/g, '');
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          Number(e.target.textContent),
+                          Number(value),
                           cell.row.original
                         );
                       }
@@ -333,28 +328,58 @@ export default function generateColumnsData({
             );
           }
           case 'text': {
+            const utilityFuncToReplaceCertainTags = (input) => {
+              const stringWithoutDivAndMarkTags = input.replace(/<div[^>]*>|<\/div>|<mark[^>]*>|<\/mark>/g, '');
+              // Replace other tags with special characters
+              const output = stringWithoutDivAndMarkTags.replace(/<[^>]+>/g, (match) => {
+                const tagMap = {
+                  '<br>': '\n', // Replace <br> with \n
+                  // Add more tag replacements as needed
+                };
+                // If the tag is in the tagMap, replace it with the corresponding special character
+                if (tagMap[match]) {
+                  return tagMap[match];
+                } else {
+                  // If the tag is not in the map, replace it with an empty string
+                  return '';
+                }
+              });
+
+              return output;
+            };
+            const stringifyHtmlElement = createStringifyHtmlElement(cellValue).replace(/\n/g, '<br>');
             return (
-              <textarea
+              <div
                 rows="1"
-                className={`form-control-plaintext text-container ${
-                  darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
-                }`}
+                className={`form-control-plaintext text-container ${darkMode ? ' textarea-dark-theme' : 'text-muted'}`}
                 readOnly={!isEditable}
                 style={{ maxWidth: width }}
                 onBlur={(e) => {
-                  if (isEditable && e.target.defaultValue !== e.target.value) {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                  if (isEditable && e.target.attributes['data-defaultValue'].value !== e.target.textContent) {
+                    const value = utilityFuncToReplaceCertainTags(e.target.innerHTML);
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }
                 }}
                 onKeyDown={(e) => {
                   e.persist();
                   if (e.key === 'Enter' && !e.shiftKey && isEditable) {
-                    handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
+                    e.preventDefault();
+                    const value = utilityFuncToReplaceCertainTags(e.target.innerHTML);
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }
                 }}
-                defaultValue={cellValue}
                 onFocus={(e) => e.stopPropagation()}
-              ></textarea>
+                contentEditable={true}
+                data-defaultValue={createStringifyHtmlElement(cellValue)}
+                onClick={(e) => {
+                  clickCount.current++;
+                  if (clickCount.current > 1) {
+                    e.stopPropagation();
+                  }
+                }}
+              >
+                <div dangerouslySetInnerHTML={{ __html: stringifyHtmlElement }} />
+              </div>
             );
           }
           case 'dropdown': {
