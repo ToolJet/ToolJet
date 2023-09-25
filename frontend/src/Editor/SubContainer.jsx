@@ -15,6 +15,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const NO_OF_GRIDS = 43;
 
@@ -44,7 +45,6 @@ export const SubContainer = ({
   onComponentHover,
   hoveredComponent,
   sideBarDebugger,
-  selectedComponents,
   onOptionChange,
   exposedVariables,
   addDefaultChildren = false,
@@ -69,6 +69,10 @@ export const SubContainer = ({
     }),
     shallow
   );
+
+  const { selectedComponents } = useEditorStore((state) => ({
+    selectedComponents: state.selectedComponents,
+  }));
 
   const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
 

@@ -54,13 +54,16 @@ const EditorSelecto = memo(
       [appDefinition, currentPageId, setSelectedComponent, setSelectionInProgress]
     );
 
-    const onAreaSelectionDragStart = useCallback((e) => {
-      if (e.inputEvent.target.getAttribute('id') !== 'real-canvas') {
-        selectionDragRef.current = true;
-      } else {
-        selectionDragRef.current = false;
-      }
-    }, []);
+    const onAreaSelectionDragStart = useCallback(
+      (e) => {
+        if (e.inputEvent.target.getAttribute('id') !== 'real-canvas') {
+          selectionDragRef.current = true;
+        } else {
+          selectionDragRef.current = false;
+        }
+      },
+      [selectionDragRef]
+    );
 
     const onAreaSelectionDrag = useCallback(
       (e) => {
@@ -69,7 +72,7 @@ const EditorSelecto = memo(
           useEditorStore.getState().selectionInProgress && setSelectionInProgress(false);
         }
       },
-      [setSelectionInProgress]
+      [setSelectionInProgress, selectionDragRef]
     );
 
     const onAreaSelectionDragEnd = () => {
