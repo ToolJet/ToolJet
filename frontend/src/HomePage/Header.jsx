@@ -12,7 +12,7 @@ export default function Header({ onSearchSubmit, darkMode }) {
           className="border-0 homepage-search"
           onSubmit={onSearchSubmit}
           darkMode={darkMode}
-          placeholder={t('globals.searchItem', 'Search apps in this workspace')}
+          placeholder={'Search apps in this workspace'}
           width={'100%'}
         />
       </div>
