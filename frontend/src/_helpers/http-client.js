@@ -34,7 +34,7 @@ class HttpClient {
     const endpoint = urlJoin(this.host, this.namespace, url);
     const options = {
       method,
-      headers: this.headers,
+      headers: { ...this.headers },
       credentials: 'include',
     };
     let session = authenticationService.currentSessionValue;
