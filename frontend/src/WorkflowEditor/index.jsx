@@ -9,6 +9,7 @@ import {
 } from '@/_services';
 import { reducer, initialState, Modes, ServerDataStates } from './reducer/reducer';
 import FlowBuilder from './FlowBuilder';
+// eslint-disable-next-line import/no-unresolved
 import { ReactFlowProvider } from 'reactflow';
 import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';
 import generateActions from './actions';

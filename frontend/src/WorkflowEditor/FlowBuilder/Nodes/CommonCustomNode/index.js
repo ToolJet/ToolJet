@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { Handle } from 'reactflow';
 import { find } from 'lodash';
 import './styles.scss';

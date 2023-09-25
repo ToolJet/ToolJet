@@ -1,4 +1,5 @@
 import React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { Handle, Position } from 'reactflow';
 import IfIcon from '../../../../../assets/images/icons/if.svg';
 
