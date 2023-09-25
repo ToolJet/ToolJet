@@ -199,6 +199,26 @@ class AppComponent extends React.Component {
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
+  // check if its getting routed from editor
+  checkPreviousRoute = (route) => {
+    if (route.includes('/apps')) {
+      return true;
+    }
+    return false;
+  };
+
+  componentDidUpdate(prevProps) {
+    // Check if the current location is the dashboard (homepage)
+    if (
+      this.props.location.pathname === `/${getWorkspaceIdFromURL()}` &&
+      prevProps.location.pathname !== `/${getWorkspaceIdFromURL()}` &&
+      this.checkPreviousRoute(prevProps.location.pathname) &&
+      prevProps.location.pathname !== `/:workspaceId`
+    ) {
+      // Reload the page for clearing already set intervals
+      window.location.reload();
+    }
+  }
 
   isThisWorkspaceLoginPage = (justLoginPage = false) => {
     const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;

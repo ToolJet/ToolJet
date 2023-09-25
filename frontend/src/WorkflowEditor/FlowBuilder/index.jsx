@@ -9,6 +9,7 @@ import {
   applyEdgeChanges,
   addEdge as addReactFlowEdge,
   Controls,
+  // eslint-disable-next-line import/no-unresolved
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import ifConditionNode from './Nodes/ifCondition';
