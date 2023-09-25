@@ -2579,8 +2579,20 @@ hr {
 
     .handle-content {
       cursor: move;
-      color: #ffffff;
+      color: var(--slate1);
       background: var(--slate12);
+       .delete-icon {
+         fill : var(--slate1);
+         &:hover {
+          fill : var(--tomato9);
+         }
+         path {
+          fill : var(--slate1) !important;
+          &:hover {
+            fill : var(--tomato9) !important;
+           }
+         }
+       }
     }
 
     .badge {

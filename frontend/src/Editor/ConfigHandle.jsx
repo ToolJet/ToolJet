@@ -48,7 +48,7 @@ export const ConfigHandle = function ConfigHandle({
             onClick={() => removeComponent({ id })}
             data-cy={`${component.name.toLowerCase()}-delete-button`}
           >
-            <SolidIcon name="trash" width="14" fill="var(--slate1)" />
+            <SolidIcon name="trash" width="14" className="delete-icon" />
           </div>
         )}
       </span>
