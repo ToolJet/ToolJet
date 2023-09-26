@@ -9,7 +9,7 @@ Now you can quickly deploy ToolJet using the Deploy to DigitalOcean button.
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
 
-The latest docker image is `tooljet/tooljet:v2.13.1-ee2.5.2`
+The latest docker image is `tooljet/tooljet:<version_tag>`
 
 ## Deploying
 
@@ -145,26 +145,6 @@ Follow the below steps to attach a postgresql database:
 
   To add additional environment variables, refer this [doc](https://docs.tooljet.com/docs/setup/env-vars/).
 
-### Licensing
-
-Enterprise edition needs a private license key to work. Please contact us if you don't have a license key.
-
-Follow these steps to update your license key:
-  1. Login as a Super Admin.
-  2. Navigate to **[Instance settings](https://docs.tooljet.com/img/licensing/licensingpage1.png)** menu & click on License tab.
-  3. Update your license key.
-
-**Note that this license key is private to your account and sharing this with anyone else is strictly prohibited.**
-
-### Marketplace
-
-To be able to install plugins from the marketplace, it's required to turn on the feature using the environment variable mentioned below:
-```bash
-ENABLE MARKETPLACE FEATURE=true
-```
-
-Learn more about the marketplace [here](https://docs.tooljet.com/docs/marketplace/marketplace-overview/).
-
 ### ToolJet Database
 
 Use the ToolJet-hosted database to build apps faster, and manage your data with ease. ToolJet database requires no setup and gives you a powerful user interface for managing your data.
@@ -176,12 +156,6 @@ You can refer docs [here](https://docs.tooljet.com/docs/setup/digitalocean#datab
 When a new version is released the team will communicate with the change-log which will contain all the latest features, bug fixes and any configuration changes(applicable only if any).
 
 We will share the latest version's tag to which it can be updated. To upgrade to the new version you will have need to change the image tag in the deployment yaml file.
-
-:::info
-Before upgrading please take back-up of the database used by production instance.
-1. Also to be on a safer side creating a staging instance is recommended, so the latest version can be tested in the staging instance using the app imported from production instance and then upgrade the production instance.
-2. This will help you to understand how the production app is behaving with the latest version.
-:::
 
 :::tip
 1. If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that NODE_EXTRA_CA_CERTS environment variable is set to the absolute path containing the certificates.
