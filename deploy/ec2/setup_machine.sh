@@ -76,7 +76,7 @@ sudo systemctl start redis
 
 # Setup app directory
 mkdir -p ~/app
-git clone -b redis-deployment https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
 
 
 mv /tmp/.env ~/app/.env
