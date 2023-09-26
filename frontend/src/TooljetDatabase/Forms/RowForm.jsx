@@ -34,7 +34,7 @@ const RowForm = ({ onCreate, onClose }) => {
 
   const handleSubmit = async () => {
     setFetching(true);
-    const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable, data);
+    const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable.id, data);
     setFetching(false);
     if (error) {
       toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);

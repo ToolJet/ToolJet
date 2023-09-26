@@ -1,13 +1,16 @@
+import { cyParamName } from "../../constants/selectors/common";
+
 export const dataSourceSelector = {
   leftSidebarDatasourceButton: "[data-cy='left-sidebar-database-button']",
   labelDataSources: "[data-cy='label-datasources']",
   addDatasourceLink: "[data-cy='add-datasource-link']",
 
-  allDatasourceLabelAndCount: '[data-rr-ui-event-key="#alldatasources"]',
-  databaseLabelAndCount: '[data-rr-ui-event-key="#databases"]',
-  apiLabelAndCount: '[data-rr-ui-event-key="#apis"]',
-  cloudStorageLabelAndCount: '[data-rr-ui-event-key="#cloudstorage"]',
-  dataSourceSearchInputField: '[data-cy="datasource-search-input"]',
+  allDatasourceLabelAndCount: '[data-cy="datasource-list-header"]',
+  databaseLabelAndCount: '[data-cy="databases-datasource-button"]',
+  apiLabelAndCount: '[data-cy="apis-datasource-button"]',
+  cloudStorageLabelAndCount: '[data-cy="cloudstorage-datasource-button"]',
+  pluginsLabelAndCount: '[data-cy="plugins-datasource-button"]',
+  dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
   dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
@@ -23,8 +26,8 @@ export const dataSourceSelector = {
   linkReadDocumentation: '[data-cy="link-read-documentation"]',
   buttonTestConnection: '[data-cy="test-connection-button"]',
   connectionFailedText: '[data-cy="test-connection-failed-text"]',
-  buttonSave: '[data-cy="db-connection-save-button"]',
-  dangerAlertNotSupportSSL: ".go3958317564",
+  buttonSave: '[data-cy="db-connection-save-button"] > .tj-base-btn',
+  dangerAlertNotSupportSSL: '.go3958317564',
 
   passwordTextField: '[data-cy="password-text-field"]',
   textConnectionVerified: '[data-cy="test-connection-verified-text"]',
@@ -85,5 +88,13 @@ export const dataSourceSelector = {
   recordsInputField: '[data-cy="records-input-field"]',
 
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
+  addedDsSearchIcon: '[data-cy="added-ds-search-icon"]',
+  AddedDsSearchBar: '[data-cy="added-ds-search-bar"]',
+  dsNameInputField: '[data-cy="data-source-name-input-filed"]',
+  unSavedModalTitle: '[data-cy="unsaved-changes-title"]',
+  eventQuerySelectionField: '[data-cy="query-selection-field"]',
   connectionAlertText: '[data-cy="connection-alert-text"]',
+  deleteDSButton: (datasourceName) => {
+    return `[data-cy="${cyParamName(datasourceName)}-delete-button"]`
+  },
 };

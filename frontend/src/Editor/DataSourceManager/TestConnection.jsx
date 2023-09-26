@@ -62,7 +62,7 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
       {connectionStatus === 'unknown' && (
         <ButtonSolid
           disabled={isTesting || connectionStatus === 'success'}
-          onClick={testDataSource}
+          onClick={() => testDataSource()}
           data-cy={`test-connection-button`}
           variant="tertiary"
           leftIcon="arrowsort"

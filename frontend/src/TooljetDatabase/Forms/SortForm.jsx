@@ -45,7 +45,6 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
           value={column}
           options={displayColumns}
           onChange={handleColumnChange}
-          customWrap={true}
         />
       </div>
       <div className="col-4 py-3 select-order-field" data-cy="select-order-field">
@@ -55,7 +54,6 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
           placeholder="Select order"
           options={orders}
           onChange={handleFilterChange}
-          customWrap={true}
         />
       </div>
       <div className="col-1 py-3 cursor-pointer" data-cy="delete-icon" onClick={() => handleDelete()}>

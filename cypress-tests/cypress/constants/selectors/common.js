@@ -9,7 +9,7 @@ export const commonSelectors = {
     '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551',
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
-  searchField: "[data-cy=widget-search-box]",
+  searchField: "[data-cy='widget-search-box-search-bar']",
   firstWidget: "[data-cy=widget-list]:eq(0)",
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
@@ -211,8 +211,11 @@ export const commonSelectors = {
   editFolderOption: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
-  inspectorPinIcon: '[data-cy="null-option-icon"]',
+  inspectorPinIcon: '.d-flex > [data-cy="left-sidebar-inspector"]',
   groupInputFieldLabel: '[data-cy="label-group-input-field"]',
+  pageSectionHeader: '[data-cy="dashboard-section-header"]',
+  yesButton: '[data-cy="yes-button"]',
+
   documentationLink: '[data-cy="read-documentation-option-button"]',
   nameLabel: '[data-cy="name-label"]',
   valueLabel: '[data-cy="value-label"]',
@@ -283,15 +286,15 @@ export const commonWidgetSelector = {
   },
 
   buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
-  buttonStylesEditorSideBar: "[data-cy='sidebar-option-styles']",
+  buttonStylesEditorSideBar: "#inspector-tab-styles",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
 
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
 
-  noEventHandlerMessage: "[data-cy='no-event-handler-message']",
+  noEventHandlerMessage: "[data-cy='no-items-banner']",
   addEventHandlerLink: "[data-cy='add-event-handler']",
-  addMoreEventHandlerLink: '[data-cy="add-more-event-handler"]',
+  addMoreEventHandlerLink: '[data-cy="add-event-handler"]',
   eventHandlerCard: "[data-cy='event-handler-card']",
   alertMessageInputField: "[data-cy='alert-message-input-field']",
   eventSelection: '[data-cy="event-selection"]',

@@ -33,8 +33,9 @@ import {
 
 describe("Editor- Test Button widget", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
   });
 
@@ -95,9 +96,7 @@ describe("Editor- Test Button widget", () => {
     );
 
     verifyControlComponentAction(data.widgetName, data.customMessage);
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
+    cy.apiDeleteApp(data.appName);
   });
 
   it("should verify the styles of the button widget", () => {
@@ -224,9 +223,7 @@ describe("Editor- Test Button widget", () => {
       data.boxShadowColor,
       4
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
+    cy.apiDeleteApp(data.appName);
   });
 
   it("should verify the app preview", () => {
@@ -281,7 +278,7 @@ describe("Editor- Test Button widget", () => {
         commonWidgetText.parameterBorderRadius
       )
     )
-      .last()
+      .first()
       .clear()
       .type(buttonText.borderRadiusInput);
 
@@ -340,8 +337,7 @@ describe("Editor- Test Button widget", () => {
       data.boxShadowParam
     );
 
-    cy.get(commonSelectors.viewerPageLogo).click();
-    cy.deleteApp(data.appName);
+    cy.apiDeleteApp(data.appName);
   });
 
   it("Should verify csa", () => {
@@ -400,5 +396,6 @@ describe("Editor- Test Button widget", () => {
     cy.get(
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
     ).should("not.be.visible");
+    cy.apiDeleteApp();
   });
 });

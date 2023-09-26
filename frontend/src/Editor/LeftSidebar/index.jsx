@@ -18,6 +18,9 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
+import { GlobalSettings } from '../Header/GlobalSettings';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -28,7 +31,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
-
     appDefinition,
     setSelectedComponent,
     removeComponent,
@@ -48,13 +50,18 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     clonePage,
     setEditorMarginLeft,
+    globalSettingsChanged,
+    toggleAppMaintenance,
+    app,
+    disableEnablePage,
   } = props;
+  const { is_maintenance_on } = app;
 
   const dataSources = useDataSources();
   const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
   const queryPanelHeight = usePanelHeight();
   const [selectedSidebarItem, setSelectedSidebarItem] = useState(
-    dataSources?.length === 0 && prevSelectedSidebarItem === 'database' ? 'inspect' : prevSelectedSidebarItem
+    dataSources?.length === 0 && prevSelectedSidebarItem === 'datasource' ? 'inspect' : prevSelectedSidebarItem
   );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -72,6 +79,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     shallow
   );
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
+  const currentState = useCurrentState();
+  const [realState, setRealState] = useState(currentState);
 
   const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
     currentPageId,
@@ -130,6 +139,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
+  useEffect(() => {
+    setRealState(currentState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState.components]);
+  const backgroundFxQuery = appDefinition?.globalSettings?.backgroundFxQuery;
 
   const SELECTED_ITEMS = {
     page: (
@@ -144,6 +158,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         renamePage={renamePage}
         hidePage={hidePage}
         unHidePage={unHidePage}
+        disableEnablePage={disableEnablePage}
         updateHomePage={updateHomePage}
         updatePageHandle={updatePageHandle}
         clonePage={clonePage}
@@ -170,7 +185,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         pinned={pinned}
       />
     ),
-    database: (
+    datasource: (
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}
@@ -182,7 +197,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         onDeleteofAllDataSources={() => {
           handleSelectedSidebarItem(null);
           handlePin(false);
-          delete sideBarBtnRefs.current['database'];
+          delete sideBarBtnRefs.current['datasource'];
         }}
         setPinned={handlePin}
         pinned={pinned}
@@ -198,7 +213,25 @@ export const LeftSidebar = forwardRef((props, ref) => {
         allLog={allLog}
       />
     ),
+    settings: (
+      <GlobalSettings
+        globalSettingsChanged={globalSettingsChanged}
+        globalSettings={appDefinition.globalSettings}
+        darkMode={darkMode}
+        toggleAppMaintenance={toggleAppMaintenance}
+        is_maintenance_on={is_maintenance_on}
+        app={app}
+        backgroundFxQuery={backgroundFxQuery}
+        realState={realState}
+      />
+    ),
   };
+
+  useEffect(() => {
+    backgroundFxQuery &&
+      globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, realState));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
@@ -219,6 +252,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         tip="Inspector"
         ref={setSideBarBtnRefs('inspect')}
       />
+
       <LeftSidebarItem
         icon="debugger"
         selectedSidebarItem={selectedSidebarItem}
@@ -230,17 +264,28 @@ export const LeftSidebar = forwardRef((props, ref) => {
         tip="Debugger"
         ref={setSideBarBtnRefs('debugger')}
       />
+      <LeftSidebarItem
+        icon="settings"
+        selectedSidebarItem={selectedSidebarItem}
+        // eslint-disable-next-line no-unused-vars
+        onClick={(e) => handleSelectedSidebarItem('settings')}
+        className={`left-sidebar-item  left-sidebar-layout`}
+        badge={true}
+        tip="Settings"
+        ref={setSideBarBtnRefs('settings')}
+      />
 
       {dataSources?.length > 0 && (
         <LeftSidebarItem
           selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('database')}
-          icon="database"
+          onClick={() => handleSelectedSidebarItem('datasource')}
+          icon="datasource"
           className={`left-sidebar-item left-sidebar-layout sidebar-datasources`}
           tip="Sources"
-          ref={setSideBarBtnRefs('database')}
+          ref={setSideBarBtnRefs('datasource')}
         />
       )}
+
       <Popover
         onInteractOutside={handleInteractOutside}
         open={pinned || !!selectedSidebarItem}
@@ -250,15 +295,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContentHeight={popoverContentHeight}
       />
 
-      {config.COMMENT_FEATURE_ENABLE && (
-        <div className={`${isVersionReleased && 'disabled'}`}>
-          <LeftSidebarComment
-            selectedSidebarItem={showComments ? 'comments' : ''}
-            currentPageId={currentPageId}
-            ref={setSideBarBtnRefs('comments')}
-          />
-        </div>
-      )}
       <ConfirmDialog
         show={showLeaveDialog}
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
@@ -267,7 +303,19 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
       />
       <div className="left-sidebar-stack-bottom">
-        <div className="left-sidebar-item no-border">
+        <div className="">
+          {config.COMMENT_FEATURE_ENABLE && (
+            <div
+              className={`${isVersionReleased && 'disabled'}`}
+              style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}
+            >
+              <LeftSidebarComment
+                selectedSidebarItem={showComments ? 'comments' : ''}
+                currentPageId={currentPageId}
+                ref={setSideBarBtnRefs('comments')}
+              />
+            </div>
+          )}
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}

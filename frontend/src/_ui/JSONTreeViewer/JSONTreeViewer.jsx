@@ -2,6 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import { JSONNode } from './JSONNode';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
+import WidgetIcon from '@/../assets/images/icons/widgets';
 
 export class JSONTreeViewer extends React.Component {
   constructor(props) {
@@ -75,16 +76,25 @@ export class JSONTreeViewer extends React.Component {
 
     return 0;
   }
+  extractComponentName = (path) => {
+    // Match the last part of the URL before ".svg" using a regular expression
+    const match = path.match(/\/([^/]+)\.svg$/);
+
+    if (match && match[1]) {
+      return match[1]; // Return the matched component name
+    } else {
+      return null; // Return null if the pattern doesn't match
+    }
+  };
 
   renderNodeIcons = (node) => {
     const icon = this.props.iconsList.filter((icon) => icon?.iconName === node)[0];
-
-    if (icon && icon.iconPath) {
+    if (icon && icon?.iconPath) {
       return (
-        <img
-          style={{ maxWidth: 'none', padding: '2px' }}
-          className={`json-tree-svg-icon ${icon.className}`}
-          src={icon.iconPath}
+        <WidgetIcon
+          name={this.extractComponentName(icon?.iconPath)}
+          fill={this.props.darkMode ? '#3A3F42' : '#D7DBDF'}
+          width="16"
         />
       );
     }
