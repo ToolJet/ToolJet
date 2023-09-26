@@ -7,7 +7,7 @@ ToolJet can establish a connection with any available REST API endpoint and crea
 
 ## Connection
 
-To establish a connection with the REST API global datasource, you can either click on the `Add new global datasource` button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the REST API data source, you can either click on the `Add new` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
@@ -15,7 +15,7 @@ To establish a connection with the REST API global datasource, you can either cl
 
 </div>
 
-**ToolJet requires the following to connect to a REST API datasource:**
+**ToolJet requires the following to connect to a REST API data source:**
 
 - __Base URL__: REST API endpoint URL
 - __Headers__: Key-value pairs to include as headers with REST API requests.
@@ -33,34 +33,33 @@ To establish a connection with the REST API global datasource, you can either cl
 
 </div>
 
-:::info
-REST HTTP methods that are supported are **GET, POST, PUT, PATCH & DELETE**.
-:::
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/restquery.png" alt="ToolJet - Data source - REST API" />
-
-</div>
-
 ## Querying REST API
 
-Once you have connected to the REST API datasource, follow these steps to write queries and interact with a REST API in the ToolJet application:
-
+Once you have connected to the REST API data source, follow these steps to write queries and interact with a REST API in the ToolJet application:
 
 1. Open the ToolJet application and navigate to the query panel at the bottom of the app builder.
-2. Click the `+Add` button to open the list of available `local` and `global datasources`.
-3. Select **REST API** from the global datasource section.
+2. Click the `+Add` button to open the list of available `Data Sources`.
+3. Select **REST API** from the Data Source section.
 4. Enter the required query parameters.
 5. Click `Preview` to view the data returned from the query or click `Run` to execute the query.
 
 :::tip
-Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/tutorial/transformations)**.
+Query results can be transformed using the **[Transformations](/docs/how-to/transformations)** feature.
 :::
 
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/preview.png" alt="ToolJet - Data source - REST API" />
+
+</div>
+
+<br/>
+
+ToolJet supports the REST HTTP methods **GET**, **POST**, **PUT**, **PATCH**, and **DELETE**. You can select the method from the dropdown menu.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/restquery.png" alt="ToolJet - Data source - REST API" />
 
 </div>
 
@@ -151,5 +150,115 @@ Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/base64.png" alt="ToolJet - Data source - REST API" />
+
+</div>
+
+## OAuth 2.0 method for authenticating REST APIs
+
+ToolJet’s REST API data source supports OAuth 2.0 as the authentication type.
+
+Before setting up the REST API data source in ToolJet, we need to configure the **Google Cloud Platform** to gather the API keys required for the authorization access.
+
+### Setting up Google Cloud Platform
+
+Google Cloud Platform provides access to more than 350 APIs and Services that can allow us to access data from our Google account and its services. Let's create an OAuth application that can be given permission to use our Google profile data such as Name and Profile picture.
+
+1. Sign in to your [Google Cloud](https://cloud.google.com/) account, and from the console create a New Project.
+2. Navigate to the **APIs and Services**, and then open the **OAuth consent screen** section from the left sidebar.
+3. Enter the Application details and select the appropriate scopes for your application. We will select the profile and the email scopes. 
+4. Once you have created the OAuth consent screen, Create new credentials for the **OAuth client ID** from the **Credentials** section in the left sidebar.
+5. Select the application type, enter the application name, and then add the following URIs under Authorised Redirect URIs:
+    1. `https://app.tooljet.com/oauth2/authorize` (if you’re using ToolJet cloud)
+    2. `http://localhost:8082/oauth2/authorize` (if you’re using ToolJet locally)
+6. Now save and then you’ll get the **Client ID and Client secret** for your application.
+
+<img class="screenshot-full" src="/img/how-to/oauth2-authorization/gcp.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" height="420"/>
+
+### Configuring ToolJet Application with Google's OAuth 2.0 API
+
+Let's follow the steps to authorize ToolJet to access your Google profile data:
+
+-  Go to the **Data Sources** page from the ToolJet dashboard, select API category on sidebar and choose the **REST API** data source.
+
+  :::info
+  You can rename the data source by clicking on its default name `restapi`
+  :::
+
+- In the **Base URL** field, enter the base URL `https://www.googleapis.com/oauth2/v1/userinfo`; the base URL specifies the network address of the API service.
+- Select **Authentication** type as `OAuth 2.0`
+- Keep the default values for **Grant Type**, **Add Access Token To**, and **Header Prefix** i.e. `Authorization Code`, `Request Header`, and `Bearer` respectively.
+- Enter **Access Token URL**: `https://oauth2.googleapis.com/token`; this token allows users to verify their identity, and in return, receive a unique access token.
+- Enter the **Client ID** and **Client Secret** that we generated from the [Google Console](http://console.developers.google.com/).
+- In the **Scope** field, enter `https://www.googleapis.com/auth/userinfo.profile`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
+- Enter **Authorization URL:** `https://accounts.google.com/o/oauth2/v2/auth`; the Authorization URL requests authorization from the user and redirects to retrieve an authorization code from identity server.
+- Create three **Custom Authentication Parameters:**
+
+  | Params      | Description |
+  |:----------- |:----------- |
+  | response_type | code ( `code` refers to the Authorization Code) |
+  | client_id | **Client ID**  |
+  | redirect_uri | `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.  |
+    
+- Keep the default selection for **Client Authentication** and **Save** the data source.
+
+<img class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0"/>
+
+### Authenticating REST API
+
+Let’s create a query to make a `GET` request to the URL, it will pop a new window and ask the user to authenticate against the API.
+
+- Add a new query and select the REST API data source from the dropdown
+- In the **Method** dropdown select `GET` and enabe the  `Run query on application load?`
+- Run the query. 
+- A new window will pop for authentication and once auth is successful, you can run the query again to get the user data like Name and Profile Picture.
+
+## Bearer Token method for authenticating REST APIs
+
+ToolJet’s REST API data source supports Bearer Token as the authentication type. Bearer Token is a security token that is issued by the authentication server to the client. The client then uses the token to access the protected resources hosted by the resource server.
+
+### Configuring REST API data source with Bearer Token
+
+-  Go to the **Data Sources** page from the ToolJet dashboard, select **API** category on sidebar and choose the **REST API** data source.
+
+  :::info
+  You can rename the data source by clicking on its default name `restapi`
+  :::
+
+- In the **Base URL** field, enter the base URL. The base URL specifies the network address of the API service. For example, `http://localhost:3001/api/bearer-auth`
+- Enter the **Headers** if required. Headers are key-value pairs to include as headers with REST API requests.
+- Select **Authentication** type as `Bearer` from the dropdown.
+- Enter the **Token** in the field. The token is a security token that is issued by the authentication server to the client. The client then uses the token to access the protected resources hosted by the resource server.
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/datasource-reference/rest-api/none.png" alt="ToolJet - Data source - REST API" />
+
+  </div>
+
+- Now you have option to select the **SSL Certificate** if required. SSL certificate is used to verify the server certificate. By default, it is set to `None`. You can provide the **CA Certificate** or **Client Certificate** from the dropdown.
+  - **CA Certificate**: Requires a CA certificate to verify the server certificate. Copy the content of `server.crt` file and paste it in the **CA Cert** field. `server.crt` file is the certificate file that is used to verify the server certificate.
+  
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/datasource-reference/rest-api/cacert.png" alt="ToolJet - Data source - REST API" />
+
+  </div>
+
+  - **Client Certificate**: Requires a client certificate to authenticate with the server. `client.key`, `client.crt`, and `server.crt` files are the certificate files that are used to authenticate with the server. Copy the content of `client.key` file and paste it in the **Client Key** field. Copy the content of `client.crt` file and paste it in the **Client Cert** field. Copy the content of `server.crt` file and paste it in the **CA Cert** field.
+  
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/datasource-reference/rest-api/clientcert.png" alt="ToolJet - Data source - REST API" />
+
+  </div>
+
+- Once you have configured the REST API data source, click on the **Save** button.
+
+### Authenticating REST API
+
+Create a query to make a `GET` request to the URL, and it will return a success message if the token is valid.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/bearersuccess.png" alt="ToolJet - Data source - REST API" />
 
 </div>
