@@ -32,9 +32,13 @@ import {
 
 describe("Text Input", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
-    cy.dragAndDropWidget("Text Input");
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
+    cy.dragAndDropWidget("Text Input", 500, 500);
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the text input widget", () => {
@@ -45,8 +49,6 @@ describe("Text Input", () => {
     data.minimumLength = randomNumber(1, 4);
     data.maximumLength = randomNumber(8, 10);
     data.customText = randomString(12);
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(textInputText.defaultWidgetName);
     closeAccordions(["Validation", "General", "Properties", "Layout"]);
@@ -191,9 +193,6 @@ describe("Text Input", () => {
     );
     data.customText = fake.firstName;
     verifyControlComponentAction(data.widgetName, data.customText);
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
   it("should verify the styles of the text input widget", () => {
     const data = {};
@@ -201,8 +200,6 @@ describe("Text Input", () => {
     data.colourHex = fake.randomRgbaHex;
     data.boxShadowColor = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(textInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -254,9 +251,6 @@ describe("Text Input", () => {
       data.boxShadowColor,
       4
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 
   it("should verify the app preview", () => {
@@ -272,8 +266,6 @@ describe("Text Input", () => {
     data.maximumLength = randomNumber(8, 10);
     data.customText = randomString(12);
     data.maxLengthText = randomString(data.maximumLength);
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(textInputText.defaultWidgetName);
     verifyAndModifyParameter(
@@ -344,10 +336,12 @@ describe("Text Input", () => {
       .invoke("attr", "placeholder")
       .should("contain", data.customText);
 
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName),
-      data.customText
-    );
+    cy.get(
+      commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName)
+    )
+      .type(`{selectAll}{backspace}{enter}`)
+      .type(data.customText);
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(
         textInputText.defaultWidgetName
@@ -416,29 +410,29 @@ describe("Text Input", () => {
     selectCSA("textinput1", "Visibility");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Text input", 500, 50);
+    cy.dragAndDropWidget("Text input", 50, 50);
     selectEvent("On change", "Control Component");
     selectCSA("textinput1", "Set text", "500");
     addSupportCSAData("text", "{{components.textinput2.value");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 275);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 200);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Clear", "500");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 350);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 50, 400);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Disable", "500");
     cy.get('[data-cy="Value-toggle-button"]').click();
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 425);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 50);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Set blur", "500");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 300, 200);
     selectEvent("On click", "Control Component");
     selectCSA("textinput1", "Set focus");
 

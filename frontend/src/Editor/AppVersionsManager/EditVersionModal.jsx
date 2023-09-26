@@ -52,7 +52,6 @@ export const EditVersion = ({
         setShowEditAppVersion(false);
       }}
       title={t('editor.appVersionManager.editVersion', 'Edit Version')}
-      checkForBackground={true}
     >
       <form
         onSubmit={(e) => {
@@ -61,7 +60,7 @@ export const EditVersion = ({
         }}
       >
         <div className="row mb-3">
-          <div className="col modal-main">
+          <div className="col modal-main tj-app-input">
             <input
               type="text"
               onChange={(e) => setVersionName(e.target.value)}
