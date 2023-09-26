@@ -49,6 +49,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
   useEffect(() => {
     if (!isBulkUploadDrawerOpen) {
       setErrors({ client: [], server: [] });
+      setBulkUploadFile(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBulkUploadDrawerOpen]);
