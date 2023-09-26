@@ -572,11 +572,29 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'control-component': {
-        const component = Object.values(getCurrentState()?.components ?? {}).filter(
+        let component = Object.values(getCurrentState()?.components ?? {}).filter(
           (component) => component.id === event.componentId
         )[0];
-        const action = component?.[event.componentSpecificActionHandle];
-        const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
+        let action = '';
+        let actionArguments = '';
+        // check if component id not found then try to find if its available as child widget else continue
+        //  with normal flow finding action
+        if (component == undefined) {
+          component = _ref.state.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId];
+          const parent = Object.values(getCurrentState()?.components ?? {}).find(
+            (item) => item.id === component.parent
+          );
+          Object.values(parent?.children).map((item) => {
+            if (item.id == event.componentId) {
+              // child
+              action = item?.[event.componentSpecificActionHandle];
+            }
+          });
+        } else {
+          //normal compone
+          action = component?.[event.componentSpecificActionHandle];
+        }
+        actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
           value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
         }));
@@ -1158,6 +1176,7 @@ export function renderTooltip({ props, text }) {
 export function computeComponentState(_ref, components = {}) {
   let componentState = {};
   const currentComponents = getCurrentState().components;
+  console.log(':components--', components);
   Object.keys(components).forEach((key) => {
     const component = components[key];
     const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);

@@ -125,15 +125,15 @@ export const EventManager = ({
   // use components instead of currentState?.components to get all the components in canvas
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
-    Object.values(currentState?.components || {}).forEach((value) => {
+    Object.keys(components || {}).forEach((key) => {
       const targetComponentMeta = componentTypes.find(
-        (componentType) => components[value.id]?.component?.component === componentType?.component
+        (componentType) => components[key].component.component === componentType.component
       );
       if ((targetComponentMeta?.actions?.length ?? 0) > 0) {
-        if (componentType === '' || components[value.id].component.component === componentType) {
+        if (componentType === '' || components[key].component.component === componentType) {
           componentOptions.push({
-            name: components[value.id].component.name,
-            value: value.id,
+            name: components[key].component.name,
+            value: key,
           });
         }
       }
@@ -696,6 +696,7 @@ export const EventManager = ({
                       styles={styles}
                       useMenuPortal={false}
                       useCustomStyles={true}
+                      event={event}
                     />
                   </div>
                 </div>
