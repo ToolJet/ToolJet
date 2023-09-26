@@ -44,13 +44,28 @@ The trial license key will be valid for 14 days. To fully enjoy ToolJet, we reco
 
 When you've identified the ideal paid license to meet your needs, the next step is to complete the purchase process, ensuring seamless access to premium features.
 
-## A) Chosen Plan: Business Plan
+### A) Chosen Plan: Business Plan
 
-If you decide to proceed with the Business Plan and have made the purchase, please wait for our team to get back to you within 24-48 hours to get you onboarded.
+If you decide to proceed with the Business Plan and have made the purchase, please wait for our team to get back to you within 24-48 hours to get you onboarded. Once you receive the business license key, follow the steps to [update the license key](#updating-license-key).
 
-**To update the business license key, follow these steps:**
+:::warning Important
+The business license key will be valid for 3 months only. You can renew it to continue using ToolJet to its fullest potential.
+:::
+
+
+### B) Chosen Plan: Enterprise Plan
+
+- If you've selected the Enterprise Plan, expect a response from our team within 24-48 hours for onboarding.
+- To update the enterprise license key, follow the steps outlined previously.
+- The remaining days of your enterprise edition period can be conveniently viewed on the dashboard.
+
+---
+
+## Updating License Key
+
+**To update the license key, follow these steps:**
 1. Log in as a **[Super Admin](/docs/Enterprise/superadmin)**, ensuring that you are on the correct instance URL.
-2. Go to the instance settings page.
+2. Go to the Instance settings page.
 3. In the license key tab, update the provided license key.
 4. Within the license tab of the instance settings page, you can access the limit tab, which provides details about available super admins, builders, and end users.
 
@@ -70,21 +85,6 @@ As a super admin, you can conveniently view the remaining days of your enterpris
 
 </div>
 
-:::warning Important
-The business license key will be valid for 3 months only. You can renew it to continue using ToolJet to its fullest potential.
-:::
-
-
-## B) Chosen Plan: Enterprise Plan
-
-- If you've selected the Enterprise Plan, expect a response from our team within 24-48 hours for onboarding.
-- To update the enterprise license key, follow the steps outlined previously.
-- The remaining days of your enterprise edition period can be conveniently viewed on the dashboard. (refer screenshots added above)
-
-:::info Note
-As a super admin, you can conveniently view the remaining days of your enterprise edition period on the dashboard.
-:::
-
 ---
 
 ## Frequently Asked Questions (FAQs)
@@ -100,10 +100,16 @@ If your business or enterprise edition license key is nearing expiration, please
 
 **Ref: Screenshot addressing upgrade/renew CTAs. Note that there are a couple of other pages which will display banners or CTAs, from where you can upgrade/renew.**
 
-### 2) What happens if my license expires?
+### 2) What is the duration of my license's validity?
+If you have an active license, you can find its validity period in the instance settings. Generally, the duration of your license varies based on the type:
+- Trial licenses are valid for 14 days.
+- Business licenses are valid for 3 months.
+- Enterprise licenses can be customized to suit your needs.
+
+### 3) What happens if my license expires?
 If your business or enterprise license key expires, your instance will revert to operating as a free plan. While you can still create unlimited apps, workspaces, and add users, premium features such as OpenID and Audit logs will no longer be accessible. For further information, please refer to the relevant **[plans](https://www.tooljet.com/pricing)**.
 
-### 3) How can I add more users? 
+### 4) How can I add more users? 
 There are different methods to do this:
 
 **a)** You can renew directly using the **[business plan](https://www.tooljet.com/pricing)**. (Note: Please do check the list of premium features available with this plan)

@@ -38,7 +38,6 @@ const sidebars = {
         'setup/v2-migration-guide'
       ]
     },
-    'licensing',
     'tooljet-database',
     'tooljet-copilot',
     {
@@ -290,6 +289,7 @@ const sidebars = {
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
+        'org-management/licensing',
       ],
     },
     {
