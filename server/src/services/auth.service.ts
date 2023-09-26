@@ -378,7 +378,8 @@ export class AuthService {
   }
 
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
-    const { companyName, companySize, name, role, workspace, password, email, phoneNumber } = userCreateDto;
+    const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
+      userCreateDto;
 
     const nameObj = this.splitName(name);
 
@@ -405,11 +406,11 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
-      if (userCreateDto.requestedTrial) await this.activateTrial(userCreateDto);
+      if (requestedTrial) await this.activateTrial(userCreateDto);
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
-    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
+    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role, requestedTrial);
     return result;
   }
 
