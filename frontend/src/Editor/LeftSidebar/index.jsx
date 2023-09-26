@@ -19,6 +19,8 @@ import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -78,6 +80,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   );
 
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
+  const currentState = useCurrentState();
+  const [realState, setRealState] = useState(currentState);
 
   const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
     currentPageId,
@@ -136,6 +140,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
+  useEffect(() => {
+    setRealState(currentState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState.components]);
+  const backgroundFxQuery = appDefinition?.globalSettings?.backgroundFxQuery;
 
   const SELECTED_ITEMS = {
     page: (
@@ -213,9 +222,17 @@ export const LeftSidebar = forwardRef((props, ref) => {
         toggleAppMaintenance={toggleAppMaintenance}
         is_maintenance_on={is_maintenance_on}
         app={app}
+        backgroundFxQuery={backgroundFxQuery}
+        realState={realState}
       />
     ),
   };
+
+  useEffect(() => {
+    backgroundFxQuery &&
+      globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, realState));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
@@ -278,6 +295,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}
       />
+
       <ConfirmDialog
         show={showLeaveDialog}
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
