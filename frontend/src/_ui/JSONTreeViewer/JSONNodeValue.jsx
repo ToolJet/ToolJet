@@ -2,17 +2,18 @@ import React from 'react';
 
 const JSONTreeValueNode = ({ data, type }) => {
   if (type === 'Function') {
-    const functionString = `${data.toString().split('{')[0].trim()}{...}`;
-    return (
-      <React.Fragment>
-        <span
-          className={`text-secondary node-value-${type}`}
-          style={{ fontSize: '12px', fontFamily: 'monospace', textTransform: 'none' }}
-        >
-          {functionString}
-        </span>
-      </React.Fragment>
-    );
+    return;
+    // const functionString = `${data.toString().split('{')[0].trim()}{...}`;
+    // return (
+    //   <React.Fragment>
+    //     <span
+    //       className={`text-secondary node-value-${type}`}
+    //       style={{ fontSize: '12px', fontFamily: 'monospace', textTransform: 'none' }}
+    //     >
+    //       {functionString}
+    //     </span>
+    //   </React.Fragment>
+    // );
   }
 
   let value = type === 'String' ? `"${data}"` : String(data);

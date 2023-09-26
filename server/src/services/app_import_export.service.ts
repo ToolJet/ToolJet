@@ -27,9 +27,22 @@ interface AppResourceMappings {
   appDefaultEnvironmentMapping: Record<string, string[]>;
 }
 
-type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb';
+type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
+type DefaultDataSourceName =
+  | 'restapidefault'
+  | 'runjsdefault'
+  | 'runpydefault'
+  | 'tooljetdbdefault'
+  | 'workflowsdefault';
 
-const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb'];
+const DefaultDataSourceNames: DefaultDataSourceName[] = [
+  'restapidefault',
+  'runjsdefault',
+  'runpydefault',
+  'tooljetdbdefault',
+  'workflowsdefault',
+];
+const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
 
 @Injectable()
 export class AppImportExportService {
@@ -374,7 +387,7 @@ export class AppImportExportService {
           );
         }
 
-        const isDefaultDatasource = DefaultDataSourceKinds.includes(importingDataSource.kind as DefaultDataSourceKind);
+        const isDefaultDatasource = DefaultDataSourceNames.includes(importingDataSource.name as DefaultDataSourceName);
         if (!isDefaultDatasource) {
           await this.createDataSourceOptionsForExistingAppEnvs(
             manager,
@@ -460,9 +473,10 @@ export class AppImportExportService {
 
     await Promise.all(newDataQueries.map((newQuery: any) => manager.save(newQuery)));
 
-    newDataQueries.forEach(
-      (newQuery: { id: string }) => (appResourceMappings.dataQueryMapping[newQuery.id] = newQuery.id)
-    );
+    newDataQueries.forEach((newQuery, index) => {
+      const importingDataQuery = importingDataQueriesForAppVersion[index];
+      appResourceMappings.dataQueryMapping[importingDataQuery.id] = newQuery.id;
+    });
 
     for (const newQuery of newDataQueries) {
       const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
@@ -505,12 +519,19 @@ export class AppImportExportService {
         (dso) => dso.environmentId === defaultAppEnvironmentId
       );
       for (const otherEnvironmentId of otherEnvironmentsIds) {
-        await this.createDatasourceOption(
-          manager,
-          defaultEnvDsOption.options,
-          otherEnvironmentId,
-          dataSourceForAppVersion.id
-        );
+        const existingDataSourceOptions = await manager.findOne(DataSourceOptions, {
+          where: {
+            dataSourceId: dataSourceForAppVersion.id,
+            environmentId: otherEnvironmentId,
+          },
+        });
+        !existingDataSourceOptions &&
+          (await this.createDatasourceOption(
+            manager,
+            defaultEnvDsOption.options,
+            otherEnvironmentId,
+            dataSourceForAppVersion.id
+          ));
       }
     }
 
@@ -558,7 +579,7 @@ export class AppImportExportService {
     appVersionId: string,
     user: User
   ): Promise<DataSource> {
-    const isDefaultDatasource = DefaultDataSourceKinds.includes(dataSource.kind as DefaultDataSourceKind);
+    const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
     const isPlugin = !!dataSource.pluginId;
 
     if (isDefaultDatasource) {
