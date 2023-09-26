@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       job-to-run:
-        description: Enter the job name (tooljet-ce/tooljet-server-ce/try-tooljet)
-        options: ["tooljet-ce", "try-tooljet", "tooljet-server-ce"]
+        description: Enter the job name (tooljet-ce)
+        options: ["tooljet-ce", "try-tooljet"]
         required: true
       image:
         description: "Enter the latest image tag"
