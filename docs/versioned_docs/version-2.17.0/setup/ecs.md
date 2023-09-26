@@ -1,9 +1,9 @@
 ---
-id: ecs
-title: AWS ECS
+id: google-cloud-run
+title: Google Cloud Run
 ---
 
-# Deploying ToolJet on Amazon ECS
+# Deploying ToolJet on Google Cloud Run
 
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet.
@@ -11,80 +11,143 @@ You should setup a PostgreSQL database manually to be used by ToolJet.
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
 
-Follow the steps below to deploy ToolJet on a ECS cluster.
+Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
-1.  Setup a PostgreSQL database
-    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps.
 
-2.  Create a target group and an application load balancer to route traffic onto ToolJet containers.
-    You can [reference](https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-application-load-balancer.html) AWS docs to set it up. Please note that ToolJet server exposes `/api/health`, which you can configure for health checks.
+## Deploying ToolJet application
 
-    :::note
-    This setup follows the old AWS UI for ECS as some options are missing on the latest experience.
-    :::
+1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific tooljet image from docker hub and then tag with your project to push it to cloud registry.
 
-3.  Create task definition for deploying ToolJet app as a service on your preconfigured cluster.
+   ```bash
+   gcloud auth configure-docker
+   docker pull tooljet/tooljet:latest
+   docker tag tooljet/tooljet:latest gcr.io/<replace-your-project-id>/tooljet/tooljet:latest
+   docker push gcr.io/<replace-your-project-id>/tooljet/tooljet:latest
+   ```
 
-    1.  Select Fargate as launch type compatibility.
-        <img className="screenshot-full" src="/img/setup/ecs/launch-type-compatibility.png" alt="select launch type compatibility" />
+  Please run the above command by launching GoogleCLI which will help to push the Tooljet application image to Google container registry. 
 
-    2.  Configure IAM roles and set operating system family as Linux
-        <img className="screenshot-full" src="/img/setup/ecs/task-definition-config.png" alt="task definition config" />
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/CLI.png" alt="CLI" />
+  </div>
 
-    3.  Select task size to have 3GB of memory and 1vCpu
-        <img className="screenshot-full" src="/img/setup/ecs/task-size.png" alt="task size config" />
 
-    4.  Click on add container to update container definitions
-        <img className="screenshot-full" src="/img/setup/ecs/add-container-button.png" alt="add container button" />
+2. Create new cloud run service
 
-        Within the add container form that is shown:
+	Select and add the pushed Tooljet application image as shown below.
 
-        - Specify your container name ex: `tooljet`
-        - Set the image you intend to deploy. ex: `tooljet/tooljet:<version_tag>`
-        - Update port mappings at container port `3000` for tcp protocol.
-          <img className="screenshot-full" src="/img/setup/ecs/container-setup.png" alt="container setup" />
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/tooljet-app-service.png" alt="tooljet-app-service" />
+  </div>
 
-        - Update container command field to be `npm,run,start:prod`.
-          <img className="screenshot-full" src="/img/setup/ecs/container-command.png" alt="container command" />
+3. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
 
-        - Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up.
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
+  </div>
 
-           <img className="screenshot-full" src="/img/setup/ecs/container-env-setup.png" alt="container env setup" />
+4. Under containers tab, please make sure the port is set 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity is set to 2GiB.
 
-          :::note
-          For the minimal setup, ToolJet requires:
-          `TOOLJET_HOST`, `PG_HOST`, `PG_DB`, `PG_USER`, `PG_PASSWORD`, `SECRET_KEY_BASE` & `LOCKBOX_MASTER_KEY` keys in the secret.
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-tooljet" />
+  </div>
 
-          Read **[environment variables reference](/docs/setup/env-vars)**
 
-          :::
+5. Under environmental variable please add the below Tooljet application variables. You can also refer env variable [**here**](/docs/setup/env-vars). 
 
-      5. Please add redis container as part of the deployment. Please make sure that you are using redis version 6.x.x
+  Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
-      Also add these env variable in the above tooljet container
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/env-variable-tooljet.png" alt="env-variable-tooljet" />
+  </div>
 
-        ```
-        REDIS_HOST=localhost
-        REDIS_PORT=6379
-        REDIS_USER=default
-        REDIS_PASSWORD=
-        ```
-
-4.  Create a service to run your task definition within your cluster.
-    - Select launch type as Fargate.
-    - Set operating system family as Linux
-    - Select task definition family as the one created earlier. ex: `tooljet-ce`
-    - Select the cluster and set the service name
-    - You can set the number of tasks to start with as two
-    - Rest of the values can be kept as default
-      <img className="screenshot-full" src="/img/setup/ecs/service-config.png" alt="service config" />
-    - Click on next step to configure networking options
-    - Select your designated VPC, Subnets and Security groups. Kindly ensure that the security group allows for inbound traffic to http port 3000 for the task.
-      <img className="screenshot-full" src="/img/setup/ecs/service-security-group-config.png" alt="service security group config" />
-    - Since migrations are run as a part of container boot, please specify health check grace period for 900 seconds.
-    - Select the application loadbalancer option and set the target group name to the one we had created earlier. This will auto populate the health check endpoints.
-
-:::info
-The setup above is just a template. Feel free to update the task definition and configure parameters for resources and environment variables according to your needs.
+:::tip
+If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`.  
 :::
 
+
+6. Please go to the connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up.
+
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/cloud-SQL-tooljet.png" alt="cloud-SQL-tooljet" />
+  </div>
+
+
+Click on deploy once the above parameters are set. 
+
+:::info
+Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
+:::
+
+
+
+
+
+### Deploying ToolJet Database 
+
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
+
+#### PostgREST server 
+
+1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific PostgREST image from docker hub and then tag with your project to push it to cloud registry.
+
+   ```bash
+   gcloud auth configure-docker
+   docker pull postgrest/postgrest:v10.1.1.20221215
+   docker tag postgrest/postgrest:v10.1.1.20221215 gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
+   docker push gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
+   ```
+  
+  Please run the above command by launching googleCLI which will help to push the PostgREST image to Google container registry. 
+
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/CLI.png" alt="CLI" />
+  </div>
+
+
+2. Once the PostgREST image is pushed. Click on create service.
+
+  Select and add the pushed PostgREST image as shown in below.
+
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/create-service-cloud-run-postgrest.png" alt="create-service-cloud-run-postgrest" />
+  </div>  
+
+
+3. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
+
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
+  </div>
+
+
+4. Under containers tab, please make sure the port is set 3000 and CPU capacity is set to 1GiB.
+
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-postgrest" />
+  </div>
+  
+5. Under environmental variable please add corresponding Tooljet database env variables. You can also refer [env variable](/docs/setup/env-vars#tooljet-database).
+
+6. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for Tooljet application or the separate PostgreSQL database created respective to Tooljet Database from the drop-down option.
+
+
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/Cloud-SQL-instance.png" alt="Cloud-SQL-instance" />
+  </div>
+  
+
+Click on deploy once the above parameters are set. 
+
+:::info
+Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
+:::
+
+
+
+7. Additional Environmental variable to be added to Tooljet application or Tooljet Server connect to PostgREST server. You can also refer env variable [**here**](/docs/setup/env-vars#tooljet-database)
+
+
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/cloud-run/env-for-tooljet.png" alt="env-for-tooljet" />
+  </div>
