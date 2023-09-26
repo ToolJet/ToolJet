@@ -1,4 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  Index,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Page } from './page.entity';
 import { Layout } from './layout.entity';
 
@@ -28,6 +38,12 @@ export class Component {
 
   @Column('simple-json')
   validations: any;
+
+  @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
 
   @ManyToOne(() => Page, (page) => page.components)
   @JoinColumn({ name: 'page_id' })

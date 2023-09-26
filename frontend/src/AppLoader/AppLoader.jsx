@@ -26,10 +26,10 @@ const AppLoaderComponent = (props) => {
     appService
       .getApp(appId, 'edit')
       .then((data) => {
+        setShouldLoadApp(true);
         updateState({
           app: data,
         });
-        setShouldLoadApp(true);
       })
       .catch((error) => {
         handleError(error);

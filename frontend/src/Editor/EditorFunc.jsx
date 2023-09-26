@@ -640,6 +640,7 @@ const EditorComponent = (props) => {
       appId: data?.id,
       events: data.events,
       currentVersionId: data?.editing_version?.id,
+      app: data,
     });
 
     const appDefData = buildAppDefinition(data);

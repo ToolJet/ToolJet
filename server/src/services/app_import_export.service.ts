@@ -140,6 +140,36 @@ export class AppImportExportService {
         });
       }
 
+      const pages = await manager
+        .createQueryBuilder(Page, 'pages')
+        .where('pages.appVersionId IN(:...versionId)', {
+          versionId: appVersions.map((v) => v.id),
+        })
+        .orderBy('pages.created_at', 'ASC')
+        .getMany();
+
+      const components = await manager
+        .createQueryBuilder(Component, 'components')
+        .leftJoinAndSelect('components.layouts', 'layouts')
+        .where('components.pageId IN(:...pageId)', {
+          pageId: pages.map((v) => v.id),
+        })
+        .orderBy('components.created_at', 'ASC')
+        .getMany();
+
+      const events = await manager
+        .createQueryBuilder(EventHandler, 'event_handlers')
+        .where('event_handlers.appVersionId IN(:...versionId)', {
+          versionId: appVersions.map((v) => v.id),
+        })
+        .orderBy('event_handlers.created_at', 'ASC')
+        .getMany();
+
+      // console.log('-----arpit import/export::', { components });
+
+      appToExport['components'] = components;
+      appToExport['pages'] = pages;
+      appToExport['events'] = events;
       appToExport['dataQueries'] = dataQueries;
       appToExport['dataSources'] = dataSources;
       appToExport['appVersions'] = appVersions;
@@ -149,6 +179,7 @@ export class AppImportExportService {
         multiPages: true,
         multiEnv: true,
         globalDataSources: true,
+        normalizedAppDefinitionSchema: true,
       };
 
       return { appV2: appToExport };
@@ -176,6 +207,8 @@ export class AppImportExportService {
       ? appParams
       : convertSinglePageSchemaToMultiPageSchema(appParams);
 
+    const isNormalizedAppDefinitionSchema = appParams?.schemaDetails?.normalizedAppDefinitionSchema;
+
     await dbTransactionWrap(async (manager) => {
       importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user);
       await this.setupImportedAppAssociations(
@@ -183,7 +216,8 @@ export class AppImportExportService {
         importedApp,
         schemaUnifiedAppParams,
         user,
-        externalResourceMappings
+        externalResourceMappings,
+        isNormalizedAppDefinitionSchema
       );
       await this.createAdminGroupPermissions(manager, importedApp);
     });
@@ -219,6 +253,9 @@ export class AppImportExportService {
     importingAppEnvironments: AppEnvironment[];
     importingDataSourceOptions: DataSourceOptions[];
     importingDefaultAppEnvironmentId: string;
+    importingPages: Page[];
+    importingComponents: Component[];
+    importingEvents: EventHandler[];
   } {
     const importingDataSources = appParams?.dataSources || [];
     const importingDataQueries = appParams?.dataQueries || [];
@@ -229,6 +266,10 @@ export class AppImportExportService {
       (env: { isDefault: any }) => env.isDefault
     )?.id;
 
+    const importingPages = appParams?.pages || [];
+    const importingComponents = appParams?.components || [];
+    const importingEvents = appParams?.events || [];
+
     return {
       importingDataSources,
       importingDataQueries,
@@ -236,6 +277,9 @@ export class AppImportExportService {
       importingAppEnvironments,
       importingDataSourceOptions,
       importingDefaultAppEnvironmentId,
+      importingPages,
+      importingComponents,
+      importingEvents,
     };
   }
 
@@ -248,7 +292,8 @@ export class AppImportExportService {
     importedApp: App,
     appParams: any,
     user: User,
-    externalResourceMappings: Record<string, unknown>
+    externalResourceMappings: Record<string, unknown>,
+    isNormalizedAppDefinitionSchema: boolean
   ) {
     // Old version without app version
     // Handle exports prior to 0.12.0
@@ -266,7 +311,6 @@ export class AppImportExportService {
       appEnvironmentMapping: {},
       appDefaultEnvironmentMapping: {},
     };
-
     const {
       importingDataSources,
       importingDataQueries,
@@ -274,6 +318,9 @@ export class AppImportExportService {
       importingAppEnvironments,
       importingDataSourceOptions,
       importingDefaultAppEnvironmentId,
+      importingPages,
+      importingComponents,
+      importingEvents,
     } = this.extractImportDataFromAppParams(appParams);
 
     const { appDefaultEnvironmentMapping, appVersionMapping } = await this.createAppVersionsForImportedApp(
@@ -281,7 +328,8 @@ export class AppImportExportService {
       user,
       importedApp,
       importingAppVersions,
-      appResourceMappings
+      appResourceMappings,
+      isNormalizedAppDefinitionSchema
     );
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
@@ -296,126 +344,126 @@ export class AppImportExportService {
       importingDataSources,
       importingDataSourceOptions,
       importingDataQueries,
-      importingDefaultAppEnvironmentId
+      importingDefaultAppEnvironmentId,
+      importingPages,
+      importingComponents,
+      importingEvents
     );
+    // console.log('-----arpit extract import data:: ', { appResourceMappings });
+    if (!isNormalizedAppDefinitionSchema) {
+      for (const importingAppVersion of importingAppVersions) {
+        const updatedDefinition = this.replaceDataQueryIdWithinDefinitions(
+          importingAppVersion.definition,
+          appResourceMappings.dataQueryMapping
+        );
 
-    for (const importingAppVersion of importingAppVersions) {
-      const updatedDefinition = this.replaceDataQueryIdWithinDefinitions(
-        importingAppVersion.definition,
-        appResourceMappings.dataQueryMapping
-      );
+        // !-----
 
-      // !-----
+        let updateHomepageId = null;
 
-      let updateHomepageId = null;
+        if (updatedDefinition?.pages) {
+          for (const pageId of Object.keys(updatedDefinition?.pages)) {
+            const page = updatedDefinition.pages[pageId];
 
-      if (updatedDefinition?.pages) {
-        for (const pageId of Object.keys(updatedDefinition?.pages)) {
-          const page = updatedDefinition.pages[pageId];
+            const pageEvents = page.events || [];
+            const componentEvents = [];
 
-          const pageEvents = page.events || [];
-          const componentEvents = [];
+            const pagePostionIntheList = Object.keys(updatedDefinition?.pages).indexOf(pageId);
 
-          const pagePostionIntheList = Object.keys(updatedDefinition?.pages).indexOf(pageId);
+            const isHompage = (updatedDefinition['homePageId'] as any) === pageId;
 
-          const isHompage = (updatedDefinition['homePageId'] as any) === pageId;
+            const pageComponents = page.components;
 
-          const pageComponents = page.components;
+            const mappedComponents = transformComponentData(pageComponents, componentEvents);
 
-          const mappedComponents = transformComponentData(pageComponents, componentEvents);
+            const componentLayouts = [];
 
-          const componentLayouts = [];
+            const newPage = manager.create(Page, {
+              name: page.name,
+              handle: page.handle,
+              appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+              index: pagePostionIntheList,
+            });
+            const pageCreated = await manager.save(newPage);
 
-          const newPage = manager.create(Page, {
-            name: page.name,
-            handle: page.handle,
-            appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-            index: pagePostionIntheList,
-          });
-          const pageCreated = await manager.save(newPage);
+            mappedComponents.forEach((component) => {
+              component.page = pageCreated;
+            });
 
-          mappedComponents.forEach((component) => {
-            component.page = pageCreated;
-          });
+            const savedComponents = await manager.save(Component, mappedComponents);
 
-          const savedComponents = await manager.save(Component, mappedComponents);
+            savedComponents.forEach((component) => {
+              const componentLayout = pageComponents[component.id]['layouts'];
 
-          savedComponents.forEach((component) => {
-            const componentLayout = pageComponents[component.id]['layouts'];
+              if (componentLayout) {
+                for (const type in componentLayout) {
+                  const layout = componentLayout[type];
+                  const newLayout = new Layout();
+                  newLayout.type = type;
+                  newLayout.top = layout.top;
+                  newLayout.left = layout.left;
+                  newLayout.width = layout.width;
+                  newLayout.height = layout.height;
+                  newLayout.component = component;
 
-            if (componentLayout) {
-              for (const type in componentLayout) {
-                const layout = componentLayout[type];
-                const newLayout = new Layout();
-                newLayout.type = type;
-                newLayout.top = layout.top;
-                newLayout.left = layout.left;
-                newLayout.width = layout.width;
-                newLayout.height = layout.height;
-                newLayout.component = component;
-
-                componentLayouts.push(newLayout);
+                  componentLayouts.push(newLayout);
+                }
               }
+            });
+
+            await manager.save(Layout, componentLayouts);
+
+            //Event handlers
+
+            if (pageEvents.length > 0) {
+              pageEvents.forEach(async (event, index) => {
+                const newEvent = {
+                  name: event.eventId,
+                  sourceId: pageCreated.id,
+                  target: Target.page,
+                  event: event,
+                  index: pageEvents.index || index,
+                  appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                };
+
+                await manager.save(EventHandler, newEvent);
+              });
             }
-          });
 
-          await manager.save(Layout, componentLayouts);
+            componentEvents.forEach((eventObj) => {
+              if (eventObj.event?.length === 0) return;
 
-          //Event handlers
+              eventObj.event.forEach(async (event, index) => {
+                const newEvent = {
+                  name: event.eventId,
+                  sourceId: eventObj.componentId,
+                  target: Target.component,
+                  event: event,
+                  index: eventObj.index || index,
+                  appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                };
 
-          if (pageEvents.length > 0) {
-            pageEvents.forEach(async (event, index) => {
-              const newEvent = {
-                name: event.eventId,
-                sourceId: pageCreated.id,
-                target: Target.page,
-                event: event,
-                index: pageEvents.index || index,
-                appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-              };
-
-              await manager.save(EventHandler, newEvent);
+                await manager.save(EventHandler, newEvent);
+              });
             });
-          }
 
-          componentEvents.forEach((eventObj) => {
-            if (eventObj.event?.length === 0) return;
-
-            eventObj.event.forEach(async (event, index) => {
-              const newEvent = {
-                name: event.eventId,
-                sourceId: eventObj.componentId,
-                target: Target.component,
-                event: event,
-                index: eventObj.index || index,
-                appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-              };
-
-              await manager.save(EventHandler, newEvent);
-            });
-          });
-
-          if (isHompage) {
-            updateHomepageId = pageCreated.id;
+            if (isHompage) {
+              updateHomepageId = pageCreated.id;
+            }
           }
         }
+
+        //!----
+
+        await manager.update(
+          AppVersion,
+          { id: appResourceMappings.appVersionMapping[importingAppVersion.id] },
+          {
+            definition: updatedDefinition,
+            homePageId: updateHomepageId,
+          }
+        );
       }
-
-      // await manager.update(
-      //   AppVersion,
-      //   { id: appVersionMapping[appVersion.id] },
-      //   { definition: null, homePageId: updateHomepageId }
-      // );
-      //!----
-
-      await manager.update(
-        AppVersion,
-        { id: appResourceMappings.appVersionMapping[importingAppVersion.id] },
-        {
-          definition: updatedDefinition,
-          homePageId: updateHomepageId,
-        }
-      );
     }
 
     await this.setEditingVersionAsLatestVersion(manager, appResourceMappings.appVersionMapping, importingAppVersions);
@@ -431,11 +479,17 @@ export class AppImportExportService {
     importingDataSources: DataSource[],
     importingDataSourceOptions: DataSourceOptions[],
     importingDataQueries: DataQuery[],
-    importingDefaultAppEnvironmentId: string
+    importingDefaultAppEnvironmentId: string,
+    importingPages: Page[],
+    importingComponents: Component[],
+    importingEvents: EventHandler[]
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
 
     for (const importingAppVersion of importingAppVersions) {
+      let isHomePage = false;
+      let updateHomepageId = null;
+
       const { appEnvironmentMapping } = await this.associateAppEnvironmentsToAppVersion(
         manager,
         user,
@@ -517,10 +571,100 @@ export class AppImportExportService {
           dataSourceForAppVersion,
           importingAppVersion,
           appResourceMappings,
-          externalResourceMappings
+          externalResourceMappings,
+          importingEvents.filter((event) => event.target === Target.dataQuery)
         );
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
+
+      for (const page of importingPages) {
+        const newPage = manager.create(Page, {
+          name: page.name,
+          handle: page.handle,
+          appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+          index: page.index,
+        });
+
+        const pageCreated = await manager.save(newPage);
+
+        isHomePage = importingAppVersion.homePageId === page.id;
+
+        if (isHomePage) {
+          updateHomepageId = pageCreated.id;
+        }
+
+        const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
+
+        for (const component of pageComponents) {
+          const newComponent = new Component();
+
+          newComponent.name = component.name;
+          newComponent.type = component.type;
+          newComponent.properties = component.properties;
+          newComponent.styles = component.styles;
+          newComponent.validations = component.validations;
+          newComponent.parent = component.parent || null;
+
+          newComponent.page = pageCreated;
+
+          const savedComponent = await manager.save(newComponent);
+
+          const componentLayout = component.layouts;
+
+          componentLayout.forEach(async (layout) => {
+            const newLayout = new Layout();
+            newLayout.type = layout.type;
+            newLayout.top = layout.top;
+            newLayout.left = layout.left;
+            newLayout.width = layout.width;
+            newLayout.height = layout.height;
+            newLayout.component = savedComponent;
+
+            await manager.save(newLayout);
+          });
+
+          const componentEvents = importingEvents.filter((event) => event.sourceId === component.id);
+
+          if (componentEvents.length > 0) {
+            componentEvents.forEach(async (componentEvent) => {
+              const newEvent = {
+                name: componentEvent.name,
+                sourceId: savedComponent.id,
+                target: componentEvent.target,
+                event: componentEvent.event,
+                index: componentEvent.index,
+                appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+              };
+              await manager.save(EventHandler, newEvent);
+            });
+          }
+        }
+
+        const pageEvents = importingEvents.filter((event) => event.sourceId === page.id);
+
+        if (pageEvents.length > 0) {
+          pageEvents.forEach(async (pageEvent) => {
+            const newEvent = {
+              name: pageEvent.name,
+              sourceId: pageCreated.id,
+              target: pageEvent.target,
+              event: pageEvent.event,
+              index: pageEvent.index,
+              appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+            };
+
+            await manager.save(EventHandler, newEvent);
+          });
+        }
+      }
+
+      await manager.update(
+        AppVersion,
+        { id: appResourceMappings.appVersionMapping[importingAppVersion.id] },
+        {
+          homePageId: updateHomepageId,
+        }
+      );
     }
 
     return appResourceMappings;
@@ -561,7 +705,8 @@ export class AppImportExportService {
     dataSourceForAppVersion: DataSource,
     importingAppVersion: AppVersion,
     appResourceMappings: AppResourceMappings,
-    externalResourceMappings: { [x: string]: any }
+    externalResourceMappings: { [x: string]: any },
+    importingQueryEvents: EventHandler[]
   ) {
     appResourceMappings = { ...appResourceMappings };
     const newDataQueries = importingDataQueriesForAppVersion
@@ -593,24 +738,39 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping
       );
 
-      const queryEvents = newQuery.options?.events || [];
-      delete newOptions?.events;
+      if (importingQueryEvents.length > 0) {
+        importingQueryEvents.forEach(async (dataQueryEvent) => {
+          const newEvent = {
+            name: dataQueryEvent.name,
+            sourceId: newQuery.id,
+            target: dataQueryEvent.target,
+            event: dataQueryEvent.event,
+            index: dataQueryEvent.index,
+            appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+          };
+
+          await manager.save(EventHandler, newEvent);
+        });
+      } else {
+        const queryEvents = newQuery.options?.events || [];
+        delete newOptions?.events;
+
+        queryEvents.forEach(async (event, index) => {
+          const newEvent = {
+            name: event.eventId,
+            sourceId: newQuery.id,
+            target: Target.dataQuery,
+            event: event,
+            index: queryEvents.index || index,
+            appVersionId: newQuery.appVersionId,
+          };
+
+          await manager.save(EventHandler, newEvent);
+        });
+      }
 
       newQuery.options = newOptions;
       await manager.save(newQuery);
-
-      queryEvents.forEach(async (event, index) => {
-        const newEvent = {
-          name: event.eventId,
-          sourceId: newQuery.id,
-          target: Target.dataQuery,
-          event: event,
-          index: queryEvents.index || index,
-          appVersionId: newQuery.appVersionId,
-        };
-
-        await manager.save(EventHandler, newEvent);
-      });
     }
     return appResourceMappings;
   }
@@ -837,7 +997,8 @@ export class AppImportExportService {
     user: User,
     importedApp: App,
     appVersions: AppVersion[],
-    appResourceMappings: AppResourceMappings
+    appResourceMappings: AppResourceMappings,
+    isNormalizedAppDefinitionSchema: boolean
   ) {
     appResourceMappings = { ...appResourceMappings };
     const { appVersionMapping, appDefaultEnvironmentMapping } = appResourceMappings;
@@ -867,9 +1028,15 @@ export class AppImportExportService {
         updatedAt: new Date(),
       });
 
-      version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
-      version.homePageId = appVersion.definition?.homePageId;
-      version.globalSettings = appVersion.definition?.globalSettings;
+      if (isNormalizedAppDefinitionSchema) {
+        version.showViewerNavigation = appVersion.showViewerNavigation;
+        version.homePageId = appVersion.homePageId;
+        version.globalSettings = appVersion.globalSettings;
+      } else {
+        version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
+        version.homePageId = appVersion.definition?.homePageId;
+        version.globalSettings = appVersion.definition?.globalSettings;
+      }
 
       await manager.save(version);
 

@@ -12,6 +12,7 @@ import ExportAppModal from '../../HomePage/ExportAppModal';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useAppInfo } from '@/_stores/appDataStore';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -19,7 +20,7 @@ export const GlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   isMaintenanceOn,
-  app,
+  // app,
   backgroundFxQuery,
   realState,
 }) => {
@@ -35,6 +36,8 @@ export const GlobalSettings = ({
     }),
     shallow
   );
+
+  const { app } = useAppInfo();
 
   const coverStyles = {
     position: 'fixed',
@@ -56,6 +59,8 @@ export const GlobalSettings = ({
     outline: showPicker && '1px solid var(--indigo9)',
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
+
+  console.log('----arpit exporting:: ', { app });
   return (
     <>
       <Confirm
