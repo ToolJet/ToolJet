@@ -39,8 +39,8 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 
         Within the add container form that is shown:
 
-        - Specify your container name ex: `tooljet-ce`
-        - Set the image you intend to deploy. ex: `tooljet/tooljet-ce:v1.26.0`
+        - Specify your container name ex: `tooljet`
+        - Set the image you intend to deploy. ex: `tooljet/tooljet:<version_tag>`
         - Update port mappings at container port `3000` for tcp protocol.
           <img className="screenshot-full" src="/img/setup/ecs/container-setup.png" alt="container setup" />
 
@@ -58,6 +58,17 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
           Read **[environment variables reference](/docs/setup/env-vars)**
 
           :::
+
+      5. Please add redis container as part of the deployment. Please make sure that you are using redis version 6.x.x
+
+      Also add these env variable in the above tooljet container
+
+        ```
+        REDIS_HOST=localhost
+        REDIS_PORT=6379
+        REDIS_USER=default
+        REDIS_PASSWORD=
+        ```
 
 4.  Create a service to run your task definition within your cluster.
     - Select launch type as Fargate.
