@@ -70,7 +70,7 @@ spec:
           - name: TOOLJET_HOST
             value: "https://tooljet.your-domain.com"
           - name: DEPLOYMENT_PLATFORM
-            value: "k8s:aks"         
+            value: "k8s:aks"
           # Set the env values below for Tooljet Database
           # - name: ENABLE_TOOLJET_DB
           #   value: "true"
@@ -85,4 +85,4 @@ spec:
           # - name: PGRST_HOST
           #   value: "replace_with_postgrest_host"
           # - name: PGRST_JWT_SECRET
-          #   value: "replace_pgrst_jwt_secret_here"      
+          #   value: "replace_pgrst_jwt_secret_here"
