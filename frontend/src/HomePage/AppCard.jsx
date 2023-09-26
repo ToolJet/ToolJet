@@ -124,6 +124,7 @@ export default function AppCard({
                   to={getPrivateRoute('editor', {
                     id: app.id,
                   })}
+                  reloadDocument
                 >
                   <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">
                     <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />

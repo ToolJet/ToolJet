@@ -131,7 +131,7 @@ const RenderFilterFields = ({
   };
 
   return (
-    <div className="mt-1 row-container">
+    <div className="mt-1 row-container w-100">
       <div className="d-flex fields-container">
         <div className="field col">
           <Select
