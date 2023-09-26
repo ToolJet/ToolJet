@@ -869,33 +869,8 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
             ? data?.data?.status ?? 'ok'
             : data.status;
 
-        // switch (queryStatus) {
-        //   case 'Bad Request':
-        //   case 'Not Found':
-        //   case 'Unprocessable Entity':
-        //   case 'failed': {
-        //     const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-        //     toast.error(`${err.message}`);
-        //     break;
-        //   }
-        //   case 'needs_oauth': {
-        //     const url = data.data.auth_url; // Backend generates and return sthe auth url
-        //     fetchOAuthToken(url, query.data_source_id);
-        //     break;
-        //   }
-        //   case 'ok':
-        //   case 'OK':
-        //   case 'Created':
-        //   case 'Accepted':
-        //   case 'No Content': {
-        //     toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
-        //       icon: '🚀',
-        //     });
-        //     break;
-        //   }
-        // }
-
         switch (true) {
+          // Note: Need to move away from statusText -> statusCode
           case queryStatus === 'Bad Request' ||
             queryStatus === 'Not Found' ||
             queryStatus === 'Unprocessable Entity' ||
@@ -1008,7 +983,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             : query.kind === 'runpy'
             ? data?.data?.status ?? 'ok'
             : data.status;
-        console.log('Run Query --', data.status, data);
+        // Note: Need to move away from statusText -> statusCode
         if (
           promiseStatus === 'failed' ||
           promiseStatus === 'Bad Request' ||
