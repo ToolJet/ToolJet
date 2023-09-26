@@ -52,4 +52,4 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
      kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/postgrest.yaml
    ```
 
-2. Update ToolJet deployment with the appropriate env variables [here](https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/AKS/deployment.yaml) and apply the changes.
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/deployment.yaml) and apply the changes.
