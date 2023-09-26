@@ -56,14 +56,8 @@ spec:
               value: ""
             - name: TOOLJET_HOST
               value: "https://tooljet.your-domain.com"
-            - name: DEPLOYMENT_PLATFORM            
-              value: "k8s:gke"
-            - name: REDIS_HOST
-              value: tooljet-redis-service.default.svc.cluster.local
-            - name: REDIS_USER
-              value: default
-            - name: REDIS_PASSWORD
-              value:              
+            - name: DEPLOYMENT_PLATFORM
+              value: "k8s:gke"             
             # Set the env values below for Tooljet Database
             # - name: ENABLE_TOOLJET_DB
             #   value: "true"
@@ -78,51 +72,4 @@ spec:
             # - name: PGRST_HOST
             #   value: "replace_with_postgrest_host"
             # - name: PGRST_JWT_SECRET
-            #   value: "replace_pgrst_jwt_secret_here"
----
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: tooljet-redis-statefulset
-spec:
-  selector:
-    matchLabels:
-      role: tooljet-redis
-  serviceName: tooljet-redis-service
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        role: tooljet-redis
-    spec:
-      terminationGracePeriodSeconds: 10
-      containers:
-      - name: redis
-        image: redis:6.0
-        ports:
-          - containerPort: 6379
-        volumeMounts:
-          - name: tooljet-redis-persistent-storage
-            mountPath: /data
-  volumeClaimTemplates:
-  - metadata:
-      name: tooljet-redis-persistent-storage
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 2Gi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: tooljet-redis-service
-  labels:
-    name: tooljet-redis
-spec:
-  type: NodePort
-  ports:
-    - port: 6379
-      targetPort: 6379
-  selector:
-    role: tooljet-redis            
+            #   value: "replace_pgrst_jwt_secret_here"     
