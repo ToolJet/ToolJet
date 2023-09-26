@@ -162,7 +162,12 @@ const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, cu
       {showHeader && (
         <>
           <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
-            <Link to="/" data-cy="viewer-page-logo">
+            <Link
+              data-cy="viewer-page-logo"
+              onClick={() => {
+                window.location.href = '/';
+              }}
+            >
               <AppLogo isLoadingFromHeader={false} />
             </Link>
           </h1>
