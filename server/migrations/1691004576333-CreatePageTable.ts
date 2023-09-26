@@ -42,6 +42,18 @@ export class CreatePageTable1691004576333 implements MigrationInterface {
             type: 'uuid',
             isNullable: false,
           },
+          {
+            name: 'created_at',
+            type: 'timestamp',
+            isNullable: true,
+            default: 'now()',
+          },
+          {
+            name: 'updated_at',
+            type: 'timestamp',
+            isNullable: true,
+            default: 'now()',
+          },
         ],
       })
     );

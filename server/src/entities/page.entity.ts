@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { AppVersion } from './app_version.entity';
 import { Component } from './component.entity';
 
@@ -21,6 +30,12 @@ export class Page {
 
   @Column()
   hidden: boolean;
+
+  @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
 
   @Column({ name: 'app_version_id' })
   appVersionId: string;

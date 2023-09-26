@@ -44,6 +44,18 @@ export class CreateEventHandlerTable1691004706564 implements MigrationInterface 
             default: "'page'",
             isNullable: false,
           },
+          {
+            name: 'created_at',
+            type: 'timestamp',
+            isNullable: true,
+            default: 'now()',
+          },
+          {
+            name: 'updated_at',
+            type: 'timestamp',
+            isNullable: true,
+            default: 'now()',
+          },
         ],
       })
     );

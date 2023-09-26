@@ -47,6 +47,18 @@ export class CreateComponentTable1691006952074 implements MigrationInterface {
             type: 'json',
             isNullable: true,
           },
+          {
+            name: 'created_at',
+            type: 'timestamp',
+            isNullable: true,
+            default: 'now()',
+          },
+          {
+            name: 'updated_at',
+            type: 'timestamp',
+            isNullable: true,
+            default: 'now()',
+          },
         ],
       })
     );
