@@ -165,7 +165,7 @@ export const Inspector = ({
       const defaultValue = getDefaultValue(value);
       // This is needed to have enable pagination as backward compatible
       // Whenever enable pagination is false, we turn client and server side pagination as false
-      if (param.name === 'enablePagination' && !resolveReferences(value, currentState)) {
+      if (param.name === 'enablePagination' && !resolveReferences({ object: value, currentState })) {
         if (allParams?.['clientSidePagination']?.[attr]) {
           allParams['clientSidePagination'][attr] = value;
         }
@@ -537,7 +537,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
 const resolveConditionalStyle = (definition, condition, currentState) => {
   const conditionExistsInDefinition = definition[condition] ?? false;
   if (conditionExistsInDefinition) {
-    return resolveReferences(definition[condition]?.value ?? false, currentState);
+    return resolveReferences({ object: definition[condition]?.value ?? false, currentState });
   }
 };
 

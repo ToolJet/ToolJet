@@ -61,10 +61,10 @@ class Chart extends React.Component {
 
     const jsonDescription = this.state.component.component.definition.properties.jsonDescription;
 
-    const plotFromJson = resolveReferences(
-      this.state.component.component.definition.properties.plotFromJson?.value,
-      currentState
-    );
+    const plotFromJson = resolveReferences({
+      object: this.state.component.component.definition.properties.plotFromJson?.value,
+      currentState,
+    });
 
     const chartType = this.state.component.component.definition.properties.type.value;
 

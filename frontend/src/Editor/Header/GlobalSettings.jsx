@@ -52,9 +52,12 @@ export const GlobalSettings = ({
 
   useEffect(() => {
     backgroundFxQuery &&
-      globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, realState));
+      globalSettingsChanged(
+        'canvasBackgroundColor',
+        resolveReferences({ object: backgroundFxQuery, currentState: realState })
+      );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
+  }, [JSON.stringify(resolveReferences({ object: backgroundFxQuery, currentState: realState }))]);
 
   const outerStyles = {
     width: '142px',

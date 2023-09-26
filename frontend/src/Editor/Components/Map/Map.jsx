@@ -27,10 +27,10 @@ export const Map = function Map({
   const { t } = useTranslation();
 
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
-  const canAddNewMarkers = addNewMarkersProp ? resolveReferences(addNewMarkersProp.value, currentState) : false;
+  const canAddNewMarkers = addNewMarkersProp ? resolveReferences({ object: addNewMarkersProp.value }) : false;
 
   const canSearchProp = component.definition.properties.canSearch;
-  const canSearch = canSearchProp ? resolveReferences(canSearchProp.value, currentState) : false;
+  const canSearch = canSearchProp ? resolveReferences({ object: canSearchProp.value }) : false;
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
 
@@ -40,14 +40,14 @@ export const Map = function Map({
   let parsedWidgetVisibility = widgetVisibility;
 
   try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+    parsedWidgetVisibility = resolveReferences({ object: parsedWidgetVisibility });
   } catch (err) {
     console.log(err);
   }
 
   const [gmap, setGmap] = useState(null);
   const [autoComplete, setAutoComplete] = useState(null);
-  const [mapCenter, setMapCenter] = useState(resolveReferences(center, currentState));
+  const [mapCenter, setMapCenter] = useState(resolveReferences({ object: center }));
   const [markers, setMarkers] = useState(defaultMarkers);
 
   const containerStyle = {
@@ -97,7 +97,7 @@ export const Map = function Map({
   }
 
   useEffect(() => {
-    const resolvedCenter = resolveReferences(center, currentState);
+    const resolvedCenter = resolveReferences({ object: center });
     setMapCenter(resolvedCenter);
     onComponentOptionsChanged(component, [['center', addMapUrlToJson(resolvedCenter)]]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -128,7 +128,7 @@ export const Map = function Map({
 
   useEffect(() => {
     setExposedVariable('setLocation', async function (lat, lng) {
-      if (lat && lng) setMapCenter(resolveReferences({ lat, lng }, currentState));
+      if (lat && lng) setMapCenter(resolveReferences({ object: { lat, lng } }));
     });
   }, [setMapCenter]);
 

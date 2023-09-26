@@ -26,7 +26,7 @@ export const Code = ({
       const clientSidePagination = component?.component?.definition?.properties?.clientSidePagination?.value ?? false;
       const serverSidePagination = component?.component?.definition?.properties?.serverSidePagination?.value ?? false;
       const isPaginationEnabled =
-        resolveReferences(clientSidePagination, currentState) || resolveReferences(serverSidePagination, currentState);
+        resolveReferences({ object: clientSidePagination }) || resolveReferences({ object: serverSidePagination });
 
       if (isPaginationEnabled) return '{{true}}';
       return '{{false}}';
@@ -36,7 +36,7 @@ export const Code = ({
         const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
         const showBulkSelector = component?.component?.definition?.properties?.showBulkSelector?.value ?? false;
         const allowSelection =
-          resolveReferences(highlightSelectedRow, currentState) || resolveReferences(showBulkSelector, currentState);
+          resolveReferences({ object: highlightSelectedRow }) || resolveReferences({ object: showBulkSelector });
 
         return '{{' + `${allowSelection}` + '}}';
       } else if (param === 'defaultSelectedRow') {

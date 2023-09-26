@@ -403,14 +403,14 @@ export const executeAction = debounce(executeActionWithDebounce);
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
     if (event.runOnlyIf) {
-      const shouldRun = resolveReferences(event.runOnlyIf, getCurrentState(), undefined, customVariables);
+      const shouldRun = resolveReferences({ object: event.runOnlyIf, customObjects: customVariables });
       if (!shouldRun) {
         return false;
       }
     }
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, getCurrentState(), undefined, customVariables);
+        const message = resolveReferences({ object: event.message, customObjects: customVariables });
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -433,9 +433,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const params = event['parameters'];
         const resolvedParams = {};
         if (params) {
-          Object.keys(params).map(
-            (param) => (resolvedParams[param] = resolveReferences(params[param], getCurrentState(), undefined))
-          );
+          Object.keys(params).map((param) => (resolvedParams[param] = resolveReferences({ object: params[param] })));
         }
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
@@ -446,23 +444,21 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'open-webpage': {
-        const url = resolveReferences(event.url, getCurrentState(), undefined, customVariables);
+        const url = resolveReferences({ object: event.url, customObjects: customVariables });
         window.open(url, '_blank');
         return Promise.resolve();
       }
 
       case 'go-to-app': {
-        const slug = resolveReferences(event.slug, getCurrentState(), undefined, customVariables);
+        const slug = resolveReferences({ object: event.slug, customObjects: customVariables });
         const queryParams = event.queryParams?.reduce(
           (result, queryParam) => ({
             ...result,
             ...{
-              [resolveReferences(queryParam[0], getCurrentState())]: resolveReferences(
-                queryParam[1],
-                getCurrentState(),
-                undefined,
-                customVariables
-              ),
+              [resolveReferences({ object: queryParam[0] })]: resolveReferences({
+                object: queryParam[1],
+                customObjects: customVariables,
+              }),
             },
           }),
           {}
@@ -493,15 +489,15 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         return showModal(_ref, event.modal, false);
 
       case 'copy-to-clipboard': {
-        const contentToCopy = resolveReferences(event.contentToCopy, getCurrentState(), undefined, customVariables);
+        const contentToCopy = resolveReferences(event.contentToCopy, undefined, customVariables);
         copyToClipboard(contentToCopy);
 
         return Promise.resolve();
       }
 
       case 'set-localstorage-value': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences({ object: event.key, customObjects: customVariables });
+        const value = resolveReferences({ object: event.value, customObjects: customVariables });
         localStorage.setItem(key, value);
 
         return Promise.resolve();
@@ -509,9 +505,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'generate-file': {
         // const fileType = event.fileType;
-        const data = resolveReferences(event.data, getCurrentState(), undefined, customVariables) ?? [];
-        const fileName = resolveReferences(event.fileName, getCurrentState(), undefined, customVariables) ?? 'data.txt';
-        const fileType = resolveReferences(event.fileType, getCurrentState(), undefined, customVariables) ?? 'csv';
+        const data = resolveReferences({ object: event.data, customObjects: customVariables }) ?? [];
+        const fileName = resolveReferences({ object: event.fileName, customObjects: customVariables }) ?? 'data.txt';
+        const fileType = resolveReferences({ object: event.fileType, customObjects: customVariables }) ?? 'csv';
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
@@ -527,8 +523,8 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences({ object: event.key, customObjects: customVariables });
+        const value = resolveReferences({ object: event.value, customObjects: customVariables });
         const customAppVariables = { ...getCurrentState().variables };
         customAppVariables[key] = value;
         return useCurrentStateStore.getState().actions.setCurrentState({
@@ -537,7 +533,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'unset-custom-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences({ object: event.key, customObjects: customVariables });
         const customAppVariables = { ...getCurrentState().variables };
         delete customAppVariables[key];
         return useCurrentStateStore.getState().actions.setCurrentState({
@@ -546,8 +542,8 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-page-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
-        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences({ object: event.key, customObjects: customVariables });
+        const value = resolveReferences({ object: event.value, customObjects: customVariables });
         const customPageVariables = {
           ...getCurrentState().page.variables,
           [key]: value,
@@ -561,7 +557,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'unset-page-variable': {
-        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const key = resolveReferences({ object: event.key, customObjects: customVariables });
         const customPageVariables = _.omit(getCurrentState().page.variables, key);
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
@@ -578,7 +574,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const action = component?.[event.componentSpecificActionHandle];
         const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
-          value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
+          value: resolveReferences({ object: param.value, customObjects: customVariables }),
         }));
         const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
@@ -588,7 +584,10 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const { name, disabled } = _ref.state.appDefinition.pages[event.pageId];
         // Don't allow switching to disabled page in editor as well as viewer
         if (!disabled) {
-          _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+          _ref.switchPage(
+            event.pageId,
+            resolveReferences({ object: event.queryParams, customObjects: customVariables })
+          );
         }
         if (_ref.state.appDefinition.pages[event.pageId]) {
           if (disabled) {
@@ -796,12 +795,12 @@ export function getQueryVariables(options, state) {
         const vars =
           options.includes('{{constants.') && !options.includes('%%')
             ? 'HiddenOrganizationConstant'
-            : resolveReferences(options, state);
+            : resolveReferences({ object: options });
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
         dynamicVariables.forEach((variable) => {
-          queryVariables[variable] = resolveReferences(variable, state);
+          queryVariables[variable] = resolveReferences({ object: variable });
         });
       }
 
@@ -842,7 +841,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           ...paramObj,
           [param.name]:
             parameters?.[param.name] === undefined
-              ? resolveReferences(param.defaultValue, {}) //default values will not be resolved with currentState
+              ? resolveReferences({ object: param.defaultValue, currentState: {} }) //default values will not be resolved with currentState
               : parameters?.[param.name],
         }),
         {}
@@ -1141,7 +1140,7 @@ export function setTablePageIndex(_ref, tableId, index) {
   }
 
   const table = Object.entries(getCurrentState().components).filter((entry) => entry[1].id === tableId)[0][1];
-  const newPageIndex = resolveReferences(index, getCurrentState());
+  const newPageIndex = resolveReferences({ object: index });
   table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }

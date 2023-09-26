@@ -41,8 +41,8 @@ export default function generateColumnsData({
       columnType === 'image'
     ) {
       columnOptions.selectOptions = [];
-      const values = resolveReferences(column.values, currentState, []);
-      const labels = resolveReferences(column.labels, currentState, []);
+      const values = resolveReferences({ object: column.values, currentState });
+      const labels = resolveReferences({ object: column.labels, currentState });
 
       if (Array.isArray(labels) && Array.isArray(values)) {
         columnOptions.selectOptions = labels.map((label, index) => {
@@ -75,7 +75,7 @@ export default function generateColumnsData({
     const width = columnSize || defaultColumn.width;
     return {
       id: column.id,
-      Header: resolveReferences(column.name, currentState) ?? '',
+      Header: resolveReferences({ object: column.name, currentState }) ?? '',
       accessor: column.key || column.name,
       filter: customFilter,
       width: width,
@@ -115,7 +115,11 @@ export default function generateColumnsData({
           case 'string':
           case undefined:
           case 'default': {
-            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+            const textColor = resolveReferences({
+              object: column.textColor,
+              currentState,
+              customObjects: { cellValue, rowData },
+            });
 
             const cellStyles = {
               color: textColor ?? '',
@@ -194,7 +198,11 @@ export default function generateColumnsData({
             );
           }
           case 'number': {
-            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+            const textColor = resolveReferences({
+              object: column.textColor,
+              currentState,
+              customObjects: { cellValue, rowData },
+            });
 
             const cellStyles = {
               color: textColor ?? '',
@@ -457,7 +465,7 @@ export default function generateColumnsData({
             );
           }
           case 'link': {
-            const linkTarget = resolveReferences(column?.linkTarget ?? '_blank', currentState);
+            const linkTarget = resolveReferences({ object: column?.linkTarget ?? '_blank', currentState });
             return (
               <div className="h-100 d-flex align-items-center">
                 <Link cellValue={cellValue} linkTarget={linkTarget} />

@@ -54,7 +54,7 @@ function buildPostgrestQuery(filters) {
 
 async function listRows(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
-  const resolvedOptions = resolveReferences(queryOptions, currentState);
+  const resolvedOptions = resolveReferences({ object: queryOptions, currentState });
   if (hasEqualWithNull(resolvedOptions, 'list_rows')) {
     return {
       status: 'failed',
@@ -93,7 +93,7 @@ async function listRows(dataQuery, currentState) {
 
 async function createRow(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
-  const resolvedOptions = resolveReferences(queryOptions, currentState);
+  const resolvedOptions = resolveReferences({ object: queryOptions, currentState });
   const columns = Object.values(resolvedOptions.create_row).reduce((acc, colOpts) => {
     if (isEmpty(colOpts.column)) return acc;
     return { ...acc, ...{ [colOpts.column]: colOpts.value } };
@@ -104,7 +104,7 @@ async function createRow(dataQuery, currentState) {
 
 async function updateRows(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
-  const resolvedOptions = resolveReferences(queryOptions, currentState);
+  const resolvedOptions = resolveReferences({ object: queryOptions, currentState });
   if (hasEqualWithNull(resolvedOptions, 'update_rows')) {
     return {
       status: 'failed',
@@ -132,7 +132,7 @@ async function updateRows(dataQuery, currentState) {
 
 async function deleteRows(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
-  const resolvedOptions = resolveReferences(queryOptions, currentState);
+  const resolvedOptions = resolveReferences({ object: queryOptions, currentState });
   if (hasEqualWithNull(resolvedOptions, 'delete_rows')) {
     return {
       status: 'failed',

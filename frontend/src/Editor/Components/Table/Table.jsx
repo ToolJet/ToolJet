@@ -370,11 +370,14 @@ export function Table({
   let tableData = [],
     dynamicColumn = [];
 
-  const useDynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value, currentState);
+  const useDynamicColumn = resolveReferences({
+    object: component.definition.properties?.useDynamicColumn?.value,
+    currentState,
+  });
   if (currentState) {
-    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+    tableData = resolveReferences({ object: component.definition.properties.data.value, currentState });
     dynamicColumn = useDynamicColumn
-      ? resolveReferences(component.definition.properties?.columnData?.value, currentState, []) ?? []
+      ? resolveReferences({ object: component.definition.properties?.columnData?.value, currentState }) ?? []
       : [];
     if (!Array.isArray(tableData)) tableData = [];
   }
@@ -404,7 +407,7 @@ export function Table({
   columnData = useMemo(
     () =>
       columnData.filter((column) => {
-        if (resolveReferences(column.columnVisibility, currentState)) {
+        if (resolveReferences({ object: column.columnVisibility, currentState })) {
           return column;
         }
       }),
@@ -1139,7 +1142,10 @@ export function Table({
                                     },
                                   };
                                 }
-                                const isEditable = resolveReferences(column?.isEditable ?? false, currentState);
+                                const isEditable = resolveReferences({
+                                  object: column?.isEditable ?? false,
+                                  currentState,
+                                });
                                 return (
                                   <th
                                     key={index}
@@ -1334,31 +1340,42 @@ export function Table({
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
                       const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
                       const rowData = tableData[cell.row.index];
-                      const cellBackgroundColor = resolveReferences(
-                        cell.column?.cellBackgroundColor,
+                      const cellBackgroundColor = resolveReferences({
+                        object: cell.column?.cellBackgroundColor,
                         currentState,
-                        '',
-                        {
+                        customObjects: {
                           cellValue,
                           rowData,
-                        }
-                      );
-                      const cellTextColor = resolveReferences(cell.column?.textColor, currentState, '', {
-                        cellValue,
-                        rowData,
+                        },
+                      });
+                      const cellTextColor = resolveReferences({
+                        object: cell.column?.textColor,
+                        currentState,
+                        customObjects: {
+                          cellValue,
+                          rowData,
+                        },
                       });
                       const actionButtonsArray = actions.map((action) => {
                         return {
                           ...action,
-                          isDisabled: resolveReferences(action?.disableActionButton ?? false, currentState, '', {
-                            cellValue,
-                            rowData,
+                          isDisabled: resolveReferences({
+                            object: action?.disableActionButton ?? false,
+                            currentState,
+                            customObjects: {
+                              cellValue,
+                              rowData,
+                            },
                           }),
                         };
                       });
-                      const isEditable = resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
-                        cellValue,
-                        rowData,
+                      const isEditable = resolveReferences({
+                        object: cell.column?.isEditable ?? false,
+                        currentState,
+                        customObjects: {
+                          cellValue,
+                          rowData,
+                        },
                       });
                       const horizontalAlignment = cell.column?.horizontalAlignment;
                       return (
