@@ -44,7 +44,6 @@ export class TooljetDbBulkUploadService {
     const csvStream = csv.parseString(fileBuffer.toString(), {
       headers: true,
       ignoreEmpty: true,
-      maxRows: MAX_ROW_COUNT,
     });
     const rowsToInsert = [];
     const rowsToUpdate = [];
