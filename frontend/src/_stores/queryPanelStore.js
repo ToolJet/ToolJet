@@ -1,4 +1,3 @@
-import { cloneDeep } from 'lodash';
 import { create, zustandDevTools } from './utils';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -10,7 +9,7 @@ const initialState = {
   selectedDataSource: null,
   queryToBeRun: null,
   previewLoading: false,
-  queryPreviewData: null,
+  queryPreviewData: '',
   showCreateQuery: false,
   nameInputFocussed: false,
 };

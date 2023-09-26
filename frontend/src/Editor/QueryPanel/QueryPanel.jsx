@@ -151,7 +151,6 @@ const QueryPanel = ({
         className="query-pane"
         style={{
           height: 40,
-          background: '#fff',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
