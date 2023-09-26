@@ -4,9 +4,9 @@ title: Working With Queries
 ---
 
 
-Queries allow us to fetch or manipulate data present in the data sources. Queries are created on application level. When we setup a data source in ToolJet, it is available throughout the workspace. But a query is only available in the application in which it is created. 
+Queries allow us to fetch or manipulate data present in the data sources. Queries are created on application level. When we set up a data source in ToolJet, it is available throughout the workspace. But a query is only available in the application in which it is created. 
 
-We can find the **Query Panel** at the bottom in the App-Builder. The Query Panel is divided into two parts - **Query Manager** and **Query Editor**. The Query Manager displays a list of queries that have been created within the current application. On the other hand, the Query Editor allows you to construct queries either through low-code methods or by writing them out manually.
+We can find the **Query Panel** at the bottom in the App-Builder. The Query Panel is divided into two parts - **Query Manager** and **Query Editor**. The Query Manager displays a list of queries that have been created within the current application. On the other hand, the Query Editor allows us to construct queries either through low-code methods or by writing them out manually.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/working-with-queries/query-panel.png" alt="Visibility Condition Demo" />
@@ -42,8 +42,8 @@ Now we can see the returned data in the Preview window. This returned data can b
 
 Enabling the **Run this query on load?** setting ensures that the query runs automatically every time the application launches. This feature is often used for queries that are used to fetch data. 
 
-For instance, if you have a query that is used to fill a Table component with data, activating this setting will:
-- Run the query when the applications
+For instance, if we have a query that is used to fill a Table component with data, activating this setting will:
+- Run the query when the application starts
 - Populate the Table with the returned data from the query
 
 <div style={{textAlign: 'center'}}>
@@ -63,7 +63,7 @@ Let's see how we can create a query that writes data to the database.
 
 - **Create A New Query**: Click on the **+ Add** button located in the Query Panel.
 - **Choose Data Source**: Scroll through the list and select **ToolJet Database**.
-- **Select Table**: Choose *dummyDB* as your table name.
+- **Select Table**: Choose *dummyDB* as the table name.
 - **Set Operation**: Pick **Create row** from the Operations dropdown menu.
 - **Add Columns**: Click on **+ Add column** to insert new columns. Add **John Doe** as the key for name column and **33** as the key for age column.
 - **Rename Query**: Change the query name to **writeData**.
@@ -87,9 +87,9 @@ Let's see how we can update the data in our database table.
 
 - **Create A New Query**: Hit the **+ Add** button found in the Query Panel.
 - **Choose Data Source**: Scroll through the list and select **ToolJet Database**.
-- **Select Table**: Choose *dummyDB* as your table name.
+- **Select Table**: Choose *dummyDB* as the table name.
 - **Set Operation**: Pick **Update rows** from the Operations dropdown menu.
-- **Set Filter**: Click on **+ Add Condition** next to Filter, and select **id** as the column, **equals** as the operation and input **1** as they key.
+- **Set Filter**: Click on **+ Add Condition** next to Filter, and select **id** as the column, **equals** as the operation and input **1** as the key.
 - **Add Columns**: Press **+ Add Column** to create new rows. Use **Jack Doe** as the key for the name column and **44** as the key for the age column.
 - **Rename Query**: Change the query name to **updateData**.
 
@@ -97,7 +97,7 @@ Let's see how we can update the data in our database table.
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/working-with-queries/update-query.png" alt="Update Query" />
 </div>
 
-When you click the **Run** button, the filter condition will select the row where the **id** is 1. Subsequently, the database table will update to reflect the new values specified in the keys.
+When we click the **Run** button, the filter condition will select the row where the **id** is 1. Subsequently, the database table will update to reflect the new values specified in the keys.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/working-with-queries/updated-table.png" alt="Updated Table" />
@@ -109,7 +109,7 @@ To delete the data, create another query and rename it to *deleteData*.
 
 - **Create A New Query**: Hit the **+ Add** button found in the Query Panel.
 - **Choose Data Source**: Scroll through the list and select **ToolJet Database**.
-- **Select Table**: Choose *dummyDB* as your table name.
+- **Select Table**: Choose *dummyDB* as the table name.
 - **Set Operation**: Select **Delete rows** from the Operations dropdown.
 - **Set Filter**: Click on **+ Add Condition** next to Filter, and select **id** as the column, **equals** as the operation and input **1** as they key.
 - **Rename Query**: Change the query name to **deleteData**.
@@ -130,7 +130,7 @@ Data returned from queries can be accessed using the **queries** key inside curl
 
 For e.g. `{{queries.queryname.data}}`
 
-Let's use the data fetched using the *getProducts* query in a table. Drag and drop **Table** component on the canvas. Go to its configuration panel on the right and enter the below code in the Data property:
+Let's use the data fetched using the *getProducts* query in a Table component. Drag and drop a **[Table](/docs/widgets/table)** component on the canvas. Go to its configuration panel on the right and enter the below code under the **Table data** property:
 
 ```js
 {{queries.getProducts.data.products}}
@@ -142,16 +142,21 @@ Let's use the data fetched using the *getProducts* query in a table. Drag and dr
 
 Enabling the **Run this query on load?** setting for the *getProducts* query in this case would ensure that the query automatically runs when the application starts and the fetched data will be loaded in the Table component.
 
-Let's also see how we can refer component values to queries. Delete the Table component and drag and drop a **Form** component from the component library. 
+Let's also see how we can refer component values to queries. Delete the Table component and drag and drop a **[Form](/docs/widgets/form)** component from the component library. 
 
-In the *writeData* query, replace the static values for the **name** and **age** fields with the below code:
+In the *writeData* query, replace the value for **name** column's key with the below code. 
 
 ```js
 {{components.form1.data.textinput1.value}}
+```
+
+Similarly, replace the value for **age** column's key with the below code:
+
+```js
 {{components.form1.data.numberinput1.value}}
 ```
 
-<i> We can access all the values in the components using the <b>components</b> key.</i>
+<i> We can access all the values related to components using the <b>components</b> key.</i>
 
 <br/>
 <br/>
@@ -162,7 +167,7 @@ In the *writeData* query, replace the static values for the **name** and **age**
 
 There are two input fields in the Form component. Every time this query runs, the values in the Form's input fields will be written to the database. Enter **Developer** in the name input field and **24** in the age input field.  
 
-Let's create a way to trigger this query on press of a button. Select the **Button** component/submit button on the Form, navigate to its configuration panel on the right and click on **+ Add handler** under events. 
+Let's create a way to trigger this query on press of a button. Select the **[Button](/docs/widgets/button)** component/submit button on the Form, navigate to its configuration panel on the right and click on **+ Add handler** under events. 
 
 Configure the event based on the below table:
 
@@ -183,7 +188,7 @@ Now the *writeData* query will run every time we click on the submit button. Cli
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/working-with-queries/write-data-with-button.png" alt="Data Written On Button Trigger" />
 </div>
 
-You can apply the same principles to *updateData* and *deleteData* queries. 
+We can apply the same principles to *updateData* and *deleteData* queries. 
 
 ## Confirmation Before Running
 
@@ -214,7 +219,7 @@ For instance, consider a scenario where data is displayed in a Table component u
 
 Consider this a way to automatically reload data. 
 
-This concludes our basic overview of queries in ToolJet. However, the possibilities extend far beyond these fundamentals. You can fetch data from various other data sources and integrate with a wide range of APIs and services.
+This concludes our basic overview of queries in ToolJet App-Builder. However, the possibilities extend far beyond these fundamentals. We can fetch, combine and manipulate data from various other data sources and integrate with a wide range of APIs and services.
 
 
 
