@@ -22,6 +22,7 @@ import { shallow } from 'zustand/shallow';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import DragContainer from './DragContainer';
 
 const NO_OF_GRIDS = 43;
 
@@ -642,7 +643,8 @@ export const Container = ({
           ))}
         </>
       )}
-      {Object.keys(boxes).map((key) => {
+      <DragContainer boxes={Object.keys(boxes).map((key) => ({ ...boxes[key], id: key }))} />
+      {/* {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
@@ -680,7 +682,7 @@ export const Container = ({
             />
           );
         }
-      })}
+      })} */}
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: '10%' }}>
           <div className="mx-auto w-50 p-5 bg-light no-components-box">
