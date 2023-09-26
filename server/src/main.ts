@@ -93,6 +93,7 @@ async function bootstrap() {
           'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
           'cdn.skypack.dev',
           'cdn.jsdelivr.net',
+          'https://esm.sh',
         ],
         'default-src': [
           'maps.googleapis.com',
