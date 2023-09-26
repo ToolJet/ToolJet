@@ -149,19 +149,6 @@ export default function EditorHeader({
               <div className="d-flex align-items-center p-0" style={{ marginRight: '12px' }}>
                 <div className="d-flex version-manager-container p-0  align-items-center ">
                   {editingVersion && (
-                    <AppVersionsManager
-                      appId={appId}
-                      releasedVersionId={app.current_version_id}
-                      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                      onVersionDelete={onVersionDelete}
-                      environments={environments}
-                      currentEnvironment={currentEnvironment}
-                      setCurrentEnvironment={setCurrentEnvironment}
-                    />
-                  )}
-                  <div className="navbar-seperator"></div>
-
-                  {editingVersion && (
                     <EnvironmentManager
                       editingVersion={editingVersion}
                       appEnvironmentChanged={appEnvironmentChanged}
@@ -171,6 +158,19 @@ export default function EditorHeader({
                       multiEnvironmentEnabled={featureAccess?.multiEnvironment}
                       setCurrentEnvironment={setCurrentEnvironment}
                       setCurrentAppVersionPromoted={setCurrentAppVersionPromoted}
+                    />
+                  )}
+                  <div className="navbar-seperator"></div>
+
+                  {editingVersion && (
+                    <AppVersionsManager
+                      appId={appId}
+                      releasedVersionId={app.current_version_id}
+                      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+                      onVersionDelete={onVersionDelete}
+                      environments={environments}
+                      currentEnvironment={currentEnvironment}
+                      setCurrentEnvironment={setCurrentEnvironment}
                     />
                   )}
                 </div>
