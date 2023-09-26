@@ -31,18 +31,13 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
       });
   };
 
-  React.useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-      }
-    };
+  const handleKeyDown = (e) => {
+    if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+    }
+  };
+  window.addEventListener('keydown', handleKeyDown);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
 
   return (
     <ToolTip message={name} placement="bottom">
