@@ -13,8 +13,6 @@ services:
     environment:
       SERVE_CLIENT: "true"
       PORT: "80"
-    depends_on:
-      - redis
     command: npm run start:prod
   # Uncomment if ENABLE_TOOLJET_DB=true
   postgrest:
