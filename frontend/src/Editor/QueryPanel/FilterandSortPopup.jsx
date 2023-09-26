@@ -255,7 +255,7 @@ const DataSourceSelector = ({
         <div>
           <input
             className="bg-transparent border-0 form-control form-control-sm"
-            placeholder="Select datasource"
+            placeholder="Select data source"
             onChange={(e) => setSearch(e.target.value)}
             ref={searchBoxRef}
             value={search}
