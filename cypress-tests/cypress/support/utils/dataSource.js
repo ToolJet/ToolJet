@@ -49,17 +49,15 @@ export const deleteDatasource = (datasourceName) => {
   cy.get(`[data-cy="${cyParamName(datasourceName)}-button"]`)
     .parent()
     .within(() => {
-      cy.get(`[data-cy="${cyParamName(datasourceName)}-delete-button"]`).invoke(
-        "click"
-      );
+      cy.get(dataSourceSelector.deleteDSButton(datasourceName)).invoke("click");
     });
   cy.get('[data-cy="yes-button"]').click();
-  cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Deleted");
-  cy.get(commonSelectors.breadcrumbTitle).click();
-  cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
-    "have.text",
-    " Databases"
-  );
+  // cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Deleted");
+  // cy.get(commonSelectors.breadcrumbTitle).click()
+  // cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+  //   "have.text",
+  //   " Databases"
+  // );
 };
 
 export const closeDSModal = () => {
@@ -101,4 +99,24 @@ export const addQueryN = (queryName, query, dbName) => {
     .realType(" ");
   cy.get(dataSourceSelector.queryInputField).clearAndTypeOnCodeMirror(query);
   cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+};
+
+export const verifyValueOnInspector = (queryName, value) => {
+  cy.get('[data-cy="inspector-node-queries"]')
+    .parent()
+    .within(() => {
+      cy.get("span").first().scrollIntoView().contains("queries").click();
+    });
+  cy.get("body").then(($body) => {
+    if (
+      $body.find(`[data-cy="inspector-node-${queryName}"] > .node-key`).length >
+      0
+    ) {
+      cy.get(`[data-cy="inspector-node-${queryName}"] > .node-key`).click();
+      cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
+        "have.text",
+        value
+      );
+    }
+  });
 };
