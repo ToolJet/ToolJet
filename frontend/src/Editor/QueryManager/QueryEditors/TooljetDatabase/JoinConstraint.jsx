@@ -95,6 +95,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         <Col sm="4" className="p-0 border-end">
           {index ? (
             <DropDownSelect
+              showPlaceHolder
               options={leftTableList}
               darkMode={darkMode}
               onChange={async (value) => {
@@ -150,6 +151,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         </Col>
         <Col sm="5" className="p-0">
           <DropDownSelect
+            showPlaceHolder
             options={tableList}
             darkMode={darkMode}
             onChange={async (value) => {
@@ -293,6 +295,7 @@ const JoinOn = ({
       >
         {index == 1 && (
           <DropDownSelect
+            showPlaceHolder
             options={groupOperators}
             darkMode={darkMode}
             value={groupOperators.find((op) => op.value === groupOperator)}
@@ -310,6 +313,7 @@ const JoinOn = ({
       </Col>
       <Col sm="4" className="p-0 border-end">
         <DropDownSelect
+          showPlaceHolder
           options={leftFieldOptions}
           darkMode={darkMode}
           emptyError={
@@ -350,6 +354,7 @@ const JoinOn = ({
       <Col sm="5" className="p-0 d-flex">
         <div className="flex-grow-1">
           <DropDownSelect
+            showPlaceHolder
             options={rightFieldOptions}
             emptyError={
               <div className="dd-select-alert-error m-2 d-flex align-items-center">

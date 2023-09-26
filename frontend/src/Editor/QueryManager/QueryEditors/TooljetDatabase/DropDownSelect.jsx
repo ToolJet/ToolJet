@@ -21,6 +21,7 @@ const DropDownSelect = ({
   renderSelected,
   emptyError,
   shouldCenterAlignText = false,
+  showPlaceHolder = false,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -76,6 +77,19 @@ const DropDownSelect = ({
     }
 
     return 'top-start';
+  }
+
+  function isValidInput(input) {
+    if (!input) return false;
+    if (Array.isArray(input)) {
+      return input.length ? true : false;
+    }
+    if (typeof input === 'object' && !Array.isArray(input)) {
+      if (!Object.keys(input).length) return false;
+      if (!input.value) return false;
+      return true;
+    }
+    return true;
   }
 
   return (
@@ -145,18 +159,24 @@ const DropDownSelect = ({
           <div className={`text-truncate`}>
             {renderSelected && renderSelected(selected)}
 
-            {!renderSelected && selected
-              ? Array.isArray(selected)
-                ? !isOverflown && (
-                    <MultiSelectValueBadge
-                      options={options}
-                      selected={selected}
-                      setSelected={setSelected}
-                      onChange={onChange}
-                    />
-                  )
-                : selected?.label
-              : ''}
+            {!renderSelected && isValidInput(selected) ? (
+              Array.isArray(selected) ? (
+                !isOverflown && (
+                  <MultiSelectValueBadge
+                    options={options}
+                    selected={selected}
+                    setSelected={setSelected}
+                    onChange={onChange}
+                  />
+                )
+              ) : (
+                selected?.label
+              )
+            ) : showPlaceHolder ? (
+              <span style={{ color: '#9e9e9e' }}>Select..</span>
+            ) : (
+              ''
+            )}
             {!renderSelected && isOverflown && !Array.isArray(selected) && (
               <Badge className="me-1 dd-select-value-badge" bg="secondary">
                 {selected?.length} selected

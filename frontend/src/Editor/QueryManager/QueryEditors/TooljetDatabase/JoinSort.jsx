@@ -75,10 +75,11 @@ export default function JoinSort({ darkMode }) {
             <Row className="border rounded mb-2 mx-0" key={i}>
               <Col sm="6" className="p-0 border-end">
                 <DropDownSelect
+                  showPlaceHolder
                   options={tableList}
                   darkMode={darkMode}
                   value={{
-                    value: options.columnName + '_' + options.table,
+                    value: options?.columnName && options.table ? options.columnName + '_' + options.table : '',
                     label: tableDetails?.table_name
                       ? tableDetails?.table_name + '.' + options.columnName
                       : options.columnName,
@@ -103,6 +104,7 @@ export default function JoinSort({ darkMode }) {
               <Col sm="6" className="p-0 d-flex">
                 <div className="flex-grow-1 border-end">
                   <DropDownSelect
+                    showPlaceHolder
                     options={sortbyConstants}
                     darkMode={darkMode}
                     value={sortbyConstants.find((opt) => opt.value === options.direction)}

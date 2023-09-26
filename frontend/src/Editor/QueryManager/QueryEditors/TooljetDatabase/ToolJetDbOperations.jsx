@@ -465,6 +465,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
           <label className={cx('form-label')}>Table name</label>
           <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded')}>
             <DropDownSelect
+              showPlaceHolder
               options={generateListForDropdown(tables)}
               darkMode={darkMode}
               onChange={(value) => {
@@ -487,6 +488,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
           <label className={cx('form-label')}>Operations</label>
           <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded')}>
             <DropDownSelect
+              showPlaceHolder
               options={tooljetDbOperationList}
               darkMode={darkMode}
               onChange={(value) => {
