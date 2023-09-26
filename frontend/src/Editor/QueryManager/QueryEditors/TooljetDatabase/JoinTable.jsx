@@ -368,6 +368,7 @@ const RenderFilterSection = ({ darkMode }) => {
         <Col sm="2" className="p-0 border-end">
           {index === 1 && (
             <DropDownSelect
+              showPlaceHolder
               onChange={(change) => updateOperatorForConditions(change?.value)}
               options={groupOperators}
               darkMode={darkMode}
@@ -379,6 +380,7 @@ const RenderFilterSection = ({ darkMode }) => {
         </Col>
         <Col sm="3" className="p-0 border-end">
           <DropDownSelect
+            showPlaceHolder
             onChange={(newValue) =>
               updateFilterConditionEntry('Column', index, {
                 table: newValue.table,
@@ -390,7 +392,7 @@ const RenderFilterSection = ({ darkMode }) => {
               label: LeftSideTableDetails?.table_name
                 ? LeftSideTableDetails?.table_name + '.' + leftField?.columnName
                 : leftField?.columnName,
-              value: leftField?.columnName + '-' + leftField?.table,
+              value: leftField?.columnName && leftField?.table ? leftField?.columnName + '-' + leftField?.table : '',
               table: leftField?.table,
             }}
             options={tableList}
@@ -399,6 +401,7 @@ const RenderFilterSection = ({ darkMode }) => {
         </Col>
         <Col sm="3" className="p-0 border-end">
           <DropDownSelect
+            showPlaceHolder
             onChange={(change) => updateFilterConditionEntry('Operator', index, { operator: change?.value })}
             value={filterOperatorOptions.find((op) => op.value === operator)}
             options={filterOperatorOptions}
@@ -409,6 +412,7 @@ const RenderFilterSection = ({ darkMode }) => {
           <div className="flex-grow-1">
             {operator === 'IS' ? (
               <DropDownSelect
+                showPlaceHolder
                 onChange={(change) =>
                   updateFilterConditionEntry('Value', index, { value: change?.value, isLeftSideCondition: false })
                 }
