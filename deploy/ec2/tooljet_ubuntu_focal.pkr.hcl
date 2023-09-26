@@ -57,11 +57,6 @@ build {
     destination = "/tmp/postgrest.service"
   }
 
-  provisioner "file" {
-    source      = "redis-server.service"
-    destination = "/tmp/redis-server.service"
-  }  
-
   provisioner "shell" {
     script = "setup_machine.sh"
   }
