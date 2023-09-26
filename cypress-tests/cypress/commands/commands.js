@@ -305,3 +305,55 @@ Cypress.Commands.add("importApp", (appFile) => {
     importText.appImportedToastMessage
   );
 });
+
+Cypress.Commands.add("moveComponent", (componentName, x, y) => {
+  cy.get(`[data-cy="draggable-widget-${componentName}"]`, { log: false })
+    .trigger("mouseover", {
+      force: true,
+      log: false,
+    })
+    .trigger("mousedown", {
+      which: 1,
+      force: true,
+      log: false,
+    });
+  cy.get(commonSelectors.canvas, { log: false })
+    .trigger("mousemove", {
+      which: 1,
+      clientX: x,
+      ClientY: y,
+      clientX: x,
+      clientY: y,
+      pageX: x,
+      pageY: y,
+      screenX: x,
+      screenY: y,
+      log: false,
+    })
+    .trigger("mouseup", { log: false });
+
+  const log = Cypress.log({
+    name: "moveComponent",
+    displayName: "Component moved:",
+    message: `X: ${x}, Y:${y}`,
+  });
+});
+
+Cypress.Commands.add("getPosition", (componentName) => {
+  cy.get(commonWidgetSelector.draggableWidget(componentName)).then(
+    ($element) => {
+      const element = $element[0];
+      const rect = element.getBoundingClientRect();
+
+      const clientX = Math.round(rect.left + window.scrollX + rect.width / 2);
+      const clientY = Math.round(rect.top + window.scrollY + rect.height / 2);
+
+      const log = Cypress.log({
+        name: "getPosition",
+        displayName: `${componentName}'s Position:\n`,
+        message: `\nX: ${clientX}, Y:${clientY}`,
+      });
+      return [clientX, clientY];
+    }
+  );
+});
