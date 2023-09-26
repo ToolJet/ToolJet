@@ -22,7 +22,6 @@ const sidebars = {
         'setup/try-tooljet',
         'setup/digitalocean',
         'setup/docker',
-        'setup/heroku',
         'setup/ec2',
         'setup/ecs',
         'setup/openshift',
