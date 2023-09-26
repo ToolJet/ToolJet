@@ -1,9 +1,9 @@
 export const multipageSelector = {
   sidebarPageButton: '[data-cy="left-sidebar-page-button"]',
   pagesLabel: '[data-cy="label-pages"]',
-  addPageIcon: '[data-cy="add-page-option-icon"]',
-  searchPageIcon: '[data-cy="search-page-option-icon"]',
-  pagesPinIcon: '[data-cy="pin-panel-option-icon"]',
+  addPageIcon: '[title="Add Page"]',
+  searchPageIcon: '[title="Search"]',
+  pagesPinIcon: '[title="Pin"]',
 
   homePageLabel: '[data-cy="pages-name-home"]',
   homePageIcon: '[data-cy="home-page-icon"]',
@@ -16,21 +16,21 @@ export const multipageSelector = {
   renameOptionButton: '[data-cy="rename-option-button"]',
   markHomePageIcon: '[data-cy="mark-home-option-icon"]',
   markHomePageOptionButton: '[data-cy="mark-home-option-button"]',
-  hidePageOptionIcon: '[data-cy="hide-page-option-icon"]',
-  hidePageOptionButton: '[data-cy="hide-page-option-button"]',
+  hidePageOptionIcon: '[data-cy="hide-page-on-app-menu-option-icon"]',
+  hidePageOptionButton: '[data-cy="hide-page-on-app-menu-option-button"]',
 
   eventHandlersOptionIcon: '[data-cy="event-handlers-option-icon"]',
   eventHandlerOptionButton: '[data-cy="event-handlers-option-button"]',
 
   disabledDeleteButton:
     ".menu-options > :nth-child(6)>.unstyled-button.disabled",
-  pagesMenuIcon: '[data-cy="menu-icon"]',
+  pagesMenuIcon: '[data-cy="page-global-settings"]',
   pageHeaderSettings: '[data-cy="page-settings-header"]',
   disableThePageMenuLabel: '[data-cy="disable-page-menu-label"]',
   disableMenuDescription: '[data-cy="disable-page-menu-description"]',
   disableMenuToggle: '[data-cy="disable-page-menu-toggle"]',
 
-  hidePageIcon: '[data-cy="hide-page-icon"]',
+  hidePageIcon: '[data-cy="icon-hidden"]',
   deletePageOptionButton: '[data-cy="delete-page-option-button"]',
   modalMessage: '[data-cy="modal-message"]',
   modalConfirmButton: '[data-cy="modal-confirm-button"]',
@@ -39,7 +39,7 @@ export const multipageSelector = {
   modalTitlePageEvents: '[data-cy="modal-title-page-events"]',
   pageEventsLabel: '[data-cy="page-events-labe"]',
   addEventHandlerLink: '[data-cy="add-event-handler"]',
-  noEventHandlerMessage: '[data-cy="no-event-handler-message"]',
+  noEventHandlerMessage: '[data-cy="no-items-banner"]',
   closeModal: '[data-cy="close-option-button"]',
   closeIconEvents: '[data-cy="modal-close-button-page-events"]',
   eventName: '[data-cy="event-name"]',

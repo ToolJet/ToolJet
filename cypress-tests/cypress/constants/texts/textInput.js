@@ -1,4 +1,4 @@
 export const textInputText = {
   defaultWidgetName: "textinput1",
-  textInputDocumentationLink: "TextInput documentation",
-}
+  textInputDocumentationLink: "Read documentation for TextInput",
+};
