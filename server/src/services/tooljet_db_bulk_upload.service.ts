@@ -44,6 +44,8 @@ export class TooljetDbBulkUploadService {
     const csvStream = csv.parseString(fileBuffer.toString(), {
       headers: true,
       ignoreEmpty: true,
+      strictColumnHandling: true,
+      discardUnmappedColumns: true,
     });
     const rowsToInsert = [];
     const rowsToUpdate = [];
@@ -53,13 +55,14 @@ export class TooljetDbBulkUploadService {
     const passThrough = new PassThrough();
 
     csvStream
-      .on('headers', (headers) => this.validateHeadersAsColumnSubset(internalTableColumnSchema, headers))
-      .transform((row) => this.validateAndParseColumnDataType(internalTableColumnSchema, row, rowsProcessed))
+      .on('headers', (headers) => this.validateHeadersAsColumnSubset(internalTableColumnSchema, headers, csvStream))
+      .transform((row) => this.validateAndParseColumnDataType(internalTableColumnSchema, row, rowsProcessed, csvStream))
       .on('data', (row) => {
         rowsProcessed++;
         if (row.id) {
-          if (idstoUpdate.has(row.id))
-            throw new BadRequestException(`Duplicate 'id' value found on row [${rowsProcessed + 1}]: ${row.id}`);
+          if (idstoUpdate.has(row.id)) {
+            throw new BadRequestException(`Duplicate 'id' value found on row[${rowsProcessed + 1}]: ${row.id}`);
+          }
 
           idstoUpdate.add(row.id);
           rowsToUpdate.push(row);
@@ -68,7 +71,8 @@ export class TooljetDbBulkUploadService {
         }
       })
       .on('error', (error) => {
-        passThrough.emit('error', new BadRequestException(error.message));
+        csvStream.destroy();
+        passThrough.emit('error', new BadRequestException(error));
       })
       .on('end', () => {
         passThrough.emit('end');
@@ -123,7 +127,11 @@ export class TooljetDbBulkUploadService {
     }
   }
 
-  async validateHeadersAsColumnSubset(internalTableColumnSchema: TableColumnSchema[], headers: string[]) {
+  async validateHeadersAsColumnSubset(
+    internalTableColumnSchema: TableColumnSchema[],
+    headers: string[],
+    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>
+  ) {
     const internalTableColumns = new Set<string>(internalTableColumnSchema.map((c) => c.column_name));
     const columnsInCsv = new Set<string>(headers);
     const isSubset = (subset: Set<string>, superset: Set<string>) => [...subset].every((item) => superset.has(item));
@@ -131,13 +139,17 @@ export class TooljetDbBulkUploadService {
     if (!isSubset(columnsInCsv, internalTableColumns)) {
       const columnsNotIntable = [...columnsInCsv].filter((element) => !internalTableColumns.has(element));
 
-      throw new BadRequestException(`Columns ${columnsNotIntable.join(',')} not found in table`);
+      csvStream.emit('error', `Columns ${columnsNotIntable.join(',')} not found in table`);
     }
   }
 
-  validateAndParseColumnDataType(internalTableColumnSchema: TableColumnSchema[], row: unknown, rowsProcessed: number) {
-    if (rowsProcessed >= MAX_ROW_COUNT)
-      throw new BadRequestException(`Row count cannot be greater than ${MAX_ROW_COUNT}`);
+  validateAndParseColumnDataType(
+    internalTableColumnSchema: TableColumnSchema[],
+    row: unknown,
+    rowsProcessed: number,
+    csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>
+  ) {
+    if (rowsProcessed >= MAX_ROW_COUNT) csvStream.emit('error', `Row count cannot be greater than ${MAX_ROW_COUNT}`);
 
     try {
       const columnsInCsv = Object.keys(row);
@@ -152,7 +164,7 @@ export class TooljetDbBulkUploadService {
 
       return transformedRow;
     } catch (error) {
-      throw new BadRequestException(`Data type error at row[${rowsProcessed + 1}]: ${error}`);
+      csvStream.emit('error', `Data type error at row[${rowsProcessed + 1}]: ${error}`);
     }
   }
 
