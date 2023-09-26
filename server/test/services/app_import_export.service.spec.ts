@@ -191,7 +191,7 @@ describe('AppImportExportService', () => {
       expect(importedApp.currentVersionId).toBe(null);
       expect(importedApp['dataQueries']).toEqual([]);
       // there will be 3 data sources created automatically when a user creates a new app.
-      expect(importedApp['dataSources'].length).toEqual(4);
+      expect(importedApp['dataSources'].length).toEqual(5);
 
       // assert group permissions are valid
       const appGroupPermissions = await getManager().find(AppGroupPermission, {
@@ -242,6 +242,13 @@ describe('AppImportExportService', () => {
       await createDataSource(nestApp, {
         name: 'tooljetdbdefault',
         kind: 'tooljetdb',
+        type: 'static',
+        appVersion: applicationVersion,
+      });
+
+      await createDataSource(nestApp, {
+        name: 'workflowsdefault',
+        kind: 'workflows',
         type: 'static',
         appVersion: applicationVersion,
       });
