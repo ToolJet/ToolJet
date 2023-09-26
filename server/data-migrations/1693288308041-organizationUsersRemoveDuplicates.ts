@@ -8,13 +8,14 @@ export class organizationUsersRemoveDuplicates1693288308041 implements Migration
     const duplicates = await entityManager.query(
       'select sub_query.organization_id, sub_query.user_id from (select count(*) as org_user_count, organization_id, user_id from organization_users group by organization_id, user_id) sub_query where org_user_count > 1'
     );
+    console.log(`found ${duplicates?.length || 0} duplicates in organization_users table`);
+
     if (duplicates && duplicates.length) {
       const migrationProgress = new MigrationProgress(
         'organizationUsersRemoveDuplicates1693288308041',
         duplicates.length
       );
 
-      console.log(`found ${duplicates.length} duplicates in organization_users table`);
       for (const duplicate of duplicates) {
         let idToKeep;
         const duplicatesWithStatus = await entityManager.query(
