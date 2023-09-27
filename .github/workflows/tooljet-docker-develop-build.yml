@@ -65,6 +65,7 @@ jobs:
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL_OPS_CHANNEL }}
 
 
+
   tooljet-server-develop-image:
       runs-on: ubuntu-latest
       if: |
@@ -109,9 +110,9 @@ jobs:
           env:
             DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
             DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
+            
         - name: Send Slack Notification on Failure
           if: failure()
           run: |
-            message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:develop"
+            message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-server-ce:develop"
             curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL_OPS_CHANNEL }}

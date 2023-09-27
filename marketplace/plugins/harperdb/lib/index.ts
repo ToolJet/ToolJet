@@ -24,6 +24,54 @@ export default class Harperdb implements QueryService {
               records: JSON5.parse(queryOptions.records)
             })
             break;
+          case 'update': {
+            result = await harperdbClient.update({
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              records: JSON5.parse(queryOptions.records)
+            })
+            break;
+          }
+          case 'delete': {
+            result = await harperdbClient.delete({
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              hashValues: JSON5.parse(queryOptions.hash_values)
+            })
+            break;
+          }
+          case 'search_by_hash': {
+            result = await harperdbClient.searchByHash({
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              hashValues: JSON5.parse(queryOptions.hash_values),
+              attributes: JSON5.parse(queryOptions.attributes)
+            })
+            break;
+          }
+          case 'search_by_value': {
+            result = await harperdbClient.searchByValue({
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              searchAttribute: queryOptions.search_attribute,
+              searchValue: queryOptions.search_value,
+              attributes: JSON5.parse(queryOptions.attributes)
+            })
+            break;
+          }
+          case 'search_by_conditions': {
+            result = await harperdbClient.executeOperation({
+              operation: "search_by_conditions",
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              ...(queryOptions?.operator && {operator: queryOptions.operator}),
+              ...(queryOptions?.offset && {offset: queryOptions.offset}),
+              ...(queryOptions?.limit && { limit: queryOptions.limit }),
+              get_attributes: JSON5.parse(queryOptions.attributes),
+              conditions: JSON5.parse(queryOptions.conditions)
+            })
+          }
+            break;
           default:
             break;
         }
@@ -39,7 +87,7 @@ export default class Harperdb implements QueryService {
   }
 
   determineProtocol(sourceOptions: SourceOptions) {
-    const { ssl_enabled} = sourceOptions;
+    const { ssl_enabled } = sourceOptions;
     if (ssl_enabled === undefined) return 'https';
     return ssl_enabled ? 'https' : 'http';
   }

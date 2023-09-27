@@ -33,7 +33,7 @@ describe("dashboard", () => {
 
   beforeEach(() => {
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
-    cy.intercept("GET", "/api/apps").as("appEditor");
+    // cy.intercept("GET", "/api/apps").as("appEditor");
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
   });
 
@@ -159,7 +159,7 @@ describe("dashboard", () => {
     cy.reload();
     verifyTooltip(commonSelectors.dashboardIcon, "Dashboard");
     verifyTooltip(commonSelectors.databaseIcon, "Database");
-    verifyTooltip(commonSelectors.globalDataSourceIcon, "Global Datasources");
+    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data Sources");
     verifyTooltip(commonSelectors.workspaceSettingsIcon, "Workspace settings");
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
@@ -167,15 +167,16 @@ describe("dashboard", () => {
   });
 
   it("Should verify app card elements and app card operations", () => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.renameApp(data.appName);
     cy.dragAndDropWidget("Table", 250, 250);
+
 
     cy.get(commonSelectors.editorPageLogo).click();
 
     cy.wait(500);
-    cy.reloadAppForTheElement(data.appName);
     cy.get(commonSelectors.appCard(data.appName))
       .parent()
       .within(() => {
@@ -283,7 +284,7 @@ describe("dashboard", () => {
       commonSelectors.toastMessage,
       dashboardText.appClonedToast
     );
-    cy.wait("@appEditor");
+    cy.waitForAppLoad();
     cy.wait(2000);
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.dragAndDropWidget("button", 25, 25);

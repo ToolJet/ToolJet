@@ -102,6 +102,8 @@ describe('AppImportExportService', () => {
       });
       const dataQuery1 = await createDataQuery(nestApp, {
         dataSource: dataSource1,
+        appVersion: appVersion1,
+        name: 'test_query_1',
         kind: 'test_kind',
       });
 
@@ -115,6 +117,7 @@ describe('AppImportExportService', () => {
         name: 'test_name_2',
       });
       const dataQuery2 = await createDataQuery(nestApp, {
+        appVersion: appVersion2,
         dataSource: dataSource2,
         name: 'test_query_2',
       });
@@ -123,7 +126,7 @@ describe('AppImportExportService', () => {
         where: { id: application.id },
       });
 
-      let { appV2: result } = await service.export(adminUser, exportedApp.id, { versionId: appVersion1.id });
+      let { appV2: result } = await service.export(adminUser, exportedApp.id, { version_id: appVersion1.id });
 
       expect(result.id).toBe(exportedApp.id);
       expect(result.name).toBe(exportedApp.name);
@@ -137,7 +140,7 @@ describe('AppImportExportService', () => {
       expect(result.appVersions.length).toBe(1);
       expect(result.appVersions[0].name).toEqual(appVersion1.name);
 
-      const res = await service.export(adminUser, exportedApp.id, { versionId: appVersion2.id });
+      const res = await service.export(adminUser, exportedApp.id, { version_id: appVersion2.id });
       result = res.appV2;
 
       expect(result.id).toBe(exportedApp.id);
@@ -187,8 +190,8 @@ describe('AppImportExportService', () => {
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
       expect(importedApp['dataQueries']).toEqual([]);
-      // there will be 3 data sources created automatically when a user creates a new app.
-      expect(importedApp['dataSources'].length).toEqual(4);
+      // there will be 5 data sources created automatically when a user creates a new app.
+      expect(importedApp['dataSources'].length).toEqual(5);
 
       // assert group permissions are valid
       const appGroupPermissions = await getManager().find(AppGroupPermission, {
@@ -214,7 +217,7 @@ describe('AppImportExportService', () => {
         isQueryNeeded: false,
       });
 
-      //create default 3 datasources
+      //create default 5 datasources
       const firstDs = await createDataSource(nestApp, {
         name: 'runpydefault',
         kind: 'runpy',
@@ -243,9 +246,17 @@ describe('AppImportExportService', () => {
         appVersion: applicationVersion,
       });
 
+      await createDataSource(nestApp, {
+        name: 'workflowsdefault',
+        kind: 'workflows',
+        type: 'static',
+        appVersion: applicationVersion,
+      });
+
       //create default dataQuery
       await createDataQuery(nestApp, {
         dataSource: firstDs,
+        appVersion: applicationVersion,
         options: {},
       });
 
@@ -263,11 +274,9 @@ describe('AppImportExportService', () => {
       const appVersion = importedApp.appVersions[0];
       expect(appVersion.appId).toEqual(importedApp.id);
 
-      const dataSource = importedApp['dataSources'].reverse()[0];
-      expect(dataSource['appVersionId']).toEqual(appVersion.id);
-
       const dataQuery = importedApp['dataQueries'][0];
-      expect(dataQuery['dataSourceId']).toEqual(dataSource.id);
+      const dataSourceForTheDataQuery = importedApp['dataSources'].find((ds) => ds.id === dataQuery.dataSourceId);
+      expect(dataSourceForTheDataQuery).toBeDefined();
 
       // assert all fields except primary keys, foreign keys and timestamps are same
       const deleteFieldsNotToCheck = (entity) => {
@@ -287,10 +296,9 @@ describe('AppImportExportService', () => {
       const importedDataQueries = importedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
       const exportedDataQueries = exportedApp['dataQueries'].map((query) => deleteFieldsNotToCheck(query));
 
-      expect(importedAppVersions).toEqual(exportedAppVersions);
-      console.log('inside', importedDataSources, exportedDataSources);
-      expect(importedDataSources).toEqual(exportedDataSources);
-      expect(importedDataQueries).toEqual(exportedDataQueries);
+      expect(new Set(importedAppVersions)).toEqual(new Set(exportedAppVersions));
+      expect(new Set(importedDataSources)).toEqual(new Set(exportedDataSources));
+      expect(new Set(importedDataQueries)).toEqual(new Set(exportedDataQueries));
 
       // assert group permissions are valid
       const appGroupPermissions = await getManager().find(AppGroupPermission, {

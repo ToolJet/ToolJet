@@ -22,7 +22,6 @@ const sidebars = {
         'setup/try-tooljet',
         'setup/digitalocean',
         'setup/docker',
-        'setup/heroku',
         'setup/ec2',
         'setup/ecs',
         'setup/openshift',
@@ -39,7 +38,6 @@ const sidebars = {
         'setup/v2-migration-guide'
       ]
     },
-    'licensing',
     'tooljet-database',
     'tooljet-copilot',
     {
@@ -56,6 +54,7 @@ const sidebars = {
             'data-sources/amazonses',
             'data-sources/appwrite',
             'data-sources/athena',
+            'data-sources/azureblob',
             'data-sources/baserow',
             'data-sources/bigquery',
             'data-sources/firestore',
@@ -196,6 +195,7 @@ const sidebars = {
         },
       ],
     },
+    'dashboard',
     {
       'type': 'category',
       'label': 'App Builder',
@@ -210,6 +210,16 @@ const sidebars = {
         'tutorial/pages',
         'app-builder/customstyles',
         'tutorial/keyboard-shortcuts',
+      ],
+    },
+    {
+      'type': 'category',
+      'label': 'Workflows',
+      'items': [
+        'workflows/overview',
+        'workflows/nodes',
+        'workflows/permissions',
+        'workflows/logs',
       ],
     },
     {
@@ -266,18 +276,20 @@ const sidebars = {
           ],
         },
         {
-          'type': 'category',
-          'label': 'Workspaces',
-          'items': [
-            'tutorial/workspace_overview',
-            'tutorial/workspace-variables',
-          ],
+          "type": "category",
+          "label": "Workspaces",
+          "items": [
+            "org-management/workspaces/workspace_overview",
+            "org-management/workspaces/workspace-variables",
+            "org-management/workspaces/workspace_constants"
+          ]
         },
         'org-management/permissions',
         'tutorial/manage-users-groups',
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
+        'org-management/licensing',
       ],
     },
     {
@@ -334,6 +346,7 @@ const sidebars = {
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
         'how-to/bulk-update-multiple-rows',
+        'how-to/delete-multiple-rows',
         'how-to/use-server-side-pagination',
         'how-to/access-currentuser',
         'how-to/use-axios-in-runjs',
@@ -346,7 +359,6 @@ const sidebars = {
         'how-to/access-users-location',
         'how-to/use-s3-signed-url-to-upload-docs',
         'how-to/s3-custom-endpoints',
-        'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',

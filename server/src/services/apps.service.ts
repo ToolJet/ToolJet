@@ -654,4 +654,22 @@ export class AppsService {
       };
     });
   }
+
+  async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const tooljetDbDataQueries = await manager
+        .createQueryBuilder(DataQuery, 'data_queries')
+        .innerJoin(DataSource, 'data_sources', 'data_queries.data_source_id = data_sources.id')
+        .innerJoin(AppVersion, 'app_versions', 'app_versions.id = data_sources.app_version_id')
+        .where('app_versions.app_id = :appId', { appId })
+        .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
+        .getMany();
+
+      const uniqTableIds = [...new Set(tooljetDbDataQueries.map((dq) => dq.options['table_id']))];
+
+      return uniqTableIds.map((table_id) => {
+        return { table_id };
+      });
+    });
+  }
 }

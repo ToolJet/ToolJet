@@ -33,7 +33,7 @@ import {
 } from "Support/utils/events";
 
 import {
-  selectQuery,
+  selectQueryFromLandingPage,
   deleteQuery,
   query,
   changeQueryToggles,
@@ -59,24 +59,24 @@ import {
   searchPage,
 } from "Support/utils/multipage";
 import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
+import { deleteDownloadsFolder } from "Support/utils/common";
 
 describe("RunJS", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
-    resizeQueryPanel("50");
+    resizeQueryPanel("80");
   });
 
   it("should verify basic runjs", () => {
     const data = {};
     data.customText = randomString(12);
 
-    selectQuery("Run JavaScript code");
+    selectQueryFromLandingPage("runjs", "JavaScript");
     addInputOnQueryField("runjs", "return true");
-    query("create");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
     query("preview");
     verifypreview("raw", "true");
     query("run");
@@ -86,13 +86,15 @@ describe("RunJS", () => {
     openNode("runjs1");
     verifyValue("data", "Boolean", "true");
     verifyValue("rawData", "Boolean", "true");
+    cy.apiDeleteApp();
   });
 
   it("should verify actions", () => {
     const data = {};
+    deleteDownloadsFolder();
     data.customText = randomString(12);
 
-    selectQuery("Run JavaScript code");
+    selectQueryFromLandingPage("runjs", "JavaScript");
     addInputOnQueryField(
       "runjs",
       `setTimeout(() => {
@@ -101,7 +103,6 @@ describe("RunJS", () => {
     }, [0]) `
     );
     query("run");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("variables", "Object", "1 entry ");
@@ -134,7 +135,6 @@ describe("RunJS", () => {
       "actions.showAlert('success', 'alert from runjs');"
     );
     query("run");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query Saved");
 
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
     cy.get(multipageSelector.sidebarPageButton).click();
@@ -154,8 +154,6 @@ describe("RunJS", () => {
 
     addInputOnQueryField("runjs", "actions.closeModal('modal1');");
     query("run");
-    cy.intercept("GET", "api/data_queries?**").as("addQuery");
-    cy.wait("@addQuery");
     cy.wait(200);
     cy.notVisible('[data-cy="modal-title"]');
 
@@ -164,7 +162,6 @@ describe("RunJS", () => {
       "actions.copyToClipboard('data from runjs');"
     );
     query("run");
-    cy.wait("@addQuery");
 
     cy.window().then((win) => {
       win.navigator.clipboard.readText().then((text) => {
@@ -176,7 +173,6 @@ describe("RunJS", () => {
       "actions.setLocalStorage('localStorage','data from runjs');"
     );
     query("run");
-    cy.wait("@addQuery");
 
     cy.getAllLocalStorage().then((result) => {
       expect(result[Cypress.config().baseUrl].localStorage).to.deep.equal(
@@ -189,8 +185,6 @@ describe("RunJS", () => {
       "actions.generateFile('runjscsv', 'csv', [{ name: 'John', email: 'john@tooljet.com' }])"
     );
     query("run");
-    cy.wait("@addQuery");
-    cy.wait(3000);
 
     cy.readFile("cypress/downloads/runjscsv.csv", "utf-8")
       .should("contain", "name,email")
@@ -201,22 +195,23 @@ describe("RunJS", () => {
     //   "actions.goToApp('111234')"
     // );
     // query("run");
-    // cy.wait("@addQuery");
+
     addInputOnQueryField("runjs", "actions.logout()");
     query("run");
-    cy.wait("@addQuery");
-    cy.wait(3000);
     cy.get('[data-cy="sign-in-header"]').should("be.visible");
+    cy.apiLogin();
+    cy.openApp(
+      Cypress.env("appId"),
+      '[data-cy="draggable-widget-modal1-launch-button"]'
+    );
   });
 
   it("should verify global and page data", () => {
     const data = {};
     data.customText = randomString(12);
 
-    selectQuery("Run JavaScript code");
+    selectQueryFromLandingPage("runjs", "JavaScript");
     addInputOnQueryField("runjs", "return [page.handle,page.name]");
-    query("create");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
     query("preview");
     verifypreview("raw", `["home","Home"]`);
 
@@ -246,10 +241,6 @@ describe("RunJS", () => {
     query("preview");
     verifypreview("raw", `["all_users","admin"]`);
     if (Cypress.env("environment") != "Community") {
-      addInputOnQueryField("runjs", "return globals.mode");
-      query("preview");
-      verifypreview("raw", `{"value":"edit"}`);
-
       addInputOnQueryField("runjs", "return globals.environment.name");
       query("preview");
       verifypreview("raw", `development`);
@@ -261,56 +252,67 @@ describe("RunJS", () => {
       query("preview");
       verifypreview("raw", `true`);
     }
+
+    addInputOnQueryField("runjs", "return globals.mode");
+    query("preview");
+    verifypreview("raw", `{"value":"edit"}`);
+
+    addInputOnQueryField("runjs", "return constants");
+    query("preview");
+    verifypreview("raw", `{}`);
+    cy.apiDeleteApp();
   });
 
   it("should verify action by button", () => {
     const data = {};
     data.customText = randomString(12);
 
-    selectQuery("Run JavaScript code");
+    selectQueryFromLandingPage("runjs", "JavaScript");
     addInputOnQueryField(
       "runjs",
       "actions.showAlert('success', 'alert from runjs');"
     );
-    query("create");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
     query("run");
-
+    openEditorSidebar("button1");
     selectEvent("On Click", "Run query", 1);
     cy.get('[data-cy="query-selection-field"]').type("runjs1{enter}");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
 
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
     renameQueryFromEditor("newrunjs");
-    cy.wait(3000);
+    cy.waitForAutoSave();
     cy.get('[data-cy="event-handler"]').click();
 
     cy.get('[data-cy="query-selection-field"]').should("have.text", "newrunjs");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+    cy.apiDeleteApp();
   });
 
   it("should verify runjs toggle options", () => {
+    cy.intercept("PATCH", "api/data_queries/**").as("editQuery");
     const data = {};
     data.customText = randomString(12);
 
-    selectQuery("Run JavaScript code");
+    selectQueryFromLandingPage("runjs", "JavaScript");
     addInputOnQueryField(
       "runjs",
       "actions.showAlert('success', 'alert from runjs');"
     );
-    query("create");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
     changeQueryToggles("run-on-app-load");
-    query("save");
+    cy.wait(`@editQuery`);
+    cy.waitForAutoSave();
     cy.reload();
-    cy.wait(3000);
-    cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "alert from runjs",
+      false
+    );
 
     changeQueryToggles("confirmation-before-run");
-    query("save");
+    cy.wait(`@editQuery`);
+    cy.waitForAutoSave();
     cy.reload();
-    cy.wait(3000);
     cy.get('[data-cy="modal-message"]').verifyVisibleElement(
       "have.text",
       "Do you want to run this query - runjs1?"
@@ -318,15 +320,18 @@ describe("RunJS", () => {
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
 
+    resizeQueryPanel("80");
     changeQueryToggles("notification-on-success");
     cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(
       "Success alert"
     );
-    query("save");
+    cy.get('[data-cy="runjs-input-field"]').realClick();
+    cy.wait(1000);
+    cy.waitForAutoSave();
     cy.reload();
-    cy.wait(3000);
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Success alert");
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+    cy.apiDeleteApp();
   });
 });
