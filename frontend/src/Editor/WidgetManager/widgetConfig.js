@@ -5046,7 +5046,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'KanbanBoard',
     displayName: 'Kanban Board',
-    description: 'Kanban Board',
+    description: 'Task management board',
     component: 'KanbanBoard',
     defaultSize: {
       width: 40,
@@ -5277,7 +5277,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'ColorPicker',
     displayName: 'Color Picker',
-    description: 'Color Picker Palette',
+    description: 'Choose colors from a palette',
     component: 'ColorPicker',
     properties: {
       defaultColor: { type: 'color', displayName: 'Default Color' },
@@ -5327,7 +5327,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'TreeSelect',
     displayName: 'Tree Select',
-    description: 'Select values from a tree view',
+    description: 'Hierarchical item selector',
     defaultSize: {
       width: 12,
       height: 200,
