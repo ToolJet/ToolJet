@@ -15,7 +15,6 @@ on:
         required: true
 
 jobs:
-
   build-tooljet-image:
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
@@ -66,8 +65,7 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! docker image tooljet/tooljet-ee:${{ github.event.release.tag_name }} \n tooljet/tooljet:${{ github.event.release.tag_name }}"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}                   
-
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
   try-tooljet-image-build:
     runs-on: ubuntu-latest
@@ -139,7 +137,6 @@ jobs:
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
-
   #Below code helps to trigger the workflow manually
 
   tooljet:
@@ -191,7 +188,7 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! docker image tooljet/tooljet-ee:${{ github.event.inputs.image }} & tooljet/tooljet:${{ github.event.inputs.image }}"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}          
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
   try-tooljet:
     runs-on: ubuntu-latest
@@ -201,7 +198,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: main
+          ref: develop
 
       # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx
