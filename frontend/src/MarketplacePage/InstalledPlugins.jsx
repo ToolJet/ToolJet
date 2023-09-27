@@ -163,7 +163,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
                 )}
               </div>
             </div>
-            <div className="mt-4">
+            <div>
               <div className="row">
                 <div className="col">
                   <sub>

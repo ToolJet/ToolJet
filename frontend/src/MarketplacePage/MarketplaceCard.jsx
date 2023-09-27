@@ -57,7 +57,7 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
               <div>{description}</div>
             </div>
           </div>
-          <div className="mt-4">
+          <div>
             <div className="row">
               <div className="col">
                 <sub>v{version}</sub>
