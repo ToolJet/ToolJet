@@ -17,6 +17,7 @@ export class ImportResourcesDto {
 export class ImportAppDto {
   @IsDefined()
   definition: any;
+  name: string;
 }
 
 export class ImportTooljetDatabaseDto {

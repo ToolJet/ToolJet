@@ -61,7 +61,7 @@ export class ImportExportResourcesService {
     if (importResourcesDto.app) {
       for (const appImportDto of importResourcesDto.app) {
         user.organizationId = importResourcesDto.organization_id;
-        const createdApp = await this.appImportExportService.import(user, appImportDto.definition, {
+        const createdApp = await this.appImportExportService.import(user, appImportDto.definition, appImportDto.name, {
           tooljet_database: tableNameMapping,
         });
         imports.app.push({ id: createdApp.id, name: createdApp.name });
