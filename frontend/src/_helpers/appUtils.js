@@ -584,12 +584,10 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           const parent = Object.values(getCurrentState()?.components ?? {}).find(
             (item) => item.id === component.parent
           );
-          Object.values(parent?.children).map((item) => {
-            if (item.id == event.componentId) {
-              // child
-              action = item?.[event.componentSpecificActionHandle];
-            }
-          });
+          const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
+          if (child) {
+            action = child[event.componentSpecificActionHandle];
+          }
         } else {
           //normal compone
           action = component?.[event.componentSpecificActionHandle];
