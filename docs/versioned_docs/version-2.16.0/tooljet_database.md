@@ -237,23 +237,31 @@ To delete one or many records/rows, select on the checkbox at the right of the r
 
 ### Delete column
 
-To delete a particular column, just click on the column name and the **delete** button will appear, click on it to delete the column.
+To delete a particular column, just click on the column header and the **delete** button will appear, click on it to delete the column.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/delete11.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/deletecol.png" alt="ToolJet Database editor" />
 
 </div>
 
-### Edit or Delete a table
+### Edit table
 
-When you click on the kebab menu (three vertical dots icon) on the right of the table name, you'll get two options: Edit and Delete.
-- **Edit** will allow you to rename the table
-- **Delete** will allow you to delete the table permanently
+To edit the table name, click on the three vertical dots icon on the right of the table name and then click on the **Edit** option. A drawer will open from the right from where you can edit the table name.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/edit1.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/edittablename.png" alt="ToolJet Database editor" />
+
+</div>
+
+### Delete table
+
+To delete a table, click on the three vertical dots icon on the right of the table name and then click on the **Delete** option. A confirmation modal will appear, click on the **Delete** button to delete the table.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/deletetable.png" alt="ToolJet Database editor" />
 
 </div>
 

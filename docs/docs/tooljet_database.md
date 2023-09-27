@@ -7,7 +7,7 @@ Use the ToolJet-hosted database to build apps faster, and manage your data with 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/tjdb1.png" alt="ToolJet Database" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/tabledash.png" alt="ToolJet Database" />
 
 </div>
 
@@ -78,7 +78,7 @@ The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.com)**, 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/tjdbdash.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/sidebaroption.png" alt="ToolJet Database" />
 
 </div>
 
@@ -88,7 +88,7 @@ You can manage the ToolJet Database directly from the Database Editor. ToolJet D
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/tables1.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/tablescol.png" alt="ToolJet Database" />
 
 </div>
 
@@ -98,7 +98,7 @@ For creating a new table in ToolJet Database, click on the **Create New Table** 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/create1.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/createnew.png" alt="ToolJet Database" />
 
 </div>
 
@@ -106,7 +106,7 @@ When the **Create New Table** button is clicked, a drawer opens up from the righ
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/create2.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/create2.png" alt="ToolJet Database editor"/>
 
 </div>
 
@@ -120,12 +120,13 @@ When the **Create New Table** button is clicked, a drawer opens up from the righ
 - **int**: It is a numeric data type used to store whole numbers, that is, numbers without fractional components.
 - **float**: float is also a numeric data type that is used to store inexact, variable-precision values.
 - **boolean**: boolean data type can hold true, false, and null values.
+- **bigint**: bigint is a numeric data type that is used to store whole numbers, that is, numbers without fractional components.
 
 Click on **Create** button to create a new table.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/newtable2.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/datatypes.png" alt="ToolJet Database editor" width="500"/>
 
 </div>
 
@@ -135,7 +136,7 @@ You can enter a search term to search through all tables in the database.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/search1.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/search.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -150,7 +151,69 @@ A drawer from the right will open up from where you can create a new column by e
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/newcolumn1.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/addnewcolumn.png" alt="ToolJet Database editor"/>
+
+</div>
+
+### Delete column
+
+To delete a particular column, just click on the column header and the **delete** button will appear, click on it to delete the column.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/deletecol.png" alt="ToolJet Database editor" />
+
+</div>
+
+### Add new row
+
+To add a new row to the existing table data, click on the **Add new row** button. A drawer will open from the right where you can **enter the values** for the new row.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/addnewrow.png" alt="ToolJet Database editor" />
+
+</div>
+
+### Edit row
+
+To edit the rows from the ToolJet database dashboard, click on the **Edit row** button. A drawer will open from the right from where first you need to **select the id** of the row to be edited from the dropdown and then you can edit the cell values of the selected row.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/editrow.gif" alt="ToolJet Database editor"  />
+
+</div>
+
+### Bulk upload data
+
+You can bulk upload data to the ToolJet database by clicking on the **Bulk upload data** button on the top of the database editor. On clicking the button, a drawer will open from the right from where you can upload a **CSV** file.
+
+From the drawer, users can download the **template CSV file** in which they can enter the data to be uploaded to the ToolJet database's table or format their CSV file in the same way as the template file.
+
+Once the CSV file is ready, click on the file picker to select the file or drag and drop the file in the file picker. Now, click on the **Upload data** button to upload the data to the ToolJet database.
+
+**Requirements**:
+- The data types of columns in the CSV file should match those in the ToolJet database table.
+- The column with a `serial` data type should not contain duplicate values.
+
+**Limitations**:
+- There is a limit of 1000 rows per CSV file that can be uploaded to the ToolJet database.
+- The CSV file should not exceed 2MB in size.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/uploadcsv.png" alt="ToolJet Database editor" />
+
+</div>
+
+### Delete records
+
+To delete one or many records/rows, select on the checkbox at the right of the record or records that you want to delete. As soon as you select a single record, the button to delete record will appear on the top, click on the **Delete record** button to delete the selected records.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/deleterec.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -181,7 +244,7 @@ You can add as many filter as you want into the table by clicking on the **Filte
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/filter1.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/filters.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -191,69 +254,41 @@ To sort the table data, click on the **Sort** button on top, select a **column**
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/sort1.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/sort.png" alt="ToolJet Database editor" />
+
+</div>
+
+### Edit table
+
+To edit the table name, click on the three vertical dots icon on the right of the table name and then click on the **Edit** option. A drawer will open from the right from where you can edit the table name.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/edittablename.png" alt="ToolJet Database editor" />
 
 </div>
 
 ### Export table
 
-To export the table data, click on the **Export table** button on top. The selected table data will be exported to a **JSON** file.
+The export table option allows you to download the selected table schema in a JSON file. This does not export the table data.
+
+While [exporting the app](https://docs.tooljet.com/docs/dashboard#export-app), you can choose to export the app with or without table schema connected to the app.
+
+To export the table schema, click on the three vertical dots icon on the right of the table name and then click on the **Export** option. A JSON file will be downloaded with the table schema.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/exporttable.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/export.png" alt="ToolJet Database editor" />
 
 </div>
 
-### Add new row
+### Delete table
 
-To add a new row to the existing table data, click on the **Add new row** button. A drawer will open from the right where you can **enter the values** for the new row.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/database/newui/newrow2.png" alt="ToolJet Database editor" />
-
-</div>
-
-### Edit row
-
-To edit the rows from the ToolJet database dashboard, click on the **Edit row** button. A drawer will open from the right from where first you need to **select the id** of the row to be edited from the dropdown and then you can edit the cell values of the selected row.
+To delete a table, click on the three vertical dots icon on the right of the table name and then click on the **Delete** option. A confirmation modal will appear, click on the **Delete** button to delete the table.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/editrow.gif" alt="ToolJet Database editor"  />
-
-</div>
-
-### Delete records
-
-To delete one or many records/rows, select on the checkbox at the right of the record or records that you want to delete. As soon as you select a single record, the button to delete record will appear on the top, click on the **Delete record** button to delete the selected records.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/database/newui/delete1.png" alt="ToolJet Database editor" />
-
-</div>
-
-### Delete column
-
-To delete a particular column, just click on the column name and the **delete** button will appear, click on it to delete the column.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/database/newui/delete11.png" alt="ToolJet Database editor" />
-
-</div>
-
-### Edit or Delete a table
-
-When you click on the kebab menu (three vertical dots icon) on the right of the table name, you'll get two options: Edit and Delete.
-- **Edit** will allow you to rename the table
-- **Delete** will allow you to delete the table permanently
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/database/newui/edit1.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/deletetable.png" alt="ToolJet Database editor" />
 
 </div>
 
