@@ -1,6 +1,5 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useCallback, useEffect } from 'react';
 import cx from 'classnames';
-
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { ListItemPopover } from './ActionsPopover';
@@ -14,6 +13,9 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const { organizationId, columns, selectedTable, setTables, setSelectedTable } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const [isHovered, setIsHovered] = useState(false);
+  const [showDropDownMenu, setShowDropDownMenu] = useState(false);
+  const [focused, setFocused] = useState(false);
 
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
@@ -39,8 +41,23 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     return acc;
   }, {});
 
+  const onMenuToggle = useCallback(
+    (status) => {
+      setShowDropDownMenu(!!status);
+      !status && !isHovered && setFocused(false);
+    },
+    [isHovered]
+  );
+
+  useEffect(() => {
+    !showDropDownMenu && setFocused(!!isHovered);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHovered]);
+
   return (
     <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={cx(
         'table-list-item mb-1 rounded-3 d-inline-flex align-items-center justify-content-between h-4 list-group-item cursor-pointer list-group-item-action border-0 py-1',
         {
@@ -59,7 +76,20 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           {text}
         </span>
       </ToolTip>
-      <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} darkMode={darkMode} />
+      {focused && (
+        <div>
+          <ListItemPopover
+            onEdit={() => {
+              setShowDropDownMenu(false);
+              setIsEditTableDrawerOpen(true);
+            }}
+            onDelete={handleDeleteTable}
+            darkMode={darkMode}
+            onMenuToggle={onMenuToggle}
+          />
+        </div>
+      )}
+
       <Drawer
         disableFocus={true}
         isOpen={isEditTableDrawerOpen}
