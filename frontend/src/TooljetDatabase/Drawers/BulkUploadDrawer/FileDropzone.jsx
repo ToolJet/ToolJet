@@ -31,7 +31,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
       noValidate
       className="upload-user-form"
       id="onButtonClick"
-      style={{ cursor: "pointer" }}
+      style={{ cursor: 'pointer' }}
       onClick={handleClick}
     >
       <div className="form-group">
