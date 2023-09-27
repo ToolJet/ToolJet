@@ -109,4 +109,4 @@ To configure connection settings for different environments, follow these steps:
  Please note that only one version of the app can be released at a time.
  :::
 
-ToolJet automatically saves your most recently selected environment in the app builder. The next time you open an app, it will use the same environment. For example, if you switch to the staging environment in an app, the next time you open it will automatically use the same staging environment.
+ToolJet's app builder remembers your last editing state. When you reopen an app, it resumes from where you left off, ensuring a seamless experience. For instance, if you edited an app in the staging environment, it will open in the staging environment when you return.

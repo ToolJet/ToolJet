@@ -9,58 +9,155 @@ Now you can quickly deploy ToolJet using the Deploy to DigitalOcean button.
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
 
+The latest docker image is `tooljet/tooljet:<version_tag>`
+
 ## Deploying
 
 #### Follow the steps below to deploy ToolJet on DigitalOcean:
 
-
-1. Click on the button below to start one click deployment
-
+1. Once signed-in to your DigitalOcean account, click on the **Create App** button. 
+  
   <div style={{textAlign: 'center'}}>
 
-  [![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main)
+  <img className="screenshot-full" src="/img/setup/digitalocean/1.png" alt="ToolJet - Deploy on DigitalOcean" />
 
   </div>
 
-2. A new tab will open up, sign-in to your DigitalOCean account. Once signed-in, the **Create App** page will open up and **Resources** will be already selected. Click on **Next** button.
+2. On the next page, you'll be asked to choose a **Resource** type, select **Docker Hub**. Enter the Repository name as `tooljet/tooljet` and the corresponding tag.
 
-  <img className="screenshot-full" src="/img/setup/digitalocean/resources.png" alt="ToolJet - Deploy on DigitalOcean - Resources" />
+  <div style={{textAlign: 'center'}}>
 
-3. Now, on **Environment Variables** page you can add new variables or edit the existing ones. Check the [environment variables here](/docs/setup/env-vars).
+  <img className="screenshot-full" src="/img/setup/digitalocean/2.png" alt="ToolJet - Deploy on DigitalOcean" />
 
-  <img className="screenshot-full" src="/img/setup/digitalocean/env.png" alt="ToolJet - Deploy on DigitalOcean - Environment Variables" />
+  </div>
 
-4. On the next page, you can change the **App name**, **Project**, and the **Region**.
+3. Once the Resource is created, you'll be redirected to the **Resources** page. Click on the **Edit** button next to the Resource.
 
-  <img className="screenshot-full" src="/img/setup/digitalocean/region.png" alt="ToolJet - Deploy on DigitalOcean - App name" />
+  <div style={{textAlign: 'center'}}>
 
-5. On the last page, you'll be asked to **Review** all the app details such that we entered before such as **Resources**, **Environment Variables**, **Region**, and there will also be **Billing** section at the end. Review all the details and click the **Create Resource** button.
+  <img className="screenshot-full" src="/img/setup/digitalocean/3.png" alt="ToolJet - Deploy on DigitalOcean" />
 
-   <img className="screenshot-full" src="/img/setup/digitalocean/review.png" alt="ToolJet - Deploy on DigitalOcean - App name" />
+  </div>
+  
+  Make sure the **Run Command** is `./server/scripts/digitalocean-build.sh` and the **HTTP** port is `3000`. Once you have edited the ToolJet resource click on the **Back** button.
 
-6. Once you click the **Create Resource** button, the build will begin. Once the build is complete, you'll see the resource and a **URL** next to it. Click on the URL to open the deployed **ToolJet**.
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/4.png" alt="ToolJet - Deploy on DigitalOcean" />
+
+  </div>
+
+### Redis setup
+
+ToolJet requires configuring Redis which is used for enabling multiplayer editing and for background jobs.
+
+Follow the steps below to configure Redis database:
+
+1. Navigate to **Database** and create a database cluster.
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/5.png" alt="ToolJet - Deploy on DigitalOcean" />
+
+  </div>
+
+2. Select `Redis` from the database engine and add a unique name to the cluster and click on **Create Database cluster**.
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/6.png" alt="ToolJet - Deploy on DigitalOcean" />
+
+  </div>
+
+3. Once the set-up is complete, add the Redis connection string in the environmental variable of `tooliet-app`.
+  :::info
+  In the business edition, saving or making changes in apps is dependent on Redis, even if multi-player editing is not necessary.
+  :::
+  
+### Database setup
+
+Follow the below steps to attach a postgresql database:
+
+1. Click on **Add Resource** and select **Database** and click on add.
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/7.png" alt="ToolJet - Deploy on DigitalOcean" />
+
+  </div>
+
+2. Enter the preffered name for the database and click **Create and attach**.
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/8.png" alt="ToolJet - Deploy on DigitalOcean" />
+
+  </div>
+
+### Setting up environment variables
+
+1. Once the database is attached, click on **Next** to set up the environment variables.
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/9.png" alt="ToolJet - Deploy on DigitalOcean" />
+
+  </div>
+
+2. Click on **Edit** next to `tooljet-app`.
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/10.png" alt="ToolJet - Deploy on DigitalOcean" />
+
+  </div>
+
+3. Click on the build editor to edit the environment variables.
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/11.png" alt="ToolJet - Deploy on DigitalOcean" />
+
+  </div>
+
+  ```bash
+  NODE_ ENV=production
+  NODE_OPTIONS=--max-old-space-size=4096
+  LOCKBOX MASTER_KEY= #Use `openssl rand -hex 32`
+  SECRET KEY BASE= #Use `openssl rand -hex 64`
+  DEPLOYMENT_PLATFORM=digitalocean
+  DATABASE_URL=${<enter the db name which was attached>.DATABASE_URL}
+  CA CERT=${<enter the db name which was attached>.CA_CERT}
+  TOOLJET HOST=${APP_URL} 
+  TOOLJET_SERVER_URL=${APP_URL} 
+  REDIS_URL= #connection string
+  ```
+
+  DATABASE_URL and CA_CERT variable should be added in the above format.
+
+4. After adding the environment variables, click on **Save**.
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/12.png" alt="ToolJet - Deploy on DigitalOcean" />
+
+  </div>
+
+  To add additional environment variables, refer this [doc](https://docs.tooljet.com/docs/setup/env-vars/).
+
+### ToolJet Database
+
+Use the ToolJet-hosted database to build apps faster, and manage your data with ease. ToolJet database requires no setup and gives you a powerful user interface for managing your data.
+
+You can refer docs [here](https://docs.tooljet.com/docs/setup/digitalocean#database-setup), if you require ToolJet Database set-up.
+
+### Updating version
+
+When a new version is released the team will communicate with the change-log which will contain all the latest features, bug fixes and any configuration changes(applicable only if any).
+
+We will share the latest version's tag to which it can be updated. To upgrade to the new version you will have need to change the image tag in the deployment yaml file.
 
 :::tip
-ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on DigitalOcean, modify `package.json` accordingly. We have a [guide](/docs/setup/client) on deploying ToolJet client using services such as Firebase.
+1. If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that NODE_EXTRA_CA_CERTS environment variable is set to the absolute path containing the certificates.
+2. Tooljet do not support SSL termination. If you require ssl termination you would have to delegate it using a load balancer or reverse proxy.
 :::
-
-#### Deploying Tooljet Database
-
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
-You can learn more about this feature [here](/docs/tooljet-database).
-
-Follow the steps below to deploy ToolJet Database on DigitalOcean:
-
-1. If you are using dev database within ToolJet deployment, upgrade it to managed database. You could also add a separate database, if you intent use a different database, please refer the [environment variables](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) for additional env variables. 
-
-2. Create a new app for PostgREST server. You can opt for docker hub to deploy PostgREST image of version `10.1.x`.
-
-  <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-build.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST resource" />
-
-3. Update the [environment variables](/docs/setup/env-vars#postgrest-server-optional) for PostgREST and expose the HTTP port `3000`.
-
-  <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-env.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST environment variables" />
-
-4. Add your newly created PostgREST app to the trusted sources of your managed or separate database.
-
-5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) required for PostgREST. 
