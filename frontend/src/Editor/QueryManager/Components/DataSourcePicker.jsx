@@ -143,7 +143,7 @@ const EmptyDataSourceBanner = () => (
     <div className="me-2">
       <Information fill="var(--slate9)" />
     </div>
-    <div>No global data sources have been added yet.</div>
+    <div>No data sources have been added yet.</div>
   </div>
 );
 
