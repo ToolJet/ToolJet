@@ -29,6 +29,8 @@ interface AppResourceMappings {
   appVersionMapping: Record<string, string>;
   appEnvironmentMapping: Record<string, string>;
   appDefaultEnvironmentMapping: Record<string, string[]>;
+  pagesMapping: Record<string, string>;
+  componentsMapping: Record<string, string>;
 }
 
 type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
@@ -310,6 +312,8 @@ export class AppImportExportService {
       appVersionMapping: {},
       appEnvironmentMapping: {},
       appDefaultEnvironmentMapping: {},
+      pagesMapping: {},
+      componentsMapping: {},
     };
     const {
       importingDataSources,
@@ -349,7 +353,7 @@ export class AppImportExportService {
       importingComponents,
       importingEvents
     );
-    // console.log('-----arpit extract import data:: ', { appResourceMappings });
+    console.log('-----arpit extract import data:: ', { appResourceMappings });
     if (!isNormalizedAppDefinitionSchema) {
       for (const importingAppVersion of importingAppVersions) {
         const updatedDefinition = this.replaceDataQueryIdWithinDefinitions(
@@ -587,6 +591,8 @@ export class AppImportExportService {
 
         const pageCreated = await manager.save(newPage);
 
+        appResourceMappings.pagesMapping[page.id] = pageCreated.id;
+
         isHomePage = importingAppVersion.homePageId === page.id;
 
         if (isHomePage) {
@@ -609,6 +615,7 @@ export class AppImportExportService {
 
           const savedComponent = await manager.save(newComponent);
 
+          appResourceMappings.componentsMapping[component.id] = savedComponent.id;
           const componentLayout = component.layouts;
 
           componentLayout.forEach(async (layout) => {
@@ -657,6 +664,14 @@ export class AppImportExportService {
           });
         }
       }
+
+      this.updateEventActionsForNewVersionWithNewMappingIds(
+        manager,
+        appResourceMappings.appVersionMapping[importingAppVersion.id],
+        appResourceMappings.dataQueryMapping,
+        appResourceMappings.componentsMapping,
+        appResourceMappings.pagesMapping
+      );
 
       await manager.update(
         AppVersion,
@@ -1351,6 +1366,38 @@ export class AppImportExportService {
 
   replaceTooljetDbTableIds(queryOptions: any, tooljetDatabaseMapping: any) {
     return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id };
+  }
+
+  async updateEventActionsForNewVersionWithNewMappingIds(
+    manager: EntityManager,
+    versionId: string,
+    oldDataQueryToNewMapping: Record<string, unknown>,
+    oldComponentToNewComponentMapping: Record<string, unknown>,
+    oldPageToNewPageMapping: Record<string, unknown>
+  ) {
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionId },
+    });
+
+    for (const event of allEvents) {
+      const eventDefinition = event.event;
+
+      if (eventDefinition?.actionId === 'run-query') {
+        eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
+      }
+
+      if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
+      if (eventDefinition?.actionId === 'switch-page') {
+        eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
+      }
+
+      event.event = eventDefinition;
+
+      await manager.save(event);
+    }
   }
 }
 
