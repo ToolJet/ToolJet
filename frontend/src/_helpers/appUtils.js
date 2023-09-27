@@ -662,7 +662,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   if (eventName === 'onTableActionButtonClicked') {
     const { action, tableActionEvents } = options;
-    console.log('---arpit::: ', { tableActionEvents });
+
     if (action && tableActionEvents) {
       for (const event of tableActionEvents) {
         if (event?.event?.actionId) {
@@ -1315,15 +1315,13 @@ export const getComponentName = (currentState, id) => {
 
 const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefinition) => {
   const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-  newComponents.forEach((newComponent) => {
-    newComponent.component.name = computeComponentName(
-      newComponent.component.component,
-      newAppDefinition.pages[pageId].components
-    );
-    newAppDefinition.pages[pageId].components[newComponent.id] = newComponent;
-  });
 
-  updateAppDefinition(newAppDefinition, { componentDefinitionChanged: true });
+  newAppDefinition.pages[pageId].components = {
+    ...newAppDefinition.pages[pageId].components,
+    ...newComponents,
+  };
+
+  updateAppDefinition(newAppDefinition, { componentAdded: true, containerChanges: true });
 };
 
 export const cloneComponents = (
@@ -1353,8 +1351,10 @@ export const cloneComponents = (
     let clonedComponent = JSON.parse(JSON.stringify(component));
     clonedComponent.parent = undefined;
     clonedComponent.children = [];
-    clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent, addedComponentId)];
-    newComponents = [...newComponents, clonedComponent];
+    const child = getChildComponents(allComponents, component, clonedComponent, addedComponentId);
+    // clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent, addedComponentId)];
+
+    newComponents = [...newComponents, clonedComponent, ...child];
     newComponentObj = {
       newComponents,
       isCloning,
@@ -1388,7 +1388,9 @@ const getChildComponents = (allComponents, component, parentComponent, addedComp
   if (component.component.component === 'Tabs' || component.component.component === 'Calendar') {
     childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
   } else {
-    childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
+    childComponents = Object.keys(allComponents).filter((key) => {
+      return allComponents[key].component?.parent === component.id;
+    });
   }
 
   childComponents.forEach((componentId) => {
@@ -1439,9 +1441,10 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 
 export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
-  const finalComponents = [];
+  const finalComponents = {};
+  const mapOldParentComponentToNewParentComponent = {};
   let parentComponent = undefined;
-  const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
+  const { isCloning, isCut, newComponents: pastedComponents = [] } = newComponentObj;
 
   if (parentId) {
     const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
@@ -1449,36 +1452,25 @@ export const addComponents = (pageId, appDefinition, appDefinitionChanged, paren
     parentComponent.id = parentId;
   }
 
-  !isCloning && updateComponentLayout(pastedComponent, parentId, isCut);
+  pastedComponents.forEach((component) => {
+    const newComponentId = uuidv4();
 
-  const buildComponents = (components, parentComponent = undefined, skipTabCalendarCheck = false) => {
-    if (Array.isArray(components) && components.length > 0) {
-      components.forEach((component) => {
-        const newComponent = {
-          id: uuidv4(),
-          component: component?.component,
-          layouts: component?.layouts,
-        };
-        if (parentComponent) {
-          if (
-            !skipTabCalendarCheck &&
-            (parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar')
-          ) {
-            const childTabId = component.parent.split('-').at(-1);
-            newComponent.parent = `${parentComponent.id}-${childTabId}`;
-          } else {
-            newComponent.parent = parentComponent.id;
-          }
-        }
-        finalComponents.push(newComponent);
-        if (component.children.length > 0) {
-          buildComponents(component.children, newComponent);
-        }
-      });
+    if (component.children && component.children.length > 0) {
+      mapOldParentComponentToNewParentComponent[component.id] = newComponentId;
     }
-  };
 
-  buildComponents(pastedComponent, parentComponent, true);
+    const newComponent = {
+      component: {
+        ...component.component,
+        parent: component.parent ? mapOldParentComponentToNewParentComponent[component.parent] : undefined,
+      },
+      layouts: component.layouts,
+    };
+
+    finalComponents[newComponentId] = newComponent;
+  });
+
+  !isCloning && updateComponentLayout(pastedComponents, parentId, isCut);
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged);
   !isCloning && toast.success('Component pasted succesfully');
