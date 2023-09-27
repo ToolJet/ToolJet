@@ -1,7 +1,8 @@
-FROM tooljet/tooljet-ce:latest
+FROM tooljet/tooljet:latest
 
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v10.1.1.20221215 /bin/postgrest /bin
+
 
 # Install Postgres
 USER root
@@ -13,6 +14,10 @@ USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
 USER root
+
+# Install redis
+USER root
+RUN apt update && apt -y install redis
 
 RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
@@ -52,7 +57,13 @@ ENV TOOLJET_HOST=http://localhost \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \
+    REDIS_HOST=localhost \
+    REDIS_PORT=6379 \
+    REDIS_USER=default \
+    REDIS_PASS= \
     TERM=xterm
 
-# Prepare DB and start application
-ENTRYPOINT service postgresql start 1> /dev/null && /usr/bin/supervisord
+# Set the entrypoint
+COPY ./server/try-entrypoint.sh /try-entrypoint.sh
+RUN chmod +x /try-entrypoint.sh
+ENTRYPOINT ["/try-entrypoint.sh"]
