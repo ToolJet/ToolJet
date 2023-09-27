@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -e
-
 # Setup prerequisite dependencies
 sudo apt-get update
 sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl postgresql-client
@@ -62,17 +61,23 @@ tar xJf postgrest-v10.1.1-linux-static-x64.tar.xz
 sudo mv ./postgrest /bin/postgrest
 sudo rm postgrest-v10.1.1-linux-static-x64.tar.xz
 
-# Setup app and postgrest as systemd service
+# Install redis
+sudo apt-get update
+sudo apt-get install redis -y
+
+# Setup app, postgrest and redis as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
 sudo cp /tmp/postgrest.service /lib/systemd/system/postgrest.service
+sudo cp /tmp/redis-server.service /lib/systemd/system/redis-server.service
+
+# Start and enable Redis service
+sudo systemctl daemon-reload
+sudo systemctl start redis
 
 # Setup app directory
 mkdir -p ~/app
-# Add private key to clone repo
-sudo echo -n $SSH_PRIVATE_KEY | base64 -d  >> ~/.ssh/id_rsa
-sudo chmod 400 ~/.ssh/id_rsa
-ssh-keyscan github.com >> .ssh/known_hosts
-git clone -b develop git@github.com:ToolJet/tj-ee.git ~/app && cd ~/app 
+git clone -b redis-deployment https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
