@@ -202,7 +202,7 @@ const EditorComponent = (props) => {
   // Ref to store the previous appDefinition for comparison
 
   useEffect(() => {
-    if (currentUser?.current_organization_id) {
+    if (mounted && currentUser?.current_organization_id) {
       fetchGlobalDataSources();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -489,7 +489,6 @@ const EditorComponent = (props) => {
     props.switchDarkMode(newMode);
   };
 
-  //! Needs attention
   const handleEvent = (eventName, event, options) => {
     return onEvent(editorRef, eventName, event, options, 'edit');
   };
@@ -672,6 +671,7 @@ const EditorComponent = (props) => {
 
     await fetchDataSources(data.editing_version?.id);
     await fetchDataQueries(data.editing_version?.id, true, true);
+    await fetchGlobalDataSources();
 
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
