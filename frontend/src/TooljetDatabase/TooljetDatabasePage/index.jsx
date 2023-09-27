@@ -13,6 +13,7 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
 import { tooljetDatabaseService } from '@/_services';
+import { pluralize } from '@/_helpers/utils';
 
 const TooljetDatabasePage = ({ totalTables }) => {
   const {
@@ -138,8 +139,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
       }
 
       const { processed_rows: processedRows, rows_inserted: rowsInserted, rows_updated: rowsUpdated } = data.result;
+      const toastMessage =
+        `${pluralize(rowsInserted, 'new row')} added, ` + `${pluralize(rowsUpdated, 'row')} updated.`;
 
-      toast.success(`${processedRows} successfully uploaded!`, {
+      toast.success(toastMessage, {
         position: 'top-center',
       });
 
