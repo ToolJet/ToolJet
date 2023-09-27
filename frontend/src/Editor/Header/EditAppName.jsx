@@ -36,7 +36,13 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
       e.preventDefault();
     }
   };
-  window.addEventListener('keydown', handleKeyDown);
+
+  React.useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown); // Clean up the event listener
+    };
+  }, []);
 
 
   return (
