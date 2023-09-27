@@ -487,7 +487,7 @@ export const EventManager = ({
                       options={dataQueries
                         .filter((qry) => isQueryRunnable(qry))
                         .map((qry) => ({ name: qry.name, value: qry.id }))}
-                      value={event.queryId}
+                      value={event?.queryId}
                       search={true}
                       onChange={(value) => {
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
@@ -898,7 +898,12 @@ export const EventManager = ({
                             if (typeof popOverCallback === 'function') popOverCallback(showing);
                           }}
                         >
-                          <div>
+                          <div
+                            key={index}
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
                             <ManageEventButton
                               eventDisplayName={eventMetaDefinition?.events[event.event.eventId]?.displayName}
                               actionName={actionMeta.name}

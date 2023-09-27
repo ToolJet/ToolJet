@@ -375,18 +375,64 @@ export class AppsService {
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId);
-
       if (versionFrom) {
         (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
           (appVersion.globalSettings = versionFrom.globalSettings),
           await manager.save(appVersion);
 
-        await this.createNewPagesAndComponentsForVersion(manager, appVersion, versionFrom.id, versionFrom.homePageId);
+        const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
+          manager,
+          appVersion,
+          versionFrom,
+          organizationId
+        );
+
+        const { oldComponentToNewComponentMapping, oldPageToNewPageMapping } =
+          await this.createNewPagesAndComponentsForVersion(manager, appVersion, versionFrom.id, versionFrom.homePageId);
+
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appVersion.id,
+          oldDataQueryToNewMapping,
+          oldComponentToNewComponentMapping,
+          oldPageToNewPageMapping
+        );
       }
 
       return appVersion;
     }, manager);
+  }
+
+  async updateEventActionsForNewVersionWithNewMappingIds(
+    manager: EntityManager,
+    versionId: string,
+    oldDataQueryToNewMapping: any,
+    oldComponentToNewComponentMapping: any,
+    oldPageToNewPageMapping: any
+  ) {
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionId },
+    });
+
+    for (const event of allEvents) {
+      const eventDefinition = event.event;
+
+      if (eventDefinition?.actionId === 'run-query') {
+        eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
+      }
+
+      if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
+      if (eventDefinition?.actionId === 'switch-page') {
+        eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
+      }
+
+      event.event = eventDefinition;
+
+      await manager.save(event);
+    }
   }
 
   async createNewPagesAndComponentsForVersion(
@@ -411,6 +457,7 @@ export class AppsService {
     const newComponents = [];
     const newComponentLayouts = [];
     const oldComponentToNewComponentMapping = {};
+    const oldPageToNewPageMapping = {};
 
     for (const page of pages) {
       const savedPage = await manager.save(
@@ -421,7 +468,7 @@ export class AppsService {
           appVersionId: appVersion.id,
         })
       );
-
+      oldPageToNewPageMapping[page.id] = savedPage.id;
       if (page.id === prevHomePagePage) {
         homePageId = savedPage.id;
       }
@@ -495,7 +542,9 @@ export class AppsService {
       await manager.save(newComponentLayouts);
     }
 
-    return await manager.update(AppVersion, { id: appVersion.id }, { homePageId });
+    await manager.update(AppVersion, { id: appVersion.id }, { homePageId });
+
+    return { oldComponentToNewComponentMapping, oldPageToNewPageMapping };
   }
 
   async deleteVersion(app: App, version: AppVersion): Promise<void> {
@@ -672,6 +721,8 @@ export class AppsService {
         }
       }
     }
+
+    return oldDataQueryToNewMapping;
   }
 
   private async createEnvironments(appEnvironments: any[], manager: EntityManager, organizationId: string) {
