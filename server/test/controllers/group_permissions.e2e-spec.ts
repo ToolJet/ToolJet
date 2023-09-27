@@ -492,7 +492,7 @@ describe('group permissions controller', () => {
 
       for (const user of [adminUser, superAdminUserData.user]) {
         response = await request(nestApp.getHttpServer())
-          .put(`/api/group_permissions/${groupPermissionId}`)
+          .put(`/api/group_permissions/${groupPermissionId}/app`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
           .set('Cookie', user['tokenCookie'])
           .send({ add_apps: [app.id] });
@@ -534,7 +534,7 @@ describe('group permissions controller', () => {
         });
 
         response = await request(nestApp.getHttpServer())
-          .put(`/api/group_permissions/${groupPermissionId}`)
+          .put(`/api/group_permissions/${groupPermissionId}/app`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
           .set('Cookie', user['tokenCookie'])
           .send({ remove_apps: [app.id] });
@@ -602,7 +602,7 @@ describe('group permissions controller', () => {
 
       for (const user of [adminUser, superAdminUserData.user]) {
         response = await request(nestApp.getHttpServer())
-          .put(`/api/group_permissions/${groupPermissionId}`)
+          .put(`/api/group_permissions/${groupPermissionId}/user`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
           .set('Cookie', user['tokenCookie'])
           .send({ add_users: [defaultUser.id] });
@@ -621,7 +621,7 @@ describe('group permissions controller', () => {
         expect(addedUser.userId).toBe(defaultUser.id);
 
         response = await request(nestApp.getHttpServer())
-          .put(`/api/group_permissions/${groupPermissionId}`)
+          .put(`/api/group_permissions/${groupPermissionId}/user`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
           .set('Cookie', adminUser['tokenCookie'])
           .send({ remove_users: [defaultUser.id] });
@@ -652,7 +652,7 @@ describe('group permissions controller', () => {
       const loggedUser = await authenticateUser(nestApp);
 
       const response = await request(nestApp.getHttpServer())
-        .put(`/api/group_permissions/${adminGroupPermission.id}`)
+        .put(`/api/group_permissions/${adminGroupPermission.id}/user`)
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
         .send({ remove_users: [user.id] });
@@ -678,7 +678,7 @@ describe('group permissions controller', () => {
       });
 
       const response = await request(nestApp.getHttpServer())
-        .put(`/api/group_permissions/${adminGroupPermission.id}/`)
+        .put(`/api/group_permissions/${adminGroupPermission.id}/user`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
         .set('Cookie', adminUser['tokenCookie'])
         .send({ remove_users: [defaultUser.id] });

@@ -329,7 +329,7 @@ export class UsersService {
     }
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
-      if (updatableParams.userType) {
+      if (updatableParams.userType === USER_TYPE.INSTANCE) {
         await this.validateLicense(manager);
       }
     }, manager);
@@ -597,7 +597,7 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
-  async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {
+  async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean; isReleased: boolean }> {
     let app: App;
     try {
       app = await this.appsRepository.findOneOrFail(slug);
@@ -607,7 +607,11 @@ export class UsersService {
       });
     }
 
-    return { organizationId: app?.organizationId, isPublic: app?.isPublic };
+    return {
+      organizationId: app?.organizationId,
+      isPublic: app?.isPublic,
+      isReleased: app?.currentVersionId ? true : false,
+    };
   }
 
   async addAvatar(userId: string, imageBuffer: Buffer, filename: string, manager?: EntityManager) {
@@ -639,10 +643,27 @@ export class UsersService {
 
   async groupPermissions(user: User, manager?: EntityManager): Promise<GroupPermission[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      let groupPermissions: GroupPermission[] = [];
+      const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
       const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
       const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
 
-      return await manager.findByIds(GroupPermission, groupIds);
+      const result = await manager.findByIds(GroupPermission, groupIds);
+      if (!isLicenseValid) {
+        for (const groupPermission of result) {
+          const updatedGroupPermission: GroupPermission = groupPermission;
+          Object.keys(groupPermission).forEach((key) => {
+            if (typeof groupPermission[key] == 'boolean' && !['admin'].includes(groupPermission.group)) {
+              updatedGroupPermission[key] = false;
+            }
+          });
+          groupPermissions.push(updatedGroupPermission);
+        }
+      } else {
+        groupPermissions = result;
+      }
+
+      return groupPermissions;
     }, manager);
   }
 
@@ -655,6 +676,7 @@ export class UsersService {
   async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
     if (!groupIds || groupIds.length === 0) {
       return [];
@@ -670,8 +692,11 @@ export class UsersService {
             organizationId: user.organizationId,
           }
         )
+        .innerJoinAndSelect('app_group_permissions.groupPermission', 'groupPermission')
         .where('app_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
-
+      if (!isLicenseValid) {
+        query.andWhere('groupPermission.group IN (:...groups)', { groups: ['admin', 'all_users'] });
+      }
       if (appId) {
         query.andWhere('app_group_permissions.appId = :appId', { appId });
       }
@@ -686,6 +711,7 @@ export class UsersService {
   ): Promise<DataSourceGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
 
     if (!groupIds || groupIds.length === 0) {
       return [];
@@ -701,7 +727,11 @@ export class UsersService {
             organizationId: user.organizationId,
           }
         )
+        .innerJoinAndSelect('data_source_group_permissions.groupPermission', 'groupPermission')
         .where('data_source_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
+      if (!isLicenseValid) {
+        query.andWhere('groupPermission.group = :group', { group: 'admin' });
+      }
       if (dataSourceId) {
         query.andWhere('data_source_group_permissions.dataSourceId = :dataSourceId', { dataSourceId });
       }
@@ -818,21 +848,13 @@ export class UsersService {
 
   async validateLicense(manager: EntityManager): Promise<void> {
     let editor = -1,
-      viewer = -1,
-      superadmin = -1;
+      viewer = -1;
     const {
       allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
-      expired: isExpired,
-    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER, LICENSE_FIELD.IS_EXPIRED]);
-
-    if (isExpired) {
-      return;
-    }
+    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER]);
 
     if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
-      if (superadmin === -1) {
-        superadmin = await this.fetchTotalSuperadminCount(manager);
-      }
+      const superadmin = await this.fetchTotalSuperadminCount(manager);
       if (superadmin > superadminUsers) {
         throw new HttpException('You have reached your limit for number of super admins.', 451);
       }
@@ -899,9 +921,10 @@ export class UsersService {
       }
       case LIMIT_TYPE.ALL: {
         const currentUsersCount = await this.getCount(true, manager);
-        const currentEditorsCount = await this.fetchTotalEditorCount(manager);
         const currentSuperadminsCount = await this.fetchTotalSuperadminCount(manager);
-        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager);
+        const { viewer: currentViewersCount, editor: currentEditorsCount } = await this.fetchTotalViewerEditorCount(
+          manager
+        );
 
         return {
           usersCount: generatePayloadForLimits(currentUsersCount, users, licenseStatus, LICENSE_LIMITS_LABEL.USERS),

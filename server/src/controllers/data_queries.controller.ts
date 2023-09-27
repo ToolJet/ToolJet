@@ -29,6 +29,8 @@ import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.const
 import { App } from 'src/entities/app.entity';
 import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
 import { isEmpty } from 'class-validator';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -93,6 +95,15 @@ export class DataQueriesController {
 
     let dataSource: DataSource;
     let app: App;
+
+    /* Check for promoted versions */
+    if (appVersionId) {
+      await this.validateQueryActionsAgainstEnvironment(
+        user.defaultOrganizationId,
+        appVersionId,
+        'You cannot create queries in the promoted version.'
+      );
+    }
 
     if (
       !dataSourceId &&
@@ -185,6 +196,15 @@ export class DataQueriesController {
       )
     ) {
       throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const appVersionId = dataQuery.appVersionId;
+    if (appVersionId) {
+      await this.validateQueryActionsAgainstEnvironment(
+        user.defaultOrganizationId,
+        appVersionId,
+        'You cannot update queries in the promoted version.'
+      );
     }
 
     const result = await this.dataQueriesService.update(dataQueryId, name, options, data_source_id);
@@ -361,5 +381,22 @@ export class DataQueriesController {
     }
     await this.dataQueriesService.changeQueryDataSource(queryId, dataSourceId);
     return;
+  }
+
+  async validateQueryActionsAgainstEnvironment(organizationId: string, appVersionId: string, errorMessage: string) {
+    if (appVersionId) {
+      const environments: AppEnvironment[] = await AppEnvironment.find({
+        where: {
+          organizationId,
+        },
+      });
+      const appVersion: AppVersion = await this.appsService.findVersion(appVersionId);
+      const currentEnvironment: AppEnvironment = environments.find(
+        (environment) => environment.id === appVersion.currentEnvironmentId
+      );
+      if (environments?.length > 1 && currentEnvironment.priority !== 1) {
+        throw new BadRequestException(errorMessage);
+      }
+    }
   }
 }

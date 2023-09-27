@@ -20,6 +20,7 @@ export const BlankPage = function BlankPage({
   hideTemplateLibraryModal,
   viewTemplateLibraryModal,
   appType,
+  canCreateApp,
 }) {
   const { t } = useTranslation();
   const [deploying, setDeploying] = useState(false);
@@ -63,7 +64,7 @@ export const BlankPage = function BlankPage({
     });
   }
 
-  const appCreationDisabled = appsLimit?.percentage >= 100 && !appsLimit?.licenseStatus?.isExpired;
+  const appCreationDisabled = (appsLimit?.canAddUnlimited && !canCreateApp()) || appsLimit?.percentage >= 100;
 
   const templateOptionsView = (
     <>

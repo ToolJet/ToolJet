@@ -111,20 +111,18 @@ class ManageInstanceSettingsComponent extends React.Component {
                       <form noValidate>
                         {options.map((option) => (
                           <div key={option?.key} className="form-group mb-3">
-                            {option && (
-                              <label className="form-check form-switch">
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                  onChange={() => this.optionsChanged(option?.key)}
-                                  checked={option.value === 'true'}
-                                  data-cy="form-check-input"
-                                />
-                                <span className="form-check-label" data-cy="form-check-label">
-                                  {this.props.t(option?.label_key, option?.label)}
-                                </span>
-                              </label>
-                            )}
+                            <label className="form-check form-switch">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                onChange={() => this.optionsChanged(option?.key)}
+                                checked={option.value === 'true'}
+                                data-cy="form-check-input"
+                              />
+                              <span className="form-check-label" data-cy="form-check-label">
+                                {this.props.t(option?.label_key, option?.label)}
+                              </span>
+                            </label>
                             <div className="help-text">
                               <div data-cy="instance-settings-help-text">
                                 {this.props.t(option?.helper_text_key, option?.helper_text)}
@@ -132,24 +130,6 @@ class ManageInstanceSettingsComponent extends React.Component {
                             </div>
                           </div>
                         ))}
-
-                        {/* <div className="form-group mb-3">
-                      <label className="form-check form-switch">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          onChange={() => this.optionsChanged('allow_plugin_integration')}
-                          checked={options.allow_plugin_integration.value === 'true'}
-                          data-cy="form-check-input"
-                        />
-                        <span className="form-check-label" data-cy="form-check-label">
-                          {this.props.t(
-                            'header.organization.menus.manageSSO.generalSettings.allowPluginIntegration',
-                            'Allow Plugin Integration'
-                          )}
-                        </span>
-                      </label>
-                    </div> */}
 
                         <div className="form-footer">
                           <button

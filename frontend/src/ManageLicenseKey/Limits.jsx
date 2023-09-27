@@ -1,34 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons.jsx';
-import { userService, organizationService, appService } from '@/_services';
+import { userService, organizationService, appService, tooljetDatabaseService } from '@/_services';
+import { LoadingScreen } from './LoadingScreen';
 
 const Limits = () => {
   const [currentTab, setCurrentTab] = useState('apps');
   const [limitsData, setLimitsData] = useState([]);
-  const [licenseStatus, setLicenseStatus] = useState({});
+  const [loading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let service;
-    if (currentTab === 'apps') {
-      service = appService.getAppsLimit();
-    } else if (currentTab === 'workspaces') {
-      service = organizationService.getWorkspacesLimit();
-    } else if (currentTab === 'users') {
-      service = userService.getUserLimits('all');
-    }
+    const fetchData = async () => {
+      setIsLoading(true);
+      let service;
+      if (currentTab === 'apps') {
+        service = await appService.getAppsLimit();
+      } else if (currentTab === 'workspaces') {
+        service = await organizationService.getWorkspacesLimit();
+      } else if (currentTab === 'users') {
+        service = await userService.getUserLimits('all');
+      } else if (currentTab === 'tables') {
+        service = await tooljetDatabaseService.getTablesLimit();
+        service = service.data;
+      }
 
-    service.then((data) => {
-      setLimitsData([
-        ...Object.keys(data)
-          .filter((key) => data[key] !== null)
-          .map((limit) => data[limit]),
-      ]);
-      setLicenseStatus({ licenseStatus: data?.licenseStatus });
-    });
+      const data = Object.keys(service)
+        .filter((key) => service[key] !== null)
+        .map((limit) => service[limit]);
+      setLimitsData(data);
+      setIsLoading(false);
+    };
+
+    fetchData();
   }, [currentTab]);
 
-  return (
+  return loading ? (
+    <LoadingScreen />
+  ) : (
     <>
       <nav className="nav nav-tabs groups-sub-header-wrap">
         <a onClick={() => setCurrentTab('apps')} className={cx('nav-item nav-link', { active: currentTab === 'apps' })}>
@@ -37,6 +45,7 @@ const Limits = () => {
             fill={currentTab === 'apps' ? '#3E63DD' : '#C1C8CD'}
             name="grid"
             width="16"
+            viewBox={'0 0 29 29'}
           ></SolidIcon>
           Apps
         </a>
@@ -67,6 +76,22 @@ const Limits = () => {
           ></SolidIcon>
           Users
         </a>
+        {window.public_config?.ENABLE_TOOLJET_DB === 'true' && (
+          <a
+            onClick={() => setCurrentTab('tables')}
+            className={cx('nav-item nav-link', { active: currentTab === 'tables' })}
+            data-cy="tables-link"
+          >
+            <SolidIcon
+              name="table"
+              fill={currentTab === 'tables' ? '#3E63DD' : '#C1C8CD'}
+              className="manage-group-tab-icons"
+              width="16"
+              viewBox={'0 0 28 28'}
+            ></SolidIcon>
+            Tables
+          </a>
+        )}
       </nav>
       <div className="metrics-wrapper">
         <div className="tab-content">
@@ -79,10 +104,14 @@ const Limits = () => {
                     <input
                       readOnly
                       type="text"
-                      className={cx('form-control', { 'error-border': limit?.total === limit?.current })}
-                      value={`${limit?.current}/${limit?.total}`}
+                      className={cx('form-control', {
+                        'error-border': !limit?.canAddUnlimited && limit?.current > limit?.total,
+                      })}
+                      value={limit?.canAddUnlimited ? 'Unlimited' : `${limit?.current}/${limit?.total}`}
                     />
-                    {limit?.total === limit?.current && <div className="error-text">Exceeding Limit</div>}
+                    {!limit?.canAddUnlimited && limit?.current > limit?.total && (
+                      <div className="error-text">Exceeding Limit</div>
+                    )}
                   </div>
                 </div>
               ))}

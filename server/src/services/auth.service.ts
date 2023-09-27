@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -47,8 +48,11 @@ import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
 import { LicenseService } from './license.service';
+import got from 'got/dist/source';
+import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class AuthService {
@@ -118,7 +122,8 @@ export class AuthService {
     const user = await this.validateUser(email, password, organizationId);
 
     const allowPersonalWorkspace =
-      isSuperAdmin(user) || (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+      isSuperAdmin(user) ||
+      (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!organizationId) {
@@ -373,7 +378,8 @@ export class AuthService {
   }
 
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
-    const { companyName, companySize, name, role, workspace, password, email, phoneNumber } = userCreateDto;
+    const { companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial } =
+      userCreateDto;
 
     const nameObj = this.splitName(name);
 
@@ -400,11 +406,43 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
+      if (requestedTrial) await this.activateTrial(userCreateDto);
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
-    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
+    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role, requestedTrial);
     return result;
+  }
+
+  async activateTrial(userCreateDto: CreateAdminDto) {
+    const { companyName, companySize, name, role, email, phoneNumber } = userCreateDto;
+    /* generate trial license if needed */
+    const hostname = this.configService.get<string>('TOOLJET_HOST');
+    const subpath = this.configService.get<string>('SUB_PATH');
+
+    const metadata = await this.metadataService.getMetaData();
+    const { id: customerId } = metadata;
+    const otherData = { companySize, role, phoneNumber, name };
+
+    const body = {
+      hostname,
+      subpath,
+      customerId,
+      email,
+      companyName,
+      otherData,
+    };
+
+    try {
+      const licenseResponse = await got(LICENSE_TRIAL_API, {
+        method: 'POST',
+        json: body,
+      });
+      const { license_key } = JSON.parse(licenseResponse.body);
+      await this.licenseService.updateLicense({ key: license_key });
+    } catch (error) {
+      throw new HttpException(error?.error || 'Trial could not be activated. Please try again!', error?.status || 500);
+    }
   }
 
   async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
@@ -421,7 +459,7 @@ export class AuthService {
 
       const allowPersonalWorkspace =
         (await this.usersRepository.count()) === 0 ||
-        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+        (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
       if (!(allowPersonalWorkspace || organizationToken)) {
         throw new BadRequestException('Invalid invitation link');
@@ -629,7 +667,7 @@ export class AuthService {
     };
   }
 
-  generateSessionPayload(user: User, appOrganizationId: string) {
+  generateSessionPayload(user: User, appOrganizationId: string, appData?: any) {
     return decamelizeKeys({
       id: user.id,
       email: user.email,
@@ -640,6 +678,7 @@ export class AuthService {
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0],
+      ...(appData && { appData }),
     });
   }
 

@@ -10,7 +10,9 @@ import { retrieveWhiteLabelText, getSubpath } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import cx from 'classnames';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -25,6 +27,7 @@ class ManageAppUsersComponent extends React.Component {
       isSlugVerificationInProgress: false,
       addingUser: false,
       newUser: {},
+      currentEnvironment: props?.currentEnvironment,
     };
   }
 
@@ -133,7 +136,7 @@ class ManageAppUsersComponent extends React.Component {
   }, 500);
 
   render() {
-    const { isLoading, app, slugError, isSlugVerificationInProgress } = this.state;
+    const { isLoading, app, slugError, isSlugVerificationInProgress, currentEnvironment } = this.state;
     const appId = app.id;
     const appLink = `${window.public_config?.TOOLJET_HOST}${getSubpath() ? getSubpath() : ''}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
@@ -143,131 +146,146 @@ class ManageAppUsersComponent extends React.Component {
     }" title="${retrieveWhiteLabelText()} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
     return (
-      <div title="Share" className="editor-header-icon tj-secondary-btn" data-cy="share-button-link">
-        <span className="d-flex" onClick={() => this.setState({ showModal: true })}>
-          <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
-        </span>
-        <Modal
-          show={this.state.showModal}
-          size="lg"
-          backdrop="static"
-          centered={true}
-          keyboard={true}
-          animation={false}
-          onEscapeKeyDown={this.hideModal}
-          className={`app-sharing-modal animation-fade ${this.props.darkMode ? 'dark-theme' : ''}`}
-          contentClassName={this.props.darkMode ? 'dark-theme' : ''}
-        >
-          <Modal.Header>
-            <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
-            <span onClick={this.hideModal} data-cy="modal-close-button">
-              <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" />
-            </span>
-          </Modal.Header>
-          <Modal.Body>
-            {isLoading ? (
-              <div style={{ width: '100%' }} className="p-5">
-                <Skeleton count={5} />
-              </div>
-            ) : (
-              <div>
-                <div className="make-public mb-3">
-                  <div className="form-check form-switch">
-                    <input
-                      className="form-check-input color-slate12"
-                      type="checkbox"
-                      onClick={this.toggleAppVisibility}
-                      checked={this.state.app.is_public}
-                      disabled={this.state.ischangingVisibility}
-                      data-cy="make-public-app-toggle"
-                    />
-                    <span className="form-check-label" data-cy="make-public-app-label">
-                      {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public?')}
-                    </span>
-                  </div>
+      <ToolTip
+        message="You can only share apps in production"
+        placement="left"
+        show={this.props.multiEnvironmentEnabled ? (this.props.currentEnvironment?.is_default ? false : true) : false}
+      >
+        <div title="Share" className="editor-header-icon tj-secondary-btn" data-cy="share-button-link">
+          <span
+            className={cx('d-flex', {
+              'share-disabled': !this.props?.currentEnvironment?.is_default,
+            })}
+            onClick={() => {
+              this.props?.currentEnvironment?.is_default &&
+                this.props.multiEnvironmentEnabled &&
+                this.setState({ showModal: true });
+            }}
+          >
+            <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
+          </span>
+          <Modal
+            show={this.state.showModal}
+            size="lg"
+            backdrop="static"
+            centered={true}
+            keyboard={true}
+            animation={false}
+            onEscapeKeyDown={this.hideModal}
+            className={`app-sharing-modal animation-fade ${this.props.darkMode ? 'dark-theme' : ''}`}
+            contentClassName={this.props.darkMode ? 'dark-theme' : ''}
+          >
+            <Modal.Header>
+              <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
+              <span onClick={this.hideModal} data-cy="modal-close-button">
+                <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" />
+              </span>
+            </Modal.Header>
+            <Modal.Body>
+              {isLoading ? (
+                <div style={{ width: '100%' }} className="p-5">
+                  <Skeleton count={5} />
                 </div>
-
-                <div className="shareable-link mb-3">
-                  <label className="form-label" data-cy="shareable-app-link-label">
-                    <small>
-                      {this.props.t('editor.shareModal.shareableLink', 'Get shareable link for this application')}
-                    </small>
-                  </label>
-                  <div className="input-group">
-                    <span className="input-group-text" data-cy="app-link">
-                      {appLink}
-                    </span>
-                    <div className="input-with-icon app-name-slug-input">
+              ) : (
+                <div>
+                  <div className="make-public mb-3">
+                    <div className="form-check form-switch">
                       <input
-                        type="text"
-                        className={`form-control  color-slate12  ${slugButtonClass}`}
-                        placeholder={appId}
-                        onChange={(e) => {
-                          e.persist();
-                          this.delayedSlugChange(e);
-                        }}
-                        defaultValue={this.props.slug}
-                        data-cy="app-name-slug-input"
+                        className="form-check-input color-slate12"
+                        type="checkbox"
+                        onClick={this.toggleAppVisibility}
+                        checked={this.state.app.is_public}
+                        disabled={this.state.ischangingVisibility}
+                        data-cy="make-public-app-toggle"
                       />
-                      {isSlugVerificationInProgress && (
-                        <div className="icon-container">
-                          <div className="spinner-border text-azure spinner-border-sm" role="status"></div>
-                        </div>
-                      )}
+                      <span className="form-check-label" data-cy="make-public-app-label">
+                        {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public?')}
+                      </span>
                     </div>
-                    <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
-                      <button className="btn-sm tj-tertiary-btn" data-cy="copy-app-link-button">
-                        {this.props.t('editor.shareModal.copy', 'copy')}
-                      </button>
-                    </CopyToClipboard>
-                    <div className="invalid-feedback">{slugError}</div>
                   </div>
-                </div>
-                <hr />
-                {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+
                   <div className="shareable-link mb-3">
-                    <label className="form-label" data-cy="iframe-link-label">
+                    <label className="form-label" data-cy="shareable-app-link-label">
                       <small>
-                        {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
+                        {this.props.t('editor.shareModal.shareableLink', 'Get shareable link for this application')}
                       </small>
                     </label>
                     <div className="input-group">
-                      <Textarea
-                        disabled
-                        className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
-                        rows={5}
-                        value={embeddableLink}
-                        data-cy="iframe-link"
-                      />
-                      <CopyToClipboard
-                        text={embeddableLink}
-                        onCopy={() => toast.success('Embeddable link copied to clipboard')}
-                      >
-                        <button className="tj-tertiary-btn btn-sm" data-cy="iframe-link-copy-button">
+                      <span className="input-group-text" data-cy="app-link">
+                        {appLink}
+                      </span>
+                      <div className="input-with-icon app-name-slug-input">
+                        <input
+                          type="text"
+                          className={`form-control  color-slate12  ${slugButtonClass}`}
+                          placeholder={appId}
+                          onChange={(e) => {
+                            e.persist();
+                            this.delayedSlugChange(e);
+                          }}
+                          defaultValue={this.props.slug}
+                          data-cy="app-name-slug-input"
+                        />
+                        {isSlugVerificationInProgress && (
+                          <div className="icon-container">
+                            <div className="spinner-border text-azure spinner-border-sm" role="status"></div>
+                          </div>
+                        )}
+                      </div>
+                      <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
+                        <button className="btn-sm tj-tertiary-btn" data-cy="copy-app-link-button">
                           {this.props.t('editor.shareModal.copy', 'copy')}
                         </button>
                       </CopyToClipboard>
+                      <div className="invalid-feedback">{slugError}</div>
                     </div>
                   </div>
-                )}
-              </div>
-            )}
-          </Modal.Body>
+                  <hr />
+                  {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                    <div className="shareable-link mb-3">
+                      <label className="form-label" data-cy="iframe-link-label">
+                        <small>
+                          {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
+                        </small>
+                      </label>
+                      <div className="input-group">
+                        <Textarea
+                          disabled
+                          className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
+                          rows={5}
+                          value={embeddableLink}
+                          data-cy="iframe-link"
+                        />
+                        <CopyToClipboard
+                          text={embeddableLink}
+                          onCopy={() => toast.success('Embeddable link copied to clipboard')}
+                        >
+                          <button className="tj-tertiary-btn btn-sm" data-cy="iframe-link-copy-button">
+                            {this.props.t('editor.shareModal.copy', 'copy')}
+                          </button>
+                        </CopyToClipboard>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Modal.Body>
 
-          <Modal.Footer>
-            {this.isUserAdmin && (
-              <Link
-                to={getPrivateRoute('workspace_settings')}
-                target="_blank"
-                className="tj-primary-btn tj-base-btn"
-                data-cy="manage-users-button"
-              >
-                Manage users
-              </Link>
-            )}
-          </Modal.Footer>
-        </Modal>
-      </div>
+            <Modal.Footer>
+              {this.isUserAdmin && (
+                <Link
+                  to={getPrivateRoute('workspace_settings')}
+                  target="_blank"
+                  className="tj-primary-btn tj-base-btn"
+                  data-cy="manage-users-button"
+                >
+                  Manage users
+                </Link>
+              )}
+            </Modal.Footer>
+          </Modal>
+        </div>
+      </ToolTip>
     );
   }
 }

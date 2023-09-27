@@ -39,6 +39,7 @@ import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { AuditLogsModule } from './modules/audit_logs/audit_logs.module';
 import { InstanceSettingsModule } from './modules/instance_settings/instance_settings.module';
+import { WhiteLabellingModule } from './modules/white-labelling/white-labelling.module';
 import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
 import { CopilotModule } from './modules/copilot/copilot.module';
@@ -95,6 +96,7 @@ const imports = [
   SeedsModule,
   AuthModule,
   UsersModule,
+  LicenseModule,
   AppsModule,
   FoldersModule,
   OrgEnvironmentVariablesModule,
@@ -112,6 +114,7 @@ const imports = [
   EventsModule,
   AppEnvironmentsModule,
   InstanceSettingsModule,
+  WhiteLabellingModule,
   LicenseModule,
   ImportExportResourcesModule,
   CopilotModule,

@@ -84,10 +84,6 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
-export const retrieveWhiteLabelText = () => {
-  return process.env?.WHITE_LABEL_TEXT ? process.env.WHITE_LABEL_TEXT : 'ToolJet';
-};
-
 export const defaultAppEnvironments = [
   { name: 'development', isDefault: false, priority: 1 },
   { name: 'staging', isDefault: false, priority: 2 },
@@ -202,10 +198,15 @@ export function generatePayloadForLimits(currentCount: number, totalCount: any, 
         percentage: (currentCount / totalCount) * 100,
         total: totalCount,
         current: currentCount,
-        licenseStatus: licenseStatus,
-        label: label,
+        licenseStatus,
+        label,
+        canAddUnlimited: false,
       }
-    : null;
+    : {
+        canAddUnlimited: true,
+        licenseStatus,
+        label,
+      };
 }
 export class MigrationProgress {
   private progress = 0;

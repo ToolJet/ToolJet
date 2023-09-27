@@ -214,7 +214,6 @@ export const commonSelectors = {
   inspectorPinIcon: '.d-flex > [data-cy="left-sidebar-inspector"]',
   groupInputFieldLabel: '[data-cy="label-group-input-field"]',
   pageSectionHeader: '[data-cy="dashboard-section-header"]',
-  yesButton: '[data-cy="yes-button"]',
 
   documentationLink: '[data-cy="read-documentation-option-button"]',
   nameLabel: '[data-cy="name-label"]',
@@ -225,6 +224,8 @@ export const commonSelectors = {
   workspaceConstantsOption: '[data-cy="workspace-constants-list-item"]',
   nameErrorText: '[data-cy="name-error-text"]',
   valueErrorText: '[data-cy="value-error-text"]',
+  releaseButton: '[data-cy="button-release"]',
+  warningText: '[data-cy="warning-text"]'
 };
 
 export const commonWidgetSelector = {

@@ -43,6 +43,7 @@ const AppList = (props) => {
                     exportApp={props.exportApp}
                     appActionModal={props.appActionModal}
                     appType={props.appType}
+                    basicPlan={props?.basicPlan || false}
                   />
                 </div>
               );

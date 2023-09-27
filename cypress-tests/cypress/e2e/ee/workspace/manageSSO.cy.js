@@ -211,6 +211,4 @@ describe("Manage SSO for multi workspace", () => {
       }
     });
   });
-
-
 });

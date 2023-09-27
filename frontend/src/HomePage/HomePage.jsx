@@ -472,7 +472,6 @@ class HomePageComponent extends React.Component {
   hideTemplateLibraryModal = () => {
     this.setState({ showTemplateLibraryModal: false });
   };
-
   render() {
     const {
       apps,
@@ -631,13 +630,14 @@ class HomePageComponent extends React.Component {
                 <div className="create-new-app-license-wrapper">
                   <LicenseTooltip
                     limits={appsLimit}
-                    feature={this.props.appType === 'workflow' ? 'workflow' : 'app'}
+                    feature={this.props.appType === 'workflow' ? 'workflows' : 'apps'}
                     isAvailable={true}
+                    noTooltipIfValid={true}
                   >
                     <div className="create-new-app-wrapper">
                       <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                         <Button
-                          disabled={appsLimit?.percentage >= 100 && !appsLimit?.licenseStatus?.isExpired}
+                          disabled={appsLimit?.percentage >= 100}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                           onClick={this.createApp}
                           data-cy="create-new-app-button"
@@ -654,7 +654,12 @@ class HomePageComponent extends React.Component {
                         </Button>
 
                         {this.props.appType !== 'workflow' && (
-                          <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
+                          <Dropdown.Toggle
+                            disabled={appsLimit?.percentage >= 100}
+                            split
+                            className="d-inline"
+                            data-cy="import-dropdown-menu"
+                          />
                         )}
                         <Dropdown.Menu className="import-lg-position new-app-dropdown">
                           <Dropdown.Item
@@ -717,6 +722,7 @@ class HomePageComponent extends React.Component {
                 )}
                 {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
                   <BlankPage
+                    canCreateApp={this.canCreateApp}
                     createApp={this.createApp}
                     isImportingApp={isImportingApp}
                     fileInput={this.fileInput}
@@ -753,6 +759,9 @@ class HomePageComponent extends React.Component {
                       appActionModal={this.appActionModal}
                       removeAppFromFolder={this.removeAppFromFolder}
                       appType={this.props.appType}
+                      basicPlan={
+                        featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid
+                      }
                     />
                   ))}
               </div>

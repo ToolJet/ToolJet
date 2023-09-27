@@ -7,6 +7,7 @@ import { IsPublicGuard } from 'src/modules/org_environment_variables/is-public.g
 import { AppDecorator as App } from 'src/decorators/app.decorator';
 import { CustomStylesAbilityFactory } from 'src/modules/casl/abilities/custom-styles-ability.factory';
 import { CustomStyles } from 'src/entities/custom_styles.entity';
+import { CustomStylesGuard } from '@ee/licensing/guards/customStyles.guard';
 
 @Controller('custom-styles')
 export class CustomStylesController {
@@ -15,19 +16,19 @@ export class CustomStylesController {
     private customStylesAbilityFactory: CustomStylesAbilityFactory
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CustomStylesGuard)
   @Get()
   async get(@User() user) {
     return await this.customStylesService.fetch(user.organizationId);
   }
 
-  @UseGuards(IsPublicGuard)
+  @UseGuards(IsPublicGuard, CustomStylesGuard)
   @Get(':app_slug')
   async getStylesFromApp(@App() app) {
     return await this.customStylesService.fetch(app.organizationId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CustomStylesGuard)
   @Post()
   async create(@User() user, @Body() orgStylesDto: CustomStylesCreateDto) {
     const ability = await this.customStylesAbilityFactory.customStylesActions(user, {});

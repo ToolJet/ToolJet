@@ -23,7 +23,6 @@ import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
-import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 import { EditorUserCountGuard } from '@ee/licensing/guards/editorUser.guard';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
@@ -63,15 +62,16 @@ export class AppController {
   @Get('session')
   async getSessionDetails(@User() user, @Query('appId') appId: string) {
     let appOrganizationId: string;
+    let appData: any;
     if (appId) {
-      const app = await this.userService.returnOrgIdOfAnApp(appId);
+      appData = await this.userService.returnOrgIdOfAnApp(appId);
       //if the user has a session and the app is public, we don't need to authorize the app organization id
-      if (!app?.isPublic) appOrganizationId = app.organizationId;
+      if (!appData?.isPublic) appOrganizationId = appData.organizationId;
       if (appOrganizationId && user.organizationIds?.includes(appOrganizationId)) {
         user.organization_id = appOrganizationId;
       }
     }
-    return this.authService.generateSessionPayload(user, appOrganizationId);
+    return this.authService.generateSessionPayload(user, appOrganizationId, appData);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -125,8 +125,7 @@ export class AppController {
     UserCountGuard,
     EditorUserCountGuard,
     AllowPersonalWorkspaceGuard,
-    FirstUserSignupDisableGuard,
-    LicenseExpiryGuard
+    FirstUserSignupDisableGuard
   )
   @Post('signup')
   async signup(@Body() appAuthDto: AppSignupDto) {
@@ -162,12 +161,6 @@ export class AppController {
     const { token, password } = appAuthDto;
     await this.authService.resetPassword(token, password);
     return {};
-  }
-
-  @UseGuards(LicenseExpiryGuard)
-  @Get('/validate-license')
-  async validateLicense() {
-    return;
   }
 
   @Get(['/health', '/api/health'])
