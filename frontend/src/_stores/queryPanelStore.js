@@ -7,10 +7,11 @@ const initialState = {
   queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
   selectedQuery: null,
   selectedDataSource: null,
-  isUnsavedChangesAvailable: false,
   queryToBeRun: null,
   previewLoading: false,
-  queryPreviewData: null,
+  queryPreviewData: '',
+  showCreateQuery: false,
+  nameInputFocussed: false,
 };
 
 export const useQueryPanelStore = create(
@@ -19,22 +20,21 @@ export const useQueryPanelStore = create(
       ...initialState,
       actions: {
         updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
-        setSelectedQuery: (queryId, dataQuery = {}) => {
+        setSelectedQuery: (queryId) => {
           set(() => {
             if (queryId === null) {
               return { selectedQuery: null };
-            } else if (queryId === 'draftQuery') {
-              return { selectedQuery: dataQuery };
             }
             const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
-            return { selectedQuery: query ? query : null };
+            return { selectedQuery: query };
           });
         },
         setSelectedDataSource: (dataSource = null) => set({ selectedDataSource: dataSource }),
-        setUnSavedChanges: (value) => set({ isUnsavedChangesAvailable: value }),
         setQueryToBeRun: (query) => set({ queryToBeRun: query }),
         setPreviewLoading: (status) => set({ previewLoading: status }),
         setPreviewData: (data) => set({ queryPreviewData: data }),
+        setShowCreateQuery: (showCreateQuery) => set({ showCreateQuery }),
+        setNameInputFocussed: (nameInputFocussed) => set({ nameInputFocussed }),
       },
     }),
     { name: 'Query Panel Store' }
@@ -44,8 +44,11 @@ export const useQueryPanelStore = create(
 export const usePanelHeight = () => useQueryPanelStore((state) => state.queryPanelHeight);
 export const useSelectedQuery = () => useQueryPanelStore((state) => state.selectedQuery);
 export const useSelectedDataSource = () => useQueryPanelStore((state) => state.selectedDataSource);
-export const useUnsavedChanges = () => useQueryPanelStore((state) => state.isUnsavedChangesAvailable);
 export const useQueryToBeRun = () => useQueryPanelStore((state) => state.queryToBeRun);
 export const usePreviewLoading = () => useQueryPanelStore((state) => state.previewLoading);
 export const usePreviewData = () => useQueryPanelStore((state) => state.queryPreviewData);
 export const useQueryPanelActions = () => useQueryPanelStore((state) => state.actions);
+export const useShowCreateQuery = () =>
+  useQueryPanelStore((state) => [state.showCreateQuery, state.actions.setShowCreateQuery]);
+export const useNameInputFocussed = () =>
+  useQueryPanelStore((state) => [state.nameInputFocussed, state.actions.setNameInputFocussed]);

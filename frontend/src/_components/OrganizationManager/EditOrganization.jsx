@@ -13,7 +13,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   const { t } = useTranslation();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setNewOrgName(currentValue?.name), currentValue);
+  useEffect(() => setNewOrgName(currentValue?.name), [currentValue]);
 
   const editOrganization = () => {
     const trimmedName = newOrgName?.trim();
@@ -48,6 +48,13 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     setNewOrgName(e.target.value);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      editOrganization();
+    }
+  };
+
   const closeModal = () => {
     setShowEditOrg(false);
     setErrorText('');
@@ -59,13 +66,13 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       show={showEditOrg}
       closeModal={closeModal}
       title={t('header.organization.editWorkspace', 'Edit workspace')}
-      checkForBackground={false}
     >
       <div className="row mb-3 workspace-folder-modal">
         <div className="col modal-main tj-app-input">
           <input
             type="text"
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}

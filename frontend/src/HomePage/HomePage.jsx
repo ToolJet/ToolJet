@@ -14,7 +14,7 @@ import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
-import { sample } from 'lodash';
+import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
@@ -176,7 +176,7 @@ class HomePageComponent extends React.Component {
       const data = await appService.cloneApp(appName, appId);
       toast.success('App cloned successfully!');
       this.setState({ isCloningApp: false });
-      this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
+      this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
       return true;
     } catch (_error) {
       this.setState({ isCloningApp: false });
@@ -214,24 +214,36 @@ class HomePageComponent extends React.Component {
     }
   };
 
-  importFile = async (fileContent, appName) => {
+  importFile = (importJSON, appName) => {
     this.setState({ isImportingApp: true });
-    try {
-      const data = await appService.importApp(fileContent, appName);
-
-      toast.success('App imported successfully.');
-      this.setState({
-        isImportingApp: false,
-      });
-      this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
-    } catch (error) {
-      this.setState({
-        isImportingApp: false,
-      });
-      if (error.statusCode === 409) {
-        return false;
-      }
+    // For backward compatibility with legacy app import
+    const organization_id = getWorkspaceId();
+    const isLegacyImport = isEmpty(importJSON.tooljet_version);
+    if (isLegacyImport) {
+      importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
     }
+    const requestBody = { organization_id, appName, ...importJSON };
+    appService
+      .importResource(requestBody)
+      .then((data) => {
+        toast.success('App imported successfully.');
+        this.setState({
+          isImportingApp: false,
+        });
+        if (!isEmpty(data.imports.app)) {
+          this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
+        } else if (!isEmpty(data.imports.tooljet_database)) {
+          this.props.navigate(`/${getWorkspaceId()}/database`);
+        }
+      })
+      .catch(({ error }) => {
+        this.setState({
+          isImportingApp: false,
+        });
+        if (error.statusCode === 409) {
+          return false;
+        }
+      });
   };
 
   deployApp = async (event, appName, selectedApp) => {
@@ -657,7 +669,6 @@ class HomePageComponent extends React.Component {
                     value={appOperations?.selectedFolder}
                     placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
                     closeMenuOnSelect={true}
-                    customWrap={true}
                   />
                 </div>
               </div>

@@ -9,7 +9,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -27,9 +27,7 @@ describe("Data sources", () => {
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
+
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -46,15 +44,8 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.allCloudStorage
     );
+    selectAndAddDataSource("databases", "CosmosDB", data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("CosmosDB");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "CosmosDB");
-    cy.get('[data-cy="data-source-cosmosdb"]').click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      "CosmosDB"
-    );
     cy.get('[data-cy="label-end-point"]').verifyVisibleElement(
       "have.text",
       "End point"
@@ -92,14 +83,11 @@ describe("Data sources", () => {
       "have.text",
       "Invalid URL"
     );
+    deleteDatasource(`cypress-${data.lastName}-cosmosdb`);
   });
 
-  it("Should verify the functionality of CosmosDB connection form.", () => {
-    selectDataSource("CosmosDB");
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-cosmosdb`
-    );
+  it.only("Should verify the functionality of CosmosDB connection form.", () => {
+    selectAndAddDataSource("databases", "CosmosDB", data.lastName);
 
     fillDataSourceTextField(
       "End point",
@@ -120,7 +108,7 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(

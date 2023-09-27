@@ -22,7 +22,8 @@ import { randomString } from "Support/utils/textInput";
 
 describe("Database Functionality", () => {
   const data = {};
-  data.tableName = fake.tableName;
+  data.tableName1 = fake.tableName;
+  data.tableName2 = fake.tableName;
   data.newTableName = fake.tableName;
   data.editTableName = fake.tableName;
   data.maximumLength = randomNumber(8, 10);
@@ -57,11 +58,27 @@ describe("Database Functionality", () => {
     cy.appUILogin();
   });
   it("Verify that all elements of the table page", () => {
+    const data = {};
+    data.tableName1 = fake.tableName;
+    data.tableName2 = fake.tableName;
+    data.dataType = ["varchar", "int", "float", "boolean"];
+    const columnDetails = () => {
+      let column = {
+        name: fake.firstName,
+        defaultValueDoublePrecision:
+          Math.floor(Math.random() * (1000 - 100) + 100) / 100,
+        defaultValueInt: randomNumber(10, 99),
+        defaultValueVarchar: randomString(data.maximumLength),
+      };
+      return column;
+    };
+    let column1 = columnDetails();
+    let column2 = columnDetails();
     navigateToDatabase();
     verifyAllElementsOfPage();
-    createTableAndVerifyToastMessage(data.tableName, false);
+    createTableAndVerifyToastMessage(data.tableName1, false);
     createTableAndVerifyToastMessage(
-      data.newTableName,
+      data.tableName2,
       true,
       [column1.name, column2.name],
       [data.dataType[0], data.dataType[1]],
@@ -70,10 +87,43 @@ describe("Database Functionality", () => {
     );
   });
   it("Verify all operations of table", () => {
+    const data = {};
+    data.tableName = fake.tableName;
+    data.newTableName = fake.tableName;
+    data.editTableName = fake.tableName;
+    data.maximumLength = randomNumber(8, 10);
+    data.dataType = ["varchar", "int", "float", "boolean"];
+    const columnDetails = () => {
+      let column = {
+        name: fake.firstName,
+        defaultValueDoublePrecision:
+          Math.floor(Math.random() * (1000 - 100) + 100) / 100,
+        defaultValueInt: randomNumber(10, 99),
+        defaultValueVarchar: randomString(data.maximumLength),
+      };
+      return column;
+    };
+    let column1 = columnDetails();
+    let column2 = columnDetails();
+
+    const rowData = () => {
+      let row = {
+        varcharData: randomString(data.maximumLength),
+        doublePrecisionData:
+          Math.floor(Math.random() * (1000 - 100) + 100) / 100,
+        intData: randomNumber(10, 99),
+      };
+      return row;
+    };
+    let row1 = rowData();
+    let row2 = rowData();
+    let row3 = rowData();
+    let row4 = rowData();
     navigateToDatabase();
-    navigateToTable(data.tableName);
+    createTableAndVerifyToastMessage(data.newTableName, false);
     editTableNameAndVerifyToastMessage(data.newTableName, data.editTableName);
     deleteTableAndVerifyToastMessage(data.editTableName);
+    createTableAndVerifyToastMessage(data.tableName, false);
     createNewColumnAndVerify(
       data.tableName,
       column1.name,

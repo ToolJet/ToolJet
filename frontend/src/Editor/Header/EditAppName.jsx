@@ -5,7 +5,7 @@ import { handleHttpErrorMessages, validateAppName, validateName } from '@/_helpe
 import InfoOrErrorBox from './InfoOrErrorBox';
 import { toast } from 'react-hot-toast';
 
-function EditAppName({ appId, appName, onNameChanged }) {
+function EditAppName({ appId, appName = '', onNameChanged }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [name, setName] = useState(appName);
   const [isValid, setIsValid] = useState(true);
