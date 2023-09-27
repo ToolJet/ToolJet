@@ -1042,7 +1042,7 @@ const EditorComponent = (props) => {
       return;
     }
 
-    cloneComponents(selectedComponents, appDefinition, currentPageId, appDefinitionChanged, false);
+    cloneComponents(selectedComponents, appDefinition, currentPageId, appDefinitionChanged, false, true);
   };
 
   const handleEditorEscapeKeyPress = () => {
