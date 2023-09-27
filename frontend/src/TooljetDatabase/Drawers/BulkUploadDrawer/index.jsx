@@ -71,8 +71,13 @@ function BulkUploadDrawer({
         </span>
       </button>
 
-      <Drawer isOpen={isBulkUploadDrawerOpen} onClose={() => setIsBulkUploadDrawerOpen(false)} position="right">
-        <div className="drawer-card-wrapper ">
+      <Drawer
+        isOpen={isBulkUploadDrawerOpen}
+        onClose={() => setIsBulkUploadDrawerOpen(false)}
+        position="right"
+        drawerStyle={{ 'overflow-y': 'hidden' }}
+      >
+        <div className="drawer-card-wrapper">
           <div className="drawer-card-title ">
             <h3 className="" data-cy="create-new-column-header">
               Bulk upload data
