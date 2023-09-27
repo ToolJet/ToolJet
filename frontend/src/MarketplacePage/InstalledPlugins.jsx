@@ -135,7 +135,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
       />
       <div key={plugin.id} className="col-sm-6 col-lg-4">
         <div className="plugins-card">
-          <div className="card-body">
+          <div className="card-body card-body-alignment">
             <div className="row align-items-center">
               <div className="col-auto">
                 <span className="text-white avatar">
@@ -177,7 +177,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
                 )}
               </div>
             </div>
-            <div className="mt-4">
+            <div>
               <div className="row">
                 <div className="col">
                   <sub>
