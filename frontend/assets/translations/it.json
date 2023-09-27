@@ -864,7 +864,7 @@
         },
         "KanbanBoard": {
             "displayName": "Kanban Board",
-            "description": "Kanban Board"
+            "description": "Task management board"
         },
         "ColorPicker": {
             "displayName": "Picker di colori",

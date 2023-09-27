@@ -901,11 +901,11 @@
         },
         "ColorPicker": {
             "displayName": "Color Picker",
-            "description": "Color Picker Palette"
+            "description": "Choose colors from a palette"
         },
         "TreeSelect": {
             "displayName": "Tree Select",
-            "description": "Select values from a tree view"
+            "description": "Hierarchical item selector"
         }
     },
     "leftSidebar": {
