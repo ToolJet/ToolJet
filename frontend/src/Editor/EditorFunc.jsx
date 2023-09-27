@@ -1429,6 +1429,15 @@ const EditorComponent = (props) => {
   return (
     <div className="editor wrapper">
       <Confirm
+        show={queryConfirmationList?.length > 0}
+        message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
+        onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(editorRef, queryConfirmationData, true)}
+        onCancel={() => onQueryConfirmOrCancel(editorRef, queryConfirmationList[0])}
+        queryConfirmationData={queryConfirmationList[0]}
+        darkMode={props.darkMode}
+        key={queryConfirmationList[0]?.queryName}
+      />
+      <Confirm
         show={showPageDeletionConfirmation?.isOpen ?? false}
         title={'Delete Page'}
         message={`Do you really want to delete ${showPageDeletionConfirmation?.pageName || 'this'} page?`}
