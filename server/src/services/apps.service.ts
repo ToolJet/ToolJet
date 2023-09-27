@@ -406,9 +406,9 @@ export class AppsService {
   async updateEventActionsForNewVersionWithNewMappingIds(
     manager: EntityManager,
     versionId: string,
-    oldDataQueryToNewMapping: any,
-    oldComponentToNewComponentMapping: any,
-    oldPageToNewPageMapping: any
+    oldDataQueryToNewMapping: Record<string, unknown>,
+    oldComponentToNewComponentMapping: Record<string, unknown>,
+    oldPageToNewPageMapping: Record<string, unknown>
   ) {
     const allEvents = await manager.find(EventHandler, {
       where: { appVersionId: versionId },
