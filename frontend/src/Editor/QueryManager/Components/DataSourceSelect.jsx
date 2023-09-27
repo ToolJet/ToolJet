@@ -14,7 +14,7 @@ import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
 
-function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
+function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const [userDefinedSources, setUserDefinedSources] = useState([...dataSources, ...globalDataSources]);
@@ -53,7 +53,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
           <div>
             {index === 0 && (
               <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
-                Global datasources
+                Global data sources
               </div>
             )}
             <DataSourceIcon source={sources?.[0]} height={16} />
@@ -77,6 +77,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         })),
       }))
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userDefinedSources]);
 
   const DataSourceOptions = [
@@ -245,7 +246,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       {admin && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
-            + Add new datasource
+            + Add new data source
           </ButtonSolid>
         </div>
       )}

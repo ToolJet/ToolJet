@@ -62,81 +62,91 @@
 
 /* Variants */
 .tj-primary-btn {
-    background: #3E63DD;
-    border: none;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.00);
+    background: var(--indigo9) ;
+    box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.04);
     color: #FDFDFE;
-
     &:hover {
-        background: #3A5CCC;
-        color: #FDFDFE;
-
+        border: 1px solid rgba(255, 255, 255, 0.00);
+        background: var(--indigo10) ;
+        color: #FDFDFE; 
     }
 
     &:focus-visible {
-        box-shadow: 0px 0px 0px 4px var(--indigo6);
-        background: #3A5CCC;
+        border: 1px solid rgba(255, 255, 255, 0.00);
         outline: none;
-        color: #FDFDFE;
-
+        background: var(--indigo10);
     }
 
 
     &:active {
-        background: #3451B2;
-        box-shadow: none;
-        color: #F0F4FF;
+        background: var(--slate1);
+        border: 1px solid rgba(255, 255, 255, 0.00);
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
+        background: var(--indigo9);
     }
 
 }
 
 .tj-secondary-btn {
-    background: var(--indigo3);
-    border: none;
-    color: var(--indigo11);
-
+    color: var(--indigo9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.00) !important;
+    background: var(--indigo3, #F0F4FF) !important;
     &:hover {
-        background: var(--indigo4);
-        color: var(--indigo10);
+        color: var(--indigo10) !important;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
+        background: var(--indigo4, #E6EDFE) !important;
     }
 
     &:active {
-        background: var(--indigo5);
-        color: var(--indigo8);
+        color: var(--indigo9) !important;
         box-shadow: none;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
+        background: var(--indigo5, #D9E2FC) !important;
     }
 
     &:focus-visible {
-        background: #E6EDFE;
-        box-shadow: 0px 0px 0px 4px var(--indigo6);
-        color: var(--indigo10);
+        color: var(--indigo10) !important;
         outline: none;
-    }
-}
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
+        background: var(--indigo3, #F0F4FF) !important;
+
+        /* Focus rings/Indigo/light */
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
+    }}
 
 .tj-tertiary-btn {
-    background: transparent;
-    border: 1px solid var(--slate7);
     color: var(--slate12);
+    border: 1px solid var(--slate7) !important;
+    background: var(--slate1) !important;
 
     &:hover {
-        background: var(--slate4);
-        color: var(--slate11);
+        color: var(--slate11) !important;
+        border: 1px solid var(--slate7, #D7DBDF) !important;
+        background: var(--slate4, #ECEEF0) !important;
+    }
+
+    &:active,&:focus,&.always-active-btn {
+        border: 1px solid var(--slate7, #D7DBDF) !important;
+        background: var(--slate5) !important;
+        color: var(--slate12);
         border: 1px solid var(--slate7);
     }
 
     &:active {
         background: transparent;
         box-shadow: none;
-        border: 1px solid var(--slate12);
-        color: var(--slate12);
+        color: var(--slate12) !important;
     }
 
     &:focus-visible {
-        background: transparent;
-        color: var(--slate11);
-        outline: 1px solid var(--slate8);
-        box-shadow: 0px 0px 0px 4px var(--slate6);
+        color: var(--slate11) !important;
+        box-shadow: 0px 0px 0px 4px var(--slate6) !important;
         outline: none;
+        border: 1px solid var(--slate8, #C1C8CD) !important;
+        background: var(--slate1, #FBFCFD) !important;
     }
 }
 
@@ -162,6 +172,7 @@
         box-shadow: 0px 0px 0px 4px var(--indigo6);
         outline: none;
     }
+
     &:focus {
         box-shadow: 0px 0px 0px 4px var(--indigo6);
     }
@@ -173,20 +184,29 @@
     background: transparent;
 
     &:hover {
+        background: var(--slate4, #ECEEF0) !important;
         color: var(--slate11);
-        background: var(--slate4, #ECEEF0);
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
     }
-
-    &:active {
-        color: var(--slate12);
-    }
-
-    &:focus-visible {
-        color: var(--slate11);
-        background: var(--base);
-        border: none;
-        box-shadow: 0px 0px 0px 4px var(--slate6);
+    &:focus-visible{
+        color: var(--slate11) !important;
+        // background: var(--base);
+        // border: none;
+        box-shadow: 0px 0px 0px 4px var(--slate6) !important;
         outline: none;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
+        background: var(--slate1, #FBFCFD) !important;
+    }
+    &:active,&:focus,&.always-active-btn {
+        color: var(--slate12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
+        background: var(--slate5, #E6E8EB) !important;
+        box-shadow: none !important;
+    }
+    &:disabled{
+        background: rgba(255, 255, 255, 0.00) !important;
+        border: 1px solid rgba(255, 255, 255, 0.00) !important;
+        color: var(--slate8) !important;
     }
 }
 
