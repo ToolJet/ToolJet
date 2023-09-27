@@ -589,7 +589,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
             action = child[event.componentSpecificActionHandle];
           }
         } else {
-          //normal compone
+          //normal component outside a container ex : form
           action = component?.[event.componentSpecificActionHandle];
         }
         actionArguments = _.map(event.componentSpecificActionParams, (param) => ({

@@ -696,7 +696,6 @@ export const EventManager = ({
                       styles={styles}
                       useMenuPortal={false}
                       useCustomStyles={true}
-                      event={event}
                     />
                   </div>
                 </div>
