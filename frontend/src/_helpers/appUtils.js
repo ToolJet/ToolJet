@@ -337,13 +337,11 @@ export function onComponentClick(_ref, id, component, mode = 'edit') {
 }
 
 export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = false, mode = 'edit') {
-  const filtertedQueryConfirmation = _ref.state?.queryConfirmationList.filter(
+  const filtertedQueryConfirmation = _ref?.queryConfirmationList.filter(
     (query) => query.queryId !== queryConfirmationData.queryId
   );
 
-  _ref.setState({
-    queryConfirmationList: filtertedQueryConfirmation,
-  });
+  _ref.updateQueryConfirmationList(filtertedQueryConfirmation);
   isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
 
@@ -938,9 +936,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
     if (confirmed === undefined) {
       //!check
-      _ref.setState({
-        queryConfirmationList,
-      });
+      _ref.updateQueryConfirmationList(queryConfirmationList);
       return;
     }
   }
