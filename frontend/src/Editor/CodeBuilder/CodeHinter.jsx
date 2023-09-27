@@ -168,11 +168,12 @@ export function CodeHinter({
       setResolvedValue(null);
       setResolvingError(null);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ currentValue, realState })]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
-      handleChange(editor, onChange, ignoreBraces, realState, componentName);
+      handleChange(editor, onChange, ignoreBraces, realState, componentName, getCustomResolvables());
       setCurrentValue(editor.getValue()?.trim());
     }
   }

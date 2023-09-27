@@ -68,7 +68,6 @@ function getResult(suggestionList, query) {
 export function getSuggestionKeys(refState, refSource) {
   const state = _.cloneDeep(refState);
   const queries = state['queries'];
-
   const actions = [
     'runQuery',
     'setVariable',
@@ -140,6 +139,16 @@ export function getSuggestionKeys(refState, refSource) {
     });
   }
 
+  return suggestionList;
+}
+
+export function attachCustomResolvables(resolvables) {
+  const suggestionList = [];
+  for (const key in resolvables) {
+    for (const innerKey in resolvables[key]) {
+      suggestionList.push(`${key}.${innerKey}`);
+    }
+  }
   return suggestionList;
 }
 
@@ -239,8 +248,17 @@ export function canShowHint(editor, ignoreBraces = false) {
   return value.slice(ch, ch + 2) === '}}' || value.slice(ch, ch + 2) === '%%';
 }
 
-export function handleChange(editor, onChange, ignoreBraces = false, currentState, editorSource = undefined) {
+export function handleChange(
+  editor,
+  onChange,
+  ignoreBraces = false,
+  currentState,
+  editorSource = undefined,
+  resolvables = {}
+) {
   const suggestions = getSuggestionKeys(currentState, editorSource);
+  const resolvedSuggstions = attachCustomResolvables(resolvables); //attach custom resolved values to suggetsion list
+  suggestions.push(...resolvedSuggstions);
   let state = editor.state.matchHighlighter;
   editor.addOverlay((state.overlay = makeOverlay(state.options.style)));
 
