@@ -186,7 +186,7 @@ export const QueryManagerBody = ({
         <div className="query-manager-events pb-4 flex-grow-1">
           <EventManager
             sourceId={selectedQuery?.id}
-            eventSourceType="data_query"
+            eventSourceType="data_query" //check
             eventMetaDefinition={queryComponent.componentMeta}
             currentState={currentState}
             components={allComponents}

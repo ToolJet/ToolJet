@@ -13,6 +13,8 @@ export enum Target {
   page = 'page',
   component = 'component',
   dataQuery = 'data_query',
+  tableColumn = 'table_column',
+  tableAction = 'table_action',
 }
 
 @Entity({ name: 'event_handlers' })

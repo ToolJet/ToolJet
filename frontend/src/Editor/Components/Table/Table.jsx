@@ -136,6 +136,8 @@ export function Table({
   const { events: allAppEvents } = useAppInfo();
 
   const tableEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
+  const tableColumnEvents = allAppEvents.filter((event) => event.target === 'table_column' && event.sourceId === id);
+  const tableActionEvents = allAppEvents.filter((event) => event.target === 'table_action' && event.sourceId === id);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -404,6 +406,7 @@ export function Table({
     tableRef,
     t,
     darkMode,
+    tableColumnEvents: tableColumnEvents,
   });
 
   columnData = useMemo(
@@ -442,8 +445,9 @@ export function Table({
         defaultColumn,
         fireEvent,
         setExposedVariables,
+        tableActionEvents,
       }),
-    [JSON.stringify(actions)]
+    [JSON.stringify(actions), tableActionEvents]
   );
 
   const textWrapActions = (id) => {
@@ -472,6 +476,8 @@ export function Table({
       darkMode,
       allowSelection,
       highlightSelectedRow,
+      JSON.stringify(tableActionEvents),
+      JSON.stringify(tableColumnEvents),
     ] // Hack: need to fix
   );
 

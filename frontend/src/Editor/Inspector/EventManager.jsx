@@ -50,7 +50,9 @@ export const EventManager = ({
   const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
     useAppDataActions();
 
-  const currentEvents = allAppEvents.filter((event) => event.sourceId === sourceId);
+  const currentEvents = allAppEvents.filter((event) => {
+    return event.sourceId === sourceId && event.target === eventSourceType;
+  });
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
@@ -301,7 +303,11 @@ export const EventManager = ({
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
         data-cy="popover-card"
       >
-        <Popover.Body>
+        <Popover.Body
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <div className="row">
             <div className="col-3 p-2">
               <span data-cy="event-label">{t('editor.inspector.eventManager.event', 'Event')}</span>

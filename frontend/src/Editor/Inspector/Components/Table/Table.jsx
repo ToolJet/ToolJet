@@ -454,25 +454,18 @@ class TableComponent extends React.Component {
                 />
               </div>
               <EventManager
-                //!have to check
-                component={{
-                  component: {
-                    definition: {
-                      events: column.events ?? [],
-                    },
-                  },
-                }}
                 sourceId={this.props?.component?.id}
-                eventSourceType="component"
+                eventSourceType="table_column"
                 hideEmptyEventsAlert={true}
                 eventMetaDefinition={{ events: { onChange: { displayName: 'On change' } } }}
-                currentState={this.props.currentState}
+                currentState={this.state.currentState}
                 dataQueries={this.props.dataQueries}
                 components={this.props.components}
                 eventsChanged={(events) => this.columnEventChanged(column, events)}
                 apps={this.props.apps}
                 popOverCallback={(showing) => {
-                  this.setColumnPopoverRootCloseBlocker('event-manager', showing);
+                  this.setState({ actionPopOverRootClose: !showing });
+                  this.setState({ showPopOver: showing });
                 }}
                 pages={this.props.pages}
               />
@@ -833,7 +826,7 @@ class TableComponent extends React.Component {
             //!have to check
             component={dummyComponentForActionButton}
             sourceId={this.props?.component?.id}
-            eventSourceType="component"
+            eventSourceType="table_action"
             eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
             currentState={this.state.currentState}
             dataQueries={this.props.dataQueries}
