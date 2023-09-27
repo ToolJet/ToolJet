@@ -9,6 +9,7 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
+
 export default function generateColumnsData({
   columnProperties,
   columnSizes,
@@ -25,6 +26,7 @@ export default function generateColumnsData({
   tableRef,
   t,
   darkMode,
+  tableColumnEvents,
 }) {
   return columnProperties.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
@@ -429,6 +431,7 @@ export default function generateColumnsData({
                           column: column,
                           rowId: cell.row.id,
                           row: cell.row.original,
+                          tableColumnEvents,
                         });
                       }
                     );

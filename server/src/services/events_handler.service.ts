@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
-// import { Page } from 'src/entities/page.entity';
+
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 

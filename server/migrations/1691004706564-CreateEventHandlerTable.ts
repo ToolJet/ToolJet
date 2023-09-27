@@ -40,7 +40,7 @@ export class CreateEventHandlerTable1691004706564 implements MigrationInterface 
           {
             name: 'target',
             type: 'enum',
-            enum: ['page', 'component', 'data_query'],
+            enum: ['page', 'component', 'data_query', 'table_column', 'table_action'],
             default: "'page'",
             isNullable: false,
           },

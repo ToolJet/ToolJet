@@ -663,22 +663,12 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
   }
 
   if (eventName === 'onTableActionButtonClicked') {
-    const { component, data, action, rowId } = options;
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: {
-        ...getCurrentState().components,
-        [component.name]: {
-          ...getCurrentState().components[component.name],
-          selectedRow: data,
-          selectedRowId: rowId,
-        },
-      },
-    });
-    if (action && action.events) {
-      for (const event of action.events) {
-        if (event.actionId) {
-          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-          await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
+    const { action, tableActionEvents } = options;
+    console.log('---arpit::: ', { tableActionEvents });
+    if (action && tableActionEvents) {
+      for (const event of tableActionEvents) {
+        if (event?.event?.actionId) {
+          await executeAction(_self, event.event, mode, customVariables);
         }
       }
     } else {
@@ -687,23 +677,12 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
   }
 
   if (eventName === 'OnTableToggleCellChanged') {
-    const { component, column, rowId, row } = options;
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: {
-        ...getCurrentState().components,
-        [component.name]: {
-          ...getCurrentState().components[component.name],
-          selectedRow: row,
-          selectedRowId: rowId,
-        },
-      },
-    });
+    const { column, tableColumnEvents } = options;
 
-    if (column && column.events) {
-      for (const event of column.events) {
-        if (event.actionId) {
-          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-          await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
+    if (column && tableColumnEvents) {
+      for (const event of tableColumnEvents) {
+        if (event?.event?.actionId) {
+          await executeAction(_self, event.event, mode, customVariables);
         }
       }
     } else {
