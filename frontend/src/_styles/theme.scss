@@ -10924,6 +10924,13 @@ tbody {
   border: 1px solid var(--slate3);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-radius: 6px;
+
+  .card-body-alignment {
+    min-height: 145px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 }
 
 .template-source-name {
