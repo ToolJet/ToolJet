@@ -23,6 +23,7 @@ const currentSessionSubject = new BehaviorSubject({
   authentication_failed: null,
   isUserUpdated: false,
   load_app: false, //key is used only in the viewer mode
+  instance_id: null,
 });
 
 export const authenticationService = {
@@ -51,7 +52,6 @@ export const authenticationService = {
   authorize,
   validateSession,
   getUserDetails,
-  validateLicense,
 };
 
 function login(email, password, organizationId) {
@@ -160,7 +160,7 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
       return response;
     });
 }
-function setupAdmin({ companyName, companySize, name, role, workspace, password, email, phoneNumber }) {
+function setupAdmin({ companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial }) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -173,6 +173,7 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
       workspace,
       email,
       password,
+      requestedTrial,
       ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
     }),
   };
@@ -295,9 +296,4 @@ function authorize() {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponseWithoutValidation);
-}
-
-function validateLicense() {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/validate-license`, requestOptions).then(handleResponse);
 }

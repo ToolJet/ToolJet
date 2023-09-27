@@ -2,6 +2,7 @@ import {
   commonEeSelectors,
   ssoEeSelector,
   instanceSettingsSelector,
+  multiEnvSelector
 } from "Selectors/eeCommon";
 import { ssoEeText } from "Texts/eeCommon";
 import { commonSelectors } from "Selectors/common";
@@ -166,9 +167,9 @@ export const userSignUp = (fullName, email, workspaceName) => {
 export const resetAllowPersonalWorkspace = () => {
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle).then(($el) => {
+  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
     if (!$el.is(":checked")) {
-      cy.get(instanceSettingsSelector.allowWorkspaceToggle).check();
+      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).check();
       cy.get(commonEeSelectors.saveButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
@@ -216,9 +217,9 @@ export const defaultWorkspace = () => {
 export const trunOffAllowPersonalWorkspace = () => {
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle).then(($el) => {
+  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
     if ($el.is(":checked")) {
-      cy.get(instanceSettingsSelector.allowWorkspaceToggle).uncheck();
+      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).uncheck();
       cy.get(commonEeSelectors.saveButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
@@ -428,13 +429,13 @@ export const disableToggle = (toggleSelector) => {
 }
 
 export const verifyPromoteModalUI = (versionName, currEnv, targetEnv) => {
-  cy.get('[data-cy="promte-button"]').verifyVisibleElement("have.text", ' Promote ').click()
-  cy.get('[data-cy="modal-title"]').verifyVisibleElement("have.text", `Promote ${versionName}`)
-  cy.get('[data-cy="close-button"]').should('be.visible')
-  cy.get('[data-cy="from-label"]').verifyVisibleElement("have.text", "FROM")
-  cy.get('[data-cy="to-label"]').verifyVisibleElement("have.text", "TO")
-  cy.get('[data-cy="current-env-name"]').verifyVisibleElement("have.text", currEnv)
+  cy.get(commonEeSelectors.promoteButton).verifyVisibleElement("have.text", ' Promote ').click()
+  cy.get(commonEeSelectors.modalTitle).verifyVisibleElement("have.text", `Promote ${versionName}`)
+  cy.get(commonSelectors.closeButton).should('be.visible')
+  cy.get(multiEnvSelector.fromLabel).verifyVisibleElement("have.text", "FROM")
+  cy.get(multiEnvSelector.toLabel).verifyVisibleElement("have.text", "TO")
+  cy.get(multiEnvSelector.currEnvName).verifyVisibleElement("have.text", currEnv)
   cy.get('[data-cy="target-env-name"]').verifyVisibleElement("have.text", targetEnv)
   cy.get('[data-cy="cancel-button"]').verifyVisibleElement("have.text", "Cancel")
-  cy.get('[data-cy="promote-button"]').verifyVisibleElement("have.text", "Promote ")
+  cy.get(commonEeSelectors.promoteButton).eq(1).verifyVisibleElement("have.text", "Promote ")
 }

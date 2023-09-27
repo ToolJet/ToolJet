@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { createQueryBuilder, DeepPartial, EntityManager, Repository } from 'typeorm';
@@ -8,9 +8,10 @@ import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
-import { ConfigService } from '@nestjs/config';
 import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD, LICENSE_LIMIT } from 'src/helpers/license.helper';
 const uuid = require('uuid');
 
 @Injectable()
@@ -20,7 +21,7 @@ export class OrganizationUsersService {
     private organizationUsersRepository: Repository<OrganizationUser>,
     private usersService: UsersService,
     private emailService: EmailService,
-    private configService: ConfigService
+    private licenseService: LicenseService
   ) {}
 
   async create(
@@ -97,6 +98,7 @@ export class OrganizationUsersService {
 
       await this.usersService.updateUser(organizationUser.userId, { status: USER_STATUS.ACTIVE }, manager);
       await this.usersService.validateLicense(manager);
+      await this.validateLicense(manager);
     }, manager);
 
     this.emailService
@@ -133,5 +135,33 @@ export class OrganizationUsersService {
       .where('group_permissions.group = :admin', { admin: 'admin' })
       .andWhere('group_permissions.organization = :organizationId', { organizationId })
       .getCount();
+  }
+
+  async organizationsCount(manager?: EntityManager) {
+    return dbTransactionWrap(async (manager) => {
+      return await manager
+        .createQueryBuilder(Organization, 'organizations')
+        .innerJoin(
+          'organizations.organizationUsers',
+          'organizationUsers',
+          'organizationUsers.status IN(:...statusList)',
+          {
+            statusList: [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED],
+          }
+        )
+        .getCount();
+    }, manager);
+  }
+
+  async validateLicense(manager: EntityManager): Promise<void> {
+    const workspacesCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.WORKSPACES);
+
+    if (workspacesCount === LICENSE_LIMIT.UNLIMITED) {
+      return;
+    }
+
+    if ((await this.organizationsCount(manager)) > workspacesCount) {
+      throw new HttpException('You have reached your limit for number of workspaces.', 451);
+    }
   }
 }

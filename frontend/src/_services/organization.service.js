@@ -12,7 +12,6 @@ export const organizationService = {
   switchOrganization,
   getSSODetails,
   editOrganizationConfigs,
-  getOIDCLicenseTerms,
   getWorkspacesLimit,
 };
 
@@ -79,11 +78,6 @@ function editOrganizationConfigs(params) {
     body: JSON.stringify(params),
   };
   return fetch(`${config.apiUrl}/organizations/configs`, requestOptions).then(handleResponse);
-}
-
-function getOIDCLicenseTerms() {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organizations/license-terms/oidc`, requestOptions).then(handleResponse);
 }
 
 function getWorkspacesLimit() {

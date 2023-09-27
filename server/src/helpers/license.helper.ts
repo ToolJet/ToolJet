@@ -6,11 +6,16 @@ import { resolve } from 'path';
 export enum LICENSE_FIELD {
   IS_EXPIRED = 'expired',
   APP_COUNT = 'appCount',
+  TABLE_COUNT = 'tableCount',
   TOTAL_USERS = 'usersCount',
   EDITORS = 'editorsCount',
   VIEWERS = 'viewersCount',
   OIDC = 'oidcEnabled',
+  LDAP = 'ldapEnabled',
+  CUSTOM_STYLE = 'customStylingEnabled',
+  WHITE_LABEL = 'whitelabellingEnabled',
   AUDIT_LOGS = 'auditLogsEnabled',
+  MULTI_ENVIRONMENT = 'multiEnvironmentEnabled',
   UPDATED_AT = 'updatedAt',
   ALL = 'all',
   USER = 'allUsers',
@@ -19,6 +24,7 @@ export enum LICENSE_FIELD {
   FEATURES = 'features',
   DOMAINS = 'domains',
   STATUS = 'status',
+  META = 'metadata',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -34,6 +40,9 @@ export enum LICENSE_LIMITS_LABEL {
 
   //Workspaces
   WORKSPACES = 'Workspaces',
+
+  //Tables
+  TABLES = 'Tables',
 }
 
 export enum LICENSE_TYPE {
@@ -54,3 +63,5 @@ export function decrypt(toDecrypt: string): Terms {
   const decrypted = publicDecrypt(publicKey, buffer);
   return JSON.parse(decrypted.toString('utf8'));
 }
+
+export const LICENSE_TRIAL_API = 'https://nlb.tooljet.com/api/license/trial';

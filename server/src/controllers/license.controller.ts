@@ -38,7 +38,7 @@ export class LicenseController {
     return { domains: [...licenseTerms[LICENSE_FIELD.DOMAINS]], licenseStatus: licenseTerms[LICENSE_FIELD.STATUS] };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get('terms')
   async terms() {
     const licenseTerms = await this.licenseService.getLicenseTerms();
@@ -50,5 +50,11 @@ export class LicenseController {
   async updateLicenseKey(@Body() licenseUpdateDto: LicenseUpdateDto) {
     await this.licenseService.updateLicense(licenseUpdateDto);
     return;
+  }
+
+  @Get('status')
+  async isBasicPlan() {
+    const isBasicPlan = await this.licenseService.isBasicPlan();
+    return { isBasicPlan };
   }
 }

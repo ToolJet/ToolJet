@@ -28,6 +28,7 @@ import { Response } from 'express';
 import { LicenseService } from '@services/license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { LdapService } from './ldap.service';
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class OauthService {
@@ -80,7 +81,7 @@ export class OauthService {
     user = await this.usersService.findByEmail(email);
 
     const allowPersonalWorkspace =
-      (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+      (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
     const organizationUser: OrganizationUser = user?.organizationUsers?.find(
       (ou) => ou.organizationId === organization.id
@@ -233,6 +234,9 @@ export class OauthService {
         break;
 
       case 'ldap':
+        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.LDAP))) {
+          throw new UnauthorizedException('Ldap login disabled');
+        }
         userResponse = await this.ldapService.signIn({ username, password }, configs);
         break;
 
@@ -265,7 +269,7 @@ export class OauthService {
       let organizationDetails: DeepPartial<Organization>;
       const allowPersonalWorkspace =
         isSuperAdmin(userDetails) ||
-        (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
+        (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
       if (isInstanceSSOLogin) {
         // Login from main login page - Multi-Workspace enabled

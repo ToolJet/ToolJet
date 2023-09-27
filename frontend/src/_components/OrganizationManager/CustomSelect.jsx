@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
-import { authenticationService } from '@/_services';
+import { authenticationService, organizationService } from '@/_services';
 import { EditOrganization } from './EditOrganization';
 import { CreateOrganization } from './CreateOrganization';
 import { useTranslation } from 'react-i18next';
@@ -42,13 +42,13 @@ const Menu = (props) => {
         {(admin || isAllowPersonalWorkspace) && (
           <LicenseTooltip limits={workspacesLimit} feature={'workspaces'} isAvailable={true}>
             <div
-              disabled={workspacesLimit?.percentage >= 100 && !workspacesLimit?.licenseStatus?.isExpired}
+              disabled={!workspacesLimit.canAddUnlimited && workspacesLimit?.percentage >= 100}
               className={cx('cursor-pointer d-flex align-items-center add-workspace-button', {
-                disabled: workspacesLimit?.percentage >= 100 && !workspacesLimit?.licenseStatus?.isExpired,
+                disabled: !workspacesLimit.canAddUnlimited && workspacesLimit?.percentage >= 100,
               })}
               style={{ padding: '4px 12px', color: '#3E63DD' }}
               onClick={
-                workspacesLimit?.percentage >= 100 && !workspacesLimit?.licenseStatus?.isExpired
+                !workspacesLimit.canAddUnlimited && workspacesLimit?.percentage >= 100
                   ? null
                   : props.selectProps.setShowCreateOrg
               }

@@ -85,6 +85,7 @@ export const addQuery = (queryName, query, dbName) => {
   cy.get(dataSourceSelector.queryInputField)
     .realMouseDown({ position: "center" })
     .realType(" ");
+  cy.wait(1000)
   cy.get(dataSourceSelector.queryInputField).clearAndTypeOnCodeMirror(query);
   cy.get(dataSourceSelector.queryCreateAndRunButton).click();
 };
@@ -97,7 +98,7 @@ export const addQueryN = (queryName, query, dbName) => {
   cy.get(dataSourceSelector.queryInputField)
     .realMouseDown({ position: "center" })
     .realType(" ");
-  cy.wait(500)
+  cy.wait(1000)
   cy.get(dataSourceSelector.queryInputField).clearAndTypeOnCodeMirror(query);
   cy.get(dataSourceSelector.queryCreateAndRunButton).click();
 };
@@ -121,3 +122,10 @@ export const verifyValueOnInspector = (queryName, value) => {
     }
   });
 };
+
+export const selectDatasource = (datasourceName) => {
+  cy.get(dataSourceSelector.addedDsSearchIcon).click();
+  cy.clearAndType(dataSourceSelector.AddedDsSearchBar, datasourceName);
+  cy.wait(500)
+  cy.get(`[data-cy="${cyParamName(datasourceName)}-button"]`).click()
+}

@@ -24,7 +24,6 @@ export const appService = {
   setSlug,
   setPasswordFromToken,
   acceptInvite,
-  getLicenseTerms,
   getVersions,
   getAppsLimit,
   getWorkflows,
@@ -226,11 +225,6 @@ function acceptInvite({ token, password }) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/accept-invite`, requestOptions);
-}
-
-function getLicenseTerms() {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/license-terms`, requestOptions).then(handleResponse);
 }
 
 function getAppsLimit() {

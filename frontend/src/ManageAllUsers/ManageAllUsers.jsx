@@ -174,26 +174,26 @@ class ManageAllUsersComponent extends React.Component {
     const { usersCount, editorsCount, viewersCount } = this.state.userLimits;
 
     if (usersCount?.percentage >= 100) {
-      return <LicenseBanner classes="mt-3 mb-3" limits={usersCount} type="users" />;
+      return <LicenseBanner classes="mb-3" limits={usersCount} type="users" />;
     } else if (editorsCount?.percentage >= 100) {
-      return <LicenseBanner classes="mt-3 mb-3" limits={editorsCount} type="builders" />;
+      return <LicenseBanner classes="mb-3" limits={editorsCount} type="builders" />;
     } else if (viewersCount?.percentage >= 100) {
-      return <LicenseBanner classes="mt-3 mb-3" limits={viewersCount} type="viewers" />;
+      return <LicenseBanner classes="mb-3" limits={viewersCount} type="end users" />;
     } else if (
       usersCount?.percentage >= 90 ||
       (usersCount?.total <= 10 && usersCount.current === usersCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mt-3 mb-3" limits={usersCount} type="users" />;
+      return <LicenseBanner classes="mb-3" limits={usersCount} type="users" />;
     } else if (
       editorsCount?.percentage >= 90 ||
       (editorsCount?.total <= 10 && editorsCount.current === editorsCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mt-3 mb-3" limits={editorsCount} type="builders" />;
+      return <LicenseBanner classes="mb-3" limits={editorsCount} type="builders" />;
     } else if (
       viewersCount?.percentage >= 90 ||
       (viewersCount?.total <= 10 && viewersCount.current === viewersCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mt-3 mb-3" limits={viewersCount} type="viewers" />;
+      return <LicenseBanner classes="mb-3" limits={viewersCount} type="end users" />;
     }
   }
 
@@ -210,6 +210,8 @@ class ManageAllUsersComponent extends React.Component {
       userLimits,
       featureAccess,
     } = this.state;
+
+    const { superadminsCount } = this.state.userLimits;
 
     const usersTableCustomStyle = { height: 'calc(100vh - 400px)' };
 
@@ -241,17 +243,18 @@ class ManageAllUsersComponent extends React.Component {
             darkMode={this.props.darkMode}
             isUpdatingUser={isUpdatingUser}
             updateUser={this.updateUser}
+            superadminsCount={superadminsCount}
           />
 
-          <LicenseBanner classes="mt-3 mb-3" limits={featureAccess} type="Instance Settings" isAvailable={true}>
+          <LicenseBanner classes="mt-3" limits={featureAccess} type="Instance Settings" isAvailable={true}>
             <div className="page-wrapper mt-1">
               <div className="page-header workspace-page-header">
                 <div className="align-items-center d-flex">
                   <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
                     Manage All Users
                   </div>
-                  <div className="user-limits d-flex">
-                    {userLimits?.usersCount && (
+                  <div className="user-limits d-flex mb-3">
+                    {!userLimits?.usersCount?.canAddUnlimited && userLimits?.usersCount && (
                       <div className="limit">
                         <div>TOTAL USERS</div>
                         <div className="count">
@@ -259,7 +262,7 @@ class ManageAllUsersComponent extends React.Component {
                         </div>
                       </div>
                     )}
-                    {userLimits?.editorsCount && (
+                    {!userLimits?.editorsCount?.canAddUnlimited && userLimits?.editorsCount && (
                       <div className="limit">
                         <div>BUILDERS</div>
                         <div className="count">

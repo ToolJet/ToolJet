@@ -72,7 +72,6 @@ class EditorComponent extends React.Component {
     super(props);
     resetAllStores();
     const appId = this.props.params.id;
-
     useAppDataStore.getState().actions.setAppId(appId);
     useEditorStore.getState().actions.setIsEditorActive(true);
     const { socket } = createWebsocketConnection(appId);
@@ -129,6 +128,7 @@ class EditorComponent extends React.Component {
       isUnsavedQueriesAvailable: false,
       scrollOptions: {},
       currentAppEnvironmentId: null,
+      isCurrentVersionPromoted: false,
       currentPageId: defaultPageId,
       pages: {},
       selectedDataSource: null,
@@ -136,6 +136,7 @@ class EditorComponent extends React.Component {
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
     this.realtimeSave = debounce(this.appDefinitionChanged, 500);
+    this.shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
   }
 
   setWindowTitle(name) {
@@ -243,7 +244,7 @@ class EditorComponent extends React.Component {
    * current appDef is equal to the newAppDef then we do not trigger a realtimeSave
    */
   initRealtimeSave = () => {
-    if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
+    if (!this.shouldEnableMultiplayer) return null;
 
     this.props.ymap?.observe(() => {
       if (!isEqual(this.props.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId)) return;
@@ -272,19 +273,23 @@ class EditorComponent extends React.Component {
     });
   };
 
-  fetchAndInjectCustomStyles = () => {
-    customStylesService.get().then((data) => {
-      const head = document.head || document.getElementsByTagName('head')[0];
-      let styleTag = document.getElementById('workspace-custom-css');
-      if (!styleTag) {
-        // If it doesn't exist, create a new style tag and append it to the head
-        styleTag = document.createElement('style');
-        styleTag.type = 'text/css';
-        styleTag.id = 'workspace-custom-css';
-        head.appendChild(styleTag);
-      }
+  fetchAndInjectCustomStyles = async () => {
+    const head = document.head || document.getElementsByTagName('head')[0];
+    let styleTag = document.getElementById('workspace-custom-css');
+    if (!styleTag) {
+      // If it doesn't exist, create a new style tag and append it to the head
+      styleTag = document.createElement('style');
+      styleTag.type = 'text/css';
+      styleTag.id = 'workspace-custom-css';
+      head.appendChild(styleTag);
+    }
+    try {
+      const data = await customStylesService.get(false);
       styleTag.innerHTML = data.css;
-    });
+    } catch (error) {
+      console.log('Failed to fetch custom styles:', error);
+      styleTag.innerHTML = null;
+    }
   };
 
   fetchOrgEnvironmentConstants = (environmentId) => {
@@ -328,7 +333,7 @@ class EditorComponent extends React.Component {
     document.title = 'Tooljet - Dashboard';
     this.socket && this.socket?.close();
     this.subscription && this.subscription.unsubscribe();
-    if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
+    if (this.shouldEnableMultiplayer) this.props?.provider?.disconnect();
     this.appDataStoreListner && this.appDataStoreListner();
     this.dataQueriesStoreListner && this.dataQueriesStoreListner();
     useEditorStore.getState().actions.setIsEditorActive(false);
@@ -619,7 +624,7 @@ class EditorComponent extends React.Component {
   appDefinitionChanged = (newDefinition, opts = {}) => {
     let currentPageId = this.state.currentPageId;
     if (isEqual(this.state.appDefinition, newDefinition)) return;
-    if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
+    if (this.shouldEnableMultiplayer && !opts.skipYmapUpdate) {
       this.props.ymap?.set('appDef', {
         newDefinition,
         editingVersionId: this.props.editingVersion?.id,
@@ -657,7 +662,11 @@ class EditorComponent extends React.Component {
         appDefinitionLocalVersion: uuid(),
       },
       () => {
-        if (!opts.skipAutoSave) this.autoSave();
+        if (!opts.skipAutoSave) {
+          this.autoSave();
+        } else {
+          useAppDataStore.getState().actions.setIsSaving(false);
+        }
       }
     );
   };
@@ -930,7 +939,7 @@ class EditorComponent extends React.Component {
   saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (this.props.isVersionReleased && !isUserSwitchedVersion) {
       useAppDataStore.getState().actions.setIsSaving(false);
-    } else if (!isEmpty(this.props?.editingVersion)) {
+    } else if (!isEmpty(this.props?.editingVersion) && !this.state.isCurrentVersionPromoted) {
       appVersionService
         .save(
           this.state.appId,
@@ -1632,6 +1641,7 @@ class EditorComponent extends React.Component {
             onVersionDelete={this.onVersionDelete}
             currentUser={this.state.currentUser}
             getStoreData={this.getStoreData}
+            setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => this.setState({ isCurrentVersionPromoted })}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
@@ -1740,7 +1750,7 @@ class EditorComponent extends React.Component {
                         transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                       }}
                     >
-                      {config.ENABLE_MULTIPLAYER_EDITING && (
+                      {this.shouldEnableMultiplayer && (
                         <RealtimeCursors
                           editingVersionId={editingVersion?.id}
                           editingPageId={this.state.currentPageId}

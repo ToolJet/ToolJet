@@ -15,7 +15,10 @@ const EnvironmentManager = (props) => {
     setEnvironments,
     currentEnvironment,
     setCurrentEnvironment,
+    multiEnvironmentEnabled,
+    setCurrentAppVersionPromoted,
   } = props;
+
   // TODO: fix naming with the current environment id
   const currentAppEnvironmentId = editingVersion?.current_environment_id || editingVersion?.currentEnvironmentId;
   const { onEditorFreeze } = useAppVersionStore(
@@ -38,11 +41,13 @@ const EnvironmentManager = (props) => {
     const currentPromotedEnvironment = currentAppEnvironmentId
       ? environments.find((env) => env.id === currentAppEnvironmentId)
       : environments.find((env) => env.name === 'development');
+    setCurrentAppVersionPromoted(currentPromotedEnvironment.priority > 1);
     if (currentPromotedEnvironment.name === 'production' || currentPromotedEnvironment.name === 'staging') {
       // we don't want to allow editing of production and staging environments
       // so let's freeze the editor
       onEditorFreeze(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentEnvironment, onEditorFreeze, editingVersion.id]);
 
   const fetchEnvironments = (isEnvIdNotAvailableYet) => {
@@ -51,9 +56,10 @@ const EnvironmentManager = (props) => {
       const envArray = data?.environments;
       setEnvironments(envArray);
       if (envArray.length > 0) {
-        const env = currentAppEnvironmentId
-          ? envArray.find((env) => env.id === currentAppEnvironmentId)
-          : envArray.find((env) => env.name === 'development');
+        const env =
+          currentAppEnvironmentId && multiEnvironmentEnabled
+            ? envArray.find((env) => env.id === currentAppEnvironmentId)
+            : envArray.find((env) => env.name === 'development');
         // let's not change the current environment if it is already set
         if (currentEnvironment) return;
 
@@ -87,13 +93,15 @@ const EnvironmentManager = (props) => {
       environmentName: environment.name,
       onClick: handleClick,
       haveVersions,
+      priority: environment.priority,
+      enabled: environment.enabled,
       label: (
         <div className="env-option" key={index}>
           <div className="col-10">
             <ToolTip
               message="There are no versions in this environment"
               placement="left"
-              show={haveVersions ? false : true}
+              show={haveVersions || !multiEnvironmentEnabled ? false : true}
             >
               <div className={`app-environment-name ${darkMode ? 'dark-theme' : ''}`} style={grayColorStyle}>
                 {capitalize(environment.name)}

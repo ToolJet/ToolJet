@@ -28,6 +28,7 @@ export default function AppCard({
   canUpdateApp,
   currentFolder,
   appType,
+  basicPlan = false,
 }) {
   const canUpdate = canUpdateApp(app);
   const [hoverRef, isHovered] = useHover();
@@ -83,15 +84,21 @@ export default function AppCard({
             ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
             : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
         }
+        show={!basicPlan}
       >
         <button
           type="button"
           className={cx(
             ` launch-button tj-text-xsm ${
-              app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+              app?.current_version_id === null || app?.is_maintenance_on || basicPlan
+                ? 'tj-disabled-btn '
+                : 'tj-tertiary-btn'
             }`
           )}
           onClick={() => {
+            if (basicPlan) {
+              return;
+            }
             posthog.capture('click_launch_button_on_card', {
               workspace_id:
                 authenticationService?.currentUserValue?.organization_id ||

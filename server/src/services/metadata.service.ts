@@ -10,6 +10,9 @@ import { ConfigService } from '@nestjs/config';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { App } from 'src/entities/app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import License from '@ee/licensing/configs/License';
 
 @Injectable()
 export class MetadataService {
@@ -17,7 +20,8 @@ export class MetadataService {
     @InjectRepository(Metadata)
     private metadataRepository: Repository<Metadata>,
     private configService: ConfigService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private licenseService: LicenseService
   ) {}
 
   async getMetaData() {
@@ -44,10 +48,10 @@ export class MetadataService {
     });
   }
 
-  async finishOnboarding(name, email, companyName, companySize, role) {
+  async finishOnboarding(name, email, companyName, companySize, role, requestedTrial) {
     if (process.env.NODE_ENV == 'production') {
       const metadata = await this.getMetaData();
-      void this.finishInstallation(name, email, companyName, companySize, role, metadata);
+      void this.finishInstallation(name, email, companyName, companySize, role, requestedTrial, metadata);
 
       await this.updateMetaData({
         onboarded: true,
@@ -55,12 +59,13 @@ export class MetadataService {
     }
   }
 
-  async finishInstallation(
+  private async finishInstallation(
     name: string,
     email: string,
     org: string,
     companySize: string,
     role: string,
+    requestedTrial: boolean,
     metadata: Metadata
   ) {
     try {
@@ -74,6 +79,8 @@ export class MetadataService {
           org,
           companySize,
           role,
+          trial_opted: requestedTrial,
+          trial_expiry: requestedTrial && (await this.licenseService.getLicenseTerms(LICENSE_FIELD.STATUS))?.expiryDate,
         },
       });
     } catch (error) {
@@ -104,6 +111,7 @@ export class MetadataService {
           tooljet_version: globalThis.TOOLJET_VERSION,
           data_sources_count: totalDatasourcesByKindCount,
           deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),
+          license_info: License.Instance()?.terms,
         },
       });
     } catch (error) {

@@ -60,7 +60,6 @@ export function handleResponse(response) {
             feature = 'Audit logs';
           }
         }
-
         const darkMode = localStorage.getItem('darkMode') === 'true';
         const modalEl = React.createElement(LegalReasonsErrorModal, {
           showModal: true,

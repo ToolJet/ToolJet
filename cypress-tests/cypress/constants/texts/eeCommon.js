@@ -55,9 +55,9 @@ export const instanceSettingsText = {
   viewModalTitle: "Workspaces of The Developer",
   archiveAllButton: "Archive All",
   archiveState: "Archive",
-  editModalTitle: "Update User: The Developer (dev@tooljet.io)",
+  editModalTitle: "Edit user details",
   superAdminToggleLabel: "Make the user super admin",
-  allowWorkspaceToggleLabel: "Allow Personal Workspace",
+  allowWorkspaceToggleLabel: "Allow personal workspace",
   allowWorkspaceHelperText:
     "This feature will enable users to create their own workspace",
   saveButton: "Save",

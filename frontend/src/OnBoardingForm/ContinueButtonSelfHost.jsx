@@ -12,6 +12,8 @@ function ContinueButtonSelfHost({
   setIsLoading,
   darkMode,
   setEmailError = false,
+  setFormData,
+  buttonName = 'Continue',
 }) {
   const [activeCondition, setActiveCondition] = useState();
   const { companyName, role, companySize, name, email, password, workspace } = formData;
@@ -70,8 +72,9 @@ function ContinueButtonSelfHost({
             return;
           }
         }
-        if (page < 5) setPage((currPage) => currPage + 1);
-        if (page == 5) {
+        if (page <= 5) setPage((currPage) => currPage + 1);
+        if (page == 6) {
+          setFormData({ ...formData, requestedTrial: true });
           setIsLoading(true);
           setCompleted(true);
           return;
@@ -81,11 +84,11 @@ function ContinueButtonSelfHost({
     >
       {isLoading ? (
         <div className="spinner-center">
-          <Spinner />
+          <Spinner darkMode={darkMode} />
         </div>
       ) : (
         <>
-          <p className="mb-0">Continue</p>
+          <p className="mb-0">{buttonName}</p>
           <EnterIcon
             className="enter-icon-onboard"
             fill={activeCondition || isLoading ? (darkMode ? '#656565' : ' #D1D5DB') : '#fff'}

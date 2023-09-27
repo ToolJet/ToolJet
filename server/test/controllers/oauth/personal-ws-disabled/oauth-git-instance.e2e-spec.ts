@@ -5,6 +5,7 @@ import { mocked } from 'ts-jest/utils';
 import got from 'got';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 jest.mock('got');
 const mockedGot = mocked(got);
@@ -16,7 +17,10 @@ describe('oauth controller', () => {
 
   beforeEach(async () => {
     await clearDB();
-    await instanceSettingsRepository.update({ key: 'ALLOW_PERSONAL_WORKSPACE' }, { value: 'false' });
+    await instanceSettingsRepository.update(
+      { key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE },
+      { value: 'false' }
+    );
   });
 
   beforeAll(async () => {

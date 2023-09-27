@@ -270,15 +270,19 @@ class ViewerComponent extends React.Component {
   };
 
   fetchAndInjectCustomStyles = async (slug, isPublic) => {
-    let data;
-    if (!isPublic) {
-      data = await customStylesService.get();
-    } else {
-      data = await customStylesService.getForPublicApp(slug);
+    try {
+      let data;
+      if (!isPublic) {
+        data = await customStylesService.get(false);
+      } else {
+        data = await customStylesService.getForPublicApp(slug);
+      }
+      const styleEl = document.createElement('style');
+      styleEl.appendChild(document.createTextNode(data.css));
+      document.head.appendChild(styleEl);
+    } catch (error) {
+      console.log('Error fetching and injecting custom styles:', error);
     }
-    const styleEl = document.createElement('style');
-    styleEl.appendChild(document.createTextNode(data.css));
-    document.head.appendChild(styleEl);
   };
 
   loadApplicationBySlug = (slug) => {

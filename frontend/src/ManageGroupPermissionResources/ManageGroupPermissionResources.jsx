@@ -302,7 +302,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       add_apps: this.state.selectedAppIds.map((app) => app.value),
     };
     groupPermissionService
-      .update(groupPermissionId, updateParams)
+      .updateAppPermission(groupPermissionId, updateParams)
       .then(() => {
         posthog.capture('click_add_app_button', {
           workspace_id:
@@ -338,7 +338,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       add_data_sources: this.state.selectedDataSourceIds.map((dataSource) => dataSource.value),
     };
     groupPermissionService
-      .update(groupPermissionId, updateParams)
+      .updateDataSourcePermission(groupPermissionId, updateParams)
       .then(() => {
         this.setState({
           selectedDataSourceIds: [],
@@ -365,7 +365,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       remove_apps: [appId],
     };
     groupPermissionService
-      .update(groupPermissionId, updateParams)
+      .updateAppPermission(groupPermissionId, updateParams)
       .then(() => {
         this.setState({ removeAppIds: [], isLoadingApps: true });
         this.fetchAppsNotInGroup(groupPermissionId);
@@ -385,7 +385,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       remove_data_sources: [dataSourceId],
     };
     groupPermissionService
-      .update(groupPermissionId, updateParams)
+      .updateDataSourcePermission(groupPermissionId, updateParams)
       .then(() => {
         this.setState({ removeDataSourceIds: [], isLoadingDataSources: true });
         this.fetchDataSourcesNotInGroup(groupPermissionId);
@@ -411,7 +411,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       group_id: groupPermissionId,
     });
     groupPermissionService
-      .update(groupPermissionId, updateParams)
+      .updateUserPermission(groupPermissionId, updateParams)
       .then(() => {
         this.setState({
           selectedUsers: [],
@@ -434,8 +434,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     const updateParams = {
       remove_users: [userId],
     };
+
     groupPermissionService
-      .update(groupPermissionId, updateParams)
+      .updateUserPermission(groupPermissionId, updateParams)
       .then(() => {
         this.setState({ removeUserIds: [], isLoadingUsers: true });
         this.fetchUsersInGroup(groupPermissionId);
@@ -511,6 +512,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
     const { licenseStatus: { isExpired, isLicenseValid } = {} } = featureAccess;
 
+    const getPermissionInputStatus = (groupName) => {
+      return groupName === 'admin' || isExpired || !isLicenseValid;
+    };
+
     return (
       <ErrorBoundary showFallback={false}>
         <div className="org-users-page animation-fade">
@@ -584,23 +589,30 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
                   {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                 </a>
-                <a
-                  onClick={() => this.setState({ currentTab: 'permissions' })}
-                  className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
-                  data-cy="permissions-link"
+                <LicenseTooltip
+                  limits={featureAccess}
+                  feature={'Permissions'}
+                  isAvailable={true}
+                  noTooltipIfValid={true}
                 >
-                  <SolidIcon
-                    className="manage-group-tab-icons"
-                    fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
-                    name="lock"
-                    width="16"
-                  ></SolidIcon>
+                  <a
+                    onClick={() => !isExpired && isLicenseValid && this.setState({ currentTab: 'permissions' })}
+                    className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
+                    data-cy="permissions-link"
+                  >
+                    <SolidIcon
+                      className="manage-group-tab-icons"
+                      fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
+                      name="lock"
+                      width="16"
+                    ></SolidIcon>
 
-                  {this.props.t(
-                    'header.organization.menus.manageGroups.permissionResources.permissions',
-                    'Permissions'
-                  )}
-                </a>
+                    {this.props.t(
+                      'header.organization.menus.manageGroups.permissionResources.permissions',
+                      'Permissions'
+                    )}
+                  </a>
+                </LicenseTooltip>
                 {groupPermission?.group !== 'admin' && (
                   <LicenseTooltip
                     limits={featureAccess}
@@ -1021,7 +1033,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.app_create}
-                                          disabled={groupPermission.group === 'admin'}
+                                          disabled={getPermissionInputStatus(groupPermission.group)}
                                           data-cy="app-create-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="app-create-label">
@@ -1038,7 +1050,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             });
                                           }}
                                           checked={groupPermission.app_delete}
-                                          disabled={groupPermission.group === 'admin'}
+                                          disabled={getPermissionInputStatus(groupPermission.group)}
                                           data-cy="app-delete-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="app-delete-label">
@@ -1070,7 +1082,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             });
                                           }}
                                           checked={folder_permission}
-                                          disabled={groupPermission.group === 'admin'}
+                                          disabled={getPermissionInputStatus(groupPermission.group)}
                                           data-cy="folder-create-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="folder-create-label">
@@ -1101,7 +1113,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             });
                                           }}
                                           checked={orgEnvironmentPermission}
-                                          disabled={groupPermission.group === 'admin'}
+                                          disabled={getPermissionInputStatus(groupPermission.group)}
                                           data-cy="env-variable-checkbox"
                                         />
                                         <span className="form-check-label" data-cy="workspace-variable-create-label">
@@ -1114,50 +1126,48 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                     </div>
                                   </div>
                                 </div>
-                                {!isExpired && isLicenseValid && (
-                                  <div className="datasource-permissions-wrap">
-                                    <div data-cy="resource-datasources">Datasources</div>
-                                    <div className="text-muted">
-                                      <div className="d-flex apps-permission-wrap flex-column">
-                                        <label className="form-check form-check-inline">
-                                          <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            onChange={() => {
-                                              this.updateGroupPermission(groupPermission.id, {
-                                                data_source_create: !groupPermission.data_source_create,
-                                              });
-                                            }}
-                                            checked={groupPermission.data_source_create}
-                                            disabled={groupPermission.group === 'admin'}
-                                            data-cy="checkbox-create-ds"
-                                          />
-                                          <span className="form-check-label" data-cy="ds-create-label">
-                                            {this.props.t('globals.create', 'Create')}
-                                          </span>
-                                        </label>
-                                        <label className="form-check form-check-inline">
-                                          <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            onChange={() => {
-                                              this.updateGroupPermission(groupPermission.id, {
-                                                data_source_delete: !groupPermission.data_source_delete,
-                                              });
-                                            }}
-                                            checked={groupPermission.data_source_delete}
-                                            disabled={groupPermission.group === 'admin'}
-                                            data-cy="checkbox-delete-ds"
-                                          />
+                                <div className="datasource-permissions-wrap">
+                                  <div data-cy="resource-datasources">Datasources</div>
+                                  <div className="text-muted">
+                                    <div className="d-flex apps-permission-wrap flex-column">
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              data_source_create: !groupPermission.data_source_create,
+                                            });
+                                          }}
+                                          checked={groupPermission.data_source_create}
+                                          disabled={getPermissionInputStatus(groupPermission.group)}
+                                          data-cy="checkbox-create-ds"
+                                        />
+                                        <span className="form-check-label" data-cy="ds-create-label">
+                                          {this.props.t('globals.create', 'Create')}
+                                        </span>
+                                      </label>
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              data_source_delete: !groupPermission.data_source_delete,
+                                            });
+                                          }}
+                                          checked={groupPermission.data_source_delete}
+                                          disabled={getPermissionInputStatus(groupPermission.group)}
+                                          data-cy="checkbox-delete-ds"
+                                        />
 
-                                          <span className="form-check-label" data-cy="ds-delete-label">
-                                            {this.props.t('globals.delete', 'Delete')}
-                                          </span>
-                                        </label>
-                                      </div>
+                                        <span className="form-check-label" data-cy="ds-delete-label">
+                                          {this.props.t('globals.delete', 'Delete')}
+                                        </span>
+                                      </label>
                                     </div>
                                   </div>
-                                )}
+                                </div>
                               </>
                             )}
                           </div>

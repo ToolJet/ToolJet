@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, MinLength, IsEmail } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MinLength, IsEmail, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
@@ -95,6 +95,10 @@ export class CreateAdminDto {
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   workspace: string;
+
+  @IsBoolean()
+  @IsOptional()
+  requestedTrial: boolean;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}

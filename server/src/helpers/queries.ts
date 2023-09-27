@@ -7,6 +7,7 @@ import { isSuperAdmin } from './utils.helper';
 
 export function viewableAppsQuery(
   user: User,
+  isLicenseValid: boolean,
   searchKey?: string,
   select?: Array<string>,
   type?: string
@@ -23,14 +24,19 @@ export function viewableAppsQuery(
     viewableAppsQb
       .innerJoin('viewable_apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('viewable_apps.appGroupPermissions', 'app_group_permissions')
+
       .innerJoin(
         UserGroupPermission,
         'user_group_permissions',
         'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
       )
-      .where(
+      .innerJoinAndSelect('app_group_permissions.groupPermission', 'groupPermission')
+      .andWhere(
         new Brackets((qb) => {
-          qb.where('user_group_permissions.user_id = :userId', {
+          if (!isLicenseValid) {
+            qb.andWhere('groupPermission.group IN (:...groups)', { groups: ['admin', 'all_users'] });
+          }
+          qb.andWhere('user_group_permissions.user_id = :userId', {
             userId: user.id,
           })
             .andWhere('app_group_permissions.read = :value', { value: true })

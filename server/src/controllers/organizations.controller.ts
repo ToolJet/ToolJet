@@ -20,20 +20,13 @@ import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
-import { ConfigService } from '@nestjs/config';
-import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 import { Response } from 'express';
-import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(
-    private organizationsService: OrganizationsService,
-    private authService: AuthService,
-    private configService: ConfigService
-  ) {}
+  constructor(private organizationsService: OrganizationsService, private authService: AuthService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('limits')
@@ -152,11 +145,5 @@ export class OrganizationsController {
   async updateConfigs(@Body() body, @User() user) {
     const result: any = await this.organizationsService.updateOrganizationConfigs(user.organizationId, body);
     return decamelizeKeys({ id: result.id });
-  }
-
-  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, OIDCGuard)
-  @Get('license-terms/oidc')
-  async getOIDC() {
-    return;
   }
 }

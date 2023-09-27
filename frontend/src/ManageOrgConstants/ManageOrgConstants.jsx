@@ -12,6 +12,7 @@ import Drawer from '@/_ui/Drawer';
 import ConstantForm from './ConstantForm';
 import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
+import { LicenseTooltip } from '@/LicenseTooltip';
 
 const MODES = Object.freeze({
   CREATE: 'create',
@@ -38,7 +39,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
   const [selectedConstant, setSelectedConstant] = useState(null);
 
-  const { admin, super_admin, group_permissions } = authenticationService.currentSessionValue;
+  const { group_permissions, super_admin, admin } = authenticationService.currentSessionValue;
 
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);
@@ -449,22 +450,42 @@ const RenderEnvironmentsTab = ({
   const menuItems = allEnvironments.map((env) => ({
     id: env.id,
     label: `${capitalize(env.name)} (${constantCount(allConstants, env?.id)})`,
+    priority: env?.priority,
+    enabled: env?.enabled,
   }));
 
   return (
     <div className="left-menu">
       <ul data-cy="left-menu-items tj-text-xsm">
         {menuItems.map((item, index) => {
+          const Wrapper = ({ children }) =>
+            !item.enabled ? (
+              <LicenseTooltip
+                placement="bottom"
+                feature={'Multi-environments'}
+                isAvailable={item?.enabled}
+                noTooltipIfValid={true}
+                customMessage={'Multi-environments are available only in paid plans'}
+              >
+                {children}
+              </LicenseTooltip>
+            ) : (
+              <>{children}</>
+            );
           return (
-            <FolderList
-              onClick={() => updateCurrentEnvironment(item)}
-              key={index}
-              selectedItem={currentEnvironment.id === item.id}
-              items={menuItems}
-              isLoading={isLoading}
-            >
-              {item.label}
-            </FolderList>
+            <Wrapper key={index}>
+              <FolderList
+                onClick={() => {
+                  item?.enabled && updateCurrentEnvironment(item);
+                }}
+                key={index}
+                selectedItem={currentEnvironment.id === item.id}
+                items={menuItems}
+                isLoading={isLoading}
+              >
+                {item.label}
+              </FolderList>
+            </Wrapper>
           );
         })}
       </ul>

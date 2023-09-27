@@ -13,6 +13,8 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Injectable()
 export class GroupPermissionsService {
@@ -37,7 +39,9 @@ export class GroupPermissionsService {
 
     private usersService: UsersService,
 
-    private auditLoggerService: AuditLoggerService
+    private auditLoggerService: AuditLoggerService,
+
+    private licenseService: LicenseService
   ) {}
 
   async create(user: User, group: string, manager?: EntityManager): Promise<void> {
@@ -416,10 +420,21 @@ export class GroupPermissionsService {
   }
 
   async findAll(user: User): Promise<GroupPermission[]> {
-    return this.groupPermissionsRepository.find({
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+    const groupPermissions = await this.groupPermissionsRepository.find({
       where: { organizationId: user.organizationId },
       order: { createdAt: 'ASC' },
     });
+
+    for (const groupPermission of groupPermissions) {
+      if (!['all_users', 'admin'].includes(groupPermission.group) && !isLicenseValid) {
+        groupPermission['enabled'] = false;
+      } else {
+        groupPermission['enabled'] = true;
+      }
+    }
+
+    return groupPermissions;
   }
 
   async findApps(user: User, groupPermissionId: string): Promise<App[]> {

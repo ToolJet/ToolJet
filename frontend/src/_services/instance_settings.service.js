@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appService } from './app.service';
 
 export const instanceSettingsService = {
   fetchSettings,
@@ -12,9 +13,15 @@ function fetchSettings(type = 'user') {
   return fetch(`${config.apiUrl}/instance-settings?${searchParams}`, requestOptions).then(handleResponse);
 }
 
-function update(settings) {
+async function update(settings) {
   const body = [...settings];
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  return fetch(`${config.apiUrl}/instance-settings`, requestOptions).then(handleResponse);
+
+  const updatedSettings = await fetch(`${config.apiUrl}/instance-settings`, requestOptions).then(handleResponse);
+  //update global instance settings of application
+  appService.getConfig().then((config) => {
+    window.public_config = config;
+  });
+  return updatedSettings;
 }

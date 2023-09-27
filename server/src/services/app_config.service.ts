@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InstanceSettingsService } from './instance_settings.service';
+import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class AppConfigService {
@@ -34,9 +35,6 @@ export class AppConfigService {
       'SUB_PATH',
       'ENABLE_MARKETPLACE_FEATURE',
       'ENABLE_WORKFLOWS_FEATURE',
-      'WHITE_LABEL_LOGO',
-      'WHITE_LABEL_TEXT',
-      'WHITE_LABEL_FAVICON',
       'ENABLE_TOOLJET_DB',
       'LANGUAGE',
       'ENABLE_PRIVATE_APP_EMBED',
@@ -44,7 +42,13 @@ export class AppConfigService {
   }
 
   fetchDefaultInstanceConfig() {
-    return ['ALLOW_PERSONAL_WORKSPACE'];
+    return [
+      INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE,
+      INSTANCE_USER_SETTINGS.ENABLE_MULTIPLAYER_EDITING,
+      INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_LOGO,
+      INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_TEXT,
+      INSTANCE_SYSTEM_SETTINGS.WHITE_LABEL_FAVICON,
+    ];
   }
 
   fetchAllowedConfigFromEnv() {

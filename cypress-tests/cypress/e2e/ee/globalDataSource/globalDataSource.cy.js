@@ -152,7 +152,8 @@ describe("Global Datasource Manager", () => {
             "have.text",
             " Databases"
         );
-        cy.get(`[data-cy="cypress-${data.ds1}-postgresql-button"]`).click();
+        cy.wait(200)
+        cy.get(`[data-cy="cypress-${data.ds1}-postgresql-button"]`).realClick();
         cy.clearAndType(
             dataSourceSelector.dsNameInputField,
             `cypress-${data.ds1}-postgresql1`
@@ -163,7 +164,8 @@ describe("Global Datasource Manager", () => {
         cy.get(commonSelectors.appCreateButton).should("be.visible");
         cy.get(commonSelectors.globalDataSourceIcon).click();
         cy.get(dataSourceSelector.databaseLabelAndCount).click();
-        cy.get(`[data-cy="cypress-${data.ds1}-postgresql-button"]`).click();
+        cy.wait(500)
+        cy.get(`[data-cy="cypress-${data.ds1}-postgresql-button"]`).realClick();
         cy.clearAndType(
             dataSourceSelector.dsNameInputField,
             `cypress-${data.ds1}-postgresql1`

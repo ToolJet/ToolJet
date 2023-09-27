@@ -6,6 +6,7 @@ import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
 import { returnDevelopmentEnv } from '@/_helpers/utils';
+import _ from 'lodash';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -18,7 +19,6 @@ export const GlobalDataSourcesContext = createContext({
 export const GlobalDatasources = (props) => {
   const { admin, data_source_group_permissions, group_permissions, super_admin, current_organization_id, load_app } =
     authenticationService.currentSessionValue;
-  const { isExpired, isLicenseValid } = licenseService.licenseTermsValue;
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -29,9 +29,12 @@ export const GlobalDatasources = (props) => {
   const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const [featureAccess, setFeatureAccess] = useState({});
 
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('Databases');
+    fetchFeatureAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -46,16 +49,18 @@ export const GlobalDatasources = (props) => {
   }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource), activeDatasourceList]);
 
   useEffect(() => {
-    if (!canCreateDataSource() && !canReadDataSource() && !canUpdateDataSource() && !canDeleteDataSource()) {
-      toast.error("You don't have access to GDS, contact your workspace admin to add data sources");
-      return navigate('/');
+    if (!_.isEmpty(featureAccess)) {
+      if (!(canReadDataSource() || canUpdateDataSource() || canCreateDataSource() || canDeleteDataSource())) {
+        toast.error("You don't have access to GDS, contact your workspace admin to add data sources");
+        return navigate('/');
+      }
+      fetchEnvironments();
     }
-    fetchEnvironments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [admin, load_app, isExpired, isLicenseValid]);
+  }, [admin, load_app, featureAccess.isExpired, featureAccess.isLicenseValid]);
 
   const canAnyGroupPerformAction = (action, permissions, id) => {
-    if (!permissions || isExpired || !isLicenseValid) {
+    if (!permissions || featureAccess.isExpired || !featureAccess.isLicenseValid) {
       return false;
     }
     if (id) {
@@ -84,6 +89,12 @@ export const GlobalDatasources = (props) => {
   function updateSelectedDatasource(source) {
     updateSidebarNAV(source);
   }
+
+  const fetchFeatureAccess = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      setFeatureAccess({ ...data?.licenseStatus });
+    });
+  };
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     toggleDataSourceManagerModal(false);

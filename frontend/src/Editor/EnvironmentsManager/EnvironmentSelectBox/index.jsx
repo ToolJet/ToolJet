@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { capitalize } from 'lodash';
 import XenvSvg from '@assets/images/icons/x-env.svg';
 import '@/_styles/versions.scss';
+import { LicenseTooltip } from '@/LicenseTooltip';
+import { licenseService } from '@/_services';
 
 function EnvironmentSelectBox(props) {
   const { options, currentEnv } = props;
@@ -21,7 +23,7 @@ function EnvironmentSelectBox(props) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  });
+  }, []);
 
   const handleClick = (option) => {
     if (option.haveVersions) {
@@ -72,15 +74,29 @@ function EnvironmentSelectBox(props) {
           </div>
           <div className={`popover-options ${darkMode ? 'dark-theme' : ''}`}>
             {options.map((option, index) => {
+              const Wrapper = ({ children }) =>
+                !option.enabled ? (
+                  <LicenseTooltip
+                    feature={'Multi-environments'}
+                    isAvailable={option.enabled}
+                    noTooltipIfValid={true}
+                    customMessage={'Multi-environments are available only in paid plans'}
+                  >
+                    {children}
+                  </LicenseTooltip>
+                ) : (
+                  <>{children}</>
+                );
               return (
-                <div
-                  key={index}
-                  onClick={() => handleClick(option)}
-                  className={`${darkMode ? 'dark-theme' : ''}`}
-                  data-cy="env-name-list"
-                >
-                  {option.label}
-                </div>
+                <Wrapper key={index}>
+                  <div
+                    key={index}
+                    onClick={() => option.enabled && handleClick(option)}
+                    className={`${darkMode ? 'dark-theme' : ''}`}
+                  >
+                    {option.label}
+                  </div>
+                </Wrapper>
               );
             })}
           </div>

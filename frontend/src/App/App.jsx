@@ -10,10 +10,12 @@ import {
   getSubpath,
   pathnameWithoutSubpath,
   retrieveWhiteLabelText,
+  redirectToDashboard,
 } from '@/_helpers/utils';
 import { authenticationService, tooljetService, organizationService, licenseService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute } from '@/_components';
+import { shallow } from 'zustand/shallow';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
@@ -67,6 +69,9 @@ class AppComponent extends React.Component {
   };
   fetchMetadata = () => {
     tooljetService.fetchMetaData().then((data) => {
+      this.updateCurrentSession({
+        instance_id: data?.instance_id,
+      });
       localStorage.setItem('currentVersion', data.installed_version);
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
@@ -94,13 +99,15 @@ class AppComponent extends React.Component {
 
   setFaviconAndTitle() {
     const favicon_url = window.public_config?.WHITE_LABEL_FAVICON;
-    let link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
-    }
-    link.href = favicon_url ? favicon_url : 'assets/images/logo.svg';
+    let links = document.querySelectorAll("link[rel='icon']");
+    links.forEach((link) => {
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = favicon_url ? favicon_url : 'assets/images/logo.svg';
+    });
     document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
@@ -170,10 +177,10 @@ class AppComponent extends React.Component {
         const appId = isApplicationsPath ? pathnameWithoutSubpath(window.location.pathname).split('/')[2] : null;
         authenticationService
           .validateSession(appId)
-          .then(({ current_organization_id, ...currentUser }) => {
+          .then(({ current_organization_id, app_data, ...currentUser }) => {
             //check if the page is not switch-workspace, if then redirect to the page
             if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
-              this.authorizeUserAndHandleErrors(current_organization_id);
+              this.authorizeUserAndHandleErrors(current_organization_id, isApplicationsPath, app_data);
             } else {
               this.initTelemetryAndSupport(currentUser);
               this.updateCurrentSession({
@@ -187,10 +194,25 @@ class AppComponent extends React.Component {
                 authentication_status: false,
               });
             } else if (isApplicationsPath) {
-              this.updateCurrentSession({
-                authentication_failed: true,
-                load_app: true,
-              });
+              if (!window.location.pathname.includes('/versions/')) {
+                /* Redirect to login page if the license is expired */
+                licenseService.getLicenseStatus().then((data) => {
+                  const { isBasicPlan } = data;
+                  if (isBasicPlan) {
+                    return (window.location = `${getSubpath() ?? ''}/login`);
+                  }
+
+                  this.updateCurrentSession({
+                    authentication_failed: true,
+                    load_app: true,
+                  });
+                });
+              } else {
+                this.updateCurrentSession({
+                  authentication_failed: true,
+                  load_app: true,
+                });
+              }
             }
           });
       }
@@ -227,7 +249,7 @@ class AppComponent extends React.Component {
     return (justLoginPage && pathnames[0] === 'login') || (pathnames.length === 2 && pathnames[0] === 'login');
   };
 
-  authorizeUserAndHandleErrors = (workspaceId) => {
+  authorizeUserAndHandleErrors = (workspaceId, isApplicationsPath = false, appData = null) => {
     const subpath = getSubpath();
     this.updateCurrentSession({
       current_organization_id: workspaceId,
@@ -236,10 +258,21 @@ class AppComponent extends React.Component {
       .authorize()
       .then((data) => {
         this.initTelemetryAndSupport(data.current_user);
+        if (isApplicationsPath && appData) {
+          if (appData.is_released) {
+            licenseService.getLicenseStatus().then((data) => {
+              const { isBasicPlan } = data;
+              if (isBasicPlan) {
+                /* License expired for the users. now they can't access released apps */
+                redirectToDashboard();
+              }
+            });
+          }
+        }
+
         organizationService.getOrganizations().then(async (response) => {
           const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
           // this will add the other details like permission and user previlliage details to the subject
-          await licenseService.getTerms();
           this.updateCurrentSession({
             ...data,
             current_organization_name,
