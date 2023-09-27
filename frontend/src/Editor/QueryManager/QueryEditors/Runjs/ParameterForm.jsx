@@ -33,6 +33,7 @@ const ParameterForm = ({
     if (!showModal && !error) {
       onSubmit && onSubmit({ name, defaultValue });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
   const handleSubmit = (event) => {
@@ -50,13 +51,20 @@ const ParameterForm = ({
     } else {
       setError();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
   return (
     <>
-      <Popover.Header style={{ fontSize: '12px' }}>{isEdit ? 'UPDATE PARAMETER' : 'ADD PARAMETER'}</Popover.Header>
-      <Popover.Body key={'1'} bsPrefix="popover-body" className="px-0 pe-2 pt-2">
-        <Form className="container px-3" onSubmit={handleSubmit} style={{ paddingRight: '25px !important' }}>
+      <Popover.Header className={darkMode && 'dark-theme'} style={{ fontSize: '12px' }}>
+        {isEdit ? 'UPDATE PARAMETER' : 'ADD PARAMETER'}
+      </Popover.Header>
+      <Popover.Body className={darkMode && 'dark-theme dark-theme'} key={'1'} bsPrefix="popover-body">
+        <Form
+          className="container p-0 tj-app-input"
+          onSubmit={handleSubmit}
+          style={{ paddingRight: '25px !important' }}
+        >
           <Form.Group as={Row} className="mb-2 pr-1">
             <Form.Label column htmlFor="paramName">
               Name
