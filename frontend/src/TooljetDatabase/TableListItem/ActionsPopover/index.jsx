@@ -33,7 +33,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable,
         </div>
         <div className="row mt-3 cursor-pointer">
           <div className="col-auto" data-cy="export-option-icon">
-            <SolidIcon name="arrowsortrectangle" width="13" viewBox="0 0 25 25" />
+            <SolidIcon name="filedownload" width="13" viewBox="0 0 25 25" />
           </div>
           <div
             className="col text-truncate"
