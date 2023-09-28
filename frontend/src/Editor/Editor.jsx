@@ -65,7 +65,7 @@ import EditorSelecto from './EditorSelecto';
 
 setAutoFreeze(false);
 enablePatches();
-class EditorComponent extends React.PureComponent {
+class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
     resetAllStores();
