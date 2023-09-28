@@ -152,7 +152,6 @@ export function resolveReferences({
   forPreviewBox = false,
 }) {
   const state = currentState ? currentState : getCurrentState();
-  // console.log(currentState, 'current state', state);
   if (object === '{{{}}}') return '';
   const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
