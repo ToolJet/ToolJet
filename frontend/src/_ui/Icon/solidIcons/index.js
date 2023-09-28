@@ -42,15 +42,18 @@ import FloppyDisk from './FloppyDisk.jsx';
 import Folder from './Folder.jsx';
 import FolderDownload from './FolderDownload.jsx';
 import FolderUpload from './FolderUpload.jsx';
+import FullOuterJoin from './FullOuterJoin.jsx';
 import Globe from './Globe.jsx';
 import Grid from './Grid.jsx';
 import HelpPolygon from './HelpPolygon.jsx';
 import Home from './Home.jsx';
 import Information from './Information.jsx';
+import InnerJoinIcon from './InnerJoinIcon.jsx';
 import InRectangle from './InRectangle.jsx';
 import Interactive from './Interactive.jsx';
 import Layers from './Layers.jsx';
 import LeftArrow from './LeftArrow.jsx';
+import LeftOuterJoinIcon from './LeftOuterJoinIcon.jsx';
 import LightMode from './LightMode.jsx';
 import ListView from './ListView.jsx';
 import Logout from './Logout.jsx';
@@ -79,6 +82,7 @@ import Remove from './Remove.jsx';
 import Remove01 from './Remove01.jsx';
 import RemoveRectangle from './RemoveRectangle.jsx';
 import RightArrow from './RightArrow.jsx';
+import RightOuterJoin from './RightOuterJoin.jsx';
 import Row from './Row.jsx';
 import SadRectangle from './SadRectangle.jsx';
 import Search from './Search.jsx';
@@ -231,6 +235,8 @@ const Icon = (props) => {
       return <FolderDownload {...props} />;
     case 'folderupload':
       return <FolderUpload {...props} />;
+    case 'fullouterjoin':
+      return <FullOuterJoin {...props} />;
     case 'globe':
       return <Globe {...props} />;
     case 'grid':
@@ -241,6 +247,8 @@ const Icon = (props) => {
       return <Home {...props} />;
     case 'information':
       return <Information {...props} />;
+    case 'innerjoin':
+      return <InnerJoinIcon {...props} />;
     case 'inrectangle':
       return <InRectangle {...props} />;
     case 'interactive':
@@ -249,6 +257,8 @@ const Icon = (props) => {
       return <Layers {...props} />;
     case 'leftarrow':
       return <LeftArrow {...props} />;
+    case 'leftouterjoin':
+      return <LeftOuterJoinIcon {...props} />;
     case 'lightmode':
       return <LightMode {...props} />;
     case 'listview':
@@ -309,6 +319,8 @@ const Icon = (props) => {
       return <RemoveRectangle {...props} />;
     case 'rightarrrow':
       return <RightArrow {...props} />;
+    case 'rightouterjoin':
+      return <RightOuterJoin {...props} />;
     case 'row':
       return <Row {...props} />;
     case 'sadrectangle':
