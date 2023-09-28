@@ -1878,7 +1878,7 @@ export const widgets = [
   {
     name: 'DateRangePicker',
     displayName: 'Range Picker',
-    description: 'Select a date range',
+    description: 'Choose date ranges',
     component: 'DaterangePicker',
     defaultSize: {
       width: 10,
@@ -1976,7 +1976,7 @@ export const widgets = [
   {
     name: 'Text',
     displayName: 'Text',
-    description: 'Display markdown or HTML',
+    description: 'Display text or HTML',
     component: 'Text',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2148,7 +2148,7 @@ export const widgets = [
   {
     name: 'Image',
     displayName: 'Image',
-    description: 'Display an Image',
+    description: 'Show image files',
     defaultSize: {
       width: 3,
       height: 100,
@@ -2282,7 +2282,7 @@ export const widgets = [
   {
     name: 'Container',
     displayName: 'Container',
-    description: 'Wrapper for multiple components',
+    description: 'Group components',
     defaultSize: {
       width: 5,
       height: 200,
