@@ -38,7 +38,7 @@
         "query": "Query",
         "requestBody": "Request Body",
         "page": "Page",
-        "searchItem": "Search item",
+        "searchItem": "Search apps in this workspace",
         "searchComponents": "Search components"
     },
     "errorBoundary": "Something went wrong.",
