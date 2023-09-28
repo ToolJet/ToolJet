@@ -17,6 +17,7 @@ import List from '@/ToolJetUI/List/List';
 import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
+import { useAppDataStore } from '@/_stores/appDataStore';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -747,6 +748,18 @@ class TableComponent extends React.Component {
     );
   };
 
+  deletEvents = (ref, eventTarget) => {
+    const events = useAppDataStore.getState().events?.filter((e) => e.target === eventTarget);
+
+    const toDelete = events?.filter((e) => e.event?.ref === ref.ref);
+
+    return new Promise.all(
+      toDelete?.forEach((e) => {
+        return useAppDataStore.getState().actions.deleteAppVersionEventHandler(e.id);
+      })
+    );
+  };
+
   actionPopOver = (action, index) => {
     const dummyComponentForActionButton = {
       component: {
@@ -755,6 +768,8 @@ class TableComponent extends React.Component {
         },
       },
     };
+
+    const actionRef = { ref: `${action?.name}-${index}` };
 
     return (
       <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
@@ -827,6 +842,7 @@ class TableComponent extends React.Component {
             component={dummyComponentForActionButton}
             sourceId={this.props?.component?.id}
             eventSourceType="table_action"
+            customEventRefs={actionRef}
             eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
             currentState={this.state.currentState}
             dataQueries={this.props.dataQueries}
@@ -839,7 +855,10 @@ class TableComponent extends React.Component {
             }}
             pages={this.props.pages}
           />
-          <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
+          <button
+            className="btn btn-sm btn-outline-danger mt-2 col"
+            onClick={() => this.removeAction(index, actionRef)}
+          >
             {this.props.t('widget.Table.remove', 'Remove')}
           </button>
         </Popover.Body>
@@ -900,10 +919,11 @@ class TableComponent extends React.Component {
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties', true);
   };
 
-  removeAction = (index) => {
+  removeAction = (index, ref) => {
     const newValue = this.props.component.component.definition.properties.actions.value;
     newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties', true);
+    this.deletEvents(ref, 'table-action');
   };
 
   onColumnItemChange = (index, item, value) => {
@@ -922,7 +942,7 @@ class TableComponent extends React.Component {
     ...draggableStyle,
   });
 
-  removeColumn = (index) => {
+  removeColumn = (index, ref) => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
     const removedColumns = newValue.splice(index, 1);
@@ -935,6 +955,8 @@ class TableComponent extends React.Component {
       ...removedColumns.map((column) => column.key || column.name),
     ];
     this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties', true);
+
+    this.deletEvents(ref, 'table_column');
   };
 
   reorderColumns = (startIndex, endIndex) => {
@@ -1055,7 +1077,8 @@ class TableComponent extends React.Component {
                                       enableActionsMenu
                                       isEditable={item.isEditable === '{{true}}'}
                                       onMenuOptionClick={(listItem, menuOptionLabel) => {
-                                        if (menuOptionLabel === 'Delete') this.removeColumn(index);
+                                        if (menuOptionLabel === 'Delete')
+                                          this.removeColumn(index, `${item.name}-${index}`);
                                       }}
                                       darkMode={darkMode}
                                       menuActions={[

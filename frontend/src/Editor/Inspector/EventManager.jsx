@@ -37,7 +37,9 @@ export const EventManager = ({
   pages,
   hideEmptyEventsAlert,
   callerQueryId,
+  customEventRefs = {},
 }) => {
+  console.log('---arpit:: customRef', { customEventRefs });
   const dataQueries = useDataQueriesStore(({ dataQueries = [] }) => {
     if (callerQueryId) {
       //filter the same query getting attached to itself
@@ -51,6 +53,12 @@ export const EventManager = ({
     useAppDataActions();
 
   const currentEvents = allAppEvents.filter((event) => {
+    if (customEventRefs) {
+      if (event.event.ref !== customEventRefs.ref) {
+        return false;
+      }
+    }
+
     return event.sourceId === sourceId && event.target === eventSourceType;
   });
 
@@ -259,6 +267,7 @@ export const EventManager = ({
         actionId: 'show-alert',
         message: 'Hello world!',
         alertType: 'info',
+        ...customEventRefs,
       },
       eventType: eventSourceType,
       attachedTo: sourceId,
