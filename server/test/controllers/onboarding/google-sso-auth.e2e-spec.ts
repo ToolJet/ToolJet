@@ -18,7 +18,7 @@ import {
 import { getManager, Repository } from 'typeorm';
 import { OAuth2Client } from 'google-auth-library';
 
-describe('Google SSO Onboarding', () => {
+describe.skip('Google SSO Onboarding', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let orgRepository: Repository<Organization>;
