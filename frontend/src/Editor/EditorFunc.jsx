@@ -1283,9 +1283,9 @@ const EditorComponent = (props) => {
     });
   };
 
-  const clonePage = async (pageId) => {
+  const clonePage = (pageId) => {
     setIsSaving(true);
-    await appVersionService
+    appVersionService
       .clonePage(appId, editingVersion?.id, pageId)
       .then((data) => {
         const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
