@@ -38,7 +38,7 @@
         "query": "Query",
         "requestBody": "Request Body",
         "page": "Page",
-        "searchItem": "Search item",
+        "searchItem": "Search apps in this workspace",
         "searchComponents": "Search components"
     },
     "errorBoundary": "Something went wrong.",
@@ -776,7 +776,7 @@
             "addColumn": "Add column",
             "addNewColumn": "Add new column",
             "noActionMessage": "This table doesn't have any action buttons",
-            "horizontalAlignment":"horizontal alignment"
+            "horizontalAlignment": "horizontal alignment"
         },
         "Button": {
             "displayName": "Button",
