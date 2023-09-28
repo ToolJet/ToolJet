@@ -23,6 +23,7 @@ export function OrganizationSettings(props) {
   const [featureAccess, setFeatureAccess] = useState({});
   const [featuresLoaded, setFeaturesLoaded] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   const protectedNavs = [{ id: 'customStyling', label: 'Custom styles' }];
 
@@ -61,6 +62,7 @@ export function OrganizationSettings(props) {
       setFeatureAccess(data);
       setFeaturesLoaded(true);
     });
+    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   };
 
   useEffect(() => {
@@ -94,8 +96,12 @@ export function OrganizationSettings(props) {
                         feature={item}
                         isAvailable={false}
                         noTooltipIfValid={true}
-                        customMessage={`${item} are available only
-                      in paid plans`}
+                        customMessage={
+                          licenseValid
+                            ? `${item} are not included in your current plan. For more, Upgrade`
+                            : `${item} are available only
+                          in paid plans`
+                        }
                       >
                         {children}
                       </LicenseTooltip>
@@ -159,7 +165,9 @@ export function OrganizationSettings(props) {
                 )}
                 {selectedTab === 'manageCopilot' && <CopilotSetting />}
                 {selectedTab === 'manageCustomstyles' && <CustomStylesEditor darkMode={props.darkMode} />}
-                {selectedTab === 'manageOrgConstants' && <ManageOrgConstants darkMode={props.darkMode} />}
+                {selectedTab === 'manageOrgConstants' && (
+                  <ManageOrgConstants darkMode={props.darkMode} featureAccess={featureAccess} />
+                )}
               </div>
             </div>
           ) : (

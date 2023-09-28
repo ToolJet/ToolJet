@@ -50,6 +50,7 @@ export default function EditorHeader({
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [promoteModalData, setPromoteModalData] = useState(null);
   const [featureAccess, setFeatureAccess] = useState({});
+  let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
   const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
     (state) => ({
@@ -79,6 +80,7 @@ export default function EditorHeader({
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess({ ...data });
     });
+    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   };
 
   const currentAppEnvironmentId = editingVersion?.current_environment_id || editingVersion?.currentEnvironmentId;
@@ -163,6 +165,7 @@ export default function EditorHeader({
                       multiEnvironmentEnabled={featureAccess?.multiEnvironment}
                       setCurrentEnvironment={setCurrentEnvironment}
                       setCurrentAppVersionPromoted={setCurrentAppVersionPromoted}
+                      licenseValid={licenseValid}
                     />
                   )}
                   <div className="navbar-seperator"></div>
@@ -189,8 +192,13 @@ export default function EditorHeader({
                 <div className="nav-item">
                   <LicenseTooltip
                     placement="left"
+                    feature={'Multi-environments'}
                     limits={featureAccess}
-                    customMessage={'Sharing apps is available only in paid plans'}
+                    customMessage={
+                      !licenseValid
+                        ? 'Sharing apps is available only in paid plans'
+                        : 'Apps can only be shared in production'
+                    }
                     isAvailable={featureAccess?.multiEnvironment}
                     noTooltipIfValid={true}
                   >

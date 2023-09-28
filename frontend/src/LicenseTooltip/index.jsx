@@ -16,26 +16,35 @@ const LicenseTooltip = ({
   const allowedFeaturesOnExpiry = ['workspaces', 'apps', 'workflows'];
 
   const currentUser = authenticationService.currentSessionValue;
-  const paidFeatures = { 'White labelling': 'whiteLabelling' };
+  const paidFeatures = {
+    'Audit logs': 'auditLogs',
+    'Custom styles': 'customStyling',
+    'OpenID Connect': 'openid',
+    LDAP: 'ldap',
+    'Multi-environments': 'multiEnvironment',
+  };
 
   const generateMessage = () => {
     switch (true) {
       case !currentUser.admin && !canAddUnlimited && percentage >= 100:
         return `${customMessage ?? `You have reached your limit for number of ${feature}`}`;
-      case (!isLicenseValid || isExpired || !isAvailable || limits?.[paidFeatures?.[feature]] === false) &&
+      case isLicenseValid &&
+        !isExpired &&
+        limits?.[paidFeatures?.[feature]] === false &&
+        !allowedFeaturesOnExpiry.includes(feature):
+        return `${
+          customMessage ??
+          `${feature} is not included in your
+          current plan. For more, Upgrade`
+        }`;
+      case (!isLicenseValid || isExpired) &&
+        (!isAvailable || limits?.[paidFeatures?.[feature]] === false) &&
         !allowedFeaturesOnExpiry.includes(feature):
         return `${
           customMessage ??
           `${feature} is available only
         in paid plans`
         }`;
-      //handle in next phase
-      case limits?.[paidFeatures?.[feature]] === false:
-        return (
-          customMessage ??
-          `${feature} is not a part of your 
-        plan. Contact us to know more.`
-        );
       default:
         return '';
     }

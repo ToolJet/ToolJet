@@ -900,7 +900,7 @@ button {
 }
 
 .app-icon-skeleton {
-  background-color: #91a4f6;
+  background-color: #ECEEF0 !important;
   border-radius: 4px;
   margin-bottom: 20px;
   height: 40px;
@@ -7328,9 +7328,10 @@ tbody {
     position: absolute;
     bottom: 50px;
     max-height: 130px;
+    min-width: 255px;
 
     svg {
-      width: 70px;
+      width: 48px;
     }
   }
 }
@@ -12589,4 +12590,7 @@ tbody {
       border-bottom: none !important;
     }
   }
+}
+.bold-text {
+  font-weight: 500;
 }

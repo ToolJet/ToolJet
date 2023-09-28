@@ -21,7 +21,7 @@ const MODES = Object.freeze({
   NULL: null,
 });
 
-const ManageOrgConstantsComponent = ({ darkMode }) => {
+const ManageOrgConstantsComponent = ({ darkMode, featureAccess }) => {
   const [isManageVarDrawerOpen, setIsManageVarDrawerOpen] = useState(false);
   const [constants, setConstants] = useState([]);
   const [environments, setEnvironments] = useState([]);
@@ -40,6 +40,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [selectedConstant, setSelectedConstant] = useState(null);
 
   const { group_permissions, super_admin, admin } = authenticationService.currentSessionValue;
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);
@@ -362,6 +363,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     setActiveTabEnvironment={setActiveTabEnvironment}
                     isLoading={isLoading}
                     allConstants={constants}
+                    licenseValid={licenseValid}
                   />
                   {constants.length > 0 ? (
                     <div className="w-100 workspace-constant-card-body">
@@ -427,6 +429,7 @@ const RenderEnvironmentsTab = ({
   setActiveTabEnvironment,
   isLoading,
   allConstants,
+  licenseValid,
 }) => {
   if (!currentEnvironment || allEnvironments.length <= 1) return null;
 
@@ -465,7 +468,11 @@ const RenderEnvironmentsTab = ({
                 feature={'Multi-environments'}
                 isAvailable={item?.enabled}
                 noTooltipIfValid={true}
-                customMessage={'Multi-environments are available only in paid plans'}
+                customMessage={
+                  !licenseValid
+                    ? 'Multi-environments are available only in paid plans'
+                    : 'Multi-environments are not included in your current plan. For more, Upgrade'
+                }
               >
                 {children}
               </LicenseTooltip>

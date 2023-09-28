@@ -18,6 +18,7 @@ import './styles.scss';
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
   const [featureAccess, setFeatureAccess] = useState({});
+  let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   const canAnyGroupPerformAction = (action, permissions) => {
     if (!permissions) {
@@ -31,6 +32,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess({ ...data });
     });
+    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   };
 
   const canCreateDataSource = () => {
@@ -72,7 +74,6 @@ function Layout({ children, switchDarkMode, darkMode }) {
     canDeleteDataSource() ||
     admin ||
     super_admin;
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isAuthorizedForGDS = (hasCommonPermissions && licenseValid) || (!licenseValid && (admin || super_admin));
 
   const {
@@ -263,9 +264,13 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   {admin && (
                     <LicenseTooltip
                       limits={featureAccess}
-                      feature={'Audit Logs'}
+                      feature={'Audit logs'}
                       isAvailable={featureAccess?.auditLogs}
-                      customMessage={'Audit logs are available only in paid plans'}
+                      customMessage={
+                        licenseValid
+                          ? 'Audit logs are not included in your current plan. For more, Upgrade'
+                          : 'Audit logs are available only in paid plans'
+                      }
                     >
                       <Link
                         to={featureAccess?.auditLogs && getPrivateRoute('audit_logs')}

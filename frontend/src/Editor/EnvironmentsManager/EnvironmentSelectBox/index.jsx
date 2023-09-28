@@ -3,7 +3,6 @@ import { capitalize } from 'lodash';
 import XenvSvg from '@assets/images/icons/x-env.svg';
 import '@/_styles/versions.scss';
 import { LicenseTooltip } from '@/LicenseTooltip';
-import { licenseService } from '@/_services';
 
 function EnvironmentSelectBox(props) {
   const { options, currentEnv } = props;
@@ -80,7 +79,11 @@ function EnvironmentSelectBox(props) {
                     feature={'Multi-environments'}
                     isAvailable={option.enabled}
                     noTooltipIfValid={true}
-                    customMessage={'Multi-environments are available only in paid plans'}
+                    customMessage={
+                      !props.licenseValid
+                        ? 'Multi-environments are available only in paid plans'
+                        : 'Multi-environments are not included in your current plan. For more, Upgrade'
+                    }
                   >
                     {children}
                   </LicenseTooltip>

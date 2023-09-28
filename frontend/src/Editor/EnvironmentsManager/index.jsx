@@ -17,6 +17,7 @@ const EnvironmentManager = (props) => {
     setCurrentEnvironment,
     multiEnvironmentEnabled,
     setCurrentAppVersionPromoted,
+    licenseValid,
   } = props;
 
   // TODO: fix naming with the current environment id
@@ -120,6 +121,7 @@ const EnvironmentManager = (props) => {
         currentEnv={currentEnvironment}
         onEnvChange={(env) => appEnvironmentChanged(env)}
         versionId={editingVersion.id}
+        licenseValid={licenseValid}
       />
     </div>
   );

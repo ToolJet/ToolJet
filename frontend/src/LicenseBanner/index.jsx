@@ -28,6 +28,34 @@ export function LicenseBanner({
   const DEMO_LINK = `https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=onpremise&instance_id=${currentUser?.instance_id}`;
 
   const features = ['Instance Settings', 'Audit Log', 'Open ID Connect'];
+  const boldWords = [
+    'Edit user details',
+    'number of super admins',
+    'paid plans',
+    'expired',
+    'days',
+    'tables',
+    'permissions',
+    'data source permissions',
+    'Custom groups and permissions',
+    'Instance settings',
+    'White labelling',
+    'Custom styles',
+  ];
+
+  const applyBoldFormatting = (text) => {
+    const boldRegex = new RegExp(`\\b(${boldWords.join('|')}|\\d+)\\b`, 'g');
+    return text.split(boldRegex).map((word, index) => {
+      if (boldWords.includes(word) || /^\d+$/.test(word)) {
+        return (
+          <span key={index} className="bold-text">
+            {word}
+          </span>
+        );
+      }
+      return word;
+    });
+  };
 
   const daysLeft = expiryDate && getDateDifferenceInDays(new Date(), new Date(expiryDate));
 
@@ -192,32 +220,36 @@ export function LicenseBanner({
       <div className="message-wrapper">
         <div className={`heading ${warningText?.parentClassName}`}>
           {warningText && <div className={warningText?.className}>{warningText?.text}</div>}
-          {message}{' '}
-          {size === 'small' && (
-            <div className={`cursor-pointer ${className}`}>
-              {!replaceText ? (
-                <>
-                  {!replaceText && 'For more, '}
-                  <span
-                    onClick={handleClick}
-                    className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
-                  >
-                    {buttonText}
-                  </span>
-                </>
-              ) : (
-                <span onClick={handleClick}>{buttonText}</span>
-              )}
-            </div>
-          )}
-          {size === 'xsmall' && (
-            <span
-              onClick={handleClick}
-              className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
-            >
-              {buttonText}
-            </span>
-          )}
+          <div style={{ fontWeight: size === 'large' ? 500 : 400 }}>
+            {applyBoldFormatting(message)}{' '}
+            {size === 'small' && (
+              <div className={`cursor-pointer ${className}`}>
+                {!replaceText ? (
+                  <>
+                    {!replaceText && 'For more, '}
+                    <span
+                      onClick={handleClick}
+                      className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
+                      style={{ fontWeight: '500' }}
+                    >
+                      {buttonText}
+                    </span>
+                  </>
+                ) : (
+                  <span onClick={handleClick}>{buttonText}</span>
+                )}
+              </div>
+            )}
+            {size === 'xsmall' && (
+              <span
+                onClick={handleClick}
+                className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
+                style={{ fontWeight: '500' }}
+              >
+                {buttonText}
+              </span>
+            )}
+          </div>
         </div>
         {size === 'large' && <span>{generateInfo() || commonMessage}</span>}
         {type === licenseType && daysLeft <= 14 && !isExpired && (
