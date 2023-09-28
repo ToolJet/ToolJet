@@ -13,6 +13,7 @@ export enum Action {
   DropTable = 'dropTable',
   AddColumn = 'addColumn',
   DropColumn = 'dropColumn',
+  JoinTables = 'joinTables',
 }
 
 type Subjects = 'all';
@@ -44,6 +45,7 @@ export class TooljetDbAbilityFactory {
 
     can(Action.ViewTables, 'all');
     can(Action.ViewTable, 'all');
+    can(Action.JoinTables, 'all');
 
     return build({
       detectSubjectType: (item) => item as ExtractSubjectType<Subjects>,
