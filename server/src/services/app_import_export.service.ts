@@ -167,8 +167,6 @@ export class AppImportExportService {
         .orderBy('event_handlers.created_at', 'ASC')
         .getMany();
 
-      // console.log('-----arpit import/export::', { components });
-
       appToExport['components'] = components;
       appToExport['pages'] = pages;
       appToExport['events'] = events;
@@ -353,7 +351,7 @@ export class AppImportExportService {
       importingComponents,
       importingEvents
     );
-    console.log('-----arpit extract import data:: ', { appResourceMappings });
+
     if (!isNormalizedAppDefinitionSchema) {
       for (const importingAppVersion of importingAppVersions) {
         const updatedDefinition = this.replaceDataQueryIdWithinDefinitions(
