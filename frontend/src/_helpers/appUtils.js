@@ -1174,7 +1174,6 @@ export function renderTooltip({ props, text }) {
 export function computeComponentState(_ref, components = {}) {
   let componentState = {};
   const currentComponents = getCurrentState().components;
-  console.log(':components--', components);
   Object.keys(components).forEach((key) => {
     const component = components[key];
     const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
