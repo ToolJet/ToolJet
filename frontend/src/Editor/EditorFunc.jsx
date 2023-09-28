@@ -77,7 +77,7 @@ const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
-  const { updateState, updateAppDefinitionDiff, updateAppVersion } = useAppDataActions();
+  const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving } = useAppDataActions();
   const { updateEditorState, updateQueryConfirmationList } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
@@ -1261,6 +1261,7 @@ const EditorComponent = (props) => {
 
     newAppDefinition.pages[pageId].hidden = true;
 
+    switchPage(pageId);
     appDefinitionChanged(newAppDefinition, {
       pageDefinitionChanged: true,
     });
@@ -1276,38 +1277,42 @@ const EditorComponent = (props) => {
     const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
 
     newAppDefinition.pages[pageId].hidden = false;
-
+    switchPage(pageId);
     appDefinitionChanged(newAppDefinition, {
       pageDefinitionChanged: true,
     });
   };
 
   const clonePage = async (pageId) => {
-    await appVersionService.clonePage(appId, editingVersion?.id, pageId).then((data) => {
-      const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    setIsSaving(true);
+    await appVersionService
+      .clonePage(appId, editingVersion?.id, pageId)
+      .then((data) => {
+        const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-      const pages = data.pages.reduce((acc, page) => {
-        const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
+        const pages = data.pages.reduce((acc, page) => {
+          const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
 
-        page.components = currentComponents;
+          page.components = currentComponents;
 
-        acc[page.id] = page;
+          acc[page.id] = page;
 
-        return acc;
-      }, {});
+          return acc;
+        }, {});
 
-      const newAppDefinition = {
-        ...copyOfAppDefinition,
-        pages: {
-          ...copyOfAppDefinition.pages,
-          ...pages,
-        },
-      };
-      updateState({
-        events: data.events,
-      });
-      appDefinitionChanged(newAppDefinition);
-    });
+        const newAppDefinition = {
+          ...copyOfAppDefinition,
+          pages: {
+            ...copyOfAppDefinition.pages,
+            ...pages,
+          },
+        };
+        updateState({
+          events: data.events,
+        });
+        appDefinitionChanged(newAppDefinition);
+      })
+      .finally(() => setIsSaving(false));
   };
 
   const updateHomePage = (pageId) => {
