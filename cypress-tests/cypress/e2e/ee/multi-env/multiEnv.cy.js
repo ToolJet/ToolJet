@@ -164,6 +164,7 @@ describe("Multi env", () => {
       "Create new version"
     );
 
+    verifyTooltip(multiEnvSelector.createNewVersionButton, "New versions can only be created in development")
     cy.get(".datasource-picker").should("have.class", "disabled");
     cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
     cy.get(".components-container").should("have.class", "disabled");
@@ -266,10 +267,12 @@ describe("Multi env", () => {
       "have.text",
       "This version of the app is released. Please create a new version in development to make any changes."
     );
+    cy.get('[data-cy="v1-current-version-text"]').click()
+    verifyTooltip(multiEnvSelector.createNewVersionButton, "New versions can only be created in development")
     cy.get(".datasource-picker").should("have.class", "disabled");
     cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
     cy.get(".components-container").should("have.class", "disabled");
-    cy.get(commonSelectors.releaseButton).should("have.class", "disabled");
+    cy.get(commonSelectors.releaseButton).should("be.disabled");
   });
 
   it("Verify the datasource configuration and data on each env", () => {
@@ -465,4 +468,5 @@ describe("Multi env", () => {
     ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
 
   });
+
 });
