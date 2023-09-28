@@ -131,6 +131,16 @@
         background: var(--slate4, #ECEEF0) !important;
     }
 
+    &:active,
+    &:focus,
+    &.always-active-btn {
+        border: 1px solid var(--slate7, #D7DBDF) !important;
+        background: var(--slate5) !important;
+        color: var(--slate12);
+        border: 1px solid var(--slate7);
+    }
+
+
     &:active {
         background: var(--slate1);
         box-shadow: none;

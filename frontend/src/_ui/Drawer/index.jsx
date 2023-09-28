@@ -80,7 +80,7 @@ const Drawer = ({
 
   return createPortal(
     <ErrorBoundary showFallback={true}>
-      <FocusTrap active={isOpen && !disableFocus}>
+      <FocusTrap focusTrapOptions={{ initialFocus: false }} active={isOpen && !disableFocus}>
         <div
           aria-hidden={`${!isOpen}`}
           className={cx('drawer-container', {
