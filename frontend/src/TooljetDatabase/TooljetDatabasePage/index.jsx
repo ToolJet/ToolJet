@@ -59,7 +59,11 @@ const TooljetDatabasePage = ({ totalTables }) => {
     if (isEmpty(selectedTable)) return;
 
     const reloadTableData = async () => {
-      const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable.id);
+      const { headers, data, error } = await tooljetDatabaseService.findOne(
+        organizationId,
+        selectedTable.id,
+        'order=id.desc'
+      );
 
       if (error) {
         toast.error(error?.message ?? 'Something went wrong');

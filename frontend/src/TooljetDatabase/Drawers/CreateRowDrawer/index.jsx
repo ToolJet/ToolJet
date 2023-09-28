@@ -25,18 +25,20 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
           onCreate={() => {
-            tooljetDatabaseService.findOne(organizationId, selectedTable.id).then(({ headers, data = [], error }) => {
-              if (error) {
-                toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-                return;
-              }
+            tooljetDatabaseService
+              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .then(({ headers, data = [], error }) => {
+                if (error) {
+                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+                  return;
+                }
 
-              if (Array.isArray(data) && data?.length > 0) {
-                const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-                setTotalRecords(totalContentRangeRecords);
-                setSelectedTableData(data);
-              }
-            });
+                if (Array.isArray(data) && data?.length > 0) {
+                  const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+                  setTotalRecords(totalContentRangeRecords);
+                  setSelectedTableData(data);
+                }
+              });
             setIsCreateRowDrawerOpen(false);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
