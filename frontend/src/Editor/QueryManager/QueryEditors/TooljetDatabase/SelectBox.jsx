@@ -19,6 +19,7 @@ function DataSourceSelect({
   addBtnLabel,
   selected,
   emptyError,
+  highlightSelected,
 }) {
   const handleChangeDataSource = (source) => {
     onSelect && onSelect(source);
@@ -88,7 +89,7 @@ function DataSourceSelect({
                       />
                     ))}
                   <span className={`${props?.data?.icon ? 'ms-1 ' : ''}flex-grow-1`}>{children}</span>
-                  {props.isSelected && (
+                  {props.isSelected && highlightSelected && (
                     <SolidIcon
                       fill="var(--indigo9)"
                       name="tick"
@@ -162,11 +163,12 @@ function DataSourceSelect({
             ...style,
             cursor: 'pointer',
             color: 'inherit',
-            backgroundColor: isSelected
-              ? 'var(--indigo3, #F0F4FF)'
-              : isFocused && !isNested
-              ? 'var(--slate4)'
-              : 'transparent',
+            backgroundColor:
+              isSelected && highlightSelected
+                ? 'var(--indigo3, #F0F4FF)'
+                : isFocused && !isNested
+                ? 'var(--slate4)'
+                : 'transparent',
             ...(isNested
               ? { padding: '0 8px', marginLeft: '19px', borderLeft: '1px solid var(--slate5)', width: 'auto' }
               : {}),

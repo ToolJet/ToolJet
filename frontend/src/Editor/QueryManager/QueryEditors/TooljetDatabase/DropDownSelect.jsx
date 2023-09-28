@@ -22,6 +22,7 @@ const DropDownSelect = ({
   emptyError,
   shouldCenterAlignText = false,
   showPlaceHolder = false,
+  highlightSelected = true,
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -124,6 +125,7 @@ const DropDownSelect = ({
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
             emptyError={emptyError}
+            highlightSelected={highlightSelected}
           />
         </Popover>
       }

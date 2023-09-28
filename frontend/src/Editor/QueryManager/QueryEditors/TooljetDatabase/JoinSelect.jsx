@@ -96,6 +96,7 @@ export default function JoinSelect({ darkMode }) {
               </Col>
               <Col sm="9" className="p-0 border-end">
                 <DropDownSelect
+                  highlightSelected={false}
                   showPlaceHolder
                   options={[
                     { label: 'Select All', value: 'SELECT ALL' },
