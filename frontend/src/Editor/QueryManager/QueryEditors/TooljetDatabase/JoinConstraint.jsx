@@ -88,13 +88,22 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           </Col>
         )}
       </Row>
-      <Row className="border rounded mb-2 mx-0">
-        <Col sm="2" className="p-0 border-end">
-          <div className="tj-small-btn px-2">Join</div>
+      <Row className="mb-2 mx-0">
+        <Col sm="2" className="p-0">
+          <div
+            style={{
+              borderRadius: 0,
+              height: '30px',
+            }}
+            className="tj-small-btn px-2 border border-end-0 rounded-start"
+          >
+            Join
+          </div>
         </Col>
-        <Col sm="4" className="p-0 border-end">
+        <Col sm="4" className="p-0">
           {index ? (
             <DropDownSelect
+              buttonClasses="border border-end-0"
               showPlaceHolder
               options={leftTableList}
               darkMode={darkMode}
@@ -128,11 +137,20 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
               value={leftTableList.find((val) => val?.value === leftFieldTable)}
             />
           ) : (
-            <div className="tj-small-btn px-2">{baseTableDetails?.table_name ?? ''}</div>
+            <div
+              style={{
+                borderRadius: 0,
+                height: '30px',
+              }}
+              className="tj-small-btn px-2 border border-end-0"
+            >
+              {baseTableDetails?.table_name ?? ''}
+            </div>
           )}
         </Col>
-        <Col sm="1" className="p-0 border-end">
+        <Col sm="1" className="p-0">
           <DropDownSelect
+            buttonClasses="border border-end-0"
             shouldCenterAlignText
             options={staticJoinOperationsList}
             darkMode={darkMode}
@@ -151,6 +169,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
         </Col>
         <Col sm="5" className="p-0">
           <DropDownSelect
+            buttonClasses="border rounded-end"
             showPlaceHolder
             options={tableList}
             darkMode={darkMode}
@@ -282,10 +301,10 @@ const JoinOn = ({
   ];
 
   return (
-    <Row className="border rounded mb-2 mx-0">
+    <Row className="mb-2 mx-0">
       <Col
         sm="2"
-        className="p-0 border-end"
+        className="p-0"
         // data-tooltip-id={`tdb-join-operator-tooltip-${index}`}
         // data-tooltip-content={
         //   index > 1
@@ -295,6 +314,7 @@ const JoinOn = ({
       >
         {index == 1 && (
           <DropDownSelect
+            buttonClasses="border border-end-0 rounded-start"
             showPlaceHolder
             options={groupOperators}
             darkMode={darkMode}
@@ -304,15 +324,33 @@ const JoinOn = ({
             }}
           />
         )}
-        {index == 0 && <div className="tj-small-btn px-2">On</div>}
+        {index == 0 && (
+          <div
+            style={{
+              height: '30px',
+              borderRadius: 0,
+            }}
+            className="tj-small-btn px-2 border border-end-0 rounded-start"
+          >
+            On
+          </div>
+        )}
         {index > 1 && (
-          <div className="tj-small-btn px-2" style={{ color: 'var(--slate9)' }}>
+          <div
+            style={{
+              height: '30px',
+              borderRadius: 0,
+              color: 'var(--slate9)',
+            }}
+            className="tj-small-btn px-2 border border-end-0 rounded-start"
+          >
             {groupOperator}
           </div>
         )}
       </Col>
-      <Col sm="4" className="p-0 border-end">
+      <Col sm="4" className="p-0">
         <DropDownSelect
+          buttonClasses="border border-end-0"
           showPlaceHolder
           options={leftFieldOptions}
           darkMode={darkMode}
@@ -337,7 +375,7 @@ const JoinOn = ({
           }}
         />
       </Col>
-      <Col sm="1" className="p-0 border-end">
+      <Col sm="1" className="p-0">
         {/* <DropDownSelect
           options={operators}
           darkMode={darkMode}
@@ -349,11 +387,14 @@ const JoinOn = ({
 
         {/* Above line is commented and value is hardcoded as below */}
 
-        <div className="tj-small-btn px-2 text-center">{operator}</div>
+        <div style={{ height: '30px', borderRadius: 0 }} className="tj-small-btn px-2 text-center border border-end-0">
+          {operator}
+        </div>
       </Col>
       <Col sm="5" className="p-0 d-flex">
         <div className="flex-grow-1">
           <DropDownSelect
+            buttonClasses={`border ${index === 0 && 'rounded-end'}`}
             showPlaceHolder
             options={rightFieldOptions}
             emptyError={
@@ -379,7 +420,13 @@ const JoinOn = ({
           />
         </div>
         {index > 0 && (
-          <ButtonSolid size="sm" variant="ghostBlack" className="px-1 rounded-0 border-start" onClick={onRemove}>
+          <ButtonSolid
+            customStyles={{ height: '30px' }}
+            size="sm"
+            variant="ghostBlack"
+            className="px-1 rounded-0 border border-start-0 rounded-end"
+            onClick={onRemove}
+          >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />
           </ButtonSolid>
         )}

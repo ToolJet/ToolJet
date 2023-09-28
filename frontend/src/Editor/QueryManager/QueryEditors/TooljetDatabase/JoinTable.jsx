@@ -364,10 +364,11 @@ const RenderFilterSection = ({ darkMode }) => {
     const { operator = '', leftField = {}, rightField = {} } = conditionDetail;
     const LeftSideTableDetails = leftField?.table ? findTableDetails(leftField?.table) : '';
     return (
-      <Row className="border rounded mb-2 mx-0" key={index}>
-        <Col sm="2" className="p-0 border-end">
+      <Row className="mb-2 mx-0" key={index}>
+        <Col sm="2" className="p-0">
           {index === 1 && (
             <DropDownSelect
+              buttonClasses="border border-end-0 rounded-start"
               showPlaceHolder
               onChange={(change) => updateOperatorForConditions(change?.value)}
               options={groupOperators}
@@ -375,11 +376,32 @@ const RenderFilterSection = ({ darkMode }) => {
               value={groupOperators.find((op) => op.value === conditions.operator)}
             />
           )}
-          {index === 0 && <div className="tj-small-btn px-2">Where</div>}
-          {index > 1 && <div className="tj-small-btn px-2">{conditions?.operator}</div>}
+          {index === 0 && (
+            <div
+              style={{
+                borderRadius: 0,
+                height: '30px',
+              }}
+              className="tj-small-btn px-2 border border-end-0 rounded-start"
+            >
+              Where
+            </div>
+          )}
+          {index > 1 && (
+            <div
+              style={{
+                borderRadius: 0,
+                height: '30px',
+              }}
+              className="tj-small-btn px-2 rounded-start border border-end-0"
+            >
+              {conditions?.operator}
+            </div>
+          )}
         </Col>
-        <Col sm="3" className="p-0 border-end">
+        <Col sm="3" className="p-0">
           <DropDownSelect
+            buttonClasses="border border-end-0"
             showPlaceHolder
             onChange={(newValue) =>
               updateFilterConditionEntry('Column', index, {
@@ -399,8 +421,9 @@ const RenderFilterSection = ({ darkMode }) => {
             darkMode={darkMode}
           />
         </Col>
-        <Col sm="3" className="p-0 border-end">
+        <Col sm="3" className="p-0">
           <DropDownSelect
+            buttonClasses="border border-end-0"
             showPlaceHolder
             onChange={(change) => updateFilterConditionEntry('Operator', index, { operator: change?.value })}
             value={filterOperatorOptions.find((op) => op.value === operator)}
@@ -412,6 +435,7 @@ const RenderFilterSection = ({ darkMode }) => {
           <div className="flex-grow-1">
             {operator === 'IS' ? (
               <DropDownSelect
+                buttonClasses="border border-end-0"
                 showPlaceHolder
                 onChange={(change) =>
                   updateFilterConditionEntry('Value', index, { value: change?.value, isLeftSideCondition: false })
@@ -429,9 +453,9 @@ const RenderFilterSection = ({ darkMode }) => {
                       : JSON.stringify(rightField?.value)
                     : rightField?.value
                 }
-                className="codehinter-plugins"
+                className="border border-end-0 fs-12"
                 theme={darkMode ? 'monokai' : 'default'}
-                height={'28px'}
+                height={'30px'}
                 placeholder="Value"
                 onChange={(newValue) =>
                   updateFilterConditionEntry('Value', index, { value: newValue, isLeftSideCondition: false })
@@ -439,10 +463,14 @@ const RenderFilterSection = ({ darkMode }) => {
               />
             )}
           </div>
+
           <ButtonSolid
+            customStyles={{
+              height: '30px',
+            }}
             size="sm"
             variant="ghostBlack"
-            className="px-1 rounded-0 border-start"
+            className="px-1 rounded-0 border rounded-end"
             onClick={() => removeFilterConditionEntry(index)}
           >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />

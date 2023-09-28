@@ -90,12 +90,21 @@ export default function JoinSelect({ darkMode }) {
           const respectiveTableSelectedOptions = joinSelectOptions.filter((val) => val?.table === table);
           const respectiveTableOptions = tableOptions[table] ?? [];
           return (
-            <Row key={table} className="border rounded mb-2 mx-0">
-              <Col sm="3" className="p-0 border-end">
-                <div className="tj-small-btn px-2">{findTableDetails(table)?.table_name ?? ''}</div>
+            <Row key={table} className="mb-2 mx-0">
+              <Col sm="3" className="p-0">
+                <div
+                  style={{
+                    height: '30px',
+                    borderRadius: 0,
+                  }}
+                  className="tj-small-btn px-2 border border-end-0 rounded-start"
+                >
+                  {findTableDetails(table)?.table_name ?? ''}
+                </div>
               </Col>
-              <Col sm="9" className="p-0 border-end">
+              <Col sm="9" className="p-0">
                 <DropDownSelect
+                  buttonClasses="border rounded-end"
                   highlightSelected={false}
                   showPlaceHolder
                   options={[
