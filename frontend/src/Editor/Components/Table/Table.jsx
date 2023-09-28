@@ -764,12 +764,11 @@ export function Table({
         ['currentData', data],
         ['selectedRow', []],
         ['selectedRowId', null],
-      ]).then(() => {
-        if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
-          toggleAllRowsSelected(false);
-          mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
-        }
-      });
+      ]);
+      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+        toggleAllRowsSelected(false);
+        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+      }
     }
   }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
