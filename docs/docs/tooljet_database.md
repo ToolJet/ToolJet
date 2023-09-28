@@ -352,7 +352,7 @@ You can join two or more tables in the ToolJet database by using the **Join** op
 #### Required parameters
 - **From**: In the **From** section, there are the following parameters:
     - **Selected Table**: Select the table from which you want to join the other table. 
-    - **Type of Join**: Select the type of join you want to perform. The available options are: `inner`, `left`, `right`, and `full`.
+    - **Type of Join**: Select the type of join you want to perform. The available options are: `Inner Join`, `Left Join`, `RIght Join`, and `Full Outer Join`.
     - **Joining Table**: Select the table that you want to join with the selected table.
     - **On**: Select the column from the **selected table** and the **joining table** on which you want to join the tables. Currently, only `=` operation is supported for joining tables.
     - **AND or OR condition**: You can add multiple conditions by clicking on the **+Add more** button below each join. The conditions can be joined by `AND` or `OR` operation.
