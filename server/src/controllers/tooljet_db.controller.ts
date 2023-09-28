@@ -131,6 +131,19 @@ export class TooljetDbController {
       throw new BadRequestException('File size cannot be greater than 2MB');
     }
     const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file.buffer);
+
+    return decamelizeKeys({ result });
+  }
+
+  @Post('/organizations/:organizationId/join')
+  @UseGuards(TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
+  async joinTables(@Body() joinQueryJsonDto: any, @Param('organizationId') organizationId) {
+    const params = {
+      joinQueryJson: { ...joinQueryJsonDto },
+    };
+
+    const result = await this.tooljetDbService.perform(organizationId, 'join_tables', params);
     return decamelizeKeys({ result });
   }
 }
