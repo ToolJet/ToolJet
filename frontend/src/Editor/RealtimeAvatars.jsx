@@ -33,6 +33,7 @@ const RealtimeAvatars = ({ darkMode }) => {
                     image={presence?.image}
                     borderShape="rounded"
                     indexId={id}
+                    realtime={true}
                   />
                 </div>
                 <div className={`col text-truncate ${darkMode && 'text-white'}`}>
@@ -51,10 +52,14 @@ const RealtimeAvatars = ({ darkMode }) => {
   return (
     <div className="row realtime-avatars">
       <div className="col-auto ms-auto d-flex align-items-center">
-        <div className="avatar-list avatar-list-stacked">
+        <div className="avatar-list-stacked">
           {othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && (
             <Popover fullWidth={false} showArrow popoverContent={popoverContent()}>
-              <Avatar text={`+${othersOnSameVersionAndPage.length - MAX_DISPLAY_USERS}`} borderShape="rounded" />
+              <Avatar
+                text={`+${othersOnSameVersionAndPage.length - MAX_DISPLAY_USERS}`}
+                borderShape="rounded"
+                realtime={true}
+              />
             </Popover>
           )}
           {self?.presence && (
@@ -66,6 +71,7 @@ const RealtimeAvatars = ({ darkMode }) => {
               image={self?.presence?.image}
               borderShape="rounded"
               indexId={self?.presence?.id}
+              realtime={true}
             />
           )}
           {othersOnSameVersionAndPage.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
@@ -78,6 +84,7 @@ const RealtimeAvatars = ({ darkMode }) => {
                 image={presence?.image}
                 borderShape="rounded"
                 indexId={id}
+                realtime={true}
               />
             );
           })}

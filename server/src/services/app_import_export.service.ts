@@ -27,9 +27,22 @@ interface AppResourceMappings {
   appDefaultEnvironmentMapping: Record<string, string[]>;
 }
 
-type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb';
+type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';
+type DefaultDataSourceName =
+  | 'restapidefault'
+  | 'runjsdefault'
+  | 'runpydefault'
+  | 'tooljetdbdefault'
+  | 'workflowsdefault';
 
-const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb'];
+const DefaultDataSourceNames: DefaultDataSourceName[] = [
+  'restapidefault',
+  'runjsdefault',
+  'runpydefault',
+  'tooljetdbdefault',
+  'workflowsdefault',
+];
+const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
 
 @Injectable()
 export class AppImportExportService {
@@ -374,7 +387,7 @@ export class AppImportExportService {
           );
         }
 
-        const isDefaultDatasource = DefaultDataSourceKinds.includes(importingDataSource.kind as DefaultDataSourceKind);
+        const isDefaultDatasource = DefaultDataSourceNames.includes(importingDataSource.name as DefaultDataSourceName);
         if (!isDefaultDatasource) {
           await this.createDataSourceOptionsForExistingAppEnvs(
             manager,
@@ -398,6 +411,19 @@ export class AppImportExportService {
           externalResourceMappings
         );
         appResourceMappings.dataQueryMapping = dataQueryMapping;
+      }
+
+      const newDataQueries = await manager.find(DataQuery, {
+        where: { appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id] },
+      });
+
+      for (const newQuery of newDataQueries) {
+        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+          newQuery.options,
+          appResourceMappings.dataQueryMapping
+        );
+        newQuery.options = newOptions;
+        await manager.save(newQuery);
       }
     }
 
@@ -442,36 +468,27 @@ export class AppImportExportService {
     externalResourceMappings: { [x: string]: any }
   ) {
     appResourceMappings = { ...appResourceMappings };
-    const newDataQueries = importingDataQueriesForAppVersion
-      .filter((dq: { dataSourceId: any }) => dq.dataSourceId === importingDataSource.id)
-      .map((importingQuery: { options: any; name: any }) => {
-        const options =
-          importingDataSource.kind === 'tooljetdb'
-            ? this.replaceTooljetDbTableIds(importingQuery.options, externalResourceMappings['tooljet_database'])
-            : importingQuery.options;
-
-        return manager.create(DataQuery, {
-          name: importingQuery.name,
-          options,
-          dataSourceId: dataSourceForAppVersion.id,
-          appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-        });
-      });
-
-    await Promise.all(newDataQueries.map((newQuery: any) => manager.save(newQuery)));
-
-    newDataQueries.forEach(
-      (newQuery: { id: string }) => (appResourceMappings.dataQueryMapping[newQuery.id] = newQuery.id)
+    const importingQueriesForSource = importingDataQueriesForAppVersion.filter(
+      (dq: { dataSourceId: any }) => dq.dataSourceId === importingDataSource.id
     );
+    if (isEmpty(importingDataQueriesForAppVersion)) return appResourceMappings;
 
-    for (const newQuery of newDataQueries) {
-      const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-        newQuery.options,
-        appResourceMappings.dataQueryMapping
-      );
-      newQuery.options = newOptions;
+    for (const importingQuery of importingQueriesForSource) {
+      const options =
+        importingDataSource.kind === 'tooljetdb'
+          ? this.replaceTooljetDbTableIds(importingQuery.options, externalResourceMappings['tooljet_database'])
+          : importingQuery.options;
+
+      const newQuery = manager.create(DataQuery, {
+        name: importingQuery.name,
+        options,
+        dataSourceId: dataSourceForAppVersion.id,
+        appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+      });
       await manager.save(newQuery);
+      appResourceMappings.dataQueryMapping[importingQuery.id] = newQuery.id;
     }
+
     return appResourceMappings;
   }
 
@@ -505,12 +522,19 @@ export class AppImportExportService {
         (dso) => dso.environmentId === defaultAppEnvironmentId
       );
       for (const otherEnvironmentId of otherEnvironmentsIds) {
-        await this.createDatasourceOption(
-          manager,
-          defaultEnvDsOption.options,
-          otherEnvironmentId,
-          dataSourceForAppVersion.id
-        );
+        const existingDataSourceOptions = await manager.findOne(DataSourceOptions, {
+          where: {
+            dataSourceId: dataSourceForAppVersion.id,
+            environmentId: otherEnvironmentId,
+          },
+        });
+        !existingDataSourceOptions &&
+          (await this.createDatasourceOption(
+            manager,
+            defaultEnvDsOption.options,
+            otherEnvironmentId,
+            dataSourceForAppVersion.id
+          ));
       }
     }
 
@@ -558,7 +582,7 @@ export class AppImportExportService {
     appVersionId: string,
     user: User
   ): Promise<DataSource> {
-    const isDefaultDatasource = DefaultDataSourceKinds.includes(dataSource.kind as DefaultDataSourceKind);
+    const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
     const isPlugin = !!dataSource.pluginId;
 
     if (isDefaultDatasource) {
