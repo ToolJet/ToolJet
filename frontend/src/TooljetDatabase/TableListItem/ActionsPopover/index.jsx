@@ -7,7 +7,7 @@ import EditIcon from './Icons/Edit.svg';
 import DeleteIcon from './Icons/Delete.svg';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const ListItemPopover = ({ onEdit, onDelete, darkMode, onMenuToggle }) => {
+export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable, onMenuToggle }) => {
   const closeMenu = () => {
     document.body.click();
   };
@@ -29,6 +29,21 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode, onMenuToggle }) =>
             }}
           >
             Edit
+          </div>
+        </div>
+        <div className="row mt-3 cursor-pointer">
+          <div className="col-auto" data-cy="export-option-icon">
+            <SolidIcon name="filedownload" width="13" viewBox="0 0 25 25" />
+          </div>
+          <div
+            className="col text-truncate"
+            data-cy="export-table-option"
+            onClick={() => {
+              closeMenu();
+              handleExportTable();
+            }}
+          >
+            Export table
           </div>
         </div>
         {/* <div className="row mt-3">
