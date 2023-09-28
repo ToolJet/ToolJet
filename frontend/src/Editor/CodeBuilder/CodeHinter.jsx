@@ -151,7 +151,13 @@ export function CodeHinter({
   useEffect(() => {
     if (JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
       const customResolvables = getCustomResolvables();
-      const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+      const [preview, error] = resolveReferences({
+        object: currentValue,
+        customObjects: customResolvables,
+        withError: true,
+        forPreviewBox: true,
+        currentState: realState,
+      });
       setPrevCurrentValue(currentValue);
 
       if (error) {
@@ -362,7 +368,7 @@ export function CodeHinter({
             </div>
             {!codeShow && (
               <ElementToRender
-                value={resolveReferences(initialValue, realState)}
+                value={resolveReferences({ object: initialValue, currentState: realState })}
                 onChange={(value) => {
                   if (value !== currentValue) {
                     onChange(value);

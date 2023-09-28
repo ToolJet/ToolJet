@@ -173,7 +173,9 @@ class TableComponent extends React.Component {
         id="popover-basic-2"
         className={`${this.props.darkMode && 'dark-theme'} shadow`}
         style={{
-          maxHeight: resolveReferences(column.isEditable, this.state.currentState) ? '100vh' : 'inherit',
+          maxHeight: resolveReferences({ object: column.isEditable, currentState: this.state.currentState })
+            ? '100vh'
+            : 'inherit',
           overflowY: 'auto',
         }}
       >
@@ -328,7 +330,7 @@ class TableComponent extends React.Component {
                 />
               </div>
 
-              {resolveReferences(column.isEditable, this.state.currentState) && (
+              {resolveReferences({ object: column.isEditable, currentState: this.state.currentState }) && (
                 <div>
                   <div data-cy={`header-validation`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
@@ -402,45 +404,46 @@ class TableComponent extends React.Component {
             </div>
           )}
 
-          {column.columnType === 'number' && resolveReferences(column.isEditable, this.state.currentState) && (
-            <div>
-              <div className="hr-text" data-cy={`header-validation`}>
-                {this.props.t('widget.Table.validation', 'Validation')}
+          {column.columnType === 'number' &&
+            resolveReferences({ object: column.isEditable, currentState: this.state.currentState }) && (
+              <div>
+                <div className="hr-text" data-cy={`header-validation`}>
+                  {this.props.t('widget.Table.validation', 'Validation')}
+                </div>
+                <div data-cy={`input-and-label-min-value`} className="field mb-2">
+                  <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.minLength}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode="javascript"
+                    lineNumbers={false}
+                    placeholder={''}
+                    onChange={(value) => this.onColumnItemChange(index, 'minValue', value)}
+                    componentName={this.getPopoverFieldSource(column.columnType, 'minValue')}
+                    popOverCallback={(showing) => {
+                      this.setColumnPopoverRootCloseBlocker('minValue', showing);
+                    }}
+                  />
+                </div>
+                <div data-cy={`input-and-label-max-value`} className="field mb-2">
+                  <label className="form-label">{this.props.t('widget.Table.maxValue', 'Max value')}</label>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={column.maxLength}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    mode="javascript"
+                    lineNumbers={false}
+                    placeholder={''}
+                    onChange={(value) => this.onColumnItemChange(index, 'maxValue', value)}
+                    componentName={this.getPopoverFieldSource(column.columnType, 'maxValue')}
+                    popOverCallback={(showing) => {
+                      this.setColumnPopoverRootCloseBlocker('maxValue', showing);
+                    }}
+                  />
+                </div>
               </div>
-              <div data-cy={`input-and-label-min-value`} className="field mb-2">
-                <label className="form-label">{this.props.t('widget.Table.minValue', 'Min value')}</label>
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={column.minLength}
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  placeholder={''}
-                  onChange={(value) => this.onColumnItemChange(index, 'minValue', value)}
-                  componentName={this.getPopoverFieldSource(column.columnType, 'minValue')}
-                  popOverCallback={(showing) => {
-                    this.setColumnPopoverRootCloseBlocker('minValue', showing);
-                  }}
-                />
-              </div>
-              <div data-cy={`input-and-label-max-value`} className="field mb-2">
-                <label className="form-label">{this.props.t('widget.Table.maxValue', 'Max value')}</label>
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={column.maxLength}
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  placeholder={''}
-                  onChange={(value) => this.onColumnItemChange(index, 'maxValue', value)}
-                  componentName={this.getPopoverFieldSource(column.columnType, 'maxValue')}
-                  popOverCallback={(showing) => {
-                    this.setColumnPopoverRootCloseBlocker('maxValue', showing);
-                  }}
-                />
-              </div>
-            </div>
-          )}
+            )}
 
           {column.columnType === 'toggle' && (
             <div>
@@ -519,7 +522,7 @@ class TableComponent extends React.Component {
 
           {column.columnType === 'dropdown' && (
             <>
-              {resolveReferences(column.isEditable, this.state.currentState) && (
+              {resolveReferences({ object: column.isEditable, currentState: this.state.currentState }) && (
                 <div>
                   <div data-cy={`header-validations`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
@@ -964,34 +967,46 @@ class TableComponent extends React.Component {
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
     const displayServerSideFilter = component.component.definition.properties.showFilterButton?.value
-      ? resolveReferences(component.component.definition.properties.showFilterButton?.value, currentState)
+      ? resolveReferences({ object: component.component.definition.properties.showFilterButton?.value, currentState })
       : false;
     const displayServerSideSearch = component.component.definition.properties.displaySearchBox?.value
-      ? resolveReferences(component.component.definition.properties.displaySearchBox?.value, currentState)
+      ? resolveReferences({ object: component.component.definition.properties.displaySearchBox?.value, currentState })
       : false;
     const serverSidePagination = component.component.definition.properties.serverSidePagination?.value
-      ? resolveReferences(component.component.definition.properties.serverSidePagination?.value, currentState)
+      ? resolveReferences({
+          object: component.component.definition.properties.serverSidePagination?.value,
+          currentState,
+        })
       : false;
 
     const clientSidePagination = component.component.definition.properties.clientSidePagination?.value
-      ? resolveReferences(component.component.definition.properties.clientSidePagination?.value, currentState)
+      ? resolveReferences({
+          object: component.component.definition.properties.clientSidePagination?.value,
+          currentState,
+        })
       : false;
 
     let enablePagination = !has(component.component.definition.properties, 'enablePagination')
       ? clientSidePagination || serverSidePagination
-      : resolveReferences(component.component.definition.properties.enablePagination?.value, currentState);
+      : resolveReferences({ object: component.component.definition.properties.enablePagination?.value, currentState });
 
     const enabledSort = component.component.definition.properties.enabledSort?.value
-      ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
+      ? resolveReferences({ object: component.component.definition.properties.enabledSort?.value, currentState })
       : true;
     const useDynamicColumn = component.component.definition.properties.useDynamicColumn?.value
-      ? resolveReferences(component.component.definition.properties.useDynamicColumn?.value, currentState) ?? false
+      ? resolveReferences({
+          object: component.component.definition.properties.useDynamicColumn?.value,
+          currentState,
+        }) ?? false
       : false;
     //from app definition values are of string data type if defined or else,undefined
     const allowSelection = component.component.definition.properties?.allowSelection?.value
-      ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
-      : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
-        resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
+      ? resolveReferences({ object: component.component.definition.properties.allowSelection?.value, currentState })
+      : resolveReferences({
+          object: component.component.definition.properties.highlightSelectedRow.value,
+          currentState,
+        }) ||
+        resolveReferences({ object: component.component.definition.properties.showBulkSelector.value, currentState });
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -1030,7 +1045,10 @@ class TableComponent extends React.Component {
                   {({ innerRef, droppableProps, placeholder }) => (
                     <div className="w-100" {...droppableProps} ref={innerRef}>
                       {columns.value.map((item, index) => {
-                        const resolvedItemName = resolveReferences(item.name, this.state.currentState);
+                        const resolvedItemName = resolveReferences({
+                          object: item.name,
+                          currentState: this.state.currentState,
+                        });
                         return (
                           <Draggable key={item.id} draggableId={item.id} index={index}>
                             {(provided, snapshot) => (

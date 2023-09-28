@@ -48,7 +48,8 @@ export function renderElement(
     if (conditionallyRender) {
       const { key, value } = conditionallyRender;
       if (paramTypeDefinition?.[key] ?? value) {
-        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+        const resolvedValue =
+          paramTypeDefinition?.[key] && resolveReferences({ object: paramTypeDefinition?.[key], currentState });
         if (resolvedValue?.value !== value) return;
       }
     }

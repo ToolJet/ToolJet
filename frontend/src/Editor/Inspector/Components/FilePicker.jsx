@@ -20,10 +20,10 @@ export const FilePicker = ({ componentMeta, darkMode, ...restProps }) => {
     return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
   };
   const conditionalAccordionItems = (component) => {
-    const parseContent = resolveReferences(
-      component.component.definition.properties.parseContent?.value ?? false,
-      currentState
-    );
+    const parseContent = resolveReferences({
+      object: component.component.definition.properties.parseContent?.value ?? false,
+      currentState,
+    });
     const accordionItems = [];
     const options = ['parseContent'];
 

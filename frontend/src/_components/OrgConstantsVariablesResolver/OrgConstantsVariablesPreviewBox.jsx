@@ -42,8 +42,12 @@ export const OrgConstantVariablesPreviewBox = ({ workspaceVariables, workspaceCo
   );
 };
 
-const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
-  const [preview, error] = resolveReferences(value, state, null, {}, true, true);
+const ResolvedValue = ({ value, isFocused, type }) => {
+  const [preview, error] = resolveReferences({
+    object: value,
+    withError: true,
+    forPreviewBox: true,
+  });
   const previewType = typeof preview;
 
   let resolvedValue = preview;

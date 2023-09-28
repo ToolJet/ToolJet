@@ -538,7 +538,7 @@ export const SubContainer = ({
           const box = childWidgets[key];
           const canShowInCurrentLayout =
             box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-          if (box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+          if (box.parent && resolveReferences({ object: canShowInCurrentLayout })) {
             return (
               <DraggableBox
                 onComponentClick={onComponentClick}

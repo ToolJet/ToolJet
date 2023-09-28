@@ -8,7 +8,7 @@ export const resolveProperties = (component, currentState, defaultValue, customR
         ...{
           [entry[0]]: entry[1]?.skipResolve
             ? entry[1].value
-            : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables),
+            : resolveReferences({ object: entry[1].value, currentState, customObjects: customResolvables }),
         },
       }),
       {}
@@ -23,7 +23,7 @@ export const resolveStyles = (component, currentState, defaultValue, customResol
       const key = entry[0];
       const value = entry[1]?.skipResolve
         ? entry[1].value
-        : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables);
+        : resolveReferences({ object: entry[1].value, currentState, customObjects: customResolvables });
       return {
         ...resolvedStyles,
         ...{ [key]: value },
@@ -41,7 +41,7 @@ export const resolveGeneralProperties = (component, currentState, defaultValue, 
       const key = entry[0];
       const value = entry[1]?.skipResolve
         ? entry[1].value
-        : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables);
+        : resolveReferences({ object: entry[1].value, currentState, customObjects: customResolvables });
       return {
         ...resolvedGeneral,
         ...{ [key]: value },
@@ -59,7 +59,7 @@ export const resolveGeneralStyles = (component, currentState, defaultValue, cust
       const key = entry[0];
       const value = entry[1]?.skipResolve
         ? entry[1].value
-        : resolveReferences(entry[1].value, currentState, defaultValue, customResolvables);
+        : resolveReferences({ object: entry[1].value, currentState, customObjects: customResolvables });
       return {
         ...resolvedGeneral,
         ...{ [key]: value },

@@ -23,7 +23,7 @@ export const Tabs = function Tabs({
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
   // config for tabs. Includes title
-  const tabs = isExpectedDataType(resolveReferences(component.definition.properties.tabs.value, currentState), 'array');
+  const tabs = isExpectedDataType(resolveReferences({ object: component.definition.properties.tabs.value }), 'array');
   let parsedTabs = tabs;
   parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
   const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
@@ -56,7 +56,7 @@ export const Tabs = function Tabs({
   let parsedWidgetVisibility = widgetVisibility;
 
   try {
-    parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
+    parsedWidgetVisibility = resolveReferences({ object: parsedWidgetVisibility });
   } catch (err) {
     console.log(err);
   }

@@ -615,7 +615,7 @@ export const Container = ({
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
         const addDefaultChildren = box.withDefaultChildren;
-        if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+        if (!box.parent && resolveReferences({ object: canShowInCurrentLayout })) {
           return (
             <DraggableBox
               className={showComments && 'pointer-events-none'}
