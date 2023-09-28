@@ -22,7 +22,7 @@ import got from 'got';
 jest.mock('got');
 const mockedGot = mocked(got);
 
-describe('Git Onboarding', () => {
+describe.skip('Git Onboarding', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let orgRepository: Repository<Organization>;

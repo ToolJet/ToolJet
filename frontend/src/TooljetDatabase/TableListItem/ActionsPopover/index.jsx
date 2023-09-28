@@ -7,12 +7,14 @@ import EditIcon from './Icons/Edit.svg';
 import DeleteIcon from './Icons/Delete.svg';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
-  const [open, setOpen] = React.useState(false);
+export const ListItemPopover = ({ onEdit, onDelete, darkMode, onMenuToggle }) => {
+  const closeMenu = () => {
+    document.body.click();
+  };
 
   const popover = (
     <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>
-      <Popover.Body className={`${darkMode && 'theme-dark'}`}>
+      <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         <div className={`row cursor-pointer`}>
           <div className="col-auto" data-cy="edit-option-icon">
             <EditIcon />
@@ -20,8 +22,9 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
           <div
             className="col text-truncate"
             data-cy="edit-option"
-            onClick={() => {
-              setOpen(false);
+            onClick={(event) => {
+              event.stopPropagation();
+              closeMenu();
               onEdit();
             }}
           >
@@ -38,7 +41,14 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
           <div className="col-auto" data-cy="delete-option-icon">
             <DeleteIcon />
           </div>
-          <div className="col text-truncate" data-cy="delete-option" onClick={onDelete}>
+          <div
+            className="col text-truncate"
+            data-cy="delete-option"
+            onClick={() => {
+              closeMenu();
+              onDelete();
+            }}
+          >
             Delete
           </div>
         </div>
@@ -47,27 +57,12 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
   );
 
   return (
-    <div
-      className={cx(`float-right cursor-pointer table-list-item-popover`, {
-        'd-grid': open,
-      })}
-      data-cy="table-kebab-icon"
-    >
-      <OverlayTrigger
-        onToggle={(isOpen) => {
-          setOpen(isOpen);
-        }}
-        show={open}
-        rootClose
-        trigger="click"
-        placement="bottom"
-        overlay={popover}
-        transition={false}
-      >
+    <OverlayTrigger trigger="click" placement="bottom" rootClose onToggle={onMenuToggle} overlay={popover}>
+      <div className={cx(`float-right cursor-pointer table-list-item-popover`)} data-cy="table-kebab-icon">
         <span>
           <SolidIcon name="morevertical" width="14" fill={darkMode ? '#FDFDFE' : '#11181C'} />
         </span>
-      </OverlayTrigger>
-    </div>
+      </div>
+    </OverlayTrigger>
   );
 };
