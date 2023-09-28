@@ -195,7 +195,7 @@ Once the CSV file is ready, click on the file picker to select the file or drag 
 
 **Requirements**:
 - The data types of columns in the CSV file should match those in the ToolJet database table.
-- The column with a `serial` data type should not contain duplicate values.
+- The `id` column with a `serial` data type should not contain duplicate values.
 
 **Limitations**:
 - There is a limit of 1000 rows per CSV file that can be uploaded to the ToolJet database.
