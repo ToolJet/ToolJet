@@ -1,7 +1,7 @@
 import React, { useState, useContext, useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService, appService } from '@/_services';
 import { ListItemPopover } from './ActionsPopover';
 import { TooljetDatabaseContext } from '../index';
 import { ToolTip } from '@/_components';
@@ -20,6 +20,33 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   function updateSelectedTable(tableObj) {
     setSelectedTable(tableObj);
   }
+
+  const handleExportTable = () => {
+    appService
+      .exportResource({
+        tooljet_database: [{ table_id: selectedTable.id }],
+        organization_id: organizationId,
+      })
+      .then((data) => {
+        const tableName = selectedTable.table_name.replace(/\s+/g, '-').toLowerCase();
+        const fileName = `${tableName}-export-${new Date().getTime()}`;
+        // simulate link click download
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const href = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = fileName + '.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch(() => {
+        toast.error('Could not export table.', {
+          position: 'top-center',
+        });
+      });
+  };
 
   const handleDeleteTable = async () => {
     const shouldDelete = confirm(`Are you sure you want to delete the table "${text}"?`);
@@ -85,6 +112,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
             }}
             onDelete={handleDeleteTable}
             darkMode={darkMode}
+            handleExportTable={handleExportTable}
             onMenuToggle={onMenuToggle}
           />
         </div>

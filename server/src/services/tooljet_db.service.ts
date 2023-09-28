@@ -3,7 +3,19 @@ import { EntityManager, In, QueryFailedError } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty } from 'lodash';
-import { PostgrestProxyService } from '@services/postgrest_proxy.service';
+
+export type TableColumnSchema = {
+  column_name: string;
+  data_type: SupportedDataTypes;
+  column_default: string | null;
+  character_maximum_length: number | null;
+  numeric_precision: number | null;
+  is_nullable: 'YES' | 'NO';
+  constraint_type: string | null;
+  keytype: string | null;
+};
+
+export type SupportedDataTypes = 'character varying' | 'integer' | 'bigint' | 'serial' | 'double precision' | 'boolean';
 
 @Injectable()
 export class TooljetDbService {
@@ -11,8 +23,7 @@ export class TooljetDbService {
     private readonly manager: EntityManager,
     @Optional()
     @InjectEntityManager('tooljetDb')
-    private tooljetDbManager: EntityManager,
-    private readonly postgrestProxyService: PostgrestProxyService
+    private readonly tooljetDbManager: EntityManager
   ) {}
 
   async perform(organizationId: string, action: string, params = {}) {
@@ -38,7 +49,7 @@ export class TooljetDbService {
     }
   }
 
-  private async viewTable(organizationId: string, params) {
+  private async viewTable(organizationId: string, params): Promise<TableColumnSchema[]> {
     const { table_name: tableName, id: id } = params;
 
     const internalTable = await this.manager.findOne(InternalTable, {
