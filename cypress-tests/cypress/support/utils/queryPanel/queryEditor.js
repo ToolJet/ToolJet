@@ -1,11 +1,11 @@
 export const verifyElemtsNoGds = (option) => {
   cy.get('[data-cy="label-select-datasource"]').verifyVisibleElement(
     "have.text",
-    "Connect to a datasource"
+    "Connect to a Data Source"
   );
   cy.get('[data-cy="querymanager-description"]').verifyVisibleElement(
     "contain.text",
-    "Select a datasource to start creating a new query. To know more about queries in ToolJet, you can read our"
+    "Select a Data Source to start creating a new query. To know more about queries in ToolJet, you can read our"
   );
   cy.get('[data-cy="querymanager-doc-link"]').verifyVisibleElement(
     "have.text",
@@ -47,4 +47,4 @@ export const verifyElemtsNoGds = (option) => {
   );
 };
 
-export const verifyElemtsWithGds = (option) => {};
+export const verifyElemtsWithGds = (option) => { };
