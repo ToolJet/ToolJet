@@ -64,13 +64,14 @@
 .tj-primary-btn {
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.00);
-    background: var(--indigo9) ;
+    background: var(--indigo9);
     box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.04);
     color: #FDFDFE;
+
     &:hover {
         border: 1px solid rgba(255, 255, 255, 0.00);
-        background: var(--indigo10) ;
-        color: #FDFDFE; 
+        background: var(--indigo10);
+        color: #FDFDFE;
     }
 
     &:focus-visible {
@@ -93,6 +94,7 @@
     color: var(--indigo9) !important;
     border: 1px solid rgba(255, 255, 255, 0.00) !important;
     background: var(--indigo3, #F0F4FF) !important;
+
     &:hover {
         color: var(--indigo10) !important;
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
@@ -115,7 +117,8 @@
 
         /* Focus rings/Indigo/light */
         box-shadow: 0px 0px 0px 4px var(--indigo6);
-    }}
+    }
+}
 
 .tj-tertiary-btn {
     color: var(--slate12);
@@ -126,13 +129,6 @@
         color: var(--slate11) !important;
         border: 1px solid var(--slate7, #D7DBDF) !important;
         background: var(--slate4, #ECEEF0) !important;
-    }
-
-    &:active,&:focus,&.always-active-btn {
-        border: 1px solid var(--slate7, #D7DBDF) !important;
-        background: var(--slate5) !important;
-        color: var(--slate12);
-        border: 1px solid var(--slate7);
     }
 
     &:active {
@@ -190,7 +186,8 @@
         color: var(--slate11);
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
     }
-    &:focus-visible{
+
+    &:focus-visible {
         color: var(--slate11) !important;
         // background: var(--base);
         // border: none;
@@ -199,13 +196,17 @@
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
         background: var(--slate1, #FBFCFD) !important;
     }
-    &:active,&:focus,&.always-active-btn {
+
+    &:active,
+    &:focus,
+    &.always-active-btn {
         color: var(--slate12) !important;
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
         background: var(--slate5, #E6E8EB) !important;
         box-shadow: none !important;
     }
-    &:disabled{
+
+    &:disabled {
         background: rgba(255, 255, 255, 0.00) !important;
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
         color: var(--slate8) !important;
