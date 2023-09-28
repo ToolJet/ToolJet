@@ -103,7 +103,7 @@ export default function JoinSort({ darkMode }) {
                 />
               </Col>
               <Col sm="6" className="p-0 d-flex">
-                <div className="flex-grow-1">
+                <div className="flex-grow-1 overflow-hidden">
                   <DropDownSelect
                     buttonClasses="border border-end-0"
                     showPlaceHolder
@@ -142,7 +142,7 @@ export default function JoinSort({ darkMode }) {
         })
       )}
       {/* Dynamically render below Row */}
-      <Row className="mx-0">
+      <Row className="mx-1 mb-1">
         <Col className="p-0">
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => setJoinOrderByOptions([...joinOrderByOptions, {}])}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />

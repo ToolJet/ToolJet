@@ -90,8 +90,8 @@ const SelectTableMenu = ({ darkMode }) => {
     <div>
       {/* Join Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">From</label>
-        <div className="field flex-grow-1 mt-1">
+        <label className="form-label flex-shrink-0">From</label>
+        <div className="field flex-grow-1 mt-1 overflow-hidden">
           {joins.map((join, joinIndex) => (
             <JoinConstraint
               darkMode={darkMode}
@@ -133,24 +133,24 @@ const SelectTableMenu = ({ darkMode }) => {
       </div>
       {/* Filter Section */}
       <div className="tdb-join-filtersection field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Filter</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Filter</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <RenderFilterSection darkMode={darkMode} />
         </div>
       </div>
       {/* Sort Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Sort</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Sort</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <JoinSort darkMode={darkMode} />
         </div>
       </div>
       {/* Limit Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Limit</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Limit</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <CodeHinter
-            className="codehinter-plugins"
+            // className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
             placeholder="Enter limit"
@@ -168,10 +168,10 @@ const SelectTableMenu = ({ darkMode }) => {
       </div>
       {/* Offset Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Offset</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Offset</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <CodeHinter
-            className="codehinter-plugins"
+            // className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
             placeholder="Enter offset"
@@ -189,8 +189,8 @@ const SelectTableMenu = ({ darkMode }) => {
       </div>
       {/* Select Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Select</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Select</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <JoinSelect darkMode={darkMode} />
         </div>
       </div>
@@ -432,7 +432,7 @@ const RenderFilterSection = ({ darkMode }) => {
           />
         </Col>
         <Col sm="4" className="p-0 d-flex">
-          <div className="flex-grow-1">
+          <div className="flex-grow-1 overflow-hidden">
             {operator === 'IS' ? (
               <DropDownSelect
                 buttonClasses="border border-end-0"
@@ -498,7 +498,7 @@ const RenderFilterSection = ({ darkMode }) => {
         </Row>
       )}
       {filterComponents}
-      <Row className="mx-0">
+      <Row className="mx-1 mb-1">
         <Col className="p-0">
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewFilterConditionEntry()}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />

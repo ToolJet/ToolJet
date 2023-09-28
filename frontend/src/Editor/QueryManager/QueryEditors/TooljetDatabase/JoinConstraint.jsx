@@ -235,7 +235,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
           }}
         />
       ))}
-      <Row className="mb-2 mx-0">
+      <Row className="mb-2 mx-1">
         <Col className="p-0">
           <ButtonSolid
             variant="ghostBlue"
