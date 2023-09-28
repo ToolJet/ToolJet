@@ -37,7 +37,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable,
           </div>
           <div
             className="col text-truncate"
-            data-cy="edit-option"
+            data-cy="export-table-option"
             onClick={() => {
               closeMenu();
               handleExportTable();
