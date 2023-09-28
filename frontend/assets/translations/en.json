@@ -769,19 +769,19 @@
         },
         "DateRangePicker": {
             "displayName": "Range Picker",
-            "description": "Select a date range"
+            "description": "Choose date ranges"
         },
         "Text": {
             "displayName": "Text",
-            "description": "Display markdown or HTML"
+            "description": "Display text or HTML"
         },
         "Image": {
             "displayName": "Image",
-            "description": "Display an Image"
+            "description": "Show image files"
         },
         "Container": {
             "displayName": "Container",
-            "description": "Wrapper for multiple components"
+            "description": "Group components"
         },
         "Dropdown": {
             "displayName": "Dropdown",
