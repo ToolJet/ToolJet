@@ -60,7 +60,6 @@ export const GlobalSettings = ({
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
 
-  console.log('----arpit exporting:: ', { app });
   return (
     <>
       <Confirm

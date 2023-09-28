@@ -39,7 +39,6 @@ export const EventManager = ({
   callerQueryId,
   customEventRefs = {},
 }) => {
-  console.log('---arpit:: customRef', { customEventRefs });
   const dataQueries = useDataQueriesStore(({ dataQueries = [] }) => {
     if (callerQueryId) {
       //filter the same query getting attached to itself

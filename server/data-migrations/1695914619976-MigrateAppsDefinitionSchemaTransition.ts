@@ -5,7 +5,7 @@ import { Page } from 'src/entities/page.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 
-export class MigrateAppsDefinitionSchemaTransition1695902112489 implements MigrationInterface {
+export class MigrateAppsDefinitionSchemaTransition1695914619976 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     let progress = 0;
 
