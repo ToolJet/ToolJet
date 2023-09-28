@@ -1567,6 +1567,12 @@ $border-radius: 4px;
   }
 }
 
+.tjdb-codehinter {
+  .CodeMirror {
+    font-size: 12px !important;
+  }
+}
+
 .tdb-dropdown-btn {
   &:active {
     border: 1px solid var(--indigo-09, #3E63DD) !important;

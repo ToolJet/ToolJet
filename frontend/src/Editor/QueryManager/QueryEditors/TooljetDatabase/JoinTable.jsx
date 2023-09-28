@@ -150,7 +150,7 @@ const SelectTableMenu = ({ darkMode }) => {
         <label className="form-label flex-shrink-0">Limit</label>
         <div className="field flex-grow-1 overflow-hidden">
           <CodeHinter
-            // className="codehinter-plugins"
+            className="tjdb-codehinter border rounded"
             theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
             placeholder="Enter limit"
@@ -171,7 +171,7 @@ const SelectTableMenu = ({ darkMode }) => {
         <label className="form-label flex-shrink-0">Offset</label>
         <div className="field flex-grow-1 overflow-hidden">
           <CodeHinter
-            // className="codehinter-plugins"
+            className="tjdb-codehinter border rounded"
             theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
             placeholder="Enter offset"
@@ -453,7 +453,7 @@ const RenderFilterSection = ({ darkMode }) => {
                       : JSON.stringify(rightField?.value)
                     : rightField?.value
                 }
-                className="border border-end-0 fs-12"
+                className="border border-end-0 fs-12 tjdb-codehinter"
                 theme={darkMode ? 'monokai' : 'default'}
                 height={'30px'}
                 placeholder="Value"
