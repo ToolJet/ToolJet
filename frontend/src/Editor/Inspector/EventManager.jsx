@@ -121,8 +121,7 @@ export const EventManager = ({
     });
     return componentOptions;
   }
-  // currently blocking items inside subcontainer because they can't be controlled through event manager
-  // use components instead of currentState?.components to get all the components in canvas
+
   function getComponentOptionsOfComponentsWithActions(componentType = '') {
     let componentOptions = [];
     Object.keys(components || {}).forEach((key) => {
