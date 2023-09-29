@@ -621,6 +621,7 @@ const EditorComponent = (props) => {
 
   //!--------
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
+    setWindowTitle(data.name);
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
     if (!releasedVersionId || !versionSwitched) {
       useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
