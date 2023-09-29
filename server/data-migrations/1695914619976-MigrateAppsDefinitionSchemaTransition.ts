@@ -154,7 +154,7 @@ export class MigrateAppsDefinitionSchemaTransition1695914619976 implements Migra
               target: Target.dataQuery,
               event: event,
               index: queryEvents.index || index,
-              appVersionId: dataQuery.appVersionId,
+              appVersionId: version.id,
             };
 
             await entityManager.save(EventHandler, newEvent);
