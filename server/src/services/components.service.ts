@@ -203,7 +203,7 @@ export class ComponentsService {
   }
 
   createComponentWithLayout(componentData, layoutData) {
-    const { id, name, properties, styles, validations, parent } = componentData;
+    const { id, name, properties, styles, generalStyles, validations, parent } = componentData;
     const { type, top, left, width, height } = layoutData;
 
     const componentWithLayout = {
@@ -214,6 +214,7 @@ export class ComponentsService {
           definition: {
             properties,
             styles,
+            generalStyles,
             validations,
           },
           parent,

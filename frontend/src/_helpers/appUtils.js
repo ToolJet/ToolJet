@@ -1671,6 +1671,10 @@ export const buildComponentMetaDefinition = (components = {}) => {
         ...componentMeta.definition.styles,
         ...currentComponentData?.component.definition.styles,
       },
+      generalStyles: {
+        ...componentMeta.definition.generalStyles,
+        ...currentComponentData?.component.definition.generalStyles,
+      },
       validations: {
         ...componentMeta.definition.validations,
         ...currentComponentData?.component.definition.validations,
