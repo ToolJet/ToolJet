@@ -59,9 +59,23 @@ export class PageService {
       throw new Error('Page not found');
     }
 
+    let pageName = `${pageToClone.name} copy`;
+    let pageHandle = `${pageToClone.handle}-copy`;
+
+    const allPages = await this.pageRepository.find({ appVersionId });
+
+    const pageNameORHandleExists = allPages.filter((page) => {
+      return page.name.includes(pageName) || page.handle.includes(pageHandle);
+    });
+
+    if (pageNameORHandleExists.length > 0) {
+      pageName = `${pageToClone.name} copy ${pageNameORHandleExists.length}`;
+      pageHandle = `${pageToClone.handle}-copy-${pageNameORHandleExists.length}`;
+    }
+
     const newPage = new Page();
-    newPage.name = `${pageToClone.name} copy`;
-    newPage.handle = `${pageToClone.handle}-copy`;
+    newPage.name = pageName;
+    newPage.handle = pageHandle;
     newPage.index = pageToClone.index + 1;
     newPage.appVersionId = appVersionId;
 
