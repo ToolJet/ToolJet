@@ -3,7 +3,7 @@ import cx from 'classnames';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SortForm } from '../Forms/SortForm';
-import { pluralize } from '@/_helpers/utils';
+// import { pluralize } from '@/_helpers/utils';
 import { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -102,9 +102,9 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
           fill={areFiltersApplied ? '#46A758' : show ? '#3E63DD' : '#889096'}
         />
         &nbsp;&nbsp;Sort
-        {areFiltersApplied && (
+        {/* {areFiltersApplied && (
           <span>ed by {pluralize(Object.values(filters).filter(checkIsFilterObjectEmpty).length, 'column')}</span>
-        )}
+        )} */}
       </button>
     </OverlayTrigger>
   );
