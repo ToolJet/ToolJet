@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
-// import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
+
 import { App } from 'src/entities/app.entity';
 import { User } from 'src/decorators/user.decorator';
 

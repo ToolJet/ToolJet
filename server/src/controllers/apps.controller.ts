@@ -152,7 +152,7 @@ export class AppsController {
       pages: pagesForVersion,
       homePageId: versionToLoad.homePageId,
       globalSettings: versionToLoad.globalSettings,
-      showHideViewerNavigation: versionToLoad.showViewerNavigation,
+      showViewerNavigation: versionToLoad.showViewerNavigation,
     };
   }
 

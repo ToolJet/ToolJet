@@ -86,7 +86,7 @@ class ViewerComponent extends React.Component {
     if (byAppSlug) {
       appDefData.globalSettings = data.globalSettings;
       appDefData.homePageId = data.homePageId;
-      appDefData.showHideViewerNavigation = data.showHideViewerNavigation;
+      appDefData.showViewerNavigation = data.showViewerNavigation;
     }
 
     this.setState({
@@ -567,7 +567,7 @@ class ViewerComponent extends React.Component {
 
     if (appDefinition.globalSettings?.canvasMaxWidthType === 'px')
       computedCanvasMaxWidth =
-        (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - (appDefinition?.showHideViewerNavigation ? 200 : 0);
+        (+appDefinition.globalSettings?.canvasMaxWidth || 1292) - (appDefinition?.showViewerNavigation ? 200 : 0);
     else if (appDefinition.globalSettings?.canvasMaxWidthType === '%')
       computedCanvasMaxWidth = +appDefinition.globalSettings?.canvasMaxWidth + '%';
 
@@ -683,7 +683,7 @@ class ViewerComponent extends React.Component {
                     }}
                   >
                     <div className="areas d-flex flex-rows">
-                      {appDefinition?.showHideViewerNavigation && (
+                      {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
                           isMobileDevice={this.props.currentLayout === 'mobile'}
                           canvasBackgroundColor={this.computeCanvasBackgroundColor()}

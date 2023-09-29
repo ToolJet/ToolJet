@@ -35,7 +35,7 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
               </label>
               <hr style={{ margin: '0.75rem 0' }} />
               <div className="menu-options mb-0">
-                <Toggle onChange={onChange} value={!showPageViwerPageNavitation} />
+                <Toggle onChange={onChange} value={showPageViwerPageNavitation} />
               </div>
             </div>
           </Popover.Body>

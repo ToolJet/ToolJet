@@ -123,7 +123,7 @@ const updateFor = (appDiff, currentPageId, opts) => {
       }),
     },
     {
-      updateTypes: ['globalSettings'],
+      updateTypes: ['globalSettings', 'generalAppDefinitionChanged'],
       processingFunction: () => ({
         updateDiff: appDiff,
         type: 'global_settings',
