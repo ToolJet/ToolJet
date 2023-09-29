@@ -48,7 +48,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-top: 1px solid var(--slate5);
+    border-top: 1px solid var(--border-subtle-00);
 }
 
 .tj-org-select {
@@ -98,6 +98,7 @@
 .css-nw08ma-menu {
     box-shadow: none !important;
 }
-.react-select__menu-portal{
+
+.react-select__menu-portal {
     z-index: 9999 !important;
 }

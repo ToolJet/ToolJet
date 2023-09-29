@@ -7,6 +7,8 @@
     background: var(--base);
     display: grid;
     grid-template-rows: auto 1fr auto;
+    border-right: 1px solid var(--border-subtle-00);
+
 
     .add-datasource-btn {
         height: 40px;
@@ -129,6 +131,7 @@
 
 .datasource-inner-sidebar-wrap {
     height: 100%;
+
     .datasources-search {
         width: 240px;
         margin: 0 auto;
@@ -165,6 +168,7 @@
 .datasource-list-container {
     overflow-y: auto;
     max-height: calc(100vh - 64px);
+
     .datasource-list {
         width: 976px;
         margin: 0 auto;
@@ -203,8 +207,13 @@
 }
 
 .datasource-card {
+    .card {
+        background-color: var(--layer-1-default);
+    }
+
     height: 30px;
     height: 122px !important;
+
     button {
         display: none;
         padding: 5px 10px;
@@ -220,7 +229,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
+
         br:first-of-type {
             display: none !important;
         }
