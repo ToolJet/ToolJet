@@ -17,12 +17,21 @@ export const CreateVersion = ({
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
+
   const { t } = useTranslation();
   const { editingVersion } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
     }),
     shallow
+  );
+
+  const options = appVersions.map((version) => {
+    return { label: version.name, value: version };
+  });
+
+  const [selectedVersion, setSelectedVersion] = useState(() =>
+    options.find((option) => option?.value?.id === editingVersion?.id)
   );
 
   const createVersion = () => {
@@ -36,8 +45,9 @@ export const CreateVersion = ({
     }
 
     setIsCreatingVersion(true);
+
     appVersionService
-      .create(appId, versionName, editingVersion.id)
+      .create(appId, versionName, selectedVersion.id)
       .then((data) => {
         toast.success('Version Created');
         appVersionService.getAll(appId).then((data) => {
@@ -61,10 +71,6 @@ export const CreateVersion = ({
         setIsCreatingVersion(false);
       });
   };
-
-  const options = appVersions.map((version) => {
-    return { label: version.name, value: version };
-  });
 
   return (
     <AlertDialog
@@ -108,9 +114,9 @@ export const CreateVersion = ({
           <div className="ts-control" data-cy="create-version-from-input-field">
             <Select
               options={options}
-              defaultValue={options.find((option) => option?.value?.id === editingVersion?.id)}
+              defaultValue={selectedVersion}
               onChange={(version) => {
-                setAppDefinitionFromVersion(version, false);
+                setSelectedVersion(version);
               }}
               useMenuPortal={false}
               width="100%"
