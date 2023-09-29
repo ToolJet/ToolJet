@@ -70,7 +70,7 @@ async function listRows(dataQuery, currentState) {
   let query = [];
 
   if (!isEmpty(listRows)) {
-    const { limit, where_filters: whereFilters, order_filters: orderFilters } = listRows;
+    const { limit, where_filters: whereFilters, order_filters: orderFilters, offset } = listRows;
 
     if (limit && isNaN(limit)) {
       return {
@@ -88,6 +88,7 @@ async function listRows(dataQuery, currentState) {
     !isEmpty(whereQuery) && query.push(whereQuery);
     !isEmpty(orderQuery) && query.push(orderQuery);
     !isEmpty(limit) && query.push(`limit=${limit}`);
+    !isEmpty(offset) && query.push(`offset=${offset}`);
   }
   const headers = { 'data-query-id': dataQuery.id };
   return await tooljetDatabaseService.findOne(headers, tableId, query.join('&'));

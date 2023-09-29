@@ -210,6 +210,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     setListRowsOptions((prev) => ({ ...prev, limit: value }));
   };
 
+  const offsetOptionChanged = (value) => {
+    setListRowsOptions((prev) => ({ ...prev, offset: value }));
+  };
+
   const deleteOperationLimitOptionChanged = (limit) => {
     setDeleteRowsOptions((prev) => ({ ...prev, limit: limit }));
   };
@@ -286,6 +290,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       listRowsOptions,
       setListRowsOptions,
       limitOptionChanged,
+      offsetOptionChanged,
       handleOptionsChange,
       deleteRowsOptions,
       handleDeleteRowsOptionsChange,

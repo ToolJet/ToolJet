@@ -8,7 +8,8 @@ import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const ListRows = React.memo(({ darkMode }) => {
-  const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange } = useContext(TooljetDatabaseContext);
+  const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, offsetOptionChanged } =
+    useContext(TooljetDatabaseContext);
 
   function handleWhereFiltersChange(filters) {
     handleOptionsChange('where_filters', filters);
@@ -154,7 +155,7 @@ export const ListRows = React.memo(({ darkMode }) => {
           </div>
 
           {/* Limit */}
-          <div className="field-container d-flex">
+          <div className="field-container d-flex mb-2">
             <label className="form-label" data-cy="label-column-limit">
               Limit
             </label>
@@ -166,6 +167,22 @@ export const ListRows = React.memo(({ darkMode }) => {
                 height={'32px'}
                 placeholder="Enter limit"
                 onChange={(newValue) => limitOptionChanged(newValue)}
+              />
+            </div>
+          </div>
+          {/* Offset */}
+          <div className="field-container d-flex">
+            <label className="form-label" data-cy="label-column-offset">
+              Offset
+            </label>
+            <div className="field flex-grow-1">
+              <CodeHinter
+                initialValue={listRowsOptions?.offset ?? ''}
+                className="codehinter-plugins"
+                theme={darkMode ? 'monokai' : 'default'}
+                height={'32px'}
+                placeholder="Enter offset"
+                onChange={(newValue) => offsetOptionChanged(newValue)}
               />
             </div>
           </div>
