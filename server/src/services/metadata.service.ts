@@ -13,6 +13,7 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import License from '@ee/licensing/configs/License';
+import { TelemetryDataDto } from '@dto/user.dto';
 
 @Injectable()
 export class MetadataService {
@@ -48,10 +49,10 @@ export class MetadataService {
     });
   }
 
-  async finishOnboarding(name, email, companyName, companySize, role, requestedTrial) {
+  async finishOnboarding(telemetryData: TelemetryDataDto) {
     if (process.env.NODE_ENV == 'production') {
       const metadata = await this.getMetaData();
-      void this.finishInstallation(name, email, companyName, companySize, role, requestedTrial, metadata);
+      void this.finishInstallation(telemetryData, metadata);
 
       await this.updateMetaData({
         onboarded: true,
@@ -59,15 +60,9 @@ export class MetadataService {
     }
   }
 
-  private async finishInstallation(
-    name: string,
-    email: string,
-    org: string,
-    companySize: string,
-    role: string,
-    requestedTrial: boolean,
-    metadata: Metadata
-  ) {
+  private async finishInstallation(telemetryData: TelemetryDataDto, metadata: Metadata) {
+    const { companyName, companySize, name, role, email, phoneNumber, requestedTrial } = telemetryData;
+
     try {
       return await got('https://hub.tooljet.io/subscribe', {
         method: 'post',
@@ -76,10 +71,11 @@ export class MetadataService {
           installed_version: globalThis.TOOLJET_VERSION,
           name,
           email,
-          org,
+          org: companyName,
           company_size: companySize,
+          phone_number: phoneNumber,
           role,
-          trial_opted: requestedTrial,
+          trial_opted: !!requestedTrial,
           trial_expiry: requestedTrial && (await this.licenseService.getLicenseTerms(LICENSE_FIELD.STATUS))?.expiryDate,
         },
       });
