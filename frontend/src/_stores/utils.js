@@ -199,7 +199,8 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
   ) {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
-    updateDiff = currentPageComponents;
+    updateDiff = toRemoveExposedvariablesFromComponentDiff(currentPageComponents);
+
     type = opts.includes('containerChanges') ? updateType.containerChanges : updateType.componentDefinitionChanged;
   } else if (opts.includes('componentAdded')) {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
@@ -241,3 +242,18 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
 
   return { updateDiff, type, operation };
 };
+
+function toRemoveExposedvariablesFromComponentDiff(object) {
+  const copy = _.cloneDeep(object);
+  const componentIds = _.keys(copy);
+
+  componentIds.forEach((componentId) => {
+    const { component } = copy[componentId];
+
+    if (component?.exposedVariables) {
+      delete component.exposedVariables;
+    }
+  });
+
+  return copy;
+}
