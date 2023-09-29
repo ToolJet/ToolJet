@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
 
-export const Button = function Button(props) {
+export const Button = React.memo((props) => {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 
@@ -10,7 +10,7 @@ export const Button = function Button(props) {
   const [disable, setDisable] = useState(disabledState);
   const [visibility, setVisibility] = useState(styles.visibility);
   const [loading, setLoading] = useState(properties.loadingState);
-
+  console.log('render');
   useEffect(() => {
     setLabel(properties.text);
     setExposedVariable('buttonText', properties.text);
@@ -102,4 +102,4 @@ export const Button = function Button(props) {
       </button>
     </div>
   );
-};
+});

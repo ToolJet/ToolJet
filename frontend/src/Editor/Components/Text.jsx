@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ height, properties, styles, darkMode, setExposedVariable, dataCy }) {
+export const Text = memo(({ height, properties, styles, darkMode, setExposedVariable, dataCy }) => {
   let {
     textSize,
     textColor,
@@ -23,7 +23,7 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(styles.visibility);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
-
+  console.log('Text');
   useEffect(() => {
     if (visibility !== styles.visibility) setVisibility(styles.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,4 +87,4 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
       )}
     </div>
   );
-};
+});

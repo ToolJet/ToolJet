@@ -68,6 +68,7 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import WidgetIcon from '@/../assets/images/icons/widgets';
+import ComponentToRender from './ComponentToRender';
 
 const AllComponents = {
   Button,
@@ -168,7 +169,7 @@ export const Box = memo(
       return componentTypes.find((comp) => component.component === comp.component);
     }, [component]);
 
-    const ComponentToRender = AllComponents[component.component];
+    // const ComponentToRender = AllComponents[component.component];
     const [renderCount, setRenderCount] = useState(0);
     const [renderStartTime, setRenderStartTime] = useState(new Date());
     const [resetComponent, setResetStatus] = useState(false);
@@ -331,7 +332,7 @@ export const Box = memo(
                 resetComponent={() => setResetStatus(true)}
                 childComponents={childComponents}
                 dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
-              ></ComponentToRender>
+              />
             ) : (
               <></>
             )
