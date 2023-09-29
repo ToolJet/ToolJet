@@ -386,7 +386,7 @@ class EditorComponent extends React.Component {
   };
 
   fetchApps = (page) => {
-    appService.getAll(page).then((data) =>
+    appService.getAll(page, '', '', 'front-end').then((data) =>
       this.setState({
         apps: data.apps,
       })
