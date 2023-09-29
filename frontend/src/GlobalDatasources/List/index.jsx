@@ -31,10 +31,11 @@ export const List = ({ updateSelectedDatasource }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
-    fetchDataSources(false).catch(() => {
-      toast.error('Failed to fetch datasources');
-      return;
-    });
+    environments?.length &&
+      fetchDataSources(false).catch(() => {
+        toast.error('Failed to fetch datasources');
+        return;
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [environments]);
 
