@@ -1715,7 +1715,7 @@ export const buildAppDefinition = (data) => {
   const appJSON = {
     globalSettings: editingVersion.globalSettings,
     homePageId: editingVersion.homePageId,
-    showHideViewerNavigation: editingVersion.showHideViewerNavigation ?? true,
+    showViewerNavigation: editingVersion.showViewerNavigation ?? true,
     pages: pages,
   };
 

@@ -919,6 +919,10 @@ export class AppsService {
       };
     }
 
+    if (typeof body?.showViewerNavigation === 'boolean') {
+      editableParams['showViewerNavigation'] = body.showViewerNavigation;
+    }
+
     return await this.appVersionsRepository.update(version.id, editableParams);
   }
 
