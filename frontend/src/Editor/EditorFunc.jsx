@@ -1056,7 +1056,7 @@ const EditorComponent = (props) => {
   };
 
   const removeComponents = () => {
-    if (!isVersionReleased && selectedComponents?.length >= 1) {
+    if (!isVersionReleased && selectedComponents?.length > 1) {
       let newDefinition = cloneDeep(appDefinition);
 
       removeSelectedComponent(currentPageId, newDefinition, selectedComponents, appDefinitionChanged);

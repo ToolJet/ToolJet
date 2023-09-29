@@ -75,7 +75,7 @@ export const Inspector = ({
   const componentNameRef = useRef(null);
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
-  const [selectedTab, setSelectedTab] = useState('properties');
+  // const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -247,50 +247,6 @@ export const Inspector = ({
     }
   }
 
-  // function eventUpdated(event, actionId) {
-  //   let newDefinition = JSON.parse(JSON.stringify(component.component.definition));
-  //   newDefinition.events[event.name] = { actionId };
-
-  //   let newComponent = {
-  //     ...component,
-  //   };
-
-  //   // componentDefinitionChanged(newComponent, { eventUpdated: true });
-  // }
-
-  // function eventsChanged(newEvents, isReordered = false, isNew = false) {
-  //   let newComponent = JSON.parse(JSON.stringify(component));
-  //   let newDefinition = JSON.parse(JSON.stringify(newComponent.component.definition));
-
-  //   newDefinition.events = newEvents;
-
-  //   newComponent.component.definition = newDefinition;
-
-  //   // const opts = {
-  //   //   componentsEventsChanged: true,
-  //   // };
-
-  //   // if (isReordered) opts.eventsReOrdered = true;
-  //   // if (isNew) opts.newEvent = true;
-
-  //   // componentDefinitionChanged(newComponent, opts);
-  // }
-
-  // function eventOptionUpdated(event, option, value) {
-  //   console.log('eventOptionUpdated--moh', event, option, value);
-
-  //   let newDefinition = JSON.parse(JSON.stringify(component.component.definition));
-  //   let eventDefinition = newDefinition.events[event.name] || { options: {} };
-
-  //   newDefinition.events[event.name] = { ...eventDefinition, options: { ...eventDefinition.options, [option]: value } };
-
-  //   let newComponent = {
-  //     ...component,
-  //   };
-
-  //   componentDefinitionChanged(newComponent, { eventOptionUpdated: true });
-  // }
-
   const handleInspectorHeaderActions = (value) => {
     if (value === 'rename') {
       setTimeout(() => setInputFocus(), 0);
@@ -386,7 +342,7 @@ export const Inspector = ({
         message={'Widget will be deleted, do you want to continue?'}
         onConfirm={() => {
           switchSidebarTab(2);
-          removeComponent(component);
+          removeComponent(component.id);
         }}
         onCancel={() => setWidgetDeleteConfirmation(false)}
         darkMode={darkMode}
