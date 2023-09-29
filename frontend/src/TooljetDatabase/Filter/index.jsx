@@ -4,7 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { FilterForm } from '../Forms/FilterForm';
 import { isEmpty } from 'lodash';
-import { pluralize } from '@/_helpers/utils';
+// import { pluralize } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
@@ -94,9 +94,9 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
         >
           <SolidIcon name="filter" width="14" fill={areFiltersApplied ? '#46A758' : show ? '#3E63DD' : '#889096'} />
           &nbsp;&nbsp;Filter
-          {areFiltersApplied && (
+          {/* {areFiltersApplied && (
             <span>ed by {pluralize(Object.values(filters).filter(checkIsFilterObjectEmpty).length, 'column')}</span>
-          )}
+          )} */}
         </button>
       </OverlayTrigger>
     </>
