@@ -77,7 +77,7 @@ export class MetadataService {
           name,
           email,
           org,
-          companySize,
+          company_size: companySize,
           role,
           trial_opted: requestedTrial,
           trial_expiry: requestedTrial && (await this.licenseService.getLicenseTerms(LICENSE_FIELD.STATUS))?.expiryDate,
