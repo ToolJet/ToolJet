@@ -3262,7 +3262,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        instructionText: { value: 'Drag and Drop some files here, or click to select files' },
+        instructionText: { value: 'Drag and drop files here or click to select files' },
         enableDropzone: { value: '{{true}}' },
         enablePicker: { value: '{{true}}' },
         maxFileCount: { value: '{{2}}' },
