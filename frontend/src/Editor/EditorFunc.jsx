@@ -199,15 +199,6 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Ref to store the previous appDefinition for comparison
-
-  useEffect(() => {
-    if (mounted && currentUser?.current_organization_id) {
-      fetchGlobalDataSources();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(currentUser?.current_organization_id)]);
-
   // Handle appDefinition updates
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
@@ -670,10 +661,9 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: false,
     });
 
+    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id);
     await fetchDataSources(data.editing_version?.id);
     await fetchDataQueries(data.editing_version?.id, true, true);
-    await fetchGlobalDataSources();
-
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
     for (const currentEvent of currentPageEvents ?? []) {

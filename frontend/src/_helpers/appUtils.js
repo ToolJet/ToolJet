@@ -616,7 +616,10 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   const { customVariables } = options;
   if (eventName === 'onPageLoad') {
-    await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
+    //hack to make sure that the page is loaded before executing the actions
+    setTimeout(async () => {
+      return await executeActionsForEventId(_ref, 'onPageLoad', events, mode, customVariables);
+    }, 0);
   }
 
   if (eventName === 'onTrigger') {
