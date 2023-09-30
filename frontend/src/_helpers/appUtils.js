@@ -1345,19 +1345,21 @@ export const cloneComponents = (
   for (let selectedComponent of selectedComponents) {
     if (addedComponentId.has(selectedComponent.id)) continue;
     const component = {
-      id: selectedComponent.id,
       component: allComponents[selectedComponent.id]?.component,
       layouts: allComponents[selectedComponent.id]?.layouts,
       parent: allComponents[selectedComponent.id]?.parent,
+      componentId: selectedComponent.id,
     };
     addedComponentId.add(selectedComponent.id);
     let clonedComponent = JSON.parse(JSON.stringify(component));
-    clonedComponent.parent = undefined;
-    clonedComponent.children = [];
-    const child = getChildComponents(allComponents, component, clonedComponent, addedComponentId);
-    // clonedComponent.children = [...getChildComponents(allComponents, component, clonedComponent, addedComponentId)];
 
-    newComponents = [...newComponents, clonedComponent, ...child];
+    newComponents.push(clonedComponent);
+    const children = getAllChildComponents(allComponents, selectedComponent.id);
+
+    if (children.length > 0) {
+      newComponents.push(...children);
+    }
+
     newComponentObj = {
       newComponents,
       isCloning,
@@ -1384,43 +1386,34 @@ export const cloneComponents = (
   });
 };
 
-const getChildComponents = (allComponents, component, parentComponent, addedComponentId) => {
-  let childComponents = [],
-    selectedChildComponents = [];
+const getAllChildComponents = (allComponents, parentId) => {
+  const childComponents = [];
 
-  if (component.component.component === 'Tabs' || component.component.component === 'Calendar') {
-    childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent?.startsWith(component.id));
-  } else {
-    childComponents = Object.keys(allComponents).filter((key) => {
-      return allComponents[key].component?.parent === component.id;
-    });
-  }
+  Object.keys(allComponents).forEach((componentId) => {
+    const componentParentId = allComponents[componentId].component?.parent;
 
-  childComponents.forEach((componentId) => {
-    let childComponent = JSON.parse(JSON.stringify(allComponents[componentId]));
-    childComponent.id = componentId;
-    const newComponent = JSON.parse(
-      JSON.stringify({
-        id: componentId,
-        component: allComponents[componentId]?.component,
-        layouts: allComponents[componentId]?.layouts,
-        parent: allComponents[componentId]?.parent,
-      })
-    );
-    addedComponentId.add(componentId);
+    const isParentTabORCalendar =
+      allComponents[parentId]?.component?.component === 'Tabs' ||
+      allComponents[parentId]?.component?.component === 'Calendar';
 
-    if ((component.component.component === 'Tabs') | (component.component.component === 'Calendar')) {
-      const childTabId = childComponent.parent.split('-').at(-1);
-      childComponent.parent = `${parentComponent.id}-${childTabId}`;
-    } else {
-      childComponent.parent = parentComponent.id;
+    if (componentParentId && isParentTabORCalendar) {
+      const childComponent = allComponents[componentId];
+      const childTabId = componentParentId.split('-').at(-1);
+
+      if (componentParentId === `${parentId}-${childTabId}`) {
+        childComponent.componentId = componentId;
+        childComponents.push(childComponent);
+      }
     }
-    parentComponent.children = [...(parentComponent.children || []), childComponent];
-    childComponent.children = [...getChildComponents(allComponents, newComponent, childComponent, addedComponentId)];
-    selectedChildComponents.push(childComponent);
+
+    if (componentParentId === parentId) {
+      const childComponent = allComponents[componentId];
+      childComponent.componentId = componentId;
+      childComponents.push(childComponent);
+    }
   });
 
-  return selectedChildComponents;
+  return childComponents;
 };
 
 const updateComponentLayout = (components, parentId, isCut = false) => {
@@ -1436,16 +1429,28 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
           component.layouts[layout].left = 0;
         }
         prevComponent = component;
-      } else if (!isCut) {
+      } else if (!isCut && !component.component.parent) {
         component.layouts[layout].top = component.layouts[layout].top + component.layouts[layout].height;
       }
     });
   });
 };
 
+const isChildOfTabsOrCalendar = (component, allComponents = []) => {
+  const parentId = component.component.parent.slice(0, -2);
+
+  const parentComponent = allComponents.find((comp) => comp.componentId === parentId);
+
+  if (parentComponent) {
+    return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+  }
+
+  return false;
+};
+
 export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
   const finalComponents = {};
-  const mapOldParentComponentToNewParentComponent = {};
+  const componentMap = {};
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponents = [] } = newComponentObj;
 
@@ -1457,19 +1462,27 @@ export const addComponents = (pageId, appDefinition, appDefinitionChanged, paren
 
   pastedComponents.forEach((component) => {
     const newComponentId = uuidv4();
+    const componentName = computeComponentName(component.component.component, appDefinition.pages[pageId].components);
 
-    if (component.children && component.children.length > 0) {
-      mapOldParentComponentToNewParentComponent[component.id] = newComponentId;
+    componentMap[component.componentId] = newComponentId;
+    const isChild = component.component.parent;
+    const componentData = component.component;
+
+    if (isChild && isChildOfTabsOrCalendar(component, pastedComponents)) {
+      const parentId = component.component.parent.slice(0, -2);
+      const childTabId = component.component.parent.split('-').at(-1);
+      componentData.parent = `${componentMap[parentId]}-${childTabId}`;
+    } else if (isChild) {
+      componentData.parent = componentMap[isChild];
     }
 
     const newComponent = {
       component: {
-        ...component.component,
-        parent: component.parent ? mapOldParentComponentToNewParentComponent[component.parent] : undefined,
+        ...componentData,
+        name: componentName,
       },
       layouts: component.layouts,
     };
-
     finalComponents[newComponentId] = newComponent;
   });
 
