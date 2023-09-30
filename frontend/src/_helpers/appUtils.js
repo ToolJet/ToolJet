@@ -1399,7 +1399,6 @@ const getAllChildComponents = (allComponents, parentId) => {
     if (componentParentId && isParentTabORCalendar) {
       const childComponent = allComponents[componentId];
       const childTabId = componentParentId.split('-').at(-1);
-
       if (componentParentId === `${parentId}-${childTabId}`) {
         childComponent.componentId = componentId;
         childComponents.push(childComponent);
@@ -1437,7 +1436,7 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 
 const isChildOfTabsOrCalendar = (component, allComponents = []) => {
-  const parentId = component.component.parent.slice(0, -2);
+  const parentId = component.component.parent.split('-').slice(0, -1).join('-');
 
   const parentComponent = allComponents.find((comp) => comp.componentId === parentId);
 
@@ -1469,8 +1468,9 @@ export const addComponents = (pageId, appDefinition, appDefinitionChanged, paren
     const componentData = component.component;
 
     if (isChild && isChildOfTabsOrCalendar(component, pastedComponents)) {
-      const parentId = component.component.parent.slice(0, -2);
+      const parentId = component.component.parent.split('-').slice(0, -1).join('-');
       const childTabId = component.component.parent.split('-').at(-1);
+
       componentData.parent = `${componentMap[parentId]}-${childTabId}`;
     } else if (isChild) {
       componentData.parent = componentMap[isChild];
