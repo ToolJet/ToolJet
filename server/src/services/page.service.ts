@@ -93,6 +93,7 @@ export class PageService {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const pageComponents = await manager.find(Component, { pageId });
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
+      const componentsIdMap = {};
 
       // Clone events
       await Promise.all(
@@ -108,6 +109,7 @@ export class PageService {
           const clonedComponent = { ...component, id: undefined, pageId: clonePageId };
           const newComponent = await manager.save(Component, clonedComponent);
 
+          componentsIdMap[component.id] = newComponent.id;
           const componentLayouts = await manager.find(Layout, { componentId: component.id });
           const clonedLayouts = componentLayouts.map((layout) => ({
             ...layout,
@@ -130,7 +132,12 @@ export class PageService {
         })
       );
 
-      return clonedComponents;
+      for (const component of clonedComponents) {
+        const componentId = componentsIdMap[component.parent];
+        if (componentId) {
+          await manager.update(Component, component.id, { parent: componentId });
+        }
+      }
     });
   }
 
