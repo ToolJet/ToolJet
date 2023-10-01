@@ -32,6 +32,10 @@ const defaultComponent = {
   styles: {},
   validation: {},
   type: '',
+  others: {
+    showOnDesktop: { value: '{{true}}' },
+    showOnMobile: { value: '{{false}}' },
+  },
 };
 
 const updateType = Object.freeze({
@@ -222,6 +226,13 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
         metaAttributes.forEach((attribute) => {
           result[id][attribute] = metaDiff.definition[attribute];
         });
+      }
+
+      const currentDisplayPreference = _.keys(appDiff.pages[currentPageId].components[id].layouts)[0];
+
+      if (currentDisplayPreference === 'mobile') {
+        result[id].others.showOnMobile = { value: '{{true}}' };
+        result[id].others.showOnDesktop = { value: '{{false}}' };
       }
 
       if (result[id]?.definition) {

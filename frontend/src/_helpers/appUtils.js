@@ -1695,6 +1695,10 @@ export const buildComponentMetaDefinition = (components = {}) => {
         ...componentMeta.definition.validations,
         ...currentComponentData?.component.definition.validations,
       },
+      others: {
+        ...componentMeta.definition.others,
+        ...currentComponentData?.component.definition.others,
+      },
     };
 
     const mergedComponent = {
