@@ -3284,7 +3284,7 @@ export const widgets = [
   {
     name: 'Calendar',
     displayName: 'Calendar',
-    description: 'Calendar',
+    description: 'Display calendar events',
     component: 'Calendar',
     defaultSize: {
       width: 30,
@@ -3395,7 +3395,7 @@ export const widgets = [
   {
     name: 'Iframe',
     displayName: 'Iframe',
-    description: 'Display an Iframe',
+    description: 'Embed external content',
     defaultSize: {
       width: 10,
       height: 310,
@@ -3451,7 +3451,7 @@ export const widgets = [
   {
     name: 'CodeEditor',
     displayName: 'Code Editor',
-    description: 'Code Editor',
+    description: 'Edit source code',
     component: 'CodeEditor',
     defaultSize: {
       width: 15,
@@ -3532,7 +3532,7 @@ export const widgets = [
   {
     name: 'Tabs',
     displayName: 'Tabs',
-    description: 'Tabs component',
+    description: 'Organize content in tabs',
     defaultSize: {
       width: 30,
       height: 300,
