@@ -1052,7 +1052,7 @@ export const widgets = [
   {
     name: 'TextInput',
     displayName: 'Text Input',
-    description: 'Text field for forms',
+    description: 'User text input field',
     component: 'TextInput',
     defaultSize: {
       width: 6,
@@ -1183,7 +1183,7 @@ export const widgets = [
   {
     name: 'NumberInput',
     displayName: 'Number Input',
-    description: 'Number field for forms',
+    description: 'Numeric input field',
     component: 'NumberInput',
     defaultSize: {
       width: 4,
@@ -1309,7 +1309,7 @@ export const widgets = [
   {
     name: 'PasswordInput',
     displayName: 'Password Input',
-    description: 'Password input field for forms',
+    description: 'Secure text input',
     component: 'PasswordInput',
     defaultSize: {
       width: 4,
@@ -1396,7 +1396,7 @@ export const widgets = [
   {
     name: 'Datepicker',
     displayName: 'Date Picker',
-    description: 'Select a date and time',
+    description: 'Choose date and time',
     component: 'Datepicker',
     defaultSize: {
       width: 5,
