@@ -2901,7 +2901,7 @@ export const widgets = [
   {
     name: 'QrScanner',
     displayName: 'QR Scanner',
-    description: 'Scan QR codes and hold its data',
+    description: 'Scan and store QR codes',
     component: 'QrScanner',
     defaultSize: {
       width: 10,
@@ -2950,7 +2950,7 @@ export const widgets = [
   {
     name: 'StarRating',
     displayName: 'Rating',
-    description: 'Star rating',
+    description: 'User star rating',
     component: 'StarRating',
     defaultSize: {
       width: 10,
@@ -3058,7 +3058,7 @@ export const widgets = [
   {
     name: 'Divider',
     displayName: 'Divider',
-    description: 'Separator between components',
+    description: 'Separate UI elements',
     component: 'Divider',
     defaultSize: {
       width: 10,
@@ -3105,7 +3105,7 @@ export const widgets = [
   {
     name: 'FilePicker',
     displayName: 'File Picker',
-    description: 'File Picker',
+    description: 'Choose files from device',
     component: 'FilePicker',
     defaultSize: {
       width: 15,
