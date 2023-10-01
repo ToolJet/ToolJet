@@ -308,7 +308,7 @@ export const EventManager = ({
       <Popover
         id="popover-basic"
         style={{ width: '350px', maxWidth: '350px' }}
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        className={`${darkMode && 'dark-theme'} shadow`}
         data-cy="popover-card"
       >
         <Popover.Body
