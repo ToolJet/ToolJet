@@ -3657,7 +3657,7 @@ export const widgets = [
   {
     name: 'Timer',
     displayName: 'Timer',
-    description: 'timer',
+    description: 'Countdown or stopwatch',
     component: 'Timer',
     defaultSize: {
       width: 11,
@@ -3750,7 +3750,7 @@ export const widgets = [
   {
     name: 'Listview',
     displayName: 'List View',
-    description: 'Wrapper for multiple components',
+    description: 'List multiple items',
     defaultSize: {
       width: 20,
       height: 300,
@@ -3936,7 +3936,7 @@ export const widgets = [
   {
     name: 'Tags',
     displayName: 'Tags',
-    description: 'Content can be shown as tags',
+    description: 'Display tag labels',
     component: 'Tags',
     defaultSize: {
       width: 8,
@@ -3992,7 +3992,7 @@ export const widgets = [
   {
     name: 'Pagination',
     displayName: 'Pagination',
-    description: 'Pagination ',
+    description: 'Navigate pages',
     component: 'Pagination',
     defaultSize: {
       width: 10,
