@@ -6,7 +6,7 @@ title: Airtable
 # Airtable
 
 
-ToolJet can connect to your Airtable account to read and write data. **Airtable API key** is required to create an Airtable data source on ToolJet. You can generate API key by visiting [Airtable account page](https://airtable.com/account). 
+ToolJet can connect to your Airtable account to read and write data. Airtable Personal Access Token is required to connect to the Airtable data source on ToolJet. You can generate the PAT by visiting [Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions). 
 
 
 <img className="screenshot-full" src="/img/datasource-reference/airtable/add_creds.gif" alt="irtable record"/>
@@ -16,11 +16,8 @@ ToolJet can connect to your Airtable account to read and write data. **Airtable 
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API]( https://airtable.com/api )**.
 :::
 
-:::tip
-This guide assumes that you have already gone through [Adding a data source](/docs/tutorial/adding-a-datasource) tutorial.
-:::
 
-## Supported queries
+## Supported Operations
 
 - **[Listing records](#listing-records)**
 - **[Retrieving a record](#retrieving-a-record)**
