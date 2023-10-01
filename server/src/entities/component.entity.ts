@@ -39,6 +39,9 @@ export class Component {
   @Column('simple-json', { name: 'general_styles', nullable: true })
   generalStyles: any;
 
+  @Column('simple-json', { name: 'display_preferences', nullable: true })
+  displayPreferences: any;
+
   @Column('simple-json')
   validations: any;
 
