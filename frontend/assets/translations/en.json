@@ -830,19 +830,19 @@
         },
         "Timer": {
             "displayName": "Timer",
-            "description": "timer"
+            "description": "Countdown or stopwatch"
         },
         "Listview": {
             "displayName": "List View",
-            "description": "Wrapper for multiple components"
+            "description": "List multiple items"
         },
         "Tags": {
             "displayName": "Tags",
-            "description": "Content can be shown as tags"
+            "description": "Display tag labels"
         },
         "Pagination": {
             "displayName": "Pagination",
-            "description": "Pagination "
+            "description": "Navigate pages"
         },
         "CircularProgressbar": {
             "displayName": "Circular Progressbar",
