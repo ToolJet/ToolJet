@@ -4679,7 +4679,7 @@ export const widgets = [
   {
     name: 'CustomComponent',
     displayName: 'Custom Component',
-    description: 'Visual representation of a sequence of events',
+    description: 'Create React components',
     component: 'CustomComponent',
     properties: {
       data: { type: 'code', displayName: 'Data', validation: { schema: { type: 'object' } } },
@@ -4744,7 +4744,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'ButtonGroup',
     displayName: 'Button Group',
-    description: 'ButtonGroup',
+    description: 'Group of buttons',
     component: 'ButtonGroup',
     properties: {
       label: {
@@ -4886,7 +4886,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'PDF',
     displayName: 'PDF',
-    description: 'Embed PDF file',
+    description: 'Embed PDF documents',
     component: 'PDF',
     properties: {
       url: { type: 'code', displayName: 'File URL', validation: { schema: { type: 'string' } } },
@@ -4945,7 +4945,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'Steps',
     displayName: 'Steps',
-    description: 'Steps',
+    description: 'Step-by-step navigation aid',
     component: 'Steps',
     properties: {
       steps: {

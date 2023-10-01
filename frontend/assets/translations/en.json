@@ -881,19 +881,19 @@
         },
         "CustomComponent": {
             "displayName": "Custom Component",
-            "description": "Add your custom react component"
+            "description": "Create React components"
         },
         "ButtonGroup": {
             "displayName": "Button Group",
-            "description": "ButtonGroup"
+            "description": "Group of buttons"
         },
         "PDF": {
             "displayName": "PDF",
-            "description": "Embed PDF file"
+            "description": "Embed PDF documents"
         },
         "Steps": {
             "displayName": "Steps",
-            "description": "Steps"
+            "description": "Step-by-step navigation aid"
         },
         "KanbanBoard": {
             "displayName": "Kanban Board",
