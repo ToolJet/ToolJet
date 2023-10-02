@@ -889,6 +889,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           setPreviewLoading(false);
           setPreviewData(finalData);
         }
+        let queryStatusCode = data?.status ?? null;
         const queryStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
@@ -896,23 +897,29 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
             ? data?.data?.status ?? 'ok'
             : data.status;
 
-        switch (queryStatus) {
-          case 'Bad Request':
-          case 'failed': {
+        switch (true) {
+          // Note: Need to move away from statusText -> statusCode
+          case queryStatus === 'Bad Request' ||
+            queryStatus === 'Not Found' ||
+            queryStatus === 'Unprocessable Entity' ||
+            queryStatus === 'failed' ||
+            queryStatusCode === 400 ||
+            queryStatusCode === 404 ||
+            queryStatusCode === 422: {
             const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
             toast.error(`${err.message}`);
             break;
           }
-          case 'needs_oauth': {
+          case queryStatus === 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             fetchOAuthToken(url, query.data_source_id);
             break;
           }
-          case 'ok':
-          case 'OK':
-          case 'Created':
-          case 'Accepted':
-          case 'No Content': {
+          case queryStatus === 'ok' ||
+            queryStatus === 'OK' ||
+            queryStatus === 'Created' ||
+            queryStatus === 'Accepted' ||
+            queryStatus === 'No Content': {
             toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
               icon: '🚀',
             });
@@ -997,15 +1004,45 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
         }
 
+        let queryStatusCode = data?.status ?? null;
         const promiseStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
             ? data?.data?.status ?? 'ok'
             : data.status;
-
-        if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
-          const errorData = query.kind === 'runpy' ? data.data : data;
+        // Note: Need to move away from statusText -> statusCode
+        if (
+          promiseStatus === 'failed' ||
+          promiseStatus === 'Bad Request' ||
+          promiseStatus === 'Not Found' ||
+          promiseStatus === 'Unprocessable Entity' ||
+          queryStatusCode === 400 ||
+          queryStatusCode === 404 ||
+          queryStatusCode === 422
+        ) {
+          let errorData = {};
+          switch (query.kind) {
+            case 'runpy':
+              errorData = data.data;
+              break;
+            case 'tooljetdb':
+              if (data?.error) {
+                errorData = {
+                  message: data?.error?.message || 'Something went wrong',
+                  description: data?.error?.message || 'Something went wrong',
+                  status: data?.statusText || 'Failed',
+                  data: data?.error || {},
+                };
+              } else {
+                errorData = data;
+              }
+              break;
+            default:
+              errorData = data;
+              break;
+          }
+          // errorData = query.kind === 'runpy' ? data.data : data;
           useCurrentStateStore.getState().actions.setErrors({
             [queryName]: {
               type: 'query',
@@ -1383,7 +1420,9 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
     updateAppDefinition(newDefinition);
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    toast.success('Component copied succesfully');
+    const successMessage =
+      newComponentObj.newComponents.length > 1 ? 'Components copied successfully' : 'Component copied successfully';
+    toast.success(successMessage);
   }
   _ref.setState({ currentSidebarTab: 2 });
 };
