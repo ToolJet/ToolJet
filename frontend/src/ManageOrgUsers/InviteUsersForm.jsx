@@ -83,7 +83,7 @@ function InviteUsersForm({
                   onClick={() => setActiveTab(2)}
                   data-cy="button-upload-csv-file"
                 >
-                    <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#11181C' : '#687076'} />
+                  <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#11181C' : '#687076'} />
                   <span>Upload CSV file</span>
                 </button>
               </div>
