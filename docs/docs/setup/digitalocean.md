@@ -39,7 +39,7 @@ The latest docker image is `tooljet/tooljet:<version_tag>`
 
   </div>
   
-  Make sure the **Run Command** is `./server/scripts/digitalocean-build.sh` and the **HTTP** port is `3000`. Once you have edited the ToolJet resource click on the **Back** button.
+  Make sure the **Run Command** is `./server/scripts/digitalocean-postbuild` and the **HTTP** port is `3000`. Once you have edited the ToolJet resource click on the **Back** button.
 
   <div style={{textAlign: 'center'}}>
 
@@ -145,19 +145,23 @@ Follow the below steps to attach a postgresql database:
 
   To add additional environment variables, refer this [doc](https://docs.tooljet.com/docs/setup/env-vars/).
 
-### ToolJet Database
+#### Deploying Tooljet Database
 
-Use the ToolJet-hosted database to build apps faster, and manage your data with ease. ToolJet database requires no setup and gives you a powerful user interface for managing your data.
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
+You can learn more about this feature [here](/docs/tooljet-database).
 
-You can refer docs [here](https://docs.tooljet.com/docs/setup/digitalocean#database-setup), if you require ToolJet Database set-up.
+Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
-### Updating version
+1. If you are using dev database within ToolJet deployment, upgrade it to managed database. You could also add a separate database, if you intent use a different database, please refer the [environment variables](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) for additional env variables. 
 
-When a new version is released the team will communicate with the change-log which will contain all the latest features, bug fixes and any configuration changes(applicable only if any).
+2. Create a new app for PostgREST server. You can opt for docker hub to deploy PostgREST image of version `10.1.x`.
 
-We will share the latest version's tag to which it can be updated. To upgrade to the new version you will have need to change the image tag in the deployment yaml file.
+  <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-build.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST resource" />
 
-:::tip
-1. If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that NODE_EXTRA_CA_CERTS environment variable is set to the absolute path containing the certificates.
-2. Tooljet do not support SSL termination. If you require ssl termination you would have to delegate it using a load balancer or reverse proxy.
-:::
+3. Update the [environment variables](/docs/setup/env-vars#postgrest-server-optional) for PostgREST and expose the HTTP port `3000`.
+
+  <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-env.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST environment variables" />
+
+4. Add your newly created PostgREST app to the trusted sources of your managed or separate database.
+
+5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) required for PostgREST. 
