@@ -4944,7 +4944,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
 
   {
     name: 'Steps',
-    displayName: 'Steps',
+    displayName: 'Steps ',
     description: 'Step-by-step navigation aid',
     component: 'Steps',
     properties: {
