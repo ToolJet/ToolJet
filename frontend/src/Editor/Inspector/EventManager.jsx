@@ -68,7 +68,11 @@ export const EventManager = ({
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
 
-    setEvents(currentEvents || []);
+    const sortedEvents = currentEvents.sort((a, b) => {
+      return a.index - b.index;
+    });
+
+    setEvents(sortedEvents || []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents)]);
 
@@ -234,8 +238,6 @@ export const EventManager = ({
     }
 
     newEvents[index] = updatedEvent;
-
-    setEvents(newEvents);
 
     updateAppVersionEventHandlers(
       [
@@ -847,8 +849,6 @@ export const EventManager = ({
         index: index,
       };
     });
-
-    setEvents(result);
 
     updateAppVersionEventHandlers(
       reorderedEvents.map((event) => ({
