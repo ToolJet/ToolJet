@@ -4,10 +4,11 @@
 .global-datasources-sidebar {
     height: calc(100vh - 64px);
     max-width: 288px;
-    background: var(--base);
+    background: var(--background-strong);
+
     display: grid;
     grid-template-rows: auto 1fr auto;
-    border-right: 1px solid var(--border-subtle-00);
+    border-right: 1px solid var(--border-subtle-01);
 
 
     .add-datasource-btn {
@@ -79,7 +80,7 @@
     }
 
     .heading {
-        color: var(--slate12);
+        color: var(--text-primary);
         font-weight: 600;
     }
 
@@ -108,7 +109,7 @@
 
     .modal-content {
         border: 1px solid var(--slate5);
-        background-color: var(--base) !important;
+        background-color: var(--background-strong) !important;
 
         .input-icon {
             &:hover {
@@ -142,7 +143,8 @@
         .datasources-search-btn {
             width: 28px;
             height: 28px;
-            background: var(--base);
+            background: var(--background-strong);
+
             border: 1px solid;
             border-color: var(--slate7);
             cursor: pointer;
@@ -208,7 +210,7 @@
 
 .datasource-card {
     .card {
-        background-color: var(--layer-1-default);
+        background-color: var(--layer-01);
     }
 
     height: 30px;

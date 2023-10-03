@@ -5,7 +5,7 @@
     line-height: 20px;
     display: flex;
     align-items: center;
-    color: var(--slate12);
+    color: var(--text-primary);
     min-height: 32px;
     cursor: pointer;
     padding: 6px 8px;
@@ -57,5 +57,5 @@
 }
 
 .tj-list-item-selected {
-    background-color: var(--slate5);;
+    background-color: var(--slate5);
 }

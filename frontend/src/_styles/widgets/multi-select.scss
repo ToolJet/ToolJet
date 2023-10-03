@@ -20,7 +20,7 @@
 
   .select-search__select,
   .select-search-dark {
-    background-color: var(--base) !important;
+    background-color: var(--background-strong) !important;
     box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
 
     &:focus-visible {
@@ -30,7 +30,7 @@
   }
 
   .select-search__value {
-    background: var(--base);
+    background: var(--background-strong);
   }
 
   .select-search__row {
@@ -39,8 +39,8 @@
 
   .select-search__option,
   .select-search__not-found {
-    background-color: var(--base) !important;
-    color: var(--slate12);
+    background-color: var(--background-strong) !important;
+    color: var(--text-primary);
     border: 1px solid var(--slate5);
     box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
     border-radius: 6px;
@@ -109,7 +109,7 @@
       border: 1px solid var(--slate5);
       border-radius: 5px;
       background-color: var(--slate8);
-      color: var(--slate12);
+      color: var(--text-primary);
 
       .selected-count {
         padding-right: 5px;
@@ -146,12 +146,12 @@
   }
 
   .select-search-dark__input {
-    background-color: var(--base);
+    background-color: var(--background-strong);
     border: none;
   }
 
   .select-search-dark__select {
-    background-color: var(--base);
+    background-color: var(--background-strong);
     padding: 14px;
     border: 1px solid var(--slate5);
     box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);

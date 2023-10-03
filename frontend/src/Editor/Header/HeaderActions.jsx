@@ -40,7 +40,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
             <SolidIcon
               name="computer"
               width="14"
-              fill={currentLayout === 'desktop' ? 'var(--slate12)' : 'var(--icon-secondary)'}
+              fill={currentLayout === 'desktop' ? 'var(--slate12)' : 'var(--button-tirtiary-icon)'}
             />
           </button>
           <button
@@ -60,7 +60,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
             <SolidIcon
               name="mobile"
               width="14"
-              fill={currentLayout !== 'desktop' ? 'var(--slate12)' : 'var(--icon-secondary)'}
+              fill={currentLayout !== 'desktop' ? 'var(--slate12)' : 'var(--button-tirtiary-icon)'}
             />
           </button>
         </div>

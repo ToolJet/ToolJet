@@ -70,7 +70,7 @@
 
   #global-settings-popover {
     .card-body {
-      background-color: var(--base) !important;
+      background-color: var(--background-strong) !important;
     }
   }
 
@@ -164,7 +164,7 @@
   }
 
   .text-slate-12 {
-    color: var(--slate12);
+    color: var(--text-primary);
     font-weight: 500;
     line-height: 20px;
   }
@@ -183,7 +183,7 @@
 
   .nav-item .nav-link {
     background-color: var(--slate3) !important;
-    color: var(--slate11) !important;
+    color: var(--text-secondary) !important;
   }
 
   .nav-tabs .nav-link.active {
@@ -198,7 +198,7 @@
 }
 
 .debugger-content {
-  background-color: var(--base);
+  background-color: var(--background-strong);
 
   hr {
     margin-top: 0px !important;
@@ -286,7 +286,7 @@
   .list-group-item.active {
     border-radius: 4px !important;
     background-color: var(--indigo4) !important;
-    color: var(--slate12);
+    color: var(--text-primary);
   }
 
   .list-group-item+.list-group-item.active {
@@ -410,7 +410,7 @@
   }
 
   .datasource-modal-sidebar-footer {
-    background: var(--base);
+    color: var(--text-primary);
     border-left: none;
     border-bottom: none;
     border-color: var(--slate5) !important;
@@ -428,7 +428,7 @@
     border: 1px solid var(--slate5);
     width: 242px !important;
     height: 71px;
-    background-color: var(--base);
+    background-color: var(--background-strong);
     padding: 16px 12px !important;
     position: absolute;
     left: 0;
@@ -489,12 +489,12 @@
   margin-left: 5rem !important;
 
   input {
-    color: var(--slate12);
-    background-color: var(--base);
+    color: var(--text-primary);
+    background-color: var(--background-strong);
   }
 
   input:focus {
-    background-color: var(--base);
+    background-color: var(--background-strong);
   }
 }
 
@@ -571,7 +571,7 @@
   .card.active {
     width: inherit;
     background-color: var(--slate5);
-    color: var(--slate12);
+    color: var(--text-primary);
     border: none;
   }
 }
@@ -622,7 +622,7 @@
   align-items: center;
   padding-top: 0px;
   width: 48px;
-  border-right: 1px solid var(--border-subtle-00);
+  border-right: 1px solid var(--border-subtle-01);
 }
 
 .tj-leftsidebar-icon-wrap {
@@ -678,13 +678,7 @@
 }
 
 .current-seleted-route {
-  background: #E6EDFE !important;
-}
-
-.dark-theme {
-  .current-seleted-route {
-    background: #1C274F !important;
-  }
+  background: var(--button-secondary) !important;
 }
 
 .folder-info {
@@ -694,7 +688,7 @@
   align-items: center;
   letter-spacing: -0.02em;
   text-transform: uppercase;
-  color: var(-—slate9) !important;
+  color: var(--text-secondary);
 
 
   p {
@@ -708,7 +702,7 @@
   }
 
   .tab-content {
-    background: var(--base);
+    background-color: var(--background-strong);
   }
 }
 

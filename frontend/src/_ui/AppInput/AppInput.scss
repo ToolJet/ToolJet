@@ -12,14 +12,14 @@
         line-height: 20px;
         display: flex;
         align-items: center;
-        color: var(--slate12);
+        color: var(--text-primary);
         margin-bottom: 4px;
     }
 
     input,
     textarea {
         gap: 16px;
-        background: var(--base);
+        background: var(--background-strong);
         border: 1px solid var(--slate7);
         border-radius: 6px;
         margin-bottom: 4px;
@@ -62,7 +62,7 @@
 }
 
 .tj-input-helper {
-    color: var(--slate11);
+    color: var(--text-secondary);
 }
 
 .tj-input-error {

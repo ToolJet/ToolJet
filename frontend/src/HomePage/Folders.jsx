@@ -257,13 +257,9 @@ export const Folders = function Folders({
         <div data-testid="applicationFoldersList" className={cx(`mb-1 all-apps-link-cotainer`)}>
           <a
             className={cx(
-              `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
-              {
-                'bg-light-indigo': _.isEmpty(activeFolder) && !darkMode,
-                'bg-dark-indigo': _.isEmpty(activeFolder) && darkMode,
-              }
+              `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`
             )}
-            style={{ height: '32px' }}
+            style={{ height: '32px', background: _.isEmpty(activeFolder) && 'var(--layer-02)' }}
             onClick={() => handleFolderChange({})}
             data-cy="all-applications-link"
           >

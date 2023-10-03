@@ -1,4 +1,3 @@
-
 .tj-tabs {
   .nav-tabs {
     border-bottom: 0px !important;
@@ -10,8 +9,8 @@
   }
 
   .nav-item .nav-link {
-    color: var(--slate11) !important;
-    background-color: var(--base) !important;
+    color: var(--text-secondary) !important;
+    background-color: var(--background-strong) !important;
   }
 
   .nav-tabs .nav-link.active {
@@ -20,4 +19,3 @@
     color: var(--indigo9) !important;
   }
 }
-

@@ -2,7 +2,7 @@
   font-size: 12px;
   line-height: 20px;
   padding: 6px 8px !important;
-  color: var(--slate12) !important;
+  color: var(--text-primary) !important;
   border: unset !important;
   border-radius: 6px !important;
 
@@ -43,15 +43,15 @@ button:focus:not(:focus-visible) {
 
 .list-group-item.active {
   background-color: var(--slate5) !important;
-  color: var(--slate12) !important
+  color: var(--text-primary) !important
 }
 
 .list-item-popover-body {
   padding: 4px;
   min-width: 10.625rem; // 170px
-  color: var(--slate12);
+  color: var(--text-primary);
   border-radius: 6px;
-  background-color: var(--base);
+  background-color: var(--background-strong);
 
 
   .list-item-popover-option {
@@ -77,6 +77,6 @@ button:focus:not(:focus-visible) {
 
 .list-menu-option-btn {
   padding: 0px !important;
-  background-color: var(--base);
+  background-color: var(--background-strong);
   border: 1px solid transparent;
 }

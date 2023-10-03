@@ -57,7 +57,8 @@ $border-radius: 4px;
   line-height: 20px;
   border: 1px solid var(--slate5);
   border-width: 1px 0px 0px 0px;
-  background-color: var(--base);
+  background-color: var(--background-strong);
+
 
   .table-responsive {
     scrollbar-width: none;
@@ -83,7 +84,7 @@ $border-radius: 4px;
     font-weight: 500;
     width: 272px;
     height: 32px;
-    color: var(--slate12);
+    color: var(--text-primary);
     border-radius: 6px;
     margin-bottom: 4px;
 
@@ -187,7 +188,7 @@ $border-radius: 4px;
 
   .query-definition-pane-wrapper {
     flex: 1;
-    background-color: var(--base);
+    background-color: var(--layer-01);
     overflow-x: hidden;
     overflow-y: scroll;
     height: 100%;
@@ -209,9 +210,9 @@ $border-radius: 4px;
 
   .query-definition-pane {
     .header {
-      border: solid var(--slate5);
+      border: solid var(--border-subtle-02);
       border-width: 0px 0px 1px 0px;
-      background: var(--base);
+      background: var(--layer-2-default);
       z-index: 3;
       min-height: 44px;
       max-height: 44px;
@@ -219,7 +220,7 @@ $border-radius: 4px;
       font-weight: 500 !important;
 
       .query-manager-header-query-name {
-        color: var(--slate12);
+        color: var(--text-primary);
       }
 
       .ellipsis {
@@ -275,7 +276,7 @@ $border-radius: 4px;
 
     .queries-container {
       width: 100%;
-      background-color: var(--base);
+      background-color: var(--layer-01);
 
       .queries-header {
         border: solid var(--slate5);
@@ -287,6 +288,7 @@ $border-radius: 4px;
         justify-content: center;
         padding: 8px 12px;
         gap: 12px;
+        background: var(--layer-2-default);
 
         .queries-search {
           height: 28px !important;
@@ -325,7 +327,7 @@ $border-radius: 4px;
                 font-weight: 400;
                 line-height: 20px;
                 border: 1px solid var(--slate-07, #D7DBDF);
-                color: var(--slate12);
+                color: var(--text-primary);
                 padding-left: 12px !important;
 
                 &::placeholder {
@@ -567,7 +569,7 @@ $border-radius: 4px;
     font-size: 12px;
     padding: 0 !important;
     height: 32px;
-    color: var(--slate11);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--slate5) !important;
@@ -580,7 +582,7 @@ $border-radius: 4px;
   }
 
   .list-group-item:hover {
-    color: var(--slate12) !important;
+    color: var(--text-primary) !important;
     background-color: var(--slate3) !important;
   }
 
@@ -614,7 +616,7 @@ $border-radius: 4px;
     font-size: 12px;
     padding: 0 !important;
     height: 24px;
-    color: var(--slate11);
+    color: var(--text-secondary);
     border-radius: 6px;
     display: flex;
     align-items: center;
@@ -629,7 +631,7 @@ $border-radius: 4px;
   }
 
   .list-group-item:hover {
-    color: var(--slate12) !important;
+    color: var(--text-primary) !important;
     background-color: var(--slate3) !important;
     border-radius: 6px;
   }
@@ -769,7 +771,7 @@ $border-radius: 4px;
   }
 
   .text-heading {
-    color: var(--slate12);
+    color: var(--text-primary);
     font-weight: 400;
     line-height: 20px;
   }
@@ -892,10 +894,12 @@ $border-radius: 4px;
 
 //query manager
 .query-manager {
-  background-color: var(--base);
+  background-color: var(--layer-01);
 
   .header {
-    background-color: var(--base);
+    background-color: var(--background-strong);
+    ;
+    ;
   }
 
   .query-name-breadcrum {
@@ -1048,7 +1052,7 @@ $border-radius: 4px;
       .cm-variable,
       .cm-comment {
         font-size: 12px !important;
-        color: var(--slate12) !important;
+        color: var(--text-primary) !important;
       }
     }
   }
@@ -1078,16 +1082,16 @@ $border-radius: 4px;
     }
 
     .form-label {
-      color: var(--slate11) !important;
+      color: var(--text-secondary) !important;
     }
 
     .form-check-label {
-      color: var(--slate12);
+      color: var(--text-primary);
     }
 
     .cm-s-monokai.CodeMirror,
     .query-manager-input-elem>input {
-      color: var(--slate12) !important;
+      color: var(--text-primary) !important;
     }
 
     .codehinter-default-input:focus-within,
@@ -1109,7 +1113,7 @@ $border-radius: 4px;
 
         .event-handler-display,
         .event-name-display {
-          color: var(--slate12) !important;
+          color: var(--text-primary) !important;
         }
 
         .text-danger {
@@ -1152,7 +1156,7 @@ $border-radius: 4px;
     }
 
     .tranformation-label {
-      color: var(--slate12);
+      color: var(--text-primary);
     }
 
     .CodeMirror-scroll,
@@ -1168,13 +1172,13 @@ $border-radius: 4px;
       height: 32px;
 
       span {
-        color: var(--slate11);
+        color: var(--text-secondary);
       }
     }
   }
 
   .runjs-editor {
-    background-color: var(--base) !important;
+    background-color: var(--background-strong) !important;
     border: 1px solid var(--slate5);
     border-radius: 6px;
 
@@ -1285,7 +1289,7 @@ $border-radius: 4px;
 
   .query-datasource-card-container {
     .query-datasource-card {
-      color: var(--slate12) !important;
+      color: var(--text-primary) !important;
       font-weight: 400;
       font-size: 12px;
       height: 32px;
@@ -1485,7 +1489,7 @@ $border-radius: 4px;
     border-radius: $border-radius;
     padding: 16px 32px;
     font-size: 12px;
-    color: var(--slate11);
+    color: var(--text-secondary);
 
     .info {
       margin-left: 10px;
@@ -1510,7 +1514,7 @@ $border-radius: 4px;
 
   &:hover {
     background-color: var(--slate7);
-    color: var(--slate11);
+    color: var(--text-secondary);
   }
 }
 
@@ -1534,7 +1538,7 @@ $border-radius: 4px;
 
 .query-manager-input-elem {
   input {
-    background-color: var(--base) !important;
+    background-color: var(--background-strong) !important;
   }
 }
 

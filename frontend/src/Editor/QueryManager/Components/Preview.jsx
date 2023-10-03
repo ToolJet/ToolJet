@@ -86,7 +86,7 @@ const Preview = ({ darkMode }) => {
               <Col className="text-right d-flex align-items-center justify-content-end">
                 {queryPreviewData !== '' && (
                   <ButtonSolid variant="ghostBlack" size="sm" onClick={() => setPreviewData('')}>
-                    <RemoveRectangle width={17} viewBox="0 0 28 28" fill="var(--icon-secondary)" /> Clear
+                    <RemoveRectangle width={17} viewBox="0 0 28 28" fill="var(--button-tirtiary-icon)" /> Clear
                   </ButtonSolid>
                 )}
               </Col>

@@ -24,7 +24,7 @@ export const LeftSidebarItem = forwardRef(
             <SolidIcon
               name={displayIcon}
               width={icon == 'settings' ? 22.4 : 20}
-              fill={selectedSidebarItem === icon ? '#3E63DD' : 'var(--icon-secondary)'}
+              fill={selectedSidebarItem === icon ? '#3E63DD' : 'var(--button-tirtiary-icon)'}
             />
             {commentBadge && <LeftSidebarItem.CommentBadge />}
           </div>

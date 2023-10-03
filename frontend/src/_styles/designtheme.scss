@@ -62,42 +62,41 @@
 @import "@radix-ui/colors/bronzeDark.css";
 
 :root {
-    --base: var(--slate2);
     --base-black: #18181A;
     --text-black-000: #000000;
     --slate12: #313739;
 
-    // --base: #E6E8EB;
-    --base-subtle: #E6E8EB;
+    --background-strong: #F8F9FA;
+    --background-subtle: #FBFCFD;
 
     // layer-1
-    --layer-1-default: white;
-    --layer-1-hover: #FCFCFD;
-    --layer-1-active: #FCFCFD;
-    --layer-1-selected: #FCFCFD;
-    --layer-1-selected-hover: #FCFCFD;
-    --layer-1-disabled: #FCFCFD;
+    --layer-01: white;
+    --layer01-hover: #FCFCFD;
+    --layer01-active: #FCFCFD;
+    --layer01-selected: #FCFCFD;
+    --layer-01-selectedhover: #FCFCFD;
+    --layer-01-disabled: #FCFCFD;
 
     // layer-2
-    --layer-2-default: #FCFCFD;
-    --layer-2-hover: #FCFCFD;
-    --layer-2-active: #FCFCFD;
-    --layer-2-selected: #FCFCFD;
-    --layer-2-selected-hover: #FCFCFD;
-    --layer-2-disabled: #FCFCFD;
+    --layer-02: #F1F3F5;
+    --layer02-hover: #F1F3F5;
+    --layer02-active: #E6E8EB;
+    --layer02-selected: #E6E8EB;
+    --layer-02-selectedhover: #CCCFD9;
+    --layer-02-disabled: #FBFCFD;
 
     // layer-3
-    --layer-3-default: #FCFCFD;
-    --layer-3-hover: #FCFCFD;
-    --layer-3-active: #FCFCFD;
-    --layer-3-selected: #FCFCFD;
-    --layer-3-selected-hover: #FCFCFD;
-    --layer-3-disabled: #FCFCFD;
+    --layer-03: #FFFFFF;
+    --layer03-hover: #F2F2F2;
+    --layer03-active: #E6E8EB;
+    --layer03-selected: #BFC7CD;
+    --layer-03-selectedhover: #BFC7CD;
+    --layer-03-disabled: #F8F9FA;
 
 
     // icons
-    --icon-primary: #FCFCFD;
-    --icon-secondary: #FCFCFD;
+    --icon-primary: #697177;
+    --icon-secondary: #C1C8CD;
     --icon-on-color: #FCFCFD;
     --icon-on-color-disabled: #FCFCFD;
     --icon-disabled: #FCFCFD;
@@ -105,72 +104,93 @@
     --icon-regular: #FCFCFD;
 
     // text
-    --text-primary: #FCFCFD;
-    --text-secondary: #FCFCFD;
-    --text-placeholder: #FCFCFD;
-    --text-on-color: #FCFCFD;
-    --text-helper: #FCFCFD;
-    --text-error: #FCFCFD;
-    --text-inverse: #FCFCFD;
-    --text-disabled: #FCFCFD;
-    --text-on-color-disabled: #FCFCFD;
-    --text-primary: #FCFCFD;
+    --text-primary: #11181C;
+    --text-secondary: #687076;
+    --text-placeholder: #7E868C;
+    // --text-on-color: #FCFCFD;
+    // --text-helper: #FCFCFD;
+    // --text-error: #FCFCFD;
+    // --text-inverse: #FCFCFD;
+    // --text-disabled: #FCFCFD;
+    // --text-on-color-disabled: #FCFCFD;
+    // --text-primary: #FCFCFD;
 
     // borders
-    --border-subtle-00: var(--slate5);
-    --border-subtle-01: #FCFCFD;
-    --border-subtle-02: #FCFCFD;
-    --border-subtle-03: #FCFCFD;
+    --border-subtle-00: #F1F3F5;
+    --border-subtle-01: #ECEEF0;
+    --border-subtle-hover-01: #D9DDE1;
+    --border-subtle-02: #ECEEF0;
+    --border-subtle-02-hover: #D9DDE1;
+    --border-subtle-03: #E6E8EB;
+    --border-subtle-03-hover: #D9DDE1;
+    --border-strong-01: #D7DBDF;
+    --border-strong-01-hover: #AFB7BF;
+    --border-interactive: #3E63DD;
 
-    --border-subtle-01-selected: #FCFCFD;
-    --border-subtle-02-selected: #FCFCFD;
-    --border-subtle-03-selected: #FCFCFD;
 
-    --border-strong-01: #FCFCFD;
-    --border-strong-02: #FCFCFD;
-    --border-strong-03: #FCFCFD;
+    //button 
+    --button-primary: #3E63DD;
+    --button-primary-hover: #324FD6;
+    --button-primary-active: #3A5CCC;
+    --button-primary-text: #ECEDEE;
+    --button-secondary: #F0F4FF;
+    --button-secondary-hover: #E3E7EB;
+    --button-secondary-active: #D9E2FC;
+    --button-secondary-text: #3E63DD;
+    --button-secondary-border: #AEC0F5;
+    --button-separator: #F1F3F5;
+    --button-disabled: #C1C8CD;
+    --button-tirtiary: #F1F3F5;
+    --button-tirtiary-hover: #E3E7EB;
+    --button-tirtiary-active: #E6E8EB;
+    --button-tirtiary-border: #D7DBDF;
+    --button-tirtiary-icon: #C1C8CD;
+    --button-tirtiary-text: #11181C;
+    --button-ghost-hover: #E3E7EB;
+    --button-ghost-active: #E6E8EB;
+    --button-ghost-icon: #C1C8CD;
+    --button-ghost-text: #11181C;
+
 }
 
+// DARKMODE
 .dark-theme {
     /* Remap your colors for dark mode */
-    --base: var(--slate4);
-    --base-black: #FBFCFD;
-    --text-black-000: #ffffff;
-    --slate1: #1f2936;
+    --base-black: #18181A;
+    --text-black-000: #000000;
+    --slate12: #313739;
 
-
-    // --base: #E6E8EB;
-    --base-subtle: #E6E8EB;
+    --background-strong: #26292B;
+    --background-subtle: #151718;
 
     // layer-1
-    --layer-1-default: var(--slate6);
-    --layer-1-hover: #FCFCFD;
-    --layer-1-active: #FCFCFD;
-    --layer-1-selected: #FCFCFD;
-    --layer-1-selected-hover: #FCFCFD;
-    --layer-1-disabled: #FCFCFD;
+    --layer-01: #313538;
+    --layer01-hover: #292D2F;
+    --layer01-active: #787F85;
+    --layer01-selected: #697177;
+    --layer-01-selectedhover: #545A5F;
+    --layer-01-disabled: #26292B;
 
     // layer-2
-    --layer-2-default: #313538;
-    --layer-2-hover: #FCFCFD;
-    --layer-2-active: #FCFCFD;
-    --layer-2-selected: #FCFCFD;
-    --layer-2-selected-hover: #FCFCFD;
-    --layer-2-disabled: #FCFCFD;
+    --layer-02: #3A3F42;
+    --layer02-hover: #313537;
+    --layer02-active: #787F85;
+    --layer02-selected: #697177;
+    --layer-02-selectedhover: #545A5F;
+    --layer-02-disabled: #313538;
 
     // layer-3
-    --layer-3-default: #3A3F42;
-    --layer-3-hover: #FCFCFD;
-    --layer-3-active: #FCFCFD;
-    --layer-3-selected: #FCFCFD;
-    --layer-3-selected-hover: #FCFCFD;
-    --layer-3-disabled: #FCFCFD;
+    --layer-03: #26292B;
+    --layer03-hover: #202224;
+    --layer03-active: #2B2F31;
+    --layer03-selected: #697177;
+    --layer-03-selectedhover: #545A5F;
+    --layer-03-disabled: #26292B;
 
 
     // icons
-
-    --icon-primary: #FCFCFD;
-    --icon-secondary: #FCFCFD;
+    --icon-primary: #697177;
+    --icon-secondary: #C1C8CD;
     --icon-on-color: #FCFCFD;
     --icon-on-color-disabled: #FCFCFD;
     --icon-disabled: #FCFCFD;
@@ -178,28 +198,49 @@
     --icon-regular: #FCFCFD;
 
     // text
-    --text-primary: #FCFCFD;
-    --text-secondary: #FCFCFD;
-    --text-placeholder: #FCFCFD;
-    --text-on-color: #FCFCFD;
-    --text-helper: #FCFCFD;
-    --text-error: #FCFCFD;
-    --text-inverse: #FCFCFD;
-    --text-disabled: #FCFCFD;
-    --text-on-color-disabled: #FCFCFD;
-    --text-primary: #FCFCFD;
+    --text-primary: #ECEDEE;
+    --text-secondary: #9BA1A6;
+    --text-placeholder: #787F85;
+    // --text-on-color: #FCFCFD;
+    // --text-helper: #FCFCFD;
+    // --text-error: #FCFCFD;
+    // --text-inverse: #FCFCFD;
+    // --text-disabled: #FCFCFD;
+    // --text-on-color-disabled: #FCFCFD;
+    // --text-primary: #FCFCFD;
 
     // borders
-    --border-subtle-00: #FCFCFD;
-    --border-subtle-01: #FCFCFD;
-    --border-subtle-02: #FCFCFD;
-    --border-subtle-03: #FCFCFD;
+    --border-subtle-00: #151718;
+    --border-subtle-01: #3A3F42;
+    --border-subtle-hover-01: #313537;
+    --border-subtle-02: #4C5155;
+    --border-subtle-02-hover: #3D4144;
+    --border-subtle-03: #4C5155;
+    --border-subtle-03-hover: #3D4144;
+    --border-strong-01: #4C5155;
+    --border-strong-01-hover: #3D4144;
 
-    --border-subtle-01-selected: #FCFCFD;
-    --border-subtle-02-selected: #FCFCFD;
-    --border-subtle-03-selected: #FCFCFD;
 
-    --border-strong-01: #FCFCFD;
-    --border-strong-02: #FCFCFD;
-    --border-strong-03: #FCFCFD;
+    //button secondary
+    --button-primary: #3E63DD;
+    --button-primary-hover: #324FD6;
+    --button-primary-active: #2F4EB2;
+    --button-primary-text: #ECEDEE;
+    --button-secondary: #3E63DD1A;
+    --button-secondary-hover: #3E63DD33;
+    --button-secondary-active: #192140;
+    --button-secondary-text: #3E63DD;
+    --button-secondary-border: #273E89;
+    --button-separator: #2B2F31;
+    --button-disabled: #4C5155;
+    --button-tirtiary: #2B2F31;
+    --button-tirtiary-hover: #242729;
+    --button-tirtiary-active: #313538;
+    --button-tirtiary-border: #4C5155;
+    --button-tirtiary-icon: #4C5155;
+    --button-tirtiary-text: #ECEDEE;
+    --button-ghost-hover: #242729;
+    --button-ghost-active: #313538;
+    --button-ghost-icon: #4C5155;
+    --button-ghost-text: #ECEDEE;
 }

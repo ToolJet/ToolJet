@@ -1,29 +1,33 @@
 .manage-event-btn {
-    border-radius: 6px;
-    background-color: var(--slate3);
-    &:hover {
-        background-color: var(--slate4);
-    }
-    .event-handler-text {
-     font-size: 12px;
-     line-height: 20px;
-     color: var(--slate12);
-     font-weight: 500;
-    }
-    .event-name-text {
-      font-size: 12px;
-      line-height: 20px;
-      color: var(--slate11);
-      font-weight: 400;
-      display: flex;
-      align-items: center;
-    }
-    .event-action {
-    margin-right: 4px;
-    }
+  border-radius: 6px;
+  background-color: var(--layer-3-default);
 
-    .list-menu-option-btn {
-      margin-left: 20px;
-    }
-  
+  &:hover {
+    background-color: var(--slate4);
+  }
+
+  .event-handler-text {
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .event-name-text {
+    font-size: 12px;
+    line-height: 20px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+  }
+
+  .event-action {
+    margin-right: 4px;
+  }
+
+  .list-menu-option-btn {
+    margin-left: 20px;
+  }
+
 }

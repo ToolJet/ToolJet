@@ -1,10 +1,10 @@
 .ghost-black-operation {
-    color: var(--slate12);
+    color: var(--text-primary);
     border: none;
     background: transparent;
 
     &:hover {
-        color: var(--slate11);
+        color: var(--text-secondary);
     }
 
     &:active {
@@ -12,8 +12,8 @@
     }
 
     &:focus-visible {
-        color: var(--slate11);
-        background: var(--base);
+        color: var(--text-secondary);
+        background: var(--background-strong);
         border: none;
         box-shadow: 0px 0px 0px 4px var(--slate6);
         outline: none;

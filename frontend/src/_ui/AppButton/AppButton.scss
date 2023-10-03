@@ -64,13 +64,14 @@
 .tj-primary-btn {
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.00);
-    background: var(--indigo9) ;
+    background: var(--indigo9);
     box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.04);
     color: #FDFDFE;
+
     &:hover {
         border: 1px solid rgba(255, 255, 255, 0.00);
-        background: var(--indigo10) ;
-        color: #FDFDFE; 
+        background: var(--indigo10);
+        color: #FDFDFE;
     }
 
     &:focus-visible {
@@ -93,6 +94,7 @@
     color: var(--indigo9) !important;
     border: 1px solid rgba(255, 255, 255, 0.00) !important;
     background: var(--indigo3, #F0F4FF) !important;
+
     &:hover {
         color: var(--indigo10) !important;
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
@@ -115,34 +117,37 @@
 
         /* Focus rings/Indigo/light */
         box-shadow: 0px 0px 0px 4px var(--indigo6);
-    }}
+    }
+}
 
 .tj-tertiary-btn {
-    color: var(--slate12);
+    color: var(--text-primary);
     border: 1px solid var(--slate7) !important;
     background: var(--slate1) !important;
 
     &:hover {
-        color: var(--slate11) !important;
+        color: var(--text-secondary) !important;
         border: 1px solid var(--slate7, #D7DBDF) !important;
         background: var(--slate4, #ECEEF0) !important;
     }
 
-    &:active,&:focus,&.always-active-btn {
+    &:active,
+    &:focus,
+    &.always-active-btn {
         border: 1px solid var(--slate7, #D7DBDF) !important;
         background: var(--slate5) !important;
-        color: var(--slate12);
+        color: var(--text-primary);
         border: 1px solid var(--slate7);
     }
 
     &:active {
         background: transparent;
         box-shadow: none;
-        color: var(--slate12) !important;
+        color: var(--text-primary) !important;
     }
 
     &:focus-visible {
-        color: var(--slate11) !important;
+        color: var(--text-secondary) !important;
         box-shadow: 0px 0px 0px 4px var(--slate6) !important;
         outline: none;
         border: 1px solid var(--slate8, #C1C8CD) !important;
@@ -167,7 +172,8 @@
 
     &:focus-visible {
         color: var(--indigo10);
-        background: var(--base);
+        background: var(--background-strong);
+
         border: none;
         box-shadow: 0px 0px 0px 4px var(--indigo6);
         outline: none;
@@ -179,31 +185,34 @@
 }
 
 .tj-ghost-black-btn {
-    color: var(--slate12);
+    color: var(--text-primary);
     border: none;
     background: transparent;
 
     &:hover {
         background: var(--slate4, #ECEEF0) !important;
-        color: var(--slate11);
+        color: var(--text-secondary);
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
     }
-    &:focus-visible{
-        color: var(--slate11) !important;
-        // background: var(--base);
-        // border: none;
+
+    &:focus-visible {
+        color: var(--text-secondary) !important;
         box-shadow: 0px 0px 0px 4px var(--slate6) !important;
         outline: none;
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
         background: var(--slate1, #FBFCFD) !important;
     }
-    &:active,&:focus,&.always-active-btn {
-        color: var(--slate12) !important;
+
+    &:active,
+    &:focus,
+    &.always-active-btn {
+        color: var(--text-primary) !important;
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
         background: var(--slate5, #E6E8EB) !important;
         box-shadow: none !important;
     }
-    &:disabled{
+
+    &:disabled {
         background: rgba(255, 255, 255, 0.00) !important;
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
         color: var(--slate8) !important;
@@ -260,24 +269,24 @@
 }
 
 .tj-tertiary-danger-btn {
-    background: var(--base);
+    background: var(--background-strong);
     border: 1px solid var(--tomato7);
     color: var(--tomato9);
 
     &:hover {
-        background: var(--base);
+        background: var(--background-strong);
         color: var(--tomato10);
         border: 1px solid var(--tomato5);
     }
 
     &:active {
-        background: var(--base);
+        background: var(--background-strong);
         color: var(--tomato11);
         border: 1px solid var(--tomato11);
     }
 
     &:focus-visible {
-        background: var(--base);
+        background: var(--background-strong);
         outline: 1px solid var(--tomato5);
         box-shadow: 0px 0px 0px 4px var(--tomato6);
         color: var(--tomato10);
