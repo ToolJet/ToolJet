@@ -769,7 +769,7 @@ class TableComponent extends React.Component {
       },
     };
 
-    const actionRef = { ref: `${action?.name}-${index}` };
+    const actionRef = { ref: `${action?.name}` };
 
     return (
       <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>

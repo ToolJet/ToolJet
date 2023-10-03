@@ -665,9 +665,10 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   if (eventName === 'onTableActionButtonClicked') {
     const { action, tableActionEvents } = options;
+    const executeableActions = tableActionEvents.filter((event) => event?.event?.ref === action?.name);
 
-    if (action && tableActionEvents) {
-      for (const event of tableActionEvents) {
+    if (action && executeableActions) {
+      for (const event of executeableActions) {
         if (event?.event?.actionId) {
           await executeAction(_self, event.event, mode, customVariables);
         }
