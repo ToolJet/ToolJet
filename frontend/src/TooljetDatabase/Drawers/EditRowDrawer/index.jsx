@@ -12,14 +12,21 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
     <>
       <button
         onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
-        className={`edit-row-btn border-0 ghost-black-operation ${isCreateRowDrawerOpen && 'open'}`}
+        className={`ghost-black-operation ${isCreateRowDrawerOpen ? 'open' : ''}`}
       >
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* <SolidIcon name="editrectangle" width="14" fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'} /> */}
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="13" viewBox="0 0 12 13" fill="none">
           <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M0.390524 1.21767C0.640573 0.967625 0.979711 0.827148 1.33333 0.827148H10.6667C11.0203 0.827148 11.3594 0.967624 11.6095 1.21767C11.8595 1.46772 12 1.80686 12 2.16048V4.82715C12 5.18077 11.8595 5.51991 11.6095 5.76996C11.3594 6.02001 11.0203 6.16048 10.6667 6.16048H1.33333C0.979711 6.16048 0.640573 6.02001 0.390524 5.76996C0.140476 5.51991 0 5.18077 0 4.82715V2.16048C0 1.80686 0.140476 1.46772 0.390524 1.21767ZM10.6667 2.16048H1.33333L1.33333 4.82715H10.6667V2.16048ZM6 7.49381C6.36819 7.49381 6.66667 7.79229 6.66667 8.16048V8.82715H7.33333C7.70152 8.82715 8 9.12562 8 9.49381C8 9.862 7.70152 10.1605 7.33333 10.1605H6.66667V10.8271C6.66667 11.1953 6.36819 11.4938 6 11.4938C5.63181 11.4938 5.33333 11.1953 5.33333 10.8271V10.1605H4.66667C4.29848 10.1605 4 9.862 4 9.49381C4 9.12562 4.29848 8.82715 4.66667 8.82715H5.33333V8.16048C5.33333 7.79229 5.63181 7.49381 6 7.49381Z"
-            fill="#3E63DD"
+            d="M8.216 1.30645C8.80114 0.721316 9.74983 0.721316 10.335 1.30645L11.3944 2.36593C11.9796 2.95106 11.9796 3.89975 11.3944 4.48489L10.4551 5.42426C10.3813 5.38774 10.3037 5.34826 10.2233 5.30591C9.68182 5.02084 9.03927 4.62074 8.55972 4.1412C8.08017 3.66165 7.68008 3.01909 7.39501 2.47762C7.35265 2.39716 7.31316 2.31956 7.27664 2.24581L8.216 1.30645Z"
+            fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'}
+          />
+          <path
+            d="M7.87225 4.82866C8.43972 5.39613 9.1614 5.84275 9.73294 6.14639L6.03887 9.84046C5.80963 10.0697 5.51223 10.2184 5.19129 10.2642L2.96638 10.5821C2.47196 10.6527 2.04817 10.2289 2.1188 9.73451L2.43664 7.5096C2.48249 7.18867 2.6312 6.89126 2.86044 6.66202L6.55451 2.96794C6.85815 3.53949 7.30478 4.26119 7.87225 4.82866Z"
+            fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'}
+          />
+          <path
+            d="M0.652737 11.562C0.384265 11.562 0.166626 11.7797 0.166626 12.0482C0.166626 12.3166 0.384265 12.5343 0.652737 12.5343H11.3472C11.6157 12.5343 11.8333 12.3166 11.8333 12.0482C11.8333 11.7797 11.6157 11.562 11.3472 11.562H0.652737Z"
+            fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'}
           />
         </svg>
         &nbsp;&nbsp;
@@ -30,18 +37,20 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <EditRowForm
           onEdit={() => {
-            tooljetDatabaseService.findOne(organizationId, selectedTable.id).then(({ headers, data = [], error }) => {
-              if (error) {
-                toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-                return;
-              }
+            tooljetDatabaseService
+              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .then(({ headers, data = [], error }) => {
+                if (error) {
+                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+                  return;
+                }
 
-              if (Array.isArray(data) && data?.length > 0) {
-                const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-                setTotalRecords(totalContentRangeRecords);
-                setSelectedTableData(data);
-              }
-            });
+                if (Array.isArray(data) && data?.length > 0) {
+                  const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+                  setTotalRecords(totalContentRangeRecords);
+                  setSelectedTableData(data);
+                }
+              });
             setIsCreateRowDrawerOpen(false);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}
