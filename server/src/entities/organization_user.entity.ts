@@ -7,11 +7,13 @@ import {
   ManyToOne,
   JoinColumn,
   BaseEntity,
+  Unique,
 } from 'typeorm';
 import { Organization } from './organization.entity';
 import { User } from './user.entity';
 
 @Entity({ name: 'organization_users' })
+@Unique(['userId', 'organizationId'])
 export class OrganizationUser extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

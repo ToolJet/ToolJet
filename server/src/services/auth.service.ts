@@ -22,7 +22,7 @@ import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, CreateUserDto, TelemetryDataDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import {
   getUserErrorMessages,
@@ -411,15 +411,15 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
-      if (requestedTrial) await this.activateTrial(userCreateDto);
+      if (requestedTrial) await this.activateTrial(new TelemetryDataDto(userCreateDto));
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
-    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role, requestedTrial);
+    await this.metadataService.finishOnboarding(new TelemetryDataDto(userCreateDto));
     return result;
   }
 
-  async activateTrial(userCreateDto: CreateAdminDto) {
+  async activateTrial(userCreateDto: TelemetryDataDto) {
     const { companyName, companySize, name, role, email, phoneNumber } = userCreateDto;
     /* generate trial license if needed */
     const hostname = this.configService.get<string>('TOOLJET_HOST');

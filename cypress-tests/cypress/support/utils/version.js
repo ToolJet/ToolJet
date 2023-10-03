@@ -125,8 +125,8 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
   );
 };
 export const releasedVersionAndVerify = (currentVersion) => {
-  cy.contains("Release").click();
-  cy.get(confirmVersionModalSelectors.modalMessage).verifyVisibleElement(
+  cy.get(commonSelectors.releaseButton).click();
+  cy.get('[data-cy="confirm-dialogue-box-text"]').verifyVisibleElement(
     "have.text",
     releasedVersionText.releasedVersionConfirmText
   );

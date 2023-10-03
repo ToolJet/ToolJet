@@ -93,6 +93,7 @@ function EnvironmentSelectBox(props) {
                     key={index}
                     onClick={() => option.enabled && handleClick(option)}
                     className={`${darkMode ? 'dark-theme' : ''}`}
+                    data-cy="env-name-list"
                   >
                     {option.label}
                   </div>
