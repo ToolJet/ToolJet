@@ -69,7 +69,6 @@ class ViewerComponent extends React.Component {
       isLoading: true,
       users: null,
       appDefinition: { pages: {} },
-      queryConfirmationList: [],
       isAppLoaded: false,
       errorAppId: null,
       errorVersionId: null,
@@ -418,6 +417,9 @@ class ViewerComponent extends React.Component {
     }
   };
 
+  updateQueryConfirmationList = (queryConfirmationList) =>
+    useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
+
   componentDidMount() {
     this.setupViewer();
     const isMobileDevice = this.state.deviceWindowWidth < 600;
@@ -548,16 +550,15 @@ class ViewerComponent extends React.Component {
   };
 
   handleEvent = (eventName, events, options) => {
-    const { appDefinition, queryConfirmationList, currentPageId } = this.state;
+    const { appDefinition, currentPageId } = this.state;
     const viewerRef = {
       appDefinition: appDefinition,
-      queryConfirmationList: queryConfirmationList,
-      updateQueryConfirmationList: null,
+      queryConfirmationList: this.props.queryConfirmationList,
+      updateQueryConfirmationList: this.updateQueryConfirmationList,
       navigate: this.props.navigate,
       switchPage: this.switchPage,
       currentPageId: currentPageId,
     };
-
     onEvent(viewerRef, eventName, events, options, 'view');
   };
 
@@ -586,7 +587,6 @@ class ViewerComponent extends React.Component {
       deviceWindowWidth,
       defaultComponentStateComputed,
       dataQueries,
-      queryConfirmationList,
       errorAppId,
       errorVersionId,
       errorDetails,
@@ -596,6 +596,8 @@ class ViewerComponent extends React.Component {
     const currentCanvasWidth = canvasWidth;
 
     const canvasMaxWidth = this.computeCanvasMaxWidth();
+
+    const queryConfirmationList = this.props.queryConfirmationList;
 
     if (this.state.app?.isLoading) {
       return (
@@ -654,16 +656,29 @@ class ViewerComponent extends React.Component {
           return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
         }
 
+        const viewerRef = {
+          appDefinition: appDefinition,
+          queryConfirmationList: this.props.queryConfirmationList,
+          updateQueryConfirmationList: this.updateQueryConfirmationList,
+          navigate: this.props.navigate,
+          switchPage: this.switchPage,
+          currentPageId: this.state.currentPageId,
+        };
+
         return (
           <div className="viewer wrapper">
             <Confirm
               show={queryConfirmationList.length > 0}
               message={'Do you want to run this query?'}
-              onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
-              onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
+              onConfirm={(queryConfirmationData) =>
+                onQueryConfirmOrCancel(viewerRef, queryConfirmationData, true, 'view')
+              }
+              onCancel={() => onQueryConfirmOrCancel(viewerRef, queryConfirmationList[0], false, 'view')}
               queryConfirmationData={queryConfirmationList[0]}
               key={queryConfirmationList[0]?.queryName}
+              darkMode={this.props.darkMode}
             />
+
             <DndProvider backend={HTML5Backend}>
               <ViewerNavigation.Header
                 showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
@@ -755,9 +770,10 @@ class ViewerComponent extends React.Component {
 }
 const withStore = (Component) => (props) => {
   const currentState = useCurrentStateStore();
-  const { currentLayout } = useEditorStore(
+  const { currentLayout, queryConfirmationList } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
+      queryConfirmationList: state?.queryConfirmationList,
     }),
     shallow
   );
@@ -771,6 +787,7 @@ const withStore = (Component) => (props) => {
       setCurrentState={currentState?.actions?.setCurrentState}
       currentLayout={currentLayout}
       updateState={updateState}
+      queryConfirmationList={queryConfirmationList}
     />
   );
 };
