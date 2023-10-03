@@ -994,18 +994,16 @@ button {
         text-overflow: ellipsis;
       }
 
-      .app-icon-main {
-        background-color: $primary;
-
-        .app-icon {
-          img {
-            height: 24px;
-            width: 24px;
-            filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(17deg) brightness(104%) contrast(104%);
-            vertical-align: middle;
-          }
-        }
-      }
+      // .app-icon-main {
+      //   .app-icon {
+      //     img {
+      //       height: 24px;
+      //       width: 24px;
+      //       filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(17deg) brightness(104%) contrast(104%);
+      //       vertical-align: middle;
+      //     }
+      //   }
+      // }
 
       .app-template-card-wrapper {
         .card-body {
@@ -7194,7 +7192,7 @@ tbody {
 }
 
 .app-icon-main {
-  background: var(--indigo3) !important;
+  background: var(--icon-primary) !important;
   border-radius: 6px !important;
   display: flex;
   justify-content: center;
@@ -7890,7 +7888,7 @@ tbody {
 
 .homepage-app-card {
   height: 166px;
-  outline: 1px solid var(--slate3);
+  outline: 1px solid var(--border-subtle-01);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-radius: 6px;
   padding: 16px;
@@ -7943,12 +7941,6 @@ tbody {
           text-decoration: none;
         }
       }
-
-    }
-
-    .app-icon-main {
-      width: 36px;
-      height: 36px;
 
     }
   }
@@ -10924,12 +10916,11 @@ tbody {
 .marketplace-body {
   height: calc(100vh - 64px) !important;
   overflow-y: auto;
-  // background: var(--slate2);
 }
 
 .plugins-card {
-  background-color: var(--base);
-  border: 1px solid var(--slate3);
+  background-color: var(--layer-1-default);
+  border: 1px solid var(--border-subtle-01);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-radius: 6px;
 }
