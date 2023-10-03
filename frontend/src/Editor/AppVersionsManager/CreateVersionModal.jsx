@@ -30,8 +30,8 @@ export const CreateVersion = ({
     return { label: version.name, value: version };
   });
 
-  const [selectedVersion, setSelectedVersion] = useState(() =>
-    options.find((option) => option?.value?.id === editingVersion?.id)
+  const [selectedVersion, setSelectedVersion] = useState(
+    () => options.find((option) => option?.value?.id === editingVersion?.id)?.value
   );
 
   const createVersion = () => {
@@ -114,7 +114,7 @@ export const CreateVersion = ({
           <div className="ts-control" data-cy="create-version-from-input-field">
             <Select
               options={options}
-              defaultValue={selectedVersion}
+              value={selectedVersion}
               onChange={(version) => {
                 setSelectedVersion(version);
               }}
