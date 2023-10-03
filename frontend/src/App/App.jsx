@@ -28,6 +28,7 @@ import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
+import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 
 const AppWrapper = (props) => {
   return (
@@ -77,8 +78,8 @@ class AppComponent extends React.Component {
   componentDidUpdate(prevProps) {
     // Check if the current location is the dashboard (homepage)
     if (
-      this.props.location.pathname === `/${getWorkspaceIdFromURL()}` &&
-      prevProps.location.pathname !== `/${getWorkspaceIdFromURL()}` &&
+      this.props.location.pathname === `/${getWorkspaceIdOrSlugFromURL()}` &&
+      prevProps.location.pathname !== `/${getWorkspaceIdOrSlugFromURL()}` &&
       this.checkPreviousRoute(prevProps.location.pathname) &&
       prevProps.location.pathname !== `/:workspaceId`
     ) {

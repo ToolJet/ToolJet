@@ -1606,6 +1606,8 @@ class EditorComponent extends React.Component {
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
+                slug={slug}
+                handleSlugChange={this.handleSlugChange}
               />
 
               {!this.props.showComments && (

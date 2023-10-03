@@ -9,7 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
-import { getWorkspaceIdOrSlugFromURL } from './routes';
+import { getWorkspaceIdOrSlugFromURL, getSubpath } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 

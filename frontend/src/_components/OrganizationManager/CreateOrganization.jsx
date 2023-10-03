@@ -101,7 +101,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     >
       <div className="workspace-folder-modal">
         <div className="row">
-          <div className="col modal-main tj-app-input">
+          <div className="tj-app-input">
             <label>Workspace name</label>
             <input
               type="text"
@@ -118,11 +118,11 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           </div>
         </div>
         <div className="row">
-          <div className="col tj-app-input input-with-icon">
+          <div className="tj-app-input input-with-icon">
             <label>Unique workspace slug</label>
             <input
               type="text"
-              className={`form-control is-valid`}
+              className={`form-control`}
               placeholder={t('header.organization.workspaceSlug', 'unique workspace slug')}
               disabled={isCreating}
               maxLength={50}

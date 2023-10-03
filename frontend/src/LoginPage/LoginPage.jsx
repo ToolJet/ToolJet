@@ -13,9 +13,10 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
-import { setCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
 import { pathnameToArray, getSubpath, getRedirectURL, redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
+import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
+
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -119,6 +120,12 @@ class LoginPageComponent extends React.Component {
 
   componentWillUnmount() {
     this.currentSessionObservable && this.currentSessionObservable.unsubscribe();
+  }
+
+  eraseRedirectUrl() {
+    const redirectPath = getCookie('redirectPath');
+    redirectPath && eraseCookie('redirectPath');
+    return redirectPath;
   }
 
   handleChange = (event) => {

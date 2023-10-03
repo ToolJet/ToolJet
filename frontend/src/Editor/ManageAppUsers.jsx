@@ -8,7 +8,7 @@ import _, { debounce } from 'lodash';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute, replaceEditorURL, getHostURL } from '@/_helpers/routes';
-import { validateName, getSubpath } from '@/_helpers/utils';
+import { validateName } from '@/_helpers/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 class ManageAppUsersComponent extends React.Component {
@@ -198,11 +198,7 @@ class ManageAppUsersComponent extends React.Component {
           <Modal.Header>
             <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
             <span onClick={this.hideModal} data-cy="modal-close-button">
-              <SolidIcon
-                name="remove"
-                className="cursor-pointer manage-app-users-close-btn btn-close"
-                aria-label="Close"
-              />
+              <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" />
             </span>
           </Modal.Header>
           <Modal.Body>
@@ -215,7 +211,7 @@ class ManageAppUsersComponent extends React.Component {
                 <div className="make-public mb-3">
                   <div className="form-check form-switch d-flex align-items-center">
                     <input
-                      className="form-check-input color-slate12"
+                      className="form-check-input"
                       type="checkbox"
                       onClick={this.toggleAppVisibility}
                       checked={this.state.app.is_public}
@@ -233,10 +229,10 @@ class ManageAppUsersComponent extends React.Component {
                     {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
                   </label>
                   <div className="input-group">
-                    <span className="input-group-text applink-text" data-cy="app-link">
+                    <span className="input-group-text applink-text flex-grow-1" data-cy="app-link">
                       {appLink}
                     </span>
-                    <div className="input-with-icon app-name-slug-input">
+                    <div className="input-with-icon">
                       <input
                         type="text"
                         className={`form-control form-control-sm ${slugButtonClass}`}

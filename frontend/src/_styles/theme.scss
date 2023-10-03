@@ -2983,7 +2983,6 @@ input:focus-visible {
   position: relative;
   display: flex;
   flex: 1;
-  margin-right: 10px;
 
   input {
     border-radius: 0px 6px 6px 0px !important;
@@ -10961,7 +10960,7 @@ tbody {
     .input-group-text {
       border-color: var(--slate7);
       color: var(--slate12);
-      background-color: var(--base);
+      background-color: var(--slate3);
     }
 
     .app-name-slug-input {
@@ -10973,7 +10972,6 @@ tbody {
 
   .input-group {
     display: flex;
-    align-items: center;
 
     .tj-app-input textarea {
       width: 600px;
@@ -11027,7 +11025,7 @@ tbody {
   .shareable-link-container,
   .app-slug-container {
     .field-name {
-      color: var(--slate-12);
+      color: var(--slate-12) !important;
     }
     input.slug-input {
       background: #1f2936 !important;
@@ -11057,13 +11055,9 @@ tbody {
 
   .manage-app-users-footer {
     .default-secondary-button {
-      background-color: #4D72FA !important;
-      color: #F4F6FA !important;
+      background-color: var(--indigo9);
+      color: var(--base-black);
     }
-  }
-
-  .manage-app-users-close-btn{
-    filter: brightness(0) invert(1) !important;
   }
 }
 
@@ -11102,6 +11096,7 @@ tbody {
     color: var(--slate9);
     height: auto !important;
     margin-bottom: 5px;
+    border-color: var(--slate7);
 
     &:hover {
       box-shadow: none;
@@ -11114,6 +11109,7 @@ tbody {
   }
 
   .input-with-icon {
+    flex: none;
     .icon-container {
       right: 20px;
       top: calc(50% - 13px);
@@ -11128,9 +11124,6 @@ tbody {
     color: #3D9A50;
   }
 
-  .label-updated {
-    margin-bottom: 20px;
-  }
   
   .workspace-spinner {
     color: #889096 !important;
@@ -11209,7 +11202,7 @@ tbody {
     font-weight: 400;
     font-size: 10px;
     height: 0px;
-    padding: 4px 0px 20px 0px;
+    padding: 4px 0px 16px 0px;
   }
 }
 
@@ -11432,7 +11425,7 @@ tbody {
   .form-check-label {
     font-size: 12px;
     margin-left: 8px;
-    color: var(--base-slate-12, var(--slate-12, #11181C));
+    color: var(--base-slate-12);
   }
 
   .label-success,
@@ -11456,7 +11449,7 @@ tbody {
 
     .icon-container {  
       right: 12px;
-      top: calc(50% - 10px);  
+      top: calc(50% - 11px);  
       
       .spinner-border {
         width: 20px;
