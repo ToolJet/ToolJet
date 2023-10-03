@@ -1059,6 +1059,15 @@ const EditorComponent = (props) => {
     cloneComponents(selectedComponents, appDefinition, currentPageId, appDefinitionChanged, false, true);
   };
 
+  const cloningComponents = () => {
+    if (isVersionReleased) {
+      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+
+      return;
+    }
+    cloneComponents(selectedComponents, appDefinition, currentPageId, appDefinitionChanged, true, false);
+  };
+
   const handleEditorEscapeKeyPress = () => {
     if (selectedComponents?.length > 0) {
       updateEditorState({
@@ -1673,7 +1682,7 @@ const EditorComponent = (props) => {
             <div className="editor-sidebar">
               <EditorKeyHooks
                 moveComponents={moveComponents}
-                cloneComponents={cloneComponents}
+                cloneComponents={cloningComponents}
                 copyComponents={copyComponents}
                 cutComponents={cutComponents}
                 handleEditorEscapeKeyPress={handleEditorEscapeKeyPress}
