@@ -24,7 +24,7 @@ export class PostgrestProxyService {
     return this.httpProxy(req, res, next);
   }
 
-  private httpProxy = proxy(this.configService.get<string>('PGRST_HOST'), {
+  private httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
     proxyReqPathResolver: function (req) {
       const path = '/api/tooljet-db';
       const pathRegex = new RegExp(`${maybeSetSubPath(path)}/proxy`);
