@@ -64,6 +64,8 @@ import { useMounted } from '@/_hooks/use-mount';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
+import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
+
 setAutoFreeze(false);
 enablePatches();
 
@@ -199,6 +201,7 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const lastKeyPressTimestamp = useDebouncedArrowKeyPress(500); // 500 milliseconds delay
   // Handle appDefinition updates
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
@@ -218,6 +221,19 @@ const EditorComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
+
+  useEffect(() => {
+    // This effect runs when lastKeyPressTimestamp changes
+    // You can place your database update logic here
+    // Ensure that you only update the database if the timestamp is recent
+    if (Date.now() - lastKeyPressTimestamp < 500) {
+      updateEditorState({
+        isUpdatingEditorStateInProcess: true,
+      });
+      autoSave();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ appDefinition, lastKeyPressTimestamp })]);
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -774,8 +790,15 @@ const EditorComponent = (props) => {
       updateState({
         appDiffOptions: opts,
       });
+
+      let updatingEditorStateInProcess = true;
+
+      if (opts?.widgetMovedWithKeyboard === true) {
+        updatingEditorStateInProcess = false;
+      }
+
       updateEditorState({
-        isUpdatingEditorStateInProcess: true,
+        isUpdatingEditorStateInProcess: updatingEditorStateInProcess,
         appDefinition: updatedAppDefinition,
       });
 
