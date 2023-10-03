@@ -145,8 +145,6 @@ async function bootstrap() {
   }
 
   await app.listen(port, listen_addr, async function () {
-    const licenseService = app.get<LicenseService>(LicenseService);
-    await licenseService.init();
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
     console.log(
       `License valid : ${License.Instance().isValid} License Terms : ${JSON.stringify(License.Instance().terms)} 🚀`

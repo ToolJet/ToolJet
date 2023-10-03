@@ -78,16 +78,6 @@ class LoginPageComponent extends React.Component {
           if (newSession?.super_admin) {
             return redirectToWorkspace();
           }
-          authenticationService
-            .validateLicense()
-            .then(() => {
-              return redirectToWorkspace();
-            })
-            .catch((e) => {
-              window.location = getSubpath()
-                ? `${getSubpath()}/instance-settings?error=license`
-                : '/instance-settings?error=license';
-            });
         }
       }
     });

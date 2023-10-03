@@ -1,10 +1,8 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
-import { InstanceSettingsService } from './instance_settings.service';
 import { LICENSE_FIELD, LICENSE_TYPE, decrypt } from 'src/helpers/license.helper';
 import License from '@ee/licensing/configs/License';
 import { LicenseUpdateDto } from '@dto/license.dto';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
-import { InstanceSettingsType } from 'src/helpers/instance_settings.constants';
 import { CreateTrialLicenseDto } from '@dto/create-trial-license.dto';
 import { EntityManager } from 'typeorm';
 import got from 'got';
@@ -14,7 +12,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class LicenseService {
-  constructor(private instanceSettingsService: InstanceSettingsService, private configService: ConfigService) {}
+  constructor(private configService: ConfigService) {}
 
   async getLicenseTerms(type?: LICENSE_FIELD | LICENSE_FIELD[]): Promise<any> {
     await this.init();
@@ -32,13 +30,16 @@ export class LicenseService {
     }
   }
 
-  async getLicenseFieldValue(type: LICENSE_FIELD): Promise<any> {
+  private async getLicenseFieldValue(type: LICENSE_FIELD): Promise<any> {
     switch (type) {
       case LICENSE_FIELD.ALL:
         return License.Instance().terms;
 
       case LICENSE_FIELD.APP_COUNT:
         return License.Instance().apps;
+
+      case LICENSE_FIELD.TABLE_COUNT:
+        return License.Instance().tables;
 
       case LICENSE_FIELD.TOTAL_USERS:
         return License.Instance().users;
@@ -55,14 +56,26 @@ export class LicenseService {
       case LICENSE_FIELD.OIDC:
         return License.Instance().oidc;
 
+      case LICENSE_FIELD.LDAP:
+        return License.Instance().ldap;
+
+      case LICENSE_FIELD.CUSTOM_STYLE:
+        return License.Instance().customStyling;
+
       case LICENSE_FIELD.AUDIT_LOGS:
-        return License.Instance().auditLog;
+        return License.Instance().auditLogs;
+
+      case LICENSE_FIELD.MULTI_ENVIRONMENT:
+        return License.Instance().multiEnvironment;
 
       case LICENSE_FIELD.VALID:
         return License.Instance().isValid && !License.Instance().isExpired;
 
       case LICENSE_FIELD.WORKSPACES:
         return License.Instance().workspaces;
+
+      case LICENSE_FIELD.WHITE_LABEL:
+        return License.Instance().whiteLabelling;
 
       case LICENSE_FIELD.USER:
         return {
@@ -86,16 +99,22 @@ export class LicenseService {
           expiryDate: License.Instance().expiry,
         };
 
+      case LICENSE_FIELD.META:
+        return License.Instance().metaData;
+
       default:
         return License.Instance().terms;
     }
   }
 
+  getLicense(): Promise<InstanceSettings> {
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.findOneOrFail(InstanceSettings, { where: { key: 'LICENSE_KEY' } });
+    });
+  }
+
   async init(): Promise<void> {
-    const licenseSetting: InstanceSettings = await this.instanceSettingsService.getSettings(
-      'LICENSE_KEY',
-      InstanceSettingsType.SYSTEM
-    );
+    const licenseSetting: InstanceSettings = await this.getLicense();
     const updatedAt = await License.Instance()?.updatedAt;
     const isUpdated: boolean = updatedAt?.getTime() !== new Date(licenseSetting.updatedAt).getTime();
 
@@ -103,10 +122,6 @@ export class LicenseService {
       // No License updated or new license available
       License.Reload(licenseSetting?.value, licenseSetting?.updatedAt);
     }
-  }
-
-  async getLicense(): Promise<InstanceSettings> {
-    return await this.instanceSettingsService.getSettings('LICENSE_KEY', InstanceSettingsType.SYSTEM);
   }
 
   validateHostnameSubpath(domainsList = []) {
@@ -129,16 +144,26 @@ export class LicenseService {
   }
 
   async updateLicense(dto: LicenseUpdateDto): Promise<void> {
-    const licenseSetting: InstanceSettings = await this.instanceSettingsService.getSettings(
-      'LICENSE_KEY',
-      InstanceSettingsType.SYSTEM
-    );
+    const licenseSetting: InstanceSettings = await this.getLicense();
     try {
       const licenseTerms = decrypt(dto.key);
+
+      // TODO: validate expiry of new license
+      const { isLicenseValid } = await this.getLicenseTerms(LICENSE_FIELD.STATUS);
+
+      // updated with a valid license and trying to update trial license generated using API
+      if (isLicenseValid && licenseTerms?.type === LICENSE_TYPE.TRIAL && licenseTerms?.meta?.generatedFrom === 'API') {
+        throw new Error(
+          'Trying to use a trial license key, please reach out to hello@tooljet.com to get a valid license key'
+        );
+      }
+
       this.validateHostnameSubpath(licenseTerms.domains);
-      await this.instanceSettingsService.update([{ id: licenseSetting.id, value: dto.key }]);
+      await dbTransactionWrap((manager: EntityManager) => {
+        return manager.update(InstanceSettings, { id: licenseSetting.id }, { value: dto.key });
+      });
     } catch (err) {
-      throw new BadRequestException(err?.response?.message || 'License key is invalid');
+      throw new BadRequestException(err?.message || 'License key is invalid');
     }
   }
 
@@ -227,4 +252,5 @@ export class LicenseService {
       return licenseKey;
     });
   }
+  isBasicPlan = async () => !(await this.getLicenseFieldValue(LICENSE_FIELD.VALID));
 }

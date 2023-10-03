@@ -10,6 +10,8 @@ export const commonEeSelectors = {
   modalCloseButton: '[data-cy="modal-close-button"]',
   saveButton: '[data-cy="save-button"]',
   cardTitle: '[data-cy="card-title"]',
+  AddQueryButton: '[data-cy="show-ds-popover-button"]',
+  promoteButton: '[data-cy="promote-button"]',
 };
 
 export const ssoEeSelector = {
@@ -104,3 +106,20 @@ export const instanceSettingsSelector = {
   allowWorkspaceToggleLabel: '[data-cy="form-check-label"]',
   allowWorkspaceHelperText: '[data-cy="instance-settings-help-text"]',
 };
+
+
+export const multiEnvSelector = {
+  envContainer: '[data-cy="env-container"]',
+  currentEnvName: '[data-cy="list-current-env-name"]',
+  envArrow: '[data-cy="env-arrow"]',
+  selectedEnvName: '[data-cy="selected-current-env-name"]',
+  envNameList: '[data-cy="env-name-list"]',
+  appVersionLabel: '[data-cy="app-version-label"]',
+  currentVersion: '[data-cy="current-version"]',
+  createNewVersionButton: '[data-cy="create-new-version-button"]',
+  fromLabel: '[data-cy="from-label"]',
+  toLabel: '[data-cy="to-label"]',
+  currEnvName: '[data-cy="current-env-name"]',
+  targetEnvName: '[data-cy="target-env-name"]',
+
+}

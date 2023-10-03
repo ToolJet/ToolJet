@@ -22,14 +22,14 @@ import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { returnDevelopmentEnv, deepEqual } from '@/_helpers/utils';
+import { deepEqual, returnDevelopmentEnv } from '@/_helpers/utils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { ConfirmDialog } from '@/_components';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
-
+import { LicenseTooltip } from '@/LicenseTooltip';
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -706,21 +706,42 @@ class DataSourceManagerComponent extends React.Component {
       selectedDataSource &&
       this.props.environments?.length > 1 && (
         <nav className="nav nav-tabs mt-3">
-          {this.props?.environments.map((env) => (
-            <a
-              key={env?.id}
-              onClick={() =>
-                this.props.handleActions(() => {
-                  !selectedDataSource?.id && this.resetOptions();
-                  this.props.environmentChanged(env, selectedDataSource?.id);
-                })
-              }
-              className={cx('nav-item nav-link', { active: this.props.currentEnvironment?.name === env.name })}
-              data-cy={`${env.name}-label`}
-            >
-              {capitalize(env.name)}
-            </a>
-          ))}
+          {this.props?.environments.map((env, key) => {
+            const Wrapper = ({ children }) =>
+              !env?.enabled ? (
+                <LicenseTooltip
+                  placement="bottom"
+                  feature={'multi-environments'}
+                  isAvailable={env?.enabled}
+                  noTooltipIfValid={true}
+                  customMessage={'Multi-environments are available only in paid plans'}
+                >
+                  {children}
+                </LicenseTooltip>
+              ) : (
+                <>{children}</>
+              );
+            return (
+              <Wrapper key={key}>
+                <a
+                  key={env?.id}
+                  onClick={() =>
+                    this.props.handleActions(() => {
+                      if (env?.enabled) {
+                        !selectedDataSource?.id && this.resetOptions();
+                        this.props.environmentChanged(env, selectedDataSource?.id);
+                      }
+                    })
+                  }
+                  disabled={!env?.enabled}
+                  className={cx('nav-item nav-link', { active: this.props.currentEnvironment?.name === env.name })}
+                  data-cy={`${env.name}-label`}
+                >
+                  {capitalize(env.name)}
+                </a>
+              </Wrapper>
+            );
+          })}
         </nav>
       )
     );

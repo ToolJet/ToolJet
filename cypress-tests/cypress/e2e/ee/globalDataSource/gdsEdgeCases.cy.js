@@ -147,8 +147,8 @@ describe("Global Datasource Manager", () => {
       "table_preview "
     );
 
-    pinInspector();
-    cy.hideTooltip();
+        pinInspector();
+        cy.hideTooltip();
 
     resizeQueryPanel("80");
     cy.get('[data-cy="show-ds-popover-button"]').click();
@@ -207,8 +207,8 @@ describe("Global Datasource Manager", () => {
         cy.get(".query-rename-delete-btn").should("not.exist");
       });
 
-    pinInspector();
-    cy.hideTooltip();
+        pinInspector();
+        cy.hideTooltip();
 
     cy.intercept("POST", "/api/data_queries/**").as("run");
     cy.get('[data-cy="show-ds-popover-button"]').click();

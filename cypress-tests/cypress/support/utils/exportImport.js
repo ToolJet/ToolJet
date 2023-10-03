@@ -44,7 +44,9 @@ export const verifyElementsOfExportModal = (
 };
 
 export const createNewVersion = (newVersion = [], version) => {
-  cy.contains(appVersionText.createNewVersion).should("be.visible").click();
+  cy.contains(appVersionText.createNewVersion).should("be.visible");
+  cy.contains(appVersionText.createNewVersion).click();
+  cy.wait(500);
   verifyModal(
     appVersionText.createNewVersion,
     appVersionText.createNewVersion,

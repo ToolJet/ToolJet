@@ -185,7 +185,13 @@ export class AppsService {
   }
 
   async count(user: User, searchKey, type: string, from?: string): Promise<number> {
-    return await viewableAppsQuery(user, searchKey, [], type).getCount();
+    return await viewableAppsQuery(
+      user,
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      searchKey,
+      [],
+      type
+    ).getCount();
   }
 
   getAppVersionsCount = async (appId: string) => {
@@ -195,7 +201,13 @@ export class AppsService {
   };
 
   async all(user: User, page: number, searchKey: string, type: string): Promise<App[]> {
-    const viewableAppsQb = viewableAppsQuery(user, searchKey, undefined, type);
+    const viewableAppsQb = viewableAppsQuery(
+      user,
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      searchKey,
+      undefined,
+      type
+    );
 
     if (page) {
       return await viewableAppsQb
@@ -656,6 +668,10 @@ export class AppsService {
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
+      if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        throw new BadRequestException('You do not have permissions to perform this action');
+      }
+
       if (version.currentEnvironmentId !== currentEnvironmentId) {
         throw new NotAcceptableException();
       }
@@ -676,7 +692,7 @@ export class AppsService {
           organizationId,
         },
       });
-      if (editableParams['definition'] && environments > 1 && currentEnvironment.priority !== 1) {
+      if (environments > 1 && currentEnvironment.priority !== 1) {
         throw new BadRequestException('You cannot update a promoted version');
       }
       editableParams['definition'] = definition;
@@ -705,13 +721,9 @@ export class AppsService {
 
   async getAppsLimit() {
     const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.APP_COUNT, LICENSE_FIELD.STATUS]);
-    if (licenseTerms[LICENSE_FIELD.APP_COUNT] === LICENSE_LIMIT.UNLIMITED) {
-      return;
-    }
-    const currentAppsCount = await this.appsCount();
     return {
       appsCount: generatePayloadForLimits(
-        currentAppsCount,
+        licenseTerms[LICENSE_FIELD.APP_COUNT] !== LICENSE_LIMIT.UNLIMITED ? await this.appsCount() : 0,
         licenseTerms[LICENSE_FIELD.APP_COUNT],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.APPS

@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { ManageAllUsers } from '@/ManageAllUsers';
-import { ManageInstanceSettings } from '@/ManageInstanceSettings';
+import { ManageInstanceSettings, ManageWhiteLabelling } from '@/ManageInstanceSettings';
 import { authenticationService } from '@/_services/authentication.service';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
@@ -20,12 +20,23 @@ export function InstanceSettings(props) {
   const [featureAccess, setFeatureAccess] = useState({});
   const [licenseLoaded, setLicenseLoaded] = useState(false);
   const error = searchParams.get('error');
-  const [selectedTab, setSelectedTab] = useState(error === 'license' ? 'License' : 'Users');
+  const licenseCheck = searchParams.get('save_license');
+  const whiteLabelsCheck = searchParams.get('save_whiteLabelling');
+  const [selectedTab, setSelectedTab] = useState(() => {
+    switch (true) {
+      case whiteLabelsCheck === 'success':
+        return 'White labelling';
+      case error === 'license' || licenseCheck === 'success':
+        return 'License';
+      default:
+        return 'Users';
+    }
+  });
   const { load_app } = authenticationService.currentSessionValue;
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['All users', 'Manage instance settings', 'License'];
-  const protectedNavs = ['All users', 'Manage instance settings'];
+  const sideBarNavs = ['All users', 'Manage instance settings', 'White labelling', 'License'];
+  const protectedNavs = ['Manage instance settings', 'White labelling'];
 
   const defaultOrgName = (groupName) => {
     switch (groupName) {
@@ -33,6 +44,8 @@ export function InstanceSettings(props) {
         return 'Users';
       case 'Manage instance settings':
         return 'Settings';
+      case 'White labelling':
+        return 'White labelling';
       case 'License':
         return 'License';
       default:
@@ -40,22 +53,43 @@ export function InstanceSettings(props) {
     }
   };
 
-  const fetchFeatureAccess = () => {
+  const paidFeatures = { 'White labelling': 'whiteLabelling' };
+
+  const fetchFeatureAccess = (loadingAtFirstTime = false) => {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess({ ...data });
       if (data.licenseStatus.isExpired || !data.licenseStatus.isLicenseValid) {
-        setSelectedTab('License');
-        updateSidebarNAV('License');
+        setSelectedTab(loadingAtFirstTime ? 'Users' : 'License');
+        updateSidebarNAV(loadingAtFirstTime ? 'All users' : 'License');
       }
       setLicenseLoaded(true);
     });
   };
 
   useEffect(() => {
-    fetchFeatureAccess();
-    load_app && error === 'license' && toast.error('Your license key has expired. Please update your license key');
-    load_app && updateSidebarNAV(selectedTab);
+    fetchFeatureAccess(true);
+    if (load_app) {
+      switch (true) {
+        case error === 'license':
+          toast.error('Your license key has expired. Please update your license key');
+          break;
+        case licenseCheck === 'success':
+          toast.success('License key has been updated', {
+            position: 'top-center',
+          });
+          break;
+        case whiteLabelsCheck === 'success':
+          toast.success('White labelling has been updated', {
+            position: 'top-center',
+          });
+          break;
+        default:
+          break;
+      }
+      updateSidebarNAV(selectedTab);
+    }
     searchParams.delete('error');
+    searchParams.delete('save_license');
     setSearchParams(searchParams);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -77,6 +111,11 @@ export function InstanceSettings(props) {
                           feature={item}
                           isAvailable={true}
                           noTooltipIfValid={true}
+                          customMessage={
+                            item === 'Manage instance settings'
+                              ? 'Manage instance settings are available only in paid plans'
+                              : undefined
+                          }
                         >
                           {children}
                         </LicenseTooltip>
@@ -88,7 +127,12 @@ export function InstanceSettings(props) {
                         <FolderList
                           className="workspace-settings-nav-items"
                           onClick={() => {
-                            if (featureAccess.licenseStatus.isExpired || !featureAccess.licenseStatus.isLicenseValid)
+                            if (
+                              (featureAccess.licenseStatus.isExpired ||
+                                !featureAccess.licenseStatus.isLicenseValid ||
+                                featureAccess?.[paidFeatures?.[item]] === false) &&
+                              protectedNavs.includes(item) === true
+                            )
                               return;
                             setSelectedTab(defaultOrgName(item));
                             updateSidebarNAV(item);
@@ -119,6 +163,7 @@ export function InstanceSettings(props) {
                 <div className="w-100">
                   {selectedTab === 'Users' && <ManageAllUsers darkMode={props.darkMode} />}
                   {selectedTab === 'Settings' && <ManageInstanceSettings />}
+                  {selectedTab === 'White labelling' && featureAccess?.whiteLabelling && <ManageWhiteLabelling />}
                   {selectedTab === 'License' && (
                     <ManageLicenseKey fetchFeatureAccessForInstanceSettings={fetchFeatureAccess} />
                   )}

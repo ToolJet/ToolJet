@@ -79,7 +79,9 @@ export class App extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
-  @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
+  @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, {
+    onDelete: 'CASCADE',
+  })
   appGroupPermissions: AppGroupPermission[];
 
   public editingVersion;

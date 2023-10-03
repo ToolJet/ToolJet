@@ -1,12 +1,12 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 export class instanceSettings1663689836425 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
 
     const settings = [
       {
-        key: 'ALLOW_PERSONAL_WORKSPACE',
+        key: INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE,
         value: 'true',
       },
     ];

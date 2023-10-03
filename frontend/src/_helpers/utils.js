@@ -940,16 +940,17 @@ export function isExpectedDataType(data, expectedDataType) {
 
 export function getDateDifferenceInDays(date1, date2) {
   const oneDay = 24 * 60 * 60 * 1000;
-
-  const timeDiff = Math.abs(date2.getTime() - date1.getTime());
+  const utcDate1 = Date.UTC(date1.getUTCFullYear(), date1.getUTCMonth(), date1.getUTCDate());
+  const utcDate2 = Date.UTC(date2.getUTCFullYear(), date2.getUTCMonth(), date2.getUTCDate());
+  const timeDiff = Math.abs(utcDate2 - utcDate1);
   const daysDiff = Math.round(timeDiff / oneDay);
-
   return daysDiff;
 }
 
 export function convertDateFormat(dateString) {
   const date = new Date(dateString);
   const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  options.timeZone = 'UTC';
   const formattedDate = date.toLocaleDateString('en-IN', options).replace(/-/g, ' ');
   return formattedDate;
 }

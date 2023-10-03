@@ -153,7 +153,8 @@ describe("dashboard", () => {
       "have.text",
       instanceSettingsText.editModalTitle
     );
-
+    cy.get('form > :nth-child(1)').verifyVisibleElement(
+      "have.text", "The Developer (dev@tooljet.io)")
     cy.get(instanceSettingsSelector.superAdminToggleLabel).verifyVisibleElement(
       "have.text",
       instanceSettingsText.superAdminToggleLabel
@@ -161,7 +162,7 @@ describe("dashboard", () => {
     cy.get(instanceSettingsSelector.superAdminToggle).should("be.visible");
     cy.get(commonSelectors.cancelButton).verifyVisibleElement(
       "have.text",
-      commonEeText.closeButton
+      commonEeText.cancelButton
     );
     cy.get(commonEeSelectors.saveButton).verifyVisibleElement(
       "have.text",
@@ -180,16 +181,30 @@ describe("dashboard", () => {
       "have.text",
       "Instance Settings"
     );
-    cy.get(instanceSettingsSelector.allowWorkspaceToggle).should("be.visible");
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).should("be.visible");
     cy.get(
       instanceSettingsSelector.allowWorkspaceToggleLabel
-    ).verifyVisibleElement(
+    ).eq(0).verifyVisibleElement(
+      "have.text",
+      "Multiplayer editing"
+    );
+    cy.get(
+      instanceSettingsSelector.allowWorkspaceHelperText
+    ).eq(0).verifyVisibleElement(
+      "have.text",
+      "Work collaboratively and edit applications in real-time with multi-player editing"
+    );
+
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).should("be.visible");
+    cy.get(
+      instanceSettingsSelector.allowWorkspaceToggleLabel
+    ).eq(1).verifyVisibleElement(
       "have.text",
       instanceSettingsText.allowWorkspaceToggleLabel
     );
     cy.get(
       instanceSettingsSelector.allowWorkspaceHelperText
-    ).verifyVisibleElement(
+    ).eq(1).verifyVisibleElement(
       "have.text",
       instanceSettingsText.allowWorkspaceHelperText
     );
@@ -364,9 +379,9 @@ describe("dashboard", () => {
     cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-    cy.get(instanceSettingsSelector.allowWorkspaceToggle).then(($el) => {
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
       if ($el.is(":checked")) {
-        cy.get(instanceSettingsSelector.allowWorkspaceToggle).click();
+        cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).click();
         cy.get(commonEeSelectors.saveButton).click();
         cy.verifyToastMessage(
           commonSelectors.toastMessage,
@@ -423,9 +438,9 @@ describe("dashboard", () => {
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.get(instanceSettingsSelector.manageInstanceSettings).click();
 
-    cy.get(instanceSettingsSelector.allowWorkspaceToggle).then(($el) => {
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
       if ($el.is(":checked")) {
-        cy.get(instanceSettingsSelector.allowWorkspaceToggle).uncheck();
+        cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).uncheck();
         cy.get(commonEeSelectors.saveButton).click();
         cy.verifyToastMessage(
           commonSelectors.toastMessage,

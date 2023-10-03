@@ -12,7 +12,6 @@ export const userService = {
   getAvatar,
   updateAvatar,
   updateUserType,
-  getLicenseTerms,
   getUserLimits,
 };
 
@@ -79,11 +78,6 @@ function changePassword(currentPassword, newPassword) {
   const body = { currentPassword, newPassword };
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/users/change_password`, requestOptions).then(handleResponse);
-}
-
-function getLicenseTerms() {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/users/license-terms`, requestOptions).then(handleResponse);
 }
 
 function getUserLimits(type) {

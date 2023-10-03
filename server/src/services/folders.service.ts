@@ -10,6 +10,8 @@ import { Folder } from '../entities/folder.entity';
 import { UsersService } from './users.service';
 import { catchDbException } from 'src/helpers/utils.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Injectable()
 export class FoldersService {
@@ -20,7 +22,8 @@ export class FoldersService {
     private folderAppsRepository: Repository<FolderApp>,
     @InjectRepository(App)
     private appsRepository: Repository<App>,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private licenseService: LicenseService
   ) {}
 
   async create(user: User, folderName, type = 'front-end'): Promise<Folder> {
@@ -52,7 +55,13 @@ export class FoldersService {
   }
 
   async allFolders(user: User, searchKey?: string, type = 'front-end'): Promise<Folder[]> {
-    const allViewableApps = await viewableAppsQuery(user, searchKey, ['id'], type).getMany();
+    const allViewableApps = await viewableAppsQuery(
+      user,
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      searchKey,
+      ['id'],
+      type
+    ).getMany();
 
     const allViewableAppIds = allViewableApps.map((app) => app.id);
 
@@ -99,7 +108,13 @@ export class FoldersService {
       return 0;
     }
 
-    const viewableAppsQb = viewableAppsQuery(user, searchKey, undefined, type);
+    const viewableAppsQb = viewableAppsQuery(
+      user,
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      searchKey,
+      undefined,
+      type
+    );
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 
@@ -134,7 +149,13 @@ export class FoldersService {
       return [];
     }
 
-    const viewableAppsQb = viewableAppsQuery(user, searchKey, undefined, type);
+    const viewableAppsQb = viewableAppsQuery(
+      user,
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      searchKey,
+      undefined,
+      type
+    );
 
     const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
 

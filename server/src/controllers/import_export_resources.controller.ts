@@ -9,6 +9,7 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
 import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
 import { DataSource } from 'src/entities/data_source.entity';
+import { AppCountGuard } from '@ee/licensing/guards/app.guard';
 
 @Controller({
   path: 'resources',
@@ -36,7 +37,7 @@ export class ImportExportResourcesController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post('/import')
   async import(@User() user, @Body() importResourcesDto: ImportResourcesDto) {
     const appAbility = await this.appsAbilityFactory.appsActions(user);
@@ -58,7 +59,7 @@ export class ImportExportResourcesController {
     return { imports, success: true };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post('/clone')
   async clone(@User() user, @Body() cloneResourcesDto: CloneResourcesDto) {
     const appAbility = await this.appsAbilityFactory.appsActions(user);

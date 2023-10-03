@@ -211,6 +211,7 @@ export const createNewColumnAndVerify = (
     .should("be.visible")
     .and("have.text", commonText.createButton)
     .click();
+  cy.wait(1000);
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     createNewColumnText.columnCreatedSuccessfullyToast
@@ -402,7 +403,8 @@ export const deleteCondition = (selector, columnName = [], deleteIcon) => {
 };
 export const deleteRowAndVerify = (tableName, rowNumber = []) => {
   navigateToTable(tableName);
-  cy.wait("@dbLoad");
+  cy.wait(1000);
+  //cy.wait("@dbLoad");
   cy.get("body")
     .find(".table>>tr")
     .its("length")
@@ -497,7 +499,7 @@ export const editRowWithInvalidData = (
 ) => {
   cy.intercept("GET", "api/tooljet_db/organizations/**").as("dbLoad");
   navigateToTable(tableName);
-  cy.wait("@dbLoad");
+  //cy.wait("@dbLoad");
 
   cy.get(editRowSelectors.editRowbutton).should("be.visible").click();
   cy.get(editRowSelectors.editRowHeader).verifyVisibleElement(

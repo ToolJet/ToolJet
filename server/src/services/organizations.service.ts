@@ -40,6 +40,7 @@ import { AppEnvironmentService } from './app_environments.service';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 const MAX_ROW_COUNT = 500;
 
@@ -120,18 +121,17 @@ export class OrganizationsService {
 
         await this.usersService.validateLicense(manager);
       }
-      await this.validateLicense(manager);
+      await this.organizationUserService.validateLicense(manager);
     }, manager);
 
     return organization;
   }
 
   async constructSSOConfigs() {
-    const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE');
-    const {
-      oidcEnabled,
-      status: { isExpired, isLicenseValid },
-    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.OIDC, LICENSE_FIELD.STATUS]);
+    const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings(
+      INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
+    );
+    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
     return {
       google: {
         enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
@@ -147,12 +147,7 @@ export class OrganizationsService {
         },
       },
       openid: {
-        enabled: !!(
-          this.configService.get<string>('SSO_OPENID_CLIENT_ID') &&
-          oidcEnabled &&
-          isLicenseValid &&
-          !isExpired
-        ),
+        enabled: !!(this.configService.get<string>('SSO_OPENID_CLIENT_ID') && oidcEnabled),
         configs: {
           client_id: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
           name: this.configService.get<string>('SSO_OPENID_NAME'),
@@ -484,12 +479,13 @@ export class OrganizationsService {
       }
     }
 
-    // filter oidc configs
-    if (
-      result?.ssoConfigs?.some((sso) => sso.sso === 'openid') &&
-      !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.AUDIT_LOGS))
-    ) {
+    // filter oidc and ldap configs
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.OIDC, LICENSE_FIELD.LDAP]);
+    if (result?.ssoConfigs?.some((sso) => sso.sso === 'openid') && !licenseTerms[LICENSE_FIELD.OIDC]) {
       result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'openid');
+    }
+    if (result?.ssoConfigs?.some((sso) => sso.sso === 'ldap') && !licenseTerms[LICENSE_FIELD.LDAP]) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'ldap');
     }
 
     if (!isHideSensitiveData) {
@@ -690,7 +686,9 @@ export class OrganizationsService {
         // User not exist
         shouldSendWelcomeMail = true;
         // Create default organization if user not exist
-        if ((await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
+        if (
+          (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true'
+        ) {
           // Create default organization if user not exist
           const organizationName = generateNextName('My workspace');
           defaultOrganization = await this.create(organizationName, null, manager);
@@ -717,7 +715,7 @@ export class OrganizationsService {
       if (defaultOrganization) {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
-        await this.validateLicense(manager);
+        await this.organizationUserService.validateLicense(manager);
         await this.usersService.attachUserGroup(
           ['all_users', 'admin'],
           defaultOrganization.id,
@@ -930,38 +928,18 @@ export class OrganizationsService {
       });
   }
 
-  async organizationsCount(manager?: EntityManager) {
-    return dbTransactionWrap(async (manager) => {
-      return await manager.createQueryBuilder(Organization, 'organizations').getCount();
-    }, manager);
-  }
-
   async organizationsLimit() {
     const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.WORKSPACES, LICENSE_FIELD.STATUS]);
-    if (licenseTerms[LICENSE_FIELD.WORKSPACES] === LICENSE_LIMIT.UNLIMITED) {
-      return;
-    }
-    const currentOrganizationsCount = await this.organizationsCount();
 
     return {
       workspacesCount: generatePayloadForLimits(
-        currentOrganizationsCount,
+        licenseTerms[LICENSE_FIELD.WORKSPACES] !== LICENSE_LIMIT.UNLIMITED
+          ? await this.organizationUserService.organizationsCount()
+          : 0,
         licenseTerms[LICENSE_FIELD.WORKSPACES],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.WORKSPACES
       ),
     };
-  }
-
-  async validateLicense(manager: EntityManager): Promise<void> {
-    const workspacesCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.WORKSPACES);
-
-    if (workspacesCount === LICENSE_LIMIT.UNLIMITED) {
-      return;
-    }
-
-    if ((await this.organizationsCount(manager)) > workspacesCount) {
-      throw new HttpException('You have reached your limit for number of workspaces.', 451);
-    }
   }
 }

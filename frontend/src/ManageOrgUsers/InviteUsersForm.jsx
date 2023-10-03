@@ -122,7 +122,7 @@ function InviteUsersForm({
               <LicenseBanner classes="mb-3" limits={userLimits} type="users" size="small" />
               <div
                 className={`invite-user-by-email ${
-                  userLimits?.percentage === 100 && !userLimits?.licenseStatus?.isExpired && 'disabled'
+                  !userLimits?.canAddUnlimited && userLimits?.percentage >= 100 && 'disabled'
                 }`}
               >
                 <form onSubmit={handleCreateUser} noValidate className="invite-email-body" id="inviteByEmail">
@@ -194,8 +194,8 @@ function InviteUsersForm({
                   </div>
                   <div>
                     <p className="tj-text tj-text-sm" data-cy="helper-text-bulk-upload">
-                      Download the ToolJet template to add user details or format your file in the same as the template.
-                      ToolJet won’t be able to recognise files in any other format.{' '}
+                      Download the template to add user details or format your file in the same way as the template.
+                      Files in any other format may not be recognized.{' '}
                     </p>
                     <ButtonSolid
                       href="../../assets/csv/sample_upload.csv"
@@ -238,10 +238,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={
-                uploadingUsers ||
-                (userLimits?.percentage === 100 && !userLimits?.licenseStatus?.isExpired && 'disabled')
-              }
+              disabled={uploadingUsers || (!userLimits?.canAddUnlimited && userLimits?.percentage >= 100 && 'disabled')}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

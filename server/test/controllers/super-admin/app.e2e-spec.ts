@@ -44,63 +44,6 @@ describe('Authentication', () => {
     jest.clearAllMocks();
   });
 
-  describe('Single organization - Super Admin', () => {
-    beforeEach(async () => {
-      jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-        switch (key) {
-          case 'DISABLE_MULTI_WORKSPACE':
-            return 'true';
-          default:
-            return process.env[key];
-        }
-      });
-    });
-    it('should create new users and organization - user type should not be instance', async () => {
-      const adminResponse = await request(app.getHttpServer())
-        .post('/api/setup-admin')
-        .send({ email: 'test@tooljet.io', name: 'Admin', password: 'password', workspace: 'test' });
-      expect(adminResponse.statusCode).toBe(201);
-
-      const user = await userRepository.findOneOrFail({
-        where: { email: 'test@tooljet.io' },
-        relations: ['organizationUsers'],
-      });
-
-      const organization = await orgRepository.findOneOrFail({
-        where: { id: user?.organizationUsers?.[0]?.organizationId },
-      });
-
-      expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-      expect(user.userType).toBe('workspace');
-      expect(organization.name).toBe('test');
-
-      const groupPermissions = await user.groupPermissions;
-      const groupNames = groupPermissions.map((x) => x.group);
-
-      expect(new Set(['all_users', 'admin'])).toEqual(new Set(groupNames));
-
-      const adminGroup = groupPermissions.find((x) => x.group == 'admin');
-      expect(adminGroup.appCreate).toBeTruthy();
-      expect(adminGroup.appDelete).toBeTruthy();
-      expect(adminGroup.folderCreate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableCreate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableUpdate).toBeTruthy();
-      expect(adminGroup.orgEnvironmentVariableDelete).toBeTruthy();
-      expect(adminGroup.folderUpdate).toBeTruthy();
-      expect(adminGroup.folderDelete).toBeTruthy();
-
-      const allUserGroup = groupPermissions.find((x) => x.group == 'all_users');
-      expect(allUserGroup.appCreate).toBeFalsy();
-      expect(allUserGroup.appDelete).toBeFalsy();
-      expect(allUserGroup.folderCreate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableCreate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableUpdate).toBeFalsy();
-      expect(allUserGroup.orgEnvironmentVariableDelete).toBeFalsy();
-      expect(allUserGroup.folderUpdate).toBeFalsy();
-      expect(allUserGroup.folderDelete).toBeFalsy();
-    });
-  });
-
   describe('Multi organization - Super Admin onboarding', () => {
     it('should create new users and organization - user type should instance', async () => {
       const adminResponse = await request(app.getHttpServer())

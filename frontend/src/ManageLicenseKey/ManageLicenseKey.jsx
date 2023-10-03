@@ -8,12 +8,14 @@ import { Access } from './Access';
 import { Domains } from './Domains';
 import { licenseService } from '@/_services/license.service';
 import { getDateDifferenceInDays, convertDateFormat } from '@/_helpers/utils';
+import Skeleton from 'react-loading-skeleton';
 
 function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState('licenseKey');
   const [sidebarNavs, setSidebarNavs] = useState(['License Key']);
   const [featureAccess, setFeatureAccess] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const expiryDate = featureAccess?.licenseStatus?.expiryDate;
 
   const defaultOrgName = (groupName) => {
@@ -36,12 +38,12 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
   }, [selectedTab]);
 
   const fetchFeatureAccess = () => {
+    setIsLoading(true);
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess(data);
-      if (data?.licenseStatus?.isLicenseValid) {
-        fetchFeatureAccessForInstanceSettings();
-        setSidebarNavs(['License Key', 'Limits', 'Access', 'Domain']);
-      }
+      fetchFeatureAccessForInstanceSettings();
+      setSidebarNavs(['License Key', 'Limits', 'Access', 'Domain']);
+      setIsLoading(false);
     });
   };
 
@@ -60,7 +62,7 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
         };
       default:
         return {
-          text: `Valid till ${convertDateFormat(expiryDate)}`,
+          text: `Valid till ${convertDateFormat(expiryDate)} (UTC)`,
           className: 'valid-status',
         };
     }
@@ -71,7 +73,7 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
   return (
     <div className="wrapper enterprise-page">
       <div className="wrapper license-page">
-        <div style={{ minHeight: '620px' }} className="row gx-0">
+        <div className="row gx-0 body-wrapper">
           <div className="license-page-sidebar col ">
             <div className="license-nav-list-wrap">
               {sidebarNavs.map((item, index) => {
@@ -96,8 +98,12 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
           <div className={cx('col license-content-wrapper')}>
             <div className="col tj-dashboard-header-wrap font-weight-500 license-header-wrap">
               <div>{sidebarNavs.find((nav) => selectedTab === defaultOrgName(nav))}</div>
-              {expiryDate && (
-                <div className={`status-container ${licenseExpiryStatus.className}`}>{licenseExpiryStatus.text}</div>
+              {!isLoading ? (
+                expiryDate && (
+                  <div className={`status-container ${licenseExpiryStatus.className}`}>{licenseExpiryStatus.text}</div>
+                )
+              ) : (
+                <Skeleton width="150px" height="20px" />
               )}
             </div>
             <div className="content-wrapper">
@@ -105,13 +111,11 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
                 <LicenseKey fetchFeatureAccess={fetchFeatureAccess} featureAccess={featureAccess} />
               )}
             </div>
-            {featureAccess?.licenseStatus?.isLicenseValid && (
-              <>
-                <div className="content-wrapper">{selectedTab === 'limits' && <Limits />}</div>
-                <div className="content-wrapper">{selectedTab === 'access' && <Access />}</div>
-                <div className="content-wrapper">{selectedTab === 'domain' && <Domains />}</div>
-              </>
-            )}
+            <>
+              <div className="content-wrapper">{selectedTab === 'limits' && <Limits />}</div>
+              <div className="content-wrapper">{selectedTab === 'access' && <Access />}</div>
+              <div className="content-wrapper">{selectedTab === 'domain' && <Domains />}</div>
+            </>
           </div>
         </div>
       </div>

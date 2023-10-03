@@ -4,6 +4,7 @@ import { UsersService } from '@services/users.service';
 import { Observable } from 'rxjs';
 import { User } from 'src/entities/user.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
+import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
 export class AllowPersonalWorkspaceGuard implements CanActivate {
@@ -11,7 +12,8 @@ export class AllowPersonalWorkspaceGuard implements CanActivate {
 
   async allowedPersonalWorkspace(user: User): Promise<boolean> {
     return (
-      isSuperAdmin(user) || (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true'
+      isSuperAdmin(user) ||
+      (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true'
     );
   }
 

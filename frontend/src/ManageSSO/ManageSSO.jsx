@@ -22,7 +22,10 @@ export function ManageSSO({ darkMode }) {
     { id: 'openid', label: 'OpenID Connect' },
     { id: 'ldap', label: 'LDAP' },
   ];
-  const protectedMenuItems = [{ id: 'openid', label: 'OpenID Connect' }];
+  const protectedMenuItems = [
+    { id: 'openid', label: 'OpenID Connect' },
+    { id: 'ldap', label: 'LDAP' },
+  ];
 
   const changePage = useCallback(
     (page) => {
@@ -137,6 +140,7 @@ export function ManageSSO({ darkMode }) {
                             limits={featureAccess}
                             feature={item?.label}
                             isAvailable={featureAccess[item.id]}
+                            noTooltipIfValid={true}
                           >
                             {children}
                           </LicenseTooltip>
@@ -147,11 +151,7 @@ export function ManageSSO({ darkMode }) {
                         <Wrapper key={index}>
                           <FolderList
                             onClick={() => {
-                              if (
-                                featureAccess[item.id] &&
-                                !featureAccess?.licenseStatus?.isExpired &&
-                                featureAccess?.licenseStatus?.isLicenseValid
-                              ) {
+                              if (featureAccess[item.id]) {
                                 changePage(item.id);
                               } else if (!protectedMenuIndex) {
                                 changePage(item.id);
