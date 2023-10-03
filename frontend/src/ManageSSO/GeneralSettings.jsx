@@ -166,7 +166,9 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
 
             <div className="d-flex justify-content-between form-control align-items-center">
               <p id="login-url" data-cy="workspace-login-url">
-                {`${window.public_config?.TOOLJET_HOST}/login/${
+                {`${window.public_config?.TOOLJET_HOST}${
+                  window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                }/login/${
                   authenticationService?.currentSessionValue?.current_organization_slug ||
                   authenticationService?.currentSessionValue?.current_organization_id
                 }`}

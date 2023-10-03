@@ -17,7 +17,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, generateNextName } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateInviteURL, generateNextName } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -319,9 +319,12 @@ export class OauthService {
           )?.invitationToken;
 
           return decamelizeKeys({
-            redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-              userDetails.invitationToken
-            }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+            redirectUrl: generateInviteURL(
+              userDetails.invitationToken,
+              organizationToken,
+              organization.id,
+              URL_SSO_SOURCE
+            ),
           });
         }
       }
@@ -334,9 +337,7 @@ export class OauthService {
           manager
         );
         return decamelizeKeys({
-          redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-            userDetails.invitationToken
-          }?source=${URL_SSO_SOURCE}`,
+          redirectUrl: generateInviteURL(userDetails.invitationToken, null, null, URL_SSO_SOURCE),
         });
       }
       return await this.authService.generateLoginResultPayload(

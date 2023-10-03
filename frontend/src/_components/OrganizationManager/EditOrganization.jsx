@@ -27,7 +27,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
         },
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    currentValue
+    [currentValue]
   );
 
   const editOrganization = () => {
@@ -126,7 +126,6 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       show={showEditOrg}
       closeModal={closeModal}
       title={t('header.organization.editWorkspace', 'Edit workspace')}
-      checkForBackground={false}
     >
       <div className="workspace-folder-modal">
         <div className="row">

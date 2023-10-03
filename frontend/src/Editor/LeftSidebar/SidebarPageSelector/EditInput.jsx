@@ -37,7 +37,7 @@ export const EditInput = ({ slug, error, setError, pageHandle, setPageHandle, is
       </div>
       <input
         type="text"
-        className={`page-handler-input form-control form-control-sm ${error ? 'is-invalid' : ''}`}
+        className={`page-handler-input  form-control form-control-sm ${error ? 'is-invalid' : ''}`}
         placeholder={'Enter page handle'}
         onChange={onChangePageHandleValue}
         value={pageHandle}

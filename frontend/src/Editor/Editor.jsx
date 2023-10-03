@@ -1,5 +1,11 @@
 import React from 'react';
-import { appsService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
+import {
+  appsService,
+  authenticationService,
+  appVersionService,
+  orgEnvironmentVariableService,
+  orgEnvironmentConstantService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import _, { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
@@ -84,10 +90,10 @@ class EditorComponent extends React.Component {
       globalSettings: {
         hideHeader: false,
         appInMaintenance: false,
-        canvasMaxWidth: 1292,
-        canvasMaxWidthType: 'px',
+        canvasMaxWidth: 100,
+        canvasMaxWidthType: '%',
         canvasMaxHeight: 2400,
-        canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#edeff5',
+        canvasBackgroundColor: props.darkMode ? '#2f3c4c' : '#F2F2F5',
         backgroundFxQuery: '',
       },
     };
@@ -111,7 +117,8 @@ class EditorComponent extends React.Component {
       apps: [],
       queryConfirmationList: [],
       isSourceSelected: false,
-      selectionInProgress: false,
+      isSaving: false,
+      isUnsavedQueriesAvailable: false,
       scrollOptions: {},
       currentPageId: defaultPageId,
       pages: {},
@@ -169,10 +176,11 @@ class EditorComponent extends React.Component {
 
   async componentDidMount() {
     window.addEventListener('message', this.handleMessage);
-    this.getCurrentOrganizationDetails();
+    await this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.fetchApp(this.props.params.pageHandle);
+    this.fetchOrgEnvironmentConstants(); // for ce
     this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
@@ -190,6 +198,10 @@ class EditorComponent extends React.Component {
       ...this.props.currentState.globals,
       theme: { name: this.props.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+      /* Constant value.it will only change for viewer */
+      mode: {
+        value: 'edit',
+      },
     };
     const page = {
       ...this.props.currentState.page,
@@ -241,6 +253,21 @@ class EditorComponent extends React.Component {
       useCurrentStateStore.getState().actions.setCurrentState({
         server: server_variables,
         client: client_variables,
+      });
+    });
+  };
+
+  fetchOrgEnvironmentConstants = () => {
+    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
+    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+      const orgConstants = {};
+      constants.map((constant) => {
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
+      });
+
+      useCurrentStateStore.getState().actions.setCurrentState({
+        constants: orgConstants,
       });
     });
   };
@@ -610,10 +637,10 @@ class EditorComponent extends React.Component {
   };
 
   removeComponents = () => {
-    if (!this.props.isVersionReleased && this.state?.selectedComponents?.length > 1) {
-      let newDefinition = cloneDeep(this.state.appDefinition);
-      const selectedComponents = this.state?.selectedComponents;
+    const selectedComponents = this.props?.selectedComponents;
 
+    if (!this.props.isVersionReleased && selectedComponents?.length > 1) {
+      let newDefinition = cloneDeep(this.state.appDefinition);
       removeSelectedComponent(this.state.currentPageId, newDefinition, selectedComponents);
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
@@ -712,8 +739,8 @@ class EditorComponent extends React.Component {
   };
 
   handleEditorEscapeKeyPress = () => {
-    if (this.state?.selectedComponents?.length > 0) {
-      this.setState({ selectedComponents: [] });
+    if (this.props?.selectedComponents?.length > 0) {
+      this.props.setSelectedComponents([]);
       this.handleInspectorView();
     }
   };
@@ -722,7 +749,7 @@ class EditorComponent extends React.Component {
     let appDefinition = JSON.parse(JSON.stringify(this.state.appDefinition));
     let newComponents = appDefinition.pages[this.state.currentPageId].components;
 
-    for (const selectedComponent of this.state.selectedComponents) {
+    for (const selectedComponent of this.props.selectedComponents) {
       newComponents = produce(newComponents, (draft) => {
         let top = draft[selectedComponent.id].layouts[this.props.currentLayout].top;
         let left = draft[selectedComponent.id].layouts[this.props.currentLayout].left;
@@ -803,20 +830,16 @@ class EditorComponent extends React.Component {
   };
 
   setSelectedComponent = (id, component, multiSelect = false) => {
-    if (this.state.selectedComponents.length === 0 || !multiSelect) {
+    if (this.props.selectedComponents.length === 0 || !multiSelect) {
       this.switchSidebarTab(1);
     } else {
       this.switchSidebarTab(2);
     }
 
-    const isAlreadySelected = this.state.selectedComponents.find((component) => component.id === id);
+    const isAlreadySelected = this.props.selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
-      this.setState((prevState) => {
-        return {
-          selectedComponents: [...(multiSelect ? prevState.selectedComponents : []), { id, component }],
-        };
-      });
+      this.props.setSelectedComponents([...(multiSelect ? this.props.selectedComponents : []), { id, component }]);
     }
   };
 
@@ -852,9 +875,9 @@ class EditorComponent extends React.Component {
   };
 
   computeCanvasBackgroundColor = () => {
-    const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#edeff5';
-    if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
-      return this.props.darkMode ? '#2f3c4c' : '#edeff5';
+    const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#F2F2F5';
+    if (['#2f3c4c', '#F2F2F5', '#edeff5'].includes(canvasBackgroundColor)) {
+      return this.props.darkMode ? '#2f3c4c' : '#F2F2F5';
     }
     return canvasBackgroundColor;
   };
@@ -912,17 +935,7 @@ class EditorComponent extends React.Component {
   };
 
   handleComponentClick = (id, component) => {
-    this.setState({
-      selectedComponent: { id, component },
-    });
     this.switchSidebarTab(1);
-  };
-
-  handleComponentHover = (id) => {
-    if (this.state.selectionInProgress) return;
-    this.setState({
-      hoveredComponent: id,
-    });
   };
 
   sideBarDebugger = {
@@ -950,20 +963,17 @@ class EditorComponent extends React.Component {
   runQuery = (queryId, queryName) => runQuery(this, queryId, queryName);
 
   onAreaSelectionStart = (e) => {
-    const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 0;
-    this.setState((prevState) => {
-      return {
-        selectionInProgress: true,
-        selectedComponents: [...(isMultiSelect ? prevState.selectedComponents : [])],
-      };
-    });
+    const isMultiSelect = e.inputEvent.shiftKey || this.props.selectedComponents.length > 0;
+    this.props.setSelectionInProgress(true);
+    this.props.setSelectedComponents([...(isMultiSelect ? this.props.selectedComponents : [])]);
   };
 
   onAreaSelection = (e) => {
     e.added.forEach((el) => {
       el.classList.add('resizer-select');
     });
-    if (this.state.selectionInProgress) {
+
+    if (this.props.selectionInProgress) {
       e.removed.forEach((el) => {
         el.classList.remove('resizer-select');
       });
@@ -972,7 +982,7 @@ class EditorComponent extends React.Component {
 
   onAreaSelectionEnd = (e) => {
     const currentPageId = this.state.currentPageId;
-    this.setState({ selectionInProgress: false });
+    this.props.setSelectionInProgress(false);
     e.selected.forEach((el, index) => {
       const id = el.getAttribute('widgetid');
       const component = this.state.appDefinition.pages[currentPageId].components[id].component;
@@ -992,13 +1002,13 @@ class EditorComponent extends React.Component {
   onAreaSelectionDrag = (e) => {
     if (this.selectionDragRef.current) {
       e.stop();
-      this.state.selectionInProgress && this.setState({ selectionInProgress: false });
+      this.props.selectionInProgress && this.props.setSelectionInProgress(false);
     }
   };
 
   onAreaSelectionDragEnd = () => {
     this.selectionDragRef.current = false;
-    this.state.selectionInProgress && this.setState({ selectionInProgress: false });
+    this.props.selectionInProgress && this.props.setSelectionInProgress(false);
   };
 
   addNewPage = ({ name, handle }) => {
@@ -1344,6 +1354,30 @@ class EditorComponent extends React.Component {
     );
   };
 
+  disableEnablePage = ({ pageId, isDisabled }) => {
+    const newAppDefinition = {
+      ...this.state.appDefinition,
+      pages: {
+        ...this.state.appDefinition.pages,
+        [pageId]: {
+          ...this.state.appDefinition.pages[pageId],
+          disabled: isDisabled ?? false,
+        },
+      },
+    };
+
+    this.setState(
+      {
+        isSaving: true,
+        appDefinition: newAppDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        this.autoSave();
+      }
+    );
+  };
+
   switchPage = (pageId, queryParams = []) => {
     document.getElementById('real-canvas').scrollIntoView();
     if (
@@ -1448,13 +1482,18 @@ class EditorComponent extends React.Component {
       return defaultCanvasMinWidth;
     }
   };
+  handleCanvasContainerMouseUp = (e) => {
+    if (['real-canvas', 'modal'].includes(e.target.className)) {
+      this.props.setSelectedComponents([]);
+      this.setState({ currentSidebarTab: 2 });
+    }
+  };
 
   handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
 
   render() {
     const {
       currentSidebarTab,
-      selectedComponents = [],
       appDefinition,
       appId,
       slug,
@@ -1465,9 +1504,9 @@ class EditorComponent extends React.Component {
       deviceWindowWidth,
       apps,
       defaultComponentStateComputed,
-      hoveredComponent,
       queryConfirmationList,
     } = this.state;
+    const selectedComponents = this?.props?.selectedComponents;
     const currentState = this.props?.currentState;
     const editingVersion = this.props?.editingVersion;
     const previewQuery = queryString.stringify({ version: editingVersion?.name });
@@ -1525,6 +1564,9 @@ class EditorComponent extends React.Component {
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
               <LeftSidebar
+                globalSettingsChanged={this.globalSettingsChanged}
+                toggleAppMaintenance={this.toggleAppMaintenance}
+                app={app}
                 errorLogs={currentState.errors}
                 components={currentState.components}
                 appId={appId}
@@ -1541,6 +1583,7 @@ class EditorComponent extends React.Component {
                   pages: this.state.appDefinition.pages,
                   homePageId: this.state.appDefinition.homePageId,
                   showViewerNavigation: this.state.appDefinition.showViewerNavigation,
+                  globalSettings: this.state.appDefinition.globalSettings,
                 }}
                 setSelectedComponent={this.setSelectedComponent}
                 removeComponent={this.removeComponent}
@@ -1554,6 +1597,7 @@ class EditorComponent extends React.Component {
                 renamePage={this.renamePage}
                 clonePage={this.clonePage}
                 hidePage={this.hidePage}
+                disableEnablePage={this.disableEnablePage}
                 unHidePage={this.unHidePage}
                 updateHomePage={this.updateHomePage}
                 updatePageHandle={this.updatePageHandle}
@@ -1563,6 +1607,7 @@ class EditorComponent extends React.Component {
                 apps={apps}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
               />
+
               {!this.props.showComments && (
                 <Selecto
                   dragContainer={'.canvas-container'}
@@ -1597,13 +1642,9 @@ class EditorComponent extends React.Component {
                       (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
                       `px solid ${this.computeCanvasBackgroundColor()}`,
                     height: this.computeCanvasContainerHeight(),
-                    background: !this.props.darkMode && '#f4f6fa',
+                    background: !this.props.darkMode ? '#EBEBEF' : '#2E3035',
                   }}
-                  onMouseUp={(e) => {
-                    if (['real-canvas', 'modal'].includes(e.target.className)) {
-                      this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
-                    }
-                  }}
+                  onMouseUp={this.handleCanvasContainerMouseUp}
                   ref={this.canvasContainerRef}
                   onScroll={() => {
                     this.selectionRef.current.checkScroll();
@@ -1667,7 +1708,6 @@ class EditorComponent extends React.Component {
                             mode={'edit'}
                             zoomLevel={zoomLevel}
                             deviceWindowWidth={deviceWindowWidth}
-                            selectedComponents={selectedComponents}
                             appLoading={isLoading}
                             onEvent={this.handleEvent}
                             onComponentOptionChanged={this.handleOnComponentOptionChanged}
@@ -1677,8 +1717,6 @@ class EditorComponent extends React.Component {
                             handleRedo={this.handleRedo}
                             removeComponent={this.removeComponent}
                             onComponentClick={this.handleComponentClick}
-                            onComponentHover={this.handleComponentHover}
-                            hoveredComponent={hoveredComponent}
                             sideBarDebugger={this.sideBarDebugger}
                             currentPageId={this.state.currentPageId}
                           />
@@ -1733,6 +1771,7 @@ class EditorComponent extends React.Component {
                         darkMode={this.props.darkMode}
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                         pages={this.getPagesWithIds()}
+                        cloneComponents={this.cloneComponents}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">
@@ -1762,10 +1801,21 @@ class EditorComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { showComments, currentLayout } = useEditorStore(
+  const {
+    showComments,
+    currentLayout,
+    selectionInProgress,
+    setSelectionInProgress,
+    selectedComponents,
+    setSelectedComponents,
+  } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
+      selectionInProgress: state?.selectionInProgress,
+      setSelectionInProgress: state?.actions?.setSelectionInProgress,
+      selectedComponents: state?.selectedComponents,
+      setSelectedComponents: state?.actions?.setSelectedComponents,
     }),
     shallow
   );
@@ -1773,17 +1823,20 @@ const withStore = (Component) => (props) => {
     (state) => ({ isVersionReleased: state.isVersionReleased, editingVersion: state.editingVersion }),
     shallow
   );
-
   const currentState = useCurrentState();
 
   return (
     <Component
       {...props}
-      isVersionReleased={isVersionReleased}
-      editingVersion={editingVersion}
-      currentState={currentState}
       showComments={showComments}
       currentLayout={currentLayout}
+      isVersionReleased={isVersionReleased}
+      editingVersion={editingVersion}
+      selectionInProgress={selectionInProgress}
+      setSelectionInProgress={setSelectionInProgress}
+      selectedComponents={selectedComponents}
+      setSelectedComponents={setSelectedComponents}
+      currentState={currentState}
     />
   );
 };

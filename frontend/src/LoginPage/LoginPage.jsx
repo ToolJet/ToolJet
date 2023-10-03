@@ -13,7 +13,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
-import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
+import { setCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
 import { pathnameToArray, getSubpath, getRedirectURL, redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
 class LoginPageComponent extends React.Component {
@@ -121,12 +121,6 @@ class LoginPageComponent extends React.Component {
     this.currentSessionObservable && this.currentSessionObservable.unsubscribe();
   }
 
-  eraseRedirectUrl() {
-    const redirectPath = getCookie('redirectPath');
-    redirectPath && eraseCookie('redirectPath');
-    return redirectPath;
-  }
-
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
@@ -198,11 +192,6 @@ class LoginPageComponent extends React.Component {
       position: 'top-center',
     });
     this.setState({ isLoading: false });
-  };
-
-  redirectToUrl = () => {
-    const redirectPath = this.eraseRedirectUrl();
-    return redirectPath ? redirectPath : '/';
   };
 
   render() {

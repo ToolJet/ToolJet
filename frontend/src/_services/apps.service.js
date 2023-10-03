@@ -13,6 +13,9 @@ export const appsService = {
   cloneApp,
   exportApp,
   importApp,
+  exportResource,
+  importResource,
+  cloneResource,
   changeIcon,
   deleteApp,
   getApp,
@@ -21,6 +24,7 @@ export const appsService = {
   saveApp,
   getAppUsers,
   getVersions,
+  getTables,
 };
 
 function validateReleasedApp(slug) {
@@ -150,4 +154,41 @@ function setSlug(appId, slug) {
     body: JSON.stringify({ app: { slug: slug } }),
   };
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
+}
+
+function exportResource(body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  };
+
+  return fetch(`${config.apiUrl}/v2/resources/export`, requestOptions).then(handleResponse);
+}
+
+function importResource(body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/resources/import`, requestOptions).then(handleResponse);
+}
+
+function cloneResource(body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  };
+
+  return fetch(`${config.apiUrl}/v2/resources/clone`, requestOptions).then(handleResponse);
+}
+
+function getTables(id) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
 }

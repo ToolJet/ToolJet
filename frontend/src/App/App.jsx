@@ -66,6 +66,26 @@ class AppComponent extends React.Component {
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
+  // check if its getting routed from editor
+  checkPreviousRoute = (route) => {
+    if (route.includes('/apps')) {
+      return true;
+    }
+    return false;
+  };
+
+  componentDidUpdate(prevProps) {
+    // Check if the current location is the dashboard (homepage)
+    if (
+      this.props.location.pathname === `/${getWorkspaceIdFromURL()}` &&
+      prevProps.location.pathname !== `/${getWorkspaceIdFromURL()}` &&
+      this.checkPreviousRoute(prevProps.location.pathname) &&
+      prevProps.location.pathname !== `/:workspaceId`
+    ) {
+      // Reload the page for clearing already set intervals
+      window.location.reload();
+    }
+  }
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
@@ -193,7 +213,7 @@ class AppComponent extends React.Component {
               />
               <Route
                 exact
-                path="/:workspaceId/global-datasources"
+                path="/:workspaceId/data-sources"
                 element={
                   <PrivateRoute>
                     <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />

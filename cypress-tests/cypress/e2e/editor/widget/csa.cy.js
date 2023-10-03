@@ -16,8 +16,13 @@ import { commonWidgetText } from "Texts/common";
 describe("Editor- CSA", () => {
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
+  });
+
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("Should verify Tabs CSA", () => {
@@ -54,7 +59,7 @@ describe("Editor- CSA", () => {
     selectCSA("form1", "Reset Form");
 
     openEditorSidebar("form1");
-    cy.get('[data-cy="button-to-submit-form-fx-button"]').eq(1).click();
+    cy.get('[data-cy="button-to-submit-form-fx-button"] > svg').click();
     cy.get(
       '[data-cy="button-to-submit-form-input-field"]'
     ).clearAndTypeOnCodeMirror(`{{components.button2`);
@@ -148,7 +153,7 @@ describe("Editor- CSA", () => {
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.get(`${commonWidgetSelector.draggableWidget("filepicker1")} p`).should(
       "have.text",
-      "Drag and Drop some files here, or click to select files"
+      "Drag and drop files here or click to select files"
     );
   });
 

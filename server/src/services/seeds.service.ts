@@ -85,6 +85,8 @@ export class SeedsService {
       orgEnvironmentVariableCreate: group == 'admin',
       orgEnvironmentVariableUpdate: group == 'admin',
       orgEnvironmentVariableDelete: group == 'admin',
+      orgEnvironmentConstantCreate: group == 'admin',
+      orgEnvironmentConstantDelete: group == 'admin',
       folderUpdate: group == 'admin',
       folderDelete: group == 'admin',
     });

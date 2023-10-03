@@ -261,8 +261,7 @@
           "label": "Workspaces",
           "items": [
             "org-management/workspaces/workspace_overview",
-            "org-management/workspaces/workspace-variables",
-            "org-management/workspaces/workspace_constants"
+            "org-management/workspaces/workspace-variables"
           ]
         },
         "org-management/permissions",
@@ -325,6 +324,7 @@
         "how-to/use-form-component",
         "how-to/access-cellvalue-rowdata",
         "how-to/bulk-update-multiple-rows",
+        "how-to/delete-multiple-rows",
         "how-to/use-server-side-pagination",
         "how-to/access-currentuser",
         "how-to/use-axios-in-runjs",
@@ -406,7 +406,7 @@
         {
           "type": "link",
           "label": "Roadmap",
-          "href": "https://github.com/ToolJet/ToolJet/projects/2?query=is%3Aopen+sort%3Aupdated-desc"
+          "href": "https://github.com/tooljet/tooljet/milestones"
         }
       ]
     }

@@ -8,7 +8,6 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 
 export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPageId }, ref) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
   const { appVersionsId } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
@@ -42,12 +41,11 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
     <LeftSidebarItem
       commentBadge={notifications?.length > 0}
       selectedSidebarItem={selectedSidebarItem}
-      title={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
-      icon={darkMode ? `comments-dark` : 'comments-light'}
-      className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
+      title={appVersionsId ? 'Toggle comments' : 'Comments section will be available once you save this application'}
+      icon={'comments'}
+      className={cx(`left-sidebar-item left-sidebar-layout`, {
         disabled: !appVersionsId,
         active: isActive,
-        dark: darkMode,
       })}
       onClick={() => {
         toggleActive(!isActive);

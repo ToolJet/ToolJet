@@ -173,6 +173,8 @@ export class OrganizationsService {
           orgEnvironmentVariableCreate: isAdmin,
           orgEnvironmentVariableUpdate: isAdmin,
           orgEnvironmentVariableDelete: isAdmin,
+          orgEnvironmentConstantCreate: isAdmin,
+          orgEnvironmentConstantDelete: isAdmin,
           folderUpdate: isAdmin,
           folderDelete: isAdmin,
         });
@@ -634,7 +636,8 @@ export class OrganizationsService {
             user.email,
             user.firstName,
             user.invitationToken,
-            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
+            organizationUser.invitationToken,
+            organizationUser.organizationId,
             currentOrganization.name,
             `${currentUser.firstName} ${currentUser.lastName ?? ''}`
           )

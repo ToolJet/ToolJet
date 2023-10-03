@@ -3,11 +3,12 @@ export const postgreSqlSelector = {
   labelDataSources: "[data-cy='label-datasources']",
   addDatasourceLink: "[data-cy='add-datasource-link']",
 
-  allDatasourceLabelAndCount: '[data-rr-ui-event-key="#alldatasources"]',
-  databaseLabelAndCount: '[data-rr-ui-event-key="#databases"]',
-  apiLabelAndCount: '[data-rr-ui-event-key="#apis"]',
-  cloudStorageLabelAndCount: '[data-rr-ui-event-key="#cloudstorage"]',
-  dataSourceSearchInputField: '[data-cy="datasource-search-input"]',
+  allDatasourceLabelAndCount: '[data-cy="datasource-list-header"]',
+  databaseLabelAndCount: '[data-cy="databases-datasource-button"]',
+  apiLabelAndCount: '[data-cy="apis-datasource-button"]',
+  cloudStorageLabelAndCount: '[data-cy="cloudstorage-datasource-button"]',
+  pluginsLabelAndCount: '[data-cy="plugins-datasource-button"]',
+  dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
   dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
@@ -23,8 +24,8 @@ export const postgreSqlSelector = {
   linkReadDocumentation: '[data-cy="link-read-documentation"]',
   buttonTestConnection: '[data-cy="test-connection-button"]',
   connectionFailedText: '[data-cy="test-connection-failed-text"]',
-  buttonSave: '[data-cy="db-connection-save-button"]',
-  dangerAlertNotSupportSSL: '.go3958317564',
+  buttonSave: '[data-cy="db-connection-save-button"] > .tj-base-btn',
+  dangerAlertNotSupportSSL: ".go3958317564",
 
   passwordTextField: '[data-cy="password-text-field"]',
   textConnectionVerified: '[data-cy="test-connection-verified-text"]',
@@ -49,7 +50,7 @@ export const postgreSqlSelector = {
   toggleTransformation: '[data-cy="transformation-toggle-switch"]',
   inputFieldTransformation: '[data-cy="transformation-input-input-field"]',
 
-  headerQueryPreview: '.py-2',
+  headerQueryPreview: ".py-2",
   previewTabJson: '[data-cy="preview-tab-json"]',
   previewTabRaw: '[data-cy="preview-tab-raw"]',
 
@@ -68,7 +69,7 @@ export const postgreSqlSelector = {
   labelSuccessMessageInput: '[data-cy="label-success-message-input"]',
   notificationDurationInput: '[data-cy="label-notification-duration-input"]',
   addEventHandler: '[data-cy="add-event-handler"]',
-  noEventHandlerMessage: '[data-cy="no-event-handler-message"]',
+  noEventHandlerMessage: '[data-cy="no-items-banner"]',
   postgresqlQueryRunButton: '[data-cy="postgresql1-query-run-button"]',
   psqlQueryLabel: '[data-cy="postgresql1-query-label"]',
   psqlQueryDeleteButton: '[data-cy="postgresql1-query-delete-button"]',

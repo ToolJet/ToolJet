@@ -14,7 +14,7 @@ import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
-import { sample } from 'lodash';
+import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
@@ -143,11 +143,11 @@ class HomePageComponent extends React.Component {
   cloneApp = (app) => {
     this.setState({ isCloningApp: true });
     appsService
-      .cloneApp(app.id)
+      .cloneResource({ app: [{ id: app.id }], organization_id: getWorkspaceId() })
       .then((data) => {
         toast.success('App cloned successfully.');
         this.setState({ isCloningApp: false });
-        this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
+        this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
       })
       .catch(({ _error }) => {
         toast.error('Could not clone the app.');
@@ -167,24 +167,35 @@ class HomePageComponent extends React.Component {
       const fileContent = event.target.result;
       this.setState({ isImportingApp: true });
       try {
-        const requestBody = JSON.parse(fileContent);
+        const organization_id = getWorkspaceId();
+        let importJSON = JSON.parse(fileContent);
+        // For backward compatibility with legacy app import
+        const isLegacyImport = isEmpty(importJSON.tooljet_version);
+        if (isLegacyImport) {
+          importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
+        }
+        const requestBody = { organization_id, ...importJSON };
         appsService
-          .importApp(requestBody)
+          .importResource(requestBody)
           .then((data) => {
-            toast.success('App imported successfully.');
+            toast.success('Imported successfully.');
             this.setState({
               isImportingApp: false,
             });
-            this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
+            if (!isEmpty(data.imports.app)) {
+              this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
+            } else if (!isEmpty(data.imports.tooljet_database)) {
+              this.props.navigate(`/${getWorkspaceId()}/database`);
+            }
           })
           .catch(({ error }) => {
-            toast.error(`Could not import the app: ${error}`);
+            toast.error(`Could not import: ${error}`);
             this.setState({
               isImportingApp: false,
             });
           });
       } catch (error) {
-        toast.error(`Could not import the app: ${error}`);
+        toast.error(`Could not import: ${error}`);
         this.setState({
           isImportingApp: false,
         });
@@ -517,7 +528,6 @@ class HomePageComponent extends React.Component {
                     value={appOperations?.selectedFolder}
                     placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
                     closeMenuOnSelect={true}
-                    customWrap={true}
                   />
                 </div>
               </div>

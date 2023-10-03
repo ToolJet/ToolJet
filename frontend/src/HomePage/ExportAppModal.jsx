@@ -3,18 +3,21 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import moment from 'moment';
 import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { ButtonSolid } from '@/_components/AppButton';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
-  const currentVersion = app.editing_version;
-  const [versions, getVersions] = useState(undefined);
-  const [versionId, setVersionId] = useState(currentVersion.id);
+  const currentVersion = app?.editing_version;
+  const [versions, setVersions] = useState(undefined);
+  const [tables, setTables] = useState(undefined);
+  const [versionId, setVersionId] = useState(currentVersion?.id);
+  const [exportTjDb, setExportTjDb] = useState(true);
 
   useEffect(() => {
     async function fetchAppVersions() {
       try {
         const fetchVersions = await appsService.getVersions(app.id);
-        const { versions } = await fetchVersions;
-        getVersions(versions);
+        const { versions } = fetchVersions;
+        setVersions(versions);
       } catch (error) {
         toast.error('Could not fetch the versions.', {
           position: 'top-center',
@@ -22,13 +25,40 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         closeModal();
       }
     }
+    async function fetchAppTables() {
+      try {
+        const fetchTables = await appsService.getTables(app.id);
+        const { tables } = fetchTables;
+        setTables(tables);
+      } catch (error) {
+        toast.error('Could not fetch the tables.', {
+          position: 'top-center',
+        });
+        closeModal();
+      }
+    }
     fetchAppVersions();
+    fetchAppTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const exportApp = (appId, versionId = undefined) => {
+  const exportApp = (app, versionId, exportTjDb, tables) => {
+    const appOpts = {
+      app: [
+        {
+          id: app.id,
+          ...(versionId && { search_params: { version_id: versionId } }),
+        },
+      ],
+    };
+    const requestBody = {
+      ...appOpts,
+      ...(exportTjDb && { tooljet_database: tables }),
+      organization_id: app.organization_id,
+    };
+
     appsService
-      .exportApp(appId, versionId)
+      .exportResource(requestBody)
       .then((data) => {
         const appName = app.name.replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
@@ -44,8 +74,8 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         document.body.removeChild(link);
         closeModal();
       })
-      .catch(() => {
-        toast.error('Could not export the app.', {
+      .catch((error) => {
+        toast.error(`Could not export app: ${error.data.message}`, {
           position: 'top-center',
         });
         closeModal();
@@ -55,11 +85,10 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   return (
     <BootstrapModal
       onHide={() => closeModal(false)}
-      contentClassName={`home-modal-component ${customClassName ? ` ${customClassName}` : ''} ${
-        darkMode && 'dark-theme'
-      }`}
+      contentClassName={`home-modal-component home-version-modal-component ${
+        customClassName ? ` ${customClassName}` : ''
+      } ${darkMode && 'dark-theme'}`}
       show={show}
-      size="md"
       backdrop={true}
       keyboard={true}
       enforceFocus={false}
@@ -68,7 +97,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       centered
       data-cy={'modal-component'}
     >
-      <BootstrapModal.Header className="border-bottom">
+      <BootstrapModal.Header>
         <BootstrapModal.Title data-cy={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>
           {title}
         </BootstrapModal.Title>
@@ -82,27 +111,28 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       {Array.isArray(versions) ? (
         <>
           <BootstrapModal.Body>
-            <div className="py-2">
-              <div className="current-version py-2" data-cy="current-version-section">
-                <span className="text-muted" data-cy="current-version-label">
+            <div>
+              <div className="current-version " data-cy="current-version-section">
+                <span data-cy="current-version-label" className="current-version-label">
                   Current Version
                 </span>
                 <InputRadioField
-                  versionId={currentVersion.id}
-                  data-cy={`${currentVersion.id.toLowerCase().replace(/\s+/g, '-')}-value`}
-                  versionName={currentVersion.name}
-                  versionCreatedAt={currentVersion.createdAt}
-                  checked={versionId === currentVersion.id}
+                  versionId={currentVersion?.id}
+                  data-cy={`${currentVersion?.id.toLowerCase().replace(/\s+/g, '-')}-value`}
+                  versionName={currentVersion?.name}
+                  versionCreatedAt={currentVersion?.createdAt}
+                  checked={versionId === currentVersion?.id}
                   setVersionId={setVersionId}
+                  className="current-version-wrap"
                 />
               </div>
               {versions.length >= 2 ? (
-                <div className="other-versions py-2" data-cy="other-version-section">
-                  <span className="text-muted" data-cy="other-version-label">
+                <div className="other-versions" data-cy="other-version-section">
+                  <span data-cy="other-version-label" className="other-version-label">
                     Other Versions
                   </span>
                   {versions.map((version) => {
-                    if (version.id !== currentVersion.id) {
+                    if (version.id !== currentVersion?.id) {
                       return (
                         <InputRadioField
                           versionId={version.id}
@@ -112,32 +142,39 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                           key={version.name}
                           checked={versionId === version.id}
                           setVersionId={setVersionId}
+                          className="other-version-wrap"
                         />
                       );
                     }
                   })}
                 </div>
               ) : (
-                <div className="other-versions py-2" data-cy="other-version-section">
-                  <span className="text-muted" data-cy="no-other-versions-found-text">
-                    No other versions found
-                  </span>
+                <div className="other-versions" data-cy="other-version-section">
+                  <span data-cy="no-other-versions-found-text">No other versions found</span>
                 </div>
               )}
             </div>
           </BootstrapModal.Body>
-          <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end border-top align-items-center py-2">
-            <span role="button" className="btn btn-light" data-cy="export-all-button" onClick={() => exportApp(app.id)}>
+          <div className="tj-version-wrap-sub-footer">
+            <input type="checkbox" checked={exportTjDb} onChange={() => setExportTjDb(!exportTjDb)} />
+            <p>Export ToolJet table schema</p>
+          </div>
+          <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end align-items-center ">
+            <ButtonSolid
+              className="import-export-footer-btns"
+              variant="tertiary"
+              data-cy="export-all-button"
+              onClick={() => exportApp(app, null, exportTjDb, tables)}
+            >
               Export All
-            </span>
-            <span
-              role="button"
-              className="btn btn-primary"
+            </ButtonSolid>
+            <ButtonSolid
+              className="import-export-footer-btns"
               data-cy="export-selected-version-button"
-              onClick={() => exportApp(app.id, versionId)}
+              onClick={() => exportApp(app, versionId, exportTjDb, tables)}
             >
               Export selected version
-            </span>
+            </ButtonSolid>
           </BootstrapModal.Footer>
         </>
       ) : (
@@ -154,11 +191,12 @@ function InputRadioField({
   checked = undefined,
   key = undefined,
   setVersionId,
+  className,
 }) {
   return (
     <span
       key={key}
-      className="version-wrapper my-2 py-2 cursor-pointer"
+      className={`version-wrapper cursor-pointer ${className}`}
       data-cy={`${String(versionName).toLowerCase().replace(/\s+/g, '-')}-version-wrapper`}
     >
       <input
@@ -178,9 +216,9 @@ function InputRadioField({
         style={{ paddingLeft: '0.75rem' }}
       >
         <span data-cy={`${String(versionName).toLowerCase().replace(/\s+/g, '-')}-text`}>{versionName}</span>
-        <span className="text-secondary" data-cy="created-date-label">{`Created on ${moment(versionCreatedAt).format(
-          'Do MMM YYYY'
-        )}`}</span>
+        <span className="export-creation-date tj-text-sm" data-cy="created-date-label">{`Created on ${moment(
+          versionCreatedAt
+        ).format('Do MMM YYYY')}`}</span>
       </label>
     </span>
   );
