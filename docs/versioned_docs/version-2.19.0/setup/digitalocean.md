@@ -39,7 +39,7 @@ The latest docker image is `tooljet/tooljet:<version_tag>`
 
   </div>
   
-  Make sure the **Run Command** is `./server/scripts/digitalocean-postbuild` and the **HTTP** port is `3000`. Once you have edited the ToolJet resource click on the **Back** button.
+  Make sure the **Run Command** is `./server/scripts/digitalocean-postbuild.sh` and the **HTTP** port is `3000`. Once you have edited the ToolJet resource click on the **Back** button.
 
   <div style={{textAlign: 'center'}}>
 
