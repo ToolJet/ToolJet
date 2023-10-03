@@ -283,6 +283,22 @@ export function Page2({ formData, setFormData, setPage, page, setCompleted, isLo
   );
 }
 export function Page3({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
+  const phoneNumberRegex = /^\+?\d{1,4}[-. ]?\d{1,14}$/;
+
+  function isValidPhoneNumber(phoneNumber) {
+    return phoneNumberRegex.test(phoneNumber);
+  }
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      if (isValidPhoneNumber(formData.phoneNumber)) {
+        setIsLoading(true);
+        setCompleted(true);
+      } else {
+        alert('Invalid phone number. Please enter a valid phone number.');
+      }
+    }
+  };
   const btnProps = {
     setPage,
     page,
@@ -305,12 +321,7 @@ export function Page3({ formData, setFormData, setPage, page, setCompleted, isLo
         onChange={(phone) => {
           setFormData({ ...formData, phoneNumber: phone });
         }}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            setIsLoading(true);
-            setCompleted(true);
-          }
-        }}
+        onKeyDown={handleKeyDown}
         isValid={(inputNumber, country, countries) => {
           return countries.some((country) => {
             return startsWith(inputNumber, country.dialCode) || startsWith(country.dialCode, inputNumber);
