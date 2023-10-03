@@ -665,9 +665,28 @@ export class AppsService {
         .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
         .getMany();
 
-      const uniqTableIds = [...new Set(tooljetDbDataQueries.map((dq) => dq.options['table_id']))];
+      const uniqTableIds = new Set();
+      tooljetDbDataQueries.forEach((dq) => {
+        if (dq.options?.operation === 'join_tables') {
+          const joinOptions = dq.options?.join_table?.joins ?? [];
+          (joinOptions || []).forEach((join) => {
+            const { table, conditions } = join;
+            if (table) uniqTableIds.add(table);
+            conditions?.conditionsList?.forEach((condition) => {
+              const { leftField, rightField } = condition;
+              if (leftField?.table) {
+                uniqTableIds.add(leftField?.table);
+              }
+              if (rightField?.table) {
+                uniqTableIds.add(rightField?.table);
+              }
+            });
+          });
+        }
+        if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
+      });
 
-      return uniqTableIds.map((table_id) => {
+      return [...uniqTableIds].map((table_id) => {
         return { table_id };
       });
     });
