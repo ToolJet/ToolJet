@@ -748,8 +748,8 @@ class TableComponent extends React.Component {
     );
   };
 
-  deletEvents = (ref, eventTarget) => {
-    const events = useAppDataStore.getState().events?.filter((e) => e.target === eventTarget);
+  deleteEvents = (ref, eventTarget) => {
+    const events = useAppDataStore.getState().events.filter((event) => event.target === eventTarget);
 
     const toDelete = events?.filter((e) => e.event?.ref === ref.ref);
 
@@ -923,7 +923,7 @@ class TableComponent extends React.Component {
     const newValue = this.props.component.component.definition.properties.actions.value;
     newValue.splice(index, 1);
     this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties', true);
-    this.deletEvents(ref, 'table-action');
+    this.deleteEvents(ref, 'table_action');
   };
 
   onColumnItemChange = (index, item, value) => {
@@ -956,7 +956,7 @@ class TableComponent extends React.Component {
     ];
     this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties', true);
 
-    this.deletEvents(ref, 'table_column');
+    this.deleteEvents(ref, 'table_column');
   };
 
   reorderColumns = (startIndex, endIndex) => {
