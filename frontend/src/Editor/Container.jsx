@@ -323,7 +323,7 @@ export const Container = ({
         return;
       }
 
-      const deltaWidth = Math.round(d.width / gridWidth) * gridWidth; //rounding of width of element to nearest mulitple of gridWidth
+      const deltaWidth = Math.round(d.width / gridWidth) * gridWidth; //rounding of width of element to nearest multiple of gridWidth
       const deltaHeight = d.height;
 
       if (deltaWidth === 0 && deltaHeight === 0) {
