@@ -17,7 +17,7 @@ export class UpdateAppVersionEntity1691006886222 implements MigrationInterface {
       new TableColumn({
         name: 'show_viewer_navigation',
         type: 'boolean',
-        default: true,
+        default: false,
         isNullable: false,
       })
     );
