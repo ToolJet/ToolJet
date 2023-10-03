@@ -117,7 +117,7 @@ export const LeftSidebarInspector = ({
   const iconsList = useMemo(() => [...queryIcons, ...componentIcons], [queryIcons, componentIcons]);
 
   const handleRemoveComponent = (component) => {
-    removeComponent(component);
+    removeComponent(component.id);
   };
 
   const handleSelectComponentOnEditor = (component) => {
