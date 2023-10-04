@@ -22,26 +22,30 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
           });
           setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen);
         }}
-        className="tj-db-header-add-new-row-btn tj-text-xsm font-weight-500"
+        className={`ghost-black-operation ${isCreateRowDrawerOpen ? 'open' : ''}`}
       >
-        <SolidIcon name="row" width="14" />
-        <span data-cy="add-new-row-button-text">Add new row</span>
+        <SolidIcon name="row" width="14" fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'} />
+        <span data-cy="add-new-row-button-text" className="tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }}>
+          Add new row
+        </span>
       </button>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm
           onCreate={() => {
-            tooljetDatabaseService.findOne(organizationId, selectedTable.id).then(({ headers, data = [], error }) => {
-              if (error) {
-                toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-                return;
-              }
+            tooljetDatabaseService
+              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .then(({ headers, data = [], error }) => {
+                if (error) {
+                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+                  return;
+                }
 
-              if (Array.isArray(data) && data?.length > 0) {
-                const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
-                setTotalRecords(totalContentRangeRecords);
-                setSelectedTableData(data);
-              }
-            });
+                if (Array.isArray(data) && data?.length > 0) {
+                  const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
+                  setTotalRecords(totalContentRangeRecords);
+                  setSelectedTableData(data);
+                }
+              });
             setIsCreateRowDrawerOpen(false);
           }}
           onClose={() => setIsCreateRowDrawerOpen(false)}

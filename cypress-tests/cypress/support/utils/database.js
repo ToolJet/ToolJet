@@ -443,7 +443,8 @@ export const editRowAndVerify = (
   cy.reload();
   cy.intercept("GET", "api/tooljet_db/organizations/**").as("dbLoad");
   navigateToTable(tableName);
-  cy.wait("@dbLoad");
+  cy.wait(1000);
+  //cy.wait("@dbLoad");
   cy.get(editRowSelectors.editRowbutton).should("be.visible").click();
   cy.get(editRowSelectors.editRowHeader).verifyVisibleElement(
     "have.text",

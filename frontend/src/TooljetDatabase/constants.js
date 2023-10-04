@@ -1,6 +1,7 @@
 export const dataTypes = [
   { value: 'character varying', label: 'varchar' },
   { value: 'integer', label: 'int' },
+  { value: 'bigint', label: 'bigint' },
   { value: 'double precision', label: 'float' },
   { value: 'boolean', label: 'boolean' },
 ];
