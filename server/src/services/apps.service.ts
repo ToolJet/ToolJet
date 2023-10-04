@@ -710,7 +710,6 @@ export class AppsService {
         }
       }
     }
-    console.log('---------arpit:: motherIndea', { oldDataQueryToNewMapping });
 
     return oldDataQueryToNewMapping;
   }

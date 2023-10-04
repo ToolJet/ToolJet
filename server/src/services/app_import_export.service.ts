@@ -201,26 +201,22 @@ export class AppImportExportService {
       throw new BadRequestException('Invalid params for app import');
     }
 
-    let importedApp: App;
-
     const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
       ? appParams
       : convertSinglePageSchemaToMultiPageSchema(appParams);
 
     const isNormalizedAppDefinitionSchema = appParams?.schemaDetails?.normalizedAppDefinitionSchema;
 
-    await dbTransactionWrap(async (manager) => {
-      importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user);
-      await this.setupImportedAppAssociations(
-        manager,
-        importedApp,
-        schemaUnifiedAppParams,
-        user,
-        externalResourceMappings,
-        isNormalizedAppDefinitionSchema
-      );
-      await this.createAdminGroupPermissions(manager, importedApp);
-    });
+    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
+    await this.setupImportedAppAssociations(
+      this.entityManager,
+      importedApp,
+      schemaUnifiedAppParams,
+      user,
+      externalResourceMappings,
+      isNormalizedAppDefinitionSchema
+    );
+    await this.createAdminGroupPermissions(this.entityManager, importedApp);
 
     // NOTE: App slug updation callback doesn't work while wrapped in transaction
     // hence updating slug explicitly
