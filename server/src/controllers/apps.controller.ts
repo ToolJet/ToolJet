@@ -99,7 +99,7 @@ export class AppsController {
           })
         );
       }
-      
+
       const version = await this.appsService.findVersionFromName(versionName, id);
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
