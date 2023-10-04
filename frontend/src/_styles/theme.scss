@@ -472,7 +472,7 @@ button {
     left: 0;
     overflow-x: hidden;
     flex: 1 1 auto;
-    background-color: var(--background-strong) !important;
+    background-color: var(--layer-01) !important;
     background-clip: border-box;
     margin-top: 48px;
     padding-top: 8px;
@@ -634,7 +634,7 @@ button {
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         box-sizing: border-box;
         border-radius: 4px;
-        background-color: var(--layer-1);
+        background-color: var(--layer-02);
 
         img {
           margin: 0 auto;
@@ -3437,7 +3437,7 @@ input:focus-visible {
 .theme-dark .input-group-text,
 .theme-dark .markdown>table thead th,
 .theme-dark .table thead th {
-  background: #1c252f;
+  background: var(--layer-02);
   color: #ffffff;
 }
 
@@ -4242,7 +4242,7 @@ input[type="text"] {
   margin-left: 12px;
 
   .form-control-plaintext {
-    background-color: var(--background-strong)
+    background-color: var(--layer-01)
   }
 
 }
@@ -7685,6 +7685,7 @@ tbody {
 
   .react-select__control {
     border: none !important;
+    background-color: var(--layer-01) !important;
   }
 }
 
@@ -10285,8 +10286,9 @@ tbody {
   background: var(--slate7);
   border-width: 0px 1px 1px 1px;
   border-style: solid;
-  border-color: var(--slate4);
+  border-color: var(--border-strong-01);
   border-radius: 0px !important;
+  color: var(--button-tirtiary-icon) !important;
 }
 
 .add-col-btn-database {
@@ -10298,8 +10300,9 @@ tbody {
   background: var(--slate7);
   border-width: 0px 1px 1px 1px;
   border-style: solid;
-  border-color: var(--slate4);
+  border-color: var(--border-strong-01);
   border-radius: 0px !important;
+  color: var(--button-tirtiary-icon) !important;
 }
 
 // custom styles for users multiselect in manage users
@@ -11277,7 +11280,7 @@ tbody {
 .main-wrapper {
   .editor {
     .header>.navbar {
-      background-color: var(--background-strong) !important;
+      background-color: var(--layer-01) !important;
       border-bottom: 1px solid var(--border-subtle-01);
       z-index: 10;
     }
@@ -11285,7 +11288,7 @@ tbody {
 }
 
 .component-image-wrapper {
-  background-color: var(--slate3) !important;
+  background-color: var(--layer-02) !important;
   border-radius: 6px;
 }
 
