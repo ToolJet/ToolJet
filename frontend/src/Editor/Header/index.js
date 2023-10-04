@@ -15,6 +15,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 export default function EditorHeader({
   M,
@@ -63,7 +64,7 @@ export default function EditorHeader({
   }, [currentUser]);
   const handleLogoClick = () => {
     // Force a reload for clearing interval triggers
-    window.location.href = '/';
+    redirectToDashboard();
   };
 
   return (

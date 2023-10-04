@@ -9,6 +9,7 @@ import Header from './Header';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
   if (isMobileDevice) {
@@ -164,7 +165,7 @@ const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, cu
             <Link
               data-cy="viewer-page-logo"
               onClick={() => {
-                window.location.href = '/';
+                redirectToDashboard();
               }}
             >
               <LogoIcon />
