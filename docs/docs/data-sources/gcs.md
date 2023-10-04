@@ -9,16 +9,18 @@ ToolJet can connect to GCS buckets and perform various operation on them.
 
 ## Supported operations
 
--**Read file**
--**Upload file**
--**List buckets**
--**List files in a bucket**
--**Signed url for download**
--**Signed url for upload**
+* **Read file**
+* -**Upload file**
+* -**List buckets**
+* -**List files in a bucket**
+* -**Signed url for download**
+* -**Signed url for upload**
 
 ## Connection
 
-To add a new GCS source, click on the **Add or edit datasource** icon on the left sidebar of the app editor and click on `Add datasource` button. Select GCS from the modal that pops up.
+To establish a connection with the Google Cloud Storage data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+
+To connect to GCS, you need to provide the JSON Private Key of a service account that has access to the bucket. You can follow the [google documentation](https://cloud.google.com/docs/authentication/getting-started) to get started.
 
 ToolJet requires the **json private key** of a service account to be able to connect to GCS.
 You can follow the [google documentation](https://cloud.google.com/docs/authentication/getting-started) to get started.
