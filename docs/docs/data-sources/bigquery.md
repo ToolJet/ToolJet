@@ -9,15 +9,13 @@ ToolJet can connect to BigQuery databases to run BigQuery queries.
 
 ## Connection
 
-Please refer [this](https://cloud.google.com/bigquery/docs/bigquery-web-ui) link to enable BigQuery API in Google Cloud Console. 
+To connect to BigQuery, you need to enable BigQuery API in your Google Cloud Console. You can follow the steps to enable BigQuery API from [this link](https://cloud.google.com/bigquery/docs/bigquery-web-ui). 
 
-Create **Service Account** and **key**, then get your configs downloaded as **JSON**
+Next, you need to create a service account and generate a key for the same. You can follow the steps to create a service account from [this link](https://cloud.google.com/iam/docs/creating-managing-service-accounts).
 
-To add a new BigQuery, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select BigQuery from the modal that pops up.
+Now, copy and paste the data from the downloaded JSON file into the **Private key** field in the BigQuery data source form.
 
-ToolJet requires the config json downloaded from your account to connect to BigQuery. Paste the json into the `Private key` field.
-
-**The json looks like**:
+**The json file should look like this:**
 
  ```json
  {
@@ -50,7 +48,6 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 <img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-query.png" alt="BQ query" />
 
 
-Click on the **run** button to run the query. NOTE: Query should be saved before running.
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
