@@ -254,7 +254,7 @@ export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDe
         <div
           className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
         >
-          Datasource
+          Data Source
         </div>
         <div className="d-flex flex-grow-1">
           <ChangeDataSource

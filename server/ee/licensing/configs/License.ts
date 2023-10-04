@@ -28,7 +28,6 @@ export default class License {
   private constructor(key: string, updatedDate: Date) {
     if (process.env.NODE_ENV !== 'test') {
       if (!(key && updatedDate)) {
-        console.error('Invalid License Key', key);
         this._isLicenseValid = false;
         this._type = LICENSE_TYPE.BASIC;
         return;

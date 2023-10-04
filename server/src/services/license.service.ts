@@ -109,7 +109,7 @@ export class LicenseService {
 
   async init(): Promise<void> {
     const licenseSetting: InstanceSettings = await this.getLicense();
-    const updatedAt = await License.Instance()?.updatedAt;
+    const updatedAt = License.Instance()?.updatedAt;
     const isUpdated: boolean = updatedAt?.getTime() !== new Date(licenseSetting.updatedAt).getTime();
 
     if (!updatedAt || isUpdated) {
@@ -119,6 +119,10 @@ export class LicenseService {
   }
 
   validateHostnameSubpath(domainsList = []) {
+    if (!domainsList.length && (!License.Instance()?.isValid || License.Instance()?.isExpired)) {
+      // not validating license for invalid licenses -> Basic plan
+      return;
+    }
     //check for valid hostname
     const domain = process.env.TOOLJET_HOST;
     const subPath = process.env.SUB_PATH;
