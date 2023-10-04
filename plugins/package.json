@@ -62,7 +62,8 @@
     "@tooljet-plugins/twilio": "file:packages/twilio",
     "@tooljet-plugins/typesense": "file:packages/typesense",
     "@tooljet-plugins/woocommerce": "file:packages/woocommerce",
-    "@tooljet-plugins/zendesk": "file:packages/zendesk"
+    "@tooljet-plugins/zendesk": "file:packages/zendesk",
+    "tooljet": "file:.."
   },
   "peerDependencies": {
     "typescript": "^4.9.5"
