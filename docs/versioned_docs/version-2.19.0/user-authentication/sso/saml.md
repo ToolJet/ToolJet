@@ -32,6 +32,14 @@ To enable SAML authentication, you need to configure the following workspace set
   - **Group Attribute**: Enter the name of the attribute that contains the group information of the user. This attribute is used to map the user to the appropriate group.
   - **Redirect URL**: Copy the redirect URL provided and paste it in the SAML provider's configuration page.
 
+  :::tip Downloading the metadata from your identity provider
+  Generally, the metadata is available in the form of an XML file which can be downloaded from your identity provider's dashboard.
+
+  Copy the metadata from the XML file and paste it into the ToolJet's SAML SSO configuration settings. Please ensure that the metadata is pasted in the correct format, as it contains essential configuration details from the identity provider necessary for authentication.
+
+  Additionally, you can often find this data by navigating to https://&ltyour-identity-provider&gt/federationmetadata/2007-06/federationmetadata.xml
+  :::
+
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/sso/saml/config.png" alt="SSO :SAMP" />
@@ -50,9 +58,9 @@ To enable SAML authentication, you need to configure the following workspace set
 
   </div>
 
-2. The **Login URL** obtained can be utilized for accessing the workspace. Please note that ToolJet supports SAML login at the workspace level and not at the instance level. Thus, users will be logged in specifically to the chosen workspace.
+2. The **Login URL** obtained can be used to access the workspace. Please note that ToolJet supports SAML login at the workspace level, ensuring users are logged in specifically to the selected workspace. 
 
-7. Users can now login to your workspace using the **Login URL** obtained in the previous step. The login page will display the name of the SAML provider configured in the workspace settings.
+  As a result, users can now log in to your workspace using the provided Login URL. The login page will prominently feature the name of the SAML provider configured in your workspace settings.
 
   <div style={{textAlign: 'center'}}>
 
