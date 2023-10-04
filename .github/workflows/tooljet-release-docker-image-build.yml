@@ -102,7 +102,7 @@ jobs:
       - name: Check if Docker image is present
         id: check-image-presence
         run: |
-          response=$(curl -s "https://hub.docker.com/v2/repositories/tooljet/tooljet-ce/tags/${{ github.event.release.tag_name }}")
+          response=$(curl -s "https://hub.docker.com/v2/repositories/tooljet/tooljet/tags/${{ github.event.release.tag_name }}")
           if [[ $? -ne 0 ]]; then
             echo "Failed to fetch JSON response. Stopping workflow execution."
             exit 1
