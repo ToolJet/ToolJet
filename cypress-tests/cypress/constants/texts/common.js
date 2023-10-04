@@ -167,9 +167,9 @@ export const commonText = {
     makePublicAppToggleLabel: "Make application public?",
     shareableAppLink: "Get shareable link for this application",
     copyAppLinkButton: "copy",
-    // iframeLinkLabel: "Get embeddable link for this application",
-    // ifameLinkCopyButton: "copy",
   },
+  iframeLinkLabel: "Get embeddable link for this application",
+  ifameLinkCopyButton: "copy",
   groupInputFieldLabel: "Select Group",
   documentationLink: "Read Documentation",
   constantsNameError:

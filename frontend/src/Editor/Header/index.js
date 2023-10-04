@@ -20,6 +20,7 @@ import { LicenseTooltip } from '@/LicenseTooltip';
 import { licenseService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import UpdatePresence from './UpdatePresence';
+import { redirectToDashboard } from '@/_helpers/utils';
 
 export default function EditorHeader({
   M,
@@ -64,7 +65,7 @@ export default function EditorHeader({
   }, [currentUser]);
   const handleLogoClick = () => {
     // Force a reload for clearing interval triggers
-    window.location.href = '/';
+    redirectToDashboard();
   };
 
   const handlePromote = () => {
