@@ -38,6 +38,7 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose-db.yaml
   mv docker-compose-db.yaml docker-compose.yaml
   mkdir postgres_data
+  mkdir redis_data
   ```
 
   2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
@@ -83,6 +84,7 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   2. Download our production docker-compose file into the server.
   ```bash
   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose.yaml
+  mkdir redis_data
   ```
 
   3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
