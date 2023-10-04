@@ -36,6 +36,7 @@ class HomePageComponent extends React.Component {
     this.state = {
       currentUser: {
         id: currentSession?.current_user.id,
+        organization_id: currentSession?.current_organization_id,
       },
       users: null,
       isLoading: true,
@@ -167,7 +168,7 @@ class HomePageComponent extends React.Component {
       const fileContent = event.target.result;
       this.setState({ isImportingApp: true });
       try {
-        const organization_id = getWorkspaceId();
+        const organization_id = this.state.currentUser?.organization_id;
         let importJSON = JSON.parse(fileContent);
         // For backward compatibility with legacy app import
         const isLegacyImport = isEmpty(importJSON.tooljet_version);

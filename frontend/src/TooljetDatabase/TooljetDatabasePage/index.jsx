@@ -10,7 +10,7 @@ import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import ExportSchema from '../ExportSchema/ExportSchema';
-import { appService } from '@/_services/app.service';
+import { appsService } from '@/_services/apps.service';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
 
@@ -57,7 +57,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
   };
 
   const exportTable = () => {
-    appService
+    appsService
       .exportResource({
         tooljet_database: [{ table_id: selectedTable.id }],
         organization_id: organizationId,
