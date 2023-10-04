@@ -7,8 +7,6 @@ title: Baserow
 
 ## Connection
 
-## Connection
-
 To connect to Baserow, you need to provide the following details:
 
 - **API token**: You can create an API token from your Baserow dashboard. You can follow the steps to create API token from [this link](https://baserow.io/user-docs/personal-api-tokens).
