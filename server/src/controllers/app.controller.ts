@@ -20,7 +20,7 @@ import {
 } from '@dto/app-authentication.dto';
 import { AuthService } from '../services/auth.service';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
-import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, CreateUserDto, TrialUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
 import { EditorUserCountGuard } from '@ee/licensing/guards/editorUser.guard';
@@ -33,6 +33,7 @@ import { Response } from 'express';
 import { SessionAuthGuard } from 'src/modules/auth/session-auth-guard';
 import { UsersService } from '@services/users.service';
 import { SessionService } from '@services/session.service';
+import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 
 @Controller()
 export class AppController {
@@ -106,6 +107,23 @@ export class AppController {
   @Post('setup-admin')
   async setupAdmin(@Body() userCreateDto: CreateAdminDto, @Res({ passthrough: true }) response: Response) {
     return await this.authService.setupAdmin(response, userCreateDto);
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Post('activate-trial')
+  async activateTrial() {
+    const { companyName, companySize, role, email, phoneNumber, firstName, lastName } =
+      await this.userService.findSelfhostOnboardingDetails();
+    const userDto: TrialUserDto = {
+      companyName,
+      companySize,
+      role,
+      email,
+      phoneNumber,
+      name: `${firstName} ${lastName}`,
+      requestedTrial: true,
+    };
+    return await this.authService.activateTrial(userDto);
   }
 
   @UseGuards(FirstUserSignupDisableGuard)

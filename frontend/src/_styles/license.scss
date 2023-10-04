@@ -226,6 +226,11 @@
         border: 0px;
         color: var(--slate1);
         max-height: 52px;
+        box-shadow: none !important;
+    }
+
+    .start-trial-btn {
+        min-width: 131px;
     }
 }
 

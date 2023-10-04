@@ -143,6 +143,13 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
+  async findSelfhostOnboardingDetails(): Promise<User> {
+    return await this.usersRepository.findOne({
+      where: { userType: USER_TYPE.INSTANCE },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
   async findByEmail(
     email: string,
     organizationId?: string,
