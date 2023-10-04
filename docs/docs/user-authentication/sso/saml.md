@@ -3,6 +3,10 @@ id: saml
 title: SAML
 ---
 
+ToolJet supports SAML authentication for your workspace. The supported SAML providers are: Okta, Active Directory Federation Services, Azure AD, Auth0 and other SAML SSO providers.
+
+### Configuring SAML
+
 To enable SAML authentication, you need to configure the following workspace settings:
 
 1. Go to **Workspace Settings** > **SSO** > **SAML**.
@@ -36,7 +40,9 @@ To enable SAML authentication, you need to configure the following workspace set
 
 4. Once configured, click **Save Changes**.
 
-5. Now, go to the **[General Settings](/docs/user-authentication/general-settings)** and copy the **Login URL** provided. Furthermore, you have the flexibility to choose whether to turn on 'Enable Signups,' allowing users to signup without an invite. Through SSO authentication, we check if the user already exists; if so, they can sign in seamlessly. Otherwise, an error will be displayed. Conversely, with this option disabled, only invited users can log in, provided SSO authentication is successful.
+### Logging in with SAML
+
+1. Go to the **[General Settings](/docs/user-authentication/general-settings)** and copy the **Login URL** provided. Furthermore, you have the flexibility to choose whether to turn on 'Enable Signups,' allowing users to signup without an invite. Through SSO authentication, we check if the user already exists; if so, they can sign in seamlessly. Otherwise, an error will be displayed. Conversely, with this option disabled, only invited users can log in, provided SSO authentication is successful.
   
   <div style={{textAlign: 'center'}}>
 
@@ -44,7 +50,7 @@ To enable SAML authentication, you need to configure the following workspace set
 
   </div>
 
-6. The **Login URL** obtained can be utilized for accessing the workspace. Please note that ToolJet supports SAML login at the workspace level and not at the instance level. Thus, users will be logged in specifically to the chosen workspace.
+2. The **Login URL** obtained can be utilized for accessing the workspace. Please note that ToolJet supports SAML login at the workspace level and not at the instance level. Thus, users will be logged in specifically to the chosen workspace.
 
 7. Users can now login to your workspace using the **Login URL** obtained in the previous step. The login page will display the name of the SAML provider configured in the workspace settings.
 
@@ -54,7 +60,7 @@ To enable SAML authentication, you need to configure the following workspace set
 
   </div>
 
-8. Click on **Sign in with `SAML Name`** button and you will be redirected to the SAML provider's login page.
+3. Click on **Sign in with `SAML Name`** button and you will be redirected to the SAML provider's login page.
 
   <div style={{textAlign: 'center'}}>
 
@@ -62,5 +68,4 @@ To enable SAML authentication, you need to configure the following workspace set
 
   </div>
 
-7. Enter your credentials and click **Login**. If the user is signing in for the first time, they will be redirected to the ToolJet's onboarding page.
-
+4. Enter your credentials and click **Login**. If the user is signing in for the first time, they will be redirected to the ToolJet's onboarding page.
