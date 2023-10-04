@@ -144,7 +144,7 @@ class HomePageComponent extends React.Component {
   cloneApp = (app) => {
     this.setState({ isCloningApp: true });
     appsService
-      .cloneResource({ app: [{ id: app.id }], organization_id: getWorkspaceId() })
+      .cloneResource({ app: [{ id: app.id }], organization_id: this.state.currentUser?.organization_id })
       .then((data) => {
         toast.success('App cloned successfully.');
         this.setState({ isCloningApp: false });
