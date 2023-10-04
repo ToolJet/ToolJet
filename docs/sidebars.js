@@ -197,6 +197,7 @@ const sidebars = {
         },
       ],
     },
+    'dashboard',
     {
       'type': 'category',
       'label': 'App Builder',
