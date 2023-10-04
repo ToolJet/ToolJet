@@ -680,17 +680,6 @@ export class AppsService {
           );
           newQuery.options = newOptions;
 
-          const newQueryEvents = await manager.find(EventHandler, {
-            where: { appVersionId: appVersion.id, sourceId: newQuery.id },
-          });
-
-          const updatedEvents = this.replaceDataQueryEventActionWithNewDataQueryIds(
-            newQueryEvents,
-            oldDataQueryToNewMapping
-          );
-
-          await manager.save(updatedEvents);
-
           await manager.save(newQuery);
         }
 
@@ -721,6 +710,7 @@ export class AppsService {
         }
       }
     }
+    console.log('---------arpit:: motherIndea', { oldDataQueryToNewMapping });
 
     return oldDataQueryToNewMapping;
   }
@@ -748,19 +738,6 @@ export class AppsService {
       options.events = replacedEvents;
     }
     return options;
-  }
-
-  replaceDataQueryEventActionWithNewDataQueryIds(events: EventHandler[], dataQueryMapping) {
-    if (events) {
-      const replacedEvents = events.map((event) => {
-        if (event.event.queryId) {
-          event.event.queryId = dataQueryMapping[event.event.queryId];
-        }
-
-        return event;
-      });
-      return replacedEvents;
-    }
   }
 
   replaceDataQueryIdWithinDefinitions(definition, dataQueryMapping) {
