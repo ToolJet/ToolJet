@@ -13,8 +13,8 @@ ToolJet can connect to GCS buckets and perform various operation on them.
 - **Upload file**
 - **List buckets**
 - **List files in a bucket**
-- **Signed URL for download**
-- **Signed URL for upload**
+- **Signed url for download**
+- **Signed url for upload**
 
 ## Connection
 
