@@ -50,6 +50,205 @@ describe("Multi env", () => {
     cy.renameApp(data.appName);
     cy.dragAndDropWidget("Text", 350, 350);
   });
+  it("Verify the datasource configuration and data on each env", () => {
+    cy.apiLogin();
+    cy.apiCreateGDS(
+      "http://localhost:3000/api/v2/data_sources",
+      data.ds,
+      "restapi",
+      [
+        { key: "url", value: "" },
+        { key: "auth_type", value: "none" },
+        { key: "grant_type", value: "authorization_code" },
+        { key: "add_token_to", value: "header" },
+        { key: "header_prefix", value: "Bearer " },
+        { key: "access_token_url", value: "" },
+        { key: "client_ide", value: "" },
+        { key: "client_secret", value: "", encrypted: true },
+        { key: "scopes", value: "read, write" },
+        { key: "username", value: "", encrypted: false },
+        { key: "password", value: "", encrypted: true },
+        { key: "bearer_token", value: "", encrypted: true },
+        { key: "auth_url", value: "" },
+        { key: "client_auth", value: "header" },
+        { key: "headers", value: [["", ""]] },
+        { key: "custom_query_params", value: [["", ""]], encrypted: false },
+        { key: "custom_auth_params", value: [["", ""]] },
+        {
+          key: "access_token_custom_headers",
+          value: [["", ""]],
+          encrypted: false,
+        },
+        { key: "multiple_auth_enabled", value: false, encrypted: false },
+        { key: "ssl_certificate", value: "none", encrypted: false },
+      ]
+    );
+    cy.visit("/");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    selectDatasource(data.ds);
+    cy.get('[data-cy="development-label"]').click()
+    cy.clearAndType('[data-cy="base-url-text-field"]', "https://reqres.in/api/users?page=1")
+    cy.get(dataSourceSelector.buttonSave).click()
+    cy.get(commonSelectors.dashboardIcon).click();
+
+    navigateToAppEditor(data.appName);
+    cy.get(`[data-cy="${data.ds}-add-query-card"] > .text-truncate`).click();
+    cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+    cy.get(".custom-toggle-switch>.switch>").eq(3).click();
+    cy.waitForAutoSave();
+
+    cy.dragAndDropWidget("Text", 550, 650);
+    editAndVerifyWidgetName(data.constName);
+    cy.waitForAutoSave();
+
+    verifyAndModifyParameter("Text", `{{queries.restapi1.data.data[0].email`);
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
+    cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(data.constName)
+    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+
+    pinInspector();
+    cy.get(commonWidgetSelector.sidebarinspector).click();
+    cy.get(commonWidgetSelector.inspectorNodeComponents).click();
+    cy.get(commonWidgetSelector.nodeComponent(data.constName)).click();
+    cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
+      "have.text",
+      `"george.bluth@reqres.in"`
+    );
+    cy.get('[style="height: 13px; width: 13px;"] > img').should("exist");
+    cy.get('[data-cy="inspector-node-globals"] > .node-key').click();
+    cy.get('[data-cy="inspector-node-environment"] > .node-key').click();
+    cy.get('[data-cy="inspector-node-name"] > .mx-2').verifyVisibleElement(
+      "have.text",
+      `"development"`
+    );
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(4000);
+
+    cy.get(
+      commonWidgetSelector.draggableWidget(data.constName)
+    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+
+    cy.go('back');
+    cy.waitForAppLoad();
+    cy.wait(3000);
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.waitForAppLoad();
+    cy.wait(3000);
+
+    cy.get(dataSourceSelector.queryCreateAndRunButton, { timeout: 20000 }).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Query could not be completed")
+
+    cy.get(commonSelectors.editorPageLogo).click();
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    selectDatasource(data.ds);
+    cy.get('[data-cy="staging-label"]').click()
+    cy.clearAndType('[data-cy="base-url-text-field"]', "https://reqres.in/api/users?page=2")
+    cy.get(dataSourceSelector.buttonSave).click()
+
+    cy.get(commonSelectors.dashboardIcon).click();
+    navigateToAppEditor(data.appName);
+    cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(data.constName)
+    ).verifyVisibleElement("have.text", "michael.lawson@reqres.in");
+
+    cy.get(commonWidgetSelector.sidebarinspector).click();
+    cy.get(commonWidgetSelector.inspectorNodeComponents).click();
+    cy.get(commonWidgetSelector.nodeComponent(data.constName)).click();
+    cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
+      "have.text",
+      `"michael.lawson@reqres.in"`
+    );
+    cy.get('[style="height: 13px; width: 13px;"] > img').should("not.exist");
+    cy.get('[data-cy="inspector-node-globals"] > .node-key').click();
+    cy.get('[data-cy="inspector-node-environment"] > .node-key').click();
+    cy.get('[data-cy="inspector-node-name"] > .mx-2').verifyVisibleElement(
+      "have.text",
+      `"staging"`
+    );
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(4000);
+
+    cy.get(
+      commonWidgetSelector.draggableWidget(data.constName)
+    ).verifyVisibleElement("have.text", "michael.lawson@reqres.in");
+
+    // cy.get('[data-cy="viewer-page-logo"]').click();
+    // navigateToAppEditor(data.appName);
+    cy.go('back');
+    cy.waitForAppLoad();
+    cy.wait(3000);
+    cy.get(commonEeSelectors.promoteButton).click();
+    cy.get(commonEeSelectors.promoteButton).eq(1).click();
+    cy.waitForAppLoad();
+    cy.wait(3000);
+
+    cy.get(dataSourceSelector.queryCreateAndRunButton, { timeout: 20000 }).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Query could not be completed")
+
+    cy.get(commonSelectors.editorPageLogo).click();
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    selectDatasource(data.ds);
+    cy.get('[data-cy="production-label"]').click()
+    cy.clearAndType('[data-cy="base-url-text-field"]', "https://reqres.in/api/users?page=1")
+    cy.get(dataSourceSelector.buttonSave).click()
+
+    cy.get(commonSelectors.dashboardIcon).click();
+    navigateToAppEditor(data.appName);
+    cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(data.constName)
+    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+
+    cy.get(commonWidgetSelector.sidebarinspector).click();
+    cy.get(commonWidgetSelector.inspectorNodeComponents).click();
+    cy.get(commonWidgetSelector.nodeComponent(data.constName)).click();
+    cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
+      "have.text",
+      `"george.bluth@reqres.in"`
+    );
+    cy.get('[style="height: 13px; width: 13px;"] > img').should("not.exist");
+    cy.get('[data-cy="inspector-node-globals"] > .node-key').click();
+    cy.get('[data-cy="inspector-node-environment"] > .node-key').click();
+    cy.get('[data-cy="inspector-node-name"] > .mx-2').verifyVisibleElement(
+      "have.text",
+      `"production"`
+    );
+
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(4000);
+
+    cy.get(
+      commonWidgetSelector.draggableWidget(data.constName)
+    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+
+    cy.go('back');
+    cy.waitForAppLoad();
+    cy.wait(3000);
+    cy.get(commonSelectors.releaseButton).click();
+    cy.get(commonSelectors.yesButton).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
+    cy.wait(500);
+
+    cy.get(commonWidgetSelector.shareAppButton).click();
+    cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
+    cy.get(commonWidgetSelector.modalCloseButton).click();
+    cy.get(commonSelectors.editorPageLogo).click();
+    cy.wait(500)
+
+    cy.visit(`/applications/${slug}`);
+    cy.get(
+      commonWidgetSelector.draggableWidget(data.constName)
+    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
+
+  });
+
   it("Verify the multi env components UI", () => {
     cy.get(multiEnvSelector.envContainer).should("be.visible");
     cy.get(multiEnvSelector.currentEnvName)
@@ -118,7 +317,7 @@ describe("Multi env", () => {
     cy.get(commonEeSelectors.promoteButton).eq(1).click();
 
     cy.waitForAppLoad();
-    cy.wait(1500);
+    cy.wait(3000);
 
     cy.get(commonSelectors.warningText).verifyVisibleElement(
       "have.text",
@@ -186,7 +385,7 @@ describe("Multi env", () => {
     cy.get(commonEeSelectors.promoteButton).click();
     cy.get(commonEeSelectors.promoteButton).eq(1).click();
     cy.waitForAppLoad();
-    cy.wait(1500);
+    cy.wait(3000);
 
     cy.get(commonSelectors.warningText).verifyVisibleElement(
       "have.text",
@@ -275,198 +474,6 @@ describe("Multi env", () => {
     cy.get(commonSelectors.releaseButton).should("be.disabled");
   });
 
-  it("Verify the datasource configuration and data on each env", () => {
-    cy.apiLogin();
-    cy.apiCreateGDS(
-      "http://localhost:3000/api/v2/data_sources",
-      data.ds,
-      "restapi",
-      [
-        { key: "url", value: "" },
-        { key: "auth_type", value: "none" },
-        { key: "grant_type", value: "authorization_code" },
-        { key: "add_token_to", value: "header" },
-        { key: "header_prefix", value: "Bearer " },
-        { key: "access_token_url", value: "" },
-        { key: "client_ide", value: "" },
-        { key: "client_secret", value: "", encrypted: true },
-        { key: "scopes", value: "read, write" },
-        { key: "username", value: "", encrypted: false },
-        { key: "password", value: "", encrypted: true },
-        { key: "bearer_token", value: "", encrypted: true },
-        { key: "auth_url", value: "" },
-        { key: "client_auth", value: "header" },
-        { key: "headers", value: [["", ""]] },
-        { key: "custom_query_params", value: [["", ""]], encrypted: false },
-        { key: "custom_auth_params", value: [["", ""]] },
-        {
-          key: "access_token_custom_headers",
-          value: [["", ""]],
-          encrypted: false,
-        },
-        { key: "multiple_auth_enabled", value: false, encrypted: false },
-        { key: "ssl_certificate", value: "none", encrypted: false },
-      ]
-    );
-    cy.visit("/");
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    selectDatasource(data.ds);
-    cy.get('[data-cy="development-label"]').click()
-    cy.clearAndType('[data-cy="base-url-text-field"]', "https://reqres.in/api/users?page=1")
-    cy.get(dataSourceSelector.buttonSave).click()
-    cy.get(commonSelectors.dashboardIcon).click();
 
-    navigateToAppEditor(data.appName);
-    cy.get(`[data-cy="${data.ds}-add-query-card"] > .text-truncate`).click();
-    cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    cy.get(".custom-toggle-switch>.switch>").eq(3).click();
-    cy.waitForAutoSave();
-
-    cy.dragAndDropWidget("Text", 550, 650);
-    editAndVerifyWidgetName(data.constName);
-    cy.waitForAutoSave();
-
-    verifyAndModifyParameter("Text", `{{queries.restapi1.data.data[0].email`);
-    cy.forceClickOnCanvas();
-    cy.waitForAutoSave();
-    cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
-
-    pinInspector();
-    cy.get(commonWidgetSelector.sidebarinspector).click();
-    cy.get(commonWidgetSelector.inspectorNodeComponents).click();
-    cy.get(commonWidgetSelector.nodeComponent(data.constName)).click();
-    cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
-      "have.text",
-      `"george.bluth@reqres.in"`
-    );
-    cy.get('[style="height: 13px; width: 13px;"] > img').should("exist");
-    cy.get('[data-cy="inspector-node-globals"] > .node-key').click();
-    cy.get('[data-cy="inspector-node-environment"] > .node-key').click();
-    cy.get('[data-cy="inspector-node-name"] > .mx-2').verifyVisibleElement(
-      "have.text",
-      `"development"`
-    );
-
-    cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.wait(4000);
-
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
-
-    cy.get('[data-cy="viewer-page-logo"]').click();
-    navigateToAppEditor(data.appName);
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonEeSelectors.promoteButton).eq(1).click();
-    cy.waitForAppLoad();
-    cy.wait(1500);
-
-    cy.get(dataSourceSelector.queryCreateAndRunButton, { timeout: 20000 }).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query could not be completed")
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    selectDatasource(data.ds);
-    cy.get('[data-cy="staging-label"]').click()
-    cy.clearAndType('[data-cy="base-url-text-field"]', "https://reqres.in/api/users?page=2")
-    cy.get(dataSourceSelector.buttonSave).click()
-
-    cy.get(commonSelectors.dashboardIcon).click();
-    navigateToAppEditor(data.appName);
-    cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "michael.lawson@reqres.in");
-
-    cy.get(commonWidgetSelector.sidebarinspector).click();
-    cy.get(commonWidgetSelector.inspectorNodeComponents).click();
-    cy.get(commonWidgetSelector.nodeComponent(data.constName)).click();
-    cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
-      "have.text",
-      `"michael.lawson@reqres.in"`
-    );
-    cy.get('[style="height: 13px; width: 13px;"] > img').should("not.exist");
-    cy.get('[data-cy="inspector-node-globals"] > .node-key').click();
-    cy.get('[data-cy="inspector-node-environment"] > .node-key').click();
-    cy.get('[data-cy="inspector-node-name"] > .mx-2').verifyVisibleElement(
-      "have.text",
-      `"staging"`
-    );
-
-    cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.wait(4000);
-
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "michael.lawson@reqres.in");
-
-    cy.get('[data-cy="viewer-page-logo"]').click();
-    navigateToAppEditor(data.appName);
-    cy.get(commonEeSelectors.promoteButton).click();
-    cy.get(commonEeSelectors.promoteButton).eq(1).click();
-    cy.waitForAppLoad();
-    cy.wait(1500);
-
-    cy.get(dataSourceSelector.queryCreateAndRunButton, { timeout: 20000 }).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query could not be completed")
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-    selectDatasource(data.ds);
-    cy.get('[data-cy="production-label"]').click()
-    cy.clearAndType('[data-cy="base-url-text-field"]', "https://reqres.in/api/users?page=1")
-    cy.get(dataSourceSelector.buttonSave).click()
-
-    cy.get(commonSelectors.dashboardIcon).click();
-    navigateToAppEditor(data.appName);
-    cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
-
-    cy.get(commonWidgetSelector.sidebarinspector).click();
-    cy.get(commonWidgetSelector.inspectorNodeComponents).click();
-    cy.get(commonWidgetSelector.nodeComponent(data.constName)).click();
-    cy.get('[data-cy="inspector-node-text"] > .mx-2').verifyVisibleElement(
-      "have.text",
-      `"george.bluth@reqres.in"`
-    );
-    cy.get('[style="height: 13px; width: 13px;"] > img').should("not.exist");
-    cy.get('[data-cy="inspector-node-globals"] > .node-key').click();
-    cy.get('[data-cy="inspector-node-environment"] > .node-key').click();
-    cy.get('[data-cy="inspector-node-name"] > .mx-2').verifyVisibleElement(
-      "have.text",
-      `"production"`
-    );
-
-    cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.wait(4000);
-
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
-
-    cy.get('[data-cy="viewer-page-logo"]').click();
-    navigateToAppEditor(data.appName);
-    cy.get(commonSelectors.releaseButton).click();
-    cy.get(commonSelectors.yesButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
-    cy.wait(500);
-
-    cy.get(commonWidgetSelector.shareAppButton).click();
-    cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
-    cy.get(commonWidgetSelector.modalCloseButton).click();
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.wait(500)
-
-    cy.visit(`/applications/${slug}`);
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.constName)
-    ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
-
-  });
 
 });
