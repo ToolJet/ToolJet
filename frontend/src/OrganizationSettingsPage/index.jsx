@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import Layout from '@/_ui/Layout';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
-import { ManageGroupPermissions } from '@/ManageGroupPermissions';
+import { ManageGroup } from '@/ManageGroupPermissions';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
@@ -16,7 +16,7 @@ export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot'];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', '', 'Copilot'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
@@ -25,7 +25,7 @@ export function OrganizationSettings(props) {
         return 'manageGroups';
       case 'SSO':
         return 'manageSSO';
-      case 'Workspace variables':
+      case '':
         return 'manageEnvVars';
       case 'Copilot':
         return 'manageCopilot';
@@ -37,7 +37,7 @@ export function OrganizationSettings(props) {
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
-      admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
+      admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('');
     });
 
     () => subscription.unsubsciption();
@@ -53,7 +53,7 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 return (
                   <>
-                    {(admin || item == 'Workspace variables' || item == 'Copilot') && (
+                    {(admin || item == '' || item == 'Copilot') && (
                       <FolderList
                         className="workspace-settings-nav-items"
                         key={index}

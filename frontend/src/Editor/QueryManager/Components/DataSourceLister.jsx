@@ -7,8 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
 function DataSourceLister({
-  dataSources,
-  staticDataSources,
+  ,
+  static,
   changeDataSource,
   handleBackButton,
   darkMode,
@@ -16,7 +16,7 @@ function DataSourceLister({
   showAddDatasourceBtn = true,
   dataSourceBtnComponent = null,
 }) {
-  const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
+  const [allSources, setAllSources] = useState([..., ...static]);
   const { t } = useTranslation();
   const computedStyles = {
     background: darkMode ? '#2f3c4c' : 'white',
@@ -29,9 +29,9 @@ function DataSourceLister({
   };
 
   useEffect(() => {
-    setAllSources([...dataSources, ...staticDataSources]);
+    setAllSources([..., ...static]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataSources]);
+  }, []);
 
   const fetchIconForSource = (source) => {
     const iconFile = source?.plugin?.iconFile?.data ?? undefined;

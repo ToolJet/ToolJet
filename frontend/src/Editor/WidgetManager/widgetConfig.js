@@ -136,7 +136,7 @@ export const widgets = [
       },
       useDynamicColumn: {
         type: 'toggle',
-        displayName: 'Use dynamic column',
+        displayName: '',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -455,7 +455,7 @@ export const widgets = [
         loadingState: { value: '{{false}}' },
         data: {
           value:
-            "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
+            "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: ''}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
         },
         useDynamicColumn: { value: '{{false}}' },
         columnData: {

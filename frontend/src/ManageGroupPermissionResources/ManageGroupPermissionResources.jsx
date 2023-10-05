@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { groupPermissionService } from '@/_services';
+import { groupervice } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
@@ -45,7 +45,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   }
 
   fetchGroupPermission = (groupPermissionId) => {
-    groupPermissionService.getGroup(groupPermissionId).then((data) => {
+    groupervice.getGroup(groupPermissionId).then((data) => {
       this.setState((prevState) => {
         return {
           groupPermission: data,
@@ -73,7 +73,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       return [];
     }
     return new Promise((resolve, reject) => {
-      groupPermissionService
+      groupervice
         .getUsersNotInGroup(query, groupPermissionId)
         .then(({ users }) => {
           resolve(
@@ -93,7 +93,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   fetchUsersInGroup = (groupPermissionId) => {
-    groupPermissionService.getUsersInGroup(groupPermissionId).then((data) => {
+    groupervice.getUsersInGroup(groupPermissionId).then((data) => {
       this.setState({
         usersInGroup: data.users,
         isLoadingUsers: false,
@@ -102,7 +102,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   fetchAppsNotInGroup = (groupPermissionId) => {
-    groupPermissionService.getAppsNotInGroup(groupPermissionId).then((data) => {
+    groupervice.getAppsNotInGroup(groupPermissionId).then((data) => {
       this.setState({
         appsNotInGroup: data.apps,
       });
@@ -110,7 +110,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   fetchAppsInGroup = (groupPermissionId) => {
-    groupPermissionService.getAppsInGroup(groupPermissionId).then((data) => {
+    groupervice.getAppsInGroup(groupPermissionId).then((data) => {
       this.setState({
         appsInGroup: data.apps,
         isLoadingApps: false,
@@ -119,10 +119,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   updateGroupPermission = (groupPermissionId, params) => {
-    groupPermissionService
+    groupervice
       .update(groupPermissionId, params)
       .then(() => {
-        toast.success('Group permissions updated');
+        toast.success('Group  updated');
         this.fetchGroupPermission(groupPermissionId);
       })
       .catch(({ error }) => {
@@ -131,7 +131,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   updateAppGroupPermission = (app, groupPermissionId, action) => {
-    const appGroupPermission = app.app_group_permissions.find(
+    const appGroupPermission = app.app_group_.find(
       (permission) => permission.group_permission_id === groupPermissionId
     );
 
@@ -146,10 +146,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
     if (action === 'edit') actionParams['hideFromDashboard'] = false;
 
-    groupPermissionService
+    groupervice
       .updateAppGroupPermission(groupPermissionId, appGroupPermission.id, actionParams)
       .then(() => {
-        toast.success('App permissions updated');
+        toast.success('App  updated');
 
         this.fetchAppsInGroup(groupPermissionId);
       })
@@ -173,7 +173,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   findAppGroupPermission = (app, groupPermissionId) => {
-    return app.app_group_permissions.find((permission) => permission.group_permission_id === groupPermissionId);
+    return app.app_group_.find((permission) => permission.group_permission_id === groupPermissionId);
   };
 
   setSelectedUsers = (value) => {
@@ -193,7 +193,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     const updateParams = {
       add_apps: this.state.selectedAppIds.map((app) => app.value),
     };
-    groupPermissionService
+    groupervice
       .update(groupPermissionId, updateParams)
       .then(() => {
         this.setState({
@@ -220,7 +220,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     const updateParams = {
       remove_apps: [appId],
     };
-    groupPermissionService
+    groupervice
       .update(groupPermissionId, updateParams)
       .then(() => {
         this.setState({ removeAppIds: [], isLoadingApps: true });
@@ -240,7 +240,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     const updateParams = {
       add_users: selectedUsers.map((user) => user.value),
     };
-    groupPermissionService
+    groupervice
       .update(groupPermissionId, updateParams)
       .then(() => {
         this.setState({
@@ -262,7 +262,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     const updateParams = {
       remove_users: [userId],
     };
-    groupPermissionService
+    groupervice
       .update(groupPermissionId, updateParams)
       .then(() => {
         this.setState({ removeUserIds: [], isLoadingUsers: true });
@@ -321,8 +321,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
     const orgEnvironmentPermission = groupPermission
       ? groupPermission.org_environment_variable_create &&
-        groupPermission.org_environment_variable_update &&
-        groupPermission.org_environment_variable_delete
+      groupPermission.org_environment_variable_update &&
+      groupPermission.org_environment_variable_delete
       : false;
 
     return (
@@ -399,20 +399,20 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                 </a>
                 <a
-                  onClick={() => this.setState({ currentTab: 'permissions' })}
-                  className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
-                  data-cy="permissions-link"
+                  onClick={() => this.setState({ currentTab: '' })}
+                  className={cx('nav-item nav-link', { active: currentTab === '' })}
+                  data-cy="-link"
                 >
                   <SolidIcon
                     className="manage-group-tab-icons"
-                    fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
+                    fill={currentTab === '' ? '#3E63DD' : '#C1C8CD'}
                     name="lock"
                     width="16"
                   ></SolidIcon>
 
                   {this.props.t(
-                    'header.organization.menus.manageGroups.permissionResources.permissions',
-                    'Permissions'
+                    'header.organization.menus.manageGroups.permissionResources.',
+                    ''
                   )}
                 </a>
               </nav>
@@ -471,12 +471,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             <p className="font-weight-500 tj-text-xsm" data-cy="name-header">
                               App name
                             </p>
-                            <p className="font-weight-500 tj-text-xsm" data-cy="permissions-header">
-                              Permissions
+                            <p className="font-weight-500 tj-text-xsm" data-cy="-header">
+
                             </p>
                           </div>
                           <tbody className="manage-group-app-table-body">
-                            {isLoadingGroup || isLoadingApps ? (
+                            z{isLoadingGroup || isLoadingApps ? (
                               <tr>
                                 <td className="col-auto">
                                   <div className="row">
@@ -538,10 +538,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                         <div>
                                           <label className="form-check form-check-inline">
                                             <input
-                                              className={`form-check-input ${
-                                                this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
+                                              className={`form-check-input ${this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
                                                 'faded-input'
-                                              }`}
+                                                }`}
                                               type="checkbox"
                                               onChange={() => {
                                                 this.updateAppGroupPermission(
@@ -562,10 +561,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                               data-cy="checkbox-hide-from-dashboard"
                                             />
                                             <span
-                                              className={`form-check-label ${
-                                                this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
+                                              className={`form-check-label ${this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
                                                 'faded-text'
-                                              }`}
+                                                }`}
                                               data-cy="label-hide-from-dashboard"
                                             >
                                               Hide from dashboard
@@ -607,9 +605,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                     </p>
                                     <span
                                       className="tj-text-sm text-center"
-                                      data-cy="helper-text-user-groups-permissions"
+                                      data-cy="helper-text-user-groups-"
                                     >
-                                      Add app to the group to control permissions
+                                      Add app to the group to control
                                       <br /> for users in this group
                                     </span>
                                   </div>
@@ -749,16 +747,16 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     </div>
                   </div>
 
-                  {/* Permissions Tab */}
+                  {/*  Tab */}
 
-                  <aside className={`tab-pane ${currentTab === 'permissions' ? 'active show' : ''}`}>
+                  <aside className={`tab-pane ${currentTab === '' ? 'active show' : ''}`}>
                     <div>
                       <div>
                         <div>
                           {groupPermission.group == 'admin' && (
                             <div className="manage-group-users-info">
-                              <p className="tj-text-xsm" data-cy="helper-text-admin-permissions">
-                                <SolidIcon name="information" fill="#3E63DD" /> Admin has all permissions
+                              <p className="tj-text-xsm" data-cy="helper-text-admin-">
+                                <SolidIcon name="information" fill="#3E63DD" /> Admin has all
                               </p>
                             </div>
                           )}
@@ -769,10 +767,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 'Resource'
                               )}
                             </p>
-                            <p data-cy="permissions-header" className="tj-text-xsm">
+                            <p data-cy="-header" className="tj-text-xsm">
                               {this.props.t(
-                                'header.organization.menus.manageGroups.permissionResources.permissions',
-                                'Permissions'
+                                'header.organization.menus.manageGroups.permissionResources.',
+                                ''
                               )}
                             </p>
                           </div>

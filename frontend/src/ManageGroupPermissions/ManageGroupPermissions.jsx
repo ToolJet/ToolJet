@@ -57,8 +57,8 @@ class ManageGroupPermissionsComponent extends React.Component {
             type == 'admin'
               ? data.group_permissions[0].id
               : type == 'current'
-              ? this.findCurrentGroupDetails(data)
-              : data.group_permissions.at(-1).id,
+                ? this.findCurrentGroupDetails(data)
+                : data.group_permissions.at(-1).id,
         });
       })
       .catch(({ error }) => {
@@ -221,7 +221,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                 >
                   {this.props.t(
                     'header.organization.menus.manageGroups.permissions.createNewGroup',
-                    'Create new group'
+                    ''
                   )}
                 </ButtonSolid>
               )}

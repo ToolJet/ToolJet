@@ -318,7 +318,7 @@ class DataSourceManagerComponent extends React.Component {
             darkMode={this.props.darkMode}
             placeholder={this.props.t(
               'editor.queryManager.dataSourceManager.suggestAnIntegration',
-              'Suggest an integration'
+              'tegration'
             )}
           />
         </div>

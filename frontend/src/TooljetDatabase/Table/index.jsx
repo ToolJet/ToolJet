@@ -92,9 +92,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     () =>
       loading
         ? columns.map((column) => ({
-            ...column,
-            Cell: <Skeleton />,
-          }))
+          ...column,
+          Cell: <Skeleton />,
+        }))
         : columns,
     [loading, columns]
   );
@@ -229,7 +229,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           {...getTableProps()}
           className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
         >
-          <thead>
+          >
             {headerGroups.map((headerGroup, index) => (
               <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
@@ -262,7 +262,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           <button onClick={() => openCreateColumnDrawer()} className="add-row-btn-database">
             +
           </button>
-          <tbody
+          
             className={cx({
               'bg-white': rows.length > 0 && !darkMode,
             })}
@@ -323,19 +323,19 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           dataLoading={loading}
           tableDataLength={tableData.length}
         />
-      </div>
-      <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
-        <EditColumnForm
-          selectedColumn={selectedColumn}
-          onEdit={() => {
-            fetchTableMetadata();
-            setSelectedColumn();
-            setIsEditColumnDrawerOpen(false);
-          }}
-          onClose={() => setIsEditColumnDrawerOpen(false)}
-        />
-      </Drawer>
-    </div>
+      </div >
+  <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
+    <EditColumnForm
+      selectedColumn={selectedColumn}
+      onEdit={() => {
+        fetchTableMetadata();
+        setSelectedColumn();
+        setIsEditColumnDrawerOpen(false);
+      }}
+      onClose={() => setIsEditColumnDrawerOpen(false)}
+    />
+  </Drawer>
+    </div >
   );
 };
 

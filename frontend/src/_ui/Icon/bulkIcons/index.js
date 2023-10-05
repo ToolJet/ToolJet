@@ -89,7 +89,7 @@ import SmileRectangle from './SmileRectangle.jsx';
 import SortArrowDown from './SortArrowDown.jsx';
 import SortArrowUp from './SortArrowUp.jsx';
 import Sun from './Sun.jsx';
-import Table from './Table.jsx';
+import Table from './x';
 import Tick from './Tick.jsx';
 import Trash from './Trash.jsx';
 import UpArrow from './UpArrow.jsx';

@@ -11,54 +11,54 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             <th></th>
           </tr>
         </thead>
-        <tbody>
-          {options.map((option, index) => {
-            return (
-              <tr key={index}>
+        ody>
+        {options.map((option, index) => {
+          return (
+            <tr key={index}>
+              <td>
+                <input
+                  type="text"
+                  value={option[0]}
+                  placeholder="key"
+                  autoComplete="off"
+                  className="form-control no-border"
+                  onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  value={option[1]}
+                  placeholder="value"
+                  autoComplete="off"
+                  className="form-control no-border"
+                  onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
+                />
+              </td>
+              {index > 0 && (
                 <td>
-                  <input
-                    type="text"
-                    value={option[0]}
-                    placeholder="key"
-                    autoComplete="off"
-                    className="form-control no-border"
-                    onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
-                  />
+                  <span
+                    role="button"
+                    onClick={() => {
+                      removeKeyValuePair(index);
+                    }}
+                  >
+                    x
+                  </span>
                 </td>
+              )}
+              {index === 0 && (
                 <td>
-                  <input
-                    type="text"
-                    value={option[1]}
-                    placeholder="value"
-                    autoComplete="off"
-                    className="form-control no-border"
-                    onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
-                  />
+                  <button className="btn btn-sm btn-primary" onClick={addNewKeyValuePair}>
+                    Add
+                  </button>
                 </td>
-                {index > 0 && (
-                  <td>
-                    <span
-                      role="button"
-                      onClick={() => {
-                        removeKeyValuePair(index);
-                      }}
-                    >
-                      x
-                    </span>
-                  </td>
-                )}
-                {index === 0 && (
-                  <td>
-                    <button className="btn btn-sm btn-primary" onClick={addNewKeyValuePair}>
-                      Add
-                    </button>
-                  </td>
-                )}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+              )}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+    </div >
   );
 };

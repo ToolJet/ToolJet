@@ -1,8 +1,8 @@
 export const dataSourceText = {
-    labelDataSources: "Datasources",
+    label: "",
     labelAddDataSource: "+ add data source",
 
-    allDataSources: "All Datasources (42)",
+    all: "All  (42)",
     allDatabase: "Databases (19)",
     allApis: "APIs (20)",
     allCloudStorage: "Cloud Storage (3)",

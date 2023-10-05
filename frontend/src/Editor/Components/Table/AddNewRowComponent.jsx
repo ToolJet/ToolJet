@@ -29,9 +29,9 @@ export function AddNewRowComponent({
   const rowsFromPrevOperationPresent = _.isEmpty(addNewRowsDetails.newRowsDataUpdates) ? false : true;
   const previousRowsData = rowsFromPrevOperationPresent
     ? Object.keys(addNewRowsDetails.newRowsDataUpdates).reduce((accumulator, row) => {
-        accumulator[row] = addNewRowsDetails.newRowsDataUpdates[row];
-        return accumulator;
-      }, [])
+      accumulator[row] = addNewRowsDetails.newRowsDataUpdates[row];
+      return accumulator;
+    }, [])
     : null;
   const [newRowsState, setNewRowsState] = useState(rowsFromPrevOperationPresent ? previousRowsData : [newRow]);
   const newRowData = useTable(
@@ -77,7 +77,7 @@ export function AddNewRowComponent({
           {...getTableProps()}
           className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'}`}
         >
-          <thead>
+          >
             {headerGroups.map((headerGroup, index) => {
               return (
                 <tr className="tr" key={index} {...headerGroup.getHeaderGroupProps()}>
@@ -92,7 +92,7 @@ export function AddNewRowComponent({
               );
             })}
           </thead>
-          <tbody {...getTableBodyProps()}>
+           {...getTableBodyProps()}>
             {rows.map((row, index) => {
               prepareRow(row);
               return (
@@ -142,31 +142,31 @@ export function AddNewRowComponent({
           +
         </button>
         <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
-      </div>
-      <div className="card-footer">
-        <button
-          className="btn btn-primary btn-sm mx-2"
-          onClick={() => {
-            onEvent('onNewRowsAdded', { component }).then(() => {
-              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
-              setNewRowsState([]);
-            });
-          }}
-        >
-          Save
-        </button>
-        <button
-          onClick={() => {
-            setExposedVariable('newRows', []).then(() => {
-              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
-              setNewRowsState([]);
-            });
-          }}
-          className="btn btn-light btn-sm"
-        >
-          Discard
-        </button>
-      </div>
+      </div >
+    <div className="card-footer">
+      <button
+        className="btn btn-primary btn-sm mx-2"
+        onClick={() => {
+          onEvent('onNewRowsAdded', { component }).then(() => {
+            mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+            setNewRowsState([]);
+          });
+        }}
+      >
+        Save
+      </button>
+      <button
+        onClick={() => {
+          setExposedVariable('newRows', []).then(() => {
+            mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+            setNewRowsState([]);
+          });
+        }}
+        className="btn btn-light btn-sm"
+      >
+        Discard
+      </button>
     </div>
+    </div >
   );
 }

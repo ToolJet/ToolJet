@@ -122,7 +122,7 @@ export const manageGroupsElements = () => {
   cy.get(groupsSelector.appsCreateCheck).should("be.visible").check();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
-    groupsText.permissionUpdatedToast
+
   );
   cy.get(groupsSelector.appsCreateLabel).verifyVisibleElement(
     "have.text",
@@ -154,7 +154,7 @@ export const manageGroupsElements = () => {
   cy.get(groupsSelector.workspaceVarCheckbox).check();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
-    groupsText.permissionUpdatedToast
+
   );
   cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
 

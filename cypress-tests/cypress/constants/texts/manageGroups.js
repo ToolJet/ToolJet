@@ -1,6 +1,6 @@
 export const groupsText = {
   pageTitle: "User Groups",
-  createNewGroupButton: "Create new group",
+  createNewGroupButton: " group",
   tableHeader: "Name",
   allUsers: "All Users",
   admin: "Admin",
@@ -35,7 +35,7 @@ export const groupsText = {
   textAppName: "App name",
   helperTextNoAppsAdded: "No apps are added to the group",
   helperTextPermissions:
-    "Add app to the group to control permissions for users in this group",
+    "",
   helperTextAllUsersIncluded:
     " All users include every users in the app. This list is not editable",
   helperTextAdminAppAccess:

@@ -226,7 +226,7 @@ export const QueryManagerBody = forwardRef(
     const renderDataSourcesList = () => (
       <>
         {renderDataSources(
-          t('editor.queryManager.selectDatasource', 'Select Datasource'),
+          t('editor.queryManager.selectDatasource', 'ource'),
           dataSources,
           staticDataSources
         )}
@@ -295,9 +295,8 @@ export const QueryManagerBody = forwardRef(
       return (
         <>
           <div
-            className={`border-top query-manager-border-color hr-text-left px-4 ${
-              darkMode ? 'color-white' : 'color-light-slate-12'
-            }`}
+            className={`border-top query-manager-border-color hr-text-left px-4 ${darkMode ? 'color-white' : 'color-light-slate-12'
+              }`}
             style={{ paddingTop: '28px' }}
           >
             {t('editor.queryManager.eventsHandler', 'Events Handler')}
@@ -397,9 +396,8 @@ export const QueryManagerBody = forwardRef(
           })}
         >
           <div
-            className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
-              darkMode ? 'color-white' : 'color-light-slate-12'
-            }`}
+            className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${darkMode ? 'color-white' : 'color-light-slate-12'
+              }`}
           >
             Change Datasource
           </div>
@@ -419,9 +417,8 @@ export const QueryManagerBody = forwardRef(
 
     return (
       <div
-        className={`row row-deck px-2 mt-0 query-details ${
-          selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
-        }`}
+        className={`row row-deck px-2 mt-0 query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
+          }`}
       >
         {selectedDataSource === null ? renderDataSourcesList() : renderQueryElement()}
         {selectedDataSource !== null ? renderQueryOptions() : null}

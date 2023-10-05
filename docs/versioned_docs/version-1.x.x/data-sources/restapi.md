@@ -9,7 +9,7 @@ ToolJet can connect to any REST endpoint available.
 
 ## Connection
 
-To add a new REST API datasource, click the Datasources manager icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select REST API from the modal that pops up.
+To add a new REST API datasource, click the Datasources manager icon on the left-sidebar of the app builder and click on the `` button, then select REST API from the modal that pops up.
 Click on the 'Save' button to save the data source.
 
 <img class="screenshot-full" src="/img/datasource-reference/rest-api/rest-api.gif" alt="ToolJet - Data source - REST API" height="420"/>

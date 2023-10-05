@@ -118,11 +118,8 @@ export default function GenerateEachCellValue({
       {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
         <div className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper">
           <div
-            style={{
-              color: cellTextColor,
-            }}
             dangerouslySetInnerHTML={{
-              __html: htmlElement,
+              __html: `<span style="color: ${cellTextColor};">${htmlElement}</span>`,
             }}
             tabIndex={0}
             className={`form-control-plaintext form-control-plaintext-sm ${columnType === 'text' && 'h-100 my-1'}`}

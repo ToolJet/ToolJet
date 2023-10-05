@@ -562,13 +562,13 @@ export function Table({
         if (action.type === 'toggleRowSelected') {
           prevState.selectedRowIds[action.id]
             ? (newState.selectedRowIds = {
-                ...newStateWithPrevSelectedRows.selectedRowIds,
-                [action.id]: false,
-              })
+              ...newStateWithPrevSelectedRows.selectedRowIds,
+              [action.id]: false,
+            })
             : (newState.selectedRowIds = {
-                ...newStateWithPrevSelectedRows.selectedRowIds,
-                [action.id]: true,
-              });
+              ...newStateWithPrevSelectedRows.selectedRowIds,
+              [action.id]: true,
+            });
         }
         return newState;
       },
@@ -909,9 +909,8 @@ export function Table({
       {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
         <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
           <div
-            className={`d-flex align-items-center ms-auto text-muted ${
-              displaySearchBox ? 'justify-content-between' : 'justify-content-end'
-            }`}
+            className={`d-flex align-items-center ms-auto text-muted ${displaySearchBox ? 'justify-content-between' : 'justify-content-end'
+              }`}
           >
             {displaySearchBox && (
               <GlobalFilter
@@ -981,9 +980,8 @@ export function Table({
                     <Popover>
                       <div
                         data-cy={`dropdown-hide-column`}
-                        className={`dropdown-table-column-hide-common ${
-                          darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
-                        } `}
+                        className={`dropdown-table-column-hide-common ${darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
+                          } `}
                       >
                         <div className="dropdown-item">
                           <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
@@ -1035,9 +1033,8 @@ export function Table({
       <div className="table-responsive jet-data-table">
         <table
           {...getTableProps()}
-          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
-            tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
-          }`}
+          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
+            }`}
           style={computedStyles}
         >
           <thead>
@@ -1131,16 +1128,15 @@ export function Table({
                 return (
                   <tr
                     key={index}
-                    className={`table-row table-editor-component-row ${
-                      allowSelection &&
+                    className={`table-row table-editor-component-row ${allowSelection &&
                       highlightSelectedRow &&
                       ((row.isSelected && row.id === tableDetails.selectedRowId) ||
                         (showBulkSelector &&
                           row.isSelected &&
                           tableDetails?.selectedRowsDetails?.some((singleRow) => singleRow.selectedRowId === row.id)))
-                        ? 'selected'
-                        : ''
-                    }`}
+                      ? 'selected'
+                      : ''
+                      }`}
                     {...row.getRowProps()}
                     onClick={async (e) => {
                       e.stopPropagation();
@@ -1237,9 +1233,8 @@ export function Table({
                           }}
                         >
                           <div
-                            className={`td-container ${
-                              cell.column.columnType === 'image' && 'jet-table-image-column'
-                            } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
+                            className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'
+                              } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
                           >
                             <GenerateEachCellValue
                               cellValue={cellValue}

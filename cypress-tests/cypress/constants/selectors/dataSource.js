@@ -1,13 +1,13 @@
-export const dataSourceSelector = {
+export const elector = {
     leftSidebarDatasourceButton: "[data-cy='left-sidebar-database-button']",
-    labelDataSources: "[data-cy='label-datasources']",
+    label: "[data-cy='label-']",
     addDatasourceLink: "[data-cy='add-datasource-link']",
 
-    allDatasourceLabelAndCount: '[data-rr-ui-event-key="#alldatasources"]',
+    allDatasourceLabelAndCount: '[data-rr-ui-event-key="#all"]',
     databaseLabelAndCount: '[data-rr-ui-event-key="#databases"]',
     apiLabelAndCount: '[data-rr-ui-event-key="#apis"]',
     cloudStorageLabelAndCount: '[data-rr-ui-event-key="#cloudstorage"]',
-    dataSourceSearchInputField: '[data-cy="datasource-search-input"]',
+    earchInputField: '[data-cy="datasource-search-input"]',
 
     postgresDataSource: "[data-cy='data-source-postgresql']",
     dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
