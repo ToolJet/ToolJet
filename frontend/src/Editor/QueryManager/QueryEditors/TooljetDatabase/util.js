@@ -39,3 +39,26 @@ export const isOperatorOptions = [
   { value: 'null', label: 'null' },
   { value: 'notNull', label: 'not null' },
 ];
+
+export const filterOperatorOptions = [
+  { label: 'equals', value: '=' },
+  { label: 'greater than', value: '>' },
+  { label: 'greater than or equal', value: '>=' },
+  { label: 'less than', value: '<' },
+  { label: 'less than or equal', value: '<=' },
+  { label: 'not equal', value: '!=' },
+  { label: 'like', value: 'LIKE' },
+  { label: 'not like', value: 'NOT LIKE' },
+  { label: 'ilike', value: 'ILIKE' },
+  { label: 'not ilike', value: 'NOT ILIKE' },
+  { label: 'match', value: '~' },
+  { label: 'imatch', value: '~*' },
+  { label: 'in', value: 'IN' },
+  { label: 'not in', value: 'NOT IN' },
+  { label: 'is', value: 'IS' },
+];
+
+export const nullOperatorOptions = [
+  { label: 'null', value: 'NULL' },
+  { label: 'not null', value: 'NOT NULL' },
+];
