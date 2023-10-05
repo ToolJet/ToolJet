@@ -28,14 +28,14 @@ When entering one or more files and use --- to separate each definition
 Copy paste deployment.yaml to the online editor 
 
 ```
-https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/openshift/deployment.yaml
+https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/deployment.yaml
 ```
 
 
 Copy paste the service.yaml to the online editor
 
 ```
-https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/openshift/service.yaml
+https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/service.yaml
 ```
 
 <div style={{textAlign: 'center'}}>
@@ -66,5 +66,5 @@ You can know more about tooljet database [here](https://docs.tooljet.com/docs/to
 If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](https://docs.tooljet.com/docs/setup/env-vars#tooljet-database) for additional environment variables configuration to be done.
 
 ```
-https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/openshift/postgrest.yaml
+https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/postgrest.yaml
 ```

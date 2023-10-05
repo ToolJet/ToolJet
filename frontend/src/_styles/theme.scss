@@ -10736,6 +10736,8 @@ tbody {
     border-radius: 6px !important;
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
+    transition:none;
+
 
     &:hover {
       background: var(--slate1) !important;
@@ -10750,6 +10752,20 @@ tbody {
       border: 1px solid var(--indigo9) !important;
       box-shadow: none !important;
     }
+
+    &:-webkit-autofill {
+      box-shadow: 0 0 0 1000px var(--base) inset !important;
+      -webkit-text-fill-color: var(--slate12) !important;
+
+       &:hover {
+         box-shadow: 0 0 0 1000px var(--slate1) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}
+
+       &:focus-visible { 
+        box-shadow: 0 0 0 1000px var(--indigo2) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}
+    }
+
 
   }
 
