@@ -237,6 +237,13 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, lastKeyPressTimestamp })]);
 
+  useEffect(() => {
+    if (!isEmpty(canvasContainerRef?.current)) {
+      canvasContainerRef.current.scrollLeft += editorMarginLeft;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorMarginLeft]);
+
   const handleMessage = (event) => {
     const { data } = event;
 
@@ -599,7 +606,9 @@ const EditorComponent = (props) => {
     return Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id }));
   };
 
-  const handleEditorMarginLeftChange = (value) => setEditorMarginLeft(value);
+  const handleEditorMarginLeftChange = (value) => {
+    setEditorMarginLeft(value);
+  };
 
   const globalSettingsChanged = (globalOptions) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
