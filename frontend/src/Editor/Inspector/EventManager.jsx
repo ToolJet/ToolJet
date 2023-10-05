@@ -226,6 +226,28 @@ export const EventManager = ({
     }));
   }
 
+  function handleQueryChange(index, updates) {
+    let newEvents = _.cloneDeep(events);
+    let updatedEvent = newEvents[index];
+
+    updatedEvent.event = {
+      ...updatedEvent.event,
+      ...updates,
+    };
+
+    newEvents[index] = updatedEvent;
+
+    updateAppVersionEventHandlers(
+      [
+        {
+          event_id: updatedEvent.id,
+          diff: updatedEvent,
+        },
+      ],
+      'update'
+    );
+  }
+
   function handlerChanged(index, param, value) {
     let newEvents = _.cloneDeep(events);
 
@@ -509,9 +531,12 @@ export const EventManager = ({
                           }),
                           {}
                         );
-                        handlerChanged(index, 'queryId', query.id);
-                        handlerChanged(index, 'queryName', query.name);
-                        handlerChanged(index, 'parameters', parameters);
+
+                        handleQueryChange(index, {
+                          queryId: query.id,
+                          queryName: query.name,
+                          parameters: parameters,
+                        });
                       }}
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
