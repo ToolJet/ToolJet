@@ -79,7 +79,8 @@ const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
-  const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving } = useAppDataActions();
+  const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving, createAppVersionEventHandlers } =
+    useAppDataActions();
   const { updateEditorState, updateQueryConfirmationList } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
@@ -815,6 +816,46 @@ const EditorComponent = (props) => {
     }
   };
 
+  function getKeyFromComponentMap(componentMap, newItem) {
+    for (const key in componentMap) {
+      if (componentMap.hasOwnProperty(key) && componentMap[key] === newItem) {
+        return key; // Return the key when a match is found
+      }
+    }
+    return null; // Return null if no match is found
+  }
+
+  const cloneEventsForClonedComponents = (componentUpdateDiff, operation, componentMap) => {
+    if (operation !== 'create') return;
+
+    const newComponentIds = Object.keys(componentUpdateDiff);
+
+    const mappedEvents = [];
+
+    newComponentIds.forEach((componentId) => {
+      const sourceComponentId = getKeyFromComponentMap(componentMap, componentId);
+
+      const componentEvents = events.filter((event) => event.sourceId === sourceComponentId);
+
+      mappedEvents.push(...componentEvents);
+    });
+
+    return Promise.all(
+      mappedEvents.map((event) => {
+        const newEvent = {
+          event: {
+            ...event?.event,
+          },
+          eventType: event?.target,
+          attachedTo: componentMap[event?.sourceId],
+          index: event?.index,
+        };
+
+        createAppVersionEventHandlers(newEvent);
+      })
+    );
+  };
+
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
@@ -856,6 +897,15 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
           toast.error('App could not save.');
+        })
+        .finally(() => {
+          if (appDiffOptions?.cloningComponent) {
+            cloneEventsForClonedComponents(
+              updateDiff.updateDiff,
+              updateDiff.operation,
+              appDiffOptions?.cloningComponent
+            );
+          }
         });
     }
 
