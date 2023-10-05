@@ -816,16 +816,16 @@ const EditorComponent = (props) => {
     }
   };
 
-  function getKeyFromComponentMap(componentMap, newItem) {
-    for (const key in componentMap) {
-      if (componentMap.hasOwnProperty(key) && componentMap[key] === newItem) {
-        return key; // Return the key when a match is found
-      }
-    }
-    return null; // Return null if no match is found
-  }
-
   const cloneEventsForClonedComponents = (componentUpdateDiff, operation, componentMap) => {
+    function getKeyFromComponentMap(componentMap, newItem) {
+      for (const key in componentMap) {
+        if (componentMap.hasOwnProperty(key) && componentMap[key] === newItem) {
+          return key;
+        }
+      }
+      return null;
+    }
+
     if (operation !== 'create') return;
 
     const newComponentIds = Object.keys(componentUpdateDiff);
@@ -834,11 +834,14 @@ const EditorComponent = (props) => {
 
     newComponentIds.forEach((componentId) => {
       const sourceComponentId = getKeyFromComponentMap(componentMap, componentId);
+      if (!sourceComponentId) return;
 
       const componentEvents = events.filter((event) => event.sourceId === sourceComponentId);
 
       mappedEvents.push(...componentEvents);
     });
+
+    if (mappedEvents.length === 0) return;
 
     return Promise.all(
       mappedEvents.map((event) => {
