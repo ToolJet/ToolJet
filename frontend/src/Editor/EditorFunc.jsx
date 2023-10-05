@@ -628,6 +628,7 @@ const EditorComponent = (props) => {
 
   //!--------
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
+    console.log('----arpit callback');
     setWindowTitle(data.name);
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
     if (!releasedVersionId || !versionSwitched) {
@@ -681,7 +682,7 @@ const EditorComponent = (props) => {
     await fetchDataSources(data.editing_version?.id);
     await fetchDataQueries(data.editing_version?.id, true, true);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
-
+    console.log('----arpit currentPageEvents----', { currentPageEvents });
     for (const currentEvent of currentPageEvents ?? []) {
       await handleEvent(currentEvent.name, currentPageEvents);
     }
