@@ -31,14 +31,14 @@ The default environments cannot be removed or renamed.
 
 To configure connection settings for different environments, follow these steps:
 
-1. Go to the **[Global Datasource](/docs/data-sources/overview)** page.
-2. Click on the **Add new datasource** button.
-3. Choose a datasource. In the connection modal, you'll find three tabs: **Production**, **Staging**, and **Development**.
-4. Switch to each tab and enter the appropriate credentials for connecting to the respective database. Remember to save after entering credentials on each tab.
+1. Go to the **[Data Source](/docs/data-sources/overview)** page.
+2. Click on each category of data sources to view the list of available data sources. As you hover over the desired data source, an **Add** button will appear.
+3. On clicking the **Add** button, a connection modal will appear. In the connection modal, you'll find three tabs: **Production**, **Staging**, and **Development**.
+4. Switch to each tab and enter the appropriate credentials for connecting to the respective database. Remember to **save** after entering credentials on each tab.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/multi-env/envconnect.gif" alt="Multi-Environment" />
+<img className="screenshot-full" src="/img/v2-beta/multi-env/multienvtabs.png" alt="Multi-Environment" />
 
 </div>
 
@@ -109,4 +109,4 @@ To configure connection settings for different environments, follow these steps:
  Please note that only one version of the app can be released at a time.
  :::
 
-ToolJet automatically saves your most recently selected environment in the app builder. The next time you open an app, it will use the same environment. For example, if you switch to the staging environment in an app, the next time you open it will automatically use the same staging environment.
+ToolJet's app builder remembers your last editing state. When you reopen an app, it resumes from where you left off, ensuring a seamless experience. For instance, if you edited an app in the staging environment, it will open in the staging environment when you return.
