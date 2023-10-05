@@ -124,7 +124,7 @@ To configure these permissions, navigate to **Workspace Settings** -> **Groups S
 
 ## Changing scope of data sources on an app created on older versions of ToolJet
 
-On ToolJet versions below 2.3.0, the data source connection was made from within the individual apps. To make it backward compatible, we added an option to change the scope of the data sources and make it global data source.
+On ToolJet versions below 2.3.0, the data source connection was made from within the individual apps. To make it backward compatible, we added an option to change the scope of the data sources and make it data source.
 
 1. When dealing with apps that were created using ToolJet versions prior to 2.3.0, you will notice the presence of the data source manager in the left sidebar of the App Builder.
   <div style={{textAlign: 'center'}}>
@@ -140,8 +140,8 @@ On ToolJet versions below 2.3.0, the data source connection was made from within
 
   </div>
 
-3. Once you change the scope of the data source and make it global, you'll see that the **data source manager** is removed from the left sidebar and now you'll find the data source on the **query panel** under Global Data sources. You can now configure the data source from the Data Sources page on the **dashboard**.
-3. Once you have successfully changed the scope of the data source, thereby transforming it into a global data source, you will observe that the **data source manager** from the left sidebar is removed. Subsequently, the data source will be accessible within the **query panel** under the Available data sources section. Now you can configure this data source from the Data Sources page located on the **Dashboard**.
+3. Once you change the scope of the data source and make it global, you'll see that the **data source manager** is removed from the left sidebar and now you'll find the data source on the **query panel** under Data sources. You can now configure the data source from the Data Sources page on the **dashboard**.
+3. Once you have successfully changed the scope of the data source, thereby transforming it into a data source, you will observe that the **data source manager** from the left sidebar is removed. Subsequently, the data source will be accessible within the **query panel** under the Available data sources section. Now you can configure this data source from the Data Sources page located on the **Dashboard**.
 
   <div style={{textAlign: 'center'}}>
 

@@ -161,7 +161,7 @@ Selecting this option will immediately open the cloned app in the app builder wi
 
 ### Export app
 
-This option will download a JSON file of the application. This JSON file can be [imported](#import) to ToolJet to create a new app. The exported app will include all the queries connected to global data sources including the data source created from Marketplace plugins.
+This option will download a JSON file of the application. This JSON file can be [imported](#import) to ToolJet to create a new app. The exported app will include all the queries connected to data sources including the data source created from Marketplace plugins.
 
 This option allows you to select a specific version of the app to export or export all the versions of the app. To export a specific version of the app, select a version from the list of available versions in the modal and click on the `Export selected version` and to export all the versions of the app, click on the `Export All` button.
 
