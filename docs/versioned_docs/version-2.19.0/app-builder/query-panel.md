@@ -27,7 +27,7 @@ Query Manager will list all the queries that has been created in the application
 
 ### Add
 
-Add button is used to add new query in the application. When Add button is clicked, a menu will open with a list of options for creating a query from **Default** datasources such as **Rest API**, **ToolJet Database**, **JavaScript Code**, **Python Code** or from connected **Global Datasources**.
+Add button is used to add new query in the application. When Add button is clicked, a menu will open with a list of options for creating a query from **Default** datasources such as **Rest API**, **ToolJet Database**, **JavaScript Code**, **Python Code** or from connected **Data sources**.
 
 <div style={{textAlign: 'center'}}>
 

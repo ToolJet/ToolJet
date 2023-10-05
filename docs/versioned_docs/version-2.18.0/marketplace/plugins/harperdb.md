@@ -31,7 +31,7 @@ To establish a connection with HarperDB, you need the following credentials:
 </div>
 
 ## Querying HarperDB
-To perform queries on HarperDB, click the `+Add` button in the query manager located at the bottom panel of the app builder. Select the HarperDB from the Global Datasource section in the query editor.
+To perform queries on HarperDB, click the `+Add` button in the query manager located at the bottom panel of the app builder. Select the HarperDB from the Data source section in the query editor.
 
 <div style={{textAlign: 'center'}}>
 

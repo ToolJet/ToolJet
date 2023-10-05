@@ -34,9 +34,9 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 
 ### Types of variables
 
-- **Client**: The client variable can be utilized in components, queries, and global datasources.
+- **Client**: The client variable can be utilized in components, queries, and data sources.
 
-- **Server**: The server variables can be employed in all queries except for `RunJS` and the connection form for global datasources. The restriction on using server variables with components is due to their resolution occurring solely during runtime, ensuring a high level of security.
+- **Server**: The server variables can be employed in all queries except for `RunJS` and the connection form for data sources. The restriction on using server variables with components is due to their resolution occurring solely during runtime, ensuring a high level of security.
 
 :::info
 Variable Type cannot be changed once it has been created.
@@ -74,7 +74,7 @@ So, the syntax for using the variable that we created before will be `%%client.p
 
 </div>
 
-Starting from ToolJet version `2.10.0` and onwards, it is possible to utilize Server-type workspace variables in the global datasources connection form.
+Starting from ToolJet version `2.10.0` and onwards, it is possible to utilize Server-type workspace variables in the data sources connection form.
 
 <div style={{textAlign: 'center'}}>
 

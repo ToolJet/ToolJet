@@ -7,7 +7,7 @@ ToolJet has the capability to connect to PostgreSQL databases for data retrieval
 
 ## Establishing a Connection
 
-To establish a connection with the PostgreSQL global datasource, you can take either of the following steps: click on the "Add new global datasource" button in the query panel, or access the [Global Datasources](/docs/data-sources/overview) page through the ToolJet dashboard.
+To establish a connection with the PostgreSQL data source, you can take either of the following steps: click on the "Add new data source" button in the query panel, or access the [Data sources](/docs/data-sources/overview) page through the ToolJet dashboard.
 
 ToolJet requires the following information to connect to your PostgreSQL database:
 
@@ -36,7 +36,7 @@ Click the **Test connection** button to verify the correctness of the credential
 
 ## Querying PostgreSQL
 
-Click on `+Add` button on the query panel and select the PostgreSQL from the global datasources. 
+Click on `+Add` button on the query panel and select the PostgreSQL from the data sources. 
 
 PostgreSQL query editor has two modes, **SQL** & **GUI**. **[SQL mode](/docs/data-sources/postgresql#sql-mode)** can be used to write raw SQL queries and **[GUI mode](/docs/data-sources/postgresql#gui-mode)** can be used to query your PostgreSQL database without writing queries.
 

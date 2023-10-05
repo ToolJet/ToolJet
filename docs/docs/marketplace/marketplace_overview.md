@@ -51,7 +51,7 @@ Under the **Marketplace** tab, you will see a list of all the available plugins 
 
 You can access any installed plugins by following these steps:
 
-- Navigate to the **Global Datasources** Page.
+- Navigate to the **Data sources** Page.
 - Click on the **Add new datasource** button.
 - Open the **Plugins** tab in the modal that appears.
 - From here, you can connect to any of the plugins that were installed from the Marketplace.
@@ -62,7 +62,7 @@ You can access any installed plugins by following these steps:
 
 </div>
 
-- After successfully connecting to a plugin, you can access it under the Global Datasource section when creating queries.
+- After successfully connecting to a plugin, you can access it under the Data source section when creating queries.
 
 <div style={{textAlign: 'center'}}>
 
@@ -79,7 +79,7 @@ If you remove a plugin, all the queries associated with it will be eliminated fr
 To remove a plugin, follow these steps:
 - Go to the Marketplace page from the dashboard.
 - Go to the **Installed** tab and click on the **Remove** button next to the plugin that you want to remove.
-- By doing so, the plugin will be removed from the global datasource section, and no user will be able to establish a connection with it.
+- By doing so, the plugin will be removed from the data source section, and no user will be able to establish a connection with it.
 
 <div style={{textAlign: 'center'}}>
 

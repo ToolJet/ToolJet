@@ -54,7 +54,7 @@ docker-compose up -d
 
 ## Querying gRPC
 
-After setting up your proto files, you should be able to establish a connection to gRPC by going to the [global datasource](/docs/data-sources/overview) page.
+After setting up your proto files, you should be able to establish a connection to gRPC by going to the [data source](/docs/data-sources/overview) page.
 
 ### Connect the gRPC datasource
 
@@ -69,7 +69,7 @@ ToolJet requires the following to connect to gRPC servers:
 
 </div>
 
-Once you have added the gRPC from the global datasource page, you'll find it on the query panel of the application.
+Once you have added the gRPC from the data source page, you'll find it on the query panel of the application.
 
 <div style={{textAlign: 'center'}}>
 

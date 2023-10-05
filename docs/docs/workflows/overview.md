@@ -22,7 +22,7 @@ You're currently exploring the beta version of ToolJet Workflows. Please be awar
 This introductory guide will help you understand the basics of ToolJet Workflows. We'll create a workflow that fetches the sales data from the database, transforms the data using JavaScript and sends an SMS notification to the Sales Manager using Twilio. The workflow will also conditionally return a success/failure message that can be used in a ToolJet Application to show a pop-up alert. 
 
 :::info
-All data sources that are configured in **Global Datasources** will be available in Workflows.
+All data sources that are configured in **Data sources** will be available in Workflows.
 :::
 
 To create a new workflow, click on the workflow icon in the left sidebar and click on the **Create New Workflow** button. You'll be taken to the flow builder with a new workflow. Let's start by renaming the workflow to *Quickstart Guide*. 

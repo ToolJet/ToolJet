@@ -7,7 +7,7 @@ ToolJet enables you to execute Redis commands on your Redis instances.
 
 ## Connecting to Redis
 
-To establish a connection with the Redis global datasource, you have two options. You can either click on the **`+Add new global datasource`** button on the query panel or access the **[Global Datasources](/docs/data-sources/overview)** page from the ToolJet dashboard.
+To establish a connection with the Redis data source, you have two options. You can either click on the **`+Add new data source`** button on the query panel or access the **[Data sources](/docs/data-sources/overview)** page from the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 

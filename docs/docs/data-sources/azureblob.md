@@ -7,9 +7,9 @@ ToolJet offers the capability to establish a connection with Azure Blob storage 
 
 ## Connection
 
-To connect ToolJet with the Azure Blob global datasource, you have two options:
-1. Click on the `+Add new global datasource` button in the query panel.
-2. Go to the **[Global Datasources](/docs/data-sources/overview)** page on the ToolJet dashboard.
+To connect ToolJet with the Azure Blob data source, you have two options:
+1. Click on the `+Add new data source` button in the query panel.
+2. Go to the **[Data sources](/docs/data-sources/overview)** page on the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
@@ -24,11 +24,11 @@ Once you have entered the connection string, click on the **Test connection** bu
 
 ## Querying Azure Blob
 
-Once you have connected to the Azure Blob global datasource, follow these steps to create queries and interact with a Azure Blob storage from the ToolJet application:
+Once you have connected to the Azure Blob data source, follow these steps to create queries and interact with a Azure Blob storage from the ToolJet application:
 
 1. Open the ToolJet application and navigate to the query panel at the bottom of the app builder.
-2. Click the `+Add` button to open the list of available `local` and `global datasources`.
-3. Select **Azure Blob** from the global datasource section.
+2. Click the `+Add` button to open the list of available `local` and `data sources`.
+3. Select **Azure Blob** from the data source section.
 4. Select the desired **operation** from the dropdown and enter the required **parameters**.
 5. **Rename**(optional) and **Create** the query.
 6. Click **Preview** to view the data returned from the query or click **Run** to execute the query.

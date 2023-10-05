@@ -37,7 +37,7 @@ To create a query for sending an email, follow these steps:
 
 1. Open the query panel located at the bottom panel of the editor.
 2. Click the `+Add` button on the left to create a new query.
-3. Select `SMTP` from the global datasource.
+3. Select `SMTP` from the data source.
 4. Provide the following properties:
  - **From** `required` : Email address of the sender
  - **From Name** : Name of the sender
