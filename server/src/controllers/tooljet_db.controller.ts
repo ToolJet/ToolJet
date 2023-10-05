@@ -131,15 +131,11 @@ export class TooljetDbController {
 
   @UseInterceptors(FileInterceptor('file'))
   @Post('/organizations/:organizationId/table/:tableName/bulk-upload')
-  async bulkUpload(
-    @Param('organizationId') organizationId,
-    @Param('tableName') tableName,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    if (file.size > MAX_CSV_FILE_SIZE) {
+  async bulkUpload(@Param('organizationId') organizationId, @Param('tableName') tableName, @UploadedFile() file: any) {
+    if (file?.size > MAX_CSV_FILE_SIZE) {
       throw new BadRequestException('File size cannot be greater than 2MB');
     }
-    const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file.buffer);
+    const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file?.buffer);
 
     return decamelizeKeys({ result });
   }
