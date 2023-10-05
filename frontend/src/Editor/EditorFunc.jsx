@@ -98,7 +98,7 @@ const EditorComponent = (props) => {
     currentSidebarTab,
     isLoading,
     defaultComponentStateComputed,
-
+    showComments,
     showLeftSidebar,
     queryConfirmationList,
   } = useEditorState();
@@ -118,6 +118,8 @@ const EditorComponent = (props) => {
     events,
     areOthersOnSameVersionAndPage,
   } = useAppInfo();
+
+  const currentState = useCurrentState();
 
   const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -178,7 +180,7 @@ const EditorComponent = (props) => {
 
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
-            ...props.currentState.globals,
+            ...currentState.globals,
             currentUser: userVars,
           },
         });
@@ -340,7 +342,7 @@ const EditorComponent = (props) => {
     });
 
     const globals = {
-      ...props.currentState.globals,
+      ...currentState.globals,
       theme: { name: props?.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
     };
@@ -489,7 +491,7 @@ const EditorComponent = (props) => {
   const changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
-        ...props.currentState.globals,
+        ...currentState.globals,
         theme: { name: newMode ? 'dark' : 'light' },
       },
     });
@@ -1019,8 +1021,8 @@ const EditorComponent = (props) => {
     let newComponents = _appDefinition?.pages[currentPageId].components;
 
     for (const selectedComponent of selectedComponents) {
-      let top = newComponents[selectedComponent.id].layouts[props.currentLayout].top;
-      let left = newComponents[selectedComponent.id].layouts[props.currentLayout].left;
+      let top = newComponents[selectedComponent.id].layouts[currentLayout].top;
+      let left = newComponents[selectedComponent.id].layouts[currentLayout].left;
 
       switch (direction) {
         case 'ArrowLeft':
@@ -1037,8 +1039,8 @@ const EditorComponent = (props) => {
           break;
       }
 
-      newComponents[selectedComponent.id].layouts[props.currentLayout].top = top;
-      newComponents[selectedComponent.id].layouts[props.currentLayout].left = left;
+      newComponents[selectedComponent.id].layouts[currentLayout].top = top;
+      newComponents[selectedComponent.id].layouts[currentLayout].left = left;
     }
 
     _appDefinition.pages[currentPageId].components = newComponents;
@@ -1403,17 +1405,15 @@ const EditorComponent = (props) => {
   const showHideViewerNavigation = () => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
-
+    console.log(newAppDefinition.showViewerNavigation, 'Bedore');
     newAppDefinition.showViewerNavigation = !newAppDefinition.showViewerNavigation;
-
+    console.log(newAppDefinition.showViewerNavigation, 'newAppDefinition.showViewerNavigation');
     appDefinitionChanged(newAppDefinition, {
       generalAppDefinitionChanged: true,
     });
   };
 
   // !-------
-
-  const currentState = props?.currentState;
 
   const appVersionPreviewLink = editingVersion
     ? `/applications/${appId}/versions/${editingVersion.id}/${currentState.page.handle}`
@@ -1542,7 +1542,7 @@ const EditorComponent = (props) => {
               isMaintenanceOn={isMaintenanceOn}
               toggleAppMaintenance={toggleAppMaintenance}
             />
-            {!props.showComments && (
+            {!showComments && (
               <Selecto
                 dragContainer={'.canvas-container'}
                 selectableTargets={['.react-draggable']}
@@ -1721,7 +1721,7 @@ const EditorComponent = (props) => {
                 ></WidgetManager>
               )}
             </div>
-            {config.COMMENT_FEATURE_ENABLE && props.showComments && (
+            {config.COMMENT_FEATURE_ENABLE && showComments && (
               <CommentNotifications socket={socket} pageId={currentPageId} />
             )}
           </div>
@@ -1731,18 +1731,4 @@ const EditorComponent = (props) => {
   );
 };
 
-const withStore = (Component) => (props) => {
-  const { showComments, currentLayout } = useEditorStore(
-    (state) => ({
-      showComments: state?.showComments,
-      currentLayout: state?.currentLayout,
-    }),
-    shallow
-  );
-
-  const currentState = useCurrentState();
-
-  return <Component {...props} currentState={currentState} showComments={showComments} currentLayout={currentLayout} />;
-};
-
-export const EditorFunc = withTranslation()(withRouter(withStore(EditorComponent)));
+export const EditorFunc = withTranslation()(withRouter(EditorComponent));
