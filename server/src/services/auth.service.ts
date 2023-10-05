@@ -48,6 +48,7 @@ import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
 import { LicenseService } from './license.service';
+import { uuid4 } from '@sentry/utils';
 import got from 'got/dist/source';
 import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
@@ -446,7 +447,17 @@ export class AuthService {
   }
 
   async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
-    const { companyName, companySize, token, role, organizationToken, password, source, phoneNumber } = userCreateDto;
+    const {
+      companyName,
+      companySize,
+      token,
+      role,
+      organizationToken,
+      password: userPassword,
+      source,
+      phoneNumber,
+    } = userCreateDto;
+    let password = userPassword;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -470,6 +481,12 @@ export class AuthService {
           relations: ['user'],
         });
       }
+
+      if (!password && source === URL_SSO_SOURCE) {
+        /* For SSO we don't need password. let us set uuid as a password. */
+        password = uuid4();
+      }
+
       if (user?.organizationUsers) {
         if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
@@ -494,6 +511,7 @@ export class AuthService {
           (user.source === SOURCE.GOOGLE ||
             user.source === SOURCE.GIT ||
             user.source === SOURCE.OPENID ||
+            user.source === SOURCE.SAML ||
             user.source === SOURCE.LDAP);
 
         const lifecycleParams = getUserStatusAndSource(
@@ -700,9 +718,10 @@ export class AuthService {
 
     // logged in user and new user are different -> creating session
     if (loggedInUser?.id !== user.id) {
+      const clientIp = (request as any)?.clientIp;
       const session: UserSessions = await this.sessionService.createSession(
         user.id,
-        `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+        `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
           request?.headers['user-agent'] || 'unknown'
         }`,
         manager
