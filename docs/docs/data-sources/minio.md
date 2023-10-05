@@ -19,7 +19,7 @@ ToolJet can connect to minio and perform various operation on them.
 
 ## Connection
 
-To establish a connection with the Minio data source, click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+To add a new minio source, click on the **Add or edit datasource** icon on the left sidebar of the app editor and click on `Add datasource` button. Select Minio from the modal that pops up.
 
 ToolJet requires the following to connect to your DynamoDB:
 
