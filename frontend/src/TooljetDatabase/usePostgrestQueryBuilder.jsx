@@ -25,10 +25,14 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
   };
 
   const updateSelectedTableData = async () => {
+    const sortQuery = isEmpty(postgrestQueryBuilder.current.sortQuery.url.toString())
+      ? 'order=id.desc'
+      : postgrestQueryBuilder.current.sortQuery.url.toString();
+
     const query =
       postgrestQueryBuilder.current.filterQuery.url.toString() +
       '&' +
-      postgrestQueryBuilder.current.sortQuery.url.toString() +
+      sortQuery +
       '&' +
       postgrestQueryBuilder.current.paginationQuery.url.toString();
 
