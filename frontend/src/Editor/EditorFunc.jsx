@@ -86,7 +86,6 @@ const EditorComponent = (props) => {
   const { isVersionReleased, editingVersion, releasedVersionId } = useAppVersionState();
 
   const {
-    noOfVersionsSupported,
     appDefinition,
     selectedComponents,
     currentLayout,
@@ -136,6 +135,10 @@ const EditorComponent = (props) => {
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  const [optsStack, setOptsStack] = useState({
+    undo: [],
+    redo: [],
+  });
 
   // refs
   const canvasContainerRef = useRef(null);
@@ -783,7 +786,15 @@ const EditorComponent = (props) => {
     if (shouldUpdate) {
       const undoPatches = diffToPatches(inversePatches);
 
-      setUndoStack((prev) => [...prev, undoPatches]);
+      if (
+        opts?.componentAdded ||
+        opts?.componentDefinitionChanged ||
+        opts?.componentDeleted ||
+        opts?.containerChanges
+      ) {
+        setUndoStack((prev) => [...prev, undoPatches]);
+        setOptsStack((prev) => ({ ...prev, undo: [...prev.undo, opts] }));
+      }
 
       updateAppDefinitionDiff(diffPatches);
 
@@ -856,6 +867,11 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
           toast.error('App could not save.');
+        })
+        .finally(() => {
+          updateState({
+            appDiffOptions: {},
+          });
         });
     }
 
@@ -908,6 +924,16 @@ const EditorComponent = (props) => {
       setUndoStack((prev) => prev.slice(0, prev.length - 1));
       setRedoStack((prev) => [...prev, diffToPatches(_diffPatches)]);
 
+      updateState({
+        appDiffOptions: optsStack.undo[optsStack.undo.length - 1],
+      });
+
+      setOptsStack((prev) => ({
+        ...prev,
+        undo: [...prev.undo.slice(0, prev.undo.length - 1)],
+        redo: [...prev.redo, optsStack.undo[optsStack.undo.length - 1]],
+      }));
+
       updateEditorState({
         appDefinition: updatedAppDefinition,
         currentSidebarTab: 2,
@@ -929,6 +955,16 @@ const EditorComponent = (props) => {
       updateAppDefinitionDiff(redoDiff);
       setRedoStack((prev) => prev.slice(0, prev.length - 1));
       setUndoStack((prev) => [...prev, diffToPatches(_diffPatches)]);
+
+      updateState({
+        appDiffOptions: optsStack.redo[optsStack.redo.length - 1],
+      });
+
+      setOptsStack((prev) => ({
+        ...prev,
+        undo: [...prev.undo, appDiffOptions],
+        redo: [...prev.redo.slice(0, prev.redo.length - 1)],
+      }));
 
       updateEditorState({
         appDefinition: updatedAppDefinition,
