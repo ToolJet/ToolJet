@@ -465,6 +465,8 @@ export class AppImportExportService {
     }
 
     await this.setEditingVersionAsLatestVersion(manager, appResourceMappings.appVersionMapping, importingAppVersions);
+
+    return appResourceMappings;
   }
 
   async setupAppVersionAssociations(
@@ -569,8 +571,7 @@ export class AppImportExportService {
           dataSourceForAppVersion,
           importingAppVersion,
           appResourceMappings,
-          externalResourceMappings,
-          importingEvents.filter((event) => event.target === Target.dataQuery)
+          externalResourceMappings
         );
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
@@ -659,13 +660,66 @@ export class AppImportExportService {
         }
       }
 
-      this.updateEventActionsForNewVersionWithNewMappingIds(
-        manager,
-        appResourceMappings.appVersionMapping[importingAppVersion.id],
-        appResourceMappings.dataQueryMapping,
-        appResourceMappings.componentsMapping,
-        appResourceMappings.pagesMapping
-      );
+      const newDataQueries = await manager.find(DataQuery, {
+        where: { appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id] },
+      });
+
+      for (const importedDataQuery of importingDataQueriesForAppVersion) {
+        const mappedNewDataQuery = newDataQueries.find(
+          (dq) => dq.id === appResourceMappings.dataQueryMapping[importedDataQuery.id]
+        );
+
+        const importingQueryEvents = importingEvents.filter(
+          (event) => event.target === Target.dataQuery && event.sourceId === importedDataQuery.id
+        );
+
+        if (importingQueryEvents.length > 0) {
+          importingQueryEvents.forEach(async (dataQueryEvent) => {
+            const updatedEventDefinition = this.updateEventActionsForNewVersionWithNewMappingIds(
+              dataQueryEvent,
+              appResourceMappings.dataQueryMapping,
+              appResourceMappings.componentsMapping,
+              appResourceMappings.pagesMapping
+            );
+
+            const newEvent = {
+              name: dataQueryEvent.name,
+              sourceId: mappedNewDataQuery.id,
+              target: dataQueryEvent.target,
+              event: updatedEventDefinition,
+              index: dataQueryEvent.index,
+              appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+            };
+
+            await manager.save(EventHandler, newEvent);
+          });
+        } else {
+          const queryEvents = mappedNewDataQuery.options?.events || [];
+          delete mappedNewDataQuery?.options?.events;
+
+          queryEvents.forEach(async (event, index) => {
+            const updatedEventDefinition = this.updateEventActionsForNewVersionWithNewMappingIds(
+              { event: event },
+              appResourceMappings.dataQueryMapping,
+              appResourceMappings.componentsMapping,
+              appResourceMappings.pagesMapping
+            );
+
+            const newEvent = {
+              name: event.eventId,
+              sourceId: mappedNewDataQuery.id,
+              target: Target.dataQuery,
+              event: updatedEventDefinition,
+              index: queryEvents.index || index,
+              appVersionId: mappedNewDataQuery.appVersionId,
+            };
+
+            await manager.save(EventHandler, newEvent);
+          });
+        }
+
+        await manager.save(mappedNewDataQuery);
+      }
 
       await manager.update(
         AppVersion,
@@ -714,73 +768,31 @@ export class AppImportExportService {
     dataSourceForAppVersion: DataSource,
     importingAppVersion: AppVersion,
     appResourceMappings: AppResourceMappings,
-    externalResourceMappings: { [x: string]: any },
-    importingQueryEvents: EventHandler[]
+    externalResourceMappings: { [x: string]: any }
   ) {
     appResourceMappings = { ...appResourceMappings };
-    const newDataQueries = importingDataQueriesForAppVersion
-      .filter((dq: { dataSourceId: any }) => dq.dataSourceId === importingDataSource.id)
-      .map((importingQuery: { options: any; name: any }) => {
-        const options =
-          importingDataSource.kind === 'tooljetdb'
-            ? this.replaceTooljetDbTableIds(importingQuery.options, externalResourceMappings['tooljet_database'])
-            : importingQuery.options;
+    const importingQueriesForSource = importingDataQueriesForAppVersion.filter(
+      (dq: { dataSourceId: any }) => dq.dataSourceId === importingDataSource.id
+    );
+    if (isEmpty(importingDataQueriesForAppVersion)) return appResourceMappings;
 
-        return manager.create(DataQuery, {
-          name: importingQuery.name,
-          options,
-          dataSourceId: dataSourceForAppVersion.id,
-          appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-        });
+    for (const importingQuery of importingQueriesForSource) {
+      const options =
+        importingDataSource.kind === 'tooljetdb'
+          ? this.replaceTooljetDbTableIds(importingQuery.options, externalResourceMappings['tooljet_database'])
+          : importingQuery.options;
+
+      const newQuery = manager.create(DataQuery, {
+        name: importingQuery.name,
+        options,
+        dataSourceId: dataSourceForAppVersion.id,
+        appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
       });
 
-    await Promise.all(newDataQueries.map((newQuery: any) => manager.save(newQuery)));
-
-    newDataQueries.forEach((newQuery, index) => {
-      const importingDataQuery = importingDataQueriesForAppVersion[index];
-      appResourceMappings.dataQueryMapping[importingDataQuery.id] = newQuery.id;
-    });
-
-    for (const newQuery of newDataQueries) {
-      const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-        newQuery.options,
-        appResourceMappings.dataQueryMapping
-      );
-
-      if (importingQueryEvents.length > 0) {
-        importingQueryEvents.forEach(async (dataQueryEvent) => {
-          const newEvent = {
-            name: dataQueryEvent.name,
-            sourceId: newQuery.id,
-            target: dataQueryEvent.target,
-            event: dataQueryEvent.event,
-            index: dataQueryEvent.index,
-            appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-          };
-
-          await manager.save(EventHandler, newEvent);
-        });
-      } else {
-        const queryEvents = newQuery.options?.events || [];
-        delete newOptions?.events;
-
-        queryEvents.forEach(async (event, index) => {
-          const newEvent = {
-            name: event.eventId,
-            sourceId: newQuery.id,
-            target: Target.dataQuery,
-            event: event,
-            index: queryEvents.index || index,
-            appVersionId: newQuery.appVersionId,
-          };
-
-          await manager.save(EventHandler, newEvent);
-        });
-      }
-
-      newQuery.options = newOptions;
       await manager.save(newQuery);
+      appResourceMappings.dataQueryMapping[importingQuery.id] = newQuery.id;
     }
+
     return appResourceMappings;
   }
 
@@ -1362,36 +1374,29 @@ export class AppImportExportService {
     return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id };
   }
 
-  async updateEventActionsForNewVersionWithNewMappingIds(
-    manager: EntityManager,
-    versionId: string,
+  updateEventActionsForNewVersionWithNewMappingIds(
+    queryEvent: EventHandler | { event: any },
     oldDataQueryToNewMapping: Record<string, unknown>,
     oldComponentToNewComponentMapping: Record<string, unknown>,
     oldPageToNewPageMapping: Record<string, unknown>
   ) {
-    const allEvents = await manager.find(EventHandler, {
-      where: { appVersionId: versionId },
-    });
+    const event = JSON.parse(JSON.stringify(queryEvent));
 
-    for (const event of allEvents) {
-      const eventDefinition = event.event;
+    const eventDefinition = event.event;
 
-      if (eventDefinition?.actionId === 'run-query') {
-        eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
-      }
-
-      if (eventDefinition?.actionId === 'control-component') {
-        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
-      }
-
-      if (eventDefinition?.actionId === 'switch-page') {
-        eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
-      }
-
-      event.event = eventDefinition;
-
-      await manager.save(event);
+    if (eventDefinition?.actionId === 'run-query') {
+      eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
     }
+
+    if (eventDefinition?.actionId === 'control-component') {
+      eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+    }
+
+    if (eventDefinition?.actionId === 'switch-page') {
+      eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
+    }
+
+    return eventDefinition;
   }
 }
 
