@@ -768,7 +768,6 @@ export const EventManager = ({
                       value={event?.componentId}
                       search={true}
                       onChange={(value) => {
-                        handlerChanged(index, 'componentSpecificActionHandle', '');
                         handlerChanged(index, 'componentId', value);
                       }}
                       placeholder={t('globals.select', 'Select') + '...'}
