@@ -18,7 +18,7 @@ Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
 2. Create k8s deployment
 
    ```bash
-    curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/AKS/deployment.yaml
+    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/deployment.yaml
    ```
 
 Make sure to edit the environment variables in the `deployment.yaml`. We advise to use secrets to setup sensitive information. You can check out the available options [here](https://docs.tooljet.com/docs/setup/env-vars).
@@ -29,7 +29,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 
 3. Create k8s service and reserve a static IP and inorder expose it via a service load balancer as mentioned in the [doc](https://docs.microsoft.com/en-us/azure/aks/static-ip). You can refer `service.yaml`.
    ```bash
-    curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/AKS/service.yaml
+    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/service.yaml
    ```
 
 4. Apply YAML configs
@@ -49,7 +49,7 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
 1. Setup PostgREST server
 
    ```bash
-    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/AKS/postgrest.yaml
+    kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/postgrest.yaml
    ```
 
-2. Update ToolJet deployment with the appropriate env variables [here](https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/AKS/deployment.yaml) and apply the changes.
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/deployment.yaml) and apply the changes.
