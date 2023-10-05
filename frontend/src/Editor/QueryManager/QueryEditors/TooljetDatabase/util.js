@@ -28,7 +28,7 @@ export const hasEqualWithNull = (queryOptions, operation) => {
     const filterKeys = Object.keys(filters);
     for (let i = 0; i < filterKeys.length; i++) {
       const filter = filters[filterKeys[i]];
-      if (filter.operator !== 'is' && filter.value === null) {
+      if (filter.operator !== 'is' && filter.value === '') {
         return true;
       }
     }
