@@ -526,16 +526,6 @@ const EditorComponent = (props) => {
     }
   };
 
-  const onAreaSelectionEnd = (e) => {
-    setSelectionInProgress(false);
-    e.selected.forEach((el, index) => {
-      const id = el.getAttribute('widgetid');
-      const component = appDefinition?.pages[currentPageId].components[id].component;
-      const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
-      setSelectedComponent(id, component, isMultiSelect);
-    });
-  };
-
   const setSelectedComponent = (id, component, multiSelect = false) => {
     if (selectedComponents.length === 0 || !multiSelect) {
       switchSidebarTab(1);
@@ -551,6 +541,16 @@ const EditorComponent = (props) => {
         selectedComponents: [...(multiSelect ? prevSelectedComponents : []), { id, component }],
       });
     }
+  };
+
+  const onAreaSelectionEnd = (e) => {
+    setSelectionInProgress(false);
+    e.selected.forEach((el, index) => {
+      const id = el.getAttribute('widgetid');
+      const component = appDefinition?.pages[currentPageId].components[id].component;
+      const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
+      setSelectedComponent(id, component, isMultiSelect);
+    });
   };
 
   const onVersionRelease = (versionId) => {
@@ -1147,6 +1147,11 @@ const EditorComponent = (props) => {
     };
 
     setCurrentPageId(newPageId);
+    setHoveredComponent(null);
+    updateEditorState({
+      currentSidebarTab: 2,
+      selectedComponents: [],
+    });
 
     appDefinitionChanged(copyOfAppDefinition, {
       pageDefinitionChanged: true,
@@ -1692,24 +1697,20 @@ const EditorComponent = (props) => {
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponents.length === 1 &&
-                  !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
-                  !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0].id]) ? (
-                    <Inspector
-                      moveComponents={moveComponents}
-                      componentDefinitionChanged={componentDefinitionChanged}
-                      removeComponent={removeComponent}
-                      selectedComponentId={selectedComponents[0].id}
-                      allComponents={appDefinition?.pages[currentPageId]?.components}
-                      key={selectedComponents[0].id}
-                      switchSidebarTab={switchSidebarTab}
-                      darkMode={props.darkMode}
-                      pages={getPagesWithIds()}
-                    ></Inspector>
-                  ) : (
-                    <center className="mt-5 p-2">
-                      {props.t('editor.inspectComponent', 'Please select a component to inspect')}
-                    </center>
-                  )}
+                    !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
+                    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0].id]) && (
+                      <Inspector
+                        moveComponents={moveComponents}
+                        componentDefinitionChanged={componentDefinitionChanged}
+                        removeComponent={removeComponent}
+                        selectedComponentId={selectedComponents[0].id}
+                        allComponents={appDefinition?.pages[currentPageId]?.components}
+                        key={selectedComponents[0].id}
+                        switchSidebarTab={switchSidebarTab}
+                        darkMode={props.darkMode}
+                        pages={getPagesWithIds()}
+                      ></Inspector>
+                    )}
                 </div>
               )}
 
