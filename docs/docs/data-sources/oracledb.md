@@ -7,7 +7,8 @@ title: Oracle DB
 
 ToolJet can connect to Oracle databases to read and write data. 
 
-## Connection
+## Connection 
+<p>To establish a connection with the Oracle DB data source, click on the `+Add new` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.</p>
 
 A Oracle DB can be connected with the following credentails:
 - **Host**
@@ -46,7 +47,7 @@ GUI mode can be used to query Oracle database without writing queries. Select GU
 
 **Example**: `{{ [ {id: 1, channel: 33}, {id:2, channel:24} ] }}`
 
-Click on the **run** button to run the query. **NOTE**: Query should be saved before running.
+Click on the **run** button to run the query.
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
