@@ -19,7 +19,7 @@ function OnBoardingBubbles({ formData, page }) {
         } `}
       ></div>
       <div
-        className={`onboarding-bubbles ${formData.phoneNumber !== '' && 'onboarding-bubbles-selected'} ${
+        className={`onboarding-bubbles ${ (formData.phoneNumber.length === 10||formData.phoneNumber.length === 11) && formData.phoneNumber !== '' && 'onboarding-bubbles-selected'} ${
           page === 3 && 'onboarding-bubbles-active'
         } `}
       ></div>
