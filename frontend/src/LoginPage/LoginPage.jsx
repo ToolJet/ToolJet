@@ -7,6 +7,7 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import LdapSSOLoginButton from '@ee/components/LoginPage/LdapSSOLoginButton';
+import SAMLSSOLoginButton from '@ee/components/LoginPage/SAMLSSOLoginButton';
 import {
   getSubpath,
   validateEmail,
@@ -232,7 +233,7 @@ class LoginPageComponent extends React.Component {
                     </div>
                   ) : (
                     <div className="common-auth-container-wrapper ">
-                      {!configs?.form && !configs?.git && !configs?.google && !configs?.openid && (
+                      {!configs?.form && !configs?.git && !configs?.google && !configs?.openid && !configs?.saml && (
                         <div className="text-center-onboard">
                           <h2 data-cy="no-login-methods-warning">
                             {this.props.t(
@@ -247,6 +248,7 @@ class LoginPageComponent extends React.Component {
                           this.state?.configs?.git?.enabled ||
                           configs?.form?.enabled ||
                           configs?.ldap?.enabled ||
+                          configs?.saml?.enabled ||
                           this.state?.configs?.openid?.enabled) && (
                           <>
                             <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
@@ -284,6 +286,14 @@ class LoginPageComponent extends React.Component {
                             <GitSSOLoginButton configs={this.state?.configs?.git?.configs} />
                           </div>
                         )}
+                        {this.state?.configs?.saml?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <SAMLSSOLoginButton
+                              configs={this.state?.configs?.saml?.configs}
+                              configId={this.state?.configs?.saml?.config_id}
+                            />
+                          </div>
+                        )}
                         {this.state?.configs?.google?.enabled && (
                           <div className="login-sso-wrapper">
                             <GoogleSSOLoginButton
@@ -308,6 +318,8 @@ class LoginPageComponent extends React.Component {
                         )}
                         {(this.state?.configs?.google?.enabled ||
                           this.state?.configs?.git?.enabled ||
+                          configs?.ldap?.enabled ||
+                          configs?.saml?.enabled ||
                           this.state?.configs?.openid?.enabled) &&
                           configs?.form?.enabled && (
                             <div className="separator-onboarding ">

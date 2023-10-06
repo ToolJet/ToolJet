@@ -10,7 +10,7 @@ import {
   BadRequestException,
   NotAcceptableException,
 } from '@nestjs/common';
-import { Response, Express } from 'express';
+import { Response } from 'express';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -45,11 +45,11 @@ export class OrganizationUsersController {
   @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', UserEntity))
   @UseInterceptors(FileInterceptor('file'))
   @Post('upload_csv')
-  async bulkUploadUsers(@User() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response) {
-    if (file.size > MAX_CSV_FILE_SIZE) {
+  async bulkUploadUsers(@User() user, @UploadedFile() file: any, @Res() res: Response) {
+    if (file?.size > MAX_CSV_FILE_SIZE) {
       throw new BadRequestException('File size cannot be greater than 2MB');
     }
-    await this.organizationsService.bulkUploadUsers(user, file.buffer, res);
+    await this.organizationsService.bulkUploadUsers(user, file?.buffer, res);
     return;
   }
 

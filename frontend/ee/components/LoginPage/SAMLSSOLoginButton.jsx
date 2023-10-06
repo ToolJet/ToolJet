@@ -3,13 +3,13 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 
-export default function OIDCSSOLoginButton({ configId, configs, text }) {
+export default function SAMLSSOLoginButton({ configId, configs, text = 'Sign in with ' }) {
   const [isLoading, setLoading] = useState(false);
 
   const doLogin = (e) => {
     e.preventDefault();
     setLoading(true);
-    fetch(`${config.apiUrl}/oauth/openid/configs${configId ? `/${configId}` : ''}`, {
+    fetch(`${config.apiUrl}/oauth/saml/configs/${configId}`, {
       method: 'GET',
       credentials: 'include',
     })
@@ -19,7 +19,7 @@ export default function OIDCSSOLoginButton({ configId, configs, text }) {
         if (json.authorizationUrl) {
           return (window.location.href = json.authorizationUrl);
         }
-        toast.error('Open ID login failed');
+        toast.error('SAML login failed');
       })
       .catch((reason) => {
         setLoading(false);
@@ -35,9 +35,9 @@ export default function OIDCSSOLoginButton({ configId, configs, text }) {
           </div>
         ) : (
           <>
-            <img src="assets/images/sso-buttons/sso-general.svg" className="h-4" data-cy="oidc-so-icon" />
-            <span className="px-1 sso-info-text" data-cy="oidc-sso-text">
-              {text} {configs?.name || 'Open ID'}
+            <img src="assets/images/sso-buttons/sso-general.svg" className="h-4" data-cy="saml-sso-icon" />
+            <span className="px-1 sso-info-text" data-cy="saml-sso-text">
+              {text} {configs?.name || 'SAML'}
             </span>
           </>
         )}

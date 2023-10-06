@@ -105,7 +105,9 @@ describe("Global Datasource Manager", () => {
         ).verifyVisibleElement("have.text", `cypress-${data.ds2}-rest-api`);
 
         cy.get('[data-cy="icon-dashboard"]').click();
+        cy.wait(2000)
         navigateToAppEditor(data.appName);
+        cy.wait(2000)
         resizeQueryPanel()
         addQuery(
             "table_preview",
@@ -129,6 +131,7 @@ describe("Global Datasource Manager", () => {
         cy.login(data.userEmail1, "password");
 
         navigateToAppEditor(data.appName);
+        cy.wait(2000);
 
         cy.get('[data-cy="list-query-restapi1"]')
             .verifyVisibleElement("have.text", "restapi1 ")
@@ -191,6 +194,7 @@ describe("Global Datasource Manager", () => {
         cy.login(data.userEmail2, "password");
 
         navigateToAppEditor(data.appName);
+        cy.wait(2000)
         cy.get('[data-cy="list-query-restapi1"]').verifyVisibleElement(
             "have.text",
             "restapi1 "
@@ -214,6 +218,7 @@ describe("Global Datasource Manager", () => {
         cy.get('[data-cy="show-ds-popover-button"]').click();
         cy.get(".css-1rrkggf-Input").type(data.ds2);
         cy.contains(`[id*="react-select-"]`, data.ds2).click();
+        cy.wait(1000)
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.wait("@run");
         verifyValueOnInspector("restapi2", "6 entries ");
