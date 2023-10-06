@@ -9,6 +9,8 @@ ToolJet can connect to Oracle databases to read and write data.
 
 ## Connection
 
+To establish a connection with the Oracle DB data source, click on the `+Add new` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+
 A Oracle DB can be connected with the following credentails:
 - **Host**
 - **Port**
@@ -38,7 +40,7 @@ Once you have added a Oracle DB data source, click on `+` button of the query ma
 
 SQL mode can be used to write raw SQL queries. Select SQL mode from the dropdown and enter the SQL query in the editor. Click on the `run` button to run the query.
 
-**NOTE**: Query should be saved before running.
+
 
 #### GUI mode
 
