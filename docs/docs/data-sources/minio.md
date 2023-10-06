@@ -20,7 +20,7 @@ ToolJet can connect to minio and perform various operation on them.
 
 ## Connection
 
-To add a new minio source, click on the **Add or edit datasource** icon on the left sidebar of the app editor and click on `Add datasource` button. Select Minio from the modal that pops up.
+To establish a connection with the Minio data source, click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your DynamoDB:
 
@@ -44,7 +44,7 @@ Click on `+` button of the **query manager** at the bottom panel of the editor a
 <img className="screenshot-full" src="/img/datasource-reference/minio-query.png" alt="miniIo query" />
 
 Click on the **run** button to run the query. 
-**NOTE**: Query should be saved before running.
+
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
