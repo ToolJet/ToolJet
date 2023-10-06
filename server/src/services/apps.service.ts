@@ -136,7 +136,7 @@ export class AppsService {
       );
 
       // Set default values for app version
-      appVersion.showViewerNavigation = false;
+      appVersion.showViewerNavigation = true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
         hideHeader: false,
