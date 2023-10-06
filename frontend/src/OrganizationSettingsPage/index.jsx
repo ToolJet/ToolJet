@@ -13,7 +13,6 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 import { licenseService } from '../_services/license.service';
 import { LicenseBanner } from '@/LicenseBanner';
-import { LicenseTooltip } from '@/LicenseTooltip';
 import { ManageOrgConstants } from '@/ManageOrgConstants';
 import Skeleton from 'react-loading-skeleton';
 
@@ -24,8 +23,6 @@ export function OrganizationSettings(props) {
   const [featuresLoaded, setFeaturesLoaded] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
-
-  const protectedNavs = [{ id: 'customStyling', label: 'Custom styles' }];
 
   const sideBarNavs = [
     'Users',
@@ -88,26 +85,7 @@ export function OrganizationSettings(props) {
             <div className="workspace-nav-list-wrap">
               {featuresLoaded ? (
                 sideBarNavs.map((item, index) => {
-                  const protectedNavIndex = protectedNavs.findIndex((nav) => nav.label === item);
-                  const Wrapper = ({ children }) =>
-                    protectedNavIndex >= 0 && featureAccess?.[protectedNavs?.[protectedNavIndex]?.id] === false ? (
-                      <LicenseTooltip
-                        limits={featureAccess}
-                        feature={item}
-                        isAvailable={false}
-                        noTooltipIfValid={true}
-                        customMessage={
-                          licenseValid
-                            ? `${item} are not included in your current plan. For more, Upgrade`
-                            : `${item} are available only
-                          in paid plans`
-                        }
-                      >
-                        {children}
-                      </LicenseTooltip>
-                    ) : (
-                      <>{children}</>
-                    );
+                  const Wrapper = ({ children }) => <>{children}</>;
                   return (
                     <Wrapper key={index}>
                       {(admin ||
@@ -118,7 +96,6 @@ export function OrganizationSettings(props) {
                           className="workspace-settings-nav-items"
                           key={index}
                           onClick={() => {
-                            if (protectedNavIndex >= 0 && !featureAccess[protectedNavs[protectedNavIndex].id]) return;
                             setSelectedTab(defaultOrgName(item));
                             if (item == 'Users') updateSidebarNAV('Users & permissions');
                             else updateSidebarNAV(item);
@@ -164,7 +141,12 @@ export function OrganizationSettings(props) {
                   <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
                 )}
                 {selectedTab === 'manageCopilot' && <CopilotSetting />}
-                {selectedTab === 'manageCustomstyles' && <CustomStylesEditor darkMode={props.darkMode} />}
+                {selectedTab === 'manageCustomstyles' && (
+                  <CustomStylesEditor
+                    darkMode={props.darkMode}
+                    disabled={!licenseValid || featureAccess?.customStyling !== true}
+                  />
+                )}
                 {selectedTab === 'manageOrgConstants' && (
                   <ManageOrgConstants darkMode={props.darkMode} featureAccess={featureAccess} />
                 )}

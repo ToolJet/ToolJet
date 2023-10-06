@@ -19,6 +19,7 @@ export function LicenseBanner({
   children,
   isAvailable,
   style = {},
+  showPaidFeatureBanner = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const currentUser = authenticationService.currentSessionValue;
@@ -124,6 +125,8 @@ export function LicenseBanner({
         return `You've reached your limit for number of ${type} - ${current}/${total}`;
       case !canAddUnlimited && percentage >= 100:
         return `You have reached your limit for number of ${type}.`;
+      case !isExpired && (percentage >= 90 || (total <= 10 && current === total - 1)):
+        return `You're reaching your limit for number of ${type} - ${current}/${total}.`;
       case !canAddUnlimited && (percentage >= 90 || (total <= 10 && current === total - 1)):
         return `You're reaching your limit for number of ${type} - ${current}/${total}`;
       case (!isLicenseValid || isExpired) && features.includes(type) && !isAvailable:
@@ -154,6 +157,13 @@ export function LicenseBanner({
 
   const generateButtonTextAndLink = () => {
     switch (true) {
+      case showPaidFeatureBanner === true:
+        return {
+          text: 'Paid feature',
+          onClick: () => {
+            window.open(DEMO_LINK, '_blank');
+          },
+        };
       case (size === 'xsmall' || size === 'small') &&
         (type === 'trial' || type === 'basic' || type === 'enterprise' || type === 'apps' || type === 'workspaces') &&
         (isEndUser || isWorkspaceAdmin):
@@ -214,6 +224,23 @@ export function LicenseBanner({
     let text = document.getElementById(input).innerHTML;
     copyToClipboard(text);
   };
+
+  if (showPaidFeatureBanner) {
+    const buttonTextAndClick = generateButtonTextAndLink();
+    const { onClick: handleClick, text: buttonText } = buttonTextAndClick;
+    return (
+      <div className={`paid-feature-banner d-flex`}>
+        {!warningText && currentUser.admin && <SolidIcon {...iconSize} fill={'None'} name="enterpriseGradient" />}
+        <span
+          onClick={handleClick}
+          className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer `}
+          style={{ fontWeight: '500' }}
+        >
+          {buttonText}
+        </span>
+      </div>
+    );
+  }
 
   const warningText = generateWarningText();
   const message = customMessage || generateMessage();

@@ -1,11 +1,13 @@
 import React from 'react';
-import { whiteLabellingService, authenticationService, licenseService } from '@/_services';
+import { whiteLabellingService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import Skeleton from 'react-loading-skeleton';
 import { LicenseBanner } from '@/LicenseBanner';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import _ from 'lodash';
 
 class ManageWhiteLabellingComponent extends React.Component {
   constructor(props) {
@@ -17,20 +19,14 @@ class ManageWhiteLabellingComponent extends React.Component {
       isLoading: false,
       errors: {},
       settings: {},
-      featureAccess: {},
+      initialSettings: {},
+      hasChanges: false,
     };
   }
 
   componentDidMount() {
     this.fetchSettings();
-    this.fetchFeatureAccesss();
   }
-
-  fetchFeatureAccesss = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      this.setState({ featureAccess: data });
-    });
-  };
 
   fetchSettings = () => {
     this.setState({ isLoading: true });
@@ -38,7 +34,7 @@ class ManageWhiteLabellingComponent extends React.Component {
       .get()
       .then((data) => {
         this.setInitialValues(data);
-        this.setState({ isLoading: false });
+        this.setState({ isLoading: false, hasChanges: false });
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -48,12 +44,13 @@ class ManageWhiteLabellingComponent extends React.Component {
 
   setInitialValues = (data) => {
     this.setState({
-      settings: data,
+      settings: _.cloneDeep(data),
+      initialSettings: _.cloneDeep(data),
     });
   };
 
   reset = () => {
-    this.fetchSettings();
+    this.setState({ settings: this.state.initialSettings, hasChanges: false });
   };
 
   saveSettings = () => {
@@ -67,7 +64,7 @@ class ManageWhiteLabellingComponent extends React.Component {
         window.location = `${window.public_config?.TOOLJET_HOST}${
           window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
         }instance-settings?save_whiteLabelling=success`;
-        this.setState({ isSaving: false });
+        this.setState({ isSaving: false, hasChanges: false });
         this.fetchSettings();
       })
       .catch(({ error }) => {
@@ -85,6 +82,7 @@ class ManageWhiteLabellingComponent extends React.Component {
         ...prevState.settings,
         [key]: newValue,
       },
+      hasChanges: true,
     }));
   };
 
@@ -105,7 +103,8 @@ class ManageWhiteLabellingComponent extends React.Component {
   };
 
   render() {
-    const { settings, isSaving, featureAccess } = this.state;
+    const { settings, isSaving } = this.state;
+    const { disabled } = this.props;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper instance-settings-page animation-fade">
@@ -113,17 +112,28 @@ class ManageWhiteLabellingComponent extends React.Component {
 
           <div className="page-wrapper">
             <div className="container-xl">
-              <LicenseBanner classes="mt-3" limits={featureAccess} type="White labelling" isAvailable={true}>
-                <div className="card">
-                  <div className="card-header">
+              <div className="card">
+                <div className="card-header">
+                  <div className="title-banner-wrapper">
                     <div className="card-title" data-cy="card-title">
                       {this.props.t(
                         'header.organization.menus.manageInstanceSettings.instanceSettings',
                         'White labelling'
                       )}
                     </div>
+                    {disabled && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>}
                   </div>
-                  <div className="card-body">
+                </div>
+                <div className="card-body">
+                  <div
+                    className="card-content"
+                    style={{
+                      display: 'flex',
+                      width: '516px',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                    }}
+                  >
                     {Object.keys(settings).length !== 0 ? (
                       <form noValidate>
                         <div key="App Logo" className="form-group mb-3">
@@ -141,6 +151,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                                 data-cy={`input-field-App Logo`}
                                 style={{ width: '516px' }}
                                 placeholder={'https://app.tooljet.com/logo.svg' || 'Enter App Logo'}
+                                disabled={disabled}
                               />
                               <div className="help-text">
                                 <div
@@ -151,7 +162,6 @@ class ManageWhiteLabellingComponent extends React.Component {
                                     fontSize: '10px',
                                     fontStyle: 'normal',
                                     fontWeight: 400,
-                                    lineHeight: '16px',
                                   }}
                                 >
                                   This will be used for branding across the app. Required dimensions of the logo- width
@@ -177,6 +187,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                                 data-cy={`input-field-Page Title`}
                                 style={{ width: '516px' }}
                                 placeholder={'ToolJet' || 'Enter app title'}
+                                disabled={disabled}
                               />
                               <div className="help-text">
                                 <div
@@ -187,7 +198,6 @@ class ManageWhiteLabellingComponent extends React.Component {
                                     fontSize: '10px',
                                     fontStyle: 'normal',
                                     fontWeight: 400,
-                                    lineHeight: '16px',
                                   }}
                                 >
                                   This will be displayed as the browser page title
@@ -212,6 +222,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                                 data-cy={`input-field-Favicon`}
                                 style={{ width: '516px' }}
                                 placeholder={'https://app.tooljet.com/favico.png' || 'Enter favicon'}
+                                disabled={disabled}
                               />
                               <div className="help-text">
                                 <div
@@ -222,7 +233,6 @@ class ManageWhiteLabellingComponent extends React.Component {
                                     fontSize: '10px',
                                     fontStyle: 'normal',
                                     fontWeight: 400,
-                                    lineHeight: '16px',
                                   }}
                                 >
                                   This will be displayed in the address bar of the browser. Required dimensions of the
@@ -231,26 +241,6 @@ class ManageWhiteLabellingComponent extends React.Component {
                               </div>
                             </div>
                           </div>
-                        </div>
-
-                        <div className="form-footer">
-                          <button
-                            type="button"
-                            className="btn btn-light mr-2"
-                            onClick={this.reset}
-                            data-cy="cancel-button"
-                          >
-                            {this.props.t('globals.cancel', 'Cancel')}
-                          </button>
-                          <button
-                            type="button"
-                            className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
-                            disabled={isSaving}
-                            onClick={this.saveSettings}
-                            data-cy="save-button"
-                          >
-                            {this.props.t('globals.save', 'Save')}
-                          </button>
                         </div>
                       </form>
                     ) : (
@@ -271,7 +261,24 @@ class ManageWhiteLabellingComponent extends React.Component {
                     )}
                   </div>
                 </div>
-              </LicenseBanner>
+                <div className="card-footer">
+                  <button type="button" className="btn btn-light mr-2" onClick={this.reset} data-cy="cancel-button">
+                    {this.props.t('globals.cancel', 'Cancel')}
+                  </button>
+                  <ButtonSolid
+                    onClick={this.saveSettings}
+                    disabled={isSaving || disabled || !this.state.hasChanges}
+                    data-cy="save-button"
+                    variant="primary"
+                    className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
+                    leftIcon="floppydisk"
+                    fill="#fff"
+                    iconWidth="20"
+                  >
+                    {this.props.t('globals.savechanges', 'Save')}
+                  </ButtonSolid>
+                </div>
+              </div>
             </div>
           </div>
         </div>

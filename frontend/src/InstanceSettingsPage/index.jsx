@@ -10,7 +10,6 @@ import { BreadCrumbContext } from '@/App/App';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { ManageLicenseKey } from '@/ManageLicenseKey';
-import { LicenseTooltip } from '@/LicenseTooltip';
 import { LicenseBanner } from '@/LicenseBanner';
 import { licenseService } from '@/_services';
 import Skeleton from 'react-loading-skeleton';
@@ -36,7 +35,6 @@ export function InstanceSettings(props) {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const sideBarNavs = ['All users', 'Manage instance settings', 'White labelling', 'License'];
-  const protectedNavs = ['Manage instance settings', 'White labelling'];
 
   const defaultOrgName = (groupName) => {
     switch (groupName) {
@@ -103,37 +101,12 @@ export function InstanceSettings(props) {
               <div className="workspace-nav-list-wrap">
                 {licenseLoaded ? (
                   sideBarNavs.map((item, index) => {
-                    const proctedNavIndex = protectedNavs.indexOf(item);
-                    const Wrapper = ({ children }) =>
-                      proctedNavIndex >= 0 ? (
-                        <LicenseTooltip
-                          limits={featureAccess}
-                          feature={item}
-                          isAvailable={true}
-                          noTooltipIfValid={true}
-                          customMessage={
-                            item === 'Manage instance settings'
-                              ? 'Manage instance settings are available only in paid plans'
-                              : undefined
-                          }
-                        >
-                          {children}
-                        </LicenseTooltip>
-                      ) : (
-                        <>{children}</>
-                      );
+                    const Wrapper = ({ children }) => <>{children}</>;
                     return (
                       <Wrapper key={index}>
                         <FolderList
                           className="workspace-settings-nav-items"
                           onClick={() => {
-                            if (
-                              (featureAccess.licenseStatus.isExpired ||
-                                !featureAccess.licenseStatus.isLicenseValid ||
-                                featureAccess?.[paidFeatures?.[item]] === false) &&
-                              protectedNavs.includes(item) === true
-                            )
-                              return;
                             setSelectedTab(defaultOrgName(item));
                             updateSidebarNAV(item);
                           }}
@@ -161,9 +134,29 @@ export function InstanceSettings(props) {
             {licenseLoaded ? (
               <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
                 <div className="w-100">
-                  {selectedTab === 'Users' && <ManageAllUsers darkMode={props.darkMode} />}
-                  {selectedTab === 'Settings' && <ManageInstanceSettings />}
-                  {selectedTab === 'White labelling' && featureAccess?.whiteLabelling && <ManageWhiteLabelling />}
+                  {selectedTab === 'Users' && (
+                    <ManageAllUsers
+                      featureAccess={featureAccess}
+                      isLicenseExpired={featureAccess.licenseStatus.isExpired}
+                      isLicenseValid={featureAccess.licenseStatus.isLicenseValid}
+                      darkMode={props.darkMode}
+                    />
+                  )}
+                  {selectedTab === 'Settings' && (
+                    <ManageInstanceSettings
+                      featureAccess={featureAccess}
+                      disabled={featureAccess.licenseStatus.isExpired || !featureAccess.licenseStatus.isLicenseValid}
+                    />
+                  )}
+                  {selectedTab === 'White labelling' && (
+                    <ManageWhiteLabelling
+                      disabled={
+                        featureAccess.licenseStatus.isExpired ||
+                        !featureAccess.licenseStatus.isLicenseValid ||
+                        featureAccess?.whiteLabelling !== true
+                      }
+                    />
+                  )}
                   {selectedTab === 'License' && (
                     <ManageLicenseKey fetchFeatureAccessForInstanceSettings={fetchFeatureAccess} />
                   )}

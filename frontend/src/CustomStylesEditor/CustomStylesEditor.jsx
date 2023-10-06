@@ -3,29 +3,52 @@ import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import { LicenseBanner } from '@/LicenseBanner';
 
 import { customStylesService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import InformationCircle from '@/_ui/Icon/solidIcons/InformationCircle';
 
-export default function CustomStylesEditor({ darkMode }) {
-  const [styles, setStyles] = useState();
+export default function CustomStylesEditor({ darkMode, disabled = false }) {
   const { t } = useTranslation();
 
-  useEffect(() => {
-    customStylesService.get().then((data) => {
+  const [styles, setStyles] = useState();
+  const [initialStyles, setInitialStyles] = useState();
+
+  const fetchStyles = async () => {
+    try {
+      const data = await customStylesService.get();
       setStyles(data.styles);
-    });
+      if (!initialStyles) {
+        setInitialStyles(data.styles);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch custom styles. Please try again.', {
+        position: 'top-center',
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchStyles();
   }, []);
+
+  const reset = () => {
+    setStyles(initialStyles);
+    toast.success('Custom style changes discarded. No updates were made.', {
+      position: 'top-center',
+    });
+  };
 
   const saveStyles = async () => {
     try {
       await customStylesService.save({ styles });
-      toast.success('Succesfully updated styles', {
+      setInitialStyles(styles);
+      toast.success('Custom styles updated successfully', {
         position: 'top-center',
       });
     } catch (error) {
-      toast.error('Something went wrong! Please try again later.', {
+      toast.error('Failed to update custom styles. Please try again.', {
         position: 'top-center',
       });
     }
@@ -38,17 +61,22 @@ export default function CustomStylesEditor({ darkMode }) {
           <div className="container-xl">
             <div className="d-block org-settings-wrapper-card custom-styles-wrapper">
               <div className="col p-3 border-bottom">
-                <h3 className="card-title m-0">Custom Styles</h3>
+                <div className="d-flex justify-content-between align-items-center">
+                  <h3 className="card-title m-0">Custom Styles</h3>
+                  {disabled && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>}
+                </div>
               </div>
               <div className="w-100 p-4 custom-css-input-container">
                 <CodeHinter
-                  currentState={''}
-                  initialValue={styles}
+                  currentState={styles}
+                  initialValue={!disabled ? styles : ''}
                   mode="css"
                   theme={darkMode ? 'monokai' : 'base16-light'}
                   height={700}
                   onChange={(value) => setStyles(value)}
                   enablePreview={false}
+                  disabled={disabled}
+                  placeholder={disabled ? styles : ''}
                 />
                 <div className="w-100 mt-2 custom-css-input-container org-settings-info small p-3 mb-3 rounded d-flex">
                   <div className="pe-2">
@@ -63,9 +91,19 @@ export default function CustomStylesEditor({ darkMode }) {
                 </div>
 
                 <div className="d-flex justify-content-end">
+                  <button
+                    type="button"
+                    className="btn btn-light mr-2"
+                    onClick={reset}
+                    disabled={disabled}
+                    data-cy="cancel-button"
+                  >
+                    {t('globals.cancel', 'Cancel')}
+                  </button>
                   <ButtonSolid
                     onClick={saveStyles}
                     data-cy="save-button"
+                    disabled={disabled}
                     variant="primary"
                     className="ms-2"
                     leftIcon="floppydisk"

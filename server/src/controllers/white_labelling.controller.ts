@@ -7,10 +7,10 @@ import { UpdateWhiteLabellingDto } from '@dto/update_white_labelling.dto';
 import { INSTANCE_SETTINGS_TYPE } from 'src/helpers/instance_settings.constants';
 
 @Controller('white-labelling')
-@UseGuards(JwtAuthGuard, SuperAdminGuard, WhiteLabellingGuard)
 export class WhiteLabellingController {
   constructor(private instanceSettingsService: InstanceSettingsService) {}
 
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get()
   async index() {
     const settings = await this.instanceSettingsService.listSettings(INSTANCE_SETTINGS_TYPE.SYSTEM);
@@ -32,6 +32,7 @@ export class WhiteLabellingController {
     return whiteLabelSettings;
   }
 
+  @UseGuards(JwtAuthGuard, SuperAdminGuard, WhiteLabellingGuard)
   @Put()
   async update(@Body() updateWhiteLabellingDto: UpdateWhiteLabellingDto) {
     const whiteLabelSettings = {

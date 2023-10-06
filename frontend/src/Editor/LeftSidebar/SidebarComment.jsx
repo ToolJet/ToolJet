@@ -57,7 +57,7 @@ export const LeftSidebarComment = forwardRef(
             commentBadge={false}
             selectedSidebarItem={selectedSidebarItem}
             icon={'comments'}
-            iconFill={'none'}
+            iconFill={'var(--slate5)'}
             style={{ pointerEvents: 'none' }}
           />
         </div>

@@ -10,6 +10,7 @@ const UserEditModal = ({
   updatingUser,
   isUpdatingUser,
   updateUser,
+  disabled = false,
   superadminsCount,
 }) => {
   const [options, setOptions] = React.useState({});
@@ -70,7 +71,7 @@ const UserEditModal = ({
             <div className="form-group mb-3">
               <label className="form-check form-switch">
                 <input
-                  disabled={!formEnabled}
+                  disabled={!formEnabled || (disabled && !(current > 1 && updatingUser?.user_type === 'instance'))}
                   className="form-check-input"
                   type="checkbox"
                   onChange={(event) => changeOptions('userType', event.target.checked)}
@@ -84,9 +85,16 @@ const UserEditModal = ({
                   )}
                 </span>
               </label>
+              {disabled && !(current > 1 && updatingUser?.user_type === 'instance') ? (
+                <LicenseBanner
+                  classes="mt-3"
+                  customMessage="Edit user details with our paid plans. For more,"
+                  size="xsmall"
+                ></LicenseBanner>
+              ) : (
+                <LicenseBanner classes="mt-3 mb-3" limits={superadminsCount} type="super admins" size="xsmall" />
+              )}
             </div>
-
-            <LicenseBanner classes="mt-3 mb-3" limits={superadminsCount} type="super admins" size="xsmall" />
 
             <div className="form-footer d-flex justify-content-end">
               <button type="button" onClick={hideModal} className="btn btn-light mr-2" data-cy="cancel-button">
@@ -95,7 +103,11 @@ const UserEditModal = ({
               <button
                 type="button"
                 className={`btn mx-2 btn-primary ${isUpdatingUser ? 'btn-loading' : ''}`}
-                disabled={isUpdatingUser || !formEnabled}
+                disabled={
+                  isUpdatingUser ||
+                  !formEnabled ||
+                  (disabled && !(current > 1 && updatingUser?.user_type === 'instance'))
+                }
                 onClick={() => updateUser(options)}
                 data-cy="save-button"
               >

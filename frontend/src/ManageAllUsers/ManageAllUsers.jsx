@@ -33,13 +33,10 @@ class ManageAllUsersComponent extends React.Component {
       isUpdatingUser: false,
       updatingUser: null,
       userLimits: {},
-      featureAccess: {},
     };
   }
-
   componentDidMount() {
     this.fetchAllUserLimits();
-    this.fetchFeatureAccesss();
   }
 
   fetchUsers = (page = 1, options = {}) => {
@@ -56,12 +53,6 @@ class ManageAllUsersComponent extends React.Component {
         isLoading: false,
       });
       this.updateSelectedUser();
-    });
-  };
-
-  fetchFeatureAccesss = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      this.setState({ featureAccess: data });
     });
   };
 
@@ -208,10 +199,11 @@ class ManageAllUsersComponent extends React.Component {
       updatingUser,
       isUpdatingUser,
       userLimits,
-      featureAccess,
     } = this.state;
 
     const { superadminsCount } = this.state.userLimits;
+
+    const { isLicenseExpired, isLicenseValid } = this.props;
 
     const usersTableCustomStyle = { height: 'calc(100vh - 400px)' };
 
@@ -233,6 +225,7 @@ class ManageAllUsersComponent extends React.Component {
             archiveAll={this.archiveAll}
             archivingFromAllOrgs={this.state.archivingFromAllOrgs}
             openEditModal={this.openEditModal}
+            disabled={isLicenseExpired || !isLicenseValid}
           />
 
           <UserEditModal
@@ -243,74 +236,73 @@ class ManageAllUsersComponent extends React.Component {
             darkMode={this.props.darkMode}
             isUpdatingUser={isUpdatingUser}
             updateUser={this.updateUser}
+            disabled={isLicenseExpired || !isLicenseValid}
             superadminsCount={superadminsCount}
           />
 
-          <LicenseBanner classes="mt-3" limits={featureAccess} type="Instance Settings" isAvailable={true}>
-            <div className="page-wrapper mt-1">
-              <div className="page-header workspace-page-header">
-                <div className="align-items-center d-flex">
-                  <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
-                    Manage All Users
-                  </div>
-                  <div className="user-limits d-flex mb-3">
-                    {!userLimits?.usersCount?.canAddUnlimited && userLimits?.usersCount && (
-                      <div className="limit">
-                        <div>TOTAL USERS</div>
-                        <div className="count">
-                          {userLimits?.usersCount?.current}/{userLimits?.usersCount?.total}
-                        </div>
+          <div className="page-wrapper mt-1">
+            <div className="page-header workspace-page-header">
+              <div className="align-items-center d-flex">
+                <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
+                  Manage All Users
+                </div>
+                <div className="user-limits d-flex">
+                  {!userLimits?.usersCount?.canAddUnlimited && userLimits?.usersCount && (
+                    <div className="limit">
+                      <div>TOTAL USERS</div>
+                      <div className="count">
+                        {userLimits?.usersCount?.current}/{userLimits?.usersCount?.total}
                       </div>
-                    )}
-                    {!userLimits?.editorsCount?.canAddUnlimited && userLimits?.editorsCount && (
-                      <div className="limit">
-                        <div>BUILDERS</div>
-                        <div className="count">
-                          {userLimits?.editorsCount?.current}/{userLimits?.editorsCount?.total}
-                        </div>
+                    </div>
+                  )}
+                  {!userLimits?.editorsCount?.canAddUnlimited && userLimits?.editorsCount && (
+                    <div className="limit">
+                      <div>BUILDERS</div>
+                      <div className="count">
+                        {userLimits?.editorsCount?.current}/{userLimits?.editorsCount?.total}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
-              {this.generateBanner()}
-              <div>
-                <UsersFilter
-                  filterList={this.filterList}
-                  darkMode={this.props.darkMode}
-                  clearIconPressed={() => this.fetchUsers()}
-                />
-
-                {users?.length === 0 && (
-                  <div className="d-flex justify-content-center flex-column">
-                    <span className="text-center pt-5 font-weight-bold">No result found</span>
-                    <small className="text-center text-muted">Try changing the filters</small>
-                  </div>
-                )}
-
-                {users?.length !== 0 && (
-                  <UsersTable
-                    customStyles={usersTableCustomStyle}
-                    isLoading={isLoading}
-                    users={users}
-                    unarchivingUser={unarchivingUser}
-                    archivingUser={archivingUser}
-                    meta={meta}
-                    generateInvitationURL={this.generateInvitationURL}
-                    invitationLinkCopyHandler={this.invitationLinkCopyHandler}
-                    unarchiveOrgUser={this.unarchiveOrgUser}
-                    archiveOrgUser={this.archiveOrgUser}
-                    pageChanged={this.pageChanged}
-                    darkMode={this.props.darkMode}
-                    translator={this.props.t}
-                    isLoadingAllUsers={true}
-                    openOrganizationModal={this.openOrganizationModal}
-                    openEditModal={this.openEditModal}
-                  />
-                )}
-              </div>
             </div>
-          </LicenseBanner>
+            {this.generateBanner()}
+            <div>
+              <UsersFilter
+                filterList={this.filterList}
+                darkMode={this.props.darkMode}
+                clearIconPressed={() => this.fetchUsers()}
+              />
+
+              {users?.length === 0 && (
+                <div className="d-flex justify-content-center flex-column">
+                  <span className="text-center pt-5 font-weight-bold">No result found</span>
+                  <small className="text-center text-muted">Try changing the filters</small>
+                </div>
+              )}
+
+              {users?.length !== 0 && (
+                <UsersTable
+                  customStyles={usersTableCustomStyle}
+                  isLoading={isLoading}
+                  users={users}
+                  unarchivingUser={unarchivingUser}
+                  archivingUser={archivingUser}
+                  meta={meta}
+                  generateInvitationURL={this.generateInvitationURL}
+                  invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                  unarchiveOrgUser={this.unarchiveOrgUser}
+                  archiveOrgUser={this.archiveOrgUser}
+                  pageChanged={this.pageChanged}
+                  darkMode={this.props.darkMode}
+                  translator={this.props.t}
+                  isLoadingAllUsers={true}
+                  openOrganizationModal={this.openOrganizationModal}
+                  openEditModal={this.openEditModal}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </ErrorBoundary>
     );

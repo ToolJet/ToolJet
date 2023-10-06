@@ -273,7 +273,7 @@ class ViewerComponent extends React.Component {
     try {
       let data;
       if (!isPublic) {
-        data = await customStylesService.get(false);
+        data = await customStylesService.getForAppViewerEditor(false);
       } else {
         data = await customStylesService.getForPublicApp(slug);
       }

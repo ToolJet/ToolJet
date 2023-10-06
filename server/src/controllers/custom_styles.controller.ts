@@ -16,9 +16,15 @@ export class CustomStylesController {
     private customStylesAbilityFactory: CustomStylesAbilityFactory
   ) {}
 
-  @UseGuards(JwtAuthGuard, CustomStylesGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   async get(@User() user) {
+    return await this.customStylesService.fetch(user.organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard, CustomStylesGuard)
+  @Get('/app')
+  async getCustomStylesforApp(@User() user) {
     return await this.customStylesService.fetch(user.organizationId);
   }
 

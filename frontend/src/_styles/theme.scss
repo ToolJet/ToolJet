@@ -11523,7 +11523,7 @@ tbody {
   }
 }
 
-.instance-settings-page, .audit-log {
+.audit-log {
   width: 880px;
   margin: 0 auto;
 
@@ -11549,6 +11549,69 @@ tbody {
     }
   }
 }
+
+.instance-settings-page {
+  width: 880px;
+  margin: 0 auto;
+  background: var(--base);
+
+  .card {
+    background: var(--base);
+    border: 1px solid var(--slate7) !important;
+    box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05) !important;
+    width: 880px;
+
+    .card-header {
+      padding: 24px 24px;
+      gap: 12px;
+      height: 72px;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+
+      .title-banner-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 878px;
+      }
+
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 500px;
+      margin-bottom: 4px !important;
+      color: var(--slate12);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 24px 32px;
+      gap: 8px;
+      border-top: 1px solid var(--slate5) !important;
+      background: var(--base);
+      margin-top: 0px !important;
+      align-Self: 'stretch';
+      height: 88px;
+    }
+    .card-body {
+      height: 499px;
+      padding: 24px;
+      .form-group{
+        .tj-app-input{
+          .form-control{
+            &:disabled{
+              background: var(--slate3) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 
 .workspace-folder-modal {
   .tj-app-input {
