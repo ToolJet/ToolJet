@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { getSubpath } from '@/_helpers/utils';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -19,7 +20,6 @@ class ManageAppUsersComponent extends React.Component {
 
     this.state = {
       showModal: false,
-      isPublic: false,
       appId: null,
       slugError: null,
       isLoading: true,
@@ -32,7 +32,7 @@ class ManageAppUsersComponent extends React.Component {
   componentDidMount() {
     const appId = this.props.appId;
     this.fetchAppUsers(appId);
-    this.setState({ appId, isPublic: this.props.isPublic });
+    this.setState({ appId });
   }
 
   fetchAppUsers = (appId) => {
@@ -78,11 +78,11 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   toggleAppVisibility = () => {
-    const newState = !this.state.isPublic;
+    const newState = !this.props.isPublic;
     this.setState({
       ischangingVisibility: true,
     });
-
+    useAppDataStore.getState().actions.updateState({ isPublic: newState });
     // eslint-disable-next-line no-unused-vars
     appService
       .setVisibility(this.state.appId, newState)
@@ -101,6 +101,7 @@ class ManageAppUsersComponent extends React.Component {
           toast('Application visibility set to private');
         }
       })
+
       .catch((error) => {
         this.setState({
           ischangingVisibility: false,
@@ -135,7 +136,7 @@ class ManageAppUsersComponent extends React.Component {
   }, 500);
 
   render() {
-    const { isLoading, app, slugError, isSlugVerificationInProgress, appId } = this.state;
+    const { isLoading, slugError, isSlugVerificationInProgress, appId } = this.state;
 
     const appLink = `${window.public_config?.TOOLJET_HOST}${getSubpath() ? getSubpath() : ''}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
@@ -177,7 +178,7 @@ class ManageAppUsersComponent extends React.Component {
                       className="form-check-input color-slate12"
                       type="checkbox"
                       onClick={this.toggleAppVisibility}
-                      checked={this.state.isPublic}
+                      checked={this?.props?.isPublic}
                       disabled={this.state.ischangingVisibility}
                       data-cy="make-public-app-toggle"
                     />
@@ -224,7 +225,7 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                 </div>
                 <hr />
-                {(this.state.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                {(this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                   <div className="shareable-link mb-3">
                     <label className="form-label" data-cy="iframe-link-label">
                       <small>

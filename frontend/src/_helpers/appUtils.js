@@ -1317,7 +1317,7 @@ export const getComponentName = (currentState, id) => {
   }
 };
 
-const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefinition) => {
+const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefinition, componentMap, isCut) => {
   const newAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
   newAppDefinition.pages[pageId].components = {
@@ -1325,7 +1325,16 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
     ...newComponents,
   };
 
-  updateAppDefinition(newAppDefinition, { componentAdded: true, containerChanges: true });
+  const opts = {
+    componentAdded: true,
+    containerChanges: true,
+  };
+
+  if (!isCut) {
+    opts.cloningComponent = componentMap;
+  }
+
+  updateAppDefinition(newAppDefinition, opts);
 };
 
 export const cloneComponents = (
@@ -1489,7 +1498,7 @@ export const addComponents = (pageId, appDefinition, appDefinitionChanged, paren
 
   !isCloning && updateComponentLayout(pastedComponents, parentId, isCut);
 
-  updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged);
+  updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
   !isCloning && toast.success('Component pasted succesfully');
 };
 
@@ -1699,6 +1708,10 @@ export const buildComponentMetaDefinition = (components = {}) => {
       others: {
         ...componentMeta.definition.others,
         ...currentComponentData?.component.definition.others,
+      },
+      general: {
+        ...componentMeta.definition.general,
+        ...currentComponentData?.component.definition.general,
       },
     };
 

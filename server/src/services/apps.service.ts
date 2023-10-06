@@ -136,13 +136,13 @@ export class AppsService {
       );
 
       // Set default values for app version
-      appVersion.showViewerNavigation = false;
+      appVersion.showViewerNavigation = true;
       appVersion.homePageId = defaultHomePage.id;
       appVersion.globalSettings = {
         hideHeader: false,
         appInMaintenance: false,
-        canvasMaxWidth: 1292,
-        canvasMaxWidthType: 'px',
+        canvasMaxWidth: 100,
+        canvasMaxWidthType: '%',
         canvasMaxHeight: 2400,
         canvasBackgroundColor: '#edeff5',
         backgroundFxQuery: '',

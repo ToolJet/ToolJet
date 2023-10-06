@@ -44,7 +44,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     updatePageHandle,
     showHideViewerNavigationControls,
     updateOnSortingPages,
-
     apps,
     clonePage,
     setEditorMarginLeft,
@@ -93,6 +92,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   useEffect(() => {
     if (!selectedSidebarItem) {
       setEditorMarginLeft(0);
+    } else {
+      setEditorMarginLeft(350);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSidebarItem]);

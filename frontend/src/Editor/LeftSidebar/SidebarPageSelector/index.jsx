@@ -89,7 +89,7 @@ const LeftSidebarPageSelector = ({
               <GlobalSettings
                 darkMode={darkMode}
                 showHideViewerNavigationControls={showHideViewerNavigationControls}
-                showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
+                isViewerNavigationDisabled={!appDefinition?.showViewerNavigation}
               />
             }
           >

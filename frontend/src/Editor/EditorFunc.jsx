@@ -79,7 +79,8 @@ const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
-  const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving } = useAppDataActions();
+  const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving, createAppVersionEventHandlers } =
+    useAppDataActions();
   const { updateEditorState, updateQueryConfirmationList, setSelectedComponents } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
@@ -98,7 +99,7 @@ const EditorComponent = (props) => {
     currentSidebarTab,
     isLoading,
     defaultComponentStateComputed,
-
+    showComments,
     showLeftSidebar,
     queryConfirmationList,
   } = useEditorState();
@@ -118,6 +119,8 @@ const EditorComponent = (props) => {
     events,
     areOthersOnSameVersionAndPage,
   } = useAppInfo();
+
+  const currentState = useCurrentState();
 
   const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -178,7 +181,7 @@ const EditorComponent = (props) => {
 
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
-            ...props.currentState.globals,
+            ...currentState.globals,
             currentUser: userVars,
           },
         });
@@ -234,6 +237,13 @@ const EditorComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, lastKeyPressTimestamp })]);
+
+  useEffect(() => {
+    if (!isEmpty(canvasContainerRef?.current)) {
+      canvasContainerRef.current.scrollLeft += editorMarginLeft;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorMarginLeft]);
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -340,7 +350,7 @@ const EditorComponent = (props) => {
     });
 
     const globals = {
-      ...props.currentState.globals,
+      ...currentState.globals,
       theme: { name: props?.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
     };
@@ -434,16 +444,11 @@ const EditorComponent = (props) => {
     setZoomLevel(zoom);
   };
 
-  const [canvasWidth, setCanvasWidth] = useState(1092);
-
   const getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
 
     const _canvasWidth = canvasBoundingRect?.width;
-
-    if (_canvasWidth) {
-      setCanvasWidth(_canvasWidth);
-    }
+    return _canvasWidth;
   };
 
   const computeCanvasContainerHeight = () => {
@@ -489,7 +494,7 @@ const EditorComponent = (props) => {
   const changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
-        ...props.currentState.globals,
+        ...currentState.globals,
         theme: { name: newMode ? 'dark' : 'light' },
       },
     });
@@ -526,16 +531,6 @@ const EditorComponent = (props) => {
     }
   };
 
-  const onAreaSelectionEnd = (e) => {
-    setSelectionInProgress(false);
-    e.selected.forEach((el, index) => {
-      const id = el.getAttribute('widgetid');
-      const component = appDefinition?.pages[currentPageId].components[id].component;
-      const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
-      setSelectedComponent(id, component, isMultiSelect);
-    });
-  };
-
   const setSelectedComponent = (id, component, multiSelect = false) => {
     if (selectedComponents.length === 0 || !multiSelect) {
       switchSidebarTab(1);
@@ -548,6 +543,16 @@ const EditorComponent = (props) => {
     if (!isAlreadySelected) {
       setSelectedComponents([{ id, component }], multiSelect);
     }
+  };
+
+  const onAreaSelectionEnd = (e) => {
+    setSelectionInProgress(false);
+    e.selected.forEach((el, index) => {
+      const id = el.getAttribute('widgetid');
+      const component = appDefinition?.pages[currentPageId].components[id].component;
+      const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
+      setSelectedComponent(id, component, isMultiSelect);
+    });
   };
 
   const onVersionRelease = (versionId) => {
@@ -594,7 +599,9 @@ const EditorComponent = (props) => {
     return Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id }));
   };
 
-  const handleEditorMarginLeftChange = (value) => setEditorMarginLeft(value);
+  const handleEditorMarginLeftChange = (value) => {
+    setEditorMarginLeft(value);
+  };
 
   const globalSettingsChanged = (globalOptions) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
@@ -812,6 +819,49 @@ const EditorComponent = (props) => {
     }
   };
 
+  const cloneEventsForClonedComponents = (componentUpdateDiff, operation, componentMap) => {
+    function getKeyFromComponentMap(componentMap, newItem) {
+      for (const key in componentMap) {
+        if (componentMap.hasOwnProperty(key) && componentMap[key] === newItem) {
+          return key;
+        }
+      }
+      return null;
+    }
+
+    if (operation !== 'create') return;
+
+    const newComponentIds = Object.keys(componentUpdateDiff);
+
+    const mappedEvents = [];
+
+    newComponentIds.forEach((componentId) => {
+      const sourceComponentId = getKeyFromComponentMap(componentMap, componentId);
+      if (!sourceComponentId) return;
+
+      const componentEvents = events.filter((event) => event.sourceId === sourceComponentId);
+
+      mappedEvents.push(...componentEvents);
+    });
+
+    if (mappedEvents.length === 0) return;
+
+    return Promise.all(
+      mappedEvents.map((event) => {
+        const newEvent = {
+          event: {
+            ...event?.event,
+          },
+          eventType: event?.target,
+          attachedTo: componentMap[event?.sourceId],
+          index: event?.index,
+        };
+
+        createAppVersionEventHandlers(newEvent);
+      })
+    );
+  };
+
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
@@ -853,6 +903,15 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
           toast.error('App could not save.');
+        })
+        .finally(() => {
+          if (appDiffOptions?.cloningComponent) {
+            cloneEventsForClonedComponents(
+              updateDiff.updateDiff,
+              updateDiff.operation,
+              appDiffOptions?.cloningComponent
+            );
+          }
         });
     }
 
@@ -1016,8 +1075,8 @@ const EditorComponent = (props) => {
     let newComponents = _appDefinition?.pages[currentPageId].components;
 
     for (const selectedComponent of selectedComponents) {
-      let top = newComponents[selectedComponent.id].layouts[props.currentLayout].top;
-      let left = newComponents[selectedComponent.id].layouts[props.currentLayout].left;
+      let top = newComponents[selectedComponent.id].layouts[currentLayout].top;
+      let left = newComponents[selectedComponent.id].layouts[currentLayout].left;
 
       switch (direction) {
         case 'ArrowLeft':
@@ -1034,8 +1093,8 @@ const EditorComponent = (props) => {
           break;
       }
 
-      newComponents[selectedComponent.id].layouts[props.currentLayout].top = top;
-      newComponents[selectedComponent.id].layouts[props.currentLayout].left = left;
+      newComponents[selectedComponent.id].layouts[currentLayout].top = top;
+      newComponents[selectedComponent.id].layouts[currentLayout].left = left;
     }
 
     _appDefinition.pages[currentPageId].components = newComponents;
@@ -1144,6 +1203,11 @@ const EditorComponent = (props) => {
     };
 
     setCurrentPageId(newPageId);
+    setHoveredComponent(null);
+    updateEditorState({
+      currentSidebarTab: 2,
+      selectedComponents: [],
+    });
 
     appDefinitionChanged(copyOfAppDefinition, {
       pageDefinitionChanged: true,
@@ -1400,17 +1464,15 @@ const EditorComponent = (props) => {
   const showHideViewerNavigation = () => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
-
+    console.log(newAppDefinition.showViewerNavigation, 'Bedore');
     newAppDefinition.showViewerNavigation = !newAppDefinition.showViewerNavigation;
-
+    console.log(newAppDefinition.showViewerNavigation, 'newAppDefinition.showViewerNavigation');
     appDefinitionChanged(newAppDefinition, {
       generalAppDefinitionChanged: true,
     });
   };
 
   // !-------
-
-  const currentState = props?.currentState;
 
   const appVersionPreviewLink = editingVersion
     ? `/applications/${appId}/versions/${editingVersion.id}/${currentState.page.handle}`
@@ -1451,7 +1513,6 @@ const EditorComponent = (props) => {
       </div>
     );
   }
-
   return (
     <div className="editor wrapper">
       <Confirm
@@ -1539,7 +1600,7 @@ const EditorComponent = (props) => {
               isMaintenanceOn={isMaintenanceOn}
               toggleAppMaintenance={toggleAppMaintenance}
             />
-            {!props.showComments && (
+            {!showComments && (
               <Selecto
                 dragContainer={'.canvas-container'}
                 selectableTargets={['.react-draggable']}
@@ -1571,7 +1632,7 @@ const EditorComponent = (props) => {
                     (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
                     `px solid ${computeCanvasBackgroundColor()}`,
                   height: computeCanvasContainerHeight(),
-                  background: !props.darkMode && '#f4f6fa',
+                  background: !props.darkMode ? '#EBEBEF' : '#2E3035',
                 }}
                 onMouseUp={(e) => {
                   if (['real-canvas', 'modal'].includes(e.target.className)) {
@@ -1628,7 +1689,7 @@ const EditorComponent = (props) => {
                     {defaultComponentStateComputed && (
                       <>
                         <Container
-                          canvasWidth={canvasWidth}
+                          canvasWidth={getCanvasWidth()}
                           socket={socket}
                           appDefinition={appDefinition}
                           appDefinitionChanged={appDefinitionChanged}
@@ -1654,7 +1715,7 @@ const EditorComponent = (props) => {
                         />
                         <CustomDragLayer
                           snapToGrid={true}
-                          canvasWidth={canvasWidth}
+                          canvasWidth={getCanvasWidth()}
                           onDragging={(isDragging) => setIsDragging(isDragging)}
                         />
                       </>
@@ -1689,24 +1750,20 @@ const EditorComponent = (props) => {
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponents.length === 1 &&
-                  !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
-                  !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0].id]) ? (
-                    <Inspector
-                      moveComponents={moveComponents}
-                      componentDefinitionChanged={componentDefinitionChanged}
-                      removeComponent={removeComponent}
-                      selectedComponentId={selectedComponents[0].id}
-                      allComponents={appDefinition?.pages[currentPageId]?.components}
-                      key={selectedComponents[0].id}
-                      switchSidebarTab={switchSidebarTab}
-                      darkMode={props.darkMode}
-                      pages={getPagesWithIds()}
-                    ></Inspector>
-                  ) : (
-                    <center className="mt-5 p-2">
-                      {props.t('editor.inspectComponent', 'Please select a component to inspect')}
-                    </center>
-                  )}
+                    !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
+                    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0].id]) && (
+                      <Inspector
+                        moveComponents={moveComponents}
+                        componentDefinitionChanged={componentDefinitionChanged}
+                        removeComponent={removeComponent}
+                        selectedComponentId={selectedComponents[0].id}
+                        allComponents={appDefinition?.pages[currentPageId]?.components}
+                        key={selectedComponents[0].id}
+                        switchSidebarTab={switchSidebarTab}
+                        darkMode={props.darkMode}
+                        pages={getPagesWithIds()}
+                      ></Inspector>
+                    )}
                 </div>
               )}
 
@@ -1718,7 +1775,7 @@ const EditorComponent = (props) => {
                 ></WidgetManager>
               )}
             </div>
-            {config.COMMENT_FEATURE_ENABLE && props.showComments && (
+            {config.COMMENT_FEATURE_ENABLE && showComments && (
               <CommentNotifications socket={socket} pageId={currentPageId} />
             )}
           </div>
@@ -1728,18 +1785,4 @@ const EditorComponent = (props) => {
   );
 };
 
-const withStore = (Component) => (props) => {
-  const { showComments, currentLayout } = useEditorStore(
-    (state) => ({
-      showComments: state?.showComments,
-      currentLayout: state?.currentLayout,
-    }),
-    shallow
-  );
-
-  const currentState = useCurrentState();
-
-  return <Component {...props} currentState={currentState} showComments={showComments} currentLayout={currentLayout} />;
-};
-
-export const EditorFunc = withTranslation()(withRouter(withStore(EditorComponent)));
+export const EditorFunc = withTranslation()(withRouter(EditorComponent));
