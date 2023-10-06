@@ -81,7 +81,7 @@ const EditorComponent = (props) => {
 
   const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving, createAppVersionEventHandlers } =
     useAppDataActions();
-  const { updateEditorState, updateQueryConfirmationList } = useEditorActions();
+  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
   const { isVersionReleased, editingVersion, releasedVersionId } = useAppVersionState();
@@ -541,10 +541,7 @@ const EditorComponent = (props) => {
     const isAlreadySelected = selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
-      const prevSelectedComponents = [...selectedComponents];
-      updateEditorState({
-        selectedComponents: [...(multiSelect ? prevSelectedComponents : []), { id, component }],
-      });
+      setSelectedComponents([{ id, component }], multiSelect);
     }
   };
 
