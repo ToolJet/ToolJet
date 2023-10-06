@@ -37,7 +37,6 @@ export default function EditorHeader({
 
   const { updateState } = useAppDataActions();
   const { isSaving, appId, appName, app, isPublic } = useAppInfo();
-
   const handleSlugChange = (newSlug) => {
     updateState({ slug: newSlug });
   };
@@ -155,6 +154,7 @@ export default function EditorHeader({
                       M={M}
                       handleSlugChange={handleSlugChange}
                       darkMode={darkMode}
+                      isPublic={isPublic ?? false}
                     />
                   )}
                 </div>

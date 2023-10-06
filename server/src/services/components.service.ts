@@ -208,8 +208,9 @@ export class ComponentsService {
     return transformedComponents;
   }
 
-  createComponentWithLayout(componentData, layoutData) {
-    const { id, name, properties, styles, generalStyles, validations, parent, displayPreferences } = componentData;
+  createComponentWithLayout(componentData: Component, layoutData) {
+    const { id, name, properties, styles, generalStyles, validations, parent, displayPreferences, general } =
+      componentData;
     const { type, top, left, width, height } = layoutData;
     const componentWithLayout = {
       [id]: {
@@ -221,6 +222,7 @@ export class ComponentsService {
             styles,
             generalStyles,
             validations,
+            general,
             others: displayPreferences,
           },
           parent,

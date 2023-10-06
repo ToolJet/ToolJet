@@ -38,6 +38,11 @@ export class CreateComponentTable1691006952074 implements MigrationInterface {
             isNullable: true,
           },
           {
+            name: 'general_properties',
+            type: 'json',
+            isNullable: true,
+          },
+          {
             name: 'styles',
             type: 'json',
             isNullable: true,
