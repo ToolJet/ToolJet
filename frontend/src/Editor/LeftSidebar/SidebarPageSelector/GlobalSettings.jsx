@@ -4,7 +4,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
+export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, isViewerNavigationDisabled }) => {
   const { isVersionReleased, enableReleasedVersionPopupState } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -35,7 +35,7 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
               </label>
               <hr style={{ margin: '0.75rem 0' }} />
               <div className="menu-options mb-0">
-                <Toggle onChange={onChange} value={showPageViwerPageNavitation} />
+                <Toggle onChange={onChange} value={isViewerNavigationDisabled} />
               </div>
             </div>
           </Popover.Body>
