@@ -443,18 +443,12 @@ const EditorComponent = (props) => {
     setZoomLevel(zoom);
   };
 
-  const [canvasWidth, setCanvasWidth] = useState(1092);
-
   const getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
 
     const _canvasWidth = canvasBoundingRect?.width;
-
-    if (_canvasWidth) {
-      setCanvasWidth(_canvasWidth);
-    }
+    return _canvasWidth;
   };
-
   const computeCanvasContainerHeight = () => {
     // 45 = (height of header)
     // 85 = (the height of the query panel header when minimised) + (height of header)
@@ -1640,7 +1634,7 @@ const EditorComponent = (props) => {
                     {defaultComponentStateComputed && (
                       <>
                         <Container
-                          canvasWidth={canvasWidth}
+                          canvasWidth={getCanvasWidth()}
                           socket={socket}
                           appDefinition={appDefinition}
                           appDefinitionChanged={appDefinitionChanged}
@@ -1666,7 +1660,7 @@ const EditorComponent = (props) => {
                         />
                         <CustomDragLayer
                           snapToGrid={true}
-                          canvasWidth={canvasWidth}
+                          canvasWidth={getCanvasWidth()}
                           onDragging={(isDragging) => setIsDragging(isDragging)}
                         />
                       </>
