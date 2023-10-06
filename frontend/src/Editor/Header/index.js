@@ -86,8 +86,8 @@ export default function EditorHeader({
   const shouldDisablePromote = currentEnvironment?.id !== currentAppEnvironmentId || isSaving;
 
   return (
-    <div className="header">
-      <header className="navbar navbar-expand-md  d-print-none p-0">
+    <div className="header" style={{ width: '100%' }}>
+      <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
             <h1 className="navbar-brand d-none-navbar-horizontal p-0">
