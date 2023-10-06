@@ -1457,7 +1457,6 @@ const EditorComponent = (props) => {
       </div>
     );
   }
-
   return (
     <div className="editor wrapper">
       <Confirm
@@ -1577,7 +1576,7 @@ const EditorComponent = (props) => {
                     (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
                     `px solid ${computeCanvasBackgroundColor()}`,
                   height: computeCanvasContainerHeight(),
-                  background: !props.darkMode && '#f4f6fa',
+                  background: !props.darkMode ? '#EBEBEF' : '#2E3035',
                 }}
                 onMouseUp={(e) => {
                   if (['real-canvas', 'modal'].includes(e.target.className)) {
