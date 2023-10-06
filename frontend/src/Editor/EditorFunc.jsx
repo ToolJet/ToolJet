@@ -99,7 +99,7 @@ const EditorComponent = (props) => {
     currentSidebarTab,
     isLoading,
     defaultComponentStateComputed,
-
+    showComments,
     showLeftSidebar,
     queryConfirmationList,
   } = useEditorState();
@@ -119,6 +119,8 @@ const EditorComponent = (props) => {
     events,
     areOthersOnSameVersionAndPage,
   } = useAppInfo();
+
+  const currentState = useCurrentState();
 
   const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -179,7 +181,7 @@ const EditorComponent = (props) => {
 
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
-            ...props.currentState.globals,
+            ...currentState.globals,
             currentUser: userVars,
           },
         });
@@ -235,6 +237,13 @@ const EditorComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, lastKeyPressTimestamp })]);
+
+  useEffect(() => {
+    if (!isEmpty(canvasContainerRef?.current)) {
+      canvasContainerRef.current.scrollLeft += editorMarginLeft;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorMarginLeft]);
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -341,7 +350,7 @@ const EditorComponent = (props) => {
     });
 
     const globals = {
-      ...props.currentState.globals,
+      ...currentState.globals,
       theme: { name: props?.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
     };
@@ -435,24 +444,12 @@ const EditorComponent = (props) => {
     setZoomLevel(zoom);
   };
 
-  const [canvasWidth, setCanvasWidth] = useState(1092);
-
   const getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
 
     const _canvasWidth = canvasBoundingRect?.width;
-
-    if (_canvasWidth) {
-      setCanvasWidth(_canvasWidth);
-    }
+    return _canvasWidth;
   };
-
-  useEffect(() => {
-    if (mounted) {
-      getCanvasWidth();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentLayout]);
 
   const computeCanvasContainerHeight = () => {
     // 45 = (height of header)
@@ -497,7 +494,7 @@ const EditorComponent = (props) => {
   const changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
-        ...props.currentState.globals,
+        ...currentState.globals,
         theme: { name: newMode ? 'dark' : 'light' },
       },
     });
@@ -605,7 +602,9 @@ const EditorComponent = (props) => {
     return Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id }));
   };
 
-  const handleEditorMarginLeftChange = (value) => setEditorMarginLeft(value);
+  const handleEditorMarginLeftChange = (value) => {
+    setEditorMarginLeft(value);
+  };
 
   const globalSettingsChanged = (globalOptions) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
@@ -1079,8 +1078,8 @@ const EditorComponent = (props) => {
     let newComponents = _appDefinition?.pages[currentPageId].components;
 
     for (const selectedComponent of selectedComponents) {
-      let top = newComponents[selectedComponent.id].layouts[props.currentLayout].top;
-      let left = newComponents[selectedComponent.id].layouts[props.currentLayout].left;
+      let top = newComponents[selectedComponent.id].layouts[currentLayout].top;
+      let left = newComponents[selectedComponent.id].layouts[currentLayout].left;
 
       switch (direction) {
         case 'ArrowLeft':
@@ -1097,8 +1096,8 @@ const EditorComponent = (props) => {
           break;
       }
 
-      newComponents[selectedComponent.id].layouts[props.currentLayout].top = top;
-      newComponents[selectedComponent.id].layouts[props.currentLayout].left = left;
+      newComponents[selectedComponent.id].layouts[currentLayout].top = top;
+      newComponents[selectedComponent.id].layouts[currentLayout].left = left;
     }
 
     _appDefinition.pages[currentPageId].components = newComponents;
@@ -1463,17 +1462,15 @@ const EditorComponent = (props) => {
   const showHideViewerNavigation = () => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
-
+    console.log(newAppDefinition.showViewerNavigation, 'Bedore');
     newAppDefinition.showViewerNavigation = !newAppDefinition.showViewerNavigation;
-
+    console.log(newAppDefinition.showViewerNavigation, 'newAppDefinition.showViewerNavigation');
     appDefinitionChanged(newAppDefinition, {
       generalAppDefinitionChanged: true,
     });
   };
 
   // !-------
-
-  const currentState = props?.currentState;
 
   const appVersionPreviewLink = editingVersion
     ? `/applications/${appId}/versions/${editingVersion.id}/${currentState.page.handle}`
@@ -1514,7 +1511,6 @@ const EditorComponent = (props) => {
       </div>
     );
   }
-
   return (
     <div className="editor wrapper">
       <Confirm
@@ -1602,7 +1598,7 @@ const EditorComponent = (props) => {
               isMaintenanceOn={isMaintenanceOn}
               toggleAppMaintenance={toggleAppMaintenance}
             />
-            {!props.showComments && (
+            {!showComments && (
               <Selecto
                 dragContainer={'.canvas-container'}
                 selectableTargets={['.react-draggable']}
@@ -1634,7 +1630,7 @@ const EditorComponent = (props) => {
                     (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
                     `px solid ${computeCanvasBackgroundColor()}`,
                   height: computeCanvasContainerHeight(),
-                  background: !props.darkMode && '#f4f6fa',
+                  background: !props.darkMode ? '#EBEBEF' : '#2E3035',
                 }}
                 onMouseUp={(e) => {
                   if (['real-canvas', 'modal'].includes(e.target.className)) {
@@ -1691,7 +1687,7 @@ const EditorComponent = (props) => {
                     {defaultComponentStateComputed && (
                       <>
                         <Container
-                          canvasWidth={canvasWidth}
+                          canvasWidth={getCanvasWidth()}
                           socket={socket}
                           appDefinition={appDefinition}
                           appDefinitionChanged={appDefinitionChanged}
@@ -1717,7 +1713,7 @@ const EditorComponent = (props) => {
                         />
                         <CustomDragLayer
                           snapToGrid={true}
-                          canvasWidth={canvasWidth}
+                          canvasWidth={getCanvasWidth()}
                           onDragging={(isDragging) => setIsDragging(isDragging)}
                         />
                       </>
@@ -1781,7 +1777,7 @@ const EditorComponent = (props) => {
                 ></WidgetManager>
               )}
             </div>
-            {config.COMMENT_FEATURE_ENABLE && props.showComments && (
+            {config.COMMENT_FEATURE_ENABLE && showComments && (
               <CommentNotifications socket={socket} pageId={currentPageId} />
             )}
           </div>
@@ -1791,18 +1787,4 @@ const EditorComponent = (props) => {
   );
 };
 
-const withStore = (Component) => (props) => {
-  const { showComments, currentLayout } = useEditorStore(
-    (state) => ({
-      showComments: state?.showComments,
-      currentLayout: state?.currentLayout,
-    }),
-    shallow
-  );
-
-  const currentState = useCurrentState();
-
-  return <Component {...props} currentState={currentState} showComments={showComments} currentLayout={currentLayout} />;
-};
-
-export const EditorFunc = withTranslation()(withRouter(withStore(EditorComponent)));
+export const EditorFunc = withTranslation()(withRouter(EditorComponent));
