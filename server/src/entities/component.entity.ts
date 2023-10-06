@@ -33,6 +33,9 @@ export class Component {
   @Column('simple-json')
   properties: any;
 
+  @Column('simple-json', { name: 'general_properties', nullable: true })
+  general: any;
+
   @Column('simple-json')
   styles: any;
 
