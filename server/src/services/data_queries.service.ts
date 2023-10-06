@@ -14,6 +14,7 @@ import { EncryptionService } from './encryption.service';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import allPlugins from '@tooljet/plugins/dist/server';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 
 @Injectable()
@@ -338,6 +339,22 @@ export class DataQueriesService {
     }
   };
 
+  /* this function only for getting auth token for googlesheets and related plugins*/
+  async fetchAPITokenFromPlugins(dataSource: DataSource, code: string, sourceOptions: any) {
+    const queryService = new allPlugins[dataSource.kind]();
+    const accessDetails = await queryService.accessDetailsFrom(code, sourceOptions);
+    const options = [];
+    for (const row of accessDetails) {
+      const option = {};
+      option['key'] = row[0];
+      option['value'] = row[1];
+      option['encrypted'] = true;
+
+      options.push(option);
+    }
+    return options;
+  }
+
   /* This function fetches access token from authorization code */
   async authorizeOauth2(
     dataSource: DataSource,
@@ -347,22 +364,27 @@ export class DataQueriesService {
     organizationId?: string
   ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
-    const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
-    const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
-    const tokenData = this.getCurrentToken(
-      isMultiAuthEnabled,
-      dataSource.options['tokenData']?.value,
-      newToken,
-      userId
-    );
+    let tokenOptions: any;
+    if (['googlesheets', 'slack', 'zendesk'].includes(dataSource.kind)) {
+      tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
+    } else {
+      const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
+      const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
+      const tokenData = this.getCurrentToken(
+        isMultiAuthEnabled,
+        dataSource.options['tokenData']?.value,
+        newToken,
+        userId
+      );
 
-    const tokenOptions = [
-      {
-        key: 'tokenData',
-        value: tokenData,
-        encrypted: false,
-      },
-    ];
+      tokenOptions = [
+        {
+          key: 'tokenData',
+          value: tokenData,
+          encrypted: false,
+        },
+      ];
+    }
 
     await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions, organizationId, environmentId);
     return;
