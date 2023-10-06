@@ -151,7 +151,6 @@ export const Inspector = ({
   };
 
   function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false) {
-    console.log({ param, attr, value, paramType });
     let newComponent = JSON.parse(JSON.stringify(component));
     let newDefinition = _.cloneDeep(newComponent.component.definition);
     let allParams = newDefinition[paramType] || {};
@@ -162,13 +161,19 @@ export const Inspector = ({
     if (attr) {
       allParams[param.name][attr] = value;
       const defaultValue = getDefaultValue(value);
-      // This is needed to have enable pagination as backward compatible
+      // This is needed to have enable pagination in Table as backward compatible
       // Whenever enable pagination is false, we turn client and server side pagination as false
-      if (param.name === 'enablePagination' && !resolveReferences(value, currentState)) {
+      if (
+        component.component.component === 'Table' &&
+        param.name === 'enablePagination' &&
+        !resolveReferences(value, currentState)
+      ) {
         if (allParams?.['clientSidePagination']?.[attr]) {
           allParams['clientSidePagination'][attr] = value;
         }
-        allParams['serverSidePagination'][attr] = value;
+        if (allParams['serverSidePagination']?.[attr]) {
+          allParams['serverSidePagination'][attr] = value;
+        }
       }
       // This case is required to handle for older apps when serverSidePagination is connected to Fx
       if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
