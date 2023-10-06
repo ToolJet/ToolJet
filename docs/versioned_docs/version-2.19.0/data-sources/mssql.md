@@ -12,7 +12,7 @@ ToolJet can connect to MS SQL Server & Azure SQL databases to read and write dat
 
 Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
 
-To add new MS SQL Server / Azure SQL database, click on the '+' button on data sources panel at the left-bottom corner of the app editor. Select `SQL Server` from the modal that pops up.
+To establish a connection with the MS SQL Server data source, click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your PostgreSQL database.
 
