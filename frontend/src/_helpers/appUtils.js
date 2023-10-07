@@ -1378,7 +1378,9 @@ export const cloneComponents = (
   }
 
   if (isCloning) {
-    addComponents(currentPageId, appDefinition, updateAppDefinition, undefined, newComponentObj);
+    const parentId = selectedComponents[0]['component']?.parent ?? undefined;
+
+    addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
@@ -1445,8 +1447,8 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
   });
 };
 
-const isChildOfTabsOrCalendar = (component, allComponents = []) => {
-  const parentId = component.component.parent.split('-').slice(0, -1).join('-');
+const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+  const parentId = componentParentId ?? component.component?.parent?.split('-').slice(0, -1).join('-');
 
   const parentComponent = allComponents.find((comp) => comp.componentId === parentId);
 
@@ -1457,7 +1459,14 @@ const isChildOfTabsOrCalendar = (component, allComponents = []) => {
   return false;
 };
 
-export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
+export const addComponents = (
+  pageId,
+  appDefinition,
+  appDefinitionChanged,
+  parentId = undefined,
+  newComponentObj,
+  fromClipboard = false
+) => {
   const finalComponents = {};
   const componentMap = {};
   let parentComponent = undefined;
@@ -1466,24 +1475,38 @@ export const addComponents = (pageId, appDefinition, appDefinitionChanged, paren
   if (parentId) {
     const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
     parentComponent = JSON.parse(JSON.stringify(appDefinition.pages[pageId].components[id[0]]));
-    parentComponent.id = parentId;
   }
 
   pastedComponents.forEach((component) => {
     const newComponentId = uuidv4();
     const componentName = computeComponentName(component.component.component, appDefinition.pages[pageId].components);
 
-    componentMap[component.componentId] = newComponentId;
-    const isChild = component.component.parent;
-    const componentData = component.component;
+    const isParentAlsoCopied = component.component.parent && componentMap[component.component.parent];
 
-    if (isChild && isChildOfTabsOrCalendar(component, pastedComponents)) {
+    componentMap[component.componentId] = newComponentId;
+    let isChild = parentId ? parentId : component.component.parent;
+    const componentData = JSON.parse(JSON.stringify(component.component));
+
+    if (isCloning && parentId && !componentData.parent) {
+      isChild = component.component.parent;
+    }
+
+    if (!parentComponent && !isParentAlsoCopied && isChild && fromClipboard) {
+      isChild = undefined;
+      componentData.parent = undefined;
+    }
+
+    if (!isCloning && parentComponent && fromClipboard) {
+      componentData.parent = isParentAlsoCopied ?? parentId;
+    } else if (isChild && isChildOfTabsOrCalendar(component, pastedComponents, parentId)) {
       const parentId = component.component.parent.split('-').slice(0, -1).join('-');
       const childTabId = component.component.parent.split('-').at(-1);
 
       componentData.parent = `${componentMap[parentId]}-${childTabId}`;
     } else if (isChild) {
-      componentData.parent = componentMap[isChild];
+      const isParentInMap = componentMap[isChild] !== undefined;
+
+      componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
     }
 
     const newComponent = {

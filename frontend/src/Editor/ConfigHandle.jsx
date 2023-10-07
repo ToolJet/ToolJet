@@ -32,7 +32,6 @@ export const ConfigHandle = function ConfigHandle({
           style={{ display: 'flex', alignItems: 'center' }}
           onClick={(e) => {
             e.preventDefault();
-            e.stopPropagation();
             setSelectedComponent(id, component, e.shiftKey);
           }}
           role="button"

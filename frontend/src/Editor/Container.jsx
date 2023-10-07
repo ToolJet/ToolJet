@@ -95,6 +95,7 @@ export const Container = ({
   useHotkeys(
     'meta+v, control+v',
     async () => {
+      console.log('---arpit pasting:: before [container] ', { parentId: focusedParentIdRef.current });
       if (isContainerFocused && !isVersionReleased) {
         // Check if the clipboard API is available
         if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
@@ -105,7 +106,8 @@ export const Container = ({
               appDefinition,
               appDefinitionChanged,
               focusedParentIdRef.current,
-              JSON.parse(cliptext)
+              JSON.parse(cliptext),
+              true
             );
           } catch (err) {
             console.log(err);
@@ -116,7 +118,7 @@ export const Container = ({
       }
       enableReleasedVersionPopupState();
     },
-    [isContainerFocused, appDefinition, focusedParentIdRef]
+    [isContainerFocused, appDefinition, focusedParentIdRef.current]
   );
 
   useEffect(() => {
