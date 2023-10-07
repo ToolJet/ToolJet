@@ -5,6 +5,8 @@ title: Baserow
 
 # Baserow
 
+ToolJet can connect to your Baserow account to read and write data.
+
 ## Connection
 
 To connect to Baserow, you need to provide the following details:
