@@ -1072,7 +1072,7 @@ const EditorComponent = (props) => {
 
       if (newDefinition.pages[currentPageId].components?.[componentId].component.component === 'Tabs') {
         childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter((key) =>
-          newDefinition.pages[currentPageId].components[key].parent?.startsWith(componentId)
+          newDefinition.pages[currentPageId].components[key].component.parent?.startsWith(componentId)
         );
       } else {
         childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter(
