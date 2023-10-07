@@ -38,8 +38,6 @@ Once you have added a Oracle DB data source, click on `+` button of the query ma
 
 SQL mode can be used to write raw SQL queries. Select SQL mode from the dropdown and enter the SQL query in the editor. Click on the `run` button to run the query.
 
-**NOTE**: Query should be saved before running.
-
 #### GUI mode
 
 GUI mode can be used to query Oracle database without writing queries. Select GUI mode from the dropdown and then choose the operation **Bulk update using primary key**. Enter the **Table** name and **Primary key column** name. Now, in the editor enter the records in the form of an array of objects. 
