@@ -95,7 +95,6 @@ export const Container = ({
   useHotkeys(
     'meta+v, control+v',
     async () => {
-      console.log('---arpit pasting:: before [container] ', { parentId: focusedParentIdRef.current });
       if (isContainerFocused && !isVersionReleased) {
         // Check if the clipboard API is available
         if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
