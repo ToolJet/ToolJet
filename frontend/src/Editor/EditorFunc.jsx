@@ -55,7 +55,7 @@ import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore'
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
-import { computeAppDiff, computeComponentPropertyDiff, resetAllStores } from '@/_stores/utils';
+import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { shallow } from 'zustand/shallow';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
@@ -801,6 +801,16 @@ const EditorComponent = (props) => {
       }
 
       updateAppDefinitionDiff(diffPatches);
+
+      const isParamDiffFromTableColumn = opts?.containerChanges
+        ? isParamFromTableColumn(diffPatches, updatedAppDefinition)
+        : false;
+
+      if (isParamDiffFromTableColumn) {
+        opts.componentDefinitionChanged = true;
+        opts.isParamFromTableColumn = true;
+        delete opts.containerChanges;
+      }
 
       updateState({
         appDiffOptions: opts,
