@@ -1803,7 +1803,7 @@ const EditorComponent = (props) => {
                 </div>
               )}
 
-              {currentSidebarTab === 2 && (
+              {(selectedComponents.length > 1 || currentSidebarTab === 2) && (
                 <WidgetManager
                   componentTypes={componentTypes}
                   zoomLevel={zoomLevel}
