@@ -113,10 +113,10 @@ Use this environment variable to enable/disable the developement mode that allow
 | PGRST_JWT_SECRET  | JWT token client provided for authentication |
 | PGRST_HOST        | postgrest database host                      |
 
-Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. in order to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
+Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
 
 :::tip
-When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
+When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during the server boot process in all of our production deploy setups.
 Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
 :::
 
@@ -148,7 +148,7 @@ You will still be able to see the signup page but won't be able to successfully 
 ### Serve client as a server end-point ( optional )
 
 By default, the `SERVE_CLIENT` variable will be unset and the server will serve the client at its `/` end-point.
-You can set `SERVE_CLIENT` to `false` to disable this behaviour.
+You can set `SERVE_CLIENT` to `false` to disable this behavior.
 
 ### Serve client at subpath
 
