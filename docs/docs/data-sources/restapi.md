@@ -167,7 +167,7 @@ Google Cloud Platform provides access to more than 350 APIs and Services that ca
 2. Navigate to the **APIs and Services**, and then open the **OAuth consent screen** section from the left sidebar.
 3. Enter the Application details and select the appropriate scopes for your application. We will select the profile and the email scopes. 
 4. Once you have created the OAuth consent screen, Create new credentials for the **OAuth client ID** from the **Credentials** section in the left sidebar.
-5. Select the application type, enter the application name, and then add the following URIs under Authorised Redirect URIs:
+5. Select the application type, enter the application name, and then add the following URIs under Authorized Redirect URIs:
     1. `https://app.tooljet.com/oauth2/authorize` (if you’re using ToolJet cloud)
     2. `http://localhost:8082/oauth2/authorize` (if you’re using ToolJet locally)
 6. Now save and then you’ll get the **Client ID and Client secret** for your application.
@@ -208,7 +208,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
 Let’s create a query to make a `GET` request to the URL, it will pop a new window and ask the user to authenticate against the API.
 
 - Add a new query and select the REST API data source from the dropdown
-- In the **Method** dropdown select `GET` and enabe the  `Run query on application load?`
+- In the **Method** dropdown select `GET` and enable the  `Run query on application load?`
 - Run the query. 
 - A new window will pop for authentication and once auth is successful, you can run the query again to get the user data like Name and Profile Picture.
 

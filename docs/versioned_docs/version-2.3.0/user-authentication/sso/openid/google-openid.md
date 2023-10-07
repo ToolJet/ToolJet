@@ -24,11 +24,11 @@ title: Google (Open ID)
 
   </div>
 
-- Set **Name** as `Google` and get the **Client ID** and **Client Secret** from your [Google Clound Console](https://console.cloud.google.com/apis/credentials).
+- Set **Name** as `Google` and get the **Client ID** and **Client Secret** from your [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
 
 - Set the **Well Known URL** to `https://accounts.google.com/.well-known/openid-configuration`
 
-#### Generating Cliend ID and Cliend Secret on GCS
+#### Generating Client ID and Client Secret on GCS
 
 - Go to [Google cloud console](https://console.cloud.google.com/) and create a project.
   <div style={{textAlign: 'center'}}>

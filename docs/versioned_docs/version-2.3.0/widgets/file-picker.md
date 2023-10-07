@@ -170,7 +170,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 | Variables      | Description |
 | ----------- | ----------- |
-| file | This variable holds the array of objects where each object represents the file loaded on the file picker component. Each object has the following keys: **name**, **type**, **content**, **dataURL**, **base64Data**, **parsedData**, **filePath**. The values can be accesed using `{{components.filepicker1.file[0].base64Data}}` |
+| file | This variable holds the array of objects where each object represents the file loaded on the file picker component. Each object has the following keys: **name**, **type**, **content**, **dataURL**, **base64Data**, **parsedData**, **filePath**. The values can be accessed using `{{components.filepicker1.file[0].base64Data}}` |
 
 ## Component specific actions (CSA)
 

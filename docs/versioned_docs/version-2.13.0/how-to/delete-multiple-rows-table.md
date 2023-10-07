@@ -54,7 +54,7 @@ Now, we will enable the bulk row selection on the table. For this, go to the tab
 
 ## 4. Create a custom javascript query
 
-Now, we will create a custom javascript query that will **generate a SQL statement** to delete the selected rows from the table component based on a list of selected IDs, assuming the IDs are stored in the **id** column and that the name of the table component is **table1**. The actual database name should be replaced with **tooljet** as indicated in the SQL statemnent in the code below:
+Now, we will create a custom javascript query that will **generate a SQL statement** to delete the selected rows from the table component based on a list of selected IDs, assuming the IDs are stored in the **id** column and that the name of the table component is **table1**. The actual database name should be replaced with **tooljet** as indicated in the SQL statement in the code below:
 
 ```js
 const uniqueIdentifier = "id";
@@ -124,7 +124,7 @@ Optionally, we can add a loading state to the button whenever the `delete` or `g
 {{queries.delete.isLoading || queries.getRecords.isLoading}}
 ```
 
-Now, whenever you click on the button, the javascript query will generate a SQL statement to delete the selected rows from the table but to delete the rows from the database, we need to add event handler to the **runjs1** query to trigger the **delete** query whenever the `runjs1` query is **executed and successfull**.
+Now, whenever you click on the button, the javascript query will generate a SQL statement to delete the selected rows from the table but to delete the rows from the database, we need to add event handler to the **runjs1** query to trigger the **delete** query whenever the `runjs1` query is **executed and successful**.
 
 <div style={{textAlign: 'center'}}>
 

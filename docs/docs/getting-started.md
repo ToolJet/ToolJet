@@ -1,7 +1,7 @@
 ---
 id: getting-started
 title: Getting Started
-description: ToolJet is an open-source low-code framework to build and deploy custom internal tools. ToolJet can connect to your data sources such as databases ( PostgreSQL, MongoDB, MS SQL Server, Snowflake, , BigQuery, etc ), API/GraphQL endpoints, SaaS tools ( Airtable, Stripe, Google Sheets, etc ) and cloud object storage services ( AWS S3, Google Cloud Storage and Minio ). Once the data sources are connected, ToolJet can run queries on these data sources to fetch and update data. The data fetched from data sources can be visualised and modified using the UI widgets such as tables, charts, forms, etc.
+description: ToolJet is an open-source low-code framework to build and deploy custom internal tools. ToolJet can connect to your data sources such as databases ( PostgreSQL, MongoDB, MS SQL Server, Snowflake, , BigQuery, etc ), API/GraphQL endpoints, SaaS tools ( Airtable, Stripe, Google Sheets, etc ) and cloud object storage services ( AWS S3, Google Cloud Storage and Minio ). Once the data sources are connected, ToolJet can run queries on these data sources to fetch and update data. The data fetched from data sources can be visualized and modified using the UI widgets such as tables, charts, forms, etc.
 slug: /
 ---
 
@@ -15,7 +15,7 @@ ToolJet is an **open-source low-code framework** to build and deploy custom inte
 
 ToolJet ships with its built-in database called **[ToolJet DB](/docs/tooljet-database)** (built on top of PostgreSQL). You can also connect to the **external data sources** such as **databases** ( PostgreSQL, MongoDB, MS SQL Server, Snowflake, , BigQuery, etc ), **API/GraphQL endpoints**, **SaaS tools** ( Airtable, Stripe, Google Sheets, etc ) and **cloud object storage services** ( AWS S3, Google Cloud Storage and Minio ). 
 
-Once the data sources are connected, ToolJet can run **queries** on these data sources to fetch and update data. The data fetched from data sources can be **visualised and modified** using the UI widgets such as tables, charts, forms, etc. You can also use **[Javascript](/docs/data-sources/run-js)** or **[Python](/docs/data-sources/run-py)** queries for writing business logic or interacting with the user interface of the application.
+Once the data sources are connected, ToolJet can run **queries** on these data sources to fetch and update data. The data fetched from data sources can be **visualized and modified** using the UI widgets such as tables, charts, forms, etc. You can also use **[Javascript](/docs/data-sources/run-js)** or **[Python](/docs/data-sources/run-py)** queries for writing business logic or interacting with the user interface of the application.
 
 <img src="/img/v2-beta/getting_started/intro.webp" alt="Getting started Demo app" width="100%" height="100%" loading="eager" />
 
@@ -80,7 +80,7 @@ We'll first create a table in ToolJet's built-in **[database](/docs/tooljet-data
 Navigate to the **Database** tab from the left sidebar. Click on the **Create new table** button on the top-left. A dialog box will slide from the right to configure the database table properties. 
 
 <div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
-  <div style={{flex: 1, padding: '0', alignment:'center'}}>
+  <div style={{flex: 1, padding: '0', alignment: 'center'}}>
     <p style={{textAlign: 'left'}}>
         In the <b>Table name</b> field, enter <i>timeTracker</i>.
         <br/>
@@ -138,7 +138,7 @@ Click and drag a **[Container](/docs/widgets/container)** component to the canva
 Each time you click and select the **Container** or any other component on the canvas, configuration related to the component will appear on the right. 
 
 <div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
-  <div style={{flex: 1, padding: '0', alignment:'center'}}>
+  <div style={{flex: 1, padding: '0', alignment: 'center'}}>
     <p style={{textAlign: 'left'}}>
         Each component will show a different configuration based on its overall functionality.
         <br/>
@@ -320,7 +320,7 @@ Rename the query to *addLog*, select **Create row** as Operations and use the be
 Click on the **Inspector** on the left-sidebar to look at the available values under **globals** and **components**. 
 
 <div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
-  <div style={{flex: 1, padding: '0', alignment:'center'}}>
+  <div style={{flex: 1, padding: '0', alignment: 'center'}}>
     <p style={{textAlign: 'left'}}>
         The <b>currentUser</b> object holds all the values related to logged-in user.
         <br/>
@@ -346,7 +346,7 @@ Later, we'll plug this query to the **Submit** button on *logTimeModal*.
 
 **Events** allow us to run queries and other application functions based on button clicks, query completion and an array of other triggers.
 
-The *addLog* query will add data to the the *timeTracker* table in the database when it runs. But we would want our **Table** component to be reloaded with the new data every time we add or delete the entries. Since the data in the **Table** component is coming from the *getTrackerSummary* query, we'll trigger the *getTrackerSummary* query after running the *addLog* query.
+The *addLog* query will add data to the  *timeTracker* table in the database when it runs. But we would want our **Table** component to be reloaded with the new data every time we add or delete the entries. Since the data in the **Table** component is coming from the *getTrackerSummary* query, we'll trigger the *getTrackerSummary* query after running the *addLog* query.
 
 Click on the **+ New Event Handler** button in the *addLog* query - a new event will be added. Click on the event and select **Run Query** as Action and *getTrackerSummary* as Query. 
 

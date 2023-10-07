@@ -346,7 +346,7 @@ Later, we'll plug this query to the **Submit** button on *logTimeModal*.
 
 **Events** allow us to run queries and other application functions based on button clicks, query completion and an array of other triggers.
 
-The *addLog* query will add data to the the *timeTracker* table in the database when it runs. But we would want our **Table** component to be reloaded with the new data every time we add or delete the entries. Since the data in the **Table** component is coming from the *getTrackerSummary* query, we'll trigger the *getTrackerSummary* query after running the *addLog* query.
+The *addLog* query will add data to the *timeTracker* table in the database when it runs. But we would want our **Table** component to be reloaded with the new data every time we add or delete the entries. Since the data in the **Table** component is coming from the *getTrackerSummary* query, we'll trigger the *getTrackerSummary* query after running the *addLog* query.
 
 Click on the **+ New Event Handler** button in the *addLog* query - a new event will be added. Click on the event and select **Run Query** as Action and *getTrackerSummary* as Query. 
 

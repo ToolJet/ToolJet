@@ -123,5 +123,5 @@ Following actions of modal component can be controlled using the component speci
 
 | Actions     | Description |
 | ----------- | ----------- |
-| open | Control the opening and closing of the modal componennt via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.modal1.open()` |
-| close | Control the closing of the modal componennt via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.modal1.close()` |
+| open | Control the opening and closing of the modal component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.modal1.open()` |
+| close | Control the closing of the modal component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.modal1.close()` |

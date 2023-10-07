@@ -21,7 +21,7 @@ This property lets you add and remove primary value label.
 
 ### Primary value
 
-This property lets you add and remove primary value,the actual amount can be represented here.
+This property lets you add and remove primary value, the actual amount can be represented here.
 
 ### Hide secondary value
 
@@ -33,7 +33,7 @@ This property lets you add and remove secondary value label.
 
 ### Secondary value
 
-This property lets you add and remove secondary value,the change in value can be represented here.
+This property lets you add and remove secondary value, the change in value can be represented here.
 
 ### Secondary sign display
 

@@ -29,7 +29,7 @@ Let's take look at the exposed variables of the current user property:
 
     </div>
 
-- Set a condition on the Disable field so that if the the user who is using the app does not have **admin** value in the first index of **groups** array return **true**. The condition can be:
+- Set a condition on the Disable field so that if the user who is using the app does not have **admin** value in the first index of **groups** array return **true**. The condition can be:
 
     ```javascript
     {{globals.currentUser.groups[1] !== "admin" ? true : false}}

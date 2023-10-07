@@ -64,7 +64,7 @@ user who is signing in
 
   </div>
 
-- Set the `Redirect URL` generated at manage SSO `Google` page under Authorised redirect URIs
+- Set the `Redirect URL` generated at manage SSO `Google` page under Authorized redirect URIs
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/sso/google/authorized-redirect-urls.png" alt="General Settings: SSO" width="700"/>

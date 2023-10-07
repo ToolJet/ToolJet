@@ -130,12 +130,12 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Variable | Description |
 | -------- | ----------- |
 | updatedCardData | The `updatedCardData` variable will hold the latest values of all the cards in the kanban. This variable won't have any values initially, it will have values only when any action on any of the card is performed like when the card is moved, added, deleted, or updated. |
-| lastAddedCard | The variable `lastAddedCard` holds the values of the the last added card. It holds the following data - `id`, `title`, `description` and `columnId` of the last added card. You can get the values using `{{components.kanban1.lastAddedCard.title}}` |
+| lastAddedCard | The variable `lastAddedCard` holds the values of the last added card. It holds the following data - `id`, `title`, `description` and `columnId` of the last added card. You can get the values using `{{components.kanban1.lastAddedCard.title}}` |
 | lastRemovedCard | The variable `lastRemovedCard` holds the properties of the card that has been recently deleted from the kanban. It holds the following data - `id`, `title`, `description` and `columnId` of the recently deleted card. You can get the values using `{{components.kanbanboard1.lastRemovedCard.title}}` |
 | lastCardMovement | The variable `lastCardMovement` holds the properties of the card that has been recently moved from its original position. It holds the following data - `originColumnId`, `destinationColumnId`, `originCardIndex`, `destinationCardIndex` and an object `cardDetails` which includes `id`, `title`, `description` and `columnId` of the moved card. You can get the values using `{{components.kanbanboard1.lastCardMovement.cardDetails.title}}` or `{{components.kanbanboard1.lastCardMovement.destinationCardIndex}}` |
 | lastSelectedCard | The variable `lastSelectedCard` holds the `id`, `title`, `columnId`, and `description` of the last selected(clicked to view) card on the kanban. You can get the values using `{{components.kanban1.lastSelectedCard.columnId}}` |
-| lastUpdatedCard | The variable `lastUpdatedCard` holds the `id`, `title`, `description`, and `columnId` of the last updated card(using componenet specific action). You can get the values using `{{components.kanban1.lastUpdatedCard.columnId}}` |
-| lastCardUpdate | The variable `lastCardUpdate` holds the old an new values of the property that has been changed in the card(using componenet specific action). You can get the values using `{{components.kanban1.lastCardUpdate[0].title.oldValue}}` |
+| lastUpdatedCard | The variable `lastUpdatedCard` holds the `id`, `title`, `description`, and `columnId` of the last updated card(using component specific action). You can get the values using `{{components.kanban1.lastUpdatedCard.columnId}}` |
+| lastCardUpdate | The variable `lastCardUpdate` holds the old an new values of the property that has been changed in the card(using component specific action). You can get the values using `{{components.kanban1.lastCardUpdate[0].title.oldValue}}` |
 
 ## Component specific actions (CSA)
 

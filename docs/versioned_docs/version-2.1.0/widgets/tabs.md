@@ -65,7 +65,7 @@ This property is enabled by default. When enabled, only the active tab will be r
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/tabs/events.png" alt="irtable record"/>
+<img className="screenshot-full" src="/img/widgets/tabs/events.png" alt="airtable record"/>
 
 </div>
 

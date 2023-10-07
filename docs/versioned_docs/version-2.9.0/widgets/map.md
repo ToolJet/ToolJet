@@ -31,7 +31,7 @@ For detailed information about all the available **Actions**, please refer to th
 
 | properties      | description | Expected value |
 | ----------- | ----------- | ------------------ |
-| Initial location | It is the default location's coordinates that the map should focus on. | An object containing the latitude and langitude as key value pairs. ex: `{{ {"lat": 40.7128, "lng": -73.935242} }}` |
+| Initial location | It is the default location's coordinates that the map should focus on. | An object containing the latitude and longitude as key value pairs. ex: `{{ {"lat": 40.7128, "lng": -73.935242} }}` |
 | Default Markers | List of markers that should be shown on the map | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}` | 
 | Add new markers | This property should be enabled to add new markers to the map on click. | `On` by default, toggle `off` to disable adding new markers on the map. Can be programmatically configured by clicking on `Fx`, accepts values `{{true}}` or `{{false}}` |
 | Search for places | It can be used to show or hide auto-complete search box. | `On` by default, toggle `off` to disable search on the map. Can be programmatically configured by clicking on `Fx`, accepts values `{{true}}` or `{{false}}` |
@@ -80,7 +80,7 @@ Exposed variables can be used to get data from the widget.
 | ----------- | ----------- |
 | center | This variable will hold the latitude, longitude and the google map url value. |
 | center.`lat` | This variable holds the latitude value of the marker on the map component. You can access the value dynamically using JS: `{{components.map1.center.lat}}`|
-| centere.`lng` | This variable gets updated with RGB color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.map1.center.lng}}`|
+| center.`lng` | This variable gets updated with RGB color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.map1.center.lng}}`|
 | center.`googleMapUrl` | This variable holds the URL of the location where the center marker is placed on the map component. You can access the value dynamically using JS: `{{components.map1.center.googleMapUrl}}`|
 | markers | The markers variable will hold the value only if `add new markers` is enabled from the map properties. Each marker is an object and will have `lat` and `lng` keys. Values can be accessed dynamically using `{{components.map1.markers[1].lat}}` |
 | selectedMarker | Object with the marker selected by the user |
@@ -91,5 +91,5 @@ Following actions of map component can be controlled using the component specifi
 
 | Actions     | Description |
 | ----------- | ----------- |
-| setLocation | Set the marker's location on map using latitude and longitude values as parameteres via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |
+| setLocation | Set the marker's location on map using latitude and longitude values as parameters via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |
 

@@ -58,7 +58,7 @@ This operations retrieves a Database object using the ID specified.
 - **Database ID**: You'll find the Database ID in the url. Suppose this is the example url: `https://www.notion.so/workspace/XXX?v=YYY&p=ZZZ` then `XXX` is the database ID, `YYY` is the view ID and `ZZZ` is the page ID.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/db_retrieve.png" alt="notion db retreieve" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_retrieve.png" alt="notion db retrieve" />
 
 
 #### 2. Query a database

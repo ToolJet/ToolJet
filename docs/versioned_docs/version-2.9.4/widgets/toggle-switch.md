@@ -57,11 +57,11 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 
 ### Text color
 
-Change the color of the text in the widget by providig the `Hex color code` or choosing a color from the picker.
+Change the color of the text in the widget by providing the `Hex color code` or choosing a color from the picker.
 
 ### Toggle switch color
 
-Change the color of the toggle switch in the widget by providig the `Hex color code` or choosing a color from the picker.
+Change the color of the toggle switch in the widget by providing the `Hex color code` or choosing a color from the picker.
 
 ### Visibility
 

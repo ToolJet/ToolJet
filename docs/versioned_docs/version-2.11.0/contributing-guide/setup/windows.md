@@ -15,4 +15,4 @@ After successfully installing the Ubuntu environment, you will have access to a 
 If you are setting up ToolJet on a Windows machine, ensure that the line endings in the **.env** file are changed to LF. By default, they may be set to CRLF, which is not compatible unless configured specifically for Windows machines.
 :::
 
-Once the environment is set up, you can proceed with the steps outlined in the Ubuntu documentation at **[Contributin Guide- Ubuntu Setup](/docs/contributing-guide/setup/ubuntu)**.
+Once the environment is set up, you can proceed with the steps outlined in the Ubuntu documentation at **[Contributing Guide- Ubuntu Setup](/docs/contributing-guide/setup/ubuntu)**.

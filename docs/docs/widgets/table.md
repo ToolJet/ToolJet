@@ -471,7 +471,7 @@ To display email column, the key for the column should be `user.email`.
 Enable `editable` property of a column to make the cells editable. If a data type is not selected, `string` is selected as the data type.
 
 :::tip
-You can programatically **enable**/**disable** the make **editable** field in the columns property by clicking on the **Fx** button.
+You can programmatically **enable**/**disable** the make **editable** field in the columns property by clicking on the **Fx** button.
 :::
 
 If the data in a cell is changed, `changeSet` property of the table object will have the index of the row and the field that changed.
@@ -528,7 +528,7 @@ If the condition is true, the validation passes, otherwise return a string that 
 
 </div>
 
-Action buttons will be displayed as the last column of the table. The styles of these buttons can be customised and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
+Action buttons will be displayed as the last column of the table. The styles of these buttons can be customized and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
 
 | Property | Description |
 | -------- | ------------ |
@@ -691,7 +691,7 @@ When Server-side pagination is enabled, you'll be able to set three other table 
 Check this how-to guide to learn more about [server-side pagination](/docs/how-to/use-server-side-pagination).
 :::
 
-## Addional actions
+## Additional actions
 
 <div style={{textAlign: 'center'}}>
 

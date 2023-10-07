@@ -72,7 +72,7 @@ user who is signing in
 
 </div>
 
-Set the `Redirect URL` generated at manage SSO `Google` page under Authorised redirect URIs
+Set the `Redirect URL` generated at manage SSO `Google` page under Authorized redirect URIs
 
 <div style={{textAlign: 'center'}}>
 

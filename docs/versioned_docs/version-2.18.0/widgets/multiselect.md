@@ -109,7 +109,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 await components.multiselect1.clearSelections()
 await components.multiselect1.deselectOption(2)
 
-Following actions of multselect component can be controlled using the component specific actions(CSA):
+Following actions of multiselect component can be controlled using the component specific actions(CSA):
 
 | Actions     | Description |
 | ----------- | ----------- |

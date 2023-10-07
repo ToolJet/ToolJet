@@ -203,7 +203,7 @@ All the child components of the list view component are exposed through the `chi
 
 <br/>
 
-The components inside the list view can be controlled using the javascipt queries. For example, if you want to disable the `button1` component in the first record, you can use the following expression:
+The components inside the list view can be controlled using the JavaScript queries. For example, if you want to disable the `button1` component in the first record, you can use the following expression:
 
 ```js
 components.listview1.children[0].button1.disable(true) // disables the button1 component in the first record

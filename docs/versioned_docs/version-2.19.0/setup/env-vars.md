@@ -105,7 +105,7 @@ Use this environment variable to enable/disable the developement mode that allow
 | PGRST_JWT_SECRET  | JWT token client provided for authentication |
 | PGRST_HOST        | postgrest database host                      |
 
-Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. Inorder to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
+Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
 
 :::tip
 When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.

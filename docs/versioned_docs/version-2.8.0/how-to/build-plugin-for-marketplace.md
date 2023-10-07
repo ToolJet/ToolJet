@@ -14,7 +14,7 @@ ToolJet marketplace is a place where you can find custom plugins and install the
 ## Getting started
 ### 1. Enabling the marketplace for your instance
 To enable the marketplace for your instance, you need to set the `ENABLE_MARKETPLACE` environment variable to `true` in your `.env` file.
-Marketplacwe is disabled by default.
+Marketplace is disabled by default.
 Once you set the environment variable, restart your ToolJet instance. You can find the instructions to run ToolJet locally [here](/docs/setup/).
 Marketplace can be accessed from '/integrations' route.
 
@@ -270,7 +270,7 @@ It includes information about authentication options, specifically a dropdown to
 ```
 The operations.json file defines the operations that can be performed on the data source. It includes information about the operation type, the fields required to perform the operation, and the type of each field. The label, key, type, description, and hint properties are used to define the specific fields and their types required for connecting to the API or data source.
 
-### 6. Add the npm package of Gitub to the plugin dependencies
+### 6. Add the npm package of GitHub to the plugin dependencies
 
 ```bash
 # change directory to the plugin directory and install the npm package
