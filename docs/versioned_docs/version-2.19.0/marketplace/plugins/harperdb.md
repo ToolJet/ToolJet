@@ -249,7 +249,7 @@ Returns data from a table for one or more matching conditions.
 | ---------- | ----------- |
 | Schema (required) | schema where the table you are searching lives |
 | Table (required) | table you wish to search |
-| Operator inbetween each condition (optional) | the operator used between each condition - 'And', 'Or'. The default is 'And'. |
+| Operator in-between each condition (optional) | the operator used between each condition - 'And', 'Or'. The default is 'And'. |
 | Offset (optional) | the number of records that the query results will skip. The default is 0. |
 | Limit (optional) | the number of records that the query results will include. The default is null, resulting in no limit. |
 | Table Attributes (required) | define which attributes you want returned. |

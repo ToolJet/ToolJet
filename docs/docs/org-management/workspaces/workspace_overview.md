@@ -29,7 +29,7 @@ Please check the detailed doc on **[Permissions](/docs/org-management/permission
 
 - The administrator can manage [users and groups](/docs/tutorial/manage-users-groups) of each workspace
 - Applications and settings can not be shared between workspaces
-- A user authorised to login to ToolJet will not have access to all workspaces, Users should be invited or signed up to a workspace to log-in to it.
+- A user authorized to login to ToolJet will not have access to all workspaces, Users should be invited or signed up to a workspace to log-in to it.
 - When Multi-Workspace feature is enabled, user should login with username and password to log in to Tooljet.
 - Administrator can configure authentication methods for their workspaces.
 - If password login is enabled, switching to the workspace will happen without any other authorization since the user is already authorized with password login.

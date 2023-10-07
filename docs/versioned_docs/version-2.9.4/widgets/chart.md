@@ -336,7 +336,7 @@ In the **JSON description**, the value needs to be the `data` array with x and y
 
 </div>
 
-#### Few more exmaples:
+#### Few more examples:
 
 **Link to JSON description:** https://raw.githubusercontent.com/plotly/plotly.js/master/test/image/mocks/0.json
 

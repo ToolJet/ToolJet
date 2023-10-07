@@ -3,7 +3,7 @@ id: unset-variable
 title: Unset variable
 ---
 
-This action allows you to remove the variable variable that was created using the set variable action.
+This action allows you to remove the variable that was created using the set variable action.
 
 ## Options
 

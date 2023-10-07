@@ -19,7 +19,7 @@ If you are utilizing the self-hosted version of ToolJet, it is necessary to conf
 
 | Properties      | Description | Expected value |
 |:----------- |:----------- |:------------------ |
-| **Initial location** | default location when the app is loaded initially. | An object containing the **latitude** and **langitude** as key value pairs. ex: `{{ {"lat": 40.7128, "lng": -73.935242} }}` |
+| **Initial location** | default location when the app is loaded initially. | An object containing the **latitude** and **longitude** as key value pairs. ex: `{{ {"lat": 40.7128, "lng": -73.935242} }}` |
 | **Default Markers** | Number of markers that should be shown on the map | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.935242}] }}` |
 | **Polygon points** | Create a polygon on the map using the given coordinates. | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.935242}] }}` |
 | **Add new markers** | On clicking the map, a new marker will be added to the map. | By default, it's set to `On`. Toggle `off` to disable adding new markers on the map. Click `Fx` to set `{{true}}` or `{{false}}` programmatically. |
@@ -86,4 +86,4 @@ Following actions of map component can be controlled using the component specifi
 
 | Actions     | Description |
 |:---------- |:---------- |
-| **setLocation** | Set the marker's location on map using latitude and longitude values as parameteres via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |
+| **setLocation** | Set the marker's location on map using latitude and longitude values as parameters' via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |

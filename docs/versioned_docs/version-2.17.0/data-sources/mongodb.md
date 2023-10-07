@@ -96,7 +96,7 @@ Delete many records based on the filter. [Reference](https://docs.mongodb.com/dr
 #### Bulk Operations
 Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/usage-examples/bulkWrite/)
 
-### Dynamic Quries
+### Dynamic Wueries
 ```javascript
 { amount: { $lt: '{{ components.textinput1.value }}' }}
 

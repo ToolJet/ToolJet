@@ -44,7 +44,7 @@ For this guide, we've created a MonthlySales table in PostgreSQL with 5 columns 
 We can now see a node named *postgresql1* connected to the outgoing flow of the **Start trigger** node on the canvas. Click on the *postgresql1* node, a dialog box will show up on the right.   
 
 <div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
-  <div style={{flex: 1, padding: '0', alignment:'center'}}>
+  <div style={{flex: 1, padding: '0', alignment: 'center'}}>
     <p style={{textAlign: 'left'}}>
         - Click on the input field next to the PostgreSQL logo and rename the node to <i>fetchSalesData</i>. 
         <br/>    
@@ -78,7 +78,7 @@ Create an outgoing flow from the *fetchSalesData* node that we just created by c
 The **JavaScript** node lets you run JavaScript code to transform data and perform other tasks. The JavaScript code executes on the server side to protect sensitive logic and data from exposure to the client. In our example, we are using it to convert the result from the previous node into a string. 
     
 <div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
-  <div style={{flex: 1, padding: '0', alignment:'center'}}>
+  <div style={{flex: 1, padding: '0', alignment: 'center'}}>
     <p style={{textAlign: 'left'}}>
         - In the JavaScript node, the data retrieved from the <i>fetchSalesData</i> node can be accessed using the property - <b>fetchSalesData.data</b>. 
         <br/>    
@@ -110,7 +110,7 @@ Now that we are ready with our notification text, let's create a way to send it 
 
 Create an outgoing flow from the *createNotification* node and select the **Twilio** node. Rename the node to *sendSMS*. Click on the **Operation** dropdown and select **Send SMS** and then enter a  number in the **To Number** field. 
 
-In the **Body** field of the *sendSMS* node, we will retreive the data returned from the *createNotification* node. Since *createNotification* only returns a string, simply enter the name of the node as shown below to access it:
+In the **Body** field of the *sendSMS* node, we will retrieve the data returned from the *createNotification* node. Since *createNotification* only returns a string, simply enter the name of the node as shown below to access it:
 ```js
 {{createNotification}}
 ```
@@ -147,7 +147,7 @@ The **If condition** node accepts a logical expression and evaluates it. The out
 Click on the **If condition** node, a dialog box will appear on the right. 
 
 <div style={{display: 'flex', justifyContent: 'space-between', alignItems:'center'}}>
-  <div style={{flex: 1, padding: '0', alignment:'center'}}>
+  <div style={{flex: 1, padding: '0', alignment: 'center'}}>
     <p style={{textAlign: 'left'}}>
         - Enter the below logical expression in the input area: <br/>
         <b>sendSMS.data.errorMessage == null</b>

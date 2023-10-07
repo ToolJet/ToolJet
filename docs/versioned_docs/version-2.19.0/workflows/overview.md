@@ -110,7 +110,7 @@ Now that we are ready with our notification text, let's create a way to send it 
 
 Create an outgoing flow from the *createNotification* node and select the **Twilio** node. Rename the node to *sendSMS*. Click on the **Operation** dropdown and select **Send SMS** and then enter a  number in the **To Number** field. 
 
-In the **Body** field of the *sendSMS* node, we will retreive the data returned from the *createNotification* node. Since *createNotification* only returns a string, simply enter the name of the node as shown below to access it:
+In the **Body** field of the *sendSMS* node, we will retrieve the data returned from the *createNotification* node. Since *createNotification* only returns a string, simply enter the name of the node as shown below to access it:
 ```js
 {{createNotification}}
 ```

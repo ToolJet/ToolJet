@@ -97,7 +97,7 @@ To configure these permissions, navigate to **Workspace Settings** -> **Groups S
 | **Just Create** | Add new data sources and modify existing ones. Delete button will not be visible on hovering over the connected data source. |
 | **Just Delete** | Remove connected data sources from the workspace. Delete button will show up on hovering over the connected data source. |
 | **Both Create and Delete** | Add new data sources and remove connected data sources from the workspace. |
-| **Niether Create nor Delete** | No access to the Data Sources page from the Dashboard. Error toast will popup on trying to access the Data Sources page using URL. |
+| **Neither Create nor Delete** | No access to the Data Sources page from the Dashboard. Error toast will popup on trying to access the Data Sources page using URL. |
 
 <div style={{textAlign: 'center'}}>
 

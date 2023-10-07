@@ -48,7 +48,7 @@ Toggle on or off to enable the date selection. You can programmatically determin
 
 ### Disabled dates
 
-We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to be an array of`Strings`.
+We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to be an array of `Strings``.
 
 Example for disabling the 9th of January:
 ```js

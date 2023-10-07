@@ -45,7 +45,7 @@ It is mandatory to provide the Form schema in the following format:
 | ----------- | ----------- |
 | title | The title key specifies the title of the form. |
 | properties | The properties key holds an object that defines the properties of the components that will be inside the form. The **Custom Schema** for all the components is available below. |
-| submitButton | This key key holds an object that defines the properties of the Submit Button of the form. |
+| submitButton | This key holds an object that defines the properties of the Submit Button of the form. |
 
 **Submit button schema:**
 ```js

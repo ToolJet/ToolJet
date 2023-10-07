@@ -15,7 +15,7 @@ Containers are used to group widgets together. You can move the desired number o
 ## General
 ### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers themouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
 
 Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
 
@@ -36,7 +36,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Layout      | description |
 | ----------- | ----------- |
 | Show on desktop | This property have toggle switch. If enabled, the Container widget will display in the desktop view else it will not appear. This is enabled by default.|
-| Show on mobile | This property have toggle switch. If enabled, the Container wisget will display in the mobile view else it will not appear.|
+| Show on mobile | This property have toggle switch. If enabled, the Container widget will display in the mobile view else it will not appear.|
 
 ## Styles
 

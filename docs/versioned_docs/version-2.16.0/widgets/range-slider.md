@@ -69,7 +69,7 @@ Enter the hexcode to set the color for slider's handler.
 Enter the hexcode to set the color for slider's active portion on the track. 
 ### Visibility
 
-Set the visivlity of the slider programmatically. The default value is `{{true}}`.
+Set the visibility of the slider programmatically. The default value is `{{true}}`.
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

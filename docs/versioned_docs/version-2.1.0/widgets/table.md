@@ -258,7 +258,7 @@ If the condition is true, the validation passes, otherwise return a string that 
 
 </div>
 
-Action buttons will be displayed as the last column of the table. The styles of these buttons can be customised and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
+Action buttons will be displayed as the last column of the table. The styles of these buttons can be customized and `on click` actions can be configured. when clicked, `selectedRow` property of the table will have the table data of the row.
 
 | Property | Description |
 | -------- | ------------ |

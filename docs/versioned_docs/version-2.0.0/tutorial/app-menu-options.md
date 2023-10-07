@@ -21,7 +21,7 @@ Options that are available in the overflow menu of the app card are:
 
 ## Change Icon
 
-The icon on the app cards can be customised by selecting the `Change Icon` option.
+The icon on the app cards can be customized by selecting the `Change Icon` option.
 
 <div style={{textAlign: 'center'}}>
 

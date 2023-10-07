@@ -19,7 +19,7 @@ Before following this guide, it is assumed that you have already completed the p
 
 For connecting to OpenAI, following credentials are required:
 - **API key**: API key for OpenAI can be generated here: https://platform.openai.com/account/api-keys
-- **Oganization ID**: Find the Organization ID here: https://platform.openai.com/account/org-settings
+- **Organization ID**: Find the Organization ID here: https://platform.openai.com/account/org-settings
 
 <div style={{textAlign: 'center'}}>
 

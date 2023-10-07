@@ -9,7 +9,7 @@ SMTP plugin can connect ToolJet applications to **SMTP servers** for sending ema
 
 ## Connection
 
-A SMTP server can be connected with the following credentails:
+A SMTP server can be connected with the following credentials:
 - **Host**
 - **Port**
 - **User**
