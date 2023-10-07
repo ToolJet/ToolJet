@@ -174,7 +174,10 @@ export function Table({
   }, [JSON.stringify(tableDetails?.filterDetails?.filters)]);
 
   useEffect(
-    () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
+    () =>
+      mergeToTableDetails({
+        columnProperties: component?.definition?.properties?.columns?.value,
+      }),
     [component?.definition?.properties]
   );
 
@@ -238,10 +241,16 @@ export function Table({
         ..._.merge(clonedTableData[key], newChangeset[key]),
       };
     });
-    const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
+    const changesToBeSavedAndExposed = {
+      dataUpdates: newDataUpdates,
+      changeSet: newChangeset,
+    };
     mergeToTableDetails(changesToBeSavedAndExposed);
     fireEvent('onCellValueChanged');
-    return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
+    return setExposedVariables({
+      ...changesToBeSavedAndExposed,
+      updatedData: clonedTableData,
+    });
   }
 
   const copyOfTableDetails = useRef(tableDetails);
@@ -270,7 +279,10 @@ export function Table({
       ...dataUpdates,
       [index]: { ...obj },
     };
-    const changesToBeSaved = { newRowsDataUpdates: newDataUpdates, newRowsChangeSet: newChangeset };
+    const changesToBeSaved = {
+      newRowsDataUpdates: newDataUpdates,
+      newRowsChangeSet: newChangeset,
+    };
     const changesToBeExposed = Object.keys(newDataUpdates).reduce((accumulator, row) => {
       accumulator.push({ ...newDataUpdates[row] });
       return accumulator;
@@ -281,7 +293,10 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     let headers = columns.map((column) => {
-      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+      return {
+        exportValue: String(column.exportValue),
+        key: column.key ? String(column.key) : column.key,
+      };
     });
     let data = globalFilteredRows.map((row) => {
       return headers.reduce((accumulator, header) => {
@@ -483,7 +498,11 @@ export function Table({
         tableDetails.addNewRowsDetails.addingNewRows
       ) {
         setExposedVariable('newRows', []);
-        mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+        mergeToAddNewRowsDetails({
+          newRowsDataUpdates: {},
+          newRowsChangeSet: {},
+          addingNewRows: false,
+        });
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
@@ -553,14 +572,20 @@ export function Table({
       data,
       defaultColumn,
       initialState: { pageIndex: 0, pageSize: -1 },
-      pageCount: -1,
+      pageCount: 0,
       manualPagination: false,
       getExportFileBlob,
       disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
       stateReducer: (newState, action, prevState) => {
         const newStateWithPrevSelectedRows = showBulkSelector
-          ? { ...newState, selectedRowId: { ...prevState.selectedRowIds, ...newState.selectedRowIds } }
+          ? {
+              ...newState,
+              selectedRowId: {
+                ...prevState.selectedRowIds,
+                ...newState.selectedRowIds,
+              },
+            }
           : { ...newState.selectedRowId };
         if (action.type === 'toggleRowSelected') {
           prevState.selectedRowIds[action.id]
@@ -657,7 +682,10 @@ export function Table({
       const item = tableData.filter((item) => item[key] == value);
       const row = rows.find((item, index) => item.original[key] == value);
       if (row != undefined) {
-        const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
+        const selectedRowDetails = {
+          selectedRow: item[0],
+          selectedRowId: row.id,
+        };
         setExposedVariables(selectedRowDetails);
         toggleRowSelected(row.id);
         mergeToTableDetails(selectedRowDetails);
@@ -699,7 +727,11 @@ export function Table({
         setExposedVariables({
           newRows: [],
         });
-        mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
+        mergeToAddNewRowsDetails({
+          newRowsChangeSet: {},
+          newRowsDataUpdates: {},
+          addingNewRows: false,
+        });
       }
     });
   }, [
@@ -712,9 +744,15 @@ export function Table({
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
       const selectedRowsId = selectedFlatRows.map((row) => row.id);
-      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId });
+      setExposedVariables({
+        selectedRows: selectedRowsOriginalData,
+        selectedRowsId: selectedRowsId,
+      });
       const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
-        accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
+        accumulator.push({
+          selectedRowId: row.id,
+          selectedRow: row.original,
+        });
         return accumulator;
       }, []);
       mergeToTableDetails({ selectedRowsDetails });
@@ -738,8 +776,17 @@ export function Table({
 
   useEffect(() => {
     if (mounted) {
-      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null });
-      mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
+      setExposedVariables({
+        selectedRows: [],
+        selectedRowsId: [],
+        selectedRow: {},
+        selectedRowId: null,
+      });
+      mergeToTableDetails({
+        selectedRowsDetails: [],
+        selectedRow: {},
+        selectedRowId: null,
+      });
       toggleAllRowsSelected(false);
     }
   }, [showBulkSelector, highlightSelectedRow, allowSelection]);
@@ -767,14 +814,21 @@ export function Table({
       ]).then(() => {
         if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
           toggleAllRowsSelected(false);
-          mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+          mergeToTableDetails({
+            selectedRow: {},
+            selectedRowId: null,
+            selectedRowDetails: [],
+          });
         }
       });
     }
   }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
   useEffect(() => {
-    const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
+    const newColumnSizes = {
+      ...columnSizes,
+      ...state.columnResizing.columnWidths,
+    };
     if (!state.columnResizing.isResizingColumn && !_.isEmpty(newColumnSizes)) {
       changeCanDrag(true);
       paramUpdated(id, 'columnSizes', {
@@ -832,9 +886,15 @@ export function Table({
       const pageNumber = Math.floor(selectedRowId / rowsPerPage) + 1;
       preSelectRow.current = true;
       if (highlightSelectedRow) {
-        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        setExposedVariables({
+          selectedRow: selectedRow,
+          selectedRowId: selectedRowId,
+        });
         toggleRowSelected(selectedRowId, true);
-        mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        mergeToTableDetails({
+          selectedRow: selectedRow,
+          selectedRowId: selectedRowId,
+        });
       } else {
         toggleRowSelected(selectedRowId, true);
       }
@@ -849,7 +909,11 @@ export function Table({
   function downlaodPopover() {
     const options = [
       { dataCy: 'option-download-CSV', text: 'Download as CSV', value: 'csv' },
-      { dataCy: 'option-download-execel', text: 'Download as Excel', value: 'xlsx' },
+      {
+        dataCy: 'option-download-execel',
+        text: 'Download as Excel',
+        value: 'xlsx',
+      },
       { dataCy: 'option-download-pdf', text: 'Download as PDF', value: 'pdf' },
     ];
     return (
@@ -889,7 +953,10 @@ export function Table({
     return (
       <Popover
         className={`${darkMode && 'dark-theme'}`}
-        style={{ maxHeight: `${heightOfTableComponent - 79}px`, overflowY: 'auto' }}
+        style={{
+          maxHeight: `${heightOfTableComponent - 79}px`,
+          overflowY: 'auto',
+        }}
       >
         <div
           data-cy={`dropdown-hide-column`}
@@ -942,6 +1009,8 @@ export function Table({
     }
     return totalWidth;
   };
+
+  console.log({ page, pageCount, pageIndex, initialState, pageOptions, tableData, tableDetails });
   return (
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
@@ -1099,7 +1168,9 @@ export function Table({
                               isDragDisabled={!column.accessor}
                             >
                               {(provided, snapshot) => {
-                                let headerProps = { ...column.getHeaderProps() };
+                                let headerProps = {
+                                  ...column.getHeaderProps(),
+                                };
                                 if (column.columnType === 'selector') {
                                   headerProps = {
                                     ...headerProps,
@@ -1292,7 +1363,10 @@ export function Table({
                     }}
                     onMouseOver={(e) => {
                       if (hoverAdded) {
-                        const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
+                        const hoveredRowDetails = {
+                          hoveredRowId: row.id,
+                          hoveredRow: row.original,
+                        };
                         setRowDetails(hoveredRowDetails);
                         hoverRef.current = rowDetails?.hoveredRowId;
                       }
@@ -1388,7 +1462,10 @@ export function Table({
                             }
                           )}
                           {...cellProps}
-                          style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
+                          style={{
+                            ...cellProps.style,
+                            backgroundColor: cellBackgroundColor ?? 'inherit',
+                          }}
                           onClick={(e) => {
                             setExposedVariable('selectedCell', {
                               columnName: cell.column.exportValue,
@@ -1502,7 +1579,10 @@ export function Table({
                       data-cy={`table-button-save-changes`}
                       size="md"
                       isLoading={tableDetails.isSavingChanges ? true : false}
-                      customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
+                      customStyles={{
+                        minWidth: '32px',
+                        padding: width > 650 ? '6px 16px' : 0,
+                      }}
                       leftIcon={width > 650 ? '' : 'save'}
                       fill="#FDFDFE"
                       iconWidth="16"
@@ -1517,7 +1597,10 @@ export function Table({
                       }}
                       data-cy={`table-button-discard-changes`}
                       size="md"
-                      customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
+                      customStyles={{
+                        minWidth: '32px',
+                        padding: width > 650 ? '6px 16px' : 0,
+                      }}
                       leftIcon={width > 650 ? '' : 'cross'}
                       fill={'var(--slate11)'}
                       iconWidth="16"
