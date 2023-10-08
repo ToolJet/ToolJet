@@ -133,6 +133,8 @@ For general help using ToolJet, please refer to the official [documentation](htt
 - [Slack](https://tooljet.com/slack) - Discussions with the community and the team.
 - [GitHub](https://github.com/ToolJet/ToolJet/issues) - For bug reports and feature requests.
 - [Twitter](https://twitter.com/ToolJet) - Get the product updates easily.
+- [LinkedIn](https://www.linkedin.com/company/tooljet) - Connect with us on LinkedIn for updates.  
+- [YouTube](https://www.youtube.com/@tooljet) - Check out our video tutorials.
 
 ## Roadmap
 Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and to learn about what's coming next.
