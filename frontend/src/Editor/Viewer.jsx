@@ -209,9 +209,7 @@ class ViewerComponent extends React.Component {
             (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
           );
 
-          for (const currentEvent of currentPageEvents ?? []) {
-            await this.handleEvent(currentEvent.name, currentPageEvents);
-          }
+          await this.handleEvent('onPageLoad', currentPageEvents);
         });
       }
     );
@@ -483,9 +481,7 @@ class ViewerComponent extends React.Component {
               (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
             );
 
-            for (const currentEvent of currentPageEvents ?? []) {
-              await this.handleEvent(currentEvent.name, currentPageEvents);
-            }
+            await this.handleEvent('onPageLoad', currentPageEvents);
           });
         }
       );
