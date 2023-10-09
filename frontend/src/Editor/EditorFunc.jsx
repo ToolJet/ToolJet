@@ -687,9 +687,7 @@ const EditorComponent = (props) => {
     await fetchDataQueries(data.editing_version?.id, true, true);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
-    for (const currentEvent of currentPageEvents ?? []) {
-      await handleEvent(currentEvent.name, currentPageEvents);
-    }
+    await handleEvent('onPageLoad', currentPageEvents);
   };
 
   //****** */
@@ -1295,11 +1293,7 @@ const EditorComponent = (props) => {
 
     const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
-    (async () => {
-      for (const currentEvent of currentPageEvents ?? []) {
-        await handleEvent(currentEvent.name, currentPageEvents);
-      }
-    })();
+    handleEvent('onPageLoad', currentPageEvents);
   };
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
