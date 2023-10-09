@@ -67,6 +67,12 @@ const TableForm = ({
     onCreate && onCreate({ id: data.result.id, table_name: tableName });
   };
 
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') {
+      handleCreate(e);
+    }
+  }
+
   const handleEdit = async () => {
     if (!validateTableName()) return;
 
@@ -131,6 +137,7 @@ const TableForm = ({
         onClose={onClose}
         onEdit={handleEdit}
         onCreate={handleCreate}
+        onKeyPress={handleKeyPress}
       />
     </div>
   );
