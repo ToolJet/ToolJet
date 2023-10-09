@@ -44,7 +44,15 @@ function checkCommandAvailable(command: string) {
   }
 }
 
+function validateDbName(dbName: string): void {
+  const dbNameRegex = /^[a-zA-Z0-9_]+$/;
+  if (!dbNameRegex.test(dbName)) {
+    throw new Error('Table name can only contain letters, numbers and underscores');
+  }
+}
+
 function dropDb(envVars, dbName) {
+  validateDbName(dbName);
   const env = Object.assign({}, process.env, { PGPASSWORD: envVars.PG_PASS });
   const dropDbArgs = ['-h', envVars.PG_HOST, '-p', envVars.PG_PORT, '-U', envVars.PG_USER, dbName];
   const options = { env, stdio: 'pipe' } as ExecFileSyncOptions;

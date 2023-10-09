@@ -35,13 +35,10 @@ async function createDatabase(): Promise<void> {
   const dbNameFromArg = process.argv[2];
 
   if (dbNameFromArg) {
-    validateDbName(dbNameFromArg);
     await createDb(envVars, dbNameFromArg);
   } else {
-    validateDbName(envVars.PG_DB);
     await createDb(envVars, envVars.PG_DB);
     if (process.env.ENABLE_TOOLJET_DB === 'true') {
-      validateDbName(envVars.TOOLJET_DB);
       await createTooljetDb(envVars, envVars.TOOLJET_DB);
     }
   }
@@ -56,6 +53,7 @@ function checkCommandAvailable(command: string) {
 }
 
 function executeCreateDb(host: string, port: string, user: string, password: string, dbName: string) {
+  validateDbName(dbName);
   const env = Object.assign({}, process.env, { PGPASSWORD: password });
   const createDbArgs = ['-h', host, '-p', port, '-U', user, dbName];
   const options = { env, stdio: 'pipe' } as ExecFileSyncOptions;
@@ -66,7 +64,7 @@ function executeCreateDb(host: string, port: string, user: string, password: str
 function validateDbName(dbName: string): void {
   const dbNameRegex = /^[a-zA-Z0-9_]+$/;
   if (!dbNameRegex.test(dbName)) {
-    throw new Error('Invalid database name');
+    throw new Error('Table name can only contain letters, numbers and underscores');
   }
 }
 
