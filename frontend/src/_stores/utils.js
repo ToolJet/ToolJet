@@ -95,6 +95,14 @@ function updateValueInJson(json, path, value) {
   return json;
 }
 
+export function isParamFromTableColumn(appDiff, definition) {
+  const path = generatePath(appDiff, 'columns') || generatePath(appDiff, 'actions');
+
+  const value2 = getValueFromJson(definition, path);
+
+  return value2 !== undefined;
+}
+
 export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
   if (!opts?.isParamFromTableColumn) {
     return appDiff;
