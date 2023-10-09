@@ -68,7 +68,7 @@ class HttpClient {
         // TODO: add 403 to the below [401] array?
         if ([401].indexOf(response.status) !== -1) {
           // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-          authenticationService.logout();
+          location.reload();
         }
 
         throw payload;
