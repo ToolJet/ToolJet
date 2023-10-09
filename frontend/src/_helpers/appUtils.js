@@ -929,7 +929,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
   if (dataQuery.options.requestConfirmation) {
     // eslint-disable-next-line no-unsafe-optional-chaining
-    const queryConfirmationList = _ref?.queryConfirmationList ? [..._ref?.queryConfirmationList] : [];
+    const queryConfirmationList = [];
     const queryConfirmation = {
       queryId,
       queryName,
