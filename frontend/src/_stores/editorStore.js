@@ -76,14 +76,14 @@ export const useEditorStore = create(
             { type: ACTIONS.SET_SELECTION_IN_PROGRESS }
           );
         },
-        setSelectedComponents: (selectedComponents) => {
-          set(
-            {
-              selectedComponents,
-            },
-            false,
-            { type: ACTIONS.SET_SELECTED_COMPONENTS }
-          );
+        setSelectedComponents: (selectedComponents, isMulti = false) => {
+          const newSelectedComponents = isMulti
+            ? [...get().selectedComponents, ...selectedComponents]
+            : selectedComponents;
+
+          set({
+            selectedComponents: newSelectedComponents,
+          });
         },
       },
     }),

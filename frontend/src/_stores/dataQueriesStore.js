@@ -232,7 +232,7 @@ export const useDataQueriesStore = create(
             newName = queryToClone.name + '_copy' + count.toString();
           }
           queryToClone.name = newName;
-          delete queryToClone.id;
+
           useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
             .create(
@@ -250,6 +250,26 @@ export const useDataQueriesStore = create(
                 dataQueries: [{ ...data, data_source_id: queryToClone.data_source_id }, ...state.dataQueries],
               }));
               actions.setSelectedQuery(data.id, { ...data, data_source_id: queryToClone.data_source_id });
+
+              const dataQueryEvents = useAppDataStore
+                .getState()
+                .events?.filter((event) => event.target === 'data_query' && event.sourceId === queryToClone.id);
+
+              if (dataQueryEvents?.length === 0) return;
+
+              return Promise.all(
+                dataQueryEvents.map((event) => {
+                  const newEvent = {
+                    event: {
+                      ...event?.event,
+                    },
+                    eventType: event?.target,
+                    attachedTo: data.id,
+                    index: event?.index,
+                  };
+                  useAppDataStore.getState().actions?.createAppVersionEventHandlers(newEvent);
+                })
+              );
             })
             .catch((error) => {
               console.error('error', error);

@@ -82,17 +82,22 @@ export class ComponentsService {
           const updatedDefinition = component.definition;
           const columnsUpdated = Object.keys(updatedDefinition);
 
-          const newComponentData = columnsUpdated.reduce((acc, column) => {
+          const newComponentsData = columnsUpdated.reduce((acc, column) => {
             const newColumnData = {
               ...componentData[column],
               ...updatedDefinition[column],
             };
 
-            acc[column] = newColumnData;
+            if (column === 'others') {
+              acc['displayPreferences'] = newColumnData;
+            } else {
+              acc[column] = newColumnData;
+            }
+
             return acc;
           }, {});
 
-          await manager.update(Component, componentId, newComponentData);
+          await manager.update(Component, componentId, newComponentsData);
           return;
         }
 
@@ -203,8 +208,9 @@ export class ComponentsService {
     return transformedComponents;
   }
 
-  createComponentWithLayout(componentData, layoutData) {
-    const { id, name, properties, styles, generalStyles, validations, parent, displayPreferences } = componentData;
+  createComponentWithLayout(componentData: Component, layoutData) {
+    const { id, name, properties, styles, generalStyles, validations, parent, displayPreferences, general } =
+      componentData;
     const { type, top, left, width, height } = layoutData;
     const componentWithLayout = {
       [id]: {
@@ -216,6 +222,7 @@ export class ComponentsService {
             styles,
             generalStyles,
             validations,
+            general,
             others: displayPreferences,
           },
           parent,

@@ -79,14 +79,14 @@ const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
-  const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving } = useAppDataActions();
-  const { updateEditorState, updateQueryConfirmationList } = useEditorActions();
+  const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving, createAppVersionEventHandlers } =
+    useAppDataActions();
+  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
   const { isVersionReleased, editingVersion, releasedVersionId } = useAppVersionState();
 
   const {
-    noOfVersionsSupported,
     appDefinition,
     selectedComponents,
     currentLayout,
@@ -138,6 +138,10 @@ const EditorComponent = (props) => {
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+  const [optsStack, setOptsStack] = useState({
+    undo: [],
+    redo: [],
+  });
 
   // refs
   const canvasContainerRef = useRef(null);
@@ -529,16 +533,6 @@ const EditorComponent = (props) => {
     }
   };
 
-  const onAreaSelectionEnd = (e) => {
-    setSelectionInProgress(false);
-    e.selected.forEach((el, index) => {
-      const id = el.getAttribute('widgetid');
-      const component = appDefinition?.pages[currentPageId].components[id].component;
-      const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
-      setSelectedComponent(id, component, isMultiSelect);
-    });
-  };
-
   const setSelectedComponent = (id, component, multiSelect = false) => {
     if (selectedComponents.length === 0 || !multiSelect) {
       switchSidebarTab(1);
@@ -549,11 +543,18 @@ const EditorComponent = (props) => {
     const isAlreadySelected = selectedComponents.find((component) => component.id === id);
 
     if (!isAlreadySelected) {
-      const prevSelectedComponents = [...selectedComponents];
-      updateEditorState({
-        selectedComponents: [...(multiSelect ? prevSelectedComponents : []), { id, component }],
-      });
+      setSelectedComponents([{ id, component }], multiSelect);
     }
+  };
+
+  const onAreaSelectionEnd = (e) => {
+    setSelectionInProgress(false);
+    e.selected.forEach((el, index) => {
+      const id = el.getAttribute('widgetid');
+      const component = appDefinition?.pages[currentPageId].components[id].component;
+      const isMultiSelect = e.inputEvent.shiftKey || (!e.isClick && index != 0);
+      setSelectedComponent(id, component, isMultiSelect);
+    });
   };
 
   const onVersionRelease = (versionId) => {
@@ -788,7 +789,15 @@ const EditorComponent = (props) => {
     if (shouldUpdate) {
       const undoPatches = diffToPatches(inversePatches);
 
-      setUndoStack((prev) => [...prev, undoPatches]);
+      if (
+        opts?.componentAdded ||
+        opts?.componentDefinitionChanged ||
+        opts?.componentDeleted ||
+        opts?.containerChanges
+      ) {
+        setUndoStack((prev) => [...prev, undoPatches]);
+        setOptsStack((prev) => ({ ...prev, undo: [...prev.undo, opts] }));
+      }
 
       updateAppDefinitionDiff(diffPatches);
 
@@ -818,6 +827,49 @@ const EditorComponent = (props) => {
         areOthersOnSameVersionAndPage,
       });
     }
+  };
+
+  const cloneEventsForClonedComponents = (componentUpdateDiff, operation, componentMap) => {
+    function getKeyFromComponentMap(componentMap, newItem) {
+      for (const key in componentMap) {
+        if (componentMap.hasOwnProperty(key) && componentMap[key] === newItem) {
+          return key;
+        }
+      }
+      return null;
+    }
+
+    if (operation !== 'create') return;
+
+    const newComponentIds = Object.keys(componentUpdateDiff);
+
+    const mappedEvents = [];
+
+    newComponentIds.forEach((componentId) => {
+      const sourceComponentId = getKeyFromComponentMap(componentMap, componentId);
+      if (!sourceComponentId) return;
+
+      const componentEvents = events.filter((event) => event.sourceId === sourceComponentId);
+
+      mappedEvents.push(...componentEvents);
+    });
+
+    if (mappedEvents.length === 0) return;
+
+    return Promise.all(
+      mappedEvents.map((event) => {
+        const newEvent = {
+          event: {
+            ...event?.event,
+          },
+          eventType: event?.target,
+          attachedTo: componentMap[event?.sourceId],
+          index: event?.index,
+        };
+
+        createAppVersionEventHandlers(newEvent);
+      })
+    );
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
@@ -861,6 +913,20 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
           toast.error('App could not save.');
+        })
+        .finally(() => {
+          updateState({
+            appDiffOptions: {},
+          });
+        })
+        .finally(() => {
+          if (appDiffOptions?.cloningComponent) {
+            cloneEventsForClonedComponents(
+              updateDiff.updateDiff,
+              updateDiff.operation,
+              appDiffOptions?.cloningComponent
+            );
+          }
         });
     }
 
@@ -913,6 +979,16 @@ const EditorComponent = (props) => {
       setUndoStack((prev) => prev.slice(0, prev.length - 1));
       setRedoStack((prev) => [...prev, diffToPatches(_diffPatches)]);
 
+      updateState({
+        appDiffOptions: optsStack.undo[optsStack.undo.length - 1],
+      });
+
+      setOptsStack((prev) => ({
+        ...prev,
+        undo: [...prev.undo.slice(0, prev.undo.length - 1)],
+        redo: [...prev.redo, optsStack.undo[optsStack.undo.length - 1]],
+      }));
+
       updateEditorState({
         appDefinition: updatedAppDefinition,
         currentSidebarTab: 2,
@@ -934,6 +1010,16 @@ const EditorComponent = (props) => {
       updateAppDefinitionDiff(redoDiff);
       setRedoStack((prev) => prev.slice(0, prev.length - 1));
       setUndoStack((prev) => [...prev, diffToPatches(_diffPatches)]);
+
+      updateState({
+        appDiffOptions: optsStack.redo[optsStack.redo.length - 1],
+      });
+
+      setOptsStack((prev) => ({
+        ...prev,
+        undo: [...prev.undo, appDiffOptions],
+        redo: [...prev.redo.slice(0, prev.redo.length - 1)],
+      }));
 
       updateEditorState({
         appDefinition: updatedAppDefinition,
@@ -1152,6 +1238,11 @@ const EditorComponent = (props) => {
     };
 
     setCurrentPageId(newPageId);
+    setHoveredComponent(null);
+    updateEditorState({
+      currentSidebarTab: 2,
+      selectedComponents: [],
+    });
 
     appDefinitionChanged(copyOfAppDefinition, {
       pageDefinitionChanged: true,
@@ -1457,7 +1548,6 @@ const EditorComponent = (props) => {
       </div>
     );
   }
-
   return (
     <div className="editor wrapper">
       <Confirm
@@ -1577,7 +1667,7 @@ const EditorComponent = (props) => {
                     (editorMarginLeft ? editorMarginLeft - 1 : editorMarginLeft) +
                     `px solid ${computeCanvasBackgroundColor()}`,
                   height: computeCanvasContainerHeight(),
-                  background: !props.darkMode && '#f4f6fa',
+                  background: !props.darkMode ? '#EBEBEF' : '#2E3035',
                 }}
                 onMouseUp={(e) => {
                   if (['real-canvas', 'modal'].includes(e.target.className)) {
@@ -1695,24 +1785,20 @@ const EditorComponent = (props) => {
               {currentSidebarTab === 1 && (
                 <div className="pages-container">
                   {selectedComponents.length === 1 &&
-                  !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
-                  !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0].id]) ? (
-                    <Inspector
-                      moveComponents={moveComponents}
-                      componentDefinitionChanged={componentDefinitionChanged}
-                      removeComponent={removeComponent}
-                      selectedComponentId={selectedComponents[0].id}
-                      allComponents={appDefinition?.pages[currentPageId]?.components}
-                      key={selectedComponents[0].id}
-                      switchSidebarTab={switchSidebarTab}
-                      darkMode={props.darkMode}
-                      pages={getPagesWithIds()}
-                    ></Inspector>
-                  ) : (
-                    <center className="mt-5 p-2">
-                      {props.t('editor.inspectComponent', 'Please select a component to inspect')}
-                    </center>
-                  )}
+                    !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
+                    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0].id]) && (
+                      <Inspector
+                        moveComponents={moveComponents}
+                        componentDefinitionChanged={componentDefinitionChanged}
+                        removeComponent={removeComponent}
+                        selectedComponentId={selectedComponents[0].id}
+                        allComponents={appDefinition?.pages[currentPageId]?.components}
+                        key={selectedComponents[0].id}
+                        switchSidebarTab={switchSidebarTab}
+                        darkMode={props.darkMode}
+                        pages={getPagesWithIds()}
+                      ></Inspector>
+                    )}
                 </div>
               )}
 
