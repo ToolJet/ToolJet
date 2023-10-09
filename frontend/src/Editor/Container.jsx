@@ -79,7 +79,7 @@ export const Container = ({
     shallow
   );
 
-  const [boxes, setBoxes] = useState(components);
+  const [boxes, setBoxes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
