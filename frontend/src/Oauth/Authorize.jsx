@@ -5,7 +5,7 @@ import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
-import { RedirectLoader } from '@/_components';
+import { TJLoader } from '@/_components';
 import { redirectToWorkspace } from '@/_helpers/utils';
 
 export function Authorize() {
@@ -40,6 +40,11 @@ export function Authorize() {
     } else {
       authParams.token = router.query[configs.params.token];
       authParams.state = router.query[configs.params.state];
+    }
+
+    /* If the params has SAMLResponse the SAML auth is success */
+    if (router.query.saml_response_id) {
+      authParams.samlResponseId = router.query.saml_response_id;
     }
 
     let subsciption;
@@ -89,7 +94,7 @@ export function Authorize() {
 
   return (
     <div>
-      <RedirectLoader origin={Configs[router.query.origin] ? router.query.origin : 'unknown'} />
+      <TJLoader />
       {error && (
         <Navigate
           replace

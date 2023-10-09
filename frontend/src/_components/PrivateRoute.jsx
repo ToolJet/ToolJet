@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { excludeWorkspaceIdFromURL, appendWorkspaceId } from '../_helpers/utils';
+import { TJLoader } from './TJLoader';
 
 export const PrivateRoute = ({ children }) => {
   const [session, setSession] = React.useState(authenticationService.currentSessionValue);
@@ -55,15 +56,7 @@ export const PrivateRoute = ({ children }) => {
       );
     }
 
-    return (
-      <div className="spin-loader">
-        <div className="load">
-          <div className="one"></div>
-          <div className="two"></div>
-          <div className="three"></div>
-        </div>
-      </div>
-    );
+    return <TJLoader />;
   }
 };
 
@@ -110,14 +103,6 @@ export const AdminRoute = ({ children }) => {
       );
     }
 
-    return (
-      <div className="spin-loader">
-        <div className="load">
-          <div className="one"></div>
-          <div className="two"></div>
-          <div className="three"></div>
-        </div>
-      </div>
-    );
+    return <TJLoader />;
   }
 };

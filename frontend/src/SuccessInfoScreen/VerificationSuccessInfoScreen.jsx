@@ -223,7 +223,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       <label className="tj-text-input-label" data-cy="name-input-label">
                         {t('verificationSuccessPage.name', 'Name')}
                       </label>
-                      <p className="tj-text-input" data-cy="invited-user-name">
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-name">
                         {userDetails?.name}
                       </p>
                     </div>
@@ -232,12 +232,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       <label className="tj-text-input-label" data-cy="email-input-label">
                         {t('verificationSuccessPage.workEmail', 'Email')}
                       </label>
-                      <p className="tj-text-input" data-cy="invited-user-email">
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-email">
                         {userDetails?.email}
                       </p>
                     </div>
 
-                    {userDetails?.onboarding_details?.password && (
+                    {userDetails?.onboarding_details?.password && source != 'sso' && (
                       <div className="mb-3">
                         <label className="form-label" data-cy="password-label">
                           {t('verificationSuccessPage.password', 'Password')}
@@ -298,7 +298,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         }}
                         disabled={
                           isLoading ||
-                          (userDetails?.onboarding_details?.password &&
+                          (source !== 'sso' &&
+                            userDetails?.onboarding_details?.password &&
                             (password?.length < 5 || password?.trim()?.length === 0 || !password))
                         }
                         data-cy="accept-invite-button"

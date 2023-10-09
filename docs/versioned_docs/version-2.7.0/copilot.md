@@ -4,7 +4,7 @@ title: Copilot
 ---
 
 :::info BETA
-ToolJet Copilot is currently in private beta for **Enterprise** and **Cloud** users only. It is not yet available for ToolJet Community Edition, but we plan to make it accessible in the future. 
+ToolJet Copilot is currently in private beta for **Business** and **Enterprise** users only.
 :::
 
 **ToolJet Copilot** helps you write your queries faster. It uses OpenAI to suggest queries based on your data. 

@@ -480,12 +480,19 @@ export class OrganizationsService {
     }
 
     // filter oidc and ldap configs
-    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.OIDC, LICENSE_FIELD.LDAP]);
+    const licenseTerms = await this.licenseService.getLicenseTerms([
+      LICENSE_FIELD.OIDC,
+      LICENSE_FIELD.LDAP,
+      LICENSE_FIELD.SAML,
+    ]);
     if (result?.ssoConfigs?.some((sso) => sso.sso === 'openid') && !licenseTerms[LICENSE_FIELD.OIDC]) {
       result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'openid');
     }
     if (result?.ssoConfigs?.some((sso) => sso.sso === 'ldap') && !licenseTerms[LICENSE_FIELD.LDAP]) {
       result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'ldap');
+    }
+    if (result?.ssoConfigs?.some((sso) => sso.sso === 'saml') && !licenseTerms[LICENSE_FIELD.SAML]) {
+      result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'saml');
     }
 
     if (!isHideSensitiveData) {
@@ -605,7 +612,7 @@ export class OrganizationsService {
   async updateOrganizationConfigs(organizationId: string, params: any) {
     const { type, configs, enabled } = params;
 
-    if (!(type && ['git', 'google', 'form', 'openid', 'ldap'].includes(type))) {
+    if (!(type && ['git', 'google', 'form', 'openid', 'ldap', 'saml'].includes(type))) {
       throw new BadRequestException();
     }
 

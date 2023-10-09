@@ -12,6 +12,7 @@ export enum LICENSE_FIELD {
   VIEWERS = 'viewersCount',
   OIDC = 'oidcEnabled',
   LDAP = 'ldapEnabled',
+  SAML = 'samlEnabled',
   CUSTOM_STYLE = 'customStylingEnabled',
   WHITE_LABEL = 'whitelabellingEnabled',
   AUDIT_LOGS = 'auditLogsEnabled',

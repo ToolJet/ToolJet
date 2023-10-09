@@ -7738,6 +7738,10 @@ tbody {
   font-weight: 400;
 }
 
+.font-weight-600 {
+  font-weight: 600;
+}
+
 .border-indigo-09 {
   border: 1px solid $color-light-indigo-09;
 }
@@ -10740,6 +10744,8 @@ tbody {
     border-radius: 6px !important;
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
+    transition:none;
+
 
     &:hover {
       background: var(--slate1) !important;
@@ -10754,6 +10760,20 @@ tbody {
       border: 1px solid var(--indigo9) !important;
       box-shadow: none !important;
     }
+
+    &:-webkit-autofill {
+      box-shadow: 0 0 0 1000px var(--base) inset !important;
+      -webkit-text-fill-color: var(--slate12) !important;
+
+       &:hover {
+         box-shadow: 0 0 0 1000px var(--slate1) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}
+
+       &:focus-visible { 
+        box-shadow: 0 0 0 1000px var(--indigo2) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}
+    }
+
 
   }
 
@@ -12606,5 +12626,19 @@ tbody {
     .accordion-item:last-child{
       border-bottom: none !important;
     }
+  }
+}
+
+.saml-sso-conf {
+  .saml-footer {
+    display: block !important;
+  }
+
+  .text-indigo-09 {
+    color: $color-light-indigo-09;
+  }
+
+  .card-body {
+    padding-bottom: 0px !important;
   }
 }
