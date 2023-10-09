@@ -453,7 +453,6 @@ const EditorComponent = (props) => {
     const _canvasWidth = canvasBoundingRect?.width;
     return _canvasWidth;
   };
-
   const computeCanvasContainerHeight = () => {
     // 45 = (height of header)
     // 85 = (the height of the query panel header when minimised) + (height of header)

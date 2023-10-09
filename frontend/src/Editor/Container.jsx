@@ -521,8 +521,8 @@ export const Container = ({
     const componentWithChildren = {};
     Object.keys(components).forEach((key) => {
       const component = components[key];
-
-      if (component?.parent) {
+      const parent = component?.component?.parent;
+      if (parent) {
         componentWithChildren[parent] = {
           ...componentWithChildren[parent],
           [key]: component,
