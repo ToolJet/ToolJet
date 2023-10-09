@@ -1796,7 +1796,7 @@ const EditorComponent = (props) => {
                 <div className="pages-container">
                   {selectedComponents.length === 1 &&
                     !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
-                    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0].id]) && (
+                    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0]?.id]) && (
                       <Inspector
                         moveComponents={moveComponents}
                         componentDefinitionChanged={componentDefinitionChanged}
