@@ -53,19 +53,11 @@ function checkCommandAvailable(command: string) {
 }
 
 function executeCreateDb(host: string, port: string, user: string, password: string, dbName: string) {
-  validateDbName(dbName);
   const env = Object.assign({}, process.env, { PGPASSWORD: password });
   const createDbArgs = ['-h', host, '-p', port, '-U', user, dbName];
   const options = { env, stdio: 'pipe' } as ExecFileSyncOptions;
 
   execFileSync('createdb', createDbArgs, options);
-}
-
-function validateDbName(dbName: string): void {
-  const dbNameRegex = /^[a-zA-Z0-9_]+$/;
-  if (!dbNameRegex.test(dbName)) {
-    throw new Error('Table name can only contain letters, numbers and underscores');
-  }
 }
 
 async function createDb(envVars, dbName): Promise<void> {
