@@ -133,6 +133,16 @@ class ViewerComponent extends React.Component {
 
     if (dataQueries.length > 0) {
       dataQueries.forEach((query) => {
+        const queryConfirmationList = [];
+
+        if (query?.options && query?.options?.runOnPageLoad) {
+          queryConfirmationList.push({ queryId: query.id, queryName: query.name });
+        }
+
+        if (queryConfirmationList.length !== 0) {
+          useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
+        }
+
         if (query.pluginId || query?.plugin?.id) {
           queryState[query.name] = {
             ...query.plugin.manifestFile.data.source.exposedVariables,

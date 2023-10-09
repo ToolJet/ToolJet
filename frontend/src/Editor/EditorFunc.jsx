@@ -8,7 +8,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import _, { cloneDeep, isEqual, isEmpty, debounce, omit, isNull, isUndefined } from 'lodash';
+import _, { cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -57,7 +57,6 @@ import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
 import { computeAppDiff, computeComponentPropertyDiff, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
-import { shallow } from 'zustand/shallow';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';

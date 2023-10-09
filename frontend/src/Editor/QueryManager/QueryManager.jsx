@@ -1,35 +1,21 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { QueryManagerHeader } from './Components/QueryManagerHeader';
 import { QueryManagerBody } from './Components/QueryManagerBody';
 import { runQuery } from '@/_helpers/appUtils';
 import { defaultSources } from './constants';
-
-import { useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
 import { useDataSources, useGlobalDataSources, useLoadingDataSources } from '@/_stores/dataSourcesStore';
 import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
 
-const QueryManager = ({ mode, dataQueriesChanged, appId, darkMode, apps, allComponents, appDefinition, editorRef }) => {
+const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinition, editorRef }) => {
   const loadingDataSources = useLoadingDataSources();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const queryToBeRun = useQueryToBeRun();
-  const isCreationInProcess = useQueryCreationLoading();
-  const isUpdationInProcess = useQueryUpdationLoading();
   const selectedQuery = useSelectedQuery();
   const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
 
   const [options, setOptions] = useState({});
-  const mounted = useRef(false);
-
-  /** TODO: Below effect primarily used only for websocket invocation post update. Can be removed onece websocket logic is revamped */
-  useEffect(() => {
-    if (mounted.current && !isCreationInProcess && !isUpdationInProcess) {
-      return dataQueriesChanged();
-    }
-    mounted.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCreationInProcess, isUpdationInProcess, mounted.current]);
 
   useEffect(() => {
     setOptions(selectedQuery?.options || {});
