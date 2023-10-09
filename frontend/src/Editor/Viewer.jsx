@@ -130,9 +130,14 @@ class ViewerComponent extends React.Component {
     } else {
       dataQueries = data.data_queries;
     }
+    const queryConfirmationList = [];
 
     if (dataQueries.length > 0) {
       dataQueries.forEach((query) => {
+        if (query?.options && query?.options?.runOnPageLoad) {
+          queryConfirmationList.push({ queryId: query.id, queryName: query.name });
+        }
+
         if (query.pluginId || query?.plugin?.id) {
           queryState[query.name] = {
             ...query.plugin.manifestFile.data.source.exposedVariables,
@@ -148,6 +153,9 @@ class ViewerComponent extends React.Component {
       });
     }
 
+    if (queryConfirmationList.length !== 0) {
+      useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
+    }
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
     const constants = await this.fetchOrgEnvironmentConstants(data.slug, data.is_public);
 

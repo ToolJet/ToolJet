@@ -928,8 +928,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, getCurrentState());
 
   if (dataQuery.options.requestConfirmation) {
-    // eslint-disable-next-line no-unsafe-optional-chaining
-    const queryConfirmationList = _ref?.queryConfirmationList ? [..._ref?.queryConfirmationList] : [];
+    const runOnPageLoad = dataQuery.options?.runOnPageLoad ?? false;
+    const queryConfirmationList = runOnPageLoad ? _ref.queryConfirmationList : [];
+
     const queryConfirmation = {
       queryId,
       queryName,

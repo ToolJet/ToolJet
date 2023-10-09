@@ -1,7 +1,7 @@
 import { create, zustandDevTools } from './utils';
 import { getDefaultOptions } from './storeHelper';
 import { dataqueryService } from '@/_services';
-import debounce from 'lodash/debounce';
+// import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -9,6 +9,7 @@ import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import { isEmpty, throttle } from 'lodash';
+import { useEditorStore } from './editorStore';
 
 const initialState = {
   dataQueries: [],
@@ -37,8 +38,20 @@ export const useDataQueriesStore = create(
             dataQueries: sortByAttribute(data.data_queries, state.sortBy, state.sortOrder),
             loadingDataQueries: false,
           }));
-          // Runs query on loading application
-          if (runQueriesOnAppLoad) runQueries(data.data_queries, {});
+
+          if (data.data_queries.length !== 0) {
+            const queryConfirmationList = [];
+            data.data_queries.forEach(({ id, name, options }) => {
+              if (options && options?.runOnPageLoad) {
+                queryConfirmationList.push({ queryId: id, queryName: name });
+              }
+            });
+
+            if (queryConfirmationList.length !== 0) {
+              useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
+            }
+          }
+
           // Compute query state to be added in the current state
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           if (selectFirstQuery) {
@@ -47,6 +60,9 @@ export const useDataQueriesStore = create(
             const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
             actions.setSelectedQuery(query?.id);
           }
+
+          // Runs query on loading application
+          if (runQueriesOnAppLoad) runQueries(data.data_queries, {});
         },
         setDataQueries: (dataQueries) => set({ dataQueries }),
         deleteDataQueries: (queryId) => {
