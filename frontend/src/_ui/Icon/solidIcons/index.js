@@ -1,5 +1,4 @@
 import React from 'react';
-
 import Apps from './Apps.jsx';
 import Archive from './Archive.jsx';
 import ArrowBack from './ArrowBack.jsx';
@@ -13,7 +12,7 @@ import ArrowTransfer from './ArrowTransfer.jsx';
 import ArrowUp from './ArrowUp.jsx';
 import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
-import Bug from './Bug.jsx';
+import Debugger from './Debugger.jsx';
 import Calender from './Calender.jsx';
 import CheckRectangle from './CheckRectangle.jsx';
 import CheveronDown from './CheveronDown.jsx';
@@ -43,15 +42,18 @@ import FloppyDisk from './FloppyDisk.jsx';
 import Folder from './Folder.jsx';
 import FolderDownload from './FolderDownload.jsx';
 import FolderUpload from './FolderUpload.jsx';
+import FullOuterJoin from './FullOuterJoin.jsx';
 import Globe from './Globe.jsx';
 import Grid from './Grid.jsx';
 import HelpPolygon from './HelpPolygon.jsx';
 import Home from './Home.jsx';
 import Information from './Information.jsx';
+import InnerJoinIcon from './InnerJoinIcon.jsx';
 import InRectangle from './InRectangle.jsx';
 import Interactive from './Interactive.jsx';
 import Layers from './Layers.jsx';
 import LeftArrow from './LeftArrow.jsx';
+import LeftOuterJoinIcon from './LeftOuterJoinIcon.jsx';
 import LightMode from './LightMode.jsx';
 import ListView from './ListView.jsx';
 import Logout from './Logout.jsx';
@@ -70,14 +72,18 @@ import NotificationUnread from './NotificationUnread.jsx';
 import Page from './Page.jsx';
 import PageAdd from './PageAdd.jsx';
 import Pin from './Pin.jsx';
+import Unpin from './Unpin.jsx';
+import AlignRight from './AlignRight';
 import Play from './Play.jsx';
 import Plus from './Plus.jsx';
 import Plus01 from './Plus01.jsx';
 import Reload from './Reload.jsx';
+import ReloadError from './ReloadError.jsx';
 import Remove from './Remove.jsx';
 import Remove01 from './Remove01.jsx';
 import RemoveRectangle from './RemoveRectangle.jsx';
 import RightArrow from './RightArrow.jsx';
+import RightOuterJoin from './RightOuterJoin.jsx';
 import Row from './Row.jsx';
 import SadRectangle from './SadRectangle.jsx';
 import Search from './Search.jsx';
@@ -86,7 +92,7 @@ import SearchPlus from './SearchPlus.jsx';
 import Sent from './Sent.jsx';
 import SentFast from './SentFast.jsx';
 import Server from './Server.jsx';
-import Setting from './Setting.jsx';
+import Settings from './Settings.jsx';
 import Share from './Share.jsx';
 import Shield from './Shield.jsx';
 import ShieldCheck from './ShieldCheck.jsx';
@@ -118,11 +124,28 @@ import Marketplace from './Marketplace.jsx';
 import Minimize from './Minimize.jsx';
 import Maximize from './Maximize.jsx';
 import PlusRectangle from './PlusRectangle.jsx';
+import EyeOpen from './EyeOpen.jsx';
+import CloudInvalid from './CloudInvalid.jsx';
+import CloudValid from './CloudValid.jsx';
+import LayersVersion from './LayersVersion.jsx';
+import Comments from './Comments';
+import Inspect from './Inspect.jsx';
+import ArrowForwardUp from './ArrowForwardUp.jsx';
+import ArrowBackUp from './ArrowBackUp.jsx';
+import CheveronLeftDouble from './CheveronLeftDouble.jsx';
+import CheveronRightDouble from './CheveronRightDouble.jsx';
+import Dot from './Dot.jsx';
+import Check from './Check.jsx';
+import Editable from './Editable.jsx';
+import Save from './Save.jsx';
+import Cross from './Cross.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':
       return <AddRectangle {...props} />;
+    case 'alignright':
+      return <AlignRight {...props} />;
     case 'apps':
       return <Apps {...props} />;
     case 'archive':
@@ -149,8 +172,8 @@ const Icon = (props) => {
       return <BookSearch {...props} />;
     case 'branch':
       return <Branch {...props} />;
-    case 'bug':
-      return <Bug {...props} />;
+    case 'debugger':
+      return <Debugger {...props} />;
     case 'calender':
       return <Calender {...props} />;
     case 'checkrectangle':
@@ -159,8 +182,12 @@ const Icon = (props) => {
       return <CheveronDown {...props} />;
     case 'cheveronleft':
       return <CheveronLeft {...props} />;
+    case 'cheveronleftdouble':
+      return <CheveronLeftDouble {...props} />;
     case 'cheveronright':
       return <CheveronRight {...props} />;
+    case 'cheveronrightdouble':
+      return <CheveronRightDouble {...props} />;
     case 'cheveronup':
       return <CheveronUp {...props} />;
     case 'clearrectangle':
@@ -209,6 +236,8 @@ const Icon = (props) => {
       return <FolderDownload {...props} />;
     case 'folderupload':
       return <FolderUpload {...props} />;
+    case 'fullouterjoin':
+      return <FullOuterJoin {...props} />;
     case 'globe':
       return <Globe {...props} />;
     case 'grid':
@@ -219,6 +248,8 @@ const Icon = (props) => {
       return <Home {...props} />;
     case 'information':
       return <Information {...props} />;
+    case 'innerjoin':
+      return <InnerJoinIcon {...props} />;
     case 'inrectangle':
       return <InRectangle {...props} />;
     case 'interactive':
@@ -227,6 +258,8 @@ const Icon = (props) => {
       return <Layers {...props} />;
     case 'leftarrow':
       return <LeftArrow {...props} />;
+    case 'leftouterjoin':
+      return <LeftOuterJoinIcon {...props} />;
     case 'lightmode':
       return <LightMode {...props} />;
     case 'listview':
@@ -267,6 +300,8 @@ const Icon = (props) => {
       return <PageAdd {...props} />;
     case 'pin':
       return <Pin {...props} />;
+    case 'unpin':
+      return <Unpin {...props} />;
     case 'play':
       return <Play {...props} />;
     case 'plus':
@@ -277,6 +312,8 @@ const Icon = (props) => {
       return <PlusRectangle {...props} />;
     case 'reload':
       return <Reload {...props} />;
+    case 'reloaderror':
+      return <ReloadError {...props} />;
     case 'remove':
       return <Remove {...props} />;
     case 'remove01':
@@ -285,6 +322,8 @@ const Icon = (props) => {
       return <RemoveRectangle {...props} />;
     case 'rightarrrow':
       return <RightArrow {...props} />;
+    case 'rightouterjoin':
+      return <RightOuterJoin {...props} />;
     case 'row':
       return <Row {...props} />;
     case 'sadrectangle':
@@ -301,8 +340,10 @@ const Icon = (props) => {
       return <SentFast {...props} />;
     case 'server':
       return <Server {...props} />;
-    case 'setting':
-      return <Setting {...props} />;
+    case 'settings':
+      return <Settings {...props} />;
+    case 'comments':
+      return <Comments {...props} />;
     case 'share':
       return <Share {...props} />;
     case 'shield':
@@ -353,10 +394,34 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'eyeopen':
+      return <EyeOpen {...props} />;
+    case 'layersversion':
+      return <LayersVersion {...props} />;
+    case 'cloudvalid':
+      return <CloudValid {...props} />;
+    case 'cloudinvalid':
+      return <CloudInvalid {...props} />;
+    case 'dot':
+      return <Dot {...props} />;
+    case 'check':
+      return <Check {...props} />;
+    case 'editable':
+      return <Editable {...props} />;
     case 'minimize':
       return <Minimize {...props} />;
     case 'maximize':
       return <Maximize {...props} />;
+    case 'inspect':
+      return <Inspect {...props} />;
+    case 'arrowbackup':
+      return <ArrowForwardUp {...props} />;
+    case 'arrowforwardup':
+      return <ArrowBackUp {...props} />;
+    case 'save':
+      return <Save {...props} />;
+    case 'cross':
+      return <Cross {...props} />;
     default:
       return <Apps {...props} />;
   }

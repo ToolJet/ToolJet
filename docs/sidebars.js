@@ -22,7 +22,6 @@ const sidebars = {
         'setup/try-tooljet',
         'setup/digitalocean',
         'setup/docker',
-        'setup/heroku',
         'setup/ec2',
         'setup/ecs',
         'setup/openshift',
@@ -39,7 +38,6 @@ const sidebars = {
         'setup/v2-migration-guide'
       ]
     },
-    'licensing',
     'tooljet-database',
     'tooljet-copilot',
     {
@@ -273,6 +271,7 @@ const sidebars = {
                   ],
                 },
                 'user-authentication/sso/ldap',
+                'user-authentication/sso/saml',
               ],
             },
           ],
@@ -291,6 +290,7 @@ const sidebars = {
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
+        'org-management/licensing',
       ],
     },
     {
@@ -360,7 +360,6 @@ const sidebars = {
         'how-to/access-users-location',
         'how-to/use-s3-signed-url-to-upload-docs',
         'how-to/s3-custom-endpoints',
-        'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',
@@ -429,7 +428,7 @@ const sidebars = {
         {
           'type': 'link',
           'label': 'Roadmap',
-          'href': 'https://github.com/ToolJet/ToolJet/projects/2?query=is%3Aopen+sort%3Aupdated-desc',
+          'href': 'https://github.com/tooljet/tooljet/milestones',
         },
       ],
     },

@@ -32,6 +32,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -78,13 +79,20 @@ export function onComponentOptionsChanged(_ref, component, options) {
 export function onComponentOptionChanged(_ref, component, option_name, value) {
   const componentName = component.name;
   const components = getCurrentState().components;
-
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
-  useCurrentStateStore.getState().actions.setCurrentState({
-    components: { ...components, [componentName]: componentData },
-  });
+
+  if (option_name !== 'id') {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
+  } else if (!componentData?.id) {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
+  }
+
   return Promise.resolve();
 }
 
@@ -577,7 +585,27 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'switch-page': {
-        _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+        const { name, disabled } = _ref.state.appDefinition.pages[event.pageId];
+        // Don't allow switching to disabled page in editor as well as viewer
+        if (!disabled) {
+          _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+        }
+        if (_ref.state.appDefinition.pages[event.pageId]) {
+          if (disabled) {
+            const generalProps = {
+              navToDisablePage: {
+                type: 'navToDisablePage',
+                page: name,
+                data: {
+                  message: `Attempt to switch to disabled page ${name} blocked.`,
+                  status: true,
+                },
+              },
+            };
+            useCurrentStateStore.getState().actions.setErrors(generalProps);
+          }
+        }
+
         return Promise.resolve();
       }
     }
@@ -861,6 +889,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           setPreviewLoading(false);
           setPreviewData(finalData);
         }
+        let queryStatusCode = data?.status ?? null;
         const queryStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
@@ -868,23 +897,29 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
             ? data?.data?.status ?? 'ok'
             : data.status;
 
-        switch (queryStatus) {
-          case 'Bad Request':
-          case 'failed': {
+        switch (true) {
+          // Note: Need to move away from statusText -> statusCode
+          case queryStatus === 'Bad Request' ||
+            queryStatus === 'Not Found' ||
+            queryStatus === 'Unprocessable Entity' ||
+            queryStatus === 'failed' ||
+            queryStatusCode === 400 ||
+            queryStatusCode === 404 ||
+            queryStatusCode === 422: {
             const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
             toast.error(`${err.message}`);
             break;
           }
-          case 'needs_oauth': {
+          case queryStatus === 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             fetchOAuthToken(url, query.data_source_id);
             break;
           }
-          case 'ok':
-          case 'OK':
-          case 'Created':
-          case 'Accepted':
-          case 'No Content': {
+          case queryStatus === 'ok' ||
+            queryStatus === 'OK' ||
+            queryStatus === 'Created' ||
+            queryStatus === 'Accepted' ||
+            queryStatus === 'No Content': {
             toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
               icon: '🚀',
             });
@@ -969,15 +1004,45 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
         }
 
+        let queryStatusCode = data?.status ?? null;
         const promiseStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
             ? data?.data?.status ?? 'ok'
             : data.status;
-
-        if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
-          const errorData = query.kind === 'runpy' ? data.data : data;
+        // Note: Need to move away from statusText -> statusCode
+        if (
+          promiseStatus === 'failed' ||
+          promiseStatus === 'Bad Request' ||
+          promiseStatus === 'Not Found' ||
+          promiseStatus === 'Unprocessable Entity' ||
+          queryStatusCode === 400 ||
+          queryStatusCode === 404 ||
+          queryStatusCode === 422
+        ) {
+          let errorData = {};
+          switch (query.kind) {
+            case 'runpy':
+              errorData = data.data;
+              break;
+            case 'tooljetdb':
+              if (data?.error) {
+                errorData = {
+                  message: data?.error?.message || 'Something went wrong',
+                  description: data?.error?.message || 'Something went wrong',
+                  status: data?.statusText || 'Failed',
+                  data: data?.error || {},
+                };
+              } else {
+                errorData = data;
+              }
+              break;
+            default:
+              errorData = data;
+              break;
+          }
+          // errorData = query.kind === 'runpy' ? data.data : data;
           useCurrentStateStore.getState().actions.setErrors({
             [queryName]: {
               type: 'query',
@@ -1163,6 +1228,7 @@ export function computeComponentState(_ref, components = {}) {
       };
     }
   });
+
   useCurrentStateStore.getState().actions.setCurrentState({
     components: {
       ...componentState,
@@ -1177,8 +1243,8 @@ export function computeComponentState(_ref, components = {}) {
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
-  if (key === 'tooljetdb') return <RunTooljetDbIcon />;
-  if (key === 'runpy') return <RunPyIcon />;
+  if (key === 'tooljetdb') return <RunTooljetDbIcon style={{ height, width }} />;
+  if (key === 'runpy') return <RunPyIcon style={{ height, width }} />;
   const Icon = allSvgs[key];
 
   if (!Icon) return <></>;
@@ -1256,6 +1322,9 @@ export const debuggerActions = {
           generalProps.property = key.split('- ')[1];
           error.resolvedProperties = value.resolvedProperties;
           break;
+        case 'navToDisablePage':
+          generalProps.message = value.data.message;
+          break;
 
         default:
           break;
@@ -1314,7 +1383,8 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
 };
 
 export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCut = false) => {
-  const { selectedComponents, appDefinition, currentPageId } = _ref.state;
+  const { appDefinition, currentPageId } = _ref.state;
+  const selectedComponents = useEditorStore.getState().selectedComponents;
   if (selectedComponents.length < 1) return getSelectedText();
   const { components: allComponents } = appDefinition.pages[currentPageId];
   let newDefinition = _.cloneDeep(appDefinition);
@@ -1350,7 +1420,9 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
     updateAppDefinition(newDefinition);
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    toast.success('Component copied succesfully');
+    const successMessage =
+      newComponentObj.newComponents.length > 1 ? 'Components copied successfully' : 'Component copied successfully';
+    toast.success(successMessage);
   }
   _ref.setState({ currentSidebarTab: 2 });
 };
@@ -1413,7 +1485,6 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 
 export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
-  console.log({ pageId, newComponentObj });
   const finalComponents = [];
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
@@ -1632,4 +1703,15 @@ export const computeQueryState = (queries, _ref) => {
       },
     });
   }
+};
+
+export const removeFunctionObjects = (obj) => {
+  for (const key in obj) {
+    if (typeof obj[key] === 'function') {
+      delete obj[key];
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      removeFunctionObjects(obj[key]);
+    }
+  }
+  return obj;
 };

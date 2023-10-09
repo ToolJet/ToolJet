@@ -90,7 +90,6 @@ const EditRowForm = ({ onEdit, onClose }) => {
                 value={selectedRow}
                 options={options}
                 onChange={handleOnSelect}
-                customWrap={true}
               />
             </div>
           </div>
@@ -156,6 +155,7 @@ const RenderElement = ({ columnName, dataType, isPrimaryKey, defaultValue, value
   switch (dataType) {
     case 'character varying':
     case 'integer':
+    case 'bigint':
     case 'serial':
     case 'double precision':
       return (

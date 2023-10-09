@@ -40,8 +40,9 @@ import {
 
 describe("Multipage", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
   });
 
   it("should verify the elements on multipage", () => {
@@ -52,8 +53,6 @@ describe("Multipage", () => {
     data.minimumLength = randomNumber(1, 4);
     data.maximumLength = randomNumber(8, 10);
     data.customText = randomString(12);
-
-    cy.renameApp(data.appName);
 
     cy.get(multipageSelector.sidebarPageButton).click();
     cy.get(multipageSelector.pagesLabel).verifyVisibleElement(
@@ -112,7 +111,8 @@ describe("Multipage", () => {
 
     cy.get(multipageSelector.pagesPinIcon).click();
     cy.get(multipageSelector.sidebarPageButton).click();
-    cy.get(multipageSelector.pagesMenuIcon).click({ force: true });
+    cy.hideTooltip();
+    cy.get(multipageSelector.pagesMenuIcon).realClick();
 
     cy.get(multipageSelector.pageHeaderSettings).verifyVisibleElement(
       "have.text",
@@ -133,7 +133,7 @@ describe("Multipage", () => {
     cy.get('[data-cy="pages-name-test_page"]')
       .verifyVisibleElement("have.text", "test_page")
       .click();
-    cy.get(multipageSelector.pageMenuIcon).click();
+    cy.get(multipageSelector.pageMenuIcon).eq(1).click();
     cy.wait(500);
     cy.get(multipageSelector.pageHandleText).verifyVisibleElement(
       "have.text",
@@ -151,11 +151,14 @@ describe("Multipage", () => {
       .find(multipageSelector.hidePageIcon)
       .should("be.visible");
 
-    hideOrUnhidePage("home", "unhide");
+    hideOrUnhidePage("home", "show");
     cy.notVisible(multipageSelector.hidePageIcon);
 
-    cy.get(multipageSelector.homePageLabel).click();
-    cy.get(multipageSelector.pageMenuIcon).click();
+    cy.get(multipageSelector.homePageLabel)
+      .click()
+      .parent()
+      .find(multipageSelector.pageMenuIcon)
+      .click();
     cy.wait(500);
     cy.get(multipageSelector.deletePageOptionButton).click();
     cy.get(".modal-title").verifyVisibleElement(
@@ -173,16 +176,20 @@ describe("Multipage", () => {
     cy.get(multipageSelector.modalCancelButton)
       .verifyVisibleElement("have.text", "Cancel")
       .click();
-    cy.get('[data-cy="pages-name-test_page"]').should("be.visible");
-
-    cy.get(multipageSelector.pageMenuIcon).click();
     cy.wait(500);
+    cy.get('[data-cy="pages-name-home"]')
+      .should("be.visible")
+      .click()
+      .parent()
+      .find(multipageSelector.pageMenuIcon)
+      .click();
+
     cy.get(multipageSelector.deletePageOptionButton).click();
     cy.get(multipageSelector.modalConfirmButton).click();
     cy.notVisible(multipageSelector.homePageLabel);
-
-    cy.get(multipageSelector.pageMenuIcon).click();
     cy.wait(500);
+    cy.get(multipageSelector.pageMenuIcon).click();
+
     cy.get(multipageSelector.eventHandlerOptionButton).click();
     cy.get(multipageSelector.modalTitlePageEvents).verifyVisibleElement(
       "have.text",
@@ -220,7 +227,12 @@ describe("Multipage", () => {
     clearSearch();
 
     addNewPage("test");
-    cy.get(multipageSelector.pageMenuIcon).click();
+    cy.get('[data-cy="pages-name-test"]')
+      .should("be.visible")
+      .click()
+      .parent()
+      .find(multipageSelector.pageMenuIcon)
+      .click();
     cy.wait(500);
     cy.get(multipageSelector.pageHandleText).click();
     cy.get(multipageSelector.modalTitleEditPageHandle).verifyVisibleElement(
@@ -264,7 +276,7 @@ describe("Multipage", () => {
 
     hideOrUnhidePage("pageOne");
     hideOrUnhidePage("pageTwo");
-    hideOrUnhidePage("pageOne", "unhide");
+    hideOrUnhidePage("pageOne", "show");
     addEventHandler("pageThree");
     cy.get(multipageSelector.closeModal).click();
     setHomePage("pageThree");

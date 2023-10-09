@@ -14,13 +14,13 @@ export const FilePicker = ({
   onEvent,
   darkMode,
   styles,
-  registerAction,
+  setExposedVariable,
   dataCy,
 }) => {
   const currentState = useCurrentState();
   //* properties definitions
   const instructionText =
-    component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
+    component.definition.properties.instructionText?.value ?? 'Drag and drop files here or click to select files';
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -294,16 +294,11 @@ export const FilePicker = ({
       setShowSelectedFiles(false);
     }
     onComponentOptionChanged(component, 'file', selectedFiles, id);
+    setExposedVariable('clearFiles', async function () {
+      setSelectedFiles([]);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
-
-  registerAction(
-    'clearFiles',
-    async function () {
-      setSelectedFiles([]);
-    },
-    [setSelectedFiles]
-  );
 
   return (
     <section>
