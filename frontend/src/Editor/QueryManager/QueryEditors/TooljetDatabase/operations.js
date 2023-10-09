@@ -2,7 +2,7 @@ import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { isEmpty } from 'lodash';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { resolveReferences } from '@/_helpers/utils';
-import { hasEqualWithNull } from './util';
+import { hasEmptyStringOrNullValue } from './util';
 
 export const tooljetDbOperations = {
   perform,
@@ -57,7 +57,7 @@ function buildPostgrestQuery(filters) {
 async function listRows(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  if (hasEqualWithNull(resolvedOptions, 'list_rows')) {
+  if (hasEmptyStringOrNullValue(resolvedOptions, 'list_rows')) {
     return {
       status: 'failed',
       statusText: 'failed',
@@ -107,7 +107,7 @@ async function createRow(dataQuery, currentState) {
 async function updateRows(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  if (hasEqualWithNull(resolvedOptions, 'update_rows')) {
+  if (hasEmptyStringOrNullValue(resolvedOptions, 'update_rows')) {
     return {
       status: 'failed',
       statusText: 'failed',
@@ -135,7 +135,7 @@ async function updateRows(dataQuery, currentState) {
 async function deleteRows(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  if (hasEqualWithNull(resolvedOptions, 'delete_rows')) {
+  if (hasEmptyStringOrNullValue(resolvedOptions, 'delete_rows')) {
     return {
       status: 'failed',
       statusText: 'failed',
