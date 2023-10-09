@@ -69,6 +69,7 @@ const TableForm = ({
 
   function handleKeyPress(e) {
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleCreate(e);
     }
   }
