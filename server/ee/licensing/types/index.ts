@@ -18,6 +18,7 @@ export interface Terms {
     oidc?: boolean;
     auditLogs?: boolean;
     ldap?: boolean;
+    saml?: boolean;
     customStyling?: boolean;
     whiteLabelling?: boolean;
     multiEnvironment?: boolean;

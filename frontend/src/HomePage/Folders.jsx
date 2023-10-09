@@ -196,6 +196,7 @@ export const Folders = function Folders({
     setShowInput(false);
     setFilteredData(folders);
   }
+
   return (
     <div
       className={`w-100 folder-list ${!canCreateApp && 'folder-list-user'}`}

@@ -61,7 +61,7 @@ export class User extends BaseEntity {
     type: 'enum',
     enumName: 'source',
     name: 'source',
-    enum: ['signup', 'invite', 'google', 'git', 'ldap'],
+    enum: ['signup', 'invite', 'google', 'git', 'ldap', 'saml'],
     default: 'invite',
   })
   source: string;

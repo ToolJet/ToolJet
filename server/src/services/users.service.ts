@@ -260,7 +260,8 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      await this.attachUserGroup(groups, organizationId, user.id, source === 'ldap', manager);
+      const isValidatingExistingGroups = ['ldap', 'saml'].includes(source);
+      await this.attachUserGroup(groups, organizationId, user.id, isValidatingExistingGroups, manager);
     }, manager);
 
     return user;
