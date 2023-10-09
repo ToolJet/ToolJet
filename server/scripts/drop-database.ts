@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
-import { exec } from 'child_process';
+import { ExecFileSyncOptions, exec, execFileSync } from 'child_process';
 import { buildAndValidateDatabaseConfig } from './database-config-utils';
 
 function dropDatabaseFromFile(envPath: string): void {
@@ -36,40 +36,49 @@ function dropDatabase(): void {
   dropDb(envVars, envVars.PG_DB);
 }
 
-function dropDb(envVars, dbName) {
-  const dropdb =
-    `PGPASSWORD=${envVars.PG_PASS} dropdb ` +
-    `-h ${envVars.PG_HOST} ` +
-    `-p ${envVars.PG_PORT} ` +
-    `-U ${envVars.PG_USER} ` +
-    dbName;
-
-  exec(dropdb, (err, _stdout, _stderr) => {
-    if (!err) {
-      console.log(`Dropped database ${dbName}`);
-      return;
-    }
-
-    const errorMessage = `database "${dbName}" does not exist`;
-
-    if (err.message.includes(errorMessage)) {
-      console.log(errorMessage);
-    } else {
-      console.error(_stderr);
-      process.exit(1);
-    }
-  });
+function checkCommandAvailable(command: string) {
+  try {
+    execFileSync('command', ['-v', command]);
+  } catch (error) {
+    throw `Error: ${command} not found. Make sure it's installed and available in the system's PATH.`;
+  }
 }
 
-const nodeEnvPath = path.resolve(process.cwd(), process.env.NODE_ENV === 'test' ? '../.env.test' : '../.env');
+function dropDb(envVars, dbName) {
+  const env = Object.assign({}, process.env, { PGPASSWORD: envVars.PG_PASS });
+  const dropDbArgs = ['-h', envVars.PG_HOST, '-p', envVars.PG_PORT, '-U', envVars.PG_USER, dbName];
+  const options = { env, stdio: 'pipe' } as ExecFileSyncOptions;
 
-const fallbackPath = path.resolve(process.cwd(), '../.env');
+  try {
+    execFileSync('dropdb', dropDbArgs, options);
+    console.log(`Dropped database ${dbName}`);
+  } catch (error) {
+    const errorMessage = `database "${dbName}" does not exist`;
 
-if (fs.existsSync(nodeEnvPath)) {
-  dropDatabaseFromFile(nodeEnvPath);
-} else if (fs.existsSync(fallbackPath)) {
-  dropDatabaseFromFile(fallbackPath);
-} else {
-  console.log(`${nodeEnvPath} file not found to drop database\n` + 'Picking up config from the environment');
-  dropDatabase();
+    if (error.message.includes(errorMessage)) {
+      console.log(errorMessage);
+    } else {
+      console.error(errorMessage);
+      process.exit(1);
+    }
+  }
+}
+
+try {
+  checkCommandAvailable('dropdb');
+  const nodeEnvPath = path.resolve(process.cwd(), process.env.NODE_ENV === 'test' ? '../.env.test' : '../.env');
+
+  const fallbackPath = path.resolve(process.cwd(), '../.env');
+
+  if (fs.existsSync(nodeEnvPath)) {
+    dropDatabaseFromFile(nodeEnvPath);
+  } else if (fs.existsSync(fallbackPath)) {
+    dropDatabaseFromFile(fallbackPath);
+  } else {
+    console.log(`${nodeEnvPath} file not found to drop database\n` + 'Picking up config from the environment');
+    dropDatabase();
+  }
+} catch (error) {
+  console.error(error);
+  process.exit(1);
 }
