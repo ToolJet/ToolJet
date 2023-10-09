@@ -8,7 +8,7 @@ DynamoDB is a managed non-relational database service provided by Amazon. ToolJe
 
 ## Connection
 
-To establish a connection with the DynamoDB global datasource, you can either click on the `+Add new global datasource` button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the DynamoDB datasource, you can either click on the `+Add new datasource` button located on the query panel or navigate to the **[Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
