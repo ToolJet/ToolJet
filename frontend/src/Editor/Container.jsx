@@ -19,6 +19,9 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
+import _ from 'lodash';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 const NO_OF_GRIDS = 43;
 
@@ -195,7 +198,12 @@ export const Container = ({
     if (componendAdded) {
       opts.componentAdded = true;
     }
-    appDefinitionChanged(newDefinition, opts);
+
+    const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
+    if (shouldUpdate) {
+      appDefinitionChanged(newDefinition, opts);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
