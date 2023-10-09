@@ -7,7 +7,7 @@ Use the ToolJet-hosted database to build apps faster, and manage your data with 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/db.png" alt="ToolJet Database" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/tjdb1.png" alt="ToolJet Database" />
 
 </div>
 
@@ -68,6 +68,7 @@ ToolJet database allows you to:
 - **[Maintain tables of data](#accessing-tooljet-database)** in a secure database that's only accessible within your ToolJet organization.
 - **[Edit, search, filter, sort, and filter](#database-editor)** data using a spreadsheet-like interface.
 - **[Quickly build applications and write queries](#querying-data-from-the-tooljet-database)** to interact with the ToolJet Database, just like any other datasource but without any setup.
+- **[Export table](#export-table)** from the ToolJet Database to a JSON file.
 
 ## Accessing ToolJet Database
 
@@ -77,7 +78,7 @@ The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.com)**, 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/tjdbside.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/tjdbdash.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -87,7 +88,7 @@ You can manage the ToolJet Database directly from the Database Editor. ToolJet D
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/tables.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/tables1.png" alt="ToolJet Database editor"/>
 
 </div>
 
@@ -97,7 +98,7 @@ For creating a new table in ToolJet Database, click on the **Create New Table** 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/newtable.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/create1.png" alt="ToolJet Database editor"/>
 
 </div>
 
@@ -105,7 +106,7 @@ When the **Create New Table** button is clicked, a drawer opens up from the righ
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/drawer.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/create2.png" alt="ToolJet Database editor"/>
 
 </div>
 
@@ -124,7 +125,7 @@ Click on **Create** button to create a new table.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/newtable2.png" alt="ToolJet Database editor" width="500"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/newtable2.png" alt="ToolJet Database editor"/>
 
 </div>
 
@@ -134,7 +135,7 @@ You can enter a search term to search through all tables in the database.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/search.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/search1.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -149,7 +150,7 @@ A drawer from the right will open up from where you can create a new column by e
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/newcolumn2.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/newcolumn1.png" alt="ToolJet Database editor"/>
 
 </div>
 
@@ -163,24 +164,24 @@ You can add as many filter as you want into the table by clicking on the **Filte
 - Enter a **value** for the selected operation
 
 #### Available operations are:
-- **equals**
-- **greater than**
-- **greater than or equal**
-- **less than**
-- **less than or equal**
-- **not equal**
-- **like**
-- **ilike**
-- **match**
-- **imatch**
-- **in**
-- **contains**
-- **contained**
-- **not**
+- **equals**: This operation is used to check if the value of the column is equal to the value entered in the input field. 
+- **greater than**: This operation is used to check if the value of the column is greater than the value entered in the input field. 
+- **greater than or equal**: This operation is used to check if the value of the column is greater than or equal to the value entered in the input field. 
+- **less than**: This operation is used to check if the value of the column is less than the value entered in the input field.
+- **less than or equal**: This operation is used to check if the value of the column is less than or equal to the value entered in the input field. 
+- **not equal**: This operation is used to check if the value of the column is not equal to the value entered in the input field. 
+- **like**: This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet`
+- **ilike**: This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-insensitive. ex: `ToolJet` will match `tooljet`
+- **match**: This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet`. This operation uses regular expressions. ex: `^ToolJet$` will match `ToolJet` but not `ToolJet Inc`. 
+- **imatch**: This operation is used to check if the value of the column is like the value entered in the input field. This operation is case-insensitive. This operation uses regular expressions. ex: `^ToolJet$` will match `ToolJet` but not `ToolJet Inc`.
+- **in**: This operation is used to check if the value of the column is in the list of values entered in the input field. ex: `1,2,3`
+- **contains**: This operation is used to check if the value of the column contains the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet`
+- **contained**: This operation is used to check if the value of the column is contained in the value entered in the input field. This operation is case-sensitive. ex: `ToolJet` will not match `tooljet`
+- **not**: This operation is used to negate the result of the operation selected in the dropdown. ex: `not equals` will return all the records where the value of the column is not equal to the value entered in the input field.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/filter2.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/filter1.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -190,7 +191,17 @@ To sort the table data, click on the **Sort** button on top, select a **column**
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/sort2.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/sort1.png" alt="ToolJet Database editor" />
+
+</div>
+
+### Export table
+
+To export the table data, click on the **Export table** button on top. The selected table data will be exported to a **JSON** file.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/database/newui/exporttable.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -220,29 +231,37 @@ To delete one or many records/rows, select on the checkbox at the right of the r
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/deleterecord.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/delete1.png" alt="ToolJet Database editor" />
 
 </div>
 
 ### Delete column
 
-To delete a particular column, just click on the column name and the **delete** button will appear, click on it to delete the column.
+To delete a particular column, just click on the column header and the **delete** button will appear, click on it to delete the column.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/delcol.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/deletecol.png" alt="ToolJet Database editor" />
 
 </div>
 
-### Edit or Delete a table
+### Edit table
 
-When you click on the kebab menu (three vertical dots icon) on the right of the table name, you'll get two options: Edit and Delete.
-- **Edit** will allow you to rename the table
-- **Delete** will allow you to delete the table permanently
+To edit the table name, click on the three vertical dots icon on the right of the table name and then click on the **Edit** option. A drawer will open from the right from where you can edit the table name.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newui/edittable.png" alt="ToolJet Database editor" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/edittablename.png" alt="ToolJet Database editor" />
+
+</div>
+
+### Delete table
+
+To delete a table, click on the three vertical dots icon on the right of the table name and then click on the **Delete** option. A confirmation modal will appear, click on the **Delete** button to delete the table.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/database/newui2/deletetable.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -250,52 +269,54 @@ When you click on the kebab menu (three vertical dots icon) on the right of the 
 
 Querying ToolJet database is as easy as querying any other datasource on ToolJet.
 
-- Go to the **query panel**, and click on the **+Add** button to add a new query, and select **Run ToolJetDb query**
+- Go to the **query panel**, and click on the **+Add** button to add a new query, and select **ToolJet Database**
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/database/newui/q1.png" alt="ToolJet Database editor" />
+    <img className="screenshot-full" src="/img/v2-beta/database/newui/qtjdb.png" alt="ToolJet Database editor" />
 
     </div>
 
-- Enter the **Name** of the table that you want to query, select an **Operation** from the dropdown, **Create** the query, and then **Run** the query to get the response.
+- Select the **table** that you want to query from the dropdown, choose an **operation** from the dropdown, and then enter the required parameters for the selected operation. Click on the **Run** button to execute the query.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/database/newui/q2.png" alt="ToolJet Database editor" />
+    <img className="screenshot-full" src="/img/v2-beta/database/newui/qtjdb2.png" alt="ToolJet Database editor" />
 
     </div>
 
-:::info
-- **Preview** button on the query panel returns the query response without executing the query. Once clicked, the response will be displayed on the Preview section of the query panel which can be viewed in JSON or Raw.
-- When a new query is created, by default the query name is set to `tooljetdbN` (where N is a number) - you can rename the query by click on the query name or from the left sidebar of query panel.
-:::
+  :::info
+  - **Preview** button on the query panel returns the query response without executing the query. Once clicked, the response will be displayed on the Preview section of the query panel which can be viewed as JSON or Raw.
+  - When a new query is created, by default the query name is set to `tooljetdbN` (where N is a number) - you can rename the query by click on the query name or from the left sidebar of query panel.
+  :::
 
 ### Available operations
 
-#### List rows
-This operation returns the list of all the records in the table
+### List rows
+This operation returns all the records from the table
 
 #### Optional parameters
-- **Filter**: Add a filter to the query response by setting a column, operation and value.
-- **Sort**: Add a sort to the query response by setting a column and direction.
-- **Limit**: Limit the query response. This parameter expects a numerical value. ex: 5
+- **Filter**: Add a condition by choosing a column, an operation, and the value for filtering the records.
+- **Sort**: Sort the query response by choosing a column and the order (ascending or descending).
+- **Limit**: Limit the number of records to be returned by entering a number.
 
-#### Create row
-This operation creates a new record in the table
+### Create row
+This operation creates a new record in the table. You can create a single record or multiple records at once.
 
 #### Required parameters
-- **Columns**: Choose a column from the dropdown and enter a value for the new record.
+- **Columns**: Choose the columns for which you want to add values for the new record and enter the values for the selected columns. You can also add a new column by clicking on the **+Add column** button.
 
-#### Update row
-This operation updates an existing record in the table
+### Update row
+This operation updates a record in the table. You can update a single record or multiple records at once.
 
 #### Required parameter
 - **Filter**: Add a condition by choosing a column, an operation, and the value for updating a particular record.
+- **Columns**: Choose the columns for which you want to update the values for the selected record and enter the values for the selected columns.
 
-#### Delete row
-This operation deletes a record from the table
+### Delete row
+This operation deletes a record in the table. You can delete a single record or multiple records at once.
 
 #### Required parameters
 - **Filter**: Add a condition by choosing a column, an operation, and the value for deleting a particular record.
+- **Limit**: Limit the number of records to be deleted by entering a number.
 
 :::info
 If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](https://www.tooljet.com/slack)**

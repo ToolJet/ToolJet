@@ -271,6 +271,7 @@ const sidebars = {
                   ],
                 },
                 'user-authentication/sso/ldap',
+                'user-authentication/sso/saml',
               ],
             },
           ],
@@ -427,7 +428,7 @@ const sidebars = {
         {
           'type': 'link',
           'label': 'Roadmap',
-          'href': 'https://github.com/ToolJet/ToolJet/projects/2?query=is%3Aopen+sort%3Aupdated-desc',
+          'href': 'https://github.com/tooljet/tooljet/milestones',
         },
       ],
     },
