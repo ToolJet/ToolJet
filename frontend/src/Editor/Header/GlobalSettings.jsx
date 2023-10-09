@@ -20,7 +20,6 @@ export const GlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   isMaintenanceOn,
-  // app,
   backgroundFxQuery,
   realState,
 }) => {
@@ -233,7 +232,6 @@ export const GlobalSettings = ({
                             canvasBackgroundColor: resolveReferences(color, realState),
                             backgroundFxQuery: color,
                           };
-
                           globalSettingsChanged(options);
                         }}
                       />
