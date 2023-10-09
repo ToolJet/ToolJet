@@ -72,6 +72,8 @@ function generatePath(obj, targetKey, currentPath = '') {
 }
 
 function getValueFromJson(json, path) {
+  if (!path || typeof path !== 'string') return null;
+
   let value = json;
   path.split('.').forEach((key) => {
     value = value[key];
