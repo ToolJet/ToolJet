@@ -114,11 +114,14 @@ export const CustomSelect = ({ ...props }) => {
 
   return (
     <>
-      <CreateVersion
-        {...props}
-        showCreateAppVersion={showCreateAppVersion}
-        setShowCreateAppVersion={setShowCreateAppVersion}
-      />
+      {showCreateAppVersion && (
+        <CreateVersion
+          {...props}
+          showCreateAppVersion={showCreateAppVersion}
+          setShowCreateAppVersion={setShowCreateAppVersion}
+        />
+      )}
+
       <EditVersion {...props} showEditAppVersion={showEditAppVersion} setShowEditAppVersion={setShowEditAppVersion} />
       {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
       <ConfirmDialog
