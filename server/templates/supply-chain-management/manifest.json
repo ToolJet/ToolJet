@@ -1,0 +1,16 @@
+{
+    "name": "Supply chain management",
+    "description": "Supply Chain Management template offers a comprehensive solution to streamline and optimize your organization's supply chain operations.",
+    "widgets": [
+        "Table",
+        "Chart"
+    ],
+    "sources": [
+        {
+            "name": "Tooljet Database",
+            "id": "tooljetdb"
+        }
+    ],
+    "id": "supply-chain-management",
+    "category": "operations"
+}
