@@ -75,7 +75,7 @@ function InviteUsersForm({
                   onClick={() => setActiveTab(1)}
                   data-cy="button-invite-with-email"
                 >
-                  <SolidIcon name="mail" width="14" fill={activeTab == 1 ? '#fff' : '#687076'} />
+                  <SolidIcon name="mail" width="14" fill={activeTab == 1 ? '#11181C' : '#687076'} />
                   <span> Invite with email</span>
                 </button>
                 <button
@@ -83,7 +83,7 @@ function InviteUsersForm({
                   onClick={() => setActiveTab(2)}
                   data-cy="button-upload-csv-file"
                 >
-                  <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#fff' : '#687076'} />
+                  <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#11181C' : '#687076'} />
                   <span>Upload CSV file</span>
                 </button>
               </div>
