@@ -205,8 +205,6 @@ export const DraggableBox = React.memo(
       setHoveredComponent(id);
     };
 
-    console.log('---arpit:: parent', { parent });
-
     return (
       <div
         className={
