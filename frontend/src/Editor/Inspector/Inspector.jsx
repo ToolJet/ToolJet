@@ -79,6 +79,29 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
   const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
+  const [confirmKeyPressed, setConfirmKeyPressed] = useState(false);
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'Enter' || event.key === 'Return') {
+        setConfirmKeyPressed(true); // Set the confirmation key pressed state
+      } else if (event.key === 'Escape') {
+        setWidgetDeleteConfirmation(false); // Cancel the confirmation if the Esc key was pressed
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (confirmKeyPressed) {
+      setWidgetDeleteConfirmation(true); // Trigger the confirmation if the confirmation key was pressed
+      setConfirmKeyPressed(false); // Reset the confirmation key pressed state
+    }
+  }, [confirmKeyPressed]);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
