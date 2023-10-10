@@ -10,6 +10,7 @@ export default class License {
   private _isAuditLogs: boolean;
   private _isOidc: boolean;
   private _isLdap: boolean;
+  private _isSAML: boolean;
   private _isCustomStyling: boolean;
   private _isWhiteLabelling: boolean;
   private _isMultiEnvironment: boolean;
@@ -49,6 +50,7 @@ export default class License {
         this._isAuditLogs = licenseData?.features?.auditLogs === false ? false : true;
         this._isOidc = licenseData?.features?.oidc === false ? false : true;
         this._isLdap = licenseData?.features?.ldap === false ? false : true;
+        this._isSAML = licenseData?.features?.saml === false ? false : true;
         this._isCustomStyling = licenseData?.features?.customStyling === false ? false : true;
         this._isWhiteLabelling = licenseData?.features?.whiteLabelling === false ? false : true;
         this._isMultiEnvironment = licenseData?.features?.multiEnvironment === false ? false : true;
@@ -165,6 +167,13 @@ export default class License {
     return this._isLdap;
   }
 
+  public get saml(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.saml;
+    }
+    return this._isSAML;
+  }
+
   public get multiEnvironment(): boolean {
     if (this.IsBasicPlan) {
       return !!BASIC_PLAN_TERMS.features?.multiEnvironment;
@@ -206,6 +215,7 @@ export default class License {
       openid: this.oidc,
       auditLogs: this.auditLogs,
       ldap: this.ldap,
+      saml: this.saml,
       customStyling: this.customStyling,
       whiteLabelling: this.whiteLabelling,
       multiEnvironment: this.multiEnvironment,
@@ -229,6 +239,7 @@ export default class License {
       auditLogsEnabled: this.auditLogs,
       oidcEnabled: this.oidc,
       ldapEnabled: this.ldap,
+      samlEnabled: this.saml,
       customStylingEnabled: this.customStyling,
       multiEnvironmentEnabled: this.multiEnvironment,
       multiPlayerEditEnabled: this.multiPlayerEdit,

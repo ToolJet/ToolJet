@@ -10,10 +10,18 @@ import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { TableCountGuard } from '@ee/licensing/guards/table.guard';
+import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Credential, InternalTable, AppUser]), CaslModule],
   controllers: [TooljetDbController],
-  providers: [TooljetDbService, PostgrestProxyService, EncryptionService, CredentialsService, TableCountGuard],
+  providers: [
+    TooljetDbService,
+    TooljetDbBulkUploadService,
+    PostgrestProxyService,
+    EncryptionService,
+    CredentialsService,
+    TableCountGuard,
+  ],
 })
 export class TooljetDbModule {}

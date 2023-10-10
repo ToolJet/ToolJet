@@ -35,7 +35,7 @@ export default function OIDCSSOLoginButton({ configId, configs, text }) {
           </div>
         ) : (
           <>
-            <img src="assets/images/sso-buttons/openid.svg" className="h-4" data-cy="oidc-so-icon" />
+            <img src="assets/images/sso-buttons/sso-general.svg" className="h-4" data-cy="oidc-so-icon" />
             <span className="px-1 sso-info-text" data-cy="oidc-sso-text">
               {text} {configs?.name || 'Open ID'}
             </span>

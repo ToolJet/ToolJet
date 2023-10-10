@@ -153,7 +153,7 @@ describe("Editor- CSA", () => {
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.get(`${commonWidgetSelector.draggableWidget("filepicker1")} p`).should(
       "have.text",
-      "Drag and Drop some files here, or click to select files"
+      "Drag and drop files here or click to select files"
     );
   });
 

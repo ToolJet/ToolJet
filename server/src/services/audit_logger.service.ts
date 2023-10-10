@@ -29,6 +29,7 @@ export class AuditLoggerService {
   ): Promise<AuditLog> {
     return await dbTransactionWrap(async (manager) => {
       const request = RequestContext?.currentContext?.req;
+      const clientIp = (request as any)?.clientIp;
       return await manager.save(
         manager.create(AuditLog, {
           userId,
@@ -37,7 +38,7 @@ export class AuditLoggerService {
           resourceType,
           actionType,
           resourceName,
-          ipAddress: request?.clientIp || requestIp.getClientIp(request),
+          ipAddress: clientIp || requestIp.getClientIp(request),
           metadata: {
             userAgent: request?.headers['user-agent'],
             tooljetVersion: globalThis.TOOLJET_VERSION,

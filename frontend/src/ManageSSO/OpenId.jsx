@@ -8,6 +8,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Toggle from '@/_ui/Toggle/index';
 import { LicenseBanner } from '@/LicenseBanner';
 import { getSubpath } from '@/_helpers/utils';
+import { ssoConfMessages } from '@/_helpers';
 
 export function OpenId({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -56,13 +57,13 @@ export function OpenId({ settings, updateData }) {
               well_known_url: wellKnownUrl,
             },
           });
-          toast.success('updated SSO configurations', {
+          toast.success(ssoConfMessages('OpenID', 'sso_updated'), {
             position: 'top-center',
           });
         },
         () => {
           setSaving(false);
-          toast.error('Error saving sso configurations', {
+          toast.error(ssoConfMessages('OpenID', 'sso_update_failed'), {
             position: 'top-center',
           });
         }
@@ -77,20 +78,20 @@ export function OpenId({ settings, updateData }) {
 
   const changeStatus = () => {
     setSaving(true);
+    const enabled_tmp = !enabled;
     organizationService.editOrganizationConfigs({ type: 'openid', enabled: !enabled }).then(
       (data) => {
         setSaving(false);
-        const enabled_tmp = !enabled;
         setEnabled(enabled_tmp);
         data.id && setConfigId(data.id);
         updateData('openid', { id: data.id, enabled: enabled_tmp });
-        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} OpenId SSO`, {
+        toast.success(ssoConfMessages('OpenID', 'sso_updated'), {
           position: 'top-center',
         });
       },
       () => {
         setSaving(false);
-        toast.error('Error saving sso configurations', {
+        toast.error(ssoConfMessages('OpenID', 'sso_update_failed'), {
           position: 'top-center',
         });
       }

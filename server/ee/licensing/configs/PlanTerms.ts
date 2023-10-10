@@ -16,6 +16,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   features: {
     auditLogs: false,
     oidc: false,
+    saml: false,
     customStyling: false,
     ldap: false,
     whiteLabelling: false,

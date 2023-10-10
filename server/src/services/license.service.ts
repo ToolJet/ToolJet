@@ -53,6 +53,9 @@ export class LicenseService {
       case LICENSE_FIELD.LDAP:
         return License.Instance().ldap;
 
+      case LICENSE_FIELD.SAML:
+        return License.Instance().saml;
+
       case LICENSE_FIELD.CUSTOM_STYLE:
         return License.Instance().customStyling;
 
