@@ -71,6 +71,7 @@ describe("App share functionality", () => {
         cy.get(commonSelectors.viewerPageLogo).click();
 
         navigateToAppEditor(data.appName);
+        cy.wait(2000);
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.get(commonWidgetSelector.makePublicAppToggle).check();
         cy.get(commonWidgetSelector.makePublicAppToggle).check();
@@ -103,6 +104,7 @@ describe("App share functionality", () => {
 
         cy.appUILogin();
         navigateToAppEditor(data.appName);
+        cy.wait(2000);
         cy.skipEditorPopover();
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.get(commonWidgetSelector.makePublicAppToggle).uncheck();
@@ -139,6 +141,7 @@ describe("App share functionality", () => {
         cy.appUILogin();
 
         navigateToAppEditor(data.appName);
+        cy.wait(2000);
         cy.skipEditorPopover();
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.get(commonWidgetSelector.makePublicAppToggle).check();

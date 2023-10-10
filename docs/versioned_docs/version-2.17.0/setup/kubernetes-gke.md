@@ -16,7 +16,7 @@ Follow the steps below to deploy ToolJet on a GKE Kubernetes cluster.
 1. Create an SSL certificate.
 
 ```bash
-curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/certificate.yaml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/certificate.yaml
 ```
 
 Change the domain name to the domain/subdomain that you wish to use for ToolJet installation.
@@ -30,7 +30,7 @@ gcloud compute addresses create tj-static-ip --global
 3. Create k8s deployment
 
 ```bash
-curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/deployment.yaml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml
 ```
 
 Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](https://docs.tooljet.com/docs/setup/env-vars).
@@ -42,13 +42,13 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 4. Create k8s service
 
 ```bash
-curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/service.yaml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/service.yaml
 ```
 
 5. Create k8s ingress
 
 ```bash
-curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/ingress.yaml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/ingress.yaml
 ```
 
 Change the domain name to the domain/subdomain that you wish to use for ToolJet installation.
@@ -75,7 +75,7 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
 1. Setup PostgREST server
 
    ```bash
-    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/postgrest.yaml
+    kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/postgrest.yaml
    ```
 
-2. Update ToolJet deployment with the appropriate env variables [here](https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/deployment.yaml) and apply the changes.
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml) and apply the changes.

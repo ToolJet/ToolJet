@@ -1,7 +1,7 @@
 import React from 'react';
 import queryString from 'query-string';
 import { datasourceService } from '@/_services';
-import { RedirectLoader } from '@/_components';
+import { TJLoader } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import { getCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
@@ -47,7 +47,7 @@ class AuthorizeComponent extends React.Component {
     return (
       <div>
         {isLoading ? (
-          <RedirectLoader />
+          <TJLoader />
         ) : (
           <div>
             {!authSuccess ? (

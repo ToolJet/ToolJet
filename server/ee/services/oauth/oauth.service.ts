@@ -28,6 +28,7 @@ import { Response } from 'express';
 import { LicenseService } from '@services/license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { LdapService } from './ldap.service';
+import { SAMLService } from './saml.service';
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
@@ -43,6 +44,7 @@ export class OauthService {
     private readonly instanceSettingsService: InstanceSettingsService,
     private readonly licenseService: LicenseService,
     private readonly ldapService: LdapService,
+    private readonly samlService: SAMLService,
     private configService: ConfigService
   ) {}
 
@@ -71,7 +73,7 @@ export class OauthService {
   };
 
   async #findOrCreateUser(
-    { firstName, lastName, email, sso, groups: ldapGroups, profilePhoto }: any,
+    { firstName, lastName, email, sso, groups: ssoGroups, profilePhoto }: any,
     organization: DeepPartial<Organization>,
     manager?: EntityManager
   ): Promise<User> {
@@ -96,7 +98,7 @@ export class OauthService {
       defaultOrganization = await this.organizationService.create(organizationName, null, manager);
     }
 
-    const groups = ['all_users', ...(ldapGroups ? ldapGroups : [])];
+    const groups = ['all_users', ...(ssoGroups ? ssoGroups : [])];
     user = await this.usersService.create(
       { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso) },
       organization.id,
@@ -177,7 +179,7 @@ export class OauthService {
     user?: User,
     cookies?: object
   ): Promise<any> {
-    const { organizationId } = ssoResponse;
+    const { organizationId, samlResponseId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
@@ -238,6 +240,10 @@ export class OauthService {
           throw new UnauthorizedException('Ldap login disabled');
         }
         userResponse = await this.ldapService.signIn({ username, password }, configs);
+        break;
+
+      case 'saml':
+        userResponse = await this.samlService.signIn(samlResponseId, configs, configId);
         break;
 
       default:
@@ -444,4 +450,5 @@ interface SSOResponse {
   password?: string;
   codeVerifier?: string;
   organizationId?: string;
+  samlResponseId?: string;
 }

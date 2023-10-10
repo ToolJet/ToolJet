@@ -270,3 +270,26 @@ export const generateOrgInviteURL = (organizationToken: string, organizationId?:
     organizationId ? `?oid=${organizationId}` : ''
   }`;
 };
+
+export function extractFirstAndLastName(fullName: string) {
+  if (fullName) {
+    const nameParts = fullName.trim().split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ');
+
+    return {
+      firstName: firstName,
+      lastName: lastName,
+    };
+  }
+}
+
+export const getServerURL = () => {
+  const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+  const API_URL = {
+    production: process.env.TOOLJET_SERVER_URL || (process.env.SERVE_CLIENT !== 'false' ? '__REPLACE_SUB_PATH__' : ''),
+    development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
+  };
+
+  return API_URL[environment];
+};

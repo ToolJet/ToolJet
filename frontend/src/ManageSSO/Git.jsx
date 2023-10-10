@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Toggle from '@/_ui/Toggle/index';
+import { ssoConfMessages } from '@/_helpers';
 
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -36,13 +37,13 @@ export function Git({ settings, updateData }) {
           id: data.id,
           configs: { client_id: clientId, client_secret: clientSecret, host_name: hostName },
         });
-        toast.success('updated SSO configurations', {
+        toast.success(ssoConfMessages('GitHub', 'sso_updated'), {
           position: 'top-center',
         });
       },
       () => {
         setSaving(false);
-        toast.error('Error while saving SSO configurations', {
+        toast.error(ssoConfMessages('GitHub', 'sso_update_failed'), {
           position: 'top-center',
         });
       }
@@ -51,22 +52,27 @@ export function Git({ settings, updateData }) {
 
   const changeStatus = () => {
     setSaving(true);
+    const enabled_tmp = !enabled;
     organizationService.editOrganizationConfigs({ type: 'git', enabled: !enabled }).then(
       (data) => {
         setSaving(false);
-        const enabled_tmp = !enabled;
         setEnabled(enabled_tmp);
         data.id && setConfigId(data.id);
         updateData('git', { id: data.id, enabled: enabled_tmp });
-        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} GitHub SSO`, {
+        toast.success(ssoConfMessages('GitHub', 'sso_updated'), {
           position: 'top-center',
         });
       },
       () => {
         setSaving(false);
-        toast.error('Error while saving SSO configurations', {
-          position: 'top-center',
-        });
+        toast.error(
+          ssoConfMessages(ssoConfMessages('GitHub', 'sso_update_failed'), {
+            toggle_action: enabled_tmp ? 'enabled' : 'disabled',
+          }),
+          {
+            position: 'top-center',
+          }
+        );
       }
     );
   };

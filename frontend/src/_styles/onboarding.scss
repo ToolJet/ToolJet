@@ -1482,6 +1482,18 @@
     margin-bottom: 4px !important;
 }
 
+.onbaording-disabled-field {
+    color: var(--slate9);
+    background-color: var(--slate3);
+    border-color: var(--slate7);
+
+
+    &:active {
+        border-color: var(--slate7);
+        box-shadow: none;
+    }
+}
+
 // ONBOARDING-SELF-HOST STYLES END------->
 
 

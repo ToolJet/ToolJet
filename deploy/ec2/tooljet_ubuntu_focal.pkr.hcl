@@ -64,5 +64,6 @@ build {
 
   provisioner "shell" {
     script = "setup_machine.sh"
+    environment_vars = ["SSH_PRIVATE_KEY=${var.ssh_private_key}"]
   }
 }

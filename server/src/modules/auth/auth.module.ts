@@ -45,6 +45,8 @@ import { DataSourceGroupPermission } from 'src/entities/data_source_group_permis
 import { SessionService } from '@services/session.service';
 import { SessionScheduler } from 'src/schedulers/session.scheduler';
 import { LdapService } from '@ee/services/oauth/ldap.service';
+import { SAMLService } from '@ee/services/oauth/saml.service';
+import { ClearSSOResponseScheduler } from 'src/schedulers/clear_sso_response.scheduler';
 
 @Module({
   imports: [
@@ -103,7 +105,9 @@ import { LdapService } from '@ee/services/oauth/ldap.service';
     PluginsHelper,
     SessionService,
     SessionScheduler,
+    ClearSSOResponseScheduler,
     LdapService,
+    SAMLService,
   ],
   controllers: [OauthController],
   exports: [AuthService, SessionService],

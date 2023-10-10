@@ -1,8 +1,8 @@
 name: AWS AMI build using Packer config
 
 on:
-  # release:
-  #   types: [published]
+  release:
+    types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -57,7 +57,7 @@ jobs:
         with:
           command: build
           #The the below argument is specific for building EE AMI image
-          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal -var ssh_private_key=${{ secrets.SSH_PRIVATE_KEY }}
           target: .
           working_directory: deploy/ec2
         env:
