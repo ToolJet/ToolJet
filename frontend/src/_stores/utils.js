@@ -99,6 +99,9 @@ function updateValueInJson(json, path, value) {
 
 export function isParamFromTableColumn(appDiff, definition) {
   const path = generatePath(appDiff, 'columns') || generatePath(appDiff, 'actions');
+  if (!path) {
+    return false;
+  }
 
   const value2 = getValueFromJson(definition, path);
 
