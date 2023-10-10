@@ -19,6 +19,8 @@ import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
+import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -75,6 +77,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }),
     shallow
   );
+  const currentState = useCurrentState();
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
 
   const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
@@ -134,6 +137,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
+
+  const backgroundFxQuery = appDefinition?.globalSettings?.backgroundFxQuery;
 
   const SELECTED_ITEMS = {
     page: (
@@ -214,9 +219,17 @@ export const LeftSidebar = forwardRef((props, ref) => {
         toggleAppMaintenance={toggleAppMaintenance}
         isMaintenanceOn={isMaintenanceOn}
         app={app}
+        realState={currentState}
+        backgroundFxQuery={backgroundFxQuery}
       />
     ),
   };
+
+  useEffect(() => {
+    backgroundFxQuery &&
+      globalSettingsChanged({ canvasBackgroundColor: resolveReferences(backgroundFxQuery, currentState) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(resolveReferences(backgroundFxQuery, currentState))]);
 
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
