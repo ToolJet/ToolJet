@@ -58,7 +58,7 @@ export class CreateComponentTable1691006952074 implements MigrationInterface {
             isNullable: true,
           },
           {
-            name: 'validations',
+            name: 'validation',
             type: 'json',
             isNullable: true,
           },

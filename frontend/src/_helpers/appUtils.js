@@ -341,8 +341,6 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
     (query) => query.queryId !== queryConfirmationData.queryId
   );
 
-  // console.log('---arpit:: dq', { filtertedQueryConfirmation });
-
   _ref.updateQueryConfirmationList(filtertedQueryConfirmation, 'check');
   isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
@@ -1727,9 +1725,9 @@ export const buildComponentMetaDefinition = (components = {}) => {
         ...componentMeta.definition.generalStyles,
         ...currentComponentData?.component.definition.generalStyles,
       },
-      validations: {
-        ...componentMeta.definition.validations,
-        ...currentComponentData?.component.definition.validations,
+      validation: {
+        ...componentMeta.definition.validation,
+        ...currentComponentData?.component.definition.validation,
       },
       others: {
         ...componentMeta.definition.others,

@@ -46,7 +46,7 @@ export class Component {
   displayPreferences: any;
 
   @Column('simple-json')
-  validations: any;
+  validation: any;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
