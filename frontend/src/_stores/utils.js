@@ -210,15 +210,6 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
     type = updateType.componentDeleted;
 
     operation = 'delete';
-  } else if (
-    (opts.includes('containerChanges') || opts.includes('componentDefinitionChanged')) &&
-    !opts.includes('componentAdded')
-  ) {
-    const currentPageComponents = appDiff?.pages[currentPageId]?.components;
-
-    updateDiff = toRemoveExposedvariablesFromComponentDiff(currentPageComponents);
-
-    type = opts.includes('containerChanges') ? updateType.containerChanges : updateType.componentDefinitionChanged;
   } else if (opts.includes('componentAdded')) {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
@@ -237,6 +228,19 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
         const metaAttributes = _.keys(metaDiff.definition);
 
         metaAttributes.forEach((attribute) => {
+          if (metaDiff.definition[attribute]?.actions && !_.isEmpty(metaDiff.definition[attribute]?.actions?.value)) {
+            const actions = _.toArray(metaDiff.definition[attribute]?.actions?.value);
+
+            metaDiff.definition = {
+              ...metaDiff.definition,
+              [attribute]: {
+                ...metaDiff.definition[attribute],
+                actions: {
+                  value: actions,
+                },
+              },
+            };
+          }
           result[id][attribute] = metaDiff.definition[attribute];
         });
       }
@@ -262,6 +266,15 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
     }, {});
 
     type = updateType.componentDefinitionChanged;
+  } else if (
+    (opts.includes('containerChanges') || opts.includes('componentDefinitionChanged')) &&
+    !opts.includes('componentAdded')
+  ) {
+    const currentPageComponents = appDiff?.pages[currentPageId]?.components;
+
+    updateDiff = toRemoveExposedvariablesFromComponentDiff(currentPageComponents);
+
+    type = opts.includes('containerChanges') ? updateType.containerChanges : updateType.componentDefinitionChanged;
   }
 
   return { updateDiff, type, operation };
