@@ -46,8 +46,8 @@ async function createDatabase(): Promise<void> {
 
 function checkCommandAvailable(command: string) {
   try {
-    const env = Object.assign({}, process.env);
-    execFileSync('command', ['-v', command], { env }) as ExecFileSyncOptions;
+    const options = { env: process.env } as ExecFileSyncOptions;
+    execFileSync('which', [command], options);
   } catch (error) {
     throw `Error: ${command} not found. Make sure it's installed and available in the system's PATH.`;
   }
