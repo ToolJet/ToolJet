@@ -15,6 +15,8 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 const NO_OF_GRIDS = 43;
 
@@ -251,7 +253,11 @@ export const SubContainer = ({
         opts.componentAdded = true;
       }
 
-      appDefinitionChanged(newDefinition, opts);
+      const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
+
+      if (shouldUpdate) {
+        appDefinitionChanged(newDefinition, opts);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
