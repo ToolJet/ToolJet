@@ -72,6 +72,8 @@ function generatePath(obj, targetKey, currentPath = '') {
 }
 
 function getValueFromJson(json, path) {
+  if (!path || typeof path !== 'string') return null;
+
   let value = json;
   path.split('.').forEach((key) => {
     value = value[key];
@@ -93,6 +95,14 @@ function updateValueInJson(json, path, value) {
   });
   obj[lastKey] = value;
   return json;
+}
+
+export function isParamFromTableColumn(appDiff, definition) {
+  const path = generatePath(appDiff, 'columns') || generatePath(appDiff, 'actions');
+
+  const value2 = getValueFromJson(definition, path);
+
+  return value2 !== undefined;
 }
 
 export const computeComponentPropertyDiff = (appDiff, definition, opts) => {

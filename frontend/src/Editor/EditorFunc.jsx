@@ -8,7 +8,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import _, { cloneDeep, isEqual, isEmpty, debounce, omit, isNull, isUndefined } from 'lodash';
+import _, { cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -55,9 +55,8 @@ import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore'
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
-import { computeAppDiff, computeComponentPropertyDiff, resetAllStores } from '@/_stores/utils';
+import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
-import { shallow } from 'zustand/shallow';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
@@ -688,9 +687,7 @@ const EditorComponent = (props) => {
     await fetchDataQueries(data.editing_version?.id, true, true);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
-    for (const currentEvent of currentPageEvents ?? []) {
-      await handleEvent(currentEvent.name, currentPageEvents);
-    }
+    await handleEvent('onPageLoad', currentPageEvents);
   };
 
   //****** */
@@ -800,6 +797,16 @@ const EditorComponent = (props) => {
       }
 
       updateAppDefinitionDiff(diffPatches);
+
+      const isParamDiffFromTableColumn = opts?.containerChanges
+        ? isParamFromTableColumn(diffPatches, updatedAppDefinition)
+        : false;
+
+      if (isParamDiffFromTableColumn) {
+        opts.componentDefinitionChanged = true;
+        opts.isParamFromTableColumn = true;
+        delete opts.containerChanges;
+      }
 
       updateState({
         appDiffOptions: opts,
@@ -1071,7 +1078,7 @@ const EditorComponent = (props) => {
 
       if (newDefinition.pages[currentPageId].components?.[componentId].component.component === 'Tabs') {
         childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter((key) =>
-          newDefinition.pages[currentPageId].components[key].parent?.startsWith(componentId)
+          newDefinition.pages[currentPageId].components[key].component.parent?.startsWith(componentId)
         );
       } else {
         childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter(
@@ -1286,11 +1293,7 @@ const EditorComponent = (props) => {
 
     const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
-    (async () => {
-      for (const currentEvent of currentPageEvents ?? []) {
-        await handleEvent(currentEvent.name, currentPageEvents);
-      }
-    })();
+    handleEvent('onPageLoad', currentPageEvents);
   };
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
@@ -1786,7 +1789,7 @@ const EditorComponent = (props) => {
                 <div className="pages-container">
                   {selectedComponents.length === 1 &&
                     !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
-                    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0].id]) && (
+                    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0]?.id]) && (
                       <Inspector
                         moveComponents={moveComponents}
                         componentDefinitionChanged={componentDefinitionChanged}
@@ -1802,7 +1805,7 @@ const EditorComponent = (props) => {
                 </div>
               )}
 
-              {currentSidebarTab === 2 && (
+              {(selectedComponents.length > 1 || currentSidebarTab === 2) && (
                 <WidgetManager
                   componentTypes={componentTypes}
                   zoomLevel={zoomLevel}
