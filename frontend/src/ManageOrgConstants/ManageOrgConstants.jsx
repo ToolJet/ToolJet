@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { authenticationService, orgEnvironmentConstantService, appEnvironmentService } from '@/_services';
+import {
+  authenticationService,
+  orgEnvironmentConstantService,
+  appEnvironmentService,
+  licenseService,
+} from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { capitalize } from 'lodash';
@@ -21,7 +26,7 @@ const MODES = Object.freeze({
   NULL: null,
 });
 
-const ManageOrgConstantsComponent = ({ darkMode, featureAccess }) => {
+const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [isManageVarDrawerOpen, setIsManageVarDrawerOpen] = useState(false);
   const [constants, setConstants] = useState([]);
   const [environments, setEnvironments] = useState([]);
@@ -40,7 +45,16 @@ const ManageOrgConstantsComponent = ({ darkMode, featureAccess }) => {
   const [selectedConstant, setSelectedConstant] = useState(null);
 
   const { group_permissions, super_admin, admin } = authenticationService.currentSessionValue;
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const [licenseValid, setLicenseValid] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const featureAccess = await licenseService.getFeatureAccess();
+      setLicenseValid(!featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid);
+    };
+
+    fetchData();
+  }, []);
 
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);

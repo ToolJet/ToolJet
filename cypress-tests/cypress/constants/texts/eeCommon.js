@@ -50,7 +50,7 @@ export const instanceSettingsText = {
   allUsersTab: "All users",
   manageInstanceSettings: "Manage instance settings",
   typeColumnHeader: "Type",
-  workspaceColumnHeader: "Worksapces",
+  workspaceColumnHeader: "Workspaces",
   superAdminType: "instance",
   viewModalTitle: "Workspaces of The Developer",
   archiveAllButton: "Archive All",

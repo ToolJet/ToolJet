@@ -39,6 +39,16 @@ import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 import { InstanceSettings } from '@/InstanceSettingsPage';
+import { ManageAllUsers } from '@/ManageAllUsers';
+import { ManageInstanceSettings, ManageWhiteLabelling } from '@/ManageInstanceSettings';
+import { ManageLicenseKey } from '@/ManageLicenseKey';
+import { ManageOrgUsers } from '@/ManageOrgUsers';
+import { ManageGroupPermissions } from '@/ManageGroupPermissions';
+import { ManageSSO } from '@/ManageSSO';
+import { ManageOrgVars } from '@/ManageOrgVars';
+import { CopilotSetting } from '@/CopilotSettings';
+import { CustomStylesEditor } from '@/CustomStylesEditor';
+import { ManageOrgConstants } from '@/ManageOrgConstants';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import LdapLoginPage from '../LdapLogin';
@@ -407,7 +417,35 @@ class AppComponent extends React.Component {
                     <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
-              />
+              >
+                <Route
+                  path="users"
+                  element={<ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="groups"
+                  element={<ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route path="sso" element={<ManageSSO switchDarkMode={this.switchDarkMode} darkMode={darkMode} />} />
+                <Route
+                  path="workspace-variables"
+                  element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="workspace-constants"
+                  element={<ManageOrgConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="copilot"
+                  element={<CopilotSetting />}
+                  switchDarkMode={this.switchDarkMode}
+                  darkMode={darkMode}
+                />
+                <Route
+                  path="custom-styles"
+                  element={<CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+              </Route>
               <Route
                 exact
                 path="/instance-settings"
@@ -416,7 +454,24 @@ class AppComponent extends React.Component {
                     <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
-              />
+              >
+                <Route
+                  path="all-users"
+                  element={<ManageAllUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="manage-instance-settings"
+                  element={<ManageInstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="white-labelling"
+                  element={<ManageWhiteLabelling switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="license"
+                  element={<ManageLicenseKey switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+              </Route>
               <Route
                 exact
                 path="/:workspaceId/audit-logs"

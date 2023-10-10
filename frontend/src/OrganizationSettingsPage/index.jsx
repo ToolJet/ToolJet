@@ -1,28 +1,24 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { useParams, Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import cx from 'classnames';
 import Layout from '@/_ui/Layout';
-import { ManageOrgUsers } from '@/ManageOrgUsers';
-import { ManageGroupPermissions } from '@/ManageGroupPermissions';
-import { ManageSSO } from '@/ManageSSO';
-import { ManageOrgVars } from '@/ManageOrgVars';
-import { CustomStylesEditor } from '@/CustomStylesEditor';
 import { authenticationService } from '@/_services';
-import { CopilotSetting } from '@/CopilotSettings';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 import { licenseService } from '../_services/license.service';
 import { LicenseBanner } from '@/LicenseBanner';
-import { ManageOrgConstants } from '@/ManageOrgConstants';
 import Skeleton from 'react-loading-skeleton';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
-  const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const [featureAccess, setFeatureAccess] = useState({});
   const [featuresLoaded, setFeaturesLoaded] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const [selectedTab, setSelectedTab] = useState('Users');
+  const { workspaceId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const sideBarNavs = [
     'Users',
@@ -36,19 +32,24 @@ export function OrganizationSettings(props) {
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
+      case 'users':
         return 'Users & permissions';
       case 'Groups':
-        return 'manageGroups';
+      case 'groups':
+        return 'Groups';
       case 'SSO':
-        return 'manageSSO';
+      case 'sso':
+        return 'SSO';
       case 'Workspace variables':
-        return 'manageEnvVars';
+      case 'workspace-variables':
+        return 'Workspace variables';
       case 'Copilot':
-        return 'manageCopilot';
-      case 'Custom styles':
-        return 'manageCustomstyles';
-      case 'Workspace constants':
-        return 'manageOrgConstants';
+      case 'copilot':
+        return 'Copilot';
+      case 'custom-styles':
+        return 'Custom styles';
+      case 'workspace-constants':
+        return 'Workspace constants';
       default:
         return groupName;
     }
@@ -59,23 +60,35 @@ export function OrganizationSettings(props) {
       setFeatureAccess(data);
       setFeaturesLoaded(true);
     });
-    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   };
 
   useEffect(() => {
-    fetchFeatureAccess();
-    const subscription = authenticationService.currentSession.subscribe((newOrd) => {
-      setAdmin(newOrd?.admin);
-      admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
-    });
+    const fetchData = async () => {
+      await fetchFeatureAccess();
+      const subscription = authenticationService.currentSession.subscribe((newOrd) => {
+        setAdmin(newOrd?.admin);
+        admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
+      });
 
-    () => subscription.unsubsciption();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticationService.currentSessionValue?.admin]);
-
-  const goTooOrgConstantsDashboard = () => {
-    setSelectedTab('manageOrgConstants');
-  };
+      () => subscription.unsubsciption();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (featuresLoaded) {
+        const selectedTabFromRoute = location.pathname.split('/').pop();
+        if (selectedTabFromRoute === 'workspace-settings') {
+          setSelectedTab(admin ? 'Users & permissions' : 'Workspace variables');
+          navigate(
+            admin
+              ? `/${workspaceId}/workspace-settings/users`
+              : `/${workspaceId}/workspace-settings/workspace-variables`
+          );
+        } else {
+          setSelectedTab(defaultOrgName(selectedTabFromRoute));
+        }
+        updateSidebarNAV(defaultOrgName(selectedTabFromRoute));
+      }
+    };
+    fetchData();
+  }, [featuresLoaded, navigate, workspaceId, authenticationService.currentSessionValue?.admin]);
 
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
@@ -88,33 +101,44 @@ export function OrganizationSettings(props) {
                   const Wrapper = ({ children }) => <>{children}</>;
                   return (
                     <Wrapper key={index}>
-                      {(admin ||
-                        item == 'Workspace variables' ||
-                        item == 'Copilot' ||
-                        item == 'Workspace constants') && (
-                        <FolderList
-                          className="workspace-settings-nav-items"
-                          key={index}
-                          onClick={() => {
-                            setSelectedTab(defaultOrgName(item));
-                            if (item == 'Users') updateSidebarNAV('Users & permissions');
-                            else updateSidebarNAV(item);
-                          }}
-                          selectedItem={selectedTab == defaultOrgName(item)}
-                          renderBadgeForItems={['Workspace constants']}
-                          renderBadge={() => (
-                            <span
-                              style={{ width: '40px', textTransform: 'lowercase' }}
-                              className="badge bg-color-primary badge-pill"
-                            >
-                              new
-                            </span>
-                          )}
-                          dataCy={item.toLowerCase().replace(/\s+/g, '-')}
-                        >
-                          {item}
-                        </FolderList>
-                      )}
+                      <Link
+                        to={`/${workspaceId}/workspace-settings/${item.toLowerCase().replace(/\s+/g, '-')}`} // Update the URL path here
+                        key={index}
+                        style={{
+                          textDecoration: 'none',
+                          border: 'none',
+                          color: 'inherit',
+                          outline: 'none',
+                          backgroundColor: 'inherit',
+                        }}
+                      >
+                        {(admin ||
+                          item == 'Workspace variables' ||
+                          item == 'Copilot' ||
+                          item == 'Workspace constants') && (
+                          <FolderList
+                            className="workspace-settings-nav-items"
+                            key={index}
+                            onClick={() => {
+                              if (item == 'Users') updateSidebarNAV('Users & permissions');
+                              else updateSidebarNAV(item);
+                            }}
+                            selectedItem={selectedTab == defaultOrgName(item)}
+                            renderBadgeForItems={['Workspace constants']}
+                            renderBadge={() => (
+                              <span
+                                style={{ width: '40px', textTransform: 'lowercase' }}
+                                className="badge bg-color-primary badge-pill"
+                              >
+                                new
+                              </span>
+                            )}
+                            dataCy={item.toLowerCase().replace(/\s+/g, '-')}
+                          >
+                            {item}
+                          </FolderList>
+                        )}
+                      </Link>
                     </Wrapper>
                   );
                 })
@@ -134,22 +158,7 @@ export function OrganizationSettings(props) {
           {featuresLoaded ? (
             <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
               <div className="w-100">
-                {selectedTab === 'Users & permissions' && <ManageOrgUsers darkMode={props.darkMode} />}
-                {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
-                {selectedTab === 'manageSSO' && <ManageSSO />}
-                {selectedTab === 'manageEnvVars' && (
-                  <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
-                )}
-                {selectedTab === 'manageCopilot' && <CopilotSetting />}
-                {selectedTab === 'manageCustomstyles' && (
-                  <CustomStylesEditor
-                    darkMode={props.darkMode}
-                    disabled={!licenseValid || featureAccess?.customStyling !== true}
-                  />
-                )}
-                {selectedTab === 'manageOrgConstants' && (
-                  <ManageOrgConstants darkMode={props.darkMode} featureAccess={featureAccess} />
-                )}
+                <Outlet />
               </div>
             </div>
           ) : (

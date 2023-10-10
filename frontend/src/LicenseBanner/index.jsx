@@ -43,7 +43,7 @@ export function LicenseBanner({
     'tables',
     'permissions',
     'data source permissions',
-    'Custom groups and permissions',
+    'Custom groups & permissions',
     'Instance settings',
     'White labelling',
     'Custom styles',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { whiteLabellingService, authenticationService } from '@/_services';
+import { whiteLabellingService, authenticationService, licenseService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
@@ -25,8 +25,25 @@ class ManageWhiteLabellingComponent extends React.Component {
   }
 
   componentDidMount() {
+    this.fetchFeatureAccess();
     this.fetchSettings();
   }
+
+  setDisabledStatus = (licenseData) => {
+    const disabled =
+      licenseData?.licenseStatus?.isExpired ||
+      !licenseData?.licenseStatus?.isLicenseValid ||
+      licenseData?.whiteLabelling !== true;
+    this.setState({ disabled });
+  };
+
+  fetchFeatureAccess = () => {
+    this.setState({ isLoading: true });
+    licenseService.getFeatureAccess().then((data) => {
+      this.setDisabledStatus(data);
+      this.setState({ isLoading: false });
+    });
+  };
 
   fetchSettings = () => {
     this.setState({ isLoading: true });
@@ -63,7 +80,7 @@ class ManageWhiteLabellingComponent extends React.Component {
       .then(() => {
         window.location = `${window.public_config?.TOOLJET_HOST}${
           window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-        }instance-settings?save_whiteLabelling=success`;
+        }instance-settings/white-labelling`;
         this.setState({ isSaving: false, hasChanges: false });
         this.fetchSettings();
       })
@@ -103,8 +120,7 @@ class ManageWhiteLabellingComponent extends React.Component {
   };
 
   render() {
-    const { settings, isSaving } = this.state;
-    const { disabled } = this.props;
+    const { settings, isSaving, disabled, isLoading } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper instance-settings-page animation-fade">
@@ -134,7 +150,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                       alignItems: 'flex-start',
                     }}
                   >
-                    {Object.keys(settings).length !== 0 ? (
+                    {!isLoading && Object.keys(settings).length !== 0 ? (
                       <form noValidate>
                         <div key="App Logo" className="form-group mb-3">
                           <label className="form-label" data-cy="name-label">

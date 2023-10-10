@@ -10,7 +10,7 @@ import { licenseService } from '@/_services/license.service';
 import { getDateDifferenceInDays, convertDateFormat } from '@/_helpers/utils';
 import Skeleton from 'react-loading-skeleton';
 
-function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
+function ManageLicenseKey() {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState('licenseKey');
   const [sidebarNavs, setSidebarNavs] = useState(['License Key']);
@@ -41,7 +41,6 @@ function ManageLicenseKey({ fetchFeatureAccessForInstanceSettings }) {
     setIsLoading(true);
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess(data);
-      fetchFeatureAccessForInstanceSettings();
       setSidebarNavs(['License Key', 'Limits', 'Access', 'Domain']);
       setIsLoading(false);
     });

@@ -337,8 +337,9 @@ class ManageGroupPermissionsComponent extends React.Component {
                           <LicenseTooltip
                             limits={featureAccess}
                             feature={'Custom groups'}
-                            isAvailable={true}
+                            isAvailable={false}
                             noTooltipIfValid={true}
+                            customMessage={'Custom groups are available only in paid plans'}
                           >
                             {children}
                           </LicenseTooltip>
@@ -377,7 +378,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                       classes="group-banner"
                       size="xsmall"
                       type={featureAccess?.licenseStatus?.licenseType}
-                      customMessage={'You can only create new groups in our paid plans.'}
+                      customMessage={'Custom groups & permissions are available in our paid plans.'}
                     />
                   )}
                 </div>

@@ -20,13 +20,28 @@ class ManageInstanceSettingsComponent extends React.Component {
       settings: [],
       options: {},
       hasChanges: false,
+      disabled: false,
       initialOptions: {},
     };
   }
 
   componentDidMount() {
+    this.fetchFeatureAccess();
     this.fetchSettings();
   }
+
+  setDisabledStatus = (licenseStatus) => {
+    const disabled = licenseStatus?.isExpired || !licenseStatus?.isLicenseValid;
+    this.setState({ disabled });
+  };
+
+  fetchFeatureAccess = () => {
+    this.setState({ isLoading: true });
+    licenseService.getFeatureAccess().then((data) => {
+      this.setDisabledStatus(data?.licenseStatus);
+      this.setState({ isLoading: false });
+    });
+  };
 
   fetchSettings = () => {
     this.setState({ isLoading: true });
@@ -85,8 +100,7 @@ class ManageInstanceSettingsComponent extends React.Component {
   };
 
   render() {
-    const { options, isSaving } = this.state;
-    const { disabled } = this.props;
+    const { options, isSaving, disabled, isLoading, hasChanges } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper instance-settings-page animation-fade">
@@ -106,7 +120,7 @@ class ManageInstanceSettingsComponent extends React.Component {
                     {disabled && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>}
                   </div>
                 </div>
-                <div className="card-body" style={{ width: '880px', height: '499px', padding: '24px' }}>
+                <div className="card-body">
                   <div
                     className="card-content"
                     style={{
@@ -116,7 +130,7 @@ class ManageInstanceSettingsComponent extends React.Component {
                       alignItems: 'flex-start',
                     }}
                   >
-                    {Object.entries(options) != 0 ? (
+                    {!isLoading && Object.entries(options) != 0 ? (
                       <form noValidate>
                         {options.map((option) => (
                           <div key={option?.key} className="form-group mb-3">
@@ -167,7 +181,7 @@ class ManageInstanceSettingsComponent extends React.Component {
                   </button>
                   <ButtonSolid
                     onClick={this.saveSettings}
-                    disabled={isSaving || disabled || !this.state.hasChanges}
+                    disabled={isSaving || disabled || !hasChanges}
                     data-cy="save-button"
                     variant="primary"
                     className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}

@@ -5,15 +5,24 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { LicenseBanner } from '@/LicenseBanner';
 
-import { customStylesService } from '@/_services';
+import { licenseService, customStylesService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import InformationCircle from '@/_ui/Icon/solidIcons/InformationCircle';
 
-export default function CustomStylesEditor({ darkMode, disabled = false }) {
+export default function CustomStylesEditor({ darkMode }) {
   const { t } = useTranslation();
 
   const [styles, setStyles] = useState();
   const [initialStyles, setInitialStyles] = useState();
+  const [disabled, setDisabledStatus] = useState(false);
+
+  const fetchFeatureAccess = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      setDisabledStatus(
+        data?.licenseStatus?.isExpired || !data?.licenseStatus?.isLicenseValid || data?.customStyling !== true
+      );
+    });
+  };
 
   const fetchStyles = async () => {
     try {
@@ -30,6 +39,7 @@ export default function CustomStylesEditor({ darkMode, disabled = false }) {
   };
 
   useEffect(() => {
+    fetchFeatureAccess();
     fetchStyles();
   }, []);
 

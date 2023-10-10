@@ -229,13 +229,17 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       to={getPrivateRoute('workspace_settings')}
                       onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
                       className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === getPrivateRoute('workspace_settings') && `current-seleted-route`
+                        router.pathname.startsWith(getPrivateRoute('workspace_settings')) && `current-seleted-route`
                       }`}
                       data-cy="icon-workspace-settings"
                     >
                       <SolidIcon
                         name="settings"
-                        fill={router.pathname === getPrivateRoute('workspace_settings') ? '#3E63DD' : 'var(--slate8)'}
+                        fill={
+                          router.pathname.startsWith(getPrivateRoute('workspace_settings'))
+                            ? '#3E63DD'
+                            : 'var(--slate8)'
+                        }
                         width={28}
                       />
                     </Link>
@@ -246,15 +250,15 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <ToolTip message="Instance settings" placement="right">
                       <Link
                         to="/instance-settings"
+                        onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
                         className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === '/instance-settings' && `current-seleted-route`
+                          router.pathname.startsWith('/instance-settings') && `current-seleted-route`
                         }`}
                         data-cy="icon-instance-settings"
-                        onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
                       >
                         <SolidIcon
                           name="instancesettings"
-                          fill={router.pathname === '/instance-settings' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                          fill={router.pathname.startsWith('/instance-settings') ? '#3E63DD' : 'var(--slate8)'}
                         />
                       </Link>
                     </ToolTip>

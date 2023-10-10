@@ -33,11 +33,26 @@ class ManageAllUsersComponent extends React.Component {
       isUpdatingUser: false,
       updatingUser: null,
       userLimits: {},
+      disabled: false,
     };
   }
   componentDidMount() {
+    this.fetchFeatureAccess();
     this.fetchAllUserLimits();
   }
+
+  setDisabledStatus = (licenseStatus) => {
+    const disabled = licenseStatus?.isExpired || !licenseStatus?.isLicenseValid;
+    this.setState({ disabled });
+  };
+
+  fetchFeatureAccess = () => {
+    this.setState({ isLoading: true });
+    licenseService.getFeatureAccess().then((data) => {
+      this.setDisabledStatus(data?.licenseStatus);
+      this.setState({ isLoading: false });
+    });
+  };
 
   fetchUsers = (page = 1, options = {}) => {
     this.setState({
@@ -203,8 +218,6 @@ class ManageAllUsersComponent extends React.Component {
 
     const { superadminsCount } = this.state.userLimits;
 
-    const { isLicenseExpired, isLicenseValid } = this.props;
-
     const usersTableCustomStyle = { height: 'calc(100vh - 400px)' };
 
     return (
@@ -225,7 +238,7 @@ class ManageAllUsersComponent extends React.Component {
             archiveAll={this.archiveAll}
             archivingFromAllOrgs={this.state.archivingFromAllOrgs}
             openEditModal={this.openEditModal}
-            disabled={isLicenseExpired || !isLicenseValid}
+            disabled={this.state.disabled}
           />
 
           <UserEditModal
@@ -236,7 +249,7 @@ class ManageAllUsersComponent extends React.Component {
             darkMode={this.props.darkMode}
             isUpdatingUser={isUpdatingUser}
             updateUser={this.updateUser}
-            disabled={isLicenseExpired || !isLicenseValid}
+            disabled={this.state.disabled}
             superadminsCount={superadminsCount}
           />
 
