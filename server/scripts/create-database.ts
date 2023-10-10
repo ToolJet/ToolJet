@@ -100,7 +100,7 @@ async function createTooljetDb(envVars, dbName): Promise<void> {
 }
 
 try {
-  checkCommandAvailable('dropdb');
+  checkCommandAvailable('createdb');
   const nodeEnvPath = path.resolve(process.cwd(), process.env.NODE_ENV === 'test' ? '../.env.test' : '../.env');
   const fallbackPath = path.resolve(process.cwd(), '../.env');
 
