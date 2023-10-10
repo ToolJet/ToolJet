@@ -42,7 +42,7 @@ export const useDataQueriesStore = create(
           if (data.data_queries.length !== 0) {
             const queryConfirmationList = [];
             data.data_queries.forEach(({ id, name, options }) => {
-              if (options && options?.runOnPageLoad) {
+              if (options && options?.requestConfirmation && options?.runOnPageLoad) {
                 queryConfirmationList.push({ queryId: id, queryName: name });
               }
             });

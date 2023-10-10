@@ -134,7 +134,7 @@ class ViewerComponent extends React.Component {
 
     if (dataQueries.length > 0) {
       dataQueries.forEach((query) => {
-        if (query?.options && query?.options?.runOnPageLoad) {
+        if (query?.options && query?.options?.requestConfirmation && query?.options?.runOnPageLoad) {
           queryConfirmationList.push({ queryId: query.id, queryName: query.name });
         }
 
