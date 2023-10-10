@@ -341,7 +341,9 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
     (query) => query.queryId !== queryConfirmationData.queryId
   );
 
-  _ref.updateQueryConfirmationList(filtertedQueryConfirmation);
+  // console.log('---arpit:: dq', { filtertedQueryConfirmation });
+
+  _ref.updateQueryConfirmationList(filtertedQueryConfirmation, 'check');
   isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
 
@@ -927,7 +929,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
   const options = getQueryVariables(dataQuery.options, getCurrentState());
 
-  if (dataQuery.options.requestConfirmation) {
+  if (dataQuery.options?.requestConfirmation) {
     const runOnPageLoad = dataQuery.options?.runOnPageLoad ?? false;
     const queryConfirmationList = runOnPageLoad ? _ref.queryConfirmationList : [];
 
