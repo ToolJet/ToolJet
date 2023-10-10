@@ -23,11 +23,10 @@ export const PrivateRoute = ({ children }) => {
     */
     const isSwitchingPages = location.state?.isSwitchingPage;
     /* replacing the state. otherwise the route will keep isSwitchingPage value `true` */
-    navigate({
-      pathname: location.pathname,
-      search: location.search,
-      replace: true,
-    });
+    const currentRouteState = location.state; // Get the current route's state
+    isSwitchingPages && delete currentRouteState['isSwitchingPages'];
+    const newState = { ...currentRouteState, isSwitchingPages: false };
+    navigate({ pathname: location.pathname, search: location.search }, { replace: true, state: newState });
     if (isEditorOrViewerGoingToRender && group_permissions && !isSwitchingPages) {
       const componentType = pathname.startsWith('/apps/') ? 'editor' : 'viewer';
       const { slug } = params;
