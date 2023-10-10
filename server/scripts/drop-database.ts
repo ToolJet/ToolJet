@@ -38,7 +38,8 @@ function dropDatabase(): void {
 
 function checkCommandAvailable(command: string) {
   try {
-    execFileSync('command', ['-v', command]);
+    const options = process.env as ExecFileSyncOptions;
+    execFileSync('command', ['-v', command], options);
   } catch (error) {
     throw `Error: ${command} not found. Make sure it's installed and available in the system's PATH.`;
   }
