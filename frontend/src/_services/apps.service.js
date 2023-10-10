@@ -103,7 +103,9 @@ function deleteApp(id) {
 
 function getAppBySlug(slug) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then((response) =>
+    handleResponse(response, true)
+  );
 }
 
 function getAppByVersion(appId, versionId) {
