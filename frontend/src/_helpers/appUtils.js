@@ -341,8 +341,6 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
     (query) => query.queryId !== queryConfirmationData.queryId
   );
 
-  // console.log('---arpit:: dq', { filtertedQueryConfirmation });
-
   _ref.updateQueryConfirmationList(filtertedQueryConfirmation, 'check');
   isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
@@ -587,6 +585,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'switch-page': {
         const { name, disabled } = _ref.appDefinition.pages[event.pageId];
+
         // Don't allow switching to disabled page in editor as well as viewer
         if (!disabled) {
           _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));

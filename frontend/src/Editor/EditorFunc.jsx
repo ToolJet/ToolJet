@@ -1260,14 +1260,12 @@ const EditorComponent = (props) => {
   };
 
   const switchPage = (pageId, queryParams = []) => {
-    // document.getElementById('real-canvas').scrollIntoView();
     if (currentPageId === pageId && currentState.page.handle === appDefinition?.pages[pageId]?.handle) {
       return;
     }
     const { name, handle } = appDefinition.pages[pageId];
 
     if (!name || !handle) return;
-
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
