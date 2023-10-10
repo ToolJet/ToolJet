@@ -1789,7 +1789,7 @@ export const widgets = [
   },
   {
     name: 'Textarea',
-    displayName: 'Textarea',
+    displayName: 'Text Area',
     description: 'Text area form field',
     component: 'TextArea',
     defaultSize: {
