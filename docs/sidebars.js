@@ -218,6 +218,8 @@ const sidebars = {
       'items': [
         'tooljet-concepts/what-are-components',
         'tooljet-concepts/styling-components',
+        'tooljet-concepts/integrating-data',
+
       ],
     },
     {

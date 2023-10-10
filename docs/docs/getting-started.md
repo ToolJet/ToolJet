@@ -1,7 +1,7 @@
 ---
 id: getting-started
 title: Getting Started
-description: ToolJet is an open-source low-code framework to build and deploy custom internal tools. ToolJet can connect to your data sources such as databases ( PostgreSQL, MongoDB, MS SQL Server, Snowflake, , BigQuery, etc ), API/GraphQL endpoints, SaaS tools ( Airtable, Stripe, Google Sheets, etc ) and cloud object storage services ( AWS S3, Google Cloud Storage and Minio ). Once the data sources are connected, ToolJet can run queries on these data sources to fetch and update data. The data fetched from data sources can be visualised and modified using the UI widgets such as tables, charts, forms, etc.
+description: ToolJet is an low-code framework to build and deploy custom internal tools. ToolJet can connect to your data sources such as databases ( PostgreSQL, MongoDB, MS SQL Server, Snowflake, , BigQuery, etc ), API/GraphQL endpoints, SaaS tools ( Airtable, Stripe, Google Sheets, etc ) and cloud object storage services ( AWS S3, Google Cloud Storage and Minio ). Once the data sources are connected, ToolJet can run queries on these data sources to fetch and update data. The data fetched from data sources can be visualised and modified using the UI widgets such as tables, charts, forms, etc.
 slug: /
 ---
 
@@ -14,23 +14,9 @@ slug: /
 
 ## What is ToolJet
 
-ToolJet is an **open-source low-code framework** to build and deploy custom internal tools. With ToolJet's App-Builder, you can build applications in minutes using low-code, pre-built components and easy integration options. 
+ToolJet is a **low-code framework** to build and deploy custom internal tools. Using ToolJet's low-code capabilities, a suite of over 45 pre-designed components, and straightforward integration options, developers can create applications in minutes.
 
-## How ToolJet works
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/getting_started/howtjworks.webp" width="100%" height="100%" alt="How ToolJet works flow" />
-
-</div>
-
-**With ToolJet, you can build apps in 3 simple steps:**
-
-1. **Connect to datasources:** Connect to the ToolJet's built-in database **[ToolJet DB](/docs/tooljet-database)** (built on top of PostgreSQL) or your existing data sources such as PostgreSQL, MySQL, Firestore, Stripe, Google Sheets, API endpoints, etc.
-
-2. **Build queries:** ToolJet comes with query builders for all supported data sources. You can also write **[Javascript](/docs/data-sources/run-js)** or **[Python](/docs/data-sources/run-py)** queries or use **[Transformations](/docs/tutorial/transformations)** to transform the query response.
-
-3. **Build User Interface:** ToolJet's visual **[App Builder](/docs/app-builder/overview)** allows you to drag and drop components ( Eg: tables, charts, forms, etc ) to quickly build the user-interface of the apps. Components have events such as `on click`, `on row selected`, `on page changed`, etc. ToolJet apps can be used in light and dark mode.
+Design rich UIs by simply dragging and dropping components on the visual app-builder. Craft and manage complex queries, and connect to a variety of data sources using the low-code query builder. Regulate the access levels for each user to ToolJet Apps and additional resources through a streamlined user and group management system.
 
 ## Quickstart Guide
 
@@ -55,40 +41,100 @@ Start by setting up a table in ToolJet's built-in **[database](/docs/tooljet-dat
 
 Click on the **Dashboard** button on the sidebar and click on the **Create new app** button. A new application will be created with an empty canvas. 
 
-<div style={{textAlign: 'center'}}>
+<!-- <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/app-builder-overview-v2.png" alt="App-Builder Overview" />
+</div> -->
+
+<div style={{padding: '10px', marginBottom: '15px'}}>
+    <iframe
+        className="screenshot-full"
+        src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/60f6080c-abb9-4520-b524-3c4bfb8f8a0a-flo.html"
+        style={{width: '100%', height: '450px'}}
+        width="100%"
+        height="450px"
+        frameborder="0"
+        allowfullscreen="allowfullscreen"
+        webkitallowfullscreen
+        mozallowfullscreen
+        allowfullscreen>
+    </iframe>
 </div>
 
-Rename the application to *Employee Directory*. On the right side, you'll find the **Component Library** with a list of ready-to-use components. Simply drag and drop these onto the canvas to build your app. For handling data, use the **Query Panel** located at the bottom of the screen.
+Rename the application to `Employee Directory`. 
+
+<!-- On the right side, you'll find the **Component Library** with a list of ready-to-use components. Simply drag and drop these onto the canvas to build your app. For handling data, use the **Query Panel** located at the bottom of the screen. -->
 
 Click and drag a **[Table](/docs/widgets/table)** component to the canvas. 
 
-<div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/add-a-table-v2.png" alt="Drag and Drop Table" />
+<div style={{padding: '10px', marginBottom: '15px'}}>
+    <iframe
+        className="screenshot-full"
+        src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/cb4c26a4-95ac-4c19-877b-f17e9a602591-flo.html"
+        style={{width: '100%', height: '450px'}}
+        width="100%"
+        height="450px"
+        frameborder="0"
+        allowfullscreen="allowfullscreen"
+        webkitallowfullscreen
+        mozallowfullscreen
+        allowfullscreen>
+    </iframe>
 </div>
 
-<i>On clicking on the Table component or any other component on the canvas, its configuration panel will appear on the right. You can customize the functionality and styling of the components in the configuration panel.</i>
-<br/>
-<br/>
+
+<!-- <div style={{textAlign: 'center'}}>
+    <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/add-a-table-v2.png" alt="Drag and Drop Table" />
+</div> -->
+
+<!-- <i>On clicking on the Table component or any other component on the canvas, its configuration panel will appear on the right. You can customize the functionality and styling of the components in the configuration panel.</i> -->
+
 
 ### Integrate Data
 
 To fetch data in the App-Builder:
 - Select **ToolJet DB** in the Query Panel 
-- Select *employees* as Table name and **List rows** as Operations
+- Select **employees** as Table name and **List rows** as Operations
 - Click on the **Run** button in the query panel to fetch the data
-- Rename the query to *getEmployees*
+- Rename the query to `getEmployees`
 - Enable the **Run this query on application load?** toggle to automatically run this query when the application starts
 
-<div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/first-query-v2.png" alt="Fetch Data" />
+<div style={{padding: '10px', marginBottom: '15px'}}>
+    <iframe
+        className="screenshot-full"
+        src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/c3838733-4dc1-4a2b-b1ad-9786931f910b-flo.html"
+        style={{width: '100%', height: '450px'}}
+        width="100%"
+        height="450px"
+        frameborder="0"
+        allowfullscreen="allowfullscreen"
+        webkitallowfullscreen
+        mozallowfullscreen
+        allowfullscreen>
+    </iframe>
 </div>
+
 
 Click on the **Preview** button to see a preview of the fetched data. 
 
+<div style={{padding: '10px', marginBottom: '15px'}}>
+    <iframe
+        className="screenshot-full"
+        src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/a87fe800-2abc-444c-b369-3b3aad23bba0-flo.html"
+        style={{width: '100%', height: '450px'}}
+        width="100%"
+        height="450px"
+        frameborder="0"
+        allowfullscreen="allowfullscreen"
+        webkitallowfullscreen
+        mozallowfullscreen
+        allowfullscreen>
+    </iframe>
+</div>
+
+<!-- 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/query-preview-v2.png" alt="Query Preview" />
-</div>
+</div> -->
 
 ### Bind Data To UI
 
@@ -98,21 +144,36 @@ Click on the **Table** component to open its configuration panel on the right. U
 {{queries.getEmployees.data}}
 ```
 
-<i>Use double curly braces in ToolJet App-Builder to write custom JavaScript or access query results, component-related values and other variables.</i>
-
-<div style={{textAlign: 'center', marginTop:'15px', marginBottom:`15px`}}>
-    <img style={{padding: '10px', }} className="screenshot-full" src="/img/quickstart-guide/table-with-data-v2.png" alt="Table With Data" />
+<div style={{padding: '10px', marginBottom: '15px'}}>
+    <iframe
+        className="screenshot-full"
+        src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/bd92e2cb-7bec-4e7e-ad97-0db5191e3bf9-flo.html"
+        style={{width: '100%', height: '450px'}}
+        width="100%"
+        height="450px"
+        frameborder="0"
+        allowfullscreen="allowfullscreen"
+        webkitallowfullscreen
+        mozallowfullscreen
+        allowfullscreen>
+    </iframe>
 </div>
 
-Now the Table component is filled with the data returned by the *getEmployees* query. 
+<i>Use double curly braces in ToolJet App-Builder to write custom JavaScript or access query results, component-related values and other variables.</i>
+
+<!-- <div style={{textAlign: 'center', marginTop:'15px', marginBottom:`15px`}}>
+    <img style={{padding: '10px', }} className="screenshot-full" src="/img/quickstart-guide/table-with-data-v2.png" alt="Table With Data" />
+</div> -->
+
+Now the Table component is filled with the data returned by the `getEmployees` query. 
 
 ### Add Employee Details
 
 Next step is to create a way to add employee details. Click on the **+ Add** button in the query panel and create another query.  
 
 - Select **ToolJet DataBase** as the data source
-- Select *employees* as Table name and **Create row** as Operations
-- Rename the query to *addEmployees*
+- Select `employees` as Table name and **Create row** as Operations
+- Rename the query to `addEmployees`
 - Click on **+ Add Column** button and add all the required columns.  
 - For the **email** column key, enter the below code:
 
@@ -120,15 +181,13 @@ Next step is to create a way to add employee details. Click on the **+ Add** but
 {{components.table1.newRows[0].email}}
 ```
 
-Similarly, use the below code for the rest of the keys.
+Similarly, use the below code for the firstname, lastname and department keys and frame the remaining keys in the same format.
 
 ```js
 {{components.table1.newRows[0].firstname}}
 {{components.table1.newRows[0].lastname}}
 {{components.table1.newRows[0].department}}
-{{components.table1.newRows[0].position}}
-{{components.table1.newRows[0].joining}}
-{{components.table1.newRows[0].status}}
+...
 ```
 
 <div style={{textAlign: 'center'}}>
@@ -139,7 +198,7 @@ The data needs to reload once this query runs since we want the Table component 
 
 - Scroll down and click on **+ New Event Handler**
 - Select **Query Success** for the Event dropdown and **Run Query** for the Action dropdown
-- For the Query dropdown, select the previously created query - *getEmployees*
+- For the Query dropdown, select the previously created query - `getEmployees`
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/reload-data-v2.png" alt="Reload Table Data" />
@@ -150,61 +209,80 @@ Now this query is ready, and needs to be linked to a button for execution.
 In the bottom-right corner of the Table component, there is a `+` button to add a new row. The query can be run on click of this button: 
 - Click on the **Table** component, navigate to **Events** in its configuration panel and add a new event handler 
 - Select **Add new rows** as the event, **Run Query** as the Action 
-- Select *addEmployee* as the Query
+- Select `addEmployee` as the Query
 
-<div style={{textAlign: 'center'}}>
+<!-- <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/add-action-button-v2.png" alt="Add Employee Query" />
+</div> -->
+
+<div style={{padding: '10px', marginBottom: '15px'}}>
+    <iframe
+        className="screenshot-full"
+        src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/ca0842cf-1c2c-43b9-95bb-bd68538f6797-flo.html"
+        style={{width: '100%', height: '450px'}}
+        width="100%"
+        height="450px"
+        frameborder="0"
+        allowfullscreen="allowfullscreen"
+        webkitallowfullscreen
+        mozallowfullscreen
+        allowfullscreen>
+    </iframe>
 </div>
 
-Now if you click on the `+` button, enter the employee data and click on Save. The *addEmployee* query will run and the data will be written to the *employees* table in the ToolJet Database.
+Now if you click on the `+` button, enter the employee data and click on Save. The `addEmployee` query will run and the data will be written to the `employees` table in the ToolJet Database.
 
-<div style={{textAlign: 'center'}}>
+<div style={{padding: '10px', marginBottom: '15px'}}>
+    <iframe
+        className="screenshot-full"
+        src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/a6cd9cdc-592e-4dba-98b8-677a03c44b5c-flo.html"
+        style={{width: '100%', height: '450px'}}
+        width="100%"
+        height="450px"
+        frameborder="0"
+        allowfullscreen="allowfullscreen"
+        webkitallowfullscreen
+        mozallowfullscreen
+        allowfullscreen>
+    </iframe>
+</div>
+
+
+<!-- <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/add-action-dialog-v2.png" alt="Add Employee Query" />
-</div>
+</div> -->
 
 ### Preview And Share
 
 The **Share** and **Preview** icons are on the top-right of the App-Builder. 
 
 - Click on the Preview on the top-right of app builder to preview the current version of the app.
-- Click on the Release button to publish the currently opened version of the app and push the changes to production.
-- Share option allows you to share the released version of the application with other users or you can also make the app public and anyone with the URL will be able to use the app.
+- Click on the Promote button to promote the application to a different environment.
+- Share option allows you to share the the application with other users or you can also make the app public and anyone with the URL will be able to use the app.
+
+<div style={{padding: '10px', marginBottom: '15px'}}>
+    <iframe
+        className="screenshot-full"
+        src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/f85b61b2-9800-4eb3-9f2a-39ac62fb7858-flo.html"
+        style={{width: '100%', height: '450px'}}
+        width="100%"
+        height="450px"
+        frameborder="0"
+        allowfullscreen="allowfullscreen"
+        webkitallowfullscreen
+        mozallowfullscreen
+        allowfullscreen>
+    </iframe>
+</div>
+
 
 Congratulations! You've successfully built a employee directory application and, in the process, covered the essential fundamentals of ToolJet. 
 
-## What Can I Do With ToolJet
+To learn more, checkout the following ToolJet Concepts:
 
-If you are building internal tool for your organization, here are few tutorials of sample use-cases for you to get started: 
+**[What Are Components](/docs/tooljet-concepts/what-are-components.md)** <br/>
+**[Styling Components](/docs/tooljet-concepts/styling-components.md)** <br/>
 
-- **[Build a Feature Request Management App](https://youtu.be/c2sbFTDUMzs)**
-- **[Build a Ticket Triaging App with Baserow and ToolJet](https://blog.tooljet.com/build-a-ticket-triaging-app-with-baserow-and-tooljet/)**
-- **[Building a MinIO file explorer app](https://blog.tooljet.com/building-a-minio-file-explorer-app-in-30-minutes/)**
-- **[Building a Google Cloud Storage (GCS) file explorer app](https://blog.tooljet.com/build-internal-file-explorer-application-using-google-cloud-storage-gcs-and-tooljet/)**
-- **[Build an AWS S3 file explorer app](https://blog.tooljet.com/building-an-app-to-view-and-upload-files-in-aws-s3-bucket/)**
-- **[Build Stripe Refund App](https://blog.tooljet.com/build-a-stripe-refund-tool-using-low-code/)**
-- **[Build a WhatsApp CRM](https://blog.tooljet.com/build-a-whatsapp-crm-using-tooljet-within-10-mins/)**
-- **[Build a cryptocurrency dashboard](https://blog.tooljet.com/how-to-build-a-cryptocurrency-dashboard-in-10-minutes/)**
-- **[Build a Redis GUI](https://blog.tooljet.com/building-a-redis-gui-using-tooljet-in-5-minutes/)**
 
-Find more Tutorials on our **[Blog](https://blog.tooljet.com/)**.
-
-## For ToolJet Contributors
-
-To contribute to ToolJet code, plugins, and documentation, refer to our **[Contributing Guide](/docs/category/contributing-guide)**.
-
-[![GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)](https://github.com/ToolJet/ToolJet/contributors)
-[![GitHub issues](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
-[![GitHub stars](https://img.shields.io/github/stars/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
-[![GitHub license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
-
-<a href="https://github.com/tooljet/tooljet/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=360&columns=20" width="100%" height="100%" alt="contributors" />
-</a>
-
-## Help and Support
-- We have extensively documented the features of ToolJet, but in case you are stuck, please feel free to e-mail us at **hello@tooljet.com**
-- If you are using ToolJet cloud, click on the chat icon at the bottom-left corner for instant help.
-- If you have found a bug, please create a **[GitHub issue](https://github.com/ToolJet/ToolJet/issues)** for the same.
-- Feel free to join our highly active **[Slack Community](https://www.tooljet.com/slack)**.
 
 </div>
