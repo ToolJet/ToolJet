@@ -295,6 +295,7 @@ export const SubContainer = ({
     }
   });
 
+  //!Todo: need to check: this never gets called as draggingState is always false
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
@@ -383,6 +384,7 @@ export const SubContainer = ({
       enableReleasedVersionPopupState();
       return;
     }
+    console.log('---arpit---onDragStop---');
     const canvasWidth = getContainerCanvasWidth();
     const nodeBounds = direction.node.getBoundingClientRect();
 
@@ -610,6 +612,7 @@ export const SubContainer = ({
                 onComponentHover={onComponentHover}
                 hoveredComponent={hoveredComponent}
                 parentId={parentComponent?.name}
+                parent={parent}
                 sideBarDebugger={sideBarDebugger}
                 exposedVariables={exposedVariables ?? {}}
                 childComponents={childComponents[key]}
