@@ -142,7 +142,7 @@ class StripeComponent extends React.Component {
       for (const path of Object.keys(paths)) {
         for (const operation of Object.keys(paths[path])) {
           options.push({
-            value: `${operation},${path}`,
+            value: path,
             name: path,
             operation: operation,
           });
