@@ -1484,7 +1484,10 @@ export const addComponents = (
 
   pastedComponents.forEach((component) => {
     const newComponentId = uuidv4();
-    const componentName = computeComponentName(component.component.component, appDefinition.pages[pageId].components);
+    const componentName = computeComponentName(component.component.component, {
+      ...appDefinition.pages[pageId].components,
+      ...finalComponents,
+    });
 
     const isParentAlsoCopied = component.component.parent && componentMap[component.component.parent];
 
