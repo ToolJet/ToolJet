@@ -219,11 +219,20 @@ export const EventManager = ({
     return appsOptionsList;
   }
 
-  function getPageOptions() {
-    return pages.map((page) => ({
-      name: page.name,
-      value: page.id,
-    }));
+  function getPageOptions(event) {
+    // If disabled page is already selected then don't remove from page options
+    if (pages.find((page) => page.id === event.pageId)?.disabled) {
+      return pages.map((page) => ({
+        name: page.name,
+        value: page.id,
+      }));
+    }
+    return pages
+      .filter((page) => !page.disabled)
+      .map((page) => ({
+        name: page.name,
+        value: page.id,
+      }));
   }
 
   function handleQueryChange(index, updates) {
@@ -751,7 +760,7 @@ export const EventManager = ({
                 event={event}
                 handlerChanged={handlerChanged}
                 eventIndex={index}
-                getPages={getPageOptions}
+                getPages={() => getPageOptions(event)}
                 darkMode={darkMode}
               />
             )}
