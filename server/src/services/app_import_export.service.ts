@@ -603,7 +603,7 @@ export class AppImportExportService {
           newComponent.type = component.type;
           newComponent.properties = component.properties;
           newComponent.styles = component.styles;
-          newComponent.validations = component.validations;
+          newComponent.validation = component.validation;
           newComponent.parent = component.parent || null;
 
           newComponent.page = pageCreated;
@@ -1423,7 +1423,7 @@ function transformComponentData(data: object, componentEvents: any[]): Component
     transformedComponent.type = componentData.component;
     transformedComponent.properties = componentData.definition.properties || {};
     transformedComponent.styles = componentData.definition.styles || {};
-    transformedComponent.validations = componentData.definition.validation || {};
+    transformedComponent.validation = componentData.definition.validation || {};
     transformedComponent.parent = data[componentId].parent || null;
 
     transformedComponents.push(transformedComponent);

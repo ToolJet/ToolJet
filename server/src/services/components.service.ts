@@ -199,7 +199,7 @@ export class ComponentsService {
       transformedComponent.parent = componentData.parent || null;
       transformedComponent.properties = componentData.properties || {};
       transformedComponent.styles = componentData.styles || {};
-      transformedComponent.validations = componentData.validation || {};
+      transformedComponent.validation = componentData.validation || {};
       transformedComponent.displayPreferences = componentData.others || null;
 
       transformedComponents.push(transformedComponent);
@@ -209,7 +209,7 @@ export class ComponentsService {
   }
 
   createComponentWithLayout(componentData: Component, layoutData = []) {
-    const { id, name, properties, styles, generalStyles, validations, parent, displayPreferences, general } =
+    const { id, name, properties, styles, generalStyles, validation, parent, displayPreferences, general } =
       componentData;
 
     const layouts = {};
@@ -234,7 +234,7 @@ export class ComponentsService {
             properties,
             styles,
             generalStyles,
-            validations,
+            validation,
             general,
             others: displayPreferences,
           },

@@ -196,7 +196,7 @@ export class MigrateAppsDefinitionSchemaTransition1695914619976 implements Migra
 
       transformedComponent.styles = componentData.definition.styles || {};
 
-      transformedComponent.validations = componentData.definition.validation || {};
+      transformedComponent.validation = componentData.definition.validation || {};
 
       transformedComponent.parent = data[componentId].parent || null;
 

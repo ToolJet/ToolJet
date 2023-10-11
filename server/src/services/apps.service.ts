@@ -502,7 +502,7 @@ export class AppsService {
         newComponent.pageId = savedPage.id;
         newComponent.properties = component.properties;
         newComponent.styles = component.styles;
-        newComponent.validations = component.validations;
+        newComponent.validation = component.validation;
         newComponent.parent = component.parent ? oldComponentToNewComponentMapping[component.parent] : null;
         newComponent.page = savedPage;
 
