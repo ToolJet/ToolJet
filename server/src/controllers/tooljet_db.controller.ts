@@ -29,6 +29,7 @@ import { CreatePostgrestTableDto, RenamePostgrestTableDto, PostgrestTableColumnD
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.service';
+import { TooljetDbJoinDto } from '@dto/tooljet-db-join.dto';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
@@ -138,9 +139,9 @@ export class TooljetDbController {
   @Post('/organizations/:organizationId/join')
   @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
-  async joinTables(@Body() joinQueryJsonDto: any, @Param('organizationId') organizationId) {
+  async joinTables(@Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
     const params = {
-      joinQueryJson: { ...joinQueryJsonDto },
+      joinQueryJson: { ...tooljetDbJoinDto },
     };
 
     const result = await this.tooljetDbService.perform(organizationId, 'join_tables', params);
