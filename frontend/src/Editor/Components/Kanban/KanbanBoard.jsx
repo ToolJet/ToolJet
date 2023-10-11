@@ -104,9 +104,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
           updatedCardData: getData(cardDataAsObj),
         });
         fireEvent('onUpdate');
+      } else {
+        setExposedVariable('updatedCardData', getData(cardDataAsObj));
+        fireEvent('onUpdate');
       }
-      setExposedVariable('updatedCardData', getData(cardDataAsObj));
-      fireEvent('onUpdate');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastSelectedCard, JSON.stringify(cardDataAsObj)]);
