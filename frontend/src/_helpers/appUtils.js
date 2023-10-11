@@ -1420,7 +1420,9 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
     updateAppDefinition(newDefinition);
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    toast.success('Component copied succesfully');
+    const successMessage =
+      newComponentObj.newComponents.length > 1 ? 'Components copied successfully' : 'Component copied successfully';
+    toast.success(successMessage);
   }
   _ref.setState({ currentSidebarTab: 2 });
 };
