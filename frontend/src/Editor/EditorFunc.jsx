@@ -895,7 +895,7 @@ const EditorComponent = (props) => {
     } else if (!isEmpty(editingVersion)) {
       // param diff ofr table columns needs the complte column data or else the json structure is not correct computeComponentPropertyDiff function handles this
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
-      const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions);
+      const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
 
       updateAppVersion(appId, editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {

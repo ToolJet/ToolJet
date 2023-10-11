@@ -131,11 +131,9 @@ export class ComponentsService {
   async componentLayoutChange(componenstLayoutDiff: object) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
-        const { layouts } = componenstLayoutDiff[componentId];
+        const doesComponentExist = await manager.findAndCount(Component, { id: componentId });
 
-        const componentLayout = await manager.findOne(Layout, { componentId });
-
-        if (!componentLayout) {
+        if (!doesComponentExist[1]) {
           return {
             error: {
               message: `Component with id ${componentId} does not exist`,
@@ -143,19 +141,18 @@ export class ComponentsService {
           };
         }
 
+        const { layouts } = componenstLayoutDiff[componentId];
+
         for (const type in layouts) {
-          const layout = {
-            type,
-            ...layouts[type],
-          };
-          const currentLayout = Object.assign({}, componentLayout);
+          const componentLayout = await manager.findOne(Layout, { componentId, type });
 
-          const newLayout = {
-            ...currentLayout,
-            ...layout,
-          };
+          if (componentLayout) {
+            const layout = {
+              ...layouts[type],
+            } as Partial<Layout>;
 
-          await manager.update(Layout, { id: componentLayout.id }, newLayout);
+            await manager.update(Layout, { id: componentLayout.id }, layout);
+          }
         }
       }
     });

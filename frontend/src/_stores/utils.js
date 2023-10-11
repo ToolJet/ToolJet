@@ -46,8 +46,8 @@ const updateType = Object.freeze({
   componentDeleted: 'components',
 });
 
-export const computeAppDiff = (appDiff, currentPageId, opts) => {
-  const { updateDiff, type, operation } = updateFor(appDiff, currentPageId, opts);
+export const computeAppDiff = (appDiff, currentPageId, opts, currentLayout) => {
+  const { updateDiff, type, operation } = updateFor(appDiff, currentPageId, opts, currentLayout);
 
   return { updateDiff, type, operation };
 };
@@ -121,7 +121,7 @@ export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
   return _diff;
 };
 
-const updateFor = (appDiff, currentPageId, opts) => {
+const updateFor = (appDiff, currentPageId, opts, currentLayout) => {
   const updateTypeMappings = [
     {
       updateTypes: ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'],
@@ -155,7 +155,7 @@ const updateFor = (appDiff, currentPageId, opts) => {
     const optionsTypes = _.intersection(options, updateTypes);
 
     if (optionsTypes.length > 0) {
-      return processingFunction(appDiff, currentPageId, optionsTypes);
+      return processingFunction(appDiff, currentPageId, optionsTypes, currentLayout);
     }
   }
 
@@ -197,7 +197,7 @@ const computePageUpdate = (appDiff, currentPageId, opts) => {
   return { updateDiff, type, operation };
 };
 
-const computeComponentDiff = (appDiff, currentPageId, opts) => {
+const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
   let type;
   let updateDiff;
   let operation = 'update';
@@ -245,7 +245,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
         });
       }
 
-      const currentDisplayPreference = _.keys(appDiff.pages[currentPageId].components[id].layouts)[0];
+      const currentDisplayPreference = currentLayout;
 
       if (currentDisplayPreference === 'mobile') {
         result[id].others.showOnMobile = { value: '{{true}}' };
