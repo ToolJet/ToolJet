@@ -8,6 +8,7 @@ import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
+import { useAppInfo } from '@/_stores/appDataStore';
 export const Form = function Form(props) {
   const {
     id,
@@ -28,6 +29,10 @@ export const Form = function Form(props) {
     dataCy,
     paramUpdated,
   } = props;
+
+  const { events: allAppEvents } = useAppInfo();
+
+  const formEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
   const { buttonToSubmit, loadingState, advanced, JSONSchema } = properties;
   const backgroundColor =
@@ -57,7 +62,7 @@ export const Form = function Form(props) {
     });
     setExposedVariable('submitForm', async function () {
       if (isValid) {
-        onEvent('onSubmit', { component }).then(() => resetComponent());
+        onEvent('onSubmit', formEvents).then(() => resetComponent());
       } else {
         fireEvent('onInvalid');
       }
@@ -167,7 +172,7 @@ export const Form = function Form(props) {
   };
   const fireSubmissionEvent = () => {
     if (isValid) {
-      onEvent('onSubmit', { component }).then(() => resetComponent());
+      onEvent('onSubmit', formEvents).then(() => resetComponent());
     } else {
       fireEvent('onInvalid');
     }

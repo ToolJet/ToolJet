@@ -341,8 +341,6 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
     (query) => query.queryId !== queryConfirmationData.queryId
   );
 
-  // console.log('---arpit:: dq', { filtertedQueryConfirmation });
-
   _ref.updateQueryConfirmationList(filtertedQueryConfirmation, 'check');
   isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
@@ -478,7 +476,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         }
 
         if (mode === 'view') {
-          _ref.props.navigate(url);
+          _ref.navigate(url);
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
             window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
@@ -587,6 +585,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'switch-page': {
         const { name, disabled } = _ref.appDefinition.pages[event.pageId];
+
         // Don't allow switching to disabled page in editor as well as viewer
         if (!disabled) {
           _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
@@ -639,6 +638,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   if (eventName === 'onCalendarEventSelect') {
     const { component, calendarEvent } = options;
+
     useCurrentStateStore.getState().actions.setCurrentState({
       components: {
         ...getCurrentState().components,
@@ -648,6 +648,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
         },
       },
     });
+
     executeActionsForEventId(_ref, 'onCalendarEventSelect', events, mode, customVariables);
   }
 
@@ -662,6 +663,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
         },
       },
     });
+
     executeActionsForEventId(_ref, 'onCalendarSlotSelect', events, mode, customVariables);
   }
 
@@ -870,6 +872,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           setPreviewLoading(false);
           setPreviewData(finalData);
         }
+        let queryStatusCode = data?.status ?? null;
         const queryStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
@@ -877,23 +880,29 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
             ? data?.data?.status ?? 'ok'
             : data.status;
 
-        switch (queryStatus) {
-          case 'Bad Request':
-          case 'failed': {
+        switch (true) {
+          // Note: Need to move away from statusText -> statusCode
+          case queryStatus === 'Bad Request' ||
+            queryStatus === 'Not Found' ||
+            queryStatus === 'Unprocessable Entity' ||
+            queryStatus === 'failed' ||
+            queryStatusCode === 400 ||
+            queryStatusCode === 404 ||
+            queryStatusCode === 422: {
             const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
             toast.error(`${err.message}`);
             break;
           }
-          case 'needs_oauth': {
+          case queryStatus === 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             fetchOAuthToken(url, query.data_source_id);
             break;
           }
-          case 'ok':
-          case 'OK':
-          case 'Created':
-          case 'Accepted':
-          case 'No Content': {
+          case queryStatus === 'ok' ||
+            queryStatus === 'OK' ||
+            queryStatus === 'Created' ||
+            queryStatus === 'Accepted' ||
+            queryStatus === 'No Content': {
             toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
               icon: '🚀',
             });
@@ -982,15 +991,45 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
         }
 
+        let queryStatusCode = data?.status ?? null;
         const promiseStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
             ? data?.data?.status ?? 'ok'
             : data.status;
-
-        if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
-          const errorData = query.kind === 'runpy' ? data.data : data;
+        // Note: Need to move away from statusText -> statusCode
+        if (
+          promiseStatus === 'failed' ||
+          promiseStatus === 'Bad Request' ||
+          promiseStatus === 'Not Found' ||
+          promiseStatus === 'Unprocessable Entity' ||
+          queryStatusCode === 400 ||
+          queryStatusCode === 404 ||
+          queryStatusCode === 422
+        ) {
+          let errorData = {};
+          switch (query.kind) {
+            case 'runpy':
+              errorData = data.data;
+              break;
+            case 'tooljetdb':
+              if (data?.error) {
+                errorData = {
+                  message: data?.error?.message || 'Something went wrong',
+                  description: data?.error?.message || 'Something went wrong',
+                  status: data?.statusText || 'Failed',
+                  data: data?.error || {},
+                };
+              } else {
+                errorData = data;
+              }
+              break;
+            default:
+              errorData = data;
+              break;
+          }
+          // errorData = query.kind === 'runpy' ? data.data : data;
           useCurrentStateStore.getState().actions.setErrors({
             [queryName]: {
               type: 'query',
@@ -1390,7 +1429,9 @@ export const cloneComponents = (
     removeSelectedComponent(currentPageId, newDefinition, selectedComponents, updateAppDefinition);
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    toast.success('Component copied succesfully');
+    const successMessage =
+      newComponentObj.newComponents.length > 1 ? 'Components copied successfully' : 'Component copied successfully';
+    toast.success(successMessage);
   }
 
   return new Promise((resolve) => {
@@ -1482,7 +1523,10 @@ export const addComponents = (
 
   pastedComponents.forEach((component) => {
     const newComponentId = uuidv4();
-    const componentName = computeComponentName(component.component.component, appDefinition.pages[pageId].components);
+    const componentName = computeComponentName(component.component.component, {
+      ...appDefinition.pages[pageId].components,
+      ...finalComponents,
+    });
 
     const isParentAlsoCopied = component.component.parent && componentMap[component.component.parent];
 
@@ -1592,11 +1636,18 @@ export const addNewWidgetToTheEditor = (
 
   const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
 
+  const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
   const newComponent = {
     id: uuidv4(),
     component: componentData,
     layout: {
       [currentLayout]: {
+        top: top,
+        left: left,
+        width: defaultWidth,
+        height: defaultHeight,
+      },
+      [nonActiveLayout]: {
         top: top,
         left: left,
         width: defaultWidth,
@@ -1727,9 +1778,9 @@ export const buildComponentMetaDefinition = (components = {}) => {
         ...componentMeta.definition.generalStyles,
         ...currentComponentData?.component.definition.generalStyles,
       },
-      validations: {
-        ...componentMeta.definition.validations,
-        ...currentComponentData?.component.definition.validations,
+      validation: {
+        ...componentMeta.definition.validation,
+        ...currentComponentData?.component.definition.validation,
       },
       others: {
         ...componentMeta.definition.others,

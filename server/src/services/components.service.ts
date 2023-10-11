@@ -174,7 +174,7 @@ export class ComponentsService {
           return components.reduce((acc, component) => {
             const componentId = component.id;
             const componentData = component;
-            const componentLayout = component.layouts[0];
+            const componentLayout = component.layouts;
 
             const transformedData = this.createComponentWithLayout(componentData, componentLayout);
 
@@ -199,7 +199,7 @@ export class ComponentsService {
       transformedComponent.parent = componentData.parent || null;
       transformedComponent.properties = componentData.properties || {};
       transformedComponent.styles = componentData.styles || {};
-      transformedComponent.validations = componentData.validation || {};
+      transformedComponent.validation = componentData.validation || {};
       transformedComponent.displayPreferences = componentData.others || null;
 
       transformedComponents.push(transformedComponent);
@@ -208,10 +208,23 @@ export class ComponentsService {
     return transformedComponents;
   }
 
-  createComponentWithLayout(componentData: Component, layoutData) {
-    const { id, name, properties, styles, generalStyles, validations, parent, displayPreferences, general } =
+  createComponentWithLayout(componentData: Component, layoutData = []) {
+    const { id, name, properties, styles, generalStyles, validation, parent, displayPreferences, general } =
       componentData;
-    const { type, top, left, width, height } = layoutData;
+
+    const layouts = {};
+
+    layoutData.forEach((layout) => {
+      const { type, top, left, width, height } = layout;
+
+      layouts[type] = {
+        top,
+        left,
+        width,
+        height,
+      };
+    });
+
     const componentWithLayout = {
       [id]: {
         component: {
@@ -221,19 +234,14 @@ export class ComponentsService {
             properties,
             styles,
             generalStyles,
-            validations,
+            validation,
             general,
             others: displayPreferences,
           },
           parent,
         },
         layouts: {
-          [type]: {
-            top,
-            left,
-            width,
-            height,
-          },
+          ...layouts,
         },
       },
     };

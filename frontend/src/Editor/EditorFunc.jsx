@@ -256,6 +256,14 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorMarginLeft]);
 
+  useEffect(() => {
+    if (mounted) {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        layout: currentLayout,
+      });
+    }
+  }, [currentLayout, mounted]);
+
   const handleMessage = (event) => {
     const { data } = event;
 
@@ -1268,14 +1276,12 @@ const EditorComponent = (props) => {
   };
 
   const switchPage = (pageId, queryParams = []) => {
-    // document.getElementById('real-canvas').scrollIntoView();
     if (currentPageId === pageId && currentState.page.handle === appDefinition?.pages[pageId]?.handle) {
       return;
     }
     const { name, handle } = appDefinition.pages[pageId];
 
     if (!name || !handle) return;
-
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
@@ -1559,6 +1565,13 @@ const EditorComponent = (props) => {
       </div>
     );
   }
+
+  const shouldrenderWidgetInspector =
+    currentSidebarTab === 1 &&
+    selectedComponents?.length === 1 &&
+    !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
+    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0]?.id]);
+
   return (
     <div className="editor wrapper">
       <Confirm
@@ -1793,32 +1806,22 @@ const EditorComponent = (props) => {
                 removeMultipleComponents={removeComponents}
               />
 
-              {currentSidebarTab === 1 && (
+              {shouldrenderWidgetInspector ? (
                 <div className="pages-container">
-                  {selectedComponents.length === 1 &&
-                    !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
-                    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0]?.id]) && (
-                      <Inspector
-                        moveComponents={moveComponents}
-                        componentDefinitionChanged={componentDefinitionChanged}
-                        removeComponent={removeComponent}
-                        selectedComponentId={selectedComponents[0].id}
-                        allComponents={appDefinition?.pages[currentPageId]?.components}
-                        key={selectedComponents[0].id}
-                        switchSidebarTab={switchSidebarTab}
-                        darkMode={props.darkMode}
-                        pages={getPagesWithIds()}
-                      ></Inspector>
-                    )}
+                  <Inspector
+                    moveComponents={moveComponents}
+                    componentDefinitionChanged={componentDefinitionChanged}
+                    removeComponent={removeComponent}
+                    selectedComponentId={selectedComponents[0].id}
+                    allComponents={appDefinition?.pages[currentPageId]?.components}
+                    key={selectedComponents[0].id}
+                    switchSidebarTab={switchSidebarTab}
+                    darkMode={props.darkMode}
+                    pages={getPagesWithIds()}
+                  />
                 </div>
-              )}
-
-              {(selectedComponents.length > 1 || currentSidebarTab === 2) && (
-                <WidgetManager
-                  componentTypes={componentTypes}
-                  zoomLevel={zoomLevel}
-                  darkMode={props.darkMode}
-                ></WidgetManager>
+              ) : (
+                <WidgetManager componentTypes={componentTypes} zoomLevel={zoomLevel} darkMode={props.darkMode} />
               )}
             </div>
             {config.COMMENT_FEATURE_ENABLE && showComments && (

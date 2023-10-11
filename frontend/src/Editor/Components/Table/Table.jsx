@@ -1540,7 +1540,8 @@ export function Table({
                 ) : (
                   !loadingState && (
                     <span data-cy={`footer-number-of-records`} className="font-weight-500 color-slate11">
-                      {`${globalFilteredRows.length} Records`}
+                      {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
+                      {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                     </span>
                   )
                 ))}

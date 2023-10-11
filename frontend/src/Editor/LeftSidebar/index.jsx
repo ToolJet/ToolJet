@@ -80,6 +80,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const currentState = useCurrentState();
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
 
+  const [realState, setRealState] = useState(currentState);
+
   const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
     currentPageId,
     isDebuggerOpen: !!selectedSidebarItem,
@@ -137,6 +139,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
+  useEffect(() => {
+    setRealState(currentState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState.components]);
 
   const backgroundFxQuery = appDefinition?.globalSettings?.backgroundFxQuery;
 
@@ -292,6 +298,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}
       />
+
       <ConfirmDialog
         show={showLeaveDialog}
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave?'}
