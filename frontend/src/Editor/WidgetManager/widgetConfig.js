@@ -5276,11 +5276,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'ColorPicker',
-    displayName: 'Color Picker',
-    description: 'Color Picker Palette',
+    displayName: 'Color picker',
+    description: 'Color picker palette',
     component: 'ColorPicker',
     properties: {
-      defaultColor: { type: 'color', displayName: 'Default Color' },
+      defaultColor: { type: 'color', displayName: 'Default color' },
     },
     defaultSize: {
       width: 9,
@@ -5288,7 +5288,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     actions: [
       {
-        displayName: 'Set Color',
+        displayName: 'Set color',
         handle: 'setColor',
         params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
       },
