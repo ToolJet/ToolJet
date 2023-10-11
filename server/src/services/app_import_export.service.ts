@@ -846,7 +846,6 @@ export class AppImportExportService {
     return options;
   }
 
-  // Take a look : For having old table id
   replaceDataQueryIdWithinDefinitions(
     definition: QueryDeepPartialEntity<any>,
     dataQueryMapping: Record<string, string>
@@ -1039,8 +1038,90 @@ export class AppImportExportService {
     );
   }
 
+  // Entire function should be santised for Undefined values
   replaceTooljetDbTableIds(queryOptions: any, tooljetDatabaseMapping: any) {
-    return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id };
+    if (queryOptions?.operation && queryOptions.operation === 'join_tables') {
+      const joinOptions = { ...(queryOptions?.join_table ?? {}) };
+
+      // JOIN Section
+      if (joinOptions?.joins && joinOptions.joins.length > 0) {
+        const joinsTableIdUpdatedList = joinOptions.joins.map((joinCondition) => {
+          const updatedJoinCondition = { ...joinCondition };
+          // Updating Join tableId
+          if (updatedJoinCondition.table)
+            updatedJoinCondition.table =
+              tooljetDatabaseMapping[updatedJoinCondition.table]?.id ?? updatedJoinCondition.table;
+          // Updating TableId on Conditions in Join Query
+          if (updatedJoinCondition.conditions) {
+            const updatedJoinConditionFilter = this.updateNewTableIdForFilter(
+              updatedJoinCondition.conditions,
+              tooljetDatabaseMapping
+            );
+            updatedJoinCondition.conditions = updatedJoinConditionFilter.conditions;
+          }
+
+          return updatedJoinCondition;
+        });
+        joinOptions.joins = joinsTableIdUpdatedList;
+      }
+
+      // Filter Section
+      if (joinOptions?.conditions) {
+        joinOptions.conditions = this.updateNewTableIdForFilter(
+          joinOptions.conditions,
+          tooljetDatabaseMapping
+        ).conditions;
+      }
+
+      // Select Section
+      if (joinOptions?.fields) {
+        joinOptions.fields = joinOptions.fields.map((eachField) => {
+          if (eachField.table) {
+            eachField.table = tooljetDatabaseMapping[eachField.table]?.id ?? eachField.table;
+            return eachField;
+          }
+          return eachField;
+        });
+      }
+
+      // From Section
+      if (joinOptions?.from) {
+        const { name = '' } = joinOptions.from;
+        joinOptions.from = { ...joinOptions.from, name: tooljetDatabaseMapping[name]?.id ?? name };
+      }
+
+      // Sort Section
+      if (joinOptions?.order_by) {
+        joinOptions.order_by = joinOptions.order_by.map((eachOrderBy) => {
+          if (eachOrderBy.table) {
+            eachOrderBy.table = tooljetDatabaseMapping[eachOrderBy.table]?.id ?? eachOrderBy.table;
+            return eachOrderBy;
+          }
+          return eachOrderBy;
+        });
+      }
+
+      return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id, join_table: joinOptions };
+    } else {
+      return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id };
+    }
+  }
+
+  updateNewTableIdForFilter(joinConditions, tooljetDatabaseMapping) {
+    const { conditionsList = [] } = { ...joinConditions };
+    const updatedConditionList = conditionsList.map((condition) => {
+      if (condition.conditions) {
+        return this.updateNewTableIdForFilter(condition.conditions, tooljetDatabaseMapping);
+      } else {
+        const { operator = '=', leftField = {}, rightField = {} } = { ...condition };
+        if (leftField?.type && leftField.type === 'Column')
+          leftField['table'] = tooljetDatabaseMapping[leftField.table]?.id ?? leftField.table;
+        if (rightField?.type && rightField.type === 'Column')
+          rightField['table'] = tooljetDatabaseMapping[rightField.table]?.id ?? rightField.table;
+        return { operator, leftField, rightField };
+      }
+    });
+    return { conditions: { ...joinConditions, conditionsList: [...updatedConditionList] } };
   }
 }
 
