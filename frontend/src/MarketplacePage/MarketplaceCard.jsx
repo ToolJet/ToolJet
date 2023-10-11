@@ -53,14 +53,14 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
               </span>
             </div>
             <div className="col">
-              <div className="font-weight-medium text-capitalize">{name}</div>
-              <div>{description}</div>
+              <div className="font-weight-medium text-capitalize tj-text">{name}</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{description}</div>
             </div>
           </div>
           <div className="mt-4">
             <div className="row">
               <div className="col">
-                <sub>v{version}</sub>
+                <sub style={{ color: 'var(--text-secondary)' }}>v{version}</sub>
               </div>
               <div className={cx('col-auto', { disabled: installing || installed })} onClick={installPlugin}>
                 <div className="marketplace-install cursor-pointer">Install{installed && 'ed'}</div>

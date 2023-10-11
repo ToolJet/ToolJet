@@ -341,7 +341,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                 </p>
                 {(groupPermission.group == 'admin' || groupPermission.group == 'all_users') && (
                   <div className="default-group-wrap">
-                    <SolidIcon name="information" fill="#46A758" width="13" />
+                    <SolidIcon name="information" fill="#3E63DD" width="13" />
                     <p className="font-weight-500 tj-text-xsm" data-cy="text-default-group">
                       Default group
                     </p>
@@ -681,7 +681,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     <div>
                       {groupPermission.group == 'all_users' && (
                         <div className="manage-group-users-info" data-cy="helper-text-all-user-included">
-                          <p className="tj-text-xsm">
+                          <p className="tj-text-xsm tj-text">
                             <SolidIcon name="information" fill="#3E63DD" /> All users include every users in the app.
                             This list is not editable
                           </p>

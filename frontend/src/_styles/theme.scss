@@ -783,7 +783,7 @@ button {
       }
 
       .navigation-area {
-        background: var(--base, #FFF);
+        background: var(--background-strong);
         padding: 1rem;
 
         a.page-link {
@@ -1064,7 +1064,7 @@ button {
         width: 113px;
         height: 28px;
         background: var(--background-strong);
-        border: 1px solid var(--slate7);
+        border: 1px solid var(--border-subtle-01);
         color: var(--text-primary);
         padding: 4px 16px;
         gap: 6px;
@@ -1461,7 +1461,7 @@ button {
     border: none;
     color: var(--text-primary);
     width: 8.063rem; //129px
-    border: 1px solid var(--slate7);
+    border: 1px solid var(--border-subtle-01);
     padding: 6px 10px;
   }
 }
@@ -1605,7 +1605,7 @@ button {
   color: var(--text-primary);
   background-color: var(--background-strong);
   background-clip: padding-box;
-  border: 1px solid var(--slate7);
+  border: 1px solid var(--border-subtle-01);
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -2489,7 +2489,7 @@ hr {
   color: var(--slate9);
   background-color: var(--background-strong) !important;
   background-clip: padding-box;
-  border: 1px solid var(--slate7);
+  border: 1px solid var(--border-subtle-01);
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -2935,7 +2935,7 @@ input:focus-visible {
 
   input,
   .dropdown-max-canvas-width-type {
-    border: 1px solid var(--slate7, #3A3F42);
+    border: 1px solid var(--border-subtle-01, #3A3F42);
     background: var(--slate1, #151718);
     color: var(--text-primary);
     padding: 6px 10px;
@@ -4392,8 +4392,9 @@ input[type="text"] {
       padding: 4px;
       width: 20px;
       height: 20px;
-      background: var(--indigo3) !important;
+      background: var(--button-secondary) !important;
       border-radius: 4px;
+      border: 1px solid var(--button-secondary-border) !important;
     }
 
     div {
@@ -4487,7 +4488,7 @@ input[type="text"] {
     height: 28px;
     color: var(--text-primary);
     border: 1px solid;
-    border-color: var(--slate7);
+    border-color: var(--border-subtle-01);
     cursor: pointer;
     border-radius: 6px;
     display: flex;
@@ -4518,7 +4519,7 @@ input[type="text"] {
 .modal-content.home-modal-component {
   border-radius: 8px;
   overflow: hidden;
-  background-color: var(--background-strong);
+  background-color: var(--layer-01);
   color: var(--text-primary);
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
 
@@ -4529,7 +4530,7 @@ input[type="text"] {
   .modal-header,
   .modal-body {
     padding: 16px 28px;
-    background-color: var(--background-strong);
+    background-color: var(--layer-01);
   }
 
   .modal-title {
@@ -4811,8 +4812,8 @@ input[type="text"] {
 
 // **Alert component**
 .alert-component {
-  border: 1px solid rgba(101, 109, 119, 0.16);
-  background-color: var(--background-strong);
+  border: 1px solid var(--alerts-info-border) !important;
+  background-color: var(--alerts-info-bg) !important;
 
   border-radius: 6px;
 
@@ -4821,14 +4822,14 @@ input[type="text"] {
   }
 }
 
-.theme-dark .alert-component {
-  background: var(--slate2) !important;
-  border-color: var(--slate4) !important;
+// .theme-dark .alert-component {
+//   background: var(--slate2) !important;
+//   border-color: var(--slate4) !important;
 
-  a {
-    color: $primary;
-  }
-}
+//   a {
+//     color: $primary;
+//   }
+// }
 
 
 
@@ -5034,7 +5035,7 @@ div#driver-page-overlay {
 
   &:hover {
     background-color: var(--slate4);
-    border: 1px solid var(--slate7);
+    border: 1px solid var(--border-subtle-01);
   }
 
   &:focus {
@@ -5083,7 +5084,7 @@ div#driver-page-overlay {
 
   .canvas-hinter-wrap {
     width: 126x;
-    border: 1px solid var(--slate7);
+    border: 1px solid var(--border-subtle-01);
   }
 }
 
@@ -5284,7 +5285,7 @@ div#driver-page-overlay {
 }
 
 .sso-card-wrapper {
-  background-color: var(--background-strong);
+  background-color: var(--layer-01);
 
   min-height: 100%;
   height: calc(100vh - 156px) !important;
@@ -5298,6 +5299,7 @@ div#driver-page-overlay {
 
   .form-control {
     background-color: var(--background-strong);
+    border: var(--input-box-border-default);
   }
 
   .sso-card-footer {
@@ -5310,7 +5312,7 @@ div#driver-page-overlay {
     width: 660px;
     height: 88px;
     border-top: 1px solid var(--border-subtle-01) !important;
-    background: var(--background-strong);
+    background: var(--layer-01);
     margin-top: 0px !important;
   }
 }
@@ -5809,7 +5811,7 @@ div#driver-page-overlay {
 
 .org-constant-page {
   .card-footer {
-    background: var(--background-strong);
+    background: var(--layer-01);
     color: var(--text-primary);
   }
 }
@@ -5822,9 +5824,8 @@ div#driver-page-overlay {
 
 .tj-input-element {
   gap: 16px;
-  background-color: var(--background-strong);
-
-  border: 1px solid var(--slate7);
+  background-color: var(--input-box-fill-default);
+  border: 1px solid var(--input-box-border-default);
   border-radius: 6px;
   margin-bottom: 4px;
   display: block;
@@ -5841,8 +5842,8 @@ div#driver-page-overlay {
   transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 
   &:hover {
-    background: var(--slate1);
-    border: 1px solid var(--slate8);
+    background: var(--input-box-fill-hover);
+    border: 1px solid var(--input-box-border-default);
     -webkit-box-shadow: none;
     box-shadow: none;
     outline: none;
@@ -5850,19 +5851,19 @@ div#driver-page-overlay {
 
   &:focus-visible {
     background: var(--slate1);
-    border: 1px solid var(--slate8);
+    border: 1px solid var(--input-box-border-default);
     outline: none;
   }
 
   &:active {
-    background: var(--indigo2);
-    border: 1px solid var(--indigo9);
+    background: var(--input-box-fill-clicked);
+    border: 1px solid var(--input-box-fill-clicked-border);
     box-shadow: none;
   }
 
   &:disabled {
-    background: var(--slate3);
-    border: 1px solid var(--slate8);
+    // background: var();
+    // border: 1px solid var(--slate8);
     color: var(--slate9);
     cursor: not-allowed;
   }
@@ -6565,11 +6566,11 @@ input.hide-input-arrows {
 #storage-sort-popover {
   max-width: 800px;
   width: 800px;
-  background-color: var(--background-strong);
+  background-color: var(--layer-01);
   box-sizing: border-box;
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
   border-radius: 4px;
-  border: 1px solid var(--slate3) !important;
+  border: 1px solid var(--border-subtle-01) !important;
   left: 109px !important;
   top: 8px !important;
   position: absolute !important;
@@ -6577,7 +6578,7 @@ input.hide-input-arrows {
 
   .card-body,
   .card-footer {
-    background-color: var(--background-strong);
+    background-color: var(--layer-01);
   }
 }
 
@@ -6585,11 +6586,11 @@ input.hide-input-arrows {
 #storage-filter-popover {
   max-width: 800px;
   width: 800px;
-  background-color: var(--background-strong);
+  background-color: var(--layer-01) !important;
   box-sizing: border-box;
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
   border-radius: 4px;
-  border: 1px solid var(--slate3) !important;
+  border: 1px solid var(--border-subtle-01) !important;
   left: 193px !important;
   top: 10px !important;
   position: absolute !important;
@@ -6597,7 +6598,7 @@ input.hide-input-arrows {
 
   .card-body,
   .card-footer {
-    background-color: var(--background-strong);
+    background-color: var(--layer-01) !important;
   }
 }
 
@@ -6761,7 +6762,7 @@ tbody {
 .home-modal-component.modal-version-lists {
   width: 466px;
   height: 668px;
-  background-color: var(--background-strong);
+  background-color: var(--layer-01);
 
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
   border-top-right-radius: 6px;
@@ -6804,13 +6805,17 @@ tbody {
     height: 88px;
   }
 
+  .export-app-modal-footer {
+    background-color: var(--layer-01);
+  }
+
   .tj-version-wrap-sub-footer {
     display: flex;
     flex-direction: row;
     padding: 16px 28px;
     gap: 10px;
     height: 52px;
-    background: var(--background-strong);
+    background: var(--layer-01);
     border-top: 1px solid var(--border-subtle-01);
     border-bottom: 1px solid var(--border-subtle-01);
 
@@ -6902,7 +6907,7 @@ tbody {
     display: none;
   }
 
-  .table-list-item:hover .table-list-item-popover {
+  .tj-list-item:hover .table-list-item-popover {
     display: block;
   }
 }
@@ -7647,7 +7652,7 @@ tbody {
   visibility: hidden !important;
 }
 
-.folder-list-group-item:hover .folder-menu-icon {
+.tj-list-item:hover .folder-menu-icon {
   visibility: visible !important;
 }
 
@@ -7866,7 +7871,7 @@ tbody {
 
 .toojet-db-table-footer {
   height: 52px;
-  background: var(--base) !important;
+  background: var(--background-strong) !important;
 }
 
 .home-app-card-header {
@@ -8337,8 +8342,8 @@ tbody {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--slate3) !important;
-  color: var(--text-secondary) !important;
+  background-color: var(--layer-02-selected) !important;
+  color: var(--text-primary) !important;
   text-transform: uppercase;
   font-weight: 500;
 
@@ -8379,8 +8384,7 @@ tbody {
 }
 
 .users-table {
-  background-color: var(--background-strong);
-
+  background-color: var(--layer-01);
   padding: 16px;
   width: 848px;
   margin: 0 auto;
@@ -8409,18 +8413,20 @@ tbody {
     }
 
     tr>th {
-      background: var(--base) !important;
+      background: var(--background-strong) !important;
       border-bottom: none !important;
       padding: 0 !important;
       width: 282px;
+      color: var(--text-placeholder) !important;
+
     }
   }
 
   tr {
-    background: var(--background-strong);
+    background: var(--layer-01);
     height: 66px;
     padding: 13px 0px;
-    border-bottom: 1px solid var(--slate7);
+    border-bottom: 1px solid var(--border-subtle-01);
     display: flex;
     justify-content: space-between;
   }
@@ -8445,7 +8451,7 @@ tbody {
   height: 32px;
   background-color: var(--background-strong);
 
-  border: 1px solid var(--slate7);
+  border: 1px solid var(--border-subtle-01);
   border-radius: 6px;
 
   ::placeholder {
@@ -8474,7 +8480,7 @@ tbody {
 
 .workspace-setting-table-wrapper {
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
-  outline: 1px solid var(--slate7);
+  outline: 1px solid var(--border-subtle-01);
   background-color: var(--background-strong);
 
   width: 880px;
@@ -8545,7 +8551,7 @@ tbody {
 }
 
 .tj-checkbox {
-  border-color: var(--slate7);
+  border-color: var(--border-subtle-01);
 }
 
 .workspace-clipboard-wrap {
@@ -8626,6 +8632,10 @@ tbody {
   width: 248px;
 }
 
+.table-list-item-selected {
+  background-color: var(--layer-02-selected);
+}
+
 .workspace-settings-filter-items {
   width: 161.25px;
 
@@ -8647,7 +8657,7 @@ tbody {
   }
 
   .css-6t9fnh-control {
-    border: 1px solid var(--slate7) !important;
+    border: 1px solid var(--border-subtle-01) !important;
     background: var(--background-strong);
     color: var(--slate9);
     width: 161.25px;
@@ -8660,9 +8670,9 @@ tbody {
   }
 
   input.tj-checkbox {
-    background: var(--base) !important;
+    background: var(--background-strong) !important;
     color: var(--slate9);
-    border: 1px solid var(--slate7) !important;
+    border: 1px solid var(--border-subtle-01) !important;
 
     ::placeholder {
       color: var(--slate9);
@@ -8831,7 +8841,7 @@ tbody {
 .workspace-variables-alert-banner {
   width: inherit;
   background-color: #FFF9ED;
-  border-color: #FFE3A2;
+  // border-color: #FFE3A2;
 }
 
 .codehinter.alert-component.workspace-variables-alert-banner {
@@ -8941,7 +8951,7 @@ tbody {
 .manage-sso-wrapper-card {
   display: flex;
   flex-direction: row;
-  background-color: var(--background-strong);
+  background-color: var(--layer-01);
   width: 880px;
   outline: 1px solid var(--border-subtle-01);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
@@ -8950,10 +8960,18 @@ tbody {
 
 .manage-sso-wrapper-card {
   margin: 0 auto;
+  background-color: var(--layer-01) !important;
+
+  .left-menu {
+    background-color: var(--layer-01);
+  }
+
 
   .card-body {
     overflow-y: auto;
     padding: 40px;
+    background-color: var(--layer-01);
+
   }
 
   .card-header {
@@ -8961,6 +8979,7 @@ tbody {
     width: 660px;
     height: 72px;
     border-bottom: 1px solid var(--border-subtle-01);
+
 
   }
 
@@ -9139,8 +9158,13 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--grass3);
+  background: var(--alerts-info-bg);
   border-radius: 100px;
+
+  p {
+    color: var(--alerts-info-accent-color) !important;
+
+  }
 }
 
 .sso-icon-wrapper {
@@ -9151,14 +9175,14 @@ tbody {
   padding: 8px 8px 8px 16px;
   width: 251px;
   height: 56px;
-  background: var(--slate3);
+  background: var(--layer-02);
   border-radius: 6px;
   margin-top: 12px;
 }
 
 .sso-main-box {
   justify-content: center;
-  background: var(--slate6);
+  background: var(--layer-03);
   padding: 8px 16px;
   width: 96px;
   height: 40px;
@@ -9182,8 +9206,8 @@ tbody {
   width: 612px;
   border-radius: 6px;
   padding: 12px 24px 12px 24px;
-  background: var(--slate3);
-  border: 1px solid var(--border-subtle-01);
+  background: var(--alerts-info-bg);
+  border: 1px solid var(--alerts-info-border);
   border-radius: 6px;
   margin-bottom: 16px;
 
@@ -9204,7 +9228,7 @@ tbody {
   gap: 10px;
   width: 36px;
   height: 36px;
-  background-color: var(--slate3) !important;
+  background-color: var(--layer-02-selected) !important;
   border-radius: 6px;
   color: var(--text-secondary);
   margin-right: 12px;
@@ -9379,7 +9403,7 @@ tbody {
       gap: 17px;
       height: 32px;
       background: var(--background-strong);
-      border: 1px solid var(--slate7);
+      border: 1px solid var(--border-subtle-01);
       border-radius: 6px;
       display: flex;
       justify-content: center;
@@ -9437,7 +9461,7 @@ tbody {
       width: 440px;
       height: 32px;
       background: var(--background-strong);
-      border: 1px solid var(--slate7);
+      border: 1px solid var(--border-subtle-01);
       border-radius: 6px;
       display: flex;
       justify-content: center;
@@ -9774,6 +9798,7 @@ tbody {
   table {
     border-collapse: collapse;
     width: 100%;
+    background-color: var(--layer-01);
   }
 }
 
@@ -9840,14 +9865,14 @@ tbody {
 }
 
 .workspace-settings-filter-wrap {
-  background: var(--slate3);
+  background: var(--layer-02);
   padding: 15px 16px;
   gap: 12px;
   width: 880px;
   height: 62px;
-  border-right: 1px solid var(--slate7);
-  border-top: 1px solid var(--slate7);
-  border-left: 1px solid var(--slate7);
+  border-right: 1px solid var(--border-subtle-01);
+  border-top: 1px solid var(--border-subtle-01);
+  border-left: 1px solid var(--border-subtle-01);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
@@ -9875,7 +9900,7 @@ tbody {
 }
 
 .new-app-dropdown {
-  background: var(--base) !important;
+  background: var(--layer-01) !important;
   color: var(--text-primary);
 }
 
@@ -9883,11 +9908,11 @@ tbody {
 
   .card,
   thead {
-    background: var(--base) !important;
+    background: var(--layer-01) !important;
 
     tr>th,
     tbody>tr>td {
-      background: var(--base) !important;
+      background: var(--layer-01) !important;
     }
   }
 
@@ -9999,8 +10024,8 @@ tbody {
     gap: 16px;
     width: 248px !important;
     height: 28px !important;
-    background: var(--background-strong);
-    border: 1px solid var(--slate7);
+    background-color: var(--input-box-fill-default) !important;
+    border: 1px solid var(--input-box-border-default);
     border-radius: 6px;
     color: var(--text-primary);
     padding-left: 33px !important;
@@ -10014,28 +10039,30 @@ tbody {
     }
 
     &:hover {
-      background: var(--slate2);
-      border: 1px solid var(--slate8);
-    }
-
-    &:active {
-      background: var(--indigo2);
-      border: 1px solid var(--indigo9);
-      box-shadow: 0px 0px 0px 2px #C6D4F9;
+      background: var(--input-box-fill-hover);
+      border: 1px solid var(--input-box-border-default);
+      -webkit-box-shadow: none;
+      box-shadow: none;
       outline: none;
     }
 
     &:focus-visible {
-      background: var(--slate2);
-      border: 1px solid var(--slate8);
-      border-radius: 6px;
+      background: var(--input-box-fill-default);
+      border: 1px solid var(--input-box-border-default);
+      outline: none;
+    }
+
+    &:active {
+      background: var(--input-box-fill-clicked);
+      border: 1px solid var(--input-box-fill-clicked-border);
+      box-shadow: none;
       outline: none;
       padding-left: 12px !important;
     }
 
     &:disabled {
       background: var(--slate3);
-      border: 1px solid var(--slate7);
+      border: 1px solid var(--border-subtle-01);
     }
   }
 
@@ -10052,7 +10079,7 @@ tbody {
   width: 28px;
   height: 28px;
   background-color: var(--background-strong);
-  border: 1px solid var(--slate7);
+  border: 1px solid var(--border-subtle-01);
   border-radius: 6px;
   cursor: pointer;
 }
@@ -10113,16 +10140,16 @@ tbody {
 
 // targetting all react select dropdowns
 
-.css-1i2tit0-menu .css-2kg7t4-MenuList {
-  div {
-    background-color: var(--base-black);
+// .css-1i2tit0-menu .css-2kg7t4-MenuList {
+//   div {
+//     background-color: var(--base-black);
 
-    &:hover {
-      background-color: hsl(198, 6.6%, 15.8%);
-      ;
-    }
-  }
-}
+//     &:hover {
+//       background-color: hsl(198, 6.6%, 15.8%);
+//       ;
+//     }
+//   }
+// }
 
 .css-ob45yj-menu .css-2kg7t4-MenuList {
   div {
@@ -10142,14 +10169,13 @@ tbody {
 .tj-user-table-wrapper {
   height: calc(100vh - 270px); //52+64+40+32+20+62
   overflow-y: auto;
-  background-color: var(--background-strong);
-  border-right: 1px solid var(--slate7);
-  border-bottom: 1px solid var(--slate7);
-  border-left: 1px solid var(--slate7);
+  background-color: var(--layer-01);
+  border-right: 1px solid var(--border-subtle-01);
+  border-bottom: 1px solid var(--border-subtle-01);
+  border-left: 1px solid var(--border-subtle-01);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
-
 }
 
 .user-filter-search {
@@ -10159,7 +10185,7 @@ tbody {
   height: 32px;
   background-color: var(--background-strong);
 
-  border: 1px solid var(--slate7);
+  border: 1px solid var(--border-subtle-01);
   border-radius: 6px;
 
   &::placeholder {
@@ -10198,25 +10224,30 @@ tbody {
   input.form-control,
   textarea,
   .form-control {
-    gap: 16px !important;
-    background: var(--base) !important;
-    border: 1px solid var(--slate7) !important;
-    border-radius: 6px !important;
-    margin-bottom: 4px !important;
-    color: var(--text-primary) !important;
+    gap: 16px;
+    background: var(--input-box-fill-default);
+    border: 1px solid var(--input-box-border-default);
+    border-radius: 6px;
+    margin-bottom: 4px;
 
     &:hover {
-      background: var(--slate1) !important;
-      border: 1px solid var(--slate8) !important;
-      -webkit-box-shadow: none !important;
-      box-shadow: none !important;
+      background: var(--input-box-fill-hover);
+      border: 1px solid var(--input-box-border-default);
+      -webkit-box-shadow: none;
+      box-shadow: none;
       outline: none;
     }
 
     &:focus-visible {
-      background: var(--indigo2) !important;
-      border: 1px solid var(--indigo9) !important;
-      box-shadow: none !important;
+      background: var(--input-box-fill-default);
+      border: 1px solid var(--input-box-border-default);
+      outline: none;
+    }
+
+    &:active {
+      background: var(--input-box-fill-clicked);
+      border: 1px solid var(--input-box-fill-clicked-border);
+      box-shadow: none;
     }
 
   }
@@ -10283,7 +10314,7 @@ tbody {
   right: -28px;
   width: 28px;
   height: 28px;
-  background: var(--slate7);
+  background: var(--border-subtle-01);
   border-width: 0px 1px 1px 1px;
   border-style: solid;
   border-color: var(--border-strong-01);
@@ -10297,7 +10328,7 @@ tbody {
   left: 0px;
   width: 28px;
   height: 28px;
-  background: var(--slate7);
+  background: var(--border-subtle-01);
   border-width: 0px 1px 1px 1px;
   border-style: solid;
   border-color: var(--border-strong-01);
@@ -10321,7 +10352,7 @@ tbody {
 
   .dropdown-container {
     background-color: var(--background-strong);
-    border: 1px solid var(--slate7) !important;
+    border: 1px solid var(--border-subtle-01) !important;
   }
 
   .dropdown-content {
@@ -10341,7 +10372,7 @@ tbody {
   .dropdown-content,
   .panel-content,
   .search {
-    background: var(--base) !important;
+    background: var(--background-strong) !important;
   }
 
   .options {
@@ -10937,7 +10968,7 @@ tbody {
 .shareable-link {
   .input-group {
     .input-group-text {
-      border-color: var(--slate7);
+      border-color: var(--border-subtle-01);
       color: var(--text-primary);
       background-color: var(--background-strong);
     }
@@ -11119,8 +11150,8 @@ tbody {
 
 .workspace-variables-alert-banner {
   width: inherit;
-  background-color: #FFF9ED;
-  border-color: #FFE3A2;
+  background-color: var(--alerts-info-bg) !important;
+  border-color: var(--alerts-info-border) !important;
   margin-bottom: 0px;
   padding: 8px 16px;
   border-radius: 0px;
@@ -11220,7 +11251,7 @@ tbody {
 
 .form-check>.form-check-input:not(:checked) {
   background-color: var(--background-strong);
-  border-color: var(--slate7);
+  border-color: var(--border-subtle-01);
 }
 
 /*
@@ -11551,7 +11582,7 @@ tbody {
   border: solid 1px #333c48;
   height: 36px;
   background-color: var(--slate1);
-  border: 1px solid var(--slate7);
+  border: 1px solid var(--border-subtle-01);
 
   &:hover {
     background-color: var(--slate4);

@@ -30,26 +30,7 @@
         padding: 6px 15px;
         width: 248px;
         height: 32px;
-        margin-bottom: 10px;
-
-        &:focus-visible {
-            box-shadow: 0px 0px 0px 4px #dfe3e6;
-            outline: none;
-        }
-
-        &:hover {
-            background: var(--slate4);
-            border-radius: 6px;
-
-            .ds-delete-btn {
-                visibility: visible;
-            }
-        }
-
-        &:active {
-            background: var(--indigo4);
-            box-shadow: none;
-        }
+        // margin-bottom: 10px;
 
         .ds-delete-btn {
             display: block;
@@ -60,7 +41,7 @@
     }
 
     .datasources-list-item {
-        background-color: var(--indigo3);
+        background-color: var(--layer-02-selected);
     }
 }
 
@@ -96,7 +77,6 @@
 
 .datasource-modal-container {
     position: relative;
-    // background: var(--slate2);
 
     .modal-header {
         background-color: var(--slate3) !important;
@@ -104,12 +84,14 @@
 
     .modal {
         position: absolute;
-        background: var(--slate2);
+        // background: var(--background-strong);
+        background-color: var(--layer-01) !important;
+
     }
 
     .modal-content {
-        border: 1px solid var(--slate5);
-        background-color: var(--background-strong) !important;
+        border: 1px solid var(--border-subtle-01);
+        background-color: var(--layer-01) !important;
 
         .input-icon {
             &:hover {
@@ -190,6 +172,13 @@
             }
         }
     }
+
+    .row-deck {
+        display: flex;
+        flex-direction: row;
+        column-gap: 7px;
+        row-gap: 7px;
+    }
 }
 
 .datasources-info {
@@ -209,12 +198,40 @@
 }
 
 .datasource-card {
+    background-color: var(--layer-01);
+    border: 1px solid var(--border-subtle-01) !important;
+    height: 180px !important;
+    width: 156px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+
+
     .card {
         background-color: var(--layer-01);
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0px !important;
+
+
+
+
+        .card-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0px !important;
+
+
+            center {
+                width: 156px !important;
+
+            }
+        }
     }
 
-    height: 30px;
-    height: 122px !important;
+
 
     button {
         display: none;

@@ -71,25 +71,25 @@
 
     // layer-1
     --layer-01: white;
-    --layer01-hover: #FCFCFD;
-    --layer01-active: #FCFCFD;
-    --layer01-selected: #FCFCFD;
+    --layer-01-hover: #FCFCFD;
+    --layer-01-active: #FCFCFD;
+    --layer-01-selected: #FCFCFD;
     --layer-01-selectedhover: #FCFCFD;
     --layer-01-disabled: #FCFCFD;
 
     // layer-2
     --layer-02: #F1F3F5;
-    --layer02-hover: #F1F3F5;
-    --layer02-active: #E6E8EB;
-    --layer02-selected: #E6E8EB;
+    --layer-02-hover: #F1F3F5;
+    --layer-02-active: #E6E8EB;
+    --layer-02-selected: #E6E8EB;
     --layer-02-selectedhover: #CCCFD9;
     --layer-02-disabled: #FBFCFD;
 
     // layer-3
     --layer-03: #FFFFFF;
     --layer03-hover: #F2F2F2;
-    --layer03-active: #E6E8EB;
-    --layer03-selected: #BFC7CD;
+    --layer-03-active: #E6E8EB;
+    --layer-03-selected: #BFC7CD;
     --layer-03-selectedhover: #BFC7CD;
     --layer-03-disabled: #F8F9FA;
 
@@ -151,7 +151,29 @@
     --button-ghost-icon: #C1C8CD;
     --button-ghost-text: #11181C;
 
+    --alerts-info-border: #E6E8EB;
+    --alerts-info-bg: #E6E8EB;
+    --alerts-danger-bg: #FFF0EE;
+    --alerts-danger-border: #FAC7BE;
+    --alerts-info-accent-color: #3E63DD;
+
+
+
+    // input box
+    --input-box-border-default: #D7DBDF;
+    --input-box-fill-default: #FFFFFF;
+    --input-box-fill-hover: #F1F3F5;
+
+    --input-box-fill-clicked: #F8FAFF;
+    --input-box-fill-clicked-border: #3E63DD;
+
+    --input-box-fill-disabled: #DFE3E6;
+    --input-box-fill-disabled-border: #F1F3F5;
+
+
 }
+
+
 
 // DARKMODE
 .dark-theme {
@@ -164,26 +186,26 @@
     --background-subtle: #151718;
 
     // layer-1
-    --layer-01: #313538;
-    --layer01-hover: #292D2F;
-    --layer01-active: #787F85;
-    --layer01-selected: #697177;
+    --layer-01: #2B2F31;
+    --layer-01-hover: #292D2F;
+    --layer-01-active: #787F85;
+    --layer-01-selected: #697177;
     --layer-01-selectedhover: #545A5F;
     --layer-01-disabled: #26292B;
 
     // layer-2
-    --layer-02: #3A3F42;
-    --layer02-hover: #313537;
-    --layer02-active: #787F85;
-    --layer02-selected: #697177;
+    --layer-02: #313538;
+    --layer-02-hover: #292D2F;
+    --layer-02-active: #787F85;
+    --layer-02-selected: #3A3F42;
     --layer-02-selectedhover: #545A5F;
     --layer-02-disabled: #313538;
 
     // layer-3
     --layer-03: #26292B;
-    --layer03-hover: #202224;
-    --layer03-active: #2B2F31;
-    --layer03-selected: #697177;
+    --layer-03-hover: #202224;
+    --layer-03-active: #2B2F31;
+    --layer-03-selected: #697177;
     --layer-03-selectedhover: #545A5F;
     --layer-03-disabled: #26292B;
 
@@ -243,4 +265,26 @@
     --button-ghost-active: #313538;
     --button-ghost-icon: #4C5155;
     --button-ghost-text: #ECEDEE;
+
+
+    --alerts-info-border: #3A3F42;
+    --alerts-info-bg: #313538;
+    --alerts-danger-bg: #E54D2E1A;
+    --alerts-danger-border: #652016;
+    --alerts-info-accent-color: #3E63DD;
+
+
+
+
+    // input box
+    --input-box-border-default: #4C5155;
+    --input-box-fill-default: #313538;
+    --input-box-fill-hover: #11181C;
+
+    --input-box-fill-clicked: #3A3F42;
+    --input-box-fill-clicked-border: #3E63DD;
+
+    --input-box-fill-disabled: #2B2F3199;
+    --input-box-fill-disabled-border: #3A3F42;
+
 }

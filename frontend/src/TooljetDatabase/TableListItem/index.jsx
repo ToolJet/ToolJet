@@ -41,13 +41,9 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
 
   return (
     <div
-      className={cx(
-        'table-list-item mb-1 rounded-3 d-inline-flex align-items-center justify-content-between h-4 list-group-item cursor-pointer list-group-item-action border-0 py-1',
-        {
-          'bg-light-indigo': !darkMode && active,
-          'bg-dark-indigo': darkMode && active,
-        }
-      )}
+      className={cx('tj-list-item cursor-pointer', {
+        'tj-list-item-selected': active,
+      })}
       data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table`}
       onClick={onClick}
     >

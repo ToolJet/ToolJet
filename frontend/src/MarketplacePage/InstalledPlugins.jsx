@@ -129,7 +129,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
                 </span>
               </div>
               <div className="col">
-                <div className="font-weight-medium text-capitalize">{plugin.name}</div>
+                <div className="font-weight-medium text-capitalize tj-text">{plugin.name}</div>
                 <div>{plugin.description}</div>
               </div>
               <div className="col-2">

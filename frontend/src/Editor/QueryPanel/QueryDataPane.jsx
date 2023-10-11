@@ -94,7 +94,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
               data-tooltip-id="tooltip-for-query-panel-header-btn"
               data-tooltip-content="Hide query panel"
             >
-              <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--slate12)" />
+              <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--button-tirtiary-icon)" />
             </button>
             <button
               onClick={() => {
@@ -108,7 +108,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
               data-tooltip-content="Open quick search"
               data-cy="query-search-button"
             >
-              <Search width="14" height="14" fill="var(--slate12)" />
+              <Search width="14" height="14" fill="var(--button-tirtiary-icon)" />
             </button>
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}

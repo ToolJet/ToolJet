@@ -164,7 +164,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
               {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
             </label>
 
-            <div className="d-flex justify-content-between form-control align-items-center">
+            <div className="d-flex justify-content-between align-items-center tj-input-element">
               <p id="login-url" data-cy="workspace-login-url">
                 {`${window.public_config?.TOOLJET_HOST}${
                   window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'

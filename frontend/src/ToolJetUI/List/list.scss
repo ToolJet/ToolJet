@@ -17,11 +17,12 @@
 }
 
 .list-group-item:hover {
-  background-color: var(--slate4) !important;
+  background-color: var(--layer-02-hover) !important;
 }
 
 .list-group-item:disabled {
   color: var(--slate9) !important;
+  background: var(--layer-02-disabled);
 }
 
 .list-group-item:focus {
@@ -42,7 +43,7 @@ button:focus:not(:focus-visible) {
 }
 
 .list-group-item.active {
-  background-color: var(--slate5) !important;
+  background-color: var(--layer-02-selected) !important;
   color: var(--text-primary) !important
 }
 

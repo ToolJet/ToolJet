@@ -19,28 +19,28 @@
     input,
     textarea {
         gap: 16px;
-        background: var(--background-strong);
-        border: 1px solid var(--slate7);
+        background: var(--input-box-fill-default);
+        border: 1px solid var(--input-box-border-default);
         border-radius: 6px;
         margin-bottom: 4px;
 
         &:hover {
-            background: var(--slate1);
-            border: 1px solid var(--slate8);
+            background: var(--input-box-fill-hover);
+            border: 1px solid var(--input-box-border-default);
             -webkit-box-shadow: none;
             box-shadow: none;
             outline: none;
         }
 
         &:focus-visible {
-            background: var(--slate1);
-            border: 1px solid var(--slate8);
+            background: var(--input-box-fill-default);
+            border: 1px solid var(--input-box-border-default);
             outline: none;
         }
 
         &:active {
-            background: var(--indigo2);
-            border: 1px solid var(--indigo9);
+            background: var(--input-box-fill-clicked);
+            border: 1px solid var(--input-box-fill-clicked-border);
             box-shadow: none;
         }
     }

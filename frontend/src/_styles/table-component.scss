@@ -19,7 +19,7 @@
 
   .card-footer,
   .card {
-    background-color: var(--base) !important;
+    background-color: var(--background-strong) !important;
   }
 
   .card {
@@ -50,7 +50,7 @@
     &:focus-visible {
       border-radius: 6px;
       border: 1px solid var(--slate7, #D7DBDF) !important;
-      background: var(--base-base, #FFF) !important;
+      background: var(--background-strong) !important;
       /* Focus rings/Gray/light */
       box-shadow: 0px 0px 0px 4px var(--slate6) !important;
     }
@@ -529,7 +529,7 @@
     input {
       color: var(--text-primary) !important;
       border: 1px solid var(--slate7, #D7DBDF) !important;
-      background: var(--base, #FFF) !important;
+      background: var(--background-strong) !important;
 
       &:hover {
         border: 1px solid var(--slate8, #C1C8CD) !important;
@@ -538,7 +538,7 @@
 
       &:focus-visible {
         border: 1px solid var(--slate7, #D7DBDF) !important;
-        background: var(--base, #FFF) !important;
+        background: var(--background-strong) !important;
         /* Focus rings/Gray/light */
         box-shadow: 0px 0px 0px 4px var(--slate6) !important;
       }

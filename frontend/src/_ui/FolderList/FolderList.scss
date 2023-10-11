@@ -24,12 +24,12 @@
     }
 
     &:hover {
-        background: var(--slate4);
+        background: var(--layer-02-hover);
         border-radius: 6px;
     }
 
     &:active {
-        background: var(--indigo4);
+        background: var(--layer-02-selected);
         box-shadow: none;
 
     }
@@ -37,7 +37,7 @@
 }
 
 .tj-list-item-disabled {
-    color: var(--slate8);
+    color: var(--text-disabled);
 }
 
 .tj-list-item-icon {
@@ -57,5 +57,5 @@
 }
 
 .tj-list-item-selected {
-    background-color: var(--slate5);
+    background-color: var(--layer-02-selected);
 }

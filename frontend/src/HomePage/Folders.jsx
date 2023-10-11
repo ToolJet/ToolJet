@@ -256,10 +256,15 @@ export const Folders = function Folders({
       {!isLoading && (
         <div data-testid="applicationFoldersList" className={cx(`mb-1 all-apps-link-cotainer`)}>
           <a
-            className={cx(
-              `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`
-            )}
-            style={{ height: '32px', background: _.isEmpty(activeFolder) && 'var(--layer-02)' }}
+            className={cx(`tj-list-item border-0  d-flex align-items-center tj-text-xsm`)}
+            style={{
+              height: '32px',
+              background: _.isEmpty(activeFolder) && 'var(--layer-02)',
+              padding: '6px 8px',
+              textDecoration: 'none',
+              color: 'var(--text-primary)',
+              linkStyle: 'none',
+            }}
             onClick={() => handleFolderChange({})}
             data-cy="all-applications-link"
           >
@@ -274,13 +279,9 @@ export const Folders = function Folders({
         filteredData.map((folder, index) => (
           <a
             key={index}
-            className={cx(
-              `folder-list-group-item rounded-2 list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
-              {
-                'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
-                'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
-              }
-            )}
+            className={cx(`tj-list-item rounded-2  h-4 mb-1  no-border d-flex align-items-center`, {
+              'tj-list-item-selected': activeFolder.id === folder.id,
+            })}
             onClick={() => handleFolderChange(folder)}
             data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
           >

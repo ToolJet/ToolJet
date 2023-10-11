@@ -234,8 +234,8 @@
 .datasource-footer-info {
   box-sizing: border-box;
   height: 88px;
-  background: var(--slate2);
-  border: 1px solid var(--slate3);
+  background: var(--alerts-info-bg);
+  border: 1px solid var(--alerts-info-border);
   border-radius: 6px;
 
   .copied {

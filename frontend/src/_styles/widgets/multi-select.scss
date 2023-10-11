@@ -7,7 +7,7 @@
   gap: 17px;
   width: 440px;
   height: 32px;
-  background: var(--base) !important;
+  background: var(--background-strong) !important;
   border: 1px solid var(--slate7);
   border-radius: 6px !important;
   display: flex;
@@ -50,7 +50,7 @@
   .select-search__input {
     padding: 0 !important;
     color: var(--slate9) !important;
-    background: var(--base) !important;
+    background: var(--background-strong) !important;
   }
 
   .select-search__select,

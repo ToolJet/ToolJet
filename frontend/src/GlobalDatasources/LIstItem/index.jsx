@@ -47,8 +47,8 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
   return (
     <div
       key={key}
-      className={cx('mx-3 rounded-3 datasources-list', {
-        'datasources-list-item': active,
+      className={cx('mx-3 tj-list-item datasources-list', {
+        'tj-list-item-selected': active,
       })}
     >
       <div

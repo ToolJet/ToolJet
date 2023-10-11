@@ -151,7 +151,7 @@ export function Git({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 {t('header.organization.menus.manageSSO.github.redirectUrl', 'Redirect URL')}
               </label>
-              <div className="d-flex justify-content-between form-control align-items-center">
+              <div className="d-flex justify-content-between tj-input-element align-items-center">
                 <p data-cy="redirect-url" id="redirect-url">{`${window.public_config?.TOOLJET_HOST}${
                   window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
                 }sso/git/${configId}`}</p>
