@@ -830,8 +830,6 @@ const EditorComponent = (props) => {
         isUpdatingEditorStateInProcess: updatingEditorStateInProcess,
         appDefinition: updatedAppDefinition,
       });
-
-      computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
     }
 
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {

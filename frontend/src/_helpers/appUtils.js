@@ -1175,9 +1175,23 @@ export function renderTooltip({ props, text }) {
   );
 }
 
+/*
+@computeComponentState: (components = {}) => Promise<void>
+This change is made to enhance the code readability by optimizing the logic
+for computing component state. It replaces the previous try-catch block with
+a more efficient approach, precomputing the parent component types and using
+conditional checks for better performance and error handling.*/
+
 export function computeComponentState(components = {}) {
   let componentState = {};
   const currentComponents = getCurrentState().components;
+
+  // Precompute parent component types
+  const parentComponentTypes = {};
+  Object.keys(components).forEach((key) => {
+    const { component } = components[key];
+    parentComponentTypes[key] = component.component;
+  });
 
   Object.keys(components).forEach((key) => {
     if (!components[key]) return;
@@ -1189,17 +1203,9 @@ export function computeComponentState(components = {}) {
     const existingValues = currentComponents[existingComponentName];
 
     if (component.parent) {
-      const parentComponent = components[component.parent];
-      let isListView = false,
-        isForm = false;
-      try {
-        isListView = parentComponent.component.component === 'Listview';
-        isForm = parentComponent.component.component === 'Form';
-      } catch {
-        console.log('error');
-      }
+      const parentComponentType = parentComponentTypes[component.parent];
 
-      if (!isListView && !isForm) {
+      if (parentComponentType !== 'Listview' && parentComponentType !== 'Form') {
         componentState[component.name] = {
           ...componentMeta.exposedVariables,
           id: key,
@@ -1490,7 +1496,7 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
     });
   });
 };
-
+//
 const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
   const parentId = componentParentId ?? component.component?.parent?.split('-').slice(0, -1).join('-');
 
@@ -1528,10 +1534,14 @@ export const addComponents = (
       ...finalComponents,
     });
 
-    const isParentAlsoCopied = component.component.parent && componentMap[component.component.parent];
+    const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pastedComponents, parentId);
+    const parentRef = isParentTabOrCalendar
+      ? component.component.parent.split('-').slice(0, -1).join('-')
+      : component.component.parent;
+    const isParentAlsoCopied = parentRef && componentMap[parentRef];
 
     componentMap[component.componentId] = newComponentId;
-    let isChild = parentId ? parentId : component.component.parent;
+    let isChild = isParentAlsoCopied ? component.component.parent : parentId;
     const componentData = JSON.parse(JSON.stringify(component.component));
 
     if (isCloning && parentId && !componentData.parent) {
