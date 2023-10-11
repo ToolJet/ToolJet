@@ -361,7 +361,7 @@ export const widgets = [
       },
       actionButtonRadius: {
         type: 'code',
-        displayName: 'Action Button Radius',
+        displayName: 'Action button radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
         },
@@ -2756,7 +2756,7 @@ export const widgets = [
   {
     name: 'Map',
     displayName: 'Map',
-    description: 'Display Google Maps',
+    description: 'Display google maps',
     component: 'Map',
     defaultSize: {
       width: 16,
@@ -2841,7 +2841,7 @@ export const widgets = [
     actions: [
       {
         handle: 'setLocation',
-        displayName: 'Set Location',
+        displayName: 'Set location',
         params: [
           { handle: 'lat', displayName: 'Latitude' },
           { handle: 'lng', displayName: 'Longitude' },

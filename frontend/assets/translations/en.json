@@ -797,7 +797,7 @@
         },
         "Map": {
             "displayName": "Map",
-            "description": "Display Google Maps"
+            "description": "Display google maps"
         },
         "QrScanner": {
             "displayName": "QR Scanner",
