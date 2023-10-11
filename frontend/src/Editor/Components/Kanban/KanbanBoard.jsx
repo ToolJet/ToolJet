@@ -95,6 +95,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
       if (lastSelectedCard?.id === cardId) {
         setExposedVariables({
           lastSelectedCard: cardDataAsObj[cardId],
+
           lastUpdatedCard: cardDataAsObj[cardId],
           lastCardUpdate: diffKeys.map((key) => {
             return {
