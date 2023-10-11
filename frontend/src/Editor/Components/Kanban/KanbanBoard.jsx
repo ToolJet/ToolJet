@@ -95,6 +95,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
       if (lastSelectedCard?.id === cardId) {
         setExposedVariables({
           lastSelectedCard: cardDataAsObj[cardId],
+
           lastUpdatedCard: cardDataAsObj[cardId],
           lastCardUpdate: diffKeys.map((key) => {
             return {
@@ -104,10 +105,9 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
           updatedCardData: getData(cardDataAsObj),
         });
         fireEvent('onUpdate');
-      } else {
-        setExposedVariable('updatedCardData', getData(cardDataAsObj));
-        fireEvent('onUpdate');
       }
+      setExposedVariable('updatedCardData', getData(cardDataAsObj));
+      fireEvent('onUpdate');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastSelectedCard, JSON.stringify(cardDataAsObj)]);
