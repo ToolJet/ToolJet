@@ -137,7 +137,7 @@ export const GlobalSettings = ({
           darkMode={darkMode}
         />
       )}
-      <div id="" className={cx({ 'dark-theme': darkMode, disabled: isVersionReleased })}>
+      <div id="" className={cx({ 'dark-theme': darkMode })}>
         <div bsPrefix="global-settings-popover">
           <HeaderSection darkMode={darkMode}>
             <HeaderSection.PanelHeader title="Global settings" />
@@ -149,8 +149,8 @@ export const GlobalSettings = ({
                   <label className="field-name">Unique app slug</label>
                   <input
                     type="text"
-                    className={`form-control is-valid slug-input`}
-                    placeholder={t('header.organization.workspaceSlug', 'unique workspace slug')}
+                    className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'} slug-input`}
+                    placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
                     maxLength={50}
                     onChange={(e) => {
                       e.persist();
@@ -202,7 +202,7 @@ export const GlobalSettings = ({
               </div>
             </div>
           </div>
-          <div style={{ padding: '12px 16px' }}>
+          <div style={{ padding: '12px 16px' }} className={cx({ disabled: isVersionReleased })}>
             <div className="tj-text-xsm color-slate12 ">
               <div className="d-flex mb-3">
                 <span data-cy={`label-hide-header-for-launched-apps`}>

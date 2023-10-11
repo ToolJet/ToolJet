@@ -158,8 +158,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               type="text"
               onChange={(e) => delayedFieldChange(e.target.value, 'name')}
               onKeyDown={handleKeyDown}
-              className="form-control"
-              placeholder={t('header.organization.workspaceName', 'workspace name')}
+              className={`form-control ${fields['name']?.error ? 'is-invalid' : 'is-valid'}`}
+              placeholder={t('header.organization.workspaceName', 'Workspace name')}
               disabled={isCreating}
               maxLength={50}
               defaultValue={fields['name']?.value}
@@ -178,8 +178,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <label>Unique workspace slug</label>
             <input
               type="text"
-              className={`form-control is-valid`}
-              placeholder={t('header.organization.workspaceSlug', 'unique workspace slug')}
+              className={`form-control ${fields['slug']?.error ? 'is-invalid' : 'is-valid'}`}
+              placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
               disabled={isCreating}
               maxLength={50}
               onChange={(e) => {

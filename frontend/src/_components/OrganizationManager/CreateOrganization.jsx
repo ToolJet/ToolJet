@@ -125,8 +125,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 e.persist();
                 delayedFieldChange(e.target.value, 'name');
               }}
-              className="form-control"
-              placeholder={t('header.organization.workspaceName', 'workspace name')}
+              className={`form-control ${fields['name']?.error ? 'is-invalid' : 'is-valid'}`}
+              placeholder={t('header.organization.workspaceName', 'Workspace name')}
               disabled={isCreating}
               onKeyDown={handleKeyDown}
               maxLength={50}
@@ -145,8 +145,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             <label>Unique workspace slug</label>
             <input
               type="text"
-              className={`form-control`}
-              placeholder={t('header.organization.workspaceSlug', 'unique workspace slug')}
+              className={`form-control ${fields['slug']?.error ? 'is-invalid' : 'is-valid'}`}
+              placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
               disabled={isCreating}
               maxLength={50}
               onChange={(e) => {

@@ -11096,7 +11096,7 @@ tbody {
   }
 
   .tj-input-error {
-    color: #ED5F00;
+    color: var(--tomato10);
   }
 
   .tj-text-input {
@@ -11203,11 +11203,19 @@ tbody {
 .workspace-folder-modal {
   .tj-app-input {
     padding-bottom: 0px !important;
+
+    .is-invalid {
+      border-color: var(--tomato10) !important;
+    }
+
+    .is-invalid:focus {
+      border-color: var(--tomato10) !important;
+    }
   }
 
   .tj-input-error {
     height: 32px;
-    color: #ED5F00;
+    color: var(--tomato10);
     font-weight: 400;
     font-size: 10px;
     height: 0px;
