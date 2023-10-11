@@ -234,7 +234,7 @@
             "addNewWorkSpace": "Add new workspace",
             "loadOrganizations": "Load Organizations",
             "createWorkspace": "Create workspace",
-            "workspaceName": "workspace name",
+            "workspaceName": "Workspace name",
             "editWorkspace": "Edit workspace",
             "menus": {
                 "addWorkspace": "Add workspace",

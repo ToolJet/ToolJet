@@ -150,7 +150,7 @@ export const GlobalSettings = ({
                   <input
                     type="text"
                     className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'} slug-input`}
-                    placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
+                    placeholder={t('editor.appSlug', 'Unique app slug')}
                     maxLength={50}
                     onChange={(e) => {
                       e.persist();

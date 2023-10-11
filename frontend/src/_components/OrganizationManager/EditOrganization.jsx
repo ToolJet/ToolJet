@@ -218,7 +218,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <label>Workspace link</label>
             <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
               {!slugProgress ? (
-                `${window.public_config?.TOOLJET_HOST}/${fields['slug']?.value || ''}`
+                `${window.public_config?.TOOLJET_HOST}/${fields['slug']?.value || '<workspace-slug>'}`
               ) : (
                 <div className="d-flex gap-2">
                   <div class="spinner-border text-secondary workspace-spinner" role="status">
