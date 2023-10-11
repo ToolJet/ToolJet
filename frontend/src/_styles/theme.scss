@@ -4609,16 +4609,16 @@ input[type="text"] {
   color: $white  !important;
 
   .modal-title {
-    color: $white  !important;
+    color: $white !important;
   }
 
   .tj-version-wrap-sub-footer {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
     border-top: 1px solid #3A3F42 !important;
 
 
     p {
-      color: $white  !important;
+      color: $white !important;
     }
   }
 
@@ -4629,7 +4629,9 @@ input[type="text"] {
   }
 
   .modal-header {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
+    color: $white !important;
+    border-bottom: 2px solid #3A3F42 !important;
   }
 
   .btn-close {
@@ -6583,9 +6585,9 @@ input.hide-input-arrows {
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
   border-radius: 4px;
   border: 1px solid var(--slate3) !important;
-  left: 109px !important;
-  top: 8px !important;
-  position: absolute !important;
+  // left: 109px !important;
+  // top: 8px !important;
+  // position: absolute !important;
 
 
   .card-body,
@@ -6603,9 +6605,9 @@ input.hide-input-arrows {
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
   border-radius: 4px;
   border: 1px solid var(--slate3) !important;
-  left: 193px !important;
-  top: 10px !important;
-  position: absolute !important;
+  // left: 193px !important;
+  // top: 10px !important;
+  // position: absolute !important;
 
 
   .card-body,
@@ -6908,14 +6910,6 @@ tbody {
 
   .delete-row-btn {
     max-width: 140px;
-  }
-
-  .table-list-item-popover {
-    display: none;
-  }
-
-  .table-list-item:hover .table-list-item-popover {
-    display: block;
   }
 }
 
@@ -8725,7 +8719,7 @@ tbody {
   }
 }
 
-.tj-db-operaions-header {
+.tj-db-operations-header {
   height: 48px;
   padding: 0 !important;
   display: flex;
@@ -8734,19 +8728,19 @@ tbody {
 
   .row {
     margin-left: 0px;
+    width: 98%;
   }
 
-  .col {
+  .col-8 {
     padding-left: 0px;
     display: flex;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
   }
 }
 
 .add-new-column-btn {
   margin-left: 16px;
-  width: 144px !important;
   height: 28px;
   border-radius: 6px;
   padding: 0 !important;
@@ -8759,7 +8753,7 @@ tbody {
 }
 
 .tj-db-filter-btn {
-  width: 81px;
+  width: 100%;
   height: 28px;
   border-radius: 6px;
   background: transparent;
@@ -8777,7 +8771,7 @@ tbody {
   justify-content: center !important;
   align-items: center !important;
   padding: 4px 16px !important;
-  width: 171px !important;
+  width: 100% !important;
   height: 28px !important;
   background: var(--grass2) !important;
   border-radius: 6px !important;
@@ -8785,19 +8779,22 @@ tbody {
 
 .tj-db-filter-btn-active,
 .tj-db-sort-btn-active {
-  width: 81px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 4px 16px !important;
+  width: 100% !important;
   height: 28px !important;
-  background: var(--indigo4) !important;
-  border: 1px solid var(--indigo9) !important;
   border-radius: 6px !important;
-  justify-content: center;
+  background: var(--indigo4) !important;
+  //border: 1px solid var(--indigo9) !important;
   color: var(--indigo9) !important;
 }
 
 .tj-db-header-add-new-row-btn {
-  width: 125px;
   height: 28px;
-  background: var(--indigo3);
+  background: transparent;
   border-radius: 6px !important;
   display: flex;
   flex-direction: row;
@@ -8806,13 +8803,13 @@ tbody {
   gap: 6px;
   border: none;
 
-  span {
-    color: var(--indigo9);
+  padding: span {
+    //color: var(--indigo9);
   }
 }
 
 .tj-db-sort-btn {
-  width: 75px;
+  width: 100%;
   height: 28px;
   background: transparent;
   color: var(--slate12);
@@ -8820,6 +8817,7 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0
 }
 
 .edit-row-btn {
@@ -8828,6 +8826,7 @@ tbody {
   border: none;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .workspace-variable-header {
@@ -9687,7 +9686,6 @@ tbody {
   padding: 60px 0px;
   gap: 36px;
   width: 486px;
-  height: 244px;
   border: 2px dashed var(--indigo9);
   border-radius: 6px;
   align-items: center;
@@ -10212,6 +10210,8 @@ tbody {
     border-radius: 6px !important;
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
+    transition:none;
+
 
     &:hover {
       background: var(--slate1) !important;
@@ -10226,6 +10226,20 @@ tbody {
       border: 1px solid var(--indigo9) !important;
       box-shadow: none !important;
     }
+
+    &:-webkit-autofill {
+      box-shadow: 0 0 0 1000px var(--base) inset !important;
+      -webkit-text-fill-color: var(--slate12) !important;
+
+       &:hover {
+         box-shadow: 0 0 0 1000px var(--slate1) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}
+
+       &:focus-visible { 
+        box-shadow: 0 0 0 1000px var(--indigo2) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}
+    }
+
 
   }
 
@@ -10425,6 +10439,7 @@ tbody {
 
 .upload-user-form span.file-upload-error {
   color: var(--tomato10) !important;
+  margin-top: 12px 0px 0px 0px;
 }
 
 .tj-onboarding-phone-input {
@@ -10613,7 +10628,7 @@ tbody {
 }
 
 .export-table-button {
-  width: 135px;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10621,7 +10636,7 @@ tbody {
 
 
 #global-settings-popover.theme-dark {
-  background-color: $bg-dark-light  !important;
+  background-color: $bg-dark-light !important;
   border: 1px solid #2B2F31;
 
   .global-popover-text {
@@ -10629,7 +10644,7 @@ tbody {
   }
 
   .maximum-canvas-width-input-select {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
     border: 1px solid #324156;
     color: $white;
   }
@@ -10924,6 +10939,13 @@ tbody {
   border: 1px solid var(--slate3);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-radius: 6px;
+
+  .card-body-alignment {
+    min-height: 145px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 }
 
 .template-source-name {
@@ -11581,6 +11603,14 @@ tbody {
 .custom-gap-6{
   gap:6px
 }
+
+// ToolJet Database buttons
+
+.ghost-black-operation {
+  border: 1px solid transparent !important;
+  padding: 4px 10px;
+}
+
 .custom-gap-2{
   gap:2px
 }

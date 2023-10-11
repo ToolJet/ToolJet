@@ -3,26 +3,26 @@ id: overview
 title: Overview
 ---
 
-# Global Datasources : Overview
+# Data Sources : Overview
 
-Global data sources pull in and push data to any source including databases, external APIs, or services. Once a data source is connected to a workspace, the connection can be shared with any app of that workspace.
+Data Sources pull in and push data to any source including databases, external APIs, or services. Once a data source is connected to a workspace, the connection can be shared with any app of that workspace.
 
 :::caution
-Global data sources are available only on **ToolJet version 2.3.0 and above**.
+Data Source page is available only on **ToolJet version 2.3.0 and above**.
 :::
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/overview/overview.png" alt="Datasources: Overview" width="600"/>
+<img className="screenshot-full" src="/img/datasource-reference/overview/overview.png" alt="Data Sources: Overview" width="600"/>
 
 </div>
 
-## Connecting global data sources
+## Connecting data sources
 
 1. **Create a new app** from the dashboard, and Click on the **+ Add new** button from the query panel.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/newqpanel.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/newqpanel.png" alt="Data Sources: Overview" />
 
   </div>
 
@@ -30,7 +30,7 @@ Global data sources are available only on **ToolJet version 2.3.0 and above**.
 
   <div style={{textAlign: 'left'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/newgds.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/newgds.png" alt="Data Sources: Overview" />
 
   </div>
 
@@ -38,7 +38,7 @@ Global data sources are available only on **ToolJet version 2.3.0 and above**.
    
   <div style={{textAlign: 'center'}}>
   
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/gdsadd.gif" alt="Overview of Datasources" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/gdsadd.gif" alt="Overview of Data Sources" />
   
   </div>
 
@@ -48,7 +48,7 @@ Global data sources are available only on **ToolJet version 2.3.0 and above**.
 
   <div style={{textAlign: 'center'}}>
   
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/connectinggds.gif" alt="Overview of Datasources" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/connectinggds.gif" alt="Overview of Data Sources" />
   
   </div>
 
@@ -56,7 +56,7 @@ Global data sources are available only on **ToolJet version 2.3.0 and above**.
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/gdslist.png" alt="Overview of Datasources" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/gdslist.png" alt="Overview of Data Sources" />
   
   </div>
 
@@ -64,7 +64,7 @@ Global data sources are available only on **ToolJet version 2.3.0 and above**.
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/switch1.gif" alt="Overview of Datasources" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/switch1.gif" alt="Overview of Data Sources" />
   
   </div>
 
@@ -78,7 +78,7 @@ By default, 4 data sources will be available on every app on ToolJet:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/newui/overview/defds.png" alt="Datasources: Overview" />
+<img className="screenshot-full" src="/img/datasource-reference/newui/overview/defds.png" alt="Data Sources: Overview" />
 
 </div>
 
@@ -101,7 +101,7 @@ To configure these permissions, navigate to **Workspace Settings** -> **Groups S
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/newui/overview/newpermissions.png" alt="Datasources: Overview" />
+<img className="screenshot-full" src="/img/datasource-reference/newui/overview/newpermissions.png" alt="Data Sources: Overview" />
 
 </div>
 
@@ -116,7 +116,7 @@ To configure these permissions, navigate to **Workspace Settings** -> **Groups S
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/newui/overview/viewedit.png" alt="Datasources: Overview" />
+<img className="screenshot-full" src="/img/datasource-reference/newui/overview/viewedit.png" alt="Data Sources: Overview" />
 
 </div>
 
@@ -129,14 +129,14 @@ On ToolJet versions below 2.3.0, the data source connection was made from within
 1. When dealing with apps that were created using ToolJet versions prior to 2.3.0, you will notice the presence of the data source manager in the left sidebar of the App Builder.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/overview/leftsidebar.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/overview/leftsidebar.png" alt="Data Sources: Overview" />
 
   </div>
 
 2. To change the scope, locate the kebab menu situated next to the connected data source. From this menu, select the **change scope** option.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/overview/changescope.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/overview/changescope.png" alt="Data Sources: Overview" />
 
   </div>
 
@@ -145,6 +145,6 @@ On ToolJet versions below 2.3.0, the data source connection was made from within
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/overview/queryadd.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/overview/queryadd.png" alt="Data Sources: Overview" />
 
   </div>
