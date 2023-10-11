@@ -5790,7 +5790,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'BoundedBox',
-    displayName: 'Bounded Box',
+    displayName: 'Bounded box',
     description: 'An infinitely customizable image annotation widget',
     component: 'BoundedBox',
     defaultSize: {
@@ -5804,7 +5804,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       imageUrl: {
         type: 'code',
-        displayName: 'Image Url',
+        displayName: 'Image url',
         validation: {
           schema: { type: 'string' },
         },
