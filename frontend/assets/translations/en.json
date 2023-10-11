@@ -896,8 +896,8 @@
             "description": "Steps"
         },
         "KanbanBoard": {
-            "displayName": "Kanban Board",
-            "description": "Kanban Board"
+            "displayName": "Kanban board",
+            "description": "Kanban board"
         },
         "ColorPicker": {
             "displayName": "Color Picker",
