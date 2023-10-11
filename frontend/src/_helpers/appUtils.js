@@ -585,6 +585,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'switch-page': {
         const { name, disabled } = _ref.appDefinition.pages[event.pageId];
+
         // Don't allow switching to disabled page in editor as well as viewer
         if (!disabled) {
           _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
@@ -637,6 +638,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   if (eventName === 'onCalendarEventSelect') {
     const { component, calendarEvent } = options;
+
     useCurrentStateStore.getState().actions.setCurrentState({
       components: {
         ...getCurrentState().components,
@@ -646,6 +648,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
         },
       },
     });
+
     executeActionsForEventId(_ref, 'onCalendarEventSelect', events, mode, customVariables);
   }
 
@@ -660,6 +663,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
         },
       },
     });
+
     executeActionsForEventId(_ref, 'onCalendarSlotSelect', events, mode, customVariables);
   }
 
@@ -1590,11 +1594,18 @@ export const addNewWidgetToTheEditor = (
 
   const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
 
+  const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
   const newComponent = {
     id: uuidv4(),
     component: componentData,
     layout: {
       [currentLayout]: {
+        top: top,
+        left: left,
+        width: defaultWidth,
+        height: defaultHeight,
+      },
+      [nonActiveLayout]: {
         top: top,
         left: left,
         width: defaultWidth,

@@ -51,6 +51,15 @@ export const Container = ({
   // redundant save on app definition load
   const firstUpdate = useRef(true);
 
+  const { showComments, currentLayout, selectedComponents } = useEditorStore(
+    (state) => ({
+      showComments: state?.showComments,
+      currentLayout: state?.currentLayout,
+      selectedComponents: state?.selectedComponents,
+    }),
+    shallow
+  );
+
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -70,14 +79,6 @@ export const Container = ({
       appVersionsId: state?.editingVersion?.id,
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
-    }),
-    shallow
-  );
-  const { showComments, currentLayout, selectedComponents } = useEditorStore(
-    (state) => ({
-      showComments: state?.showComments,
-      currentLayout: state?.currentLayout,
-      selectedComponents: state?.selectedComponents,
     }),
     shallow
   );

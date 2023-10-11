@@ -743,7 +743,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
         });
       return Promise.resolve();
     }
-    const pages = _ref.state.appDefinition.pages;
+    const pages = _ref.appDefinition.pages;
     const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
 
     if (!pageId) {
