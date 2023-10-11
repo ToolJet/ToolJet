@@ -788,6 +788,8 @@ const EditorComponent = (props) => {
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
 
+    console.log('---arpit::---[diffPatches]', { diffPatches });
+
     const inversePatches = diff(updatedAppDefinition, appDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 

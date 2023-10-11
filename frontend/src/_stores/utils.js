@@ -220,6 +220,10 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
 
       const componentMeta = componentTypes.find((comp) => comp.component === component.component.component);
 
+      if (!componentMeta) {
+        return result;
+      }
+
       const metaDiff = diff(componentMeta, component.component);
 
       result[id] = _.defaultsDeep(metaDiff, defaultComponent);

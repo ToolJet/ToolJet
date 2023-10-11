@@ -1381,7 +1381,7 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
   if (!isCut) {
     opts.cloningComponent = componentMap;
   }
-
+  console.log('---arpit::---[updateAppDefinition]', { x: newAppDefinition.pages[pageId].components });
   updateAppDefinition(newAppDefinition, opts);
 };
 
@@ -1573,6 +1573,7 @@ export const addComponents = (
       },
       layouts: component.layouts,
     };
+
     finalComponents[newComponentId] = newComponent;
   });
 
