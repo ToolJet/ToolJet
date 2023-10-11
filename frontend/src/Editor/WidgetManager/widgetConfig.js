@@ -3118,20 +3118,20 @@ export const widgets = [
     actions: [
       {
         handle: 'clearFiles',
-        displayName: 'Clear Files',
+        displayName: 'Clear files',
       },
     ],
     properties: {
       instructionText: {
         type: 'code',
-        displayName: 'Instruction Text',
+        displayName: 'Instruction text',
         validation: {
           schema: { type: 'string' },
         },
       },
       enableDropzone: {
         type: 'code',
-        displayName: 'Use Drop zone',
+        displayName: 'Use drop zone',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -3171,7 +3171,7 @@ export const widgets = [
       },
       maxSize: {
         type: 'code',
-        displayName: 'Max size limit (Bytes)',
+        displayName: 'Max size limit (bytes)',
         validation: {
           schema: {
             type: 'union',
@@ -3181,7 +3181,7 @@ export const widgets = [
       },
       minSize: {
         type: 'code',
-        displayName: 'Min size limit (Bytes)',
+        displayName: 'Min size limit (bytes)',
         validation: {
           schema: {
             type: 'union',
@@ -3218,9 +3218,9 @@ export const widgets = [
       },
     },
     events: {
-      onFileSelected: { displayName: 'On File Selected' },
-      onFileLoaded: { displayName: 'On File Loaded' },
-      onFileDeselected: { displayName: 'On File Deselected' },
+      onFileSelected: { displayName: 'On file selected' },
+      onFileLoaded: { displayName: 'On file loaded' },
+      onFileDeselected: { displayName: 'On file deselected' },
     },
     styles: {
       visibility: {
