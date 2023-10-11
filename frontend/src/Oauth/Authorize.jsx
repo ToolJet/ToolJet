@@ -49,13 +49,13 @@ export function Authorize() {
         //logged users should send tj-workspace-id when login to unauthorized workspace
         if (session.authentication_status === false || session.current_organization_id) {
           signIn(authParams, configs);
+          subsciption.unsubscribe();
         }
       });
     } else {
       signIn(authParams, configs);
     }
 
-    () => subsciption && subsciption.unsubscribe();
     // Disabled for useEffect not being called for updation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
