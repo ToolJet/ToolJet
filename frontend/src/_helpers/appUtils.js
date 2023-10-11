@@ -585,6 +585,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'switch-page': {
         const { name, disabled } = _ref.appDefinition.pages[event.pageId];
+
         // Don't allow switching to disabled page in editor as well as viewer
         if (!disabled) {
           _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
