@@ -639,6 +639,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
 
   if (eventName === 'onCalendarEventSelect') {
     const { component, calendarEvent } = options;
+
     useCurrentStateStore.getState().actions.setCurrentState({
       components: {
         ...getCurrentState().components,
@@ -648,6 +649,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
         },
       },
     });
+
     executeActionsForEventId(_ref, 'onCalendarEventSelect', events, mode, customVariables);
   }
 
@@ -662,6 +664,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
         },
       },
     });
+
     executeActionsForEventId(_ref, 'onCalendarSlotSelect', events, mode, customVariables);
   }
 
