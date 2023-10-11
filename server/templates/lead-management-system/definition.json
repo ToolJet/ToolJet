@@ -18542,7 +18542,7 @@
                 "canvasMaxWidth": "5000",
                 "canvasMaxWidthType": "px",
                 "canvasMaxHeight": 2400,
-                "canvasBackgroundColor": "#444444",
+                "canvasBackgroundColor": "",
                 "backgroundFxQuery": "{{queries.colorPalette.data[\"canvasBg_\"+globals.theme.name]}}"
               }
             },
@@ -37335,7 +37335,7 @@
                   "canvasMaxWidth": "5000",
                   "canvasMaxWidthType": "px",
                   "canvasMaxHeight": 2400,
-                  "canvasBackgroundColor": "#444444",
+                  "canvasBackgroundColor": "",
                   "backgroundFxQuery": "{{queries.colorPalette.data[\"canvasBg_\"+globals.theme.name]}}"
                 }
               },
