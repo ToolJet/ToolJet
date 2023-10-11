@@ -3104,8 +3104,8 @@ export const widgets = [
   },
   {
     name: 'FilePicker',
-    displayName: 'File Picker',
-    description: 'File Picker',
+    displayName: 'File picker',
+    description: 'File picker',
     component: 'FilePicker',
     defaultSize: {
       width: 15,
@@ -3138,7 +3138,7 @@ export const widgets = [
       },
       enablePicker: {
         type: 'code',
-        displayName: 'Use File Picker',
+        displayName: 'Use file picker',
         validation: {
           schema: { type: 'boolean' },
         },

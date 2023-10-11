@@ -812,8 +812,8 @@
             "description": "Separator between components"
         },
         "FilePicker": {
-            "displayName": "File Picker",
-            "description": "File Picker"
+            "displayName": "File picker",
+            "description": "File picker"
         },
         "Calendar": {
             "displayName": "Calendar",
