@@ -5419,24 +5419,24 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       linkTarget: {
         type: 'code',
-        displayName: 'Link Target',
+        displayName: 'Link target',
         validation: {
           schema: { type: 'string' },
         },
       },
       linkText: {
         type: 'code',
-        displayName: 'Link Text',
+        displayName: 'Link text',
         validation: {
           schema: { type: 'string' },
         },
       },
       targetType: {
         type: 'select',
-        displayName: 'Target Type',
+        displayName: 'Target type',
         options: [
-          { name: 'New Tab', value: 'new' },
-          { name: 'Same Tab', value: 'same' },
+          { name: 'New tab', value: 'new' },
+          { name: 'Same tab', value: 'same' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -5450,14 +5450,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textSize: {
         type: 'number',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'number' },
         },
@@ -5467,7 +5467,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         displayName: 'Underline',
         options: [
           { name: 'Never', value: 'no-underline' },
-          { name: 'On Hover', value: 'on-hover' },
+          { name: 'On hover', value: 'on-hover' },
           { name: 'Always', value: 'underline' },
         ],
         validation: {
