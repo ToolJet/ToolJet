@@ -1472,6 +1472,7 @@ const getAllChildComponents = (allComponents, parentId) => {
 };
 
 const updateComponentLayout = (components, parentId, isCut = false) => {
+  console.log('-----arpit this runs');
   let prevComponent;
   components.forEach((component, index) => {
     Object.keys(component.layouts).map((layout) => {
@@ -1566,7 +1567,7 @@ export const addComponents = (
     finalComponents[newComponentId] = newComponent;
   });
 
-  !isCloning && updateComponentLayout(pastedComponents, parentId, isCut);
+  updateComponentLayout(pastedComponents, parentId, isCut);
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
   !isCloning && toast.success('Component pasted succesfully');
