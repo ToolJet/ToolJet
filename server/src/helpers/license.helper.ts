@@ -66,3 +66,5 @@ export function decrypt(toDecrypt: string): Terms {
 }
 
 export const LICENSE_TRIAL_API = 'https://nlb.tooljet.com/api/license/trial';
+
+export const freshDeskBaseUrl = 'https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/';

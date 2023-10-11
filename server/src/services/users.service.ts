@@ -10,7 +10,6 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap, generatePayloadForLimits, isSuperAdmin } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
-import got from 'got';
 import { LIMIT_TYPE, USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
@@ -21,7 +20,6 @@ import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
-const freshDeskBaseUrl = 'https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/';
 
 type FetchInstanceUsersResponse = {
   email: string;
@@ -952,73 +950,6 @@ export class UsersService {
         };
       }
     }
-  }
-
-  async createCRMUser(user): Promise<boolean> {
-    if (process.env.NODE_ENV === 'test') return true;
-
-    try {
-      await got(`${freshDeskBaseUrl}contacts`, {
-        method: 'post',
-        headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
-        json: {
-          contact: {
-            email: user.email,
-            first_name: user.firstName,
-            last_name: user.lastName,
-            custom_field: {
-              job_title: user.role,
-            },
-          },
-        },
-      });
-    } catch (error) {
-      console.error('error while connection to freshDeskBaseUrl : createCRMUser', error);
-    }
-
-    return true;
-  }
-
-  async updateCRM(user: User): Promise<boolean> {
-    if (process.env.NODE_ENV === 'test') return true;
-
-    try {
-      const response = await got(`${freshDeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
-        method: 'get',
-        headers: {
-          Authorization: `Token token=${process.env.FWAPIKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const contacts = JSON.parse(response.body)['contacts']['contacts'];
-      let contact = undefined;
-
-      if (contacts) {
-        if (contacts.length > 0) {
-          contact = contacts[0];
-        }
-      }
-
-      await got(`${freshDeskBaseUrl}contacts/${contact.id}`, {
-        method: 'put',
-        headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
-        json: {
-          contact: {
-            email: user.email,
-            first_name: user.firstName,
-            last_name: user.lastName,
-            custom_field: {
-              job_title: user.role,
-            },
-          },
-        },
-      });
-    } catch (error) {
-      console.error('error while connection to freshDeskBaseUrl : updateCRM', error);
-    }
-
-    return true;
   }
 
   async updateSSOUserInfo(manager: EntityManager, userId: string, ssoUserInfo: any): Promise<void> {

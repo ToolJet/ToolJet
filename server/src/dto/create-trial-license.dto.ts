@@ -3,6 +3,18 @@ import { Transform } from 'class-transformer';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 
 export class CreateTrialLicenseDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  @Transform(({ value }) => lowercaseString(value))
+  firstName: string;
+
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => lowercaseString(value))
+  @MaxLength(200)
+  lastName: string;
+
   @IsEmail()
   @IsNotEmpty()
   @Transform(({ value }) => lowercaseString(value))
@@ -34,4 +46,9 @@ export class CreateTrialLicenseDto {
   @IsObject()
   @IsOptional()
   otherData: object;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(5)
+  version: string;
 }

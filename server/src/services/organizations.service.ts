@@ -764,6 +764,13 @@ export class OrganizationsService {
             `${currentUser.firstName} ${currentUser.lastName ?? ''}`
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
+
+        void this.licenseService.createCRMUser({
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+        });
       } else {
         this.emailService
           .sendOrganizationUserWelcomeEmail(

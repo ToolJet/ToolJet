@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
-import { LICENSE_FIELD, LICENSE_TYPE, decrypt } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_TYPE, decrypt, freshDeskBaseUrl } from 'src/helpers/license.helper';
 import License from '@ee/licensing/configs/License';
 import { LicenseUpdateDto } from '@dto/license.dto';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
@@ -9,6 +9,7 @@ import got from 'got';
 import { SelfhostCustomerLicense } from 'src/entities/selfhost_customer_license.entity';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { ConfigService } from '@nestjs/config';
+import { CRMData } from '@ee/licensing/types';
 
 @Injectable()
 export class LicenseService {
@@ -175,7 +176,7 @@ export class LicenseService {
   }
 
   async generateTrialLicense(createDto: CreateTrialLicenseDto) {
-    const { email, hostname, subpath, companyName, otherData, customerId } = createDto;
+    const { firstName, lastName, email, hostname, subpath, companyName, otherData, customerId, version } = createDto;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const isExisted = await manager.findOne(SelfhostCustomerLicense, {
@@ -221,7 +222,10 @@ export class LicenseService {
         },
       };
 
-      const LICENSE_SERVER_URL = this.configService.get<string>('LICENSE_SERVER_URL');
+      const LICENSE_SERVER_URL =
+        version !== '2'
+          ? this.configService.get<string>('LICENSE_SERVER_URL')
+          : this.configService.get<string>('LICENSE_SERVER_URL_V2');
       const LICENSE_SERVER_SECRET = this.configService.get<string>('LICENSE_SERVER_SECRET');
 
       /* generate license here */
@@ -256,8 +260,86 @@ export class LicenseService {
         licenseKey,
       });
       await manager.save(SelfhostCustomerLicense, licenseEntry);
+
+      this.createCRMUser({ firstName, lastName, email, isTrialOpted: true });
+
       return licenseKey;
     });
   }
+
+  async createCRMUser(user: CRMData): Promise<boolean> {
+    if (process.env.NODE_ENV === 'test') return true;
+
+    try {
+      await got(`${freshDeskBaseUrl}contacts`, {
+        method: 'post',
+        headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+        json: {
+          contact: {
+            email: user.email,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            custom_field: {
+              job_title: user.role,
+              ...(user.isTrialOpted && { cf_has_started_on_prem_trial: 1 }),
+            },
+          },
+        },
+      });
+    } catch (error) {
+      const errors = JSON.parse(error.response?.body || '{}').errors;
+      const freshDeskContactAlreadyExists = (email, errorMessage) => errorMessage?.includes(`${email} already exists`);
+
+      if (errors?.code === 400 && freshDeskContactAlreadyExists(user.email, errors?.message?.[0])) {
+        console.log(`Contact ${user.email} already exists. Updating custom fields.`);
+        this.updateCRM(user);
+      } else {
+        console.error('error while connection to freshDeskBaseUrl : createCRMUser', error);
+      }
+    }
+
+    return true;
+  }
+
+  async updateCRM(user: CRMData): Promise<boolean> {
+    if (process.env.NODE_ENV === 'test') return true;
+
+    try {
+      const response = await got(`${freshDeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
+        method: 'get',
+        headers: {
+          Authorization: `Token token=${process.env.FWAPIKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const contacts = JSON.parse(response.body)['contacts']['contacts'];
+
+      if (!contacts?.length) {
+        return;
+      }
+
+      await got(`${freshDeskBaseUrl}contacts/${contacts[0].id}`, {
+        method: 'put',
+        headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+        json: {
+          contact: {
+            email: user.email,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            custom_field: {
+              job_title: user.role,
+              ...(user.isTrialOpted && { cf_has_started_on_prem_trial: 1 }),
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error('error while connection to freshDeskBaseUrl : updateCRM', error);
+    }
+
+    return true;
+  }
+
   isBasicPlan = async () => !(await this.getLicenseFieldValue(LICENSE_FIELD.VALID));
 }

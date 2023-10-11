@@ -308,7 +308,12 @@ export class OauthService {
             manager
           );
 
-          void this.usersService.createCRMUser(userDetails);
+          void this.licenseService.createCRMUser({
+            email: userDetails.email,
+            firstName: userDetails.firstName,
+            lastName: userDetails.lastName,
+            role: userDetails.role,
+          });
           await this.organizationUsersService.create(userDetails, defaultOrganization, true, manager);
           organizationDetails = defaultOrganization;
         } else if (userDetails) {

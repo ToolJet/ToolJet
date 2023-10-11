@@ -328,7 +328,12 @@ export class AuthService {
       );
       await this.organizationUsersService.create(user, organization, true, manager);
 
-      void this.usersService.createCRMUser(user);
+      void this.licenseService.createCRMUser({
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      });
       this.emailService
         .sendWelcomeEmail(user.email, user.firstName, user.invitationToken)
         .catch((err) => console.error(err));
@@ -574,7 +579,12 @@ export class AuthService {
         manager
       );
 
-      void this.usersService.updateCRM(user);
+      void this.licenseService.updateCRM({
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      });
       return this.generateLoginResultPayload(response, user, organization, isInstanceSSOLogin, !isSSOVerify);
     });
   }

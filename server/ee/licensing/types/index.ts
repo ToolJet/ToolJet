@@ -32,3 +32,11 @@ export interface Terms {
     createdBy?: string;
   };
 }
+
+export interface CRMData {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  isTrialOpted?: boolean;
+}
