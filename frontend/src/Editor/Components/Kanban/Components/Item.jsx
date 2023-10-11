@@ -26,11 +26,12 @@ export const Item = React.memo(
         isFirstItem = false,
         setShowModal = () => {},
         cardDataAsObj = {},
+        setLastSelectedCard,
         ...props
       },
       ref
     ) => {
-      const { id, component, containerProps, fireEvent, setExposedVariable, darkMode } = kanbanProps;
+      const { id, component, containerProps, fireEvent, darkMode, setExposedVariable } = kanbanProps;
       useEffect(() => {
         if (!dragOverlay) {
           return;
@@ -61,6 +62,7 @@ export const Item = React.memo(
             )
               return;
             setExposedVariable('lastSelectedCard', cardDataAsObj[value]);
+            setLastSelectedCard(cardDataAsObj[value]);
             setShowModal(true);
             fireEvent('onCardSelected');
           }}

@@ -37,11 +37,10 @@ const dropAnimation = {
 const TRASH_ID = 'void';
 
 export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
-  const { properties, fireEvent, setExposedVariable, setExposedVariables, exposedVariables, styles } = kanbanProps;
-  const { lastSelectedCard = {} } = exposedVariables;
+  const { properties, fireEvent, setExposedVariable, setExposedVariables, styles } = kanbanProps;
   const { columnData, cardData, cardWidth, cardHeight, showDeleteButton, enableAddCard } = properties;
   const { accentColor } = styles;
-
+  const [lastSelectedCard, setLastSelectedCard] = useState({});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const columnDataAsObj = useMemo(() => convertArrayToObj(columnData), [JSON.stringify(columnData)]);
 
@@ -85,7 +84,6 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
   useEffect(() => {
     droppableItemsColumnId.current = containers.find((container) => items[container]?.length > 0);
   }, [items, containers]);
-
   useEffect(() => {
     setExposedVariable('updateCardData', async function (cardId, value) {
       if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
@@ -95,7 +93,6 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
       if (lastSelectedCard?.id === cardId) {
         setExposedVariables({
           lastSelectedCard: cardDataAsObj[cardId],
-
           lastUpdatedCard: cardDataAsObj[cardId],
           lastCardUpdate: diffKeys.map((key) => {
             return {
@@ -105,9 +102,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
           updatedCardData: getData(cardDataAsObj),
         });
         fireEvent('onUpdate');
+      } else {
+        setExposedVariable('updatedCardData', getData(cardDataAsObj));
+        fireEvent('onUpdate');
       }
-      setExposedVariable('updatedCardData', getData(cardDataAsObj));
-      fireEvent('onUpdate');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastSelectedCard, JSON.stringify(cardDataAsObj)]);
@@ -149,7 +147,6 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         ...items,
         [columnId]: [...items[columnId], cardDetails.id],
       }));
-
       setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) });
       fireEvent('onCardAdded');
     });
@@ -371,6 +368,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
                           isFirstItem={index === 0 && droppableItemsColumnId.current === columnId}
                           setShowModal={setShowModal}
                           cardDataAsObj={cardDataAsObj}
+                          setLastSelectedCard={setLastSelectedCard}
                         />
                       );
                     })}
@@ -427,6 +425,7 @@ function SortableItem({
   isFirstItem,
   setShowModal,
   cardDataAsObj,
+  setLastSelectedCard,
 }) {
   const { setNodeRef, setActivatorNodeRef, listeners, isDragging, isSorting, transform, transition } = useSortable({
     id,
@@ -451,6 +450,7 @@ function SortableItem({
       isFirstItem={isFirstItem}
       setShowModal={setShowModal}
       cardDataAsObj={cardDataAsObj}
+      setLastSelectedCard={setLastSelectedCard}
     />
   );
 }

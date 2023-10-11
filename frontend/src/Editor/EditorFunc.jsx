@@ -227,6 +227,15 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
+  useEffect(
+    () => {
+      const components = appDefinition?.pages?.[currentPageId]?.components || {};
+      computeComponentState(components);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentPageId]
+  );
+
   useEffect(() => {
     // This effect runs when lastKeyPressTimestamp changes
     // You can place your database update logic here
@@ -748,7 +757,6 @@ const EditorComponent = (props) => {
         resolve();
       });
     }
-
     let updatedAppDefinition;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
