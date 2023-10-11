@@ -66,8 +66,9 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     }
   };
 
-  const handleInputChange = (value, field) => {
+  const handleInputChange = async (value, field) => {
     const trimmedValue = value?.trim();
+    const prevValue = field === 'name' ? currentValue?.name : currentValue?.slug;
     //reset fields
     setFields({
       ...fields,
@@ -76,7 +77,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
         error: null,
       },
     });
-    const error = validateName(
+    let error = validateName(
       value,
       `Workspace ${field}`,
       false,
@@ -84,6 +85,22 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       !(field === 'slug'),
       field === 'slug'
     );
+
+    /* If the basic validation is passing. then check the uniqueness */
+    if (error?.status === true && value !== prevValue) {
+      try {
+        await organizationService.checkWorkspaceUniqueness(
+          field === 'name' ? value : null,
+          field === 'slug' ? value : null
+        );
+      } catch (errResponse) {
+        error = {
+          status: false,
+          errorMsg: errResponse?.error,
+        };
+      }
+    }
+
     setFields({
       ...fields,
       [field]: {
@@ -93,14 +110,20 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     });
 
     if (error?.status) {
+      /* Checking for if the user entered the same value or not */
       if (field === 'name') {
         setDisabled(trimmedValue === currentValue?.name && fields?.slug?.value === currentValue?.slug);
       } else {
         setDisabled(trimmedValue === currentValue?.slug && fields?.name?.value === currentValue?.name);
       }
-      return;
     }
-    setDisabled(!error?.status);
+
+    /* recheck if the rest of fields are valid or not */
+    const otherInputErrors = Object.keys(fields).find(
+      (key) => (key !== field && !_.isEmpty(fields[key].error)) || (key !== field && _.isEmpty(fields[key].value))
+    );
+    setDisabled(!error?.status || otherInputErrors);
+    return;
   };
 
   const handleKeyDown = (e) => {
@@ -116,9 +139,9 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     setDisabled(true);
   };
 
-  const delayedSlugChange = _.debounce((value, field) => {
-    handleInputChange(value, field);
-    setSlugProgress(false);
+  const delayedFieldChange = _.debounce(async (value, field) => {
+    await handleInputChange(value, field);
+    field === 'slug' && setSlugProgress(false);
   }, 500);
 
   return (
@@ -133,7 +156,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <label>Workspace name</label>
             <input
               type="text"
-              onChange={(e) => handleInputChange(e.target.value, 'name')}
+              onChange={(e) => delayedFieldChange(e.target.value, 'name')}
               onKeyDown={handleKeyDown}
               className="form-control"
               placeholder={t('header.organization.workspaceName', 'workspace name')}
@@ -143,7 +166,11 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               data-cy="workspace-name-input-field"
               autoFocus
             />
-            <label className="label tj-input-error">{fields['name']?.error || ''}</label>
+            {fields['name']?.error ? (
+              <label className="label tj-input-error">{fields['name']?.error || ''}</label>
+            ) : (
+              <label className="label label-info">Name must be unique and max 50 characters</label>
+            )}
           </div>
         </div>
         <div className="row">
@@ -158,7 +185,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               onChange={(e) => {
                 setSlugProgress(true);
                 e.persist();
-                delayedSlugChange(e.target.value, 'slug');
+                delayedFieldChange(e.target.value, 'slug');
               }}
               onKeyDown={handleKeyDown}
               defaultValue={fields['slug']?.value}

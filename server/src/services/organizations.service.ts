@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotAcceptableException } from '@nestjs/common';
 import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -807,5 +807,17 @@ export class OrganizationsService {
       .on('error', (error) => {
         throw error.message;
       });
+  }
+
+  async checkWorkspaceUniqueness(name: string, slug: string) {
+    if (!(slug || name)) {
+      throw new NotAcceptableException('Request should contain the slug or name');
+    }
+    const result = await getManager().findOne(Organization, {
+      ...(name && { name }),
+      ...(slug && { slug }),
+    });
+    if (result) throw new ConflictException(`${name ? 'Name' : 'Slug'} must be unique`);
+    return;
   }
 }

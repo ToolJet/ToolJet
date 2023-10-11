@@ -118,4 +118,10 @@ export class OrganizationsController {
     const result: any = await this.organizationsService.updateOrganizationConfigs(user.organizationId, body);
     return decamelizeKeys({ id: result.id });
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/is-unique')
+  async checkWorkspaceUnique(@User() user, @Query('name') name: string, @Query('slug') slug: string) {
+    return this.organizationsService.checkWorkspaceUniqueness(name, slug);
+  }
 }

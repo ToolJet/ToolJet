@@ -11,6 +11,7 @@ export const organizationService = {
   switchOrganization,
   getSSODetails,
   editOrganizationConfigs,
+  checkWorkspaceUniqueness,
 };
 
 function getUsers(page, options) {
@@ -71,4 +72,10 @@ function editOrganizationConfigs(params) {
     body: JSON.stringify(params),
   };
   return fetch(`${config.apiUrl}/organizations/configs`, requestOptions).then(handleResponse);
+}
+
+function checkWorkspaceUniqueness(name, slug) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const query = queryString.stringify({ name, slug });
+  return fetch(`${config.apiUrl}/organizations/is-unique?${query}`, requestOptions).then(handleResponse);
 }

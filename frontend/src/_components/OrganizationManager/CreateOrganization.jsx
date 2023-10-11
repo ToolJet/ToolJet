@@ -45,7 +45,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     }
   };
 
-  const handleInputChange = (value, field) => {
+  const handleInputChange = async (value, field) => {
     setFields({
       ...fields,
       [field]: {
@@ -53,7 +53,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         error: null,
       },
     });
-    const error = validateName(
+    let error = validateName(
       value,
       `Workspace ${field}`,
       false,
@@ -61,6 +61,22 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       !(field === 'slug'),
       field === 'slug'
     );
+
+    /* If the basic validation is passing. then check the uniqueness */
+    if (error?.status === true) {
+      try {
+        await organizationService.checkWorkspaceUniqueness(
+          field === 'name' ? value : null,
+          field === 'slug' ? value : null
+        );
+      } catch (errResponse) {
+        error = {
+          status: false,
+          errorMsg: errResponse?.error,
+        };
+      }
+    }
+
     setFields({
       ...fields,
       [field]: {
@@ -88,9 +104,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     setDisabled(true);
   };
 
-  const delayedSlugChange = _.debounce((value, field) => {
-    handleInputChange(value, field);
-    setSlugProgress(false);
+  const delayedFieldChange = _.debounce(async (value, field) => {
+    await handleInputChange(value, field);
+    field === 'slug' && setSlugProgress(false);
   }, 500);
 
   return (
@@ -105,7 +121,10 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             <label>Workspace name</label>
             <input
               type="text"
-              onChange={(e) => handleInputChange(e.target.value, 'name')}
+              onChange={(e) => {
+                e.persist();
+                delayedFieldChange(e.target.value, 'name');
+              }}
               className="form-control"
               placeholder={t('header.organization.workspaceName', 'workspace name')}
               disabled={isCreating}
@@ -114,7 +133,11 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               data-cy="workspace-name-input-field"
               autoFocus
             />
-            <label className="label tj-input-error">{fields['name']?.error || ''}</label>
+            {fields['name']?.error ? (
+              <label className="label tj-input-error">{fields['name']?.error || ''}</label>
+            ) : (
+              <label className="label label-info">Name must be unique and max 50 characters</label>
+            )}
           </div>
         </div>
         <div className="row">
@@ -129,7 +152,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               onChange={(e) => {
                 setSlugProgress(true);
                 e.persist();
-                delayedSlugChange(e.target.value, 'slug');
+                delayedFieldChange(e.target.value, 'slug');
               }}
               data-cy="workspace-slug-input-field"
               autoFocusfields
@@ -160,7 +183,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             <label>Workspace link</label>
             <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
               {!slugProgress ? (
-                `${window.public_config?.TOOLJET_HOST}/${fields['slug']?.value || ''}`
+                `${window.public_config?.TOOLJET_HOST}/${fields['slug']?.value || '<workspace-slug>'}`
               ) : (
                 <div className="d-flex gap-2">
                   <div class="spinner-border text-secondary workspace-spinner" role="status">
