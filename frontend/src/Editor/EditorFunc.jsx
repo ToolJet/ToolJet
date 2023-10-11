@@ -186,6 +186,10 @@ const EditorComponent = (props) => {
             theme: { name: props?.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
             currentUser: userVars,
+            /* Constant value.it will only change for viewer */
+            mode: {
+              value: 'edit',
+            },
           },
         });
       }
