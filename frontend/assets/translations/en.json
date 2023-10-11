@@ -900,8 +900,8 @@
             "description": "Kanban Board"
         },
         "ColorPicker": {
-            "displayName": "Color Picker",
-            "description": "Color Picker Palette"
+            "displayName": "Color picker",
+            "description": "Color picker palette"
         },
         "TreeSelect": {
             "displayName": "Tree Select",
