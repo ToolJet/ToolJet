@@ -1557,6 +1557,13 @@ const EditorComponent = (props) => {
       </div>
     );
   }
+
+  const shouldrenderWidgetInspector =
+    currentSidebarTab === 1 &&
+    selectedComponents?.length === 1 &&
+    !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
+    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0]?.id]);
+
   return (
     <div className="editor wrapper">
       <Confirm
@@ -1791,32 +1798,22 @@ const EditorComponent = (props) => {
                 removeMultipleComponents={removeComponents}
               />
 
-              {currentSidebarTab === 1 && (
+              {shouldrenderWidgetInspector ? (
                 <div className="pages-container">
-                  {selectedComponents.length === 1 &&
-                    !isEmpty(appDefinition?.pages[currentPageId]?.components) &&
-                    !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0]?.id]) && (
-                      <Inspector
-                        moveComponents={moveComponents}
-                        componentDefinitionChanged={componentDefinitionChanged}
-                        removeComponent={removeComponent}
-                        selectedComponentId={selectedComponents[0].id}
-                        allComponents={appDefinition?.pages[currentPageId]?.components}
-                        key={selectedComponents[0].id}
-                        switchSidebarTab={switchSidebarTab}
-                        darkMode={props.darkMode}
-                        pages={getPagesWithIds()}
-                      ></Inspector>
-                    )}
+                  <Inspector
+                    moveComponents={moveComponents}
+                    componentDefinitionChanged={componentDefinitionChanged}
+                    removeComponent={removeComponent}
+                    selectedComponentId={selectedComponents[0].id}
+                    allComponents={appDefinition?.pages[currentPageId]?.components}
+                    key={selectedComponents[0].id}
+                    switchSidebarTab={switchSidebarTab}
+                    darkMode={props.darkMode}
+                    pages={getPagesWithIds()}
+                  />
                 </div>
-              )}
-
-              {(selectedComponents.length > 1 || currentSidebarTab === 2) && (
-                <WidgetManager
-                  componentTypes={componentTypes}
-                  zoomLevel={zoomLevel}
-                  darkMode={props.darkMode}
-                ></WidgetManager>
+              ) : (
+                <WidgetManager componentTypes={componentTypes} zoomLevel={zoomLevel} darkMode={props.darkMode} />
               )}
             </div>
             {config.COMMENT_FEATURE_ENABLE && showComments && (
