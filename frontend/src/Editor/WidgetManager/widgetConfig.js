@@ -5537,7 +5537,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       iconColor: {
         type: 'color',
-        displayName: 'Icon Color',
+        displayName: 'Icon color',
         validation: {
           schema: { type: 'string' },
         },
@@ -5557,7 +5557,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         displayName: 'Click',
       },
       {
-        displayName: 'Set Visibility',
+        displayName: 'Set visibility',
         handle: 'setVisibility',
         params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
       },

@@ -369,7 +369,7 @@
     },
     "homePage": {
         "appCard": {
-            "changeIcon": "Change Icon",
+            "changeIcon": "Change icon",
             "addToFolder": "Add to folder",
             "move": "Move",
             "to": "to",
