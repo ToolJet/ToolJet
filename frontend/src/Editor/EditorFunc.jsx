@@ -247,6 +247,14 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorMarginLeft]);
 
+  useEffect(() => {
+    if (mounted) {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        layout: currentLayout,
+      });
+    }
+  }, [currentLayout, mounted]);
+
   const handleMessage = (event) => {
     const { data } = event;
 

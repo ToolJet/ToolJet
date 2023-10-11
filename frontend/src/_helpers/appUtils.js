@@ -341,8 +341,6 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
     (query) => query.queryId !== queryConfirmationData.queryId
   );
 
-  // console.log('---arpit:: dq', { filtertedQueryConfirmation });
-
   _ref.updateQueryConfirmationList(filtertedQueryConfirmation, 'check');
   isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
@@ -1595,11 +1593,18 @@ export const addNewWidgetToTheEditor = (
 
   const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
 
+  const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
   const newComponent = {
     id: uuidv4(),
     component: componentData,
     layout: {
       [currentLayout]: {
+        top: top,
+        left: left,
+        width: defaultWidth,
+        height: defaultHeight,
+      },
+      [nonActiveLayout]: {
         top: top,
         left: left,
         width: defaultWidth,
