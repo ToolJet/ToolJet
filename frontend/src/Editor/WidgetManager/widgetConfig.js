@@ -5597,7 +5597,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         properties: ['text'],
         styles: ['fontWeight', 'textSize', 'textColor'],
         defaultValue: {
-          text: 'User Details',
+          text: 'User details',
           fontWeight: 'bold',
           textSize: 20,
           textColor: '#000',
@@ -5677,7 +5677,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       buttonToSubmit: {
         type: 'select',
-        displayName: 'Button To Submit Form',
+        displayName: 'Button to submit form',
         options: [{ name: 'None', value: 'none' }],
         validation: {
           schema: { type: 'string' },
@@ -5700,7 +5700,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       JSONSchema: {
         type: 'code',
-        displayName: 'JSON Schema',
+        displayName: 'JSON schema',
         conditionallyRender: {
           key: 'advanced',
           value: true,
@@ -5721,7 +5721,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
@@ -5758,11 +5758,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     actions: [
       {
         handle: 'submitForm',
-        displayName: 'Submit Form',
+        displayName: 'Submit form',
       },
       {
         handle: 'resetForm',
-        displayName: 'Reset Form',
+        displayName: 'Reset form',
       },
     ],
     definition: {
