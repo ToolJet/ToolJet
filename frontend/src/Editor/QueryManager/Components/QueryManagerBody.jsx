@@ -97,14 +97,6 @@ export const QueryManagerBody = ({
     validateNewOptions(newOptions);
   };
 
-  const eventsChanged = (events) => {
-    optionchanged('events', events);
-    //added this here since the subscriber added in QueryManager component does not detect this change
-    useDataQueriesStore
-      .getState()
-      .actions.saveData({ ...selectedQuery, options: { ...selectedQuery.options, events: events } });
-  };
-
   const toggleOption = (option) => {
     const currentValue = selectedQuery?.options?.[option] ?? false;
     optionchanged(option, !currentValue);

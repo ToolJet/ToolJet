@@ -5,6 +5,7 @@ import {
   appVersionService,
   orgEnvironmentVariableService,
   appEnvironmentService,
+  orgEnvironmentConstantService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -289,6 +290,21 @@ const EditorComponent = (props) => {
     });
   };
 
+  const fetchOrgEnvironmentConstants = () => {
+    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
+    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+      const orgConstants = {};
+      constants.map((constant) => {
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
+      });
+
+      useCurrentStateStore.getState().actions.setCurrentState({
+        constants: orgConstants,
+      });
+    });
+  };
+
   const initComponentVersioning = () => {
     updateEditorState({
       canUndo: false,
@@ -346,6 +362,7 @@ const EditorComponent = (props) => {
 
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
+    await fetchOrgEnvironmentConstants();
     initComponentVersioning();
     initRealtimeSave();
     initEventListeners();
