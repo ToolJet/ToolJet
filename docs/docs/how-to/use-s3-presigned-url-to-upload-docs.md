@@ -30,7 +30,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
 - Go to the **datasource manager** on the left-sidebar, you'll find that the **AWS S3 datasource** is already added. All you need to do is update the datasource **credentials**.
 
   :::tip
-  Check the [AWS S3 datasource reference](/docs/data-sources/s3) to learn more about connnection and choosing your preferred authentication method.
+  Check the [AWS S3 datasource reference](/docs/data-sources/s3) to learn more about connection and choosing your preferred authentication method.
   :::
 
   <div style={{textAlign: 'center'}}>

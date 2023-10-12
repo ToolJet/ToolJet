@@ -124,7 +124,7 @@ Optionally, we can add a loading state to the button whenever the `delete` or `g
 {{queries.delete.isLoading || queries.getRecords.isLoading}}
 ```
 
-Now, whenever you click on the button, the javascript query will generate a SQL statement to delete the selected rows from the table but to delete the rows from the database, we need to add event handler to the **runjs1** query to trigger the **delete** query whenever the `runjs1` query is **executed and successfull**.
+Now, whenever you click on the button, the javascript query will generate a SQL statement to delete the selected rows from the table but to delete the rows from the database, we need to add event handler to the **runjs1** query to trigger the **delete** query whenever the `runjs1` query is **executed and successful**.
 
 <div style={{textAlign: 'center'}}>
 
