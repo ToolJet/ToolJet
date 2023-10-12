@@ -47,7 +47,7 @@ describe('library apps controller', () => {
         .set('Cookie', adminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.app[0].name).toContain('Supply chain management');
+      expect(response.body.app[0].name).toContain('Supply Chain Management');
     });
 
     it('should return error if template identifier is not found', async () => {
