@@ -22,7 +22,7 @@ const LegalReasonsErrorModal = ({
     if (!isModalOpen) {
       const element = document.getElementById('legal-reason-modal');
       const parentNode = element?.parentNode;
-      parentNode && ReactDOM.unmountComponentAtNode(parentNode?.child[0]);
+      parentNode && ReactDOM.unmountComponentAtNode(parentNode);
       toggleModal && toggleModal();
     }
   }, [isModalOpen]);

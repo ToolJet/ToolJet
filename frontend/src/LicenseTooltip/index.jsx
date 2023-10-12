@@ -14,7 +14,6 @@ const LicenseTooltip = ({
   const { percentage, licenseStatus, canAddUnlimited } = limits ?? {};
   const { isExpired, isLicenseValid } = licenseStatus ?? {};
   const allowedFeaturesOnExpiry = ['workspaces', 'apps', 'workflows'];
-
   const currentUser = authenticationService.currentSessionValue;
   const paidFeatures = {
     'Audit logs': 'auditLogs',

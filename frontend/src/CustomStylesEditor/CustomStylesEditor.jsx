@@ -4,7 +4,6 @@ import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { LicenseBanner } from '@/LicenseBanner';
-
 import { licenseService, customStylesService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import InformationCircle from '@/_ui/Icon/solidIcons/InformationCircle';
@@ -44,6 +43,9 @@ export default function CustomStylesEditor({ darkMode }) {
   }, []);
 
   const reset = () => {
+    if (disabled) {
+      return;
+    }
     setStyles(initialStyles);
     toast.success('Custom style changes discarded. No updates were made.', {
       position: 'top-center',
@@ -101,13 +103,7 @@ export default function CustomStylesEditor({ darkMode }) {
                 </div>
 
                 <div className="d-flex justify-content-end">
-                  <button
-                    type="button"
-                    className="btn btn-light mr-2"
-                    onClick={reset}
-                    disabled={disabled}
-                    data-cy="cancel-button"
-                  >
+                  <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
                     {t('globals.cancel', 'Cancel')}
                   </button>
                   <ButtonSolid

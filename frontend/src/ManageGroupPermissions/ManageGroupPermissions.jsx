@@ -227,24 +227,33 @@ class ManageGroupPermissionsComponent extends React.Component {
                 {groups?.length} Groups
               </p>
               {!showNewGroupForm && !showGroupNameUpdateForm && (
-                <ButtonSolid
-                  className="btn btn-primary create-new-group-button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
-                  }}
-                  data-cy="create-new-group-button"
-                  leftIcon="plus"
-                  isLoading={isLoading}
-                  iconWidth="16"
-                  fill={'#FDFDFE'}
-                  disabled={!isFeatureEnabled}
+                <LicenseTooltip
+                  limits={featureAccess}
+                  feature={'Custom groups'}
+                  noTooltipIfValid={true}
+                  isAvailable={isFeatureEnabled}
+                  placement={'bottom'}
+                  customMessage={'Custom groups can only be created in paid plans'}
                 >
-                  {this.props.t(
-                    'header.organization.menus.manageGroups.permissions.createNewGroup',
-                    'Create new group'
-                  )}
-                </ButtonSolid>
+                  <ButtonSolid
+                    className="btn btn-primary create-new-group-button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
+                    }}
+                    data-cy="create-new-group-button"
+                    leftIcon="plus"
+                    isLoading={isLoading}
+                    iconWidth="16"
+                    fill={'#FDFDFE'}
+                    disabled={!isFeatureEnabled}
+                  >
+                    {this.props.t(
+                      'header.organization.menus.manageGroups.permissions.createNewGroup',
+                      'Create new group'
+                    )}
+                  </ButtonSolid>
+                </LicenseTooltip>
               )}
             </div>
 
