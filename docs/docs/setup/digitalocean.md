@@ -86,7 +86,7 @@ Follow the below steps to attach a postgresql database:
 
   </div>
 
-2. Enter the preffered name for the database and click **Create and attach**.
+2. Enter the preferred name for the database and click **Create and attach**.
 
   <div style={{textAlign: 'center'}}>
 

@@ -78,9 +78,9 @@ Use this environment variable to enable/disable the feature that allows users to
 | -------------------------- | ----------------- |
 | ENABLE_MARKETPLACE_FEATURE | `true` or `false` |
 
-#### Enable Marketplace plugin developement mode ( optional )
+#### Enable Marketplace plugin development mode ( optional )
 
-Use this environment variable to enable/disable the developement mode that allows developers to build the plugin.
+Use this environment variable to enable/disable the development mode that allows developers to build the plugin.
 
 | variable                   | value             |
 | -------------------------- | ----------------- |
