@@ -5557,7 +5557,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         displayName: 'Click',
       },
       {
-        displayName: 'Set visibility',
+        displayName: 'Set Visibility',
         handle: 'setVisibility',
         params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
       },
