@@ -1,0 +1,13 @@
+{
+  "name": "Lead management system",
+  "description": "The Lead Management System template streamlines lead lifecycle with four status templates: Leads (capturing potential leads) and Opportunities (converting leads), along with Customers (effective relationship management) and Lost (learning from lost opportunities).",
+  "widgets": ["Table", "Chart"],
+  "sources": [
+    {
+      "name": "Tooljet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "lead-management-system",
+  "category": "sales"
+}
