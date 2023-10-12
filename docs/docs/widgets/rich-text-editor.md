@@ -1,8 +1,8 @@
 ---
 id: rich-text-editor
-title: Rich Text Editor
+title: Text Editor
 ---
-# Rich Text Editor
+# Text Editor
 
 Rich Text Editor can be used to enter and edit the text in HTML format.
 It should be preferred for blog posts, forum posts or notes sections. The text is to be used as the label for the radio button.
