@@ -1182,7 +1182,7 @@ export const widgets = [
   },
   {
     name: 'NumberInput',
-    displayName: 'Number Input',
+    displayName: 'Number input',
     description: 'Number field for forms',
     component: 'NumberInput',
     defaultSize: {
@@ -1264,18 +1264,18 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border Color',
+        displayName: 'Border color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: { schema: { type: 'string' } },
       },
     },

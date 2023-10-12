@@ -740,7 +740,7 @@
             "description": "Text field for forms"
         },
         "NumberInput": {
-            "displayName": "Number Input",
+            "displayName": "Number input",
             "description": "Number field for forms"
         },
         "PasswordInput": {
