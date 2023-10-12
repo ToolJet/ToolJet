@@ -55,7 +55,7 @@ Query results can be transformed using transformations. Read our transformations
 
 ## Supported operations
 
--  [List Datasets](#list-datatsets)
+-  [List Datasets](#list-datasets)
 
 -  [List Tables](#list-tables)
 
