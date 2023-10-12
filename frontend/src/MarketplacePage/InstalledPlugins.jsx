@@ -109,19 +109,33 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
     toast.success(`${capitalizeFirstLetter(name)} reloaded`);
   };
 
+  const pluginDeleteMessage = (
+    <>
+      Deleting <strong>{capitalizeFirstLetter(name)}</strong> plugin will result in the permanent removal of all
+      associated datasources and its dataqueries. This action cannot be undone. Are you sure you wish to proceed with
+      the deletion?
+    </>
+  );
+
   return (
     <>
       <ConfirmDialog
+        title={'Delete plugin'}
         show={isDeleteModalVisible}
-        message={'Are you sure you want to delete ' + capitalizeFirstLetter(name) + '?'}
+        message={pluginDeleteMessage}
+        confirmButtonText={'Delete'}
         confirmButtonLoading={isDeletingPlugin}
         onConfirm={executePluginDeletion}
         onCancel={cancelDeletePlugin}
         darkMode={darkMode}
+        footerStyle={{
+          borderTop: '1px solid var(--slate5)',
+          padding: '0.875rem 1.5rem',
+        }}
       />
       <div key={plugin.id} className="col-sm-6 col-lg-4">
         <div className="plugins-card">
-          <div className="card-body">
+          <div className="card-body card-body-alignment">
             <div className="row align-items-center">
               <div className="col-auto">
                 <span className="text-white avatar">
@@ -163,7 +177,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
                 )}
               </div>
             </div>
-            <div className="mt-4">
+            <div>
               <div className="row">
                 <div className="col">
                   <sub>

@@ -42,12 +42,12 @@ describe('library apps controller', () => {
 
       response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'github-contributors', appName: 'GitHub Contributor Leaderboard' })
+        .send({ identifier: 'supply-chain-management', appName: 'Supply Chain Management' })
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.name).toContain('GitHub Contributor Leaderboard');
+      expect(response.body.app[0].name).toContain('Supply Chain Management');
     });
 
     it('should return error if template identifier is not found', async () => {

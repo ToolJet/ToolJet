@@ -38,7 +38,7 @@
         "query": "Query",
         "requestBody": "Request Body",
         "page": "Page",
-        "searchItem": "Search item",
+        "searchItem": "Search apps in this workspace",
         "searchComponents": "Search components"
     },
     "errorBoundary": "Something went wrong.",
@@ -721,7 +721,7 @@
             "addColumn": "Add column",
             "addNewColumn": "Add new column",
             "noActionMessage": "This table doesn't have any action buttons",
-            "horizontalAlignment":"horizontal alignment"
+            "horizontalAlignment": "horizontal alignment"
         },
         "Button": {
             "displayName": "Button",
@@ -737,19 +737,19 @@
         },
         "TextInput": {
             "displayName": "Text Input",
-            "description": "Text field for forms"
+            "description": "User text input field"
         },
         "NumberInput": {
             "displayName": "Number Input",
-            "description": "Number field for forms"
+            "description": "Numeric input field"
         },
         "PasswordInput": {
             "displayName": "Password Input",
-            "description": "Password input field for forms"
+            "description": "Secure text input"
         },
         "Datepicker": {
             "displayName": "Date Picker",
-            "description": "Select a date and time"
+            "description": "Choose date and time"
         },
         "Checkbox": {
             "displayName": "Checkbox",
@@ -769,19 +769,19 @@
         },
         "DateRangePicker": {
             "displayName": "Range Picker",
-            "description": "Select a date range"
+            "description": "Choose date ranges"
         },
         "Text": {
             "displayName": "Text",
-            "description": "Display markdown or HTML"
+            "description": "Display text or HTML"
         },
         "Image": {
             "displayName": "Image",
-            "description": "Display an Image"
+            "description": "Show image files"
         },
         "Container": {
             "displayName": "Container",
-            "description": "Wrapper for multiple components"
+            "description": "Group components"
         },
         "Dropdown": {
             "displayName": "Dropdown",
@@ -833,35 +833,35 @@
         },
         "Timer": {
             "displayName": "Timer",
-            "description": "timer"
+            "description": "Countdown or stopwatch"
         },
         "Listview": {
             "displayName": "List View",
-            "description": "Wrapper for multiple components"
+            "description": "List multiple items"
         },
         "Tags": {
             "displayName": "Tags",
-            "description": "Content can be shown as tags"
+            "description": "Display tag labels"
         },
         "Pagination": {
             "displayName": "Pagination",
-            "description": "Pagination "
+            "description": "Navigate pages"
         },
         "CircularProgressbar": {
             "displayName": "Circular Progressbar",
-            "description": "Show the progress using circular progressbar"
+            "description": "Show circular progress"
         },
         "Spinner": {
             "displayName": "Spinner",
-            "description": "Spinner can be used to display loading status"
+            "description": "Indicate loading state"
         },
         "Statistics": {
             "displayName": "Statistics",
-            "description": "Statistics can be used to display different statistical information"
+            "description": "Show key metrics"
         },
         "RangeSlider": {
             "displayName": "Range Slider",
-            "description": "Can be used to show slider with a range"
+            "description": "Adjust value range"
         },
         "Timeline": {
             "displayName": "Timeline",
@@ -881,19 +881,19 @@
         },
         "CustomComponent": {
             "displayName": "Custom Component",
-            "description": "Add your custom react component"
+            "description": "Create React components"
         },
         "ButtonGroup": {
             "displayName": "Button Group",
-            "description": "ButtonGroup"
+            "description": "Group of buttons"
         },
         "PDF": {
             "displayName": "PDF",
-            "description": "Embed PDF file"
+            "description": "Embed PDF documents"
         },
         "Steps": {
             "displayName": "Steps",
-            "description": "Steps"
+            "description": "Step-by-step navigation aid"
         },
         "KanbanBoard": {
             "displayName": "Kanban Board",
