@@ -1052,7 +1052,7 @@ export const widgets = [
   {
     name: 'TextInput',
     displayName: 'Text Input',
-    description: 'Text field for forms',
+    description: 'User text input field',
     component: 'TextInput',
     defaultSize: {
       width: 6,
@@ -1183,7 +1183,7 @@ export const widgets = [
   {
     name: 'NumberInput',
     displayName: 'Number input',
-    description: 'Number field for forms',
+    description: 'Numeric input field',
     component: 'NumberInput',
     defaultSize: {
       width: 4,
@@ -1309,7 +1309,7 @@ export const widgets = [
   {
     name: 'PasswordInput',
     displayName: 'Password Input',
-    description: 'Password input field for forms',
+    description: 'Secure text input',
     component: 'PasswordInput',
     defaultSize: {
       width: 4,
@@ -1396,7 +1396,7 @@ export const widgets = [
   {
     name: 'Datepicker',
     displayName: 'Date Picker',
-    description: 'Select a date and time',
+    description: 'Choose date and time',
     component: 'Datepicker',
     defaultSize: {
       width: 5,
@@ -1878,7 +1878,7 @@ export const widgets = [
   {
     name: 'DateRangePicker',
     displayName: 'Range Picker',
-    description: 'Select a date range',
+    description: 'Choose date ranges',
     component: 'DaterangePicker',
     defaultSize: {
       width: 10,
@@ -1976,7 +1976,7 @@ export const widgets = [
   {
     name: 'Text',
     displayName: 'Text',
-    description: 'Display markdown or HTML',
+    description: 'Display text or HTML',
     component: 'Text',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -2148,7 +2148,7 @@ export const widgets = [
   {
     name: 'Image',
     displayName: 'Image',
-    description: 'Display an Image',
+    description: 'Show image files',
     defaultSize: {
       width: 3,
       height: 100,
@@ -2282,7 +2282,7 @@ export const widgets = [
   {
     name: 'Container',
     displayName: 'Container',
-    description: 'Wrapper for multiple components',
+    description: 'Group components',
     defaultSize: {
       width: 5,
       height: 200,
@@ -3704,7 +3704,7 @@ export const widgets = [
   {
     name: 'Timer',
     displayName: 'Timer',
-    description: 'timer',
+    description: 'Countdown or stopwatch',
     component: 'Timer',
     defaultSize: {
       width: 11,
@@ -3797,7 +3797,7 @@ export const widgets = [
   {
     name: 'Listview',
     displayName: 'List View',
-    description: 'Wrapper for multiple components',
+    description: 'List multiple items',
     defaultSize: {
       width: 20,
       height: 300,
@@ -3983,7 +3983,7 @@ export const widgets = [
   {
     name: 'Tags',
     displayName: 'Tags',
-    description: 'Content can be shown as tags',
+    description: 'Display tag labels',
     component: 'Tags',
     defaultSize: {
       width: 8,
@@ -4039,7 +4039,7 @@ export const widgets = [
   {
     name: 'Pagination',
     displayName: 'Pagination',
-    description: 'Pagination ',
+    description: 'Navigate pages',
     component: 'Pagination',
     defaultSize: {
       width: 10,
@@ -4113,7 +4113,7 @@ export const widgets = [
   {
     name: 'CircularProgressbar',
     displayName: 'Circular Progressbar',
-    description: 'Show the progress using circular progressbar',
+    description: 'Show circular progress',
     component: 'CircularProgressBar',
     defaultSize: {
       width: 7,
@@ -4220,7 +4220,7 @@ export const widgets = [
   {
     name: 'Spinner',
     displayName: 'Spinner',
-    description: 'Spinner can be used to display loading status',
+    description: 'Indicate loading state',
     component: 'Spinner',
     defaultSize: {
       width: 4,
@@ -4277,7 +4277,7 @@ export const widgets = [
   {
     name: 'Statistics',
     displayName: 'Statistics',
-    description: 'Statistics can be used to display different statistical information',
+    description: 'Show key metrics',
     component: 'Statistics',
     defaultSize: {
       width: 9.2,
@@ -4367,7 +4367,7 @@ export const widgets = [
   {
     name: 'RangeSlider',
     displayName: 'Range Slider',
-    description: 'Can be used to show slider with a range',
+    description: 'Adjust value range',
     component: 'RangeSlider',
     defaultSize: {
       width: 9,
@@ -4679,7 +4679,7 @@ export const widgets = [
   {
     name: 'CustomComponent',
     displayName: 'Custom Component',
-    description: 'Visual representation of a sequence of events',
+    description: 'Create React components',
     component: 'CustomComponent',
     properties: {
       data: { type: 'code', displayName: 'Data', validation: { schema: { type: 'object' } } },
@@ -4744,7 +4744,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'ButtonGroup',
     displayName: 'Button Group',
-    description: 'ButtonGroup',
+    description: 'Group of buttons',
     component: 'ButtonGroup',
     properties: {
       label: {
@@ -4886,7 +4886,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'PDF',
     displayName: 'PDF',
-    description: 'Embed PDF file',
+    description: 'Embed PDF documents',
     component: 'PDF',
     properties: {
       url: { type: 'code', displayName: 'File URL', validation: { schema: { type: 'string' } } },
@@ -4945,7 +4945,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'Steps',
     displayName: 'Steps',
-    description: 'Steps',
+    description: 'Step-by-step navigation aid',
     component: 'Steps',
     properties: {
       steps: {

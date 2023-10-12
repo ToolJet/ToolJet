@@ -8,27 +8,24 @@ title: CouchDB
 ToolJet can connect to CouchDB databases to read and write data. CocuhDB uses basic auth for authentication , username and password for the database is required to create an CouchDB data source on ToolJet. For more info visit [CouchDB docs](https://docs.couchdb.org/en/stable/).
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/auth_couch.gif" alt="Couch auth" />
+## Supported Queries: 
 
-
-## Supported queries: 
-
-- [Listing records](#listing-records)
-- [Retrieving a record](#retrieving-a-record)
-- [Creating a record](#creating-a-record)
-- [Updating a record](#updating-a-record)
-- [Deleting a record](#deleting-a-record)
+- [Listing Records](#listing-records)
+- [Retrieving a Record](#retrieving-a-record)
+- [Creating a Record](#creating-a-record)
+- [Updating a Record](#updating-a-record)
+- [Deleting a Record](#deleting-a-record)
 - [Find](#find)
-- [Retrieving a view](#retrieving-a-view)
+- [Retrieving a View](#retrieving-a-view)
 
 :::info
 NOTE: Record ID is same as document ID("_id") .
 :::
-### Listing records 
+### Listing Records 
 
 This query lists all the records in a database.
 
-#### Optional parameters: 
+#### Optional Parameters: 
 
 - **Include docs**
 - **Descending order**
@@ -83,9 +80,9 @@ Example response from CouchDb:
 }
 ```
 
-### Retrieving a record 
+### Retrieving a Record 
 
-#### Required parameters: 
+#### Required Parameters: 
 
 - **Record ID**
 
@@ -108,7 +105,7 @@ Example response from CouchDb:
 The returned JSON is the JSON of the document, including the document ID and revision number:
 
 
-### Creating a record
+### Creating a Record
 
 
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/creating.png" alt="Couch create view"/>
@@ -122,10 +119,6 @@ The returned JSON is the JSON of the document, including the document ID and rev
 
 Click on the `run` button to run the query.
 
-:::info
-NOTE: Query must be saved before running.
-:::
-
 Example response from CouchDb:
 ```json
 
@@ -137,12 +130,12 @@ Example response from CouchDb:
 
 ```
 
-### Updating a record
+### Updating a Record
 
 You can get the revision id  value, by sending a GET request to get the document details.
 You get the document as JSON in the response. For each update to the document, the revision field "_rev" gets changed.
 
-#### Required parameters:
+#### Required Parameters:
 - **Revision ID**
 - **Record ID**
 
@@ -150,7 +143,7 @@ You get the document as JSON in the response. For each update to the document, t
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/updating.png" alt="Couch update view" />
 
 
-#### Example body:
+#### Example Body:
 
 ```json
   [{"name":"tooljet"}]
@@ -172,9 +165,9 @@ Example response from CouchDb:
 }
 ```
 
-### Deleting a record
+### Deleting a Record
 
-#### Required parameters:
+#### Required Parameters:
 - **Revision ID**
 - **Record ID**
 
@@ -200,7 +193,7 @@ Example response from CouchDb:
 
 Find documents using a declarative JSON querying syntax.
 
-#### Required parameters:
+#### Required Parameters:
 - **Selector**
 
 :::info
@@ -212,7 +205,7 @@ selector syntax: https://pouchdb.com/guides/mango-queries.html
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/find.png" alt="Couch find" />
 
 
-#### Example body:
+#### Example Body:
 
 ```json
 {
@@ -239,11 +232,11 @@ Example response from CouchDb:
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/find_response.png" alt="Couch find response" />
 
 
-### Retrieving a view
+### Retrieving a View
 
 Views are the primary tool used for querying and reporting on CouchDB documents.
 
-#### Required parameters:
+#### Required Parameters:
 - **View url**
 
 Reference for view :https://docs.couchdb.org/en/3.2.0/ddocs/views/intro.html#what-is-a-view
@@ -252,7 +245,7 @@ Reference for view :https://docs.couchdb.org/en/3.2.0/ddocs/views/intro.html#wha
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/get_view.png" alt="Couch get view" />
 
 
-#### Optional parameters: 
+#### Optional Parameters: 
 
 - **Start key**
 - **End key**

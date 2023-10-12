@@ -2,14 +2,14 @@
 id: cosmosdb
 title: CosmosDB
 ---
+
 # Cosmosdb
 
-ToolJet can connect to CosmosDB databases to read and write data. 
-
+ToolJet can connect to CosmosDB databases to read and write data.
 
 ## Connection
 
-To add a new **[Azure Cosmos DB](https://docs.microsoft.com/en-us/javascript/api/overview/azure/cosmos-readme?view=azure-node-latest#key-concepts)**, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select CosmosDB from the modal that pops up.
+To establish a connection with the CosmosDB data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your Cosmos DB.
 
@@ -28,8 +28,7 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 
 </div>
 
-
-## Supported queries: 
+## Supported Queries:
 
 - [Listing databases](#listing-databases)
 - [Listing containers](#listing-containers)
@@ -38,54 +37,54 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 - [Deleting an item](#deleting-an-item)
 - [Querying documents](#querying-documents)
 
+### Listing Databases
 
-
-
-
-### Listing databases
 This query lists all the databases in a Cosmos DB.
 
-### Listing containers
+### Listing Containers
+
 This query lists all the containers of a database in a Cosmos DB.
 
-| Fields      | description |
-| ----------- | ----------- |
-| database    | id of the database |
+| Fields   | Description        |
+| -------- | ------------------ |
+| database | id of the database |
 
-### Inserting item(s)
+### Inserting Item(s)
+
 This query inserts one or more items in a container of a database in a Cosmos DB.
 
-| Fields      | description |
-| ----------- | ----------- |
-| database    | id of the database |
-| container   | id of the container |
-| items       | items to be inserted. Example: `{{[{name: "one", val: 1}, {name:"two", val: 2}]}}` |
+| Fields    | Description                                                                        |
+| --------- | ---------------------------------------------------------------------------------- |
+| database  | id of the database                                                                 |
+| container | id of the container                                                                |
+| items     | items to be inserted. Example: `{{[{name: "one", val: 1}, {name:"two", val: 2}]}}` |
 
-### Retrieving an item
+### Retrieving An Item
+
 To read a single item from a container of a database in a Cosmos DB, use the following query.
 
-| Fields      | description |
-| ----------- | ----------- |
-| database    | id of the database |
-| container   | id of the container |
-| item        | id of the item |
+| Fields    | Description         |
+| --------- | ------------------- |
+| database  | id of the database  |
+| container | id of the container |
+| item      | id of the item      |
 
+### Deleting An Item
 
-### Deleting an item
 To delete an item from a container of a database in a Cosmos DB, use the following query.
 
-| Fields      | description |
-| ----------- | ----------- |
-| database    | id of the database |
-| container   | id of the container |
-| item        | id of the item |
+| Fields    | Description         |
+| --------- | ------------------- |
+| database  | id of the database  |
+| container | id of the container |
+| item      | id of the item      |
 
+### Querying Documents
 
-### Querying documents
 To query documents from a container of a database in a Cosmos DB using SQL-like syntax, use the following query.
 
-| Fields      | description |
-| ----------- | ----------- |
-| database    | id of the database |
-| container   | id of the container |
-| query       | query to be executed. Example: `SELECT * FROM c WHERE c.age > 20 AND c.age <= 30` |
+| Fields    | Description                                                                       |
+| --------- | --------------------------------------------------------------------------------- |
+| database  | id of the database                                                                |
+| container | id of the container                                                               |
+| query     | query to be executed. Example: `SELECT * FROM c WHERE c.age > 20 AND c.age <= 30` |

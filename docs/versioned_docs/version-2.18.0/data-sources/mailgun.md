@@ -15,7 +15,7 @@ The Mailgun API Datasource supports for interaction with the mail endpoint of th
 
 ## Connection
 
-To add a new Mailgun API datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select Mailgun API from the modal that pops up.
+To establish a connection with the MailGun data source, click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
 
 Enter your **Mailgun API key** in the "API key" field.
 
@@ -57,8 +57,4 @@ For example: `admin@tooljet.io`
 **Send a single email to multiple recipients** - The `Send mail to` field can contain an array of recipients, which will send a single email with all of the recipients in the field.
 
 **Send multiple individual emails to multiple recipients** - set <b>Multiple recipients</b> field to `{{true}}` and the `Send mail to` field will be split into multiple emails and send to each recipient.
-:::
-
-:::note
-NOTE: Query should be saved before running.
 :::
