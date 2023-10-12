@@ -5,7 +5,7 @@ export const promoteApp = () => {
     cy.get(commonEeSelectors.promoteButton).click();
     cy.get(commonEeSelectors.promoteButton).eq(1).click();
     cy.waitForAppLoad();
-    cy.wait(1500);
+    cy.wait(3000);
 };
 
 export const releaseApp = () => {

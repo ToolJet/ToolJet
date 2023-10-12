@@ -672,7 +672,7 @@ export const Container = ({
               our&nbsp;
               <a
                 className="color-indigo9 "
-                href="https://docs.tooljet.com/docs#the-very-quick-quickstart"
+                href="https://docs.tooljet.com/docs/#quickstart-guide"
                 target="_blank"
                 rel="noreferrer"
               >
