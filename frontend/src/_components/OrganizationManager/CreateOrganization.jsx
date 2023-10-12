@@ -4,7 +4,7 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
-import { appendWorkspaceId } from '@/_helpers/routes';
+import { appendWorkspaceId, getHostURL } from '@/_helpers/routes';
 import _ from 'lodash';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
@@ -187,7 +187,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             <label>Workspace link</label>
             <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
               {!slugProgress ? (
-                `${window.public_config?.TOOLJET_HOST}/${fields['slug']?.value || '<workspace-slug>'}`
+                `${getHostURL()}/${fields['slug']?.value || '<workspace-slug>'}`
               ) : (
                 <div className="d-flex gap-2">
                   <div class="spinner-border text-secondary workspace-spinner" role="status">
