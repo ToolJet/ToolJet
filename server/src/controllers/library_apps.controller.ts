@@ -21,9 +21,8 @@ export class LibraryAppsController {
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const newApp = await this.libraryAppCreationService.perform(user, identifier);
-
-    return newApp;
+    const result = await this.libraryAppCreationService.perform(user, identifier);
+    return result;
   }
 
   @Get()
