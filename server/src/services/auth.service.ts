@@ -442,7 +442,8 @@ export class AuthService {
       const { license_key } = JSON.parse(licenseResponse.body);
       await this.licenseService.updateLicense({ key: license_key });
     } catch (error) {
-      throw new HttpException(error?.error || 'Trial could not be activated. Please try again!', error?.status || 500);
+      const response = JSON.parse(error?.response?.body || '{}');
+      throw new HttpException(response?.message || 'Trial could not be activated. Please try again!', 500);
     }
   }
 
