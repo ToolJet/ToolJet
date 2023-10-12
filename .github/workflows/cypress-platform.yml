@@ -200,7 +200,7 @@ jobs:
         run: cd frontend && NODE_ENV=production npm run build
 
       - name: Run the server
-        run: cd server && npm run start:dev &
+        run: cd server && npm run start:prod &
 
       - name: Wait for the server to be ready
         run: |
