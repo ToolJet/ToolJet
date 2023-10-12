@@ -11,6 +11,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [fields, setFields] = useState({ name: { value: '', error: '' }, slug: { value: null, error: '' } });
   const [slugProgress, setSlugProgress] = useState(false);
+  const [workspaceNameProgress, setWorkspaceNameProgress] = useState(false);
   const [isDisabled, setDisabled] = useState(true);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { t } = useTranslation();
@@ -89,6 +90,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       (key) => (key !== field && !_.isEmpty(fields[key].error)) || (key !== field && _.isEmpty(fields[key].value))
     );
     setDisabled(!error?.status || otherInputErrors);
+    field === 'slug' && setSlugProgress(false);
+    field === 'name' && setWorkspaceNameProgress(false);
+    return;
   };
 
   const handleKeyDown = (e) => {
@@ -105,8 +109,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const delayedFieldChange = _.debounce(async (value, field) => {
+    field === 'name' && setWorkspaceNameProgress(true);
+    field === 'slug' && setSlugProgress(true);
     await handleInputChange(value, field);
-    field === 'slug' && setSlugProgress(false);
   }, 500);
 
   return (
@@ -121,9 +126,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             <label>Workspace name</label>
             <input
               type="text"
-              onChange={(e) => {
+              onChange={async (e) => {
                 e.persist();
-                delayedFieldChange(e.target.value, 'name');
+                await delayedFieldChange(e.target.value, 'name');
               }}
               className={`form-control ${fields['name']?.error ? 'is-invalid' : 'is-valid'}`}
               placeholder={t('header.organization.workspaceName', 'Workspace name')}
@@ -149,15 +154,14 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
               disabled={isCreating}
               maxLength={50}
-              onChange={(e) => {
-                setSlugProgress(true);
+              onChange={async (e) => {
                 e.persist();
-                delayedFieldChange(e.target.value, 'slug');
+                await delayedFieldChange(e.target.value, 'slug');
               }}
               data-cy="workspace-slug-input-field"
               autoFocusfields
             />
-            {fields['slug'].value !== null && !fields['slug'].error && (
+            {!slugProgress && fields['slug'].value !== null && !fields['slug'].error && (
               <div className="icon-container">
                 <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -171,7 +175,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             )}
             {fields['slug']?.error ? (
               <label className="label tj-input-error">{fields['slug']?.error || ''}</label>
-            ) : fields['slug'].value ? (
+            ) : fields['slug'].value && !slugProgress ? (
               <label className="label label-success">{`Slug accepted!`}</label>
             ) : (
               <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
@@ -194,7 +198,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               )}
             </div>
             <label className="label label-success label-updated">
-              {fields['slug'].value && !fields['slug'].error ? `Link updated successfully!` : ''}
+              {fields['slug'].value && !fields['slug'].error && !slugProgress ? `Link updated successfully!` : ''}
             </label>
           </div>
         </div>
@@ -204,7 +208,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
             <ButtonSolid
-              disabled={isCreating || isDisabled}
+              disabled={isCreating || isDisabled || slugProgress || workspaceNameProgress}
               onClick={createOrganization}
               data-cy="create-workspace-button"
               isLoading={isCreating}

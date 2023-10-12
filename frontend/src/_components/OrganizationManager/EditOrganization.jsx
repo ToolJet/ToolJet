@@ -12,6 +12,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   const [isCreating, setIsCreating] = useState(false);
   const [fields, setFields] = useState({ name: { value: '', error: '' }, slug: { value: null, error: '' } });
   const [slugProgress, setSlugProgress] = useState(false);
+  const [workspaceNameProgress, setWorkspaceNameProgress] = useState(false);
   const [isDisabled, setDisabled] = useState(true);
   const { t } = useTranslation();
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -123,6 +124,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       (key) => (key !== field && !_.isEmpty(fields[key].error)) || (key !== field && _.isEmpty(fields[key].value))
     );
     setDisabled(!error?.status || otherInputErrors);
+    field === 'slug' && setSlugProgress(false);
+    field === 'name' && setWorkspaceNameProgress(false);
     return;
   };
 
@@ -140,8 +143,9 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   };
 
   const delayedFieldChange = _.debounce(async (value, field) => {
+    field === 'name' && setWorkspaceNameProgress(true);
+    field === 'slug' && setSlugProgress(true);
     await handleInputChange(value, field);
-    field === 'slug' && setSlugProgress(false);
   }, 500);
 
   return (
@@ -156,7 +160,10 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <label>Workspace name</label>
             <input
               type="text"
-              onChange={(e) => delayedFieldChange(e.target.value, 'name')}
+              onChange={async (e) => {
+                e.persist();
+                await delayedFieldChange(e.target.value, 'name');
+              }}
               onKeyDown={handleKeyDown}
               className={`form-control ${fields['name']?.error ? 'is-invalid' : 'is-valid'}`}
               placeholder={t('header.organization.workspaceName', 'Workspace name')}
@@ -182,17 +189,16 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
               disabled={isCreating}
               maxLength={50}
-              onChange={(e) => {
-                setSlugProgress(true);
+              onChange={async (e) => {
                 e.persist();
-                delayedFieldChange(e.target.value, 'slug');
+                await delayedFieldChange(e.target.value, 'slug');
               }}
               onKeyDown={handleKeyDown}
               defaultValue={fields['slug']?.value}
               data-cy="workspace-slug-input-field"
               autoFocusfields
             />
-            {fields?.['slug']?.value !== currentValue?.slug && !fields['slug'].error && (
+            {!slugProgress && fields?.['slug']?.value !== currentValue?.slug && !fields['slug'].error && (
               <div className="icon-container">
                 <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -206,7 +212,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             )}
             {fields['slug']?.error ? (
               <label className="label tj-input-error">{fields['slug']?.error || ''}</label>
-            ) : fields?.['slug']?.value !== currentValue?.slug ? (
+            ) : fields?.['slug']?.value !== currentValue?.slug && !slugProgress ? (
               <label className="label label-success">{`Slug accepted!`}</label>
             ) : (
               <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
@@ -229,7 +235,10 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               )}
             </div>
             <label className="label label-success label-updated">
-              {fields['slug'].value && !fields['slug'].error && fields?.['slug']?.value !== currentValue?.slug
+              {!slugProgress &&
+              fields['slug'].value &&
+              !fields['slug'].error &&
+              fields?.['slug']?.value !== currentValue?.slug
                 ? `Link updated successfully!`
                 : ''}
             </label>
@@ -240,7 +249,11 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <ButtonSolid variant="secondary" onClick={closeModal} className="cancel-btn">
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
-            <ButtonSolid isLoading={isCreating} disabled={isCreating || isDisabled} onClick={editOrganization}>
+            <ButtonSolid
+              isLoading={isCreating}
+              disabled={isCreating || isDisabled || slugProgress || workspaceNameProgress}
+              onClick={editOrganization}
+            >
               {t('globals.save', 'Save')}
             </ButtonSolid>
           </div>
