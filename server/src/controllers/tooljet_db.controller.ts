@@ -14,6 +14,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseFilters,
 } from '@nestjs/common';
 import { Express } from 'express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
@@ -30,16 +31,22 @@ import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard'
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.service';
 import { TooljetDbJoinDto } from '@dto/tooljet-db-join.dto';
+import { TooljetDbJoinExceptionFilter } from 'src/filters/tooljetdb-join-exceptions-filter';
+import { Logger } from 'nestjs-pino';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
 @Controller('tooljet-db')
 export class TooljetDbController {
+  private readonly pinoLogger: Logger;
   constructor(
     private readonly tooljetDbService: TooljetDbService,
     private readonly postgrestProxyService: PostgrestProxyService,
-    private readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService
-  ) {}
+    private readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService,
+    private readonly logger: Logger
+  ) {
+    this.pinoLogger = logger;
+  }
 
   @All('/proxy/*')
   @UseGuards(OrganizationAuthGuard, TooljetDbGuard)
@@ -137,6 +144,7 @@ export class TooljetDbController {
   }
 
   @Post('/organizations/:organizationId/join')
+  @UseFilters(new TooljetDbJoinExceptionFilter())
   @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
   async joinTables(@Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {

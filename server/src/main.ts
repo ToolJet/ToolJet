@@ -7,7 +7,7 @@ import { AppModule } from './app.module';
 import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
-import { AllExceptionsFilter } from './all-exceptions-filter';
+import { AllExceptionsFilter } from './filters/all-exceptions-filter';
 import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
