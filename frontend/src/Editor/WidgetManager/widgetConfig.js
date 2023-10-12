@@ -5111,7 +5111,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'Kanban',
-    displayName: 'Kanban Board',
+    displayName: 'Kanban',
     description: 'Task management board',
     component: 'Kanban',
     defaultSize: {
