@@ -9,13 +9,15 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   const currentVersion = app?.editing_version;
   const [versions, setVersions] = useState(undefined);
   const [tables, setTables] = useState(undefined);
+  const [allTables, setAllTables] = useState(undefined);
   const [versionId, setVersionId] = useState(currentVersion?.id);
   const [exportTjDb, setExportTjDb] = useState(true);
+
 
   useEffect(() => {
     async function fetchAppVersions() {
       try {
-        const fetchVersions = await appService.getVersions(app.id);
+        const fetchVersions = await appService.getVersions(app.id); // this is used to get all versions of App, while exporting we need to show all versions
         const { versions } = fetchVersions;
         setVersions(versions);
       } catch (error) {
@@ -27,9 +29,33 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     }
     async function fetchAppTables() {
       try {
-        const fetchTables = await appService.getTables(app.id);
+        const fetchTables = await appService.getTables(app.id);  // this is used to get all tables
         const { tables } = fetchTables;
-        setTables(tables);
+        const tbl = await appService.getAppByVersion(app.id, versionId) // this is used to get particular App by version
+        const { dataQueries } = tbl
+        const extractedIdData = [];
+        dataQueries.forEach(item => {
+          if (item.kind === "tooljetdb") {
+            const joinOptions = item.options?.join_table?.joins ?? [];
+            (joinOptions || []).forEach((join) => {
+              const { table, conditions } = join;
+              if (table) extractedIdData.push(table);
+              conditions?.conditionsList?.forEach((condition) => {
+                const { leftField, rightField } = condition;
+                if (leftField?.table) {
+                  extractedIdData.push(leftField?.table);
+                }
+                if (rightField?.table) {
+                  extractedIdData.push(rightField?.table);
+                }
+              });
+            });
+          }
+        });
+        const uniqueSet = new Set(extractedIdData);
+        const selectedVersiontable = Array.from(uniqueSet).map((item) => ({ table_id: item }));
+        setTables(selectedVersiontable)
+        setAllTables(tables)
       } catch (error) {
         toast.error('Could not fetch the tables.', {
           position: 'top-center',
@@ -40,9 +66,10 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     fetchAppVersions();
     fetchAppTables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [versionId]);
 
-  const exportApp = (app, versionId, exportTjDb, tables) => {
+  const exportApp = (app, versionId, exportTjDb, tables, isDownload) => {
+    const finalTable = isDownload === 'true' ? allTables : tables
     const appOpts = {
       app: [
         {
@@ -51,9 +78,10 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         },
       ],
     };
+
     const requestBody = {
       ...appOpts,
-      ...(exportTjDb && { tooljet_database: tables }),
+      ...(exportTjDb && { tooljet_database: finalTable }),
       organization_id: app.organization_id,
     };
 
@@ -81,13 +109,12 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         closeModal();
       });
   };
-
+  var isDownload = ''
   return (
     <BootstrapModal
       onHide={() => closeModal(false)}
-      contentClassName={`home-modal-component home-version-modal-component ${
-        customClassName ? ` ${customClassName}` : ''
-      } ${darkMode && 'dark-theme'}`}
+      contentClassName={`home-modal-component home-version-modal-component ${customClassName ? ` ${customClassName}` : ''
+        } ${darkMode && 'dark-theme'}`}
       show={show}
       backdrop={true}
       keyboard={true}
@@ -164,14 +191,14 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               className="import-export-footer-btns"
               variant="tertiary"
               data-cy="export-all-button"
-              onClick={() => exportApp(app, null, exportTjDb, tables)}
+              onClick={() => exportApp(app, null, exportTjDb, tables, isDownload = 'true')}
             >
               Export All
             </ButtonSolid>
             <ButtonSolid
               className="import-export-footer-btns"
               data-cy="export-selected-version-button"
-              onClick={() => exportApp(app, versionId, exportTjDb, tables)}
+              onClick={() => exportApp(app, versionId, exportTjDb, tables, isDownload = 'false')}
             >
               Export selected version
             </ButtonSolid>
