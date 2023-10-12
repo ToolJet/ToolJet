@@ -737,19 +737,19 @@
         },
         "TextInput": {
             "displayName": "Text Input",
-            "description": "Text field for forms"
+            "description": "User text input field"
         },
         "NumberInput": {
             "displayName": "Number Input",
-            "description": "Number field for forms"
+            "description": "Numeric input field"
         },
         "PasswordInput": {
             "displayName": "Password Input",
-            "description": "Password input field for forms"
+            "description": "Secure text input"
         },
         "Datepicker": {
             "displayName": "Date Picker",
-            "description": "Select a date and time"
+            "description": "Choose date and time"
         },
         "Checkbox": {
             "displayName": "Checkbox",
