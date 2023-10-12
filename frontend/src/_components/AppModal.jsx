@@ -19,8 +19,6 @@ export function AppModal({
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
-  } else if (!selectedAppName && fileContent) {
-    selectedAppName = fileContent?.appV2?.name || '';
   } else if (!selectedAppName) {
     selectedAppName = '';
   }
@@ -102,7 +100,7 @@ export function AppModal({
   const handleInputChange = (e) => {
     const newAppName = e.target.value;
     const trimmedName = newAppName.trim();
-    if (trimmedName.length === 50) {
+    if (trimmedName.length > 50) {
       setInfoText('Maximum length has been reached');
     } else {
       setInfoText('');
@@ -150,8 +148,8 @@ export function AppModal({
             placeholder={'Enter app name'}
             value={newAppName}
             data-cy="app-name-input"
+            maxLength={51}
             autoFocus
-            maxLength={50}
             ref={inputRef}
             style={{
               borderColor: errorText ? '#DB4324 !important' : 'initial',

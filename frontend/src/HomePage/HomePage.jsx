@@ -67,6 +67,7 @@ class HomePageComponent extends React.Component {
       showCloneAppModal: false,
       showRenameAppModal: false,
       fileContent: '',
+      fileName: '',
       selectedTemplate: null,
       deploying: false,
     };
@@ -199,11 +200,12 @@ class HomePageComponent extends React.Component {
       if (!file) return;
 
       const fileReader = new FileReader();
+      const fileName = file.name.replace('.json', '').substring(0, 50);
       fileReader.readAsText(file, 'UTF-8');
       fileReader.onload = (event) => {
         const result = event.target.result;
         const fileContent = JSON.parse(result);
-        this.setState({ fileContent, showImportAppModal: true });
+        this.setState({ fileContent, fileName, showImportAppModal: true });
       };
       fileReader.onerror = (error) => {
         throw new Error(`Could not import the app: ${error}`);
@@ -524,6 +526,14 @@ class HomePageComponent extends React.Component {
     this.setState({ showCreateAppFromTemplateModal: false, selectedTemplate: null });
   };
 
+  openCreateAppModal = () => {
+    this.setState({ showCreateAppModal: true });
+  };
+
+  closeCreateAppModal = () => {
+    this.setState({ showCreateAppModal: false });
+  };
+
   render() {
     const {
       apps,
@@ -547,6 +557,7 @@ class HomePageComponent extends React.Component {
       showCreateAppModal,
       showImportAppModal,
       fileContent,
+      fileName,
       showRenameAppModal,
       showCreateAppFromTemplateModal,
     } = this.state;
@@ -555,9 +566,9 @@ class HomePageComponent extends React.Component {
         <div className="wrapper home-page">
           {showCreateAppModal && (
             <AppModal
-              closeModal={() => this.setState({ showCreateAppModal: false })}
+              closeModal={this.closeCreateAppModal}
               processApp={this.createApp}
-              show={() => this.setState({ showCreateAppModal: true })}
+              show={this.openCreateAppModal}
               title={'Create app'}
               actionButton={'+ Create app'}
               actionLoadingButton={'Creating'}
@@ -581,6 +592,7 @@ class HomePageComponent extends React.Component {
               processApp={this.importFile}
               fileContent={fileContent}
               show={() => this.setState({ showImportAppModal: true })}
+              selectedAppName={fileName}
               title={'Import app'}
               actionButton={'Import app'}
               actionLoadingButton={'Importing'}
@@ -804,10 +816,11 @@ class HomePageComponent extends React.Component {
                 )}
                 {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
                   <BlankPage
-                    createApp={this.createApp}
+                    readAndImport={this.readAndImport}
                     isImportingApp={isImportingApp}
                     fileInput={this.fileInput}
-                    handleImportApp={this.handleImportApp}
+                    openCreateAppModal={this.openCreateAppModal}
+                    openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
                     creatingApp={creatingApp}
                     darkMode={this.props.darkMode}
                     showTemplateLibraryModal={this.state.showTemplateLibraryModal}

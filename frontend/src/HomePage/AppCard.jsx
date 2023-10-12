@@ -66,12 +66,12 @@ export default function AppCard({
 
   return (
     <div className="card homepage-app-card animation-fade">
-      <div key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
+      <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
             <div>
               <div className="app-icon-main">
-                <div className="app-icon d-flex" data-cy={`app-card-${app.icon}-icon`}>
+                <div className="app-icon d-flex" data-cy={`app-card-${app?.icon}-icon`}>
                   {AppIcon && AppIcon}
                 </div>
               </div>
