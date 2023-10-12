@@ -349,6 +349,76 @@ export const Container = ({
     [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, selectedComponents, updateCanvasHeight]
   );
 
+  const onResizeStop2 = (boxList, id, height, width, x, y) => {
+    const newBoxes = boxList.reduce((newBoxList, { id, height, width, x, y }) => {
+      const newWidth = (width * NO_OF_GRIDS) / canvasWidth;
+      return {
+        ...newBoxList,
+        [id]: {
+          ...boxes[id],
+          layouts: {
+            ...boxes[id]['layouts'],
+            [currentLayout]: {
+              ...boxes[id]['layouts'][currentLayout],
+              width: newWidth,
+              height,
+              top: y,
+              left: Math.round(x / gridWidth),
+            },
+          },
+        },
+      };
+    }, {});
+    let updatedBoxes = {
+      ...boxes,
+      ...newBoxes,
+    };
+
+    setBoxes(updatedBoxes);
+    updateCanvasHeight(updatedBoxes);
+  };
+
+  function onDragStop2(boxPositions) {
+    const updatedBoxes = boxPositions.reduce(
+      (boxesObj, { id, x, y, parent }) => ({
+        ...boxesObj,
+        [id]: {
+          ...boxes[id],
+          layouts: {
+            ...boxes[id]['layouts'],
+            [currentLayout]: {
+              ...boxes[id]['layouts'][currentLayout],
+              // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
+              top: y,
+              left: Math.round(x / gridWidth),
+            },
+          },
+          parent: parent ? parent : boxes[id].parent,
+        },
+      }),
+      {}
+    );
+    let newBoxes = {
+      ...boxes,
+      ...updatedBoxes,
+      // [id]: {
+      //   ...boxes[id],
+      //   layouts: {
+      //     ...boxes[id]['layouts'],
+      //     [currentLayout]: {
+      //       ...boxes[id]['layouts'][currentLayout],
+      //       // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
+      //       top: y,
+      //       left: Math.round(x / gridWidth),
+      //     },
+      //   },
+      //   parent: parent ? parent : boxes[id].parent,
+      // },
+    };
+
+    setBoxes(newBoxes);
+  }
+
   const onResizeStop = useCallback(
     (id, e, direction, ref, d, position) => {
       if (isVersionReleased) {
@@ -603,6 +673,80 @@ export const Container = ({
     childComponents,
   ]);
 
+  const renderWidget = (key, height, setIsChildDragged) => {
+    const box = boxes[key];
+    if (!box) {
+      return '';
+    }
+    const canShowInCurrentLayout =
+      box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+    const addDefaultChildren = box.withDefaultChildren;
+    if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+      return (
+        <DraggableBox
+          className={showComments && 'pointer-events-none'}
+          canvasWidth={canvasWidth}
+          onComponentClick={
+            config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
+          }
+          onEvent={onEvent}
+          height={height}
+          onComponentOptionChanged={onComponentOptionChanged}
+          onComponentOptionsChanged={onComponentOptionsChanged}
+          key={key}
+          onResizeStop={onResizeStop}
+          onDragStop={onDragStop}
+          paramUpdated={paramUpdated}
+          id={key}
+          {...boxes[key]}
+          mode={mode}
+          resizingStatusChanged={(status) => setIsResizing(status)}
+          draggingStatusChanged={(status) => setIsDragging(status)}
+          inCanvas={true}
+          zoomLevel={zoomLevel}
+          setSelectedComponent={setSelectedComponent}
+          removeComponent={removeComponent}
+          deviceWindowWidth={deviceWindowWidth}
+          isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
+          darkMode={darkMode}
+          // onComponentHover={onComponentHover}
+          // hoveredComponent={hoveredComponent}
+          sideBarDebugger={sideBarDebugger}
+          isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+          childComponents={childComponents[key]}
+          containerProps={{
+            mode,
+            snapToGrid,
+            onComponentClick,
+            onEvent,
+            appDefinition,
+            appDefinitionChanged,
+            currentState,
+            onComponentOptionChanged,
+            onComponentOptionsChanged,
+            appLoading,
+            zoomLevel,
+            setSelectedComponent,
+            removeComponent,
+            currentLayout,
+            deviceWindowWidth,
+            selectedComponents,
+            darkMode,
+            // onComponentHover,
+            // hoveredComponent,
+            sideBarDebugger,
+            addDefaultChildren,
+            currentPageId,
+            childComponents,
+            setIsChildDragged,
+          }}
+          isVersionReleased={isVersionReleased}
+        />
+      );
+    }
+    return '';
+  };
+
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -643,7 +787,15 @@ export const Container = ({
           ))}
         </>
       )}
-      <DragContainer boxes={Object.keys(boxes).map((key) => ({ ...boxes[key], id: key }))} />
+      <DragContainer
+        boxes={Object.keys(boxes).map((key) => ({ ...boxes[key], id: key }))}
+        renderWidget={renderWidget}
+        canvasWidth={canvasWidth}
+        onResizeStop={onResizeStop2}
+        onDrag={onDragStop2}
+        gridWidth={gridWidth}
+        selectedComponents={selectedComponents}
+      />
       {/* {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =

@@ -1,14 +1,14 @@
-.target {
+.target, .nested-target {
 	position: absolute;
-	width: 100px;
-	height: 100px;
-	top: 150px;
-	left: 100px;
-	line-height: 100px;
+	/* width: 100px;
+	height: 100px; */
+	/* top: 150px;
+	left: 100px; */
+	/* line-height: 100px; */
 	text-align: center;
 	background: #ee8;
 	color: #333;
-	font-weight: bold;
+	/* font-weight: bold; */
 	border: 1px solid #333;
 	box-sizing: border-box;
 }

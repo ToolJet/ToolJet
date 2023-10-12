@@ -1610,7 +1610,7 @@ class EditorComponent extends React.Component {
               {!this.props.showComments && (
                 <Selecto
                   dragContainer={'.canvas-container'}
-                  selectableTargets={['.react-draggable']}
+                  selectableTargets={['.widget-target']}
                   hitRate={0}
                   selectByClick={true}
                   toggleContinueSelect={['shift']}
