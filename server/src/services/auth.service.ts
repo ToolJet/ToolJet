@@ -423,7 +423,7 @@ export class AuthService {
 
     const metadata = await this.metadataService.getMetaData();
     const { id: customerId } = metadata;
-    const otherData = { companySize, role, phoneNumber, name };
+    const otherData = { companySize, role, phoneNumber };
 
     const body = {
       hostname,
@@ -431,6 +431,8 @@ export class AuthService {
       customerId,
       email,
       companyName,
+      version: '2',
+      ...this.splitName(name),
       otherData,
     };
 

@@ -35,12 +35,13 @@ export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInt
         });
 
         // create other two environments
-        for (const { name, isDefault } of defaultAppEnvironments.filter((env) => !env.isDefault)) {
+        for (const { name, isDefault, priority } of defaultAppEnvironments.filter((env) => !env.isDefault)) {
           const newEnvironment: AppEnvironment = await entityManager.save(
             entityManager.create(AppEnvironment, {
               name,
               isDefault,
               organizationId: organization.id,
+              priority,
             })
           );
 

@@ -2,6 +2,7 @@ import { Terms } from '@ee/licensing/types';
 import { readFileSync } from 'fs';
 import { publicDecrypt } from 'crypto';
 import { resolve } from 'path';
+import { inflateSync } from 'zlib';
 
 export enum LICENSE_FIELD {
   IS_EXPIRED = 'expired',
@@ -61,7 +62,13 @@ export function decrypt(toDecrypt: string): Terms {
   const publicKey = readFileSync(absolutePath, 'utf8');
   const buffer = Buffer.from(toDecrypt, 'base64');
   const decrypted = publicDecrypt(publicKey, buffer);
-  return JSON.parse(decrypted.toString('utf8'));
+
+  const decryptedJson = JSON.parse(decrypted.toString('utf8'));
+
+  if (decryptedJson?.version !== 2) {
+    return decryptedJson;
+  }
+  return JSON.parse(inflateSync(Buffer.from(decryptedJson.data, 'base64')).toString('utf8'));
 }
 
 export const LICENSE_TRIAL_API = 'https://nlb.tooljet.com/api/license/trial';
