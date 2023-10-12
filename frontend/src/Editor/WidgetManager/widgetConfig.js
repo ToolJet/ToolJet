@@ -2707,7 +2707,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'code',
-        displayName: 'Default Value',
+        displayName: 'Default value',
         validation: {
           schema: { type: 'string' },
         },
@@ -5804,7 +5804,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       imageUrl: {
         type: 'code',
-        displayName: 'Image Url',
+        displayName: 'Image URL',
         validation: {
           schema: { type: 'string' },
         },
