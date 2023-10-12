@@ -21,6 +21,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { ImportExportResourcesModule } from '../import_export_resources/import_export_resources.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { Organization } from 'src/entities/organization.entity';
       Organization,
     ]),
     CaslModule,
+    ImportExportResourcesModule,
   ],
   providers: [
     EncryptionService,
