@@ -16,9 +16,14 @@ import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { ImportExportResourcesModule } from '../import_export_resources/import_export_resources.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource]), CaslModule],
+  imports: [
+    TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource]),
+    CaslModule,
+    ImportExportResourcesModule,
+  ],
   providers: [
     EncryptionService,
     CredentialsService,
