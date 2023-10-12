@@ -216,7 +216,7 @@ class HomePageComponent extends React.Component {
     }
   };
 
-  importFile = (importJSON, appName) => {
+  importFile = async (importJSON, appName) => {
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
     const organization_id = getWorkspaceId();
@@ -225,27 +225,25 @@ class HomePageComponent extends React.Component {
       importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
     }
     const requestBody = { organization_id, appName, ...importJSON };
-    appService
-      .importResource(requestBody)
-      .then((data) => {
-        toast.success('App imported successfully.');
-        this.setState({
-          isImportingApp: false,
-        });
-        if (!isEmpty(data.imports.app)) {
-          this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
-        } else if (!isEmpty(data.imports.tooljet_database)) {
-          this.props.navigate(`/${getWorkspaceId()}/database`);
-        }
-      })
-      .catch(({ error }) => {
-        this.setState({
-          isImportingApp: false,
-        });
-        if (error.statusCode === 409) {
-          return false;
-        }
+    try {
+      const data = await appService.importResource(requestBody);
+      toast.success('App imported successfully.');
+      this.setState({
+        isImportingApp: false,
       });
+      if (!isEmpty(data.imports.app)) {
+        this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
+      } else if (!isEmpty(data.imports.tooljet_database)) {
+        this.props.navigate(`/${getWorkspaceId()}/database`);
+      }
+    } catch (error) {
+      this.setState({
+        isImportingApp: false,
+      });
+      if (error.statusCode === 409) {
+        return false;
+      }
+    }
   };
 
   deployApp = async (event, appName, selectedApp) => {
