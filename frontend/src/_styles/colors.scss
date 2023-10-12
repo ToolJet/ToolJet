@@ -218,3 +218,7 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 .bg-slate6 {
   background-color: var(--slate6) !important;
 }
+
+.text-placeholder {
+  color: '#7E868C'
+}

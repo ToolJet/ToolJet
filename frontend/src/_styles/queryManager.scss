@@ -42,6 +42,7 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
+  background-color: var(--background-strong);
 }
 
 .query-pane {
@@ -210,9 +211,9 @@ $border-radius: 4px;
 
   .query-definition-pane {
     .header {
-      border: solid var(--border-subtle-02);
+      border: solid var(--border-subtle-01);
       border-width: 0px 0px 1px 0px;
-      background: var(--layer-2-default);
+      background: var(--layer-03);
       z-index: 3;
       min-height: 44px;
       max-height: 44px;
@@ -252,7 +253,6 @@ $border-radius: 4px;
 
   .data-pane {
     flex: 0 0 288px;
-    border: solid var(--slate5);
     border-width: 0px 1px 0px 0px;
     overflow-x: hidden;
     overflow-y: scroll;
@@ -277,9 +277,9 @@ $border-radius: 4px;
     .queries-container {
       width: 100%;
       background-color: var(--layer-01);
+      border-right: 1px solid var(--border-subtle-01);
 
       .queries-header {
-        border: solid var(--slate5);
         border-width: 0px 0px 1px 0px;
         height: 44px;
         --tblr-gutter-x: 0rem;
@@ -288,7 +288,7 @@ $border-radius: 4px;
         justify-content: center;
         padding: 8px 12px;
         gap: 12px;
-        background: var(--layer-2-default);
+        background: var(--layer-03);
 
         .queries-search {
           height: 28px !important;
@@ -995,7 +995,7 @@ $border-radius: 4px;
     }
 
     .preview-section-header {
-      background-color: var(--slate1);
+      background-color: var(--layer-03);
       border-radius: 6px 6px 0px 0px;
       border: 1px solid var(--slate5);
     }
@@ -1020,7 +1020,7 @@ $border-radius: 4px;
 
     .preview-data-container {
       min-height: 65px;
-      background-color: var(--slate3);
+      background-color: var(--layer-02);
     }
   }
 
@@ -1183,7 +1183,7 @@ $border-radius: 4px;
     border-radius: 6px;
 
     .card-header {
-      background-color: var(--slate1);
+      background-color: var(--layer-03);
       color: var(--slate9);
       border-radius: 6px 6px 0px 0px;
     }
@@ -1191,7 +1191,7 @@ $border-radius: 4px;
     .CodeMirror-scroll,
     .CodeMirror-gutters,
     .CodeMirror {
-      background-color: var(--slate3) !important;
+      background-color: var(--layer-02) !important;
     }
 
     .CodeMirror-sizer {
@@ -1309,7 +1309,7 @@ $border-radius: 4px;
 
 .rest-api-tabpanes-body {
   .CodeMirror.cm-s-monokai.CodeMirror-wrap {
-    background-color: var(--slate3) !important;
+    background-color: var(--layer-02) !important;
   }
 }
 
@@ -1320,7 +1320,7 @@ $border-radius: 4px;
 
   .CodeMirror.cm-s-monokai.CodeMirror-wrap,
   .cm-s-monokai .CodeMirror-gutters {
-    background-color: var(--slate3) !important;
+    background-color: var(--layer-02) !important;
   }
 }
 
@@ -1543,12 +1543,12 @@ $border-radius: 4px;
 }
 
 .query-hinter {
-  border: 1px solid var(--slate5);
+  // border: 1px solid var(--slate5);
   border-radius: 0px 0px 6px 6px;
 
   .cm-s-base16-light.CodeMirror,
   .CodeMirror-scroll,
   .CodeMirror-gutters {
-    background-color: var(--slate3) !important;
+    background-color: var(--layer-02) !important;
   }
 }

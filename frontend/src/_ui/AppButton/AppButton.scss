@@ -64,118 +64,119 @@
 .tj-primary-btn {
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.00);
-    background: var(--indigo9);
     box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.04);
-    color: #FDFDFE;
+    background: var(--button-primary);
+    color: var(--button-primary-text);
 
     &:hover {
         border: 1px solid rgba(255, 255, 255, 0.00);
-        background: var(--indigo10);
+        background: var(--button-primary-hover);
         color: #FDFDFE;
     }
 
     &:focus-visible {
         border: 1px solid rgba(255, 255, 255, 0.00);
         outline: none;
-        background: var(--indigo10);
+        background: var(--button-tirtiary-hover);
+        color: var(--button-primary-text);
+        box-shadow: 0px 0px 0px 4px #C6D4F9;
     }
 
 
     &:active {
-        background: var(--slate1);
         border: 1px solid rgba(255, 255, 255, 0.00);
         box-shadow: 0px 0px 0px 4px var(--indigo6);
-        background: var(--indigo9);
+        background: var(--button-primary-active);
+
     }
 
 }
 
 .tj-secondary-btn {
-    color: var(--indigo9) !important;
-    border: 1px solid rgba(255, 255, 255, 0.00) !important;
-    background: var(--indigo3, #F0F4FF) !important;
+    color: var(--button-secondary-text) !important;
+    border: 1px solid var(--button-secondary-border) !important;
+    background: var(--button-secondary) !important;
 
     &:hover {
-        color: var(--indigo10) !important;
-        border: 1px solid rgba(255, 255, 255, 0.00) !important;
-        background: var(--indigo4, #E6EDFE) !important;
+        color: var(--button-secondary-text) !important;
+        border: 1px solid var(--button-secondary-border) !important;
+        background: var(--button-secondary-hover) !important;
     }
 
     &:active {
-        color: var(--indigo9) !important;
+        color: var(--button-secondary-text) !important;
         box-shadow: none;
         border-radius: 6px;
-        border: 1px solid rgba(255, 255, 255, 0.00) !important;
-        background: var(--indigo5, #D9E2FC) !important;
+        border: 1px solid var(--button-secondary-border) !important;
+        background: var(--button-secondary-active) !important;
     }
 
     &:focus-visible {
-        color: var(--indigo10) !important;
+        color: var(--button-secondary-text) !important;
         outline: none;
-        border: 1px solid rgba(255, 255, 255, 0.00) !important;
-        background: var(--indigo3, #F0F4FF) !important;
+        border: 1px solid var(--button-secondary-border) !important;
+        background: var(--button-secondary) !important;
 
         /* Focus rings/Indigo/light */
-        box-shadow: 0px 0px 0px 4px var(--indigo6);
+        box-shadow: 0px 0px 0px 4px #C6D4F9;
     }
 }
 
 .tj-tertiary-btn {
-    color: var(--text-primary);
-    border: 1px solid var(--slate7) !important;
-    background: var(--slate1) !important;
+    color: var(--button-tirtiary-text);
+    border: 1px solid var(--button-tirtiary-border) !important;
+    background: var(--button-tirtiary) !important;
 
     &:hover {
-        color: var(--text-secondary) !important;
-        border: 1px solid var(--slate7, #D7DBDF) !important;
-        background: var(--slate4, #ECEEF0) !important;
+        color: var(--button-tirtiary-text) !important;
+        border: 1px solid var(--button-tirtiary-border) !important;
+        background: var(--button-tirtiary-hover) !important;
     }
 
     &:active,
     &:focus,
     &.always-active-btn {
-        border: 1px solid var(--slate7, #D7DBDF) !important;
-        background: var(--slate5) !important;
-        color: var(--text-primary);
-        border: 1px solid var(--slate7);
+        border: 1px solid var(--button-tirtiary-border) !important;
+        background: var(--button-tirtiary-active) !important;
+        color: var(--button-tirtiary-text);
     }
 
     &:active {
-        background: transparent;
+        background: var(--button-tirtiary-active);
         box-shadow: none;
-        color: var(--text-primary) !important;
+        color: var(--button-tirtiary-text) !important;
     }
 
     &:focus-visible {
         color: var(--text-secondary) !important;
-        box-shadow: 0px 0px 0px 4px var(--slate6) !important;
+        box-shadow: 0px 0px 0px 4px #DFE3E6;
         outline: none;
-        border: 1px solid var(--slate8, #C1C8CD) !important;
-        background: var(--slate1, #FBFCFD) !important;
+        border: 1px solid var(--button-tirtiary-border) !important;
+        background: var(--button-tirtiary-hover) !important;
     }
 }
 
 
 .tj-ghost-blue-btn {
-    color: var(--indigo9);
+    color: var(--button-secondary-text);
     border: none;
     background: transparent;
 
     &:hover {
-        color: var(--indigo10);
-        background-color: var(--indigo4);
+        color: var(--button-secondary-text);
+        background-color: var(--button-secondary-hover);
     }
 
     &:active {
-        color: var(--indigo8);
+        color: var(--button-secondary-text);
+        background-color: var(--button-secondary-active);
     }
 
     &:focus-visible {
-        color: var(--indigo10);
+        color: var(--button-secondary-text);
         background: var(--background-strong);
-
         border: none;
-        box-shadow: 0px 0px 0px 4px var(--indigo6);
+        box-shadow: 0px 0px 0px 4px #C6D4F9;
         outline: none;
     }
 
@@ -185,111 +186,114 @@
 }
 
 .tj-ghost-black-btn {
-    color: var(--text-primary);
+    color: var(--button-tirtiary-text);
     border: none;
     background: transparent;
 
     &:hover {
-        background: var(--slate4, #ECEEF0) !important;
-        color: var(--text-secondary);
+        background: var(--button-tirtiary-hover) !important;
+        color: var(--button-tirtiary-text);
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
     }
 
     &:focus-visible {
-        color: var(--text-secondary) !important;
-        box-shadow: 0px 0px 0px 4px var(--slate6) !important;
+        color: var(--button-tirtiary-text);
+        box-shadow: 0px 0px 0px 4px #DFE3E6;
         outline: none;
-        border: 1px solid rgba(255, 255, 255, 0.00) !important;
-        background: var(--slate1, #FBFCFD) !important;
+        background: var(--button-tirtiary-hover) !important;
     }
 
     &:active,
     &:focus,
     &.always-active-btn {
-        color: var(--text-primary) !important;
+        color: var(--button-tirtiary-text);
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
-        background: var(--slate5, #E6E8EB) !important;
+        background: var(--button-tirtiary-active) !important;
         box-shadow: none !important;
     }
 
     &:disabled {
-        background: rgba(255, 255, 255, 0.00) !important;
+        // background: rgba(255, 255, 255, 0.00) !important;
         border: 1px solid rgba(255, 255, 255, 0.00) !important;
-        color: var(--slate8) !important;
+        color: #C1C8CD;
     }
 }
 
 /* // Danger-variants--- */
 
 .tj-primary-danger-btn {
-    background: #E54D2E;
+    background: var(--button-primary);
     border: none;
-    color: #FFFCFC;
+    color: var(--button-primary-text);
 
     &:hover {
-        background: var(--tomato10);
+        background: var(--button-primary-hover);
     }
 
     &:active {
-        background: var(--tomato11);
-        color: #F0F4FF
+        background: var(--button-primary-active);
+        color: var(--button-primary-text);
     }
 
     &:focus-visible {
-        background: var(--tomato10);
+        background: var(--button-primary);
         border: none;
-        box-shadow: 0px 0px 0px 4px var(--tomato6);
+        box-shadow: 0px 0px 0px 4px #FAC7BE;
         outline: none;
     }
 
 }
 
 .tj-secondary-danger-btn {
-    background: var(--tomato3);
-    border: none;
-    color: var(--tomato9);
+    background: var(--button-secondary);
+    border: 1px solid var(--button-secondary-border);
+    color: var(--button-secondary-text);
 
     &:hover {
-        background: var(--tomato4);
-        color: var(--tomato10);
+        background: var(--button-secondary-hover);
+        color: var(--button-secondary-text);
+        border: 1px solid var(--button-secondary-border);
+
     }
 
     &:active {
-        background: var(--tomato5);
-        color: var(--tomato8);
+        background: var(--button-secondary-active);
+        color: var(--button-secondary-text);
+        border: 1px solid var(--button-secondary-border);
+
     }
 
     &:focus-visible {
         background: var(--tomato4);
-        border: none;
+        border: 1px solid var(--button-secondary-border);
         box-shadow: 0px 0px 0px 4px var(--tomato6);
-        color: var(--tomato8);
+        color: var(--button-secondary-text);
         outline: none;
     }
 }
 
 .tj-tertiary-danger-btn {
-    background: var(--background-strong);
-    border: 1px solid var(--tomato7);
-    color: var(--tomato9);
+    background: transparent;
+    border: 1px solid var(--button-secondary-border);
+    color: var(--button-secondary-text);
 
     &:hover {
-        background: var(--background-strong);
-        color: var(--tomato10);
-        border: 1px solid var(--tomato5);
+        background: var(--button-tirtiary-hover);
+        color: var(--button-secondary-text);
+        border: 1px solid var(--button-secondary-border);
     }
 
     &:active {
-        background: var(--background-strong);
-        color: var(--tomato11);
-        border: 1px solid var(--tomato11);
+        background: var(--button-secondary-active);
+        color: var(--button-secondary-text);
+        border: 1px solid var(--button-secondary-border);
     }
 
     &:focus-visible {
-        background: var(--background-strong);
+        background: var(--button-tirtiary-hover);
         outline: 1px solid var(--tomato5);
-        box-shadow: 0px 0px 0px 4px var(--tomato6);
-        color: var(--tomato10);
+        box-shadow: 0px 0px 0px 4px #FAC7BE;
+        color: var(--button-secondary-text);
         outline: none;
     }
 
@@ -297,22 +301,25 @@
 
 
 .tj-ghost-danger-btn {
-    color: var(--tomato9);
+    color: var(--button-secondary-text);
     background: transparent;
     border: none;
 
     &:hover {
-        color: var(--tomato10);
+        color: var(--button-secondary-text);
+        background-color: var(--button-secondary-hover);
     }
 
     &:active {
-        color: var(--tomato8);
+        color: var(--button-secondary-text);
+        background-color: var(--button-secondary);
     }
 
     &:focus-visible {
         border: none;
-        box-shadow: 0px 0px 0px 4px var(--tomato6);
+        box-shadow: 0px 0px 0px 4px #FAC7BE;
         outline: none;
+        background-color: var(--button-tirtiary-hover);
     }
 }
 
@@ -322,56 +329,56 @@
     border: none !important;
 }
 
-.dark-theme {
-    tj-primary-btn {
-        background: #3E63DD;
-        border: none;
-        color: #FDFDFE;
+// .dark-theme {
+//     tj-primary-btn {
+//         background: #3E63DD;
+//         border: none;
+//         color: #FDFDFE;
 
-        &:hover {
-            background: var(--indigo10);
-            border: 1px solid #FFFFFF
-        }
+//         &:hover {
+//             background: var(--indigo10);
+//             border: 1px solid #FFFFFF
+//         }
 
-        &:focus-visible {
-            box-shadow: 0px 0px 0px 4px var(--indigo6);
-            border: 1px solid #FFFFFF;
-            outline: none;
-        }
-
-
-        &:active {
-            background: #849DFF;
-            box-shadow: none;
-        }
-
-    }
+//         &:focus-visible {
+//             box-shadow: 0px 0px 0px 4px var(--indigo6);
+//             border: 1px solid #FFFFFF;
+//             outline: none;
+//         }
 
 
-    /* // Danger-variants--- */
+//         &:active {
+//             background: #849DFF;
+//             box-shadow: none;
+//         }
 
-    .tj-primary-danger-btn {
-        background: var(--tomato9);
-        border: none;
-        color: #FFFCFC;
+//     }
 
-        &:hover {
-            background: var(--tomato10);
-            color: #FFFCFC;
-        }
 
-        &:active {
-            background: var(--tomato11);
-            color: #F0F4FF;
-        }
+//     /* // Danger-variants--- */
 
-        &:focus-visible {
-            background: var(--tomato10);
-            border: none;
-            box-shadow: 0px 0px 0px 4px var(--tomato6);
-            outline: none;
-            color: #FFFCFC;
-        }
+//     .tj-primary-danger-btn {
+//         background: var(--tomato9);
+//         border: none;
+//         color: #FFFCFC;
 
-    }
-}
+//         &:hover {
+//             background: var(--tomato10);
+//             color: #FFFCFC;
+//         }
+
+//         &:active {
+//             background: var(--tomato11);
+//             color: #F0F4FF;
+//         }
+
+//         &:focus-visible {
+//             background: var(--tomato10);
+//             border: none;
+//             box-shadow: 0px 0px 0px 4px var(--tomato6);
+//             outline: none;
+//             color: #FFFCFC;
+//         }
+
+//     }
+// }

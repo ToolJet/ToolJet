@@ -1302,15 +1302,15 @@ button {
     }
   }
 
-  .template-list {
-    .template-search-box {
-      input {
-        background-color: #2b394a;
-        border-color: #232e3c;
-        color: white;
-      }
-    }
-  }
+  // .template-list {
+  //   .template-search-box {
+  //     input {
+  //       background-color: #2b394a;
+  //       border-color: #232e3c;
+  //       color: white;
+  //     }
+  //   }
+  // }
 }
 
 .fx-container {
@@ -2880,7 +2880,7 @@ input:focus-visible {
   top: 0px;
   border-radius: 6px !important;
   border: 1px solid var(--border-subtle-01, #E6E8EB) !important;
-  background: var(--slate1, #FBFCFD) !important;
+  background: var(--layer-01) !important;
   width: 210px !important; //adjusted with padding
   box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08) !important;
   color: var(--text-primary);
@@ -2936,7 +2936,7 @@ input:focus-visible {
   input,
   .dropdown-max-canvas-width-type {
     border: 1px solid var(--border-subtle-01, #3A3F42);
-    background: var(--slate1, #151718);
+    background: var(--input-box-fill-default, #151718);
     color: var(--text-primary);
     padding: 6px 10px;
   }
@@ -3233,6 +3233,7 @@ input:focus-visible {
 
   .main .query-pane .data-pane .queries-container .queries-header {
     border-width: 0px 0px 1px 0px !important;
+    border-bottom: 1px solid var(--border-subtle-01);
 
     .text-muted {
       color: #ffffff !important;
@@ -4003,7 +4004,7 @@ input[type="text"] {
 
           .CodeMirror {
             height: 100% !important;
-            border: 1px solid var(--border-subtle-01, #26292B);
+            // border: 1px solid var(--border-subtle-01, #26292B);
             border-bottom-left-radius: 6px;
             border-bottom-right-radius: 6px;
           }
@@ -4011,7 +4012,7 @@ input[type="text"] {
           .CodeMirror-scroll,
           .CodeMirror-gutters,
           .CodeMirror {
-            background-color: var(--slate3) !important;
+            background-color: var(--layer-02) !important;
           }
         }
       }
@@ -4369,7 +4370,7 @@ input[type="text"] {
 
   .input-icon .form-control:not(:first-child),
   .input-icon .form-select:not(:last-child) {
-    padding-left: 28px !important;
+    // padding-left: 28px !important;
   }
 
   input:focus {
@@ -4561,7 +4562,7 @@ input[type="text"] {
 
   .modal-header,
   .modal-body {
-    background-color: #232e3c;
+    // background-color: #232e3c;
     color: #fff;
   }
 
@@ -5841,6 +5842,10 @@ div#driver-page-overlay {
   appearance: none;
   transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 
+  &::placeholder {
+    color: var(--text-placeholder);
+  }
+
   &:hover {
     background: var(--input-box-fill-hover);
     border: 1px solid var(--input-box-border-default);
@@ -5850,9 +5855,10 @@ div#driver-page-overlay {
   }
 
   &:focus-visible {
-    background: var(--slate1);
+    background: var(--input-box-fill-default);
     border: 1px solid var(--input-box-border-default);
     outline: none;
+    // box-shadow: 0px 0px 0px 4px #DFE3E6;
   }
 
   &:active {
@@ -7885,6 +7891,7 @@ tbody {
   border-radius: 6px;
   padding: 16px;
   background-color: var(--layer-01) !important;
+  border: none;
 
   .appcard-buttons-wrap {
     display: none;
@@ -8413,7 +8420,7 @@ tbody {
     }
 
     tr>th {
-      background: var(--background-strong) !important;
+      background: var(--layer-01) !important;
       border-bottom: none !important;
       padding: 0 !important;
       width: 282px;
@@ -10460,7 +10467,7 @@ tbody {
   gap: 8px;
   margin-bottom: 12px;
   background: #FFFFFF;
-  border: 1px solid #D7DBDF !important;
+  // border: 1px solid  !important;
   border-radius: 0px 4px 4px 0px !important;
 
   &:hover {
@@ -11533,8 +11540,8 @@ tbody {
 .popover {
   border: none;
   border-radius: 6px;
-  border: 1px solid var(--slate3, #F1F3F5);
-  background: var(--slate1, #FBFCFD);
+  border: 1px solid var(--border-subtle-01) !important;
+  background: var(--layer-01);
   box-shadow: 0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10);
 }
 

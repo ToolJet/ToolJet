@@ -221,7 +221,7 @@
 
         h2 span {
             color: #9BA3AF;
-            background: #fff;
+            background: var(--background-strong);
             padding: 0 18px;
         }
     }
@@ -388,8 +388,8 @@
     padding: 8px 16px;
     gap: 10px;
     height: 40px;
-    background: #FFFFFF;
-    border: 1px solid #D1D5DB;
+    background-color: var(--input-box-fill-default);
+    border: 1px solid var(--input-box-border-default);
     border-radius: 4px;
     font-style: normal;
     font-weight: 400;
@@ -402,7 +402,7 @@
     padding-right: 40px !important;
 
     ::placeholder {
-        color: #6B7787;
+        color: var(--text-placeholder);
     }
 
     p {
@@ -415,8 +415,8 @@
 
 
     &:hover {
-        border: 1px solid #D1D5DB;
-        box-shadow: 0px 0px 0px 4px #E4E7EB;
+        background: var(--input-box-fill-hover);
+        border: 1px solid var(--input-box-border-default);
     }
 
     &:active {
@@ -666,8 +666,8 @@
     display: grid;
     grid-template-columns: 1fr 3fr 392px 3fr 1fr;
     align-items: center;
-    border-bottom: 1px solid #E4E7EB;
-    background-color: #fff;
+    border-bottom: 1px solid var(--border-strong-01);
+    background-color: var(--background-strong);
     z-index: 1000;
 }
 
@@ -1099,7 +1099,7 @@
 // Dark-Mode styles onboarding  && self host dark mode
 .theme-dark {
     .onboarding-navbar {
-        background-color: #2b394b;
+        background-color: var(--background-strong);
     }
 
     .org-avatar:hover {
@@ -1127,8 +1127,8 @@
     }
 
     .onboarding-navbar-layout {
-        background-color: #2b394b;
-        border-bottom: 1px solid #2B2F31;
+        // background-color: #2b394b;
+        // border-bottom: 1px solid #2B2F31;
     }
 
     .setup-page-navbar {
@@ -1140,11 +1140,9 @@
     }
 
     .login-sso-wrapper,
-    .sso-button,
-    .tj-text-input,
-    .onboard-input {
-        background-color: #2b394b !important;
-        border-color: #787F85;
+    .sso-button {
+        background-color: var(--input-box-fill-default) !important;
+        border-color: var(--input-box-border-default);
     }
 
     .login-sso-wrapper {
@@ -1155,10 +1153,10 @@
         }
     }
 
-    .separator-onboarding .separator h2 span,
-    .separator-signup .separator h2 span {
-        background-color: #2b394b;
-    }
+    // .separator-onboarding .separator h2 span,
+    // .separator-signup .separator h2 span {
+    //     background-color: #2b394b;
+    // }
 
     .separator-onboarding .separator h2 {
         border-bottom: 1px solid #697177 !important;

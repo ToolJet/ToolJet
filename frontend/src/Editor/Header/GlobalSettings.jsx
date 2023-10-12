@@ -126,7 +126,7 @@ export const GlobalSettings = ({
                       style={{ width: '103px', borderRight: 'none' }}
                       data-cy="maximum-canvas-width-input-field"
                       type="text"
-                      className={`form-control`}
+                      className={`form-control `}
                       placeholder={'0'}
                       onChange={(e) => {
                         const width = e.target.value;

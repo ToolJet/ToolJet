@@ -35,7 +35,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
             disabled={!options.showSuccessNotification}
             onChange={(e) => optionchanged('notificationDuration', e.target.value)}
             placeholder={5}
-            className="form-control"
+            className="form-control tj-input-element"
             value={options.notificationDuration}
             data-cy={'notification-duration-input-field'}
           />

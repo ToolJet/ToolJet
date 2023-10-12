@@ -282,6 +282,9 @@ export const Folders = function Folders({
             className={cx(`tj-list-item rounded-2  h-4 mb-1  no-border d-flex align-items-center`, {
               'tj-list-item-selected': activeFolder.id === folder.id,
             })}
+            style={{
+              textDecoration: 'none',
+            }}
             onClick={() => handleFolderChange(folder)}
             data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
           >

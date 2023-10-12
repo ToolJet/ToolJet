@@ -251,7 +251,7 @@ export const QueryManagerBody = ({
     return (
       <div className={cx('mt-2 d-flex px-4 mb-3', { 'disabled ': isVersionReleased })}>
         <div
-          className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
+          className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source text-placeholder`}
         >
           Datasource
         </div>
