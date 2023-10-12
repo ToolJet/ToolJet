@@ -219,7 +219,7 @@ export const DraggableBox = React.memo(
       >
         {inCanvas ? (
           <div
-            className={cx(`draggable-box widget-${id}`, {
+            className={cx(`draggable-box w-100 widget-${id}`, {
               [className]: !!className,
               'draggable-box-in-editor': mode === 'edit',
             })}
@@ -234,8 +234,7 @@ export const DraggableBox = React.memo(
             }}
             style={getStyles(isDragging, isSelectedComponent)}
           >
-            <Rnd
-              maxWidth={canvasWidth}
+            {/* <Rnd
               style={{ ...style }}
               resizeGrid={[gridWidth, 10]}
               dragGrid={[gridWidth, 10]}
@@ -274,52 +273,52 @@ export const DraggableBox = React.memo(
               }}
               bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
               widgetId={id}
-            >
-              <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-                {mode === 'edit' &&
-                  !readOnly &&
-                  (configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) &&
-                  !isResizing && (
-                    <ConfigHandle
-                      id={id}
-                      removeComponent={removeComponent}
-                      component={component}
-                      position={layoutData.top < 15 ? 'bottom' : 'top'}
-                      widgetTop={layoutData.top}
-                      widgetHeight={layoutData.height}
-                      isMultipleComponentsSelected={isMultipleComponentsSelected}
-                      configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
-                    />
-                  )}
-                <ErrorBoundary showFallback={mode === 'edit'}>
-                  <Box
-                    component={component}
+            > */}
+            <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
+              {mode === 'edit' &&
+                !readOnly &&
+                (configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) &&
+                !isResizing && (
+                  <ConfigHandle
                     id={id}
-                    width={width}
-                    height={layoutData.height - 4}
-                    mode={mode}
-                    changeCanDrag={changeCanDrag}
-                    inCanvas={inCanvas}
-                    paramUpdated={paramUpdated}
-                    onEvent={onEvent}
-                    onComponentOptionChanged={onComponentOptionChanged}
-                    onComponentOptionsChanged={onComponentOptionsChanged}
-                    onComponentClick={onComponentClick}
-                    currentState={currentState}
-                    containerProps={containerProps}
-                    darkMode={darkMode}
                     removeComponent={removeComponent}
-                    canvasWidth={canvasWidth}
-                    readOnly={readOnly}
-                    customResolvables={customResolvables}
-                    parentId={parentId}
-                    allComponents={allComponents}
-                    sideBarDebugger={sideBarDebugger}
-                    childComponents={childComponents}
+                    component={component}
+                    position={layoutData.top < 15 ? 'bottom' : 'top'}
+                    widgetTop={layoutData.top}
+                    widgetHeight={layoutData.height}
+                    isMultipleComponentsSelected={isMultipleComponentsSelected}
+                    configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
                   />
-                </ErrorBoundary>
-              </div>
-            </Rnd>
+                )}
+              <ErrorBoundary showFallback={mode === 'edit'}>
+                <Box
+                  component={component}
+                  id={id}
+                  width={width}
+                  height={layoutData.height - 4}
+                  mode={mode}
+                  changeCanDrag={changeCanDrag}
+                  inCanvas={inCanvas}
+                  paramUpdated={paramUpdated}
+                  onEvent={onEvent}
+                  onComponentOptionChanged={onComponentOptionChanged}
+                  onComponentOptionsChanged={onComponentOptionsChanged}
+                  onComponentClick={onComponentClick}
+                  currentState={currentState}
+                  containerProps={containerProps}
+                  darkMode={darkMode}
+                  removeComponent={removeComponent}
+                  canvasWidth={canvasWidth}
+                  readOnly={readOnly}
+                  customResolvables={customResolvables}
+                  parentId={parentId}
+                  allComponents={allComponents}
+                  sideBarDebugger={sideBarDebugger}
+                  childComponents={childComponents}
+                />
+              </ErrorBoundary>
+            </div>
+            {/* </Rnd> */}
           </div>
         ) : (
           <div ref={drag} role="DraggableBox" className="draggable-box" style={{ height: '100%' }}>
