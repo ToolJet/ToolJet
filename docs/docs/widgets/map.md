@@ -86,4 +86,4 @@ Following actions of map component can be controlled using the component specifi
 
 | Actions     | Description |
 |:---------- |:---------- |
-| **setLocation** | Set the marker's location on map using latitude and longitude values as parameteres via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |
+| **setLocation** | Set the marker's location on map using latitude and longitude values as parameters via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |

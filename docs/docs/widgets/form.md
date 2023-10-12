@@ -105,7 +105,7 @@ Here's an example using the custom schema of **Text Input**, **Number Input** an
          "displayValues":[
             "Male",
             "Female",
-            "Perfer not to Answer"
+            "Prefer not to Answer"
          ],
          "loading":false,
          "value":3,
