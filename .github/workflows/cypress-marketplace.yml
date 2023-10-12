@@ -1,0 +1,57 @@
+name: Cypress Marketplace
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, closed]
+
+  workflow_dispatch:
+
+env:
+  PR_NUMBER: ${{ github.event.number }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  Cypress-Marketplace:
+    runs-on: ubuntu-22.04
+
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-marketplace' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Checking the PR URL
+        run: |
+          timeout 1500 bash -c '
+          until curl --silent --fail https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com; do
+          sleep 100
+          done'
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
+
+      - name: Marketplace
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
+          config-file: cypress-marketplace.config.js
+
+      - name: Capture Screenshots
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: screenshots
+          path: cypress-tests/cypress/screenshots
