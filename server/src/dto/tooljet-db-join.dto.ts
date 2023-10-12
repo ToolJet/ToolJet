@@ -24,6 +24,7 @@ class Field {
 class Conditions {
   @IsString()
   @IsIn(['AND', 'OR'])
+  @IsOptional()
   operator: string;
 
   @IsArray()
@@ -38,7 +39,7 @@ class ConditionField {
   type: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional() // present only when type is column
   table: string;
 
   @IsString()
