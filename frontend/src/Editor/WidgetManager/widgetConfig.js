@@ -4113,7 +4113,7 @@ export const widgets = [
   {
     name: 'CircularProgressbar',
     displayName: 'Circular Progressbar',
-    description: 'Show the progress using circular progressbar',
+    description: 'Show circular progress',
     component: 'CircularProgressBar',
     defaultSize: {
       width: 7,
@@ -4220,7 +4220,7 @@ export const widgets = [
   {
     name: 'Spinner',
     displayName: 'Spinner',
-    description: 'Spinner can be used to display loading status',
+    description: 'Indicate loading state',
     component: 'Spinner',
     defaultSize: {
       width: 4,
@@ -4277,7 +4277,7 @@ export const widgets = [
   {
     name: 'Statistics',
     displayName: 'Statistics',
-    description: 'Statistics can be used to display different statistical information',
+    description: 'Show key metrics',
     component: 'Statistics',
     defaultSize: {
       width: 9.2,
@@ -4367,7 +4367,7 @@ export const widgets = [
   {
     name: 'RangeSlider',
     displayName: 'Range Slider',
-    description: 'Can be used to show slider with a range',
+    description: 'Adjust value range',
     component: 'RangeSlider',
     defaultSize: {
       width: 9,
