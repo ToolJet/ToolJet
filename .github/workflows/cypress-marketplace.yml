@@ -42,7 +42,7 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "TOOLJET_HOST=http://localhost:80" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
@@ -62,9 +62,17 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "REDIS_HOST=redis" >> .env
+          echo "REDIS_PORT=6379" >> .env
+          echo "REDIS_USER=default" >> .env
+          echo "REDIS_PASSWORD=" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml
+
+      - name: creating folder
+        run: mkdir postgres_data && mkdir redis_data
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -158,9 +166,17 @@ jobs:
           echo "SUB_PATH=/apps/tooljet/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
+          echo "REDIS_HOST=redis" >> .env
+          echo "REDIS_PORT=6379" >> .env
+          echo "REDIS_USER=default" >> .env
+          echo "REDIS_PASSWORD=" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml
+
+      - name: creating folder
+        run: mkdir postgres_data && mkdir redis_data
 
       - name: Run docker-compose file
         run: docker-compose up -d
