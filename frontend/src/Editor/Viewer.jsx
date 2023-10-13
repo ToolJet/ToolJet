@@ -434,7 +434,6 @@ class ViewerComponent extends React.Component {
     document.getElementById('real-canvas').scrollIntoView();
     /* Keep default query params for preview */
     const defaultParams = getPreviewQueryParams();
-    queryParams.push(...Object.entries(defaultParams));
 
     if (this.state.currentPageId === id) return;
 
@@ -442,11 +441,16 @@ class ViewerComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.navigate(`/applications/${this.state.slug}/${handle}?${queryParamsString}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    this.props.navigate(
+      `/applications/${this.state.slug}/${handle}?${
+        !_.isEmpty(defaultParams) ? `version=${defaultParams.version}` : ''
+      }${queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''}`,
+      {
+        state: {
+          isSwitchingPage: true,
+        },
+      }
+    );
   };
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'view');
