@@ -199,7 +199,7 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Platform-subpath
+      - name: App Builder subpath
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests

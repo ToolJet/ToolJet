@@ -90,7 +90,7 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Platform-subpath
+      - name: Marketplace
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
@@ -186,7 +186,7 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Platform-subpath
+      - name: Marketplace subpath
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
