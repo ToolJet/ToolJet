@@ -1233,6 +1233,11 @@ const EditorComponent = (props) => {
       return;
     }
 
+    if (name.length > 32) {
+      toast.error('Page name cannot be more than 32 characters');
+      return;
+    }
+
     const pageHandles = Object.values(appDefinition.pages).map((page) => page.handle);
 
     let newHandle = handle;
