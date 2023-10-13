@@ -5,6 +5,7 @@ import { Component } from 'src/entities/component.entity';
 
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/utils.helper';
+import { UpdateEventHandlerDto } from '@dto/event-handler.dto';
 
 @Injectable()
 export class EventsService {
@@ -61,11 +62,11 @@ export class EventsService {
     }, versionId);
   }
 
-  async updateEvent(events: [], updateType: 'update' | 'reorder', appVersionId: string) {
+  async updateEvent(events: UpdateEventHandlerDto[], updateType: 'update' | 'reorder', appVersionId: string) {
     return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       return await Promise.all(
         events.map(async (event) => {
-          const { event_id, diff } = event as any;
+          const { event_id, diff } = event;
 
           const eventDiff = diff?.event;
           const eventToUpdate = await manager.findOne(EventHandler, {
