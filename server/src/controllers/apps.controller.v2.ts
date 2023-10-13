@@ -40,6 +40,7 @@ export class AppsControllerV2 {
     private appsService: AppsService,
     private componentsService: ComponentsService,
     private pageService: PageService,
+    private eventsService: EventsService,
     private eventService: EventsService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
@@ -73,6 +74,9 @@ export class AppsControllerV2 {
       : [];
 
     const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(app.editingVersion.id) : [];
+    const eventsForVersion = app.editingVersion
+      ? await this.eventsService.findEventsForVersion(app.editingVersion.id)
+      : [];
 
     // serialize queries
     for (const query of dataQueriesForVersion) {
@@ -84,6 +88,7 @@ export class AppsControllerV2 {
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
     response['pages'] = pagesForVersion;
+    response['events'] = eventsForVersion;
 
     //! if editing version exists, camelize the definition
     if (app.editingVersion && app.editingVersion.definition) {
@@ -95,28 +100,82 @@ export class AppsControllerV2 {
     return response;
   }
 
+  async appFromSlug(@User() user, @AppDecorator() app: App) {
+    if (user) {
+      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+      if (!ability.can('viewApp', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+    }
+
+    const versionToLoad = app.currentVersionId
+      ? await this.appsService.findVersion(app.currentVersionId)
+      : await this.appsService.findVersion(app.editingVersion?.id);
+
+    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
+    const eventsForVersion = app.editingVersion ? await this.eventsService.findEventsForVersion(versionToLoad.id) : [];
+
+    // serialize
+    return {
+      current_version_id: app['currentVersionId'],
+      data_queries: versionToLoad?.dataQueries,
+      definition: versionToLoad?.definition,
+      is_public: app.isPublic,
+      is_maintenance_on: app.isMaintenanceOn,
+      name: app.name,
+      slug: app.slug,
+      events: eventsForVersion,
+      pages: pagesForVersion,
+      homePageId: versionToLoad.homePageId,
+      globalSettings: versionToLoad.globalSettings,
+      showViewerNavigation: versionToLoad.showViewerNavigation,
+    };
+  }
+
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
-  @Put(':id/versions/:versionId')
-  async updateVersion(
-    @User() user,
-    @Param('id') id,
-    @Param('versionId') versionId,
-    @Body() appVersionUpdateDto: AppVersionUpdateDto
-  ) {
-    const version = await this.appsService.findVersion(versionId);
-    const app = version.app;
+  @Get(':id/versions/:versionId')
+  async version(@User() user, @Param('id') id, @Param('versionId') versionId) {
+    const appVersion = await this.appsService.findVersion(versionId);
+    const app = appVersion.app;
 
     if (app.id !== id) {
       throw new BadRequestException();
     }
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('updateVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
+    if (!ability.can('fetchVersions', app)) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
     }
 
-    return await this.appsService.updateAppVersion(version, appVersionUpdateDto);
+    const pagesForVersion = await this.pageService.findPagesForVersion(versionId);
+    const eventsForVersion = await this.eventsService.findEventsForVersion(versionId);
+
+    const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
+
+    delete appCurrentEditingVersion['app'];
+
+    const appData = {
+      ...app,
+    };
+
+    delete appData['editingVersion'];
+
+    return {
+      ...appData,
+      editing_version: camelizeKeys(appCurrentEditingVersion),
+      pages: pagesForVersion,
+      events: eventsForVersion,
+    };
   }
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)

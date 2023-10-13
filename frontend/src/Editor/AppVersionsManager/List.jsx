@@ -83,7 +83,7 @@ export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion
         resetDeleteModal();
       });
   };
-
+  //this
   const options = appVersions.map((appVersion) => ({
     value: appVersion.id,
     isReleasedVersion: appVersion.id === releasedVersionId,

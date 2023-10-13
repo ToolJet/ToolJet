@@ -730,7 +730,7 @@ const EditorComponent = (props) => {
     const _appId = props?.params?.id;
 
     if (!onMount) {
-      await appService.getApp(_appId).then((data) => callBack(data, startingPageHandle));
+      await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
     } else {
       callBack(app, startingPageHandle);
     }
