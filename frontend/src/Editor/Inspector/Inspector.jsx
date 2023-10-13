@@ -382,15 +382,31 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
+  const handleDeleteConfirm = () => {
+    switchSidebarTab(2);
+    removeComponent(component);
+    setWidgetDeleteConfirmation(false);
+  };
+
+  React.useEffect(()=>{
+    const handleKeyPress = (event) => {
+        if (showWidgetDeleteConfirmation && event.key === 'Enter') {
+            handleDeleteConfirm();
+        }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => {
+        document.removeEventListener('keydown', handleKeyPress);
+    };
+  },[showWidgetDeleteConfirmation, handleDeleteConfirm]);
+
   return (
     <div className="inspector">
       <ConfirmDialog
         show={showWidgetDeleteConfirmation}
         message={'Widget will be deleted, do you want to continue?'}
-        onConfirm={() => {
-          switchSidebarTab(2);
-          removeComponent(component);
-        }}
+        onConfirm={handleDeleteConfirm}
         onCancel={() => setWidgetDeleteConfirmation(false)}
         darkMode={darkMode}
       />
