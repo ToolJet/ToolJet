@@ -34,7 +34,7 @@ describe('library apps controller', () => {
 
       let response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'github-contributors' })
+        .send({ identifier: 'github-contributors', appName: 'Github Contributors' })
         .set('tj-workspace-id', nonAdminUserData.user.defaultOrganizationId)
         .set('Cookie', nonAdminUserData['tokenCookie']);
 
@@ -42,12 +42,12 @@ describe('library apps controller', () => {
 
       response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'supply-chain-management', appName: 'Supply Chain Management' })
+        .send({ identifier: 'github-contributors', appName: 'Github Contributors' })
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.app[0].name).toContain('Supply Chain Management');
+      expect(response.body.app[0].name).toContain('Github Contributors');
     });
 
     it('should return error if template identifier is not found', async () => {
@@ -61,7 +61,7 @@ describe('library apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'non-existent-template' })
+        .send({ identifier: 'non-existent-template', appName: 'Non existent template' })
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
