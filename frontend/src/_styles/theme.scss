@@ -6278,6 +6278,10 @@ input.hide-input-arrows {
       background-color: #232e3c;
       border-bottom: 1px solid #324156;
     }
+    .popover-body {
+      background-color: #232e3c;
+      border-radius: 6px;
+  }
   }
 
   .popover-header {
@@ -11459,7 +11463,7 @@ tbody {
   box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08);
 
   .popover-body {
-    background-color: #232e3c;
+    background-color: var(--base);
     color: var(--slate12);
     border: 1px solid var(--slate3, #F1F3F5);
     border-radius: 6px;
