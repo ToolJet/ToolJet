@@ -29,6 +29,7 @@ import {
   removeSelectedComponent,
   buildAppDefinition,
   buildComponentMetaDefinition,
+  runQueries,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
@@ -81,7 +82,8 @@ const EditorComponent = (props) => {
 
   const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving, createAppVersionEventHandlers } =
     useAppDataActions();
-  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents } = useEditorActions();
+  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents, setCurrentPageId } =
+    useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
   const { isVersionReleased, editingVersion, releasedVersionId } = useAppVersionState();
@@ -101,6 +103,7 @@ const EditorComponent = (props) => {
     showComments,
     showLeftSidebar,
     queryConfirmationList,
+    currentPageId,
   } = useEditorState();
 
   const dataQueries = useDataQueries();
@@ -121,7 +124,7 @@ const EditorComponent = (props) => {
 
   const currentState = useCurrentState();
 
-  const [currentPageId, setCurrentPageId] = useState(null);
+  // const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isQueryPaneDragging, setIsQueryPaneDragging] = useState(false);
   const [isQueryPaneExpanded, setIsQueryPaneExpanded] = useState(false);
@@ -148,6 +151,7 @@ const EditorComponent = (props) => {
   const dataSourceModalRef = useRef(null);
   const selectionDragRef = useRef(null);
   const selectionRef = useRef(null);
+  const runQueriesOnAppLoadRef = useRef(true);
 
   const prevAppDefinition = useRef(appDefinition);
 
@@ -264,6 +268,13 @@ const EditorComponent = (props) => {
       });
     }
   }, [currentLayout, mounted]);
+
+  useEffect(() => {
+    if (mounted && runQueriesOnAppLoadRef.current && dataQueries?.length > 0) {
+      runQueries(dataQueries, editorRef);
+      runQueriesOnAppLoadRef.current = false;
+    }
+  }, [dataQueries?.length]);
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -536,8 +547,17 @@ const EditorComponent = (props) => {
     props.switchDarkMode(newMode);
   };
 
-  const handleEvent = (eventName, event, options) => {
-    return onEvent(editorRef, eventName, event, options, 'edit');
+  const handleEvent = (eventName, event, options, onAppLoad = false) => {
+    const ref = _.cloneDeep(editorRef);
+
+    if (onAppLoad) {
+      const _appDefinition = useEditorStore.getState().appDefinition;
+      const _currentPageId = useEditorStore.getState().currentPageId;
+      ref.appDefinition = _appDefinition;
+      ref.currentPageId = _currentPageId;
+    }
+
+    return onEvent(ref, eventName, event, options, 'edit');
   };
 
   const handleRunQuery = (queryId, queryName) => runQuery(editorRef, queryId, queryName);
@@ -721,7 +741,7 @@ const EditorComponent = (props) => {
     await fetchDataQueries(data.editing_version?.id, true, true);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
-    await handleEvent('onPageLoad', currentPageEvents);
+    await handleEvent('onPageLoad', currentPageEvents, {}, true);
   };
 
   //****** */

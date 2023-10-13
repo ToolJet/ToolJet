@@ -38,6 +38,7 @@ const initialState = {
   defaultComponentStateComputed: false,
   showLeftSidebar: true,
   queryConfirmationList: [],
+  currentPageId: null,
 };
 
 export const useEditorStore = create(
@@ -85,6 +86,7 @@ export const useEditorStore = create(
             selectedComponents: newSelectedComponents,
           });
         },
+        setCurrentPageId: (currentPageId) => set({ currentPageId }),
       },
     }),
     { name: STORE_NAME }

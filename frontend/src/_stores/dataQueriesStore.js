@@ -62,7 +62,7 @@ export const useDataQueriesStore = create(
           }
 
           // Runs query on loading application
-          if (runQueriesOnAppLoad) runQueries(data.data_queries, {});
+          // if (runQueriesOnAppLoad) runQueries(data.data_queries, {});
         },
         setDataQueries: (dataQueries) => set({ dataQueries }),
         deleteDataQueries: (queryId) => {
