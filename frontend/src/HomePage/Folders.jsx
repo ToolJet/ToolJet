@@ -111,7 +111,7 @@ export const Folders = function Folders({
   }
 
   function updateFolderQuery(name) {
-    const path = `/${getWorkspaceId()}${name ? `?folder=${name}` : ''}`;
+    const path = `${name ? `?folder=${name}` : ''}`;
     navigate(path);
   }
 
