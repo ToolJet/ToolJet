@@ -14,7 +14,7 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-workspace' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-platform' }}
 
     steps:
       - name: Setup Node.js
@@ -124,7 +124,7 @@ jobs:
   Cypress-Platform-subpath:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-workspace-subpath' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-platform-subpath' }}
 
     steps:
       - name: Checkout
