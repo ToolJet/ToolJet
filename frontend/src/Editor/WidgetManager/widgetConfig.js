@@ -1643,14 +1643,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       activeColor: {
         type: 'color',
-        displayName: 'Active Color',
+        displayName: 'Active color',
         validation: {
           schema: { type: 'string' },
         },
