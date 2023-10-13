@@ -110,12 +110,13 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       },
     });
 
+    /* Checking for if the user entered the same value or not */
+    let isValueTheSame = false;
     if (error?.status) {
-      /* Checking for if the user entered the same value or not */
       if (field === 'name') {
-        setDisabled(trimmedValue === currentValue?.name && fields?.slug?.value === currentValue?.slug);
+        isValueTheSame = trimmedValue === currentValue?.name && fields?.slug?.value === currentValue?.slug;
       } else {
-        setDisabled(trimmedValue === currentValue?.slug && fields?.name?.value === currentValue?.name);
+        isValueTheSame = trimmedValue === currentValue?.slug && fields?.name?.value === currentValue?.name;
       }
     }
 
@@ -123,7 +124,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     const otherInputErrors = Object.keys(fields).find(
       (key) => (key !== field && !_.isEmpty(fields[key].error)) || (key !== field && _.isEmpty(fields[key].value))
     );
-    setDisabled(!error?.status || otherInputErrors);
+
+    setDisabled(isValueTheSame || !error?.status || otherInputErrors);
     field === 'slug' && setSlugProgress(false);
     field === 'name' && setWorkspaceNameProgress(false);
     return;
