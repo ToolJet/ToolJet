@@ -14,7 +14,7 @@ import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source = null }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -44,6 +44,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           companySize: formData.companySize,
           role: formData.role,
           token: token,
+          source,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
           phoneNumber: formData?.phoneNumber,

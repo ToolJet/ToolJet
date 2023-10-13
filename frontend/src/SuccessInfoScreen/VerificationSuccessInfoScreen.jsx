@@ -384,6 +384,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           organizationToken={params?.organizationToken ?? ''}
           password={password}
           darkMode={darkMode}
+          source={source}
         />
       )}
 
