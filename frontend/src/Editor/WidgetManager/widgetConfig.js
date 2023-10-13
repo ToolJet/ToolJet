@@ -4472,7 +4472,7 @@ export const widgets = [
   {
     name: 'Timeline',
     displayName: 'Timeline',
-    description: 'Visual representation of a sequence of events',
+    description: 'Show event timeline',
     component: 'Timeline',
     properties: {
       data: {
@@ -4530,7 +4530,7 @@ export const widgets = [
   {
     name: 'SvgImage',
     displayName: 'Svg Image',
-    description: 'Svg image',
+    description: 'Display SVG graphics',
     component: 'SvgImage',
     properties: {
       data: {
@@ -4582,7 +4582,7 @@ export const widgets = [
   {
     name: 'Html',
     displayName: 'HTML Viewer',
-    description: 'HTML Viewer',
+    description: 'View HTML content',
     component: 'Html',
     defaultSize: {
       width: 10,
@@ -4632,7 +4632,7 @@ export const widgets = [
   {
     name: 'VerticalDivider',
     displayName: 'Vertical Divider',
-    description: 'Vertical Separator between components',
+    description: 'Vertical line separator',
     component: 'VerticalDivider',
     defaultSize: {
       width: 2,
