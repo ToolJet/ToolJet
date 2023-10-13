@@ -234,6 +234,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
         metaAttributes.forEach((attribute) => {
           if (metaDiff.definition[attribute]?.actions && !_.isEmpty(metaDiff.definition[attribute]?.actions?.value)) {
             const actions = _.toArray(metaDiff.definition[attribute]?.actions?.value);
+            const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value);
 
             metaDiff.definition = {
               ...metaDiff.definition,
@@ -241,6 +242,9 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
                 ...metaDiff.definition[attribute],
                 actions: {
                   value: actions,
+                },
+                columns: {
+                  value: columns,
                 },
               },
             };
