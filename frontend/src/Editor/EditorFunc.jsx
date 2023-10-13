@@ -813,6 +813,8 @@ const EditorComponent = (props) => {
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
 
+    console.log('---arpit::---[diffPatches]', { diffPatches });
+
     const inversePatches = diff(updatedAppDefinition, appDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 
@@ -855,8 +857,6 @@ const EditorComponent = (props) => {
         isUpdatingEditorStateInProcess: updatingEditorStateInProcess,
         appDefinition: updatedAppDefinition,
       });
-
-      computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
     }
 
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
@@ -920,7 +920,7 @@ const EditorComponent = (props) => {
     } else if (!isEmpty(editingVersion)) {
       // param diff ofr table columns needs the complte column data or else the json structure is not correct computeComponentPropertyDiff function handles this
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
-      const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions);
+      const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
 
       updateAppVersion(appId, editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
