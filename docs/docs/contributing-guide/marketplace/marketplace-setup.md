@@ -37,7 +37,7 @@ Use this environment variable to enable/disable the feature that allows users to
 | -------------------------- | ----------------- |
 | ENABLE_MARKETPLACE_FEATURE | `true` or `false` |
 
-#### Enable Marketplace plugin developement mode
+#### Enable Marketplace plugin development mode
 
 The use of this environment variable facilitates plugin development by enabling automatic builds whenever package changes occur, thus simplifying the development process. Moreover, it also incorporates a reload button that retrieves all the recent local modifications from the file system for installed plugins, making it a valuable feature for improving the overall development experience.
 
