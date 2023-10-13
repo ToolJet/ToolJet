@@ -28,6 +28,7 @@ export class ComponentsService {
       });
 
       const newComponents = this.transformComponentData(componentDiff);
+
       const componentLayouts = [];
 
       newComponents.forEach((component) => {

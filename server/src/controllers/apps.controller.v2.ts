@@ -22,6 +22,7 @@ import { User } from 'src/decorators/user.decorator';
 
 import { VersionEditDto } from '@dto/version-edit.dto';
 import { CreatePageDto, UpdatePageDto } from '@dto/pages.dto';
+import { CreateComponentDto } from '@dto/component.dto';
 
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
@@ -209,7 +210,7 @@ export class AppsControllerV2 {
     @User() user,
     @Param('id') id,
     @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
+    @Body() createComponentDto: CreateComponentDto
   ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
@@ -222,8 +223,8 @@ export class AppsControllerV2 {
     if (!ability.can('updateVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-
-    await this.componentsService.create(versionEditDto.diff, versionEditDto.pageId, versionId);
+    console.log('----arpit:::: new components ==>', { createComponentDto });
+    await this.componentsService.create(createComponentDto.diff, createComponentDto.pageId, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
