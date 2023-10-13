@@ -1396,11 +1396,24 @@ export const cloneComponents = (
   if (selectedComponents.length < 1) return getSelectedText();
 
   const { components: allComponents } = appDefinition.pages[currentPageId];
+
+  // if parent is selected, then remove the parent from the selected components
+  const filteredSelectedComponents = selectedComponents.filter((component) => {
+    const parentComponentId = component.component?.parent;
+    if (parentComponentId) {
+      const parentComponent = allComponents[parentComponentId];
+      if (parentComponent) {
+        return !selectedComponents.some((comp) => comp.id === parentComponent.id);
+      }
+    }
+    return true;
+  });
+
   let newDefinition = _.cloneDeep(appDefinition);
   let newComponents = [],
     newComponentObj = {},
     addedComponentId = new Set();
-  for (let selectedComponent of selectedComponents) {
+  for (let selectedComponent of filteredSelectedComponents) {
     if (addedComponentId.has(selectedComponent.id)) continue;
     const component = {
       component: allComponents[selectedComponent.id]?.component,
