@@ -141,6 +141,7 @@ const EditorComponent = (props) => {
     undo: [],
     redo: [],
   });
+  const [newPageId, setNewPageId] = useState('');
 
   // refs
   const canvasContainerRef = useRef(null);
@@ -826,7 +827,6 @@ const EditorComponent = (props) => {
         isUpdatingEditorStateInProcess: updatingEditorStateInProcess,
         appDefinition: updatedAppDefinition,
       });
-
       computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
     }
 
@@ -1247,7 +1247,6 @@ const EditorComponent = (props) => {
       components: {},
       index: Object.keys(copyOfAppDefinition.pages).length + 1,
     };
-
     setCurrentPageId(newPageId);
     setHoveredComponent(null);
     updateEditorState({
@@ -1261,7 +1260,16 @@ const EditorComponent = (props) => {
       switchPage: true,
       pageId: newPageId,
     });
+    setNewPageId(newPageId);
   };
+
+  // This UseEffect is used when new page is created
+  useEffect(() => {
+    if (newPageId) {
+      switchPage(newPageId);
+    }
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newPageId, JSON.stringify(appDefinition)]);
 
   const switchPage = (pageId, queryParams = []) => {
     if (currentPageId === pageId && currentState.page.handle === appDefinition?.pages[pageId]?.handle) {
@@ -1272,7 +1280,6 @@ const EditorComponent = (props) => {
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-
     props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = currentState;
@@ -1296,6 +1303,8 @@ const EditorComponent = (props) => {
     const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === page.id);
 
     handleEvent('onPageLoad', currentPageEvents);
+    // Always set new Page id to empty after switching
+    setNewPageId('');
   };
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
