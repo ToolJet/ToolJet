@@ -1021,6 +1021,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
         if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
           const errorData = query.kind === 'runpy' ? data.data : data;
+          if (parameters?.shouldSetPreviewData) {
+            setPreviewLoading(false);
+            setPreviewData(errorData);
+          }
           useCurrentStateStore.getState().actions.setErrors({
             [queryName]: {
               type: 'query',
