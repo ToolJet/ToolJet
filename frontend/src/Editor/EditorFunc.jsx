@@ -56,11 +56,11 @@ import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
 import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
-import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -269,13 +269,6 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
-  useEffect(() => {
-    if (mounted && runQueriesOnAppLoadRef.current && dataQueries?.length > 0) {
-      runQueries(dataQueries, editorRef);
-      runQueriesOnAppLoadRef.current = false;
-    }
-  }, [dataQueries?.length]);
-
   const handleMessage = (event) => {
     const { data } = event;
 
@@ -410,7 +403,16 @@ const EditorComponent = (props) => {
   };
 
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    await useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad);
+    // editorRef can be undefined when runQueriesOnAppLoad
+    const editorRef = {
+      appDefinition: useEditorStore.getState().appDefinition,
+      queryConfirmationList: useEditorStore.getState().queryConfirmationList,
+      updateQueryConfirmationList: updateQueryConfirmationList,
+      navigate: props.navigate,
+      switchPage: switchPage,
+      currentPageId: useEditorStore.getState().currentPageId,
+    };
+    await useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, editorRef);
   };
 
   const fetchDataSources = (id) => {
@@ -1313,7 +1315,13 @@ const EditorComponent = (props) => {
   };
 
   const switchPage = (pageId, queryParams = []) => {
-    if (currentPageId === pageId && currentState.page.handle === appDefinition?.pages[pageId]?.handle) {
+    // This are fetched from store to handle runQueriesOnAppLoad
+    const currentPageId = useEditorStore.getState().currentPageId;
+    const appDefinition = useEditorStore.getState().appDefinition;
+    const appId = useAppDataStore.getState()?.appId;
+    const pageHandle = getCurrentState().pageHandle;
+
+    if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       return;
     }
     const { name, handle } = appDefinition.pages[pageId];
