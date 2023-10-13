@@ -1401,9 +1401,12 @@ export const cloneComponents = (
   const filteredSelectedComponents = selectedComponents.filter((component) => {
     const parentComponentId = component.component?.parent;
     if (parentComponentId) {
-      const parentComponent = allComponents[parentComponentId];
-      if (parentComponent) {
-        return !selectedComponents.some((comp) => comp.id === parentComponent.id);
+      // Check if the parent component is also selected
+      const isParentSelected = selectedComponents.some((comp) => comp.id === parentComponentId);
+
+      // If the parent is selected, filter out the child component
+      if (isParentSelected) {
+        return false;
       }
     }
     return true;
@@ -1590,7 +1593,7 @@ export const addComponents = (
     finalComponents[newComponentId] = newComponent;
   });
 
-  !isCloning && updateComponentLayout(pastedComponents, parentId, isCut);
+  updateComponentLayout(pastedComponents, parentId, isCut);
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
   !isCloning && toast.success('Component pasted succesfully');
