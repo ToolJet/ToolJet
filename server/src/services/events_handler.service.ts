@@ -4,7 +4,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class EventsService {
@@ -55,14 +55,14 @@ export class EventsService {
       index: eventObj.index,
     };
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+    return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const event = await manager.save(EventHandler, newEvent);
       return event;
-    });
+    }, versionId);
   }
 
-  async updateEvent(events: [], updateType: 'update' | 'reorder') {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+  async updateEvent(events: [], updateType: 'update' | 'reorder', appVersionId: string) {
+    return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       return await Promise.all(
         events.map(async (event) => {
           const { event_id, diff } = event as any;
@@ -91,7 +91,7 @@ export class EventsService {
           return await manager.save(EventHandler, updatedEvent);
         })
       );
-    });
+    }, appVersionId);
   }
 
   async updateEventsOrderOnDelete(sourceId: string, deletedIndex: number) {
@@ -112,8 +112,8 @@ export class EventsService {
     });
   }
 
-  async deleteEvent(eventId: string) {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+  async deleteEvent(eventId: string, appVersionId: string) {
+    return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const event = await manager.findOne(EventHandler, {
         where: { id: eventId },
       });
@@ -129,6 +129,6 @@ export class EventsService {
       }
       await this.updateEventsOrderOnDelete(event.sourceId, event.index);
       return deleteResponse;
-    });
+    }, appVersionId);
   }
 }
