@@ -12,11 +12,7 @@ import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
-
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
-import { Tooltip } from 'react-tooltip';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
@@ -24,7 +20,6 @@ import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
-// eslint-disable-next-line import/no-unresolved
 
 export const EventManager = ({
   sourceId,
@@ -915,7 +910,7 @@ export const EventManager = ({
               {events.map((event, index) => {
                 const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
 
-                const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
+                // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                 return (
                   <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
                     {renderDraggable((provided, snapshot) => {

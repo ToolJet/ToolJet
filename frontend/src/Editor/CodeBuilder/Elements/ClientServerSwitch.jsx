@@ -2,7 +2,7 @@ import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 import React from 'react';
 
-const ClientServerSwitch = ({ value, onChange, cyLabel, meta, paramName }) => {
+const ClientServerSwitch = ({ value, onChange, meta }) => {
   const options = meta?.options;
   const defaultValue = value ? 'serverSide' : 'clientSide';
   const handleChange = (_value) => {
