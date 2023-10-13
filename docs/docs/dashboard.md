@@ -167,7 +167,7 @@ This option allows you to select a specific version of the app to export or expo
 
 #### Export ToolJet table schema
 
-Selecting this option will inclue the schema of the tooljet table connected to that application in the exported JSON file. This option is available for all the apps on ToolJet however only the apps with a tooljet table connected(includes tjdb query) will have the schema included in the exported JSON file. 
+Selecting this option will include the schema of the tooljet table connected to that application in the exported JSON file. This option is available for all the apps on ToolJet however only the apps with a tooljet table connected(includes tjdb query) will have the schema included in the exported JSON file. 
 
 This JSON file can be used to [import](#importing-app-connected-to-tooljet-table) the application to ToolJet along with the table schema that was connected to the application.
 
