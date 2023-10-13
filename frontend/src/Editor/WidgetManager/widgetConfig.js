@@ -5158,24 +5158,24 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      columnData: { type: 'code', displayName: 'Column Data' },
-      cardData: { type: 'code', displayName: 'Card Data' },
+      columnData: { type: 'code', displayName: 'Column data' },
+      cardData: { type: 'code', displayName: 'Card data' },
       cardWidth: {
         type: 'code',
-        displayName: 'Card Width',
+        displayName: 'Card width',
         validation: {
           schema: { type: 'number' },
         },
       },
       cardHeight: {
         type: 'code',
-        displayName: 'Card Height',
+        displayName: 'Card height',
         validation: {
           schema: { type: 'number' },
         },
       },
-      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
-      showDeleteButton: { type: 'toggle', displayName: 'Show Delete Button' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable add card' },
+      showDeleteButton: { type: 'toggle', displayName: 'Show delete button' },
     },
     events: {
       onUpdate: { displayName: 'On update' },
@@ -5193,39 +5193,39 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     actions: [
       {
         handle: 'addCard',
-        displayName: 'Add Card',
+        displayName: 'Add card',
         params: [
           {
             handle: 'cardDetails',
-            displayName: 'Card Details',
+            displayName: 'Card details',
             defaultValue: `{{{ id: "c11", title: "Title 11", description: "Description 11", columnId: "r3" }}}`,
           },
         ],
       },
       {
         handle: 'deleteCard',
-        displayName: 'Delete Card',
+        displayName: 'Delete card',
         params: [
-          { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+          { handle: 'id', displayName: 'Card id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
         ],
       },
       {
         handle: 'moveCard',
-        displayName: 'Move Card',
+        displayName: 'Move card',
         params: [
-          { handle: 'cardId', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
-          { handle: 'columnId', displayName: 'Destination Column Id', defaultValue: '' },
+          { handle: 'cardId', displayName: 'Card id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+          { handle: 'columnId', displayName: 'Destination column id', defaultValue: '' },
         ],
       },
       {
         handle: 'updateCardData',
-        displayName: 'Update Card Data',
+        displayName: 'Update card data',
         params: [
-          { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+          { handle: 'id', displayName: 'Card id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
           {
             handle: 'value',
             displayName: 'Value',
-            defaultValue: `{{{...components.kanban1?.lastSelectedCard, title: 'New Title'}}}`,
+            defaultValue: `{{{...components.kanban1?.lastSelectedCard, title: 'New title'}}}`,
           },
         ],
       },
@@ -5247,7 +5247,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       properties: {
         columnData: {
           value:
-            '{{[{ "id": "r1", "title": "To Do" },{ "id": "r2", "title": "In Progress" },{ "id": "r3", "title": "Done" }]}}',
+            '{{[{ "id": "r1", "title": "To do" },{ "id": "r2", "title": "In progress" },{ "id": "r3", "title": "Done" }]}}',
         },
         cardData: {
           value:
@@ -5276,11 +5276,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'ColorPicker',
-    displayName: 'Color Picker',
-    description: 'Color Picker Palette',
+    displayName: 'Color picker',
+    description: 'Color picker palette',
     component: 'ColorPicker',
     properties: {
-      defaultColor: { type: 'color', displayName: 'Default Color' },
+      defaultColor: { type: 'color', displayName: 'Default color' },
     },
     defaultSize: {
       width: 9,
@@ -5288,7 +5288,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     actions: [
       {
-        displayName: 'Set Color',
+        displayName: 'Set color',
         handle: 'setColor',
         params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
       },
