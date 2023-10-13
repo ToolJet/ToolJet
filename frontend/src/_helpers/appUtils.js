@@ -939,8 +939,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, getCurrentState());
 
   if (dataQuery.options?.requestConfirmation) {
-    const runOnPageLoad = dataQuery.options?.runOnPageLoad ?? false;
-    const queryConfirmationList = runOnPageLoad ? _ref.queryConfirmationList : [];
+    const queryConfirmationList = useEditorStore.getState().queryConfirmationList
+      ? [...useEditorStore.getState().queryConfirmationList]
+      : [];
 
     const queryConfirmation = {
       queryId,
