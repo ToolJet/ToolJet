@@ -4,6 +4,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 export const appVersionService = {
   getAll,
   getOne,
+  getAppVersionData,
   create,
   del,
   save,
@@ -22,6 +23,10 @@ function getAll(appId) {
 function getOne(appId, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+function getAppVersionData(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function create(appId, versionName, versionFromId) {

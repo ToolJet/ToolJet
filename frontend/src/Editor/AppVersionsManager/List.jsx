@@ -44,7 +44,7 @@ export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion
 
   const selectVersion = (id) => {
     appVersionService
-      .getOne(appId, id)
+      .getAppVersionData(appId, id)
       .then((data) => {
         const isCurrentVersionReleased = data.currentVersionId ? true : false;
         setAppDefinitionFromVersion(data, isCurrentVersionReleased);
