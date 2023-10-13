@@ -4,7 +4,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/utils.helper';
 
 import { EventsService } from './events_handler.service';
 
@@ -22,7 +22,7 @@ export class ComponentsService {
   }
 
   async create(componentDiff: object, pageId: string, appVersionId: string) {
-    return dbTransactionWrap(async (manager: EntityManager) => {
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const page = await manager.findOne(Page, {
         where: { appVersionId, id: pageId },
       });
@@ -58,11 +58,11 @@ export class ComponentsService {
       await manager.save(Layout, componentLayouts);
 
       return {};
-    });
+    }, appVersionId);
   }
 
-  async update(componentDiff: object) {
-    return dbTransactionWrap(async (manager) => {
+  async update(componentDiff: object, appVersionId: string) {
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
       for (const componentId in componentDiff) {
         const { component } = componentDiff[componentId];
 
@@ -105,11 +105,11 @@ export class ComponentsService {
 
         return;
       }
-    });
+    }, appVersionId);
   }
 
-  async delete(componentIds: string[]) {
-    return dbTransactionWrap(async (manager: EntityManager) => {
+  async delete(componentIds: string[], appVersionId: string) {
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const components = await manager.findByIds(Component, componentIds);
 
       if (!components.length) {
@@ -125,11 +125,11 @@ export class ComponentsService {
       });
 
       await manager.delete(Component, componentIds);
-    });
+    }, appVersionId);
   }
 
-  async componentLayoutChange(componenstLayoutDiff: object) {
-    return dbTransactionWrap(async (manager: EntityManager) => {
+  async componentLayoutChange(componenstLayoutDiff: object, appVersionId: string) {
+    return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
         const { layouts } = componenstLayoutDiff[componentId];
 
@@ -158,7 +158,7 @@ export class ComponentsService {
           await manager.update(Layout, { id: componentLayout.id }, newLayout);
         }
       }
-    });
+    }, appVersionId);
   }
 
   async getAllComponents(pageId: string) {

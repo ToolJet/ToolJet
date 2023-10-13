@@ -188,7 +188,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.update(versionEditDto.diff);
+    await this.componentsService.update(versionEditDto.diff, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -212,7 +212,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.delete(versionEditDto.diff);
+    await this.componentsService.delete(versionEditDto.diff, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -236,7 +236,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.componentLayoutChange(versionEditDto.diff);
+    await this.componentsService.componentLayoutChange(versionEditDto.diff, versionId);
   }
 
   // pages api
@@ -300,7 +300,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.pageService.updatePage({ pageId: updatePageDto.pageId, diff: updatePageDto.diff });
+    await this.pageService.updatePage({ pageId: updatePageDto.pageId, diff: updatePageDto.diff }, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -363,7 +363,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.eventService.updateEvent(body?.events, body?.updateType);
+    return await this.eventService.updateEvent(body?.events, body?.updateType, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -382,6 +382,6 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.eventService.deleteEvent(eventId);
+    return await this.eventService.deleteEvent(eventId, versionId);
   }
 }
