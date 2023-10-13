@@ -604,7 +604,7 @@ export class AppImportExportService {
           newComponent.properties = component.properties;
           newComponent.styles = component.styles;
           newComponent.validation = component.validation;
-          newComponent.parent = component.parent || null;
+          newComponent.parent = component.parent ? appResourceMappings.componentsMapping[component.parent] : null;
 
           newComponent.page = pageCreated;
 
