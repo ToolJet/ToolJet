@@ -288,7 +288,7 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     let headers = columns.map((column) => {
-      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+      return { exportValue: String(column?.exportValue), key: column.key ? String(column.key) : column?.key };
     });
     let data = globalFilteredRows.map((row) => {
       return headers.reduce((accumulator, header) => {
@@ -412,7 +412,7 @@ export function Table({
   columnData = useMemo(
     () =>
       columnData.filter((column) => {
-        if (resolveReferences(column.columnVisibility, currentState)) {
+        if (resolveReferences(column?.columnVisibility, currentState)) {
           return column;
         }
       }),
@@ -457,7 +457,7 @@ export function Table({
     return wrapOption?.textWrap;
   };
 
-  const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
+  const optionsData = columnData.map((column) => column?.columnOptions?.selectOptions);
   const columns = useMemo(
     () => {
       return [...leftActionsCellData, ...columnData, ...rightActionsCellData];
@@ -917,7 +917,7 @@ export function Table({
           </div>
           {allColumns.map(
             (column) =>
-              typeof column.Header === 'string' && (
+              typeof column?.Header === 'string' && (
                 <div key={column.id}>
                   <div>
                     <label className="dropdown-item d-flex cursor-pointer">
