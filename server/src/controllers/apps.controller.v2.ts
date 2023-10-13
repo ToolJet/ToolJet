@@ -20,9 +20,9 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { App } from 'src/entities/app.entity';
 import { User } from 'src/decorators/user.decorator';
 
-import { VersionEditDto } from '@dto/version-edit.dto';
-import { CreatePageDto, UpdatePageDto } from '@dto/pages.dto';
-import { CreateComponentDto } from '@dto/component.dto';
+// import { VersionEditDto } from '@dto/version-edit.dto';
+import { CreatePageDto, DeletePageDto, UpdatePageDto } from '@dto/pages.dto';
+import { CreateComponentDto, DeleteComponentDto, UpdateComponentDto, LayoutUpdateDto } from '@dto/component.dto';
 
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
@@ -223,7 +223,7 @@ export class AppsControllerV2 {
     if (!ability.can('updateVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    console.log('----arpit:::: new components ==>', { createComponentDto });
+
     await this.componentsService.create(createComponentDto.diff, createComponentDto.pageId, versionId);
   }
 
@@ -234,7 +234,7 @@ export class AppsControllerV2 {
     @User() user,
     @Param('id') id,
     @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
+    @Body() updateComponentDto: UpdateComponentDto
   ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
@@ -248,7 +248,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.update(versionEditDto.diff, versionId);
+    await this.componentsService.update(updateComponentDto.diff, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -258,7 +258,7 @@ export class AppsControllerV2 {
     @User() user,
     @Param('id') id,
     @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
+    @Body() deleteComponentDto: DeleteComponentDto
   ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
@@ -272,7 +272,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.delete(versionEditDto.diff, versionId);
+    await this.componentsService.delete(deleteComponentDto.diff, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -282,7 +282,7 @@ export class AppsControllerV2 {
     @User() user,
     @Param('id') id,
     @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
+    @Body() updateComponentLayout: LayoutUpdateDto
   ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
@@ -296,7 +296,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.componentLayoutChange(versionEditDto.diff, versionId);
+    await this.componentsService.componentLayoutChange(updateComponentLayout.diff, versionId);
   }
 
   // pages api
@@ -366,7 +366,7 @@ export class AppsControllerV2 {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Delete(':id/versions/:versionId/pages')
-  async deletePage(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
+  async deletePage(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() deletePageDto: DeletePageDto) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
 
@@ -379,11 +379,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const { pageId } = body;
-
-    if (pageId) {
-      await this.pageService.deletePage(pageId, versionId);
-    }
+    await this.pageService.deletePage(deletePageDto.pageId, versionId);
   }
 
   // events api

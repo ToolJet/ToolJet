@@ -1,18 +1,32 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsObject, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, IsUUID } from 'class-validator';
 
-class ComponentLayoutDto {
+export class ComponentLayoutDto {
   @IsNumber()
-  top: number;
-
-  @IsNumber()
-  left: number;
+  @IsOptional()
+  top?: number;
 
   @IsNumber()
-  width: number;
+  @IsOptional()
+  left?: number;
 
   @IsNumber()
-  height: number;
+  @IsOptional()
+  width?: number;
+
+  @IsNumber()
+  @IsOptional()
+  height?: number;
+}
+
+export class LayoutData {
+  @IsObject()
+  @IsOptional()
+  desktop?: ComponentLayoutDto;
+
+  @IsObject()
+  @IsOptional()
+  mobile?: ComponentLayoutDto;
 }
 
 class ComponentDto {
@@ -34,7 +48,6 @@ class ComponentDto {
   @IsObject()
   others: Record<string, any>;
 
-  @ValidateNested()
   @IsOptional()
   @Type(() => ComponentLayoutDto)
   layouts: ComponentLayoutDto;
@@ -50,7 +63,6 @@ export class CreateComponentDto {
   @IsUUID()
   pageId: string;
 
-  @ValidateNested()
   @IsObject()
   diff: Record<string, ComponentDto>;
 }
@@ -62,7 +74,29 @@ export class UpdateComponentDto {
   @IsUUID()
   pageId: string;
 
-  @ValidateNested()
   @IsObject()
   diff: Record<string, ComponentDto>;
+}
+
+export class DeleteComponentDto {
+  @IsBoolean()
+  is_user_switched_version: boolean;
+
+  @IsUUID()
+  pageId: string;
+
+  @IsArray()
+  diff: string[];
+}
+
+export class LayoutUpdateDto {
+  @IsBoolean()
+  is_user_switched_version: boolean;
+
+  @IsUUID()
+  pageId: string;
+
+  @IsObject()
+  @IsNotEmpty()
+  diff: Record<string, { layouts: LayoutData }>;
 }
