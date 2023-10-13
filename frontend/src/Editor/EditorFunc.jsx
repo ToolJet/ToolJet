@@ -124,7 +124,6 @@ const EditorComponent = (props) => {
 
   const currentState = useCurrentState();
 
-  // const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isQueryPaneDragging, setIsQueryPaneDragging] = useState(false);
   const [isQueryPaneExpanded, setIsQueryPaneExpanded] = useState(false);
@@ -151,7 +150,6 @@ const EditorComponent = (props) => {
   const dataSourceModalRef = useRef(null);
   const selectionDragRef = useRef(null);
   const selectionRef = useRef(null);
-  const runQueriesOnAppLoadRef = useRef(true);
 
   const prevAppDefinition = useRef(appDefinition);
 
@@ -276,6 +274,18 @@ const EditorComponent = (props) => {
       const redirectCookie = data?.payload['redirectPath'];
       setCookie('redirectPath', redirectCookie, 1);
     }
+  };
+
+  const getEditorRef = () => {
+    const editorRef = {
+      appDefinition: useEditorStore.getState().appDefinition,
+      queryConfirmationList: useEditorStore.getState().queryConfirmationList,
+      updateQueryConfirmationList: updateQueryConfirmationList,
+      navigate: props.navigate,
+      switchPage: switchPage,
+      currentPageId: useEditorStore.getState().currentPageId,
+    };
+    return editorRef;
   };
 
   const fetchApps = async (page) => {
@@ -403,16 +413,10 @@ const EditorComponent = (props) => {
   };
 
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    // editorRef can be undefined when runQueriesOnAppLoad
-    const editorRef = {
-      appDefinition: useEditorStore.getState().appDefinition,
-      queryConfirmationList: useEditorStore.getState().queryConfirmationList,
-      updateQueryConfirmationList: updateQueryConfirmationList,
-      navigate: props.navigate,
-      switchPage: switchPage,
-      currentPageId: useEditorStore.getState().currentPageId,
-    };
-    await useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, editorRef);
+    // // editorRef can be undefined when runQueriesOnAppLoad
+    await useDataQueriesStore
+      .getState()
+      .actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, getEditorRef());
   };
 
   const fetchDataSources = (id) => {
@@ -549,17 +553,8 @@ const EditorComponent = (props) => {
     props.switchDarkMode(newMode);
   };
 
-  const handleEvent = (eventName, event, options, onAppLoad = false) => {
-    const ref = _.cloneDeep(editorRef);
-
-    if (onAppLoad) {
-      const _appDefinition = useEditorStore.getState().appDefinition;
-      const _currentPageId = useEditorStore.getState().currentPageId;
-      ref.appDefinition = _appDefinition;
-      ref.currentPageId = _currentPageId;
-    }
-
-    return onEvent(ref, eventName, event, options, 'edit');
+  const handleEvent = (eventName, event, options) => {
+    return onEvent(getEditorRef(), eventName, event, options, 'edit');
   };
 
   const handleRunQuery = (queryId, queryName) => runQuery(editorRef, queryId, queryName);
