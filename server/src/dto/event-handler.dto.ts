@@ -31,8 +31,8 @@ class EventDto {
   @IsUUID()
   sourceId: string;
 
-  @IsString()
-  target: string;
+  @IsEnum(Target)
+  target: Target;
 
   @IsUUID()
   appVersionId: string;
