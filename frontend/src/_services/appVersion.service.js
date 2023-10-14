@@ -83,10 +83,6 @@ function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwit
     global_settings: {
       update: { ...diff },
     },
-    events: {
-      update: diff,
-      create: diff,
-    },
   };
 
   const body = !type
@@ -126,7 +122,7 @@ function saveAppVersionEventHandlers(appId, versionId, events, updateType = 'upd
 
 function createAppVersionEventHandler(appId, versionId, event) {
   const body = {
-    event,
+    ...event,
   };
 
   const requestOptions = {

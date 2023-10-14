@@ -5,7 +5,7 @@ import { Component } from 'src/entities/component.entity';
 
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/utils.helper';
-// import { UpdateEventHandlerDto } from '@dto/event-handler.dto';
+import { CreateEventHandlerDto } from '@dto/event-handler.dto';
 
 @Injectable()
 export class EventsService {
@@ -39,21 +39,28 @@ export class EventsService {
     });
   }
 
-  async createEvent(eventObj, versionId) {
-    if (Object.keys(eventObj).length === 0) {
-      return new BadRequestException('No event found');
+  async createEvent(eventHandler: CreateEventHandlerDto, versionId) {
+    if (!eventHandler.attachedTo) {
+      throw new BadRequestException('No attachedTo found');
     }
 
-    const newEvent = {
-      name: eventObj.event.eventId,
-      sourceId: eventObj.attachedTo,
-      target: eventObj.eventType,
-      event: eventObj.event,
-      appVersionId: versionId,
-      index: eventObj.index,
-    };
+    if (!eventHandler.eventType) {
+      throw new BadRequestException('No eventType found');
+    }
+
+    if (!eventHandler.event) {
+      throw new BadRequestException('No event found');
+    }
 
     return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+      const newEvent = new EventHandler();
+      newEvent.name = eventHandler.event.eventId;
+      newEvent.sourceId = eventHandler.attachedTo;
+      newEvent.target = eventHandler.eventType;
+      newEvent.event = eventHandler.event;
+      newEvent.index = eventHandler.index;
+      newEvent.appVersionId = versionId;
+
       const event = await manager.save(EventHandler, newEvent);
       return event;
     }, versionId);

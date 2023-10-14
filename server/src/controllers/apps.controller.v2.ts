@@ -30,7 +30,7 @@ import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-// import { CreateEventHandlerDto, UpdateEventHandlersDto } from '@dto/event-handler.dto';
+import { CreateEventHandlerDto } from '@dto/event-handler.dto';
 
 @Controller({
   path: 'apps',
@@ -406,7 +406,12 @@ export class AppsControllerV2 {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/versions/:versionId/events')
-  async createEvent(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
+  async createEvent(
+    @User() user,
+    @Param('id') id,
+    @Param('versionId') versionId,
+    @Body() createEventHandlerDto: CreateEventHandlerDto
+  ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
 
@@ -419,9 +424,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const { event } = body;
-
-    return this.eventService.createEvent(event, versionId);
+    return this.eventService.createEvent(createEventHandlerDto, versionId);
   }
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
