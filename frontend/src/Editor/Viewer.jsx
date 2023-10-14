@@ -284,7 +284,7 @@ class ViewerComponent extends React.Component {
 
   loadApplicationBySlug = (slug) => {
     appService
-      .getAppBySlug(slug)
+      .fetchAppBySlug(slug)
       .then((data) => {
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
@@ -302,7 +302,7 @@ class ViewerComponent extends React.Component {
 
   loadApplicationByVersion = (appId, versionId) => {
     appService
-      .getAppByVersion(appId, versionId)
+      .fetchAppByVersion(appId, versionId)
       .then((data) => {
         this.setStateForApp(data);
         this.setStateForContainer(data, versionId);

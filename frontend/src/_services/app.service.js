@@ -14,8 +14,11 @@ export const appService = {
   changeIcon,
   deleteApp,
   getApp,
+  fetchApp,
   getAppBySlug,
+  fetchAppBySlug,
   getAppByVersion,
+  fetchAppByVersion,
   saveApp,
   getAppUsers,
   createAppUser,
@@ -124,6 +127,14 @@ function getApp(id, accessType) {
   );
 }
 
+// v2 api for fetching app
+function fetchApp(id, accessType) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/v2/apps/${id}${accessType ? `?access_type=${accessType}` : ''}`, requestOptions).then(
+    handleResponse
+  );
+}
+
 function deleteApp(id) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
@@ -134,9 +145,18 @@ function getAppBySlug(slug) {
   return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then(handleResponse);
 }
 
+function fetchAppBySlug(slug) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/v2/apps/slugs/${slug}`, requestOptions).then(handleResponse);
+}
+
 function getAppByVersion(appId, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+function fetchAppByVersion(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function saveApp(id, attributes) {

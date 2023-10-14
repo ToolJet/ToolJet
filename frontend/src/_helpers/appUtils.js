@@ -1382,6 +1382,7 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
   if (!isCut) {
     opts.cloningComponent = componentMap;
   }
+
   updateAppDefinition(newAppDefinition, opts);
 };
 
