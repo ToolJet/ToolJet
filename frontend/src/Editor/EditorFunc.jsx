@@ -1270,7 +1270,6 @@ const EditorComponent = (props) => {
       switchPage: true,
       pageId: newPageId,
     });
-
     props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${newHandle}`);
   };
 
