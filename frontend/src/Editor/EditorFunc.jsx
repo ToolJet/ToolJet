@@ -1270,6 +1270,8 @@ const EditorComponent = (props) => {
       switchPage: true,
       pageId: newPageId,
     });
+
+    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${newHandle}`);
   };
 
   const switchPage = (pageId, queryParams = []) => {
