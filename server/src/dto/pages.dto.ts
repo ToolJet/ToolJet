@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsObject, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreatePageDto {
   @IsUUID()
@@ -19,20 +19,20 @@ export class CreatePageDto {
   @IsNotEmpty()
   index: number;
 
-  @IsObject()
-  @IsNotEmpty()
-  components: Record<string, unknown>;
-}
+  @IsOptional()
+  disabled: boolean;
 
-export class UpdatePageDto {
-  @IsUUID()
-  pageId: string;
-
-  diff: Partial<CreatePageDto>;
+  @IsOptional()
+  hidden: boolean;
 }
 
 export class DeletePageDto {
   @IsUUID()
   @IsNotEmpty()
   pageId: string;
+}
+
+export class UpdatePageDto {
+  pageId: string;
+  diff: Partial<CreatePageDto>;
 }

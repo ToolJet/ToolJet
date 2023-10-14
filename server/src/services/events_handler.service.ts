@@ -5,7 +5,7 @@ import { Component } from 'src/entities/component.entity';
 
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/utils.helper';
-import { UpdateEventHandlerDto } from '@dto/event-handler.dto';
+// import { UpdateEventHandlerDto } from '@dto/event-handler.dto';
 
 @Injectable()
 export class EventsService {
@@ -24,11 +24,8 @@ export class EventsService {
   }
 
   async findAllEventsWithSourceId(sourceId: string): Promise<EventHandler[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const allEvents = await manager.find(EventHandler, {
-        where: { sourceId },
-      });
-      return allEvents;
+    return this.eventsRepository.find({
+      where: { sourceId },
     });
   }
 
@@ -62,7 +59,7 @@ export class EventsService {
     }, versionId);
   }
 
-  async updateEvent(events: UpdateEventHandlerDto[], updateType: 'update' | 'reorder', appVersionId: string) {
+  async updateEvent(events: any[], updateType: 'update' | 'reorder', appVersionId: string) {
     return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       return await Promise.all(
         events.map(async (event) => {

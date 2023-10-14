@@ -110,7 +110,14 @@ export class PageService {
 
           event.event = eventDefinition;
 
-          const clonedEvent = { ...event, id: undefined, sourceId: clonePageId };
+          const clonedEvent = new EventHandler();
+          clonedEvent.event = event.event;
+          clonedEvent.index = event.index;
+          clonedEvent.name = event.name;
+          clonedEvent.sourceId = clonePageId;
+          clonedEvent.target = event.target;
+          clonedEvent.appVersionId = event.appVersionId;
+
           await manager.save(EventHandler, clonedEvent);
         })
       );
@@ -139,11 +146,15 @@ export class PageService {
             }
             event.event = eventDefinition;
 
-            return {
-              ...event,
-              id: undefined,
-              sourceId: newComponent.id,
-            };
+            const clonedEvent = new EventHandler();
+            clonedEvent.event = event.event;
+            clonedEvent.index = event.index;
+            clonedEvent.name = event.name;
+            clonedEvent.sourceId = newComponent.id;
+            clonedEvent.target = event.target;
+            clonedEvent.appVersionId = event.appVersionId;
+
+            return clonedEvent;
           });
 
           await manager.save(Layout, clonedLayouts);

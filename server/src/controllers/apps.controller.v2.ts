@@ -20,8 +20,7 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { App } from 'src/entities/app.entity';
 import { User } from 'src/decorators/user.decorator';
 
-// import { VersionEditDto } from '@dto/version-edit.dto';
-import { CreatePageDto, DeletePageDto, UpdatePageDto } from '@dto/pages.dto';
+import { CreatePageDto, DeletePageDto } from '@dto/pages.dto';
 import { CreateComponentDto, DeleteComponentDto, UpdateComponentDto, LayoutUpdateDto } from '@dto/component.dto';
 
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
@@ -31,7 +30,7 @@ import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-import { CreateEventHandlerDto, UpdateEventHandlersDto } from '@dto/event-handler.dto';
+// import { CreateEventHandlerDto, UpdateEventHandlersDto } from '@dto/event-handler.dto';
 
 @Controller({
   path: 'apps',
@@ -179,6 +178,31 @@ export class AppsControllerV2 {
       events: eventsForVersion,
     };
   }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/versions/:versionId')
+  async updateVersion(
+    @User() user,
+    @Param('id') id,
+    @Param('versionId') versionId,
+    @Body() appVersionUpdateDto: AppVersionUpdateDto
+  ) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return await this.appsService.updateAppVersion(version, appVersionUpdateDto);
+  }
+
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id/versions/:versionId/global_settings')
@@ -343,12 +367,7 @@ export class AppsControllerV2 {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id/versions/:versionId/pages')
-  async updatePages(
-    @User() user,
-    @Param('id') id,
-    @Param('versionId') versionId,
-    @Body() updatePageDto: Partial<UpdatePageDto>
-  ) {
+  async updatePages(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() updatePageDto) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
 
@@ -361,7 +380,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.pageService.updatePage({ pageId: updatePageDto.pageId, diff: updatePageDto.diff }, versionId);
+    await this.pageService.updatePage(updatePageDto, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -387,12 +406,7 @@ export class AppsControllerV2 {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/versions/:versionId/events')
-  async createEvent(
-    @User() user,
-    @Param('id') id,
-    @Param('versionId') versionId,
-    @Body() createEventHandlerDto: CreateEventHandlerDto
-  ) {
+  async createEvent(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
 
@@ -405,17 +419,14 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return this.eventService.createEvent(createEventHandlerDto.event, versionId);
+    const { event } = body;
+
+    return this.eventService.createEvent(event, versionId);
   }
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id/versions/:versionId/events')
-  async updateEvents(
-    @User() user,
-    @Param('id') id,
-    @Param('versionId') versionId,
-    @Body() updateEventHandlersDto: UpdateEventHandlersDto
-  ) {
+  async updateEvents(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
 
@@ -428,9 +439,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const { events, updateType } = updateEventHandlersDto;
-
-    return await this.eventService.updateEvent(events, updateType, versionId);
+    return await this.eventService.updateEvent(body?.events, body?.updateType, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
