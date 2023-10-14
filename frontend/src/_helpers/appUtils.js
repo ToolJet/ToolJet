@@ -1382,7 +1382,6 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
   if (!isCut) {
     opts.cloningComponent = componentMap;
   }
-  console.log('---arpit::---[updateAppDefinition]', { x: newAppDefinition.pages[pageId].components });
   updateAppDefinition(newAppDefinition, opts);
 };
 
@@ -1439,6 +1438,7 @@ export const cloneComponents = (
       newComponents,
       isCloning,
       isCut,
+      currentPageId,
     };
   }
 
@@ -1537,7 +1537,7 @@ export const addComponents = (
   const finalComponents = {};
   const componentMap = {};
   let parentComponent = undefined;
-  const { isCloning, isCut, newComponents: pastedComponents = [] } = newComponentObj;
+  const { isCloning, isCut, newComponents: pastedComponents = [], currentPageId } = newComponentObj;
 
   if (parentId) {
     const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
@@ -1565,7 +1565,7 @@ export const addComponents = (
       isChild = component.component.parent;
     }
 
-    if (!parentComponent && !isParentAlsoCopied && isChild && fromClipboard) {
+    if (!parentComponent && !isParentAlsoCopied && fromClipboard) {
       isChild = undefined;
       componentData.parent = undefined;
     }
@@ -1594,7 +1594,9 @@ export const addComponents = (
     finalComponents[newComponentId] = newComponent;
   });
 
-  updateComponentLayout(pastedComponents, parentId, isCut);
+  if (currentPageId === pageId) {
+    updateComponentLayout(pastedComponents, parentId, isCut);
+  }
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
   !isCloning && toast.success('Component pasted succesfully');
