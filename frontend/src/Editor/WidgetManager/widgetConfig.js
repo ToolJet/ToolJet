@@ -391,7 +391,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -2312,7 +2312,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
@@ -3464,7 +3464,7 @@ export const widgets = [
     properties: {
       enableLineNumber: {
         type: 'code',
-        displayName: 'Show Line Number',
+        displayName: 'Show line number',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -5721,7 +5721,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
