@@ -29,8 +29,10 @@ export default function generateColumnsData({
   tableColumnEvents,
 }) {
   return columnProperties.map((column) => {
-    const columnSize = columnSizes[column.id] || columnSizes[column.name];
-    const columnType = column.columnType;
+    if (!column) return;
+
+    const columnSize = columnSizes[column?.id] || columnSizes[column?.name];
+    const columnType = column?.columnType;
     let sortType = 'alphanumeric';
 
     const columnOptions = {};
