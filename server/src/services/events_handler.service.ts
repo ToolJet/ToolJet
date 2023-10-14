@@ -1,16 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { Component } from 'src/entities/component.entity';
-
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/utils.helper';
-import { CreateEventHandlerDto } from '@dto/event-handler.dto';
+import { CreateEventHandlerDto, UpdateEvent } from '@dto/event-handler.dto';
 
 @Injectable()
 export class EventsService {
   constructor(
-    @InjectRepository(Component)
+    @InjectRepository(EventHandler)
     private eventsRepository: Repository<EventHandler>
   ) {}
 
@@ -66,7 +64,7 @@ export class EventsService {
     }, versionId);
   }
 
-  async updateEvent(events: any[], updateType: 'update' | 'reorder', appVersionId: string) {
+  async updateEvent(events: UpdateEvent[], updateType: 'update' | 'reorder', appVersionId: string) {
     return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       return await Promise.all(
         events.map(async (event) => {
@@ -83,11 +81,12 @@ export class EventsService {
 
           const updatedEvent = {
             ...eventToUpdate,
-            event: {
-              ...eventToUpdate.event,
-              ...eventDiff,
-            },
           };
+
+          if (updateType === 'update') {
+            updatedEvent.name = eventDiff?.eventId;
+            updatedEvent.event = eventDiff;
+          }
 
           if (updateType === 'reorder') {
             updatedEvent.index = diff.index;
@@ -101,17 +100,13 @@ export class EventsService {
 
   async updateEventsOrderOnDelete(sourceId: string, deletedIndex: number) {
     const allEvents = await this.findAllEventsWithSourceId(sourceId);
+
     const eventsToUpdate = allEvents.filter((event) => event.index > deletedIndex);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await Promise.all(
         eventsToUpdate.map(async (event) => {
-          const updatedEvent = {
-            ...event,
-            index: event.index - 1,
-          };
-
-          return await manager.save(EventHandler, updatedEvent);
+          return await manager.update(EventHandler, { id: event.id }, { index: event.index - 1 });
         })
       );
     });
@@ -123,6 +118,9 @@ export class EventsService {
         where: { id: eventId },
       });
 
+      const sourceId = event.sourceId;
+      const deletedIndex = event.index;
+
       if (!event) {
         return new BadRequestException('No event found');
       }
@@ -132,7 +130,7 @@ export class EventsService {
       if (!deleteResponse?.affected) {
         throw new NotFoundException();
       }
-      await this.updateEventsOrderOnDelete(event.sourceId, event.index);
+      await this.updateEventsOrderOnDelete(sourceId, deletedIndex);
       return deleteResponse;
     }, appVersionId);
   }

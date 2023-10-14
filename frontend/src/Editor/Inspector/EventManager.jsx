@@ -32,7 +32,7 @@ export const EventManager = ({
   pages,
   hideEmptyEventsAlert,
   callerQueryId,
-  customEventRefs = {},
+  customEventRefs = undefined,
 }) => {
   const dataQueries = useDataQueriesStore(({ dataQueries = [] }) => {
     if (callerQueryId) {
