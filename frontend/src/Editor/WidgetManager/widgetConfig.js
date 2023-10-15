@@ -714,7 +714,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -763,7 +763,7 @@ export const widgets = [
       },
       jsonDescription: {
         type: 'json',
-        displayName: 'Json Description',
+        displayName: 'Json description',
         validation: {
           schema: {
             type: 'string',
