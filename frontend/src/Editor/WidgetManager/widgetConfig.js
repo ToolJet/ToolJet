@@ -4311,28 +4311,28 @@ export const widgets = [
 
         validation: { schema: { type: 'string' } },
       },
-      loadingState: { type: 'toggle', displayName: 'Loading State', validation: { schema: { type: 'boolean' } } },
+      loadingState: { type: 'toggle', displayName: 'Loading state', validation: { schema: { type: 'boolean' } } },
     },
     events: {},
     styles: {
       primaryLabelColour: {
         type: 'color',
-        displayName: 'Primary Label Colour',
+        displayName: 'Primary label colour',
         validation: { schema: { type: 'string' } },
       },
       primaryTextColour: {
         type: 'color',
-        displayName: 'Primary Text  Colour',
+        displayName: 'Primary text  colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryLabelColour: {
         type: 'color',
-        displayName: 'Secondary Label Colour',
+        displayName: 'Secondary label colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryTextColour: {
         type: 'color',
-        displayName: 'Secondary Text Colour',
+        displayName: 'Secondary text colour',
         validation: { schema: { type: 'string' } },
       },
       visibility: {
