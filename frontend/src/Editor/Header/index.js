@@ -29,7 +29,6 @@ export default function EditorHeader({
   onVersionRelease,
   saveEditingVersion,
   onVersionDelete,
-  isMaintenanceOn,
   slug,
   darkMode,
 }) {

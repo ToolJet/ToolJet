@@ -23,7 +23,7 @@ const AppLoaderComponent = (props) => {
 
   const loadAppDetails = () => {
     appService
-      .getApp(appId, 'edit')
+      .fetchApp(appId, 'edit')
       .then((data) => {
         setShouldLoadApp(true);
         updateState({
