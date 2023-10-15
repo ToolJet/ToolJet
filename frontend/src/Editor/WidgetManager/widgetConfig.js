@@ -1530,7 +1530,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'toggle',
-        displayName: 'Default Status',
+        displayName: 'Default status',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -1543,14 +1543,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       checkboxColor: {
         type: 'color',
-        displayName: 'Checkbox Color',
+        displayName: 'Checkbox color',
         validation: {
           schema: { type: 'string' },
         },
