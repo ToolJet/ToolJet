@@ -801,19 +801,19 @@
         },
         "QrScanner": {
             "displayName": "QR Scanner",
-            "description": "Scan QR codes and hold its data"
+            "description": "Scan and store QR codes"
         },
         "StarRating": {
             "displayName": "Rating",
-            "description": "Star rating"
+            "description": "User star rating"
         },
         "Divider": {
             "displayName": "Divider",
-            "description": "Separator between components"
+            "description": "Separate UI elements"
         },
         "FilePicker": {
             "displayName": "File Picker",
-            "description": "File Picker"
+            "description": "Choose files from device"
         },
         "Calendar": {
             "displayName": "Calendar",
