@@ -459,6 +459,20 @@ export class AppsService {
     const oldComponentToNewComponentMapping = {};
     const oldPageToNewPageMapping = {};
 
+    const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+      if (componentParentId) {
+        const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+        const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+        if (parentComponent) {
+          return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+        }
+      }
+
+      return false;
+    };
+
     for (const page of pages) {
       const savedPage = await manager.save(
         manager.create(Page, {
@@ -497,13 +511,27 @@ export class AppsService {
 
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
 
+        let parentId = component.parent ? component.parent : null;
+
+        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
+
+        if (isParentTabOrCalendar) {
+          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
+
+          parentId = `${mappedParentId}-${childTabId}`;
+        } else {
+          parentId = oldComponentToNewComponentMapping[parentId];
+        }
+
         newComponent.name = component.name;
         newComponent.type = component.type;
         newComponent.pageId = savedPage.id;
         newComponent.properties = component.properties;
         newComponent.styles = component.styles;
         newComponent.validation = component.validation;
-        newComponent.parent = component.parent ? oldComponentToNewComponentMapping[component.parent] : null;
+        newComponent.parent = component.parent ? parentId : null;
         newComponent.page = savedPage;
 
         newComponents.push(newComponent);
