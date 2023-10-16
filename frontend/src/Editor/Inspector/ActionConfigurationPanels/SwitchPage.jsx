@@ -69,7 +69,7 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMo
           <div key={index} className="row input-group mt-1">
             <div className="col">
               <CodeHinter
-                initialValue={event.queryParams[index][0]}
+                initialValue={event?.queryParams?.[index]?.[0]}
                 onChange={(value) => queryParamChangeHandler(index, 0, value)}
                 mode="javascript"
                 className="form-control codehinter-query-editor-input"
@@ -79,7 +79,7 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMo
             </div>
             <div className="col">
               <CodeHinter
-                initialValue={event.queryParams[index][1]}
+                initialValue={event?.queryParams?.[index]?.[1]}
                 onChange={(value) => queryParamChangeHandler(index, 1, value)}
                 mode="javascript"
                 className="form-control codehinter-query-editor-input"
