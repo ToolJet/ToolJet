@@ -5,7 +5,7 @@ title: Copilot
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-:::info BETA
+:::info BET
 ToolJet Copilot is currently in private beta for **Business** and **Enterprise** users only.
 :::
 
