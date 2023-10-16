@@ -22,11 +22,7 @@ const Slack = ({ optionchanged, createDataSource, options, isSaving, _selectedDa
       .fetchOauth2BaseUrl(provider)
       .then((data) => {
         const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
-        // if (selectedDataSource?.id) {
-        //   localStorage.setItem('sourceWaitingForOAuth', selectedDataSource.id);
-        // } else {
-        //   localStorage.setItem('sourceWaitingForOAuth', 'newSource');
-        // }
+
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');
         optionchanged('provider', provider).then(() => {
           optionchanged('oauth2', true);
