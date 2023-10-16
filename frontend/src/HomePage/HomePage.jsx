@@ -253,7 +253,7 @@ class HomePageComponent extends React.Component {
       const data = await libraryAppService.deploy(id, appName);
       this.setState({ deploying: false });
       toast.success('App created successfully!', { position: 'top-center' });
-      this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
+      this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`);
     } catch (e) {
       this.setState({ deploying: false });
       if (e.statusCode === 409) {
