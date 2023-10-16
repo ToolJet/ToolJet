@@ -58,7 +58,7 @@ export const CreateVersion = ({
         });
 
         appVersionService
-          .getOne(appId, data.id)
+          .getAppVersionData(appId, data.id)
           .then((data) => {
             setAppDefinitionFromVersion(data);
           })
