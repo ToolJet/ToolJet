@@ -72,7 +72,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
+              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/static/${{ env.SERVICE_ID }}'
             })
 
       - uses: actions/github-script@v6
@@ -149,23 +149,6 @@ jobs:
             } catch (e) {
               console.log(e)
             }
-
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt update
-          sudo apt install postgresql-client -y
-
-      - name: Wait after installing PostgreSQL
-        run: sleep 25
-
-      - name: Drop PostgreSQL PR database
-        env:
-          PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
-          PGPORT: 5432
-          PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
-          PGDATABASE: ${{ env.PR_NUMBER }}
-        run: |
-          PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
 
   suspend-review-pr-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-pr-app' }}
