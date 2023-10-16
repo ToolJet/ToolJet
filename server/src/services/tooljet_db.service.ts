@@ -323,19 +323,9 @@ export class TooljetDbService {
 
     // @description: Only SELECT & FROM statement is Mandatory, else is Optional
     let finalQuery = ``;
-    finalQuery += `SELECT ${await this.constructSelectStatement(
-      queryJson.fields,
-      internalTableIdToNameMap,
-      sqlParamsCounter,
-      sqlParamsList
-    )}`;
+    finalQuery += `SELECT ${await this.constructSelectStatement(queryJson.fields, internalTableIdToNameMap)}`;
 
-    finalQuery += `\nFROM ${await this.constructFromStatement(
-      queryJson,
-      internalTableIdToNameMap,
-      sqlParamsCounter,
-      sqlParamsList
-    )}`;
+    finalQuery += `\nFROM ${await this.constructFromStatement(queryJson, internalTableIdToNameMap)}`;
 
     if (queryJson?.joins?.length)
       finalQuery += `\n${await this.constructJoinStatements(
@@ -357,29 +347,19 @@ export class TooljetDbService {
         sqlParamsList
       )}`;
 
-    // if (queryJson?.group_by?.length)
-    //   finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(
-    //     queryJson.group_by,
-    //     internalTableIdToNameMap,
-    //     sqlParamsCounter,
-    //     sqlParamsList
-    //   )}`;
+    if (queryJson?.group_by?.length)
+      finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(queryJson.group_by, internalTableIdToNameMap)}`;
 
-    // if (queryJson?.having && Object.keys(queryJson?.having).length)
-    //   finalQuery += `\nHAVING ${await this.constructWhereStatement(
-    //     queryJson.having,
-    //     internalTableIdToNameMap,
-    //     sqlParamsCounter,
-    //     sqlParamsList
-    //   )}`;
-
-    if (queryJson?.order_by?.length)
-      finalQuery += `\nORDER BY ${await this.constructOrderByStatement(
-        queryJson.order_by,
+    if (queryJson?.having && Object.keys(queryJson?.having).length)
+      finalQuery += `\nHAVING ${await this.constructWhereStatement(
+        queryJson.having,
         internalTableIdToNameMap,
         sqlParamsCounter,
         sqlParamsList
       )}`;
+
+    if (queryJson?.order_by?.length)
+      finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by, internalTableIdToNameMap)}`;
 
     if (queryJson?.limit && queryJson?.limit.length) {
       sqlParamsList.push(queryJson.limit);
@@ -395,12 +375,7 @@ export class TooljetDbService {
   }
 
   // Assuming tableId is being passed, tableName to tableId mapping is removed
-  private constructSelectStatement(
-    selectStatementInputList,
-    internalTableIdToNameMap,
-    sqlParamsCounter,
-    sqlParamsList
-  ) {
+  private constructSelectStatement(selectStatementInputList, internalTableIdToNameMap) {
     if (selectStatementInputList.length) {
       const selectQueryFields = selectStatementInputList
         .map((field) => {
@@ -420,71 +395,19 @@ export class TooljetDbService {
       return selectQueryFields;
     }
 
-    // if (selectStatementInputList.length) {
-    //   const selectQueryFields = selectStatementInputList
-    //     .map((field) => {
-    //       let fieldExpression = ``;
-
-    //       if (field.function) {
-    //         sqlParamsList.push(field.function);
-    //         fieldExpression += `$${++sqlParamsCounter.counter}(`;
-    //       }
-
-    //       // HANDLE!!
-    //       // if (field.table) sqlParamsList.push(field.table);
-    //       // sqlParamsList.push(`${field.table ? '"' + field.table + '"' + '.' : ''}`);
-    //       sqlParamsList.push(field.name);
-    //       // fieldExpression += `$${++sqlParamsCounter.counter}$${++sqlParamsCounter.counter}`;
-    //       fieldExpression += `${field.table ? '"' + field.table + '"' + '.' : ''}$${++sqlParamsCounter.counter}`;
-
-    //       if (field.function) fieldExpression += `)`;
-    //       if (field.alias) {
-    //         sqlParamsList.push(field.alias);
-    //         fieldExpression += ` AS $${++sqlParamsCounter.counter}`;
-    //       } else {
-    //         sqlParamsList.push(field.name);
-    //         // By Default Alias has been added here for tooljetdb join flow
-    //         fieldExpression += ` AS ${internalTableIdToNameMap[field.table]}_$${++sqlParamsCounter.counter}`;
-    //       }
-    //       return fieldExpression;
-    //     })
-    //     .join(', ');
-    //   return selectQueryFields;
-    // }
-
     throw new BadRequestException('Select statement is empty');
   }
 
-  private constructFromStatement(queryJson, _internalTableIdToNameMap, sqlParamsCounter, sqlParamsList) {
+  private constructFromStatement(queryJson, _internalTableIdToNameMap) {
     const { from } = queryJson;
     if (from.name) {
       return `${'"' + from.name + '"'} ${from.alias ? from.alias : ''}`;
     }
 
-    // if (from.name) {
-    //   if (from.alias) sqlParamsList.push(from.alias);
-    //   // HANDLE!!
-    //   return `${'"' + from.name + '"'} ${from.alias ? '$' + ++sqlParamsCounter.counter : ''}`;
-    // }
-
     throw new BadRequestException('From table is not selected');
   }
 
   private constructJoinStatements(joinsInputList, internalTableIdToNameMap, sqlParamsCounter, sqlParamsList) {
-    // const joinStatementOutput = joinsInputList
-    //   .map((joinCondition) => {
-    //     const { table, joinType, conditions } = joinCondition;
-
-    //     sqlParamsList.push(joinType);
-    //     if (joinCondition.alias) sqlParamsList.push(joinCondition.alias);
-    //     // HANDLE!!
-    //     return `$${++sqlParamsCounter.counter} JOIN ${'"' + table + '"'} ${
-    //       joinCondition.alias ? '$' + ++sqlParamsCounter.counter : ''
-    //     } ON ${this.constructWhereStatement(conditions, internalTableIdToNameMap, sqlParamsCounter, sqlParamsList)}`;
-    //   })
-    //   .join('\n');
-    // return joinStatementOutput;
-
     const joinStatementOutput = joinsInputList
       .map((joinCondition) => {
         const { table, joinType, conditions } = joinCondition;
@@ -497,71 +420,6 @@ export class TooljetDbService {
   }
 
   private constructWhereStatement(whereStatementConditions, internalTableIdToNameMap, sqlParamsCounter, sqlParamsList) {
-    // const { operator = 'AND', conditionsList = [] } = whereStatementConditions;
-    // const whereConditionOutput = conditionsList
-    //   .map((condition) => {
-    //     // @description: Recursive call to build - Sub-condition
-    //     if (condition.conditions)
-    //       return `(${this.constructWhereStatement(
-    //         condition.conditions,
-    //         internalTableIdToNameMap,
-    //         sqlParamsCounter,
-    //         sqlParamsList
-    //       )})`;
-    //     // @description: Building a Condition for 'WHERE & HAVING statements' - LHS, operator and RHS
-    //     // @description: In LHS & RHS it is not mandatory to provide table name, but column name is mandatory
-    //     // @description: In LHS & RHS - We get function only in HAVING statement
-    //     const { operator, leftField, rightField } = condition;
-    //     // @desc: When 'IS' operator is choosed, 'NULL' & 'NOT NULL' keywords will be provided as value and it should not be converted to string
-    //     const keywords = ['NULL', 'NOT NULL'];
-
-    //     let leftSideInput = ``;
-    //     if (leftField.type === 'Value') {
-    //       const dontAddQuotes =
-    //         (keywords.includes(leftField.value) && operator === 'IS') || operator === 'IN' || operator === 'NOT IN';
-
-    //       dontAddQuotes
-    //         ? sqlParamsList.push(leftField.value)
-    //         : sqlParamsList.push(this.addQuotesIfString(leftField.value));
-    //       leftSideInput += dontAddQuotes ? `$${++sqlParamsCounter.counter}` : `$${++sqlParamsCounter.counter}`;
-    //     } else {
-    //       if (leftField.function) {
-    //         sqlParamsList.push(leftField.function);
-    //         leftSideInput += `$${++sqlParamsCounter.counter}(`;
-    //       }
-    //       // HANDLE!!
-    //       sqlParamsList.push(leftField.columnName);
-    //       leftSideInput += `${leftField.table ? '"' + leftField.table + '"' + '.' : ''}$${++sqlParamsCounter.counter}`;
-    //       if (leftField.function) leftSideInput += `)`;
-    //     }
-
-    //     let rightSideInput = ``;
-    //     if (rightField.type === 'Value') {
-    //       const dontAddQuotes =
-    //         (keywords.includes(rightField.value) && operator === 'IS') || operator === 'IN' || operator === 'NOT IN';
-
-    //       dontAddQuotes
-    //         ? sqlParamsList.push(rightField.value)
-    //         : sqlParamsList.push(this.addQuotesIfString(rightField.value));
-    //       rightSideInput += dontAddQuotes ? `$${++sqlParamsCounter.counter}` : `$${++sqlParamsCounter.counter}`;
-    //     } else {
-    //       if (rightField.function) {
-    //         sqlParamsList.push(rightField.function);
-    //         rightSideInput += `$${++sqlParamsCounter.counter}(`;
-    //       }
-    //       // HANDLE!!
-    //       sqlParamsList.push(rightField.columnName);
-    //       rightSideInput += `${
-    //         rightField.table ? '"' + rightField.table + '"' + '.' : ''
-    //       }$${++sqlParamsCounter.counter}`;
-    //       if (rightField.function) rightSideInput += `)`;
-    //     }
-
-    //     return `${leftSideInput} ${operator} ${rightSideInput}`;
-    //   })
-    //   .join(` ${operator} `);
-    // return whereConditionOutput;
-
     const { operator = 'AND', conditionsList = [] } = whereStatementConditions;
     const whereConditionOutput = conditionsList
       .map((condition) => {
@@ -610,17 +468,13 @@ export class TooljetDbService {
     return whereConditionOutput;
   }
 
-  private constructGroupByStatement(groupByInputList, _internalTableIdToNameMap, sqlParamsCounter, sqlParamsList) {
+  private constructGroupByStatement(groupByInputList, _internalTableIdToNameMap) {
     return groupByInputList
-      .map((groupByInput) => {
-        sqlParamsList.push(groupByInput.columnName);
-        // HANDLE!!
-        return `${'"' + groupByInput.table + '"'}.$${++sqlParamsCounter.counter}`;
-      })
+      .map((groupByInput) => `${'"' + groupByInput.table + '"'}.${groupByInput.columnName}`)
       .join(', ');
   }
 
-  private constructOrderByStatement(orderByInputList, internalTableIdToNameMap, sqlParamsCounter, sqlParamsList) {
+  private constructOrderByStatement(orderByInputList, internalTableIdToNameMap) {
     // @description: For "ORDER BY" statement table field is optional. But column_name & order_by direction is mandatory
     return orderByInputList
       .map((orderByInput) => {
@@ -628,20 +482,6 @@ export class TooljetDbService {
         return `${orderByInput.table ? '"' + orderByInput.table + '"' + '.' : ''}${columnName} ${direction}`;
       })
       .join(`, `);
-
-    // // @description: For "ORDER BY" statement table field is optional. But column_name & order_by direction is mandatory
-    // return orderByInputList
-    //   .map((orderByInput) => {
-    //     const { columnName, direction } = orderByInput;
-
-    //     sqlParamsList.push(columnName);
-    //     sqlParamsList.push(direction);
-    //     // HANDLE!!
-    //     return `${
-    //       orderByInput.table ? '"' + orderByInput.table + '"' + '.' : ''
-    //     }$${++sqlParamsCounter.counter} $${++sqlParamsCounter.counter}`;
-    //   })
-    //   .join(`, `);
   }
 
   private async findOrFailInternalTableFromTableId(requestedTableIdList: Array<string>, organizationId: string) {
