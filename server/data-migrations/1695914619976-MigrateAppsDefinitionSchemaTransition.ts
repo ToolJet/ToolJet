@@ -4,6 +4,7 @@ import { Component } from 'src/entities/component.entity';
 import { Page } from 'src/entities/page.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
+import { processDataInBatches } from 'src/helpers/utils.helper';
 
 export class MigrateAppsDefinitionSchemaTransition1695914619976 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -19,187 +20,198 @@ export class MigrateAppsDefinitionSchemaTransition1695914619976 implements Migra
 
     console.log(`MigrateAppsDefinitionSchemaTransition1695902112489 Progress ${progress} %`);
 
-    for (const version of appVersions) {
-      progress++;
-      const definition = version['definition'];
+    const batchSize = 100; // Number of apps to migrate at a time
 
-      const dataQueries = await queryBuilder
-        .select()
-        .from('data_queries', 'data_queries')
-        .where('app_version_id = :appVersionId', { appVersionId: version.id })
-        .getRawMany();
+    await processDataInBatches(
+      entityManager,
+      async (entityManager, skip, take) => {
+        return appVersions.slice(skip, skip + take);
+      },
+      async (entityManager, versions: AppVersion[]) => {
+        for (const version of appVersions) {
+          progress++;
+          const definition = version['definition'];
 
-      let updateHomepageId = null;
+          const dataQueries = await queryBuilder
+            .select()
+            .from('data_queries', 'data_queries')
+            .where('app_version_id = :appVersionId', { appVersionId: version.id })
+            .getRawMany();
 
-      if (definition?.pages) {
-        for (const pageId of Object.keys(definition?.pages)) {
-          const page = definition.pages[pageId];
+          let updateHomepageId = null;
 
-          const pageEvents = page.events || [];
+          if (definition?.pages) {
+            for (const pageId of Object.keys(definition?.pages)) {
+              const page = definition.pages[pageId];
 
-          const componentEvents = [];
+              const pageEvents = page.events || [];
 
-          const pagePostionIntheList = Object.keys(definition?.pages).indexOf(pageId);
+              const componentEvents = [];
 
-          const isHompage = (definition['homePageId'] as any) === pageId;
+              const pagePostionIntheList = Object.keys(definition?.pages).indexOf(pageId);
 
-          const pageComponents = page.components;
+              const isHompage = (definition['homePageId'] as any) === pageId;
 
-          const componentLayouts = [];
+              const pageComponents = page.components;
 
-          const mappedComponents = this.transformComponentData(pageComponents, componentEvents);
+              const componentLayouts = [];
 
-          const newPage = entityManager.create(Page, {
-            name: page.name,
-            handle: page.handle,
-            appVersionId: version.id,
-            disabled: page.disabled || false,
-            hidden: page.hidden || false,
-            index: pagePostionIntheList,
-          });
+              const mappedComponents = this.transformComponentData(pageComponents, componentEvents);
 
-          const pageCreated = await entityManager.save(newPage);
+              const newPage = entityManager.create(Page, {
+                name: page.name,
+                handle: page.handle,
+                appVersionId: version.id,
+                disabled: page.disabled || false,
+                hidden: page.hidden || false,
+                index: pagePostionIntheList,
+              });
 
-          mappedComponents.forEach((component) => {
-            component.page = pageCreated;
-          });
+              const pageCreated = await entityManager.save(newPage);
 
-          const savedComponents = await entityManager.save(Component, mappedComponents);
+              mappedComponents.forEach((component) => {
+                component.page = pageCreated;
+              });
 
-          savedComponents.forEach((component) => {
-            const componentLayout = pageComponents[component.id]['layouts'];
+              const savedComponents = await entityManager.save(Component, mappedComponents);
 
-            if (componentLayout) {
-              for (const type in componentLayout) {
-                const layout = componentLayout[type];
+              savedComponents.forEach((component) => {
+                const componentLayout = pageComponents[component.id]['layouts'];
 
-                const newLayout = new Layout();
-                newLayout.type = type;
-                newLayout.top = layout.top;
-                newLayout.left = layout.left;
-                newLayout.width = layout.width;
-                newLayout.height = layout.height;
-                newLayout.component = component;
-                componentLayouts.push(newLayout);
+                if (componentLayout) {
+                  for (const type in componentLayout) {
+                    const layout = componentLayout[type];
+
+                    const newLayout = new Layout();
+                    newLayout.type = type;
+                    newLayout.top = layout.top;
+                    newLayout.left = layout.left;
+                    newLayout.width = layout.width;
+                    newLayout.height = layout.height;
+                    newLayout.component = component;
+                    componentLayouts.push(newLayout);
+                  }
+                }
+              });
+
+              await entityManager.save(Layout, componentLayouts);
+
+              if (pageEvents.length > 0) {
+                pageEvents.forEach(async (event, index) => {
+                  const newEvent = {
+                    name: event.eventId,
+                    sourceId: pageCreated.id,
+                    target: Target.page,
+                    event: event,
+                    index: pageEvents.index || index,
+                    appVersionId: version.id,
+                  };
+
+                  await entityManager.save(EventHandler, newEvent);
+                });
+              }
+
+              componentEvents.forEach((eventObj) => {
+                if (eventObj.event?.length === 0) return;
+
+                eventObj.event.forEach(async (event, index) => {
+                  const newEvent = {
+                    name: event.eventId,
+                    sourceId: eventObj.componentId,
+                    target: Target.component,
+                    event: event,
+                    index: eventObj.index || index,
+                    appVersionId: version.id,
+                  };
+
+                  await entityManager.save(EventHandler, newEvent);
+                });
+              });
+
+              savedComponents.forEach(async (component) => {
+                if (component.type === 'Table') {
+                  const tableActions = component.properties?.actions?.value || [];
+                  const tableColumns = component.properties?.columns?.value || [];
+
+                  const tableActionAndColumnEvents = [];
+
+                  tableActions.forEach((action) => {
+                    const actionEvents = action.events || [];
+
+                    actionEvents.forEach((event, index) => {
+                      tableActionAndColumnEvents.push({
+                        name: event.eventId,
+                        sourceId: component.id,
+                        target: Target.tableAction,
+                        event: { ...event, ref: action.name },
+                        index: event.index ?? index,
+                        appVersionId: version.id,
+                      });
+                    });
+                  });
+
+                  tableColumns.forEach((column) => {
+                    if (column?.columnType !== 'toggle') return;
+                    const columnEvents = column.events || [];
+
+                    columnEvents.forEach((event, index) => {
+                      tableActionAndColumnEvents.push({
+                        name: event.eventId,
+                        sourceId: component.id,
+                        target: Target.tableColumn,
+                        event: { ...event, ref: column.name },
+                        index: event.index ?? index,
+                        appVersionId: version.id,
+                      });
+                    });
+                  });
+
+                  await entityManager.save(EventHandler, tableActionAndColumnEvents);
+                }
+              });
+
+              if (isHompage) {
+                updateHomepageId = pageCreated.id;
               }
             }
-          });
-
-          await entityManager.save(Layout, componentLayouts);
-
-          if (pageEvents.length > 0) {
-            pageEvents.forEach(async (event, index) => {
-              const newEvent = {
-                name: event.eventId,
-                sourceId: pageCreated.id,
-                target: Target.page,
-                event: event,
-                index: pageEvents.index || index,
-                appVersionId: version.id,
-              };
-
-              await entityManager.save(EventHandler, newEvent);
-            });
           }
 
-          componentEvents.forEach((eventObj) => {
-            if (eventObj.event?.length === 0) return;
+          for (const dataQuery of dataQueries) {
+            const queryEvents = dataQuery?.options?.events || [];
 
-            eventObj.event.forEach(async (event, index) => {
-              const newEvent = {
-                name: event.eventId,
-                sourceId: eventObj.componentId,
-                target: Target.component,
-                event: event,
-                index: eventObj.index || index,
-                appVersionId: version.id,
-              };
+            if (queryEvents.length > 0) {
+              queryEvents.forEach(async (event, index) => {
+                const newEvent = {
+                  name: event.eventId,
+                  sourceId: dataQuery.id,
+                  target: Target.dataQuery,
+                  event: event,
+                  index: queryEvents.index || index,
+                  appVersionId: version.id,
+                };
 
-              await entityManager.save(EventHandler, newEvent);
-            });
-          });
-
-          savedComponents.forEach(async (component) => {
-            if (component.type === 'Table') {
-              const tableActions = component.properties?.actions?.value || [];
-              const tableColumns = component.properties?.columns?.value || [];
-
-              const tableActionAndColumnEvents = [];
-
-              tableActions.forEach((action) => {
-                const actionEvents = action.events || [];
-
-                actionEvents.forEach((event, index) => {
-                  tableActionAndColumnEvents.push({
-                    name: event.eventId,
-                    sourceId: component.id,
-                    target: Target.tableAction,
-                    event: { ...event, ref: action.name },
-                    index: event.index ?? index,
-                    appVersionId: version.id,
-                  });
-                });
+                await entityManager.save(EventHandler, newEvent);
               });
-
-              tableColumns.forEach((column) => {
-                if (column?.columnType !== 'toggle') return;
-                const columnEvents = column.events || [];
-
-                columnEvents.forEach((event, index) => {
-                  tableActionAndColumnEvents.push({
-                    name: event.eventId,
-                    sourceId: component.id,
-                    target: Target.tableColumn,
-                    event: { ...event, ref: column.name },
-                    index: event.index ?? index,
-                    appVersionId: version.id,
-                  });
-                });
-              });
-
-              await entityManager.save(EventHandler, tableActionAndColumnEvents);
             }
-          });
-
-          if (isHompage) {
-            updateHomepageId = pageCreated.id;
           }
+          console.log(
+            `MigrateAppsDefinitionSchemaTransition1695902112489 Progress ${Math.round(
+              (progress / appVersions.length) * 100
+            )} %`
+          );
+          await entityManager.update(
+            AppVersion,
+            { id: version.id },
+            {
+              homePageId: updateHomepageId,
+              showViewerNavigation: definition.showViewerNavigation || true,
+              globalSettings: definition.globalSettings,
+            }
+          );
         }
-      }
-
-      for (const dataQuery of dataQueries) {
-        const queryEvents = dataQuery?.options?.events || [];
-
-        if (queryEvents.length > 0) {
-          queryEvents.forEach(async (event, index) => {
-            const newEvent = {
-              name: event.eventId,
-              sourceId: dataQuery.id,
-              target: Target.dataQuery,
-              event: event,
-              index: queryEvents.index || index,
-              appVersionId: version.id,
-            };
-
-            await entityManager.save(EventHandler, newEvent);
-          });
-        }
-      }
-      console.log(
-        `MigrateAppsDefinitionSchemaTransition1695902112489 Progress ${Math.round(
-          (progress / appVersions.length) * 100
-        )} %`
-      );
-      await entityManager.update(
-        AppVersion,
-        { id: version.id },
-        {
-          homePageId: updateHomepageId,
-          showViewerNavigation: definition.showViewerNavigation || true,
-          globalSettings: definition.globalSettings,
-        }
-      );
-    }
+      },
+      batchSize
+    );
   }
 
   private transformComponentData(data: object, componentEvents: any[]): Component[] {
