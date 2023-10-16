@@ -71,4 +71,4 @@ export function decrypt(toDecrypt: string): Terms {
   return JSON.parse(inflateSync(Buffer.from(decryptedJson.data, 'base64')).toString('utf8'));
 }
 
-export const LICENSE_TRIAL_API = 'https://nlb.tooljet.com/api/license/trial';
+export const LICENSE_TRIAL_API = 'https://albecs.tooljet.com/api/license/trial';
