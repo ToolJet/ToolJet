@@ -41,54 +41,53 @@ const initialState = {
 };
 
 export const useEditorStore = create(
-  zustandDevTools(
-    (set, get) => ({
-      ...initialState,
-      actions: {
-        setShowComments: (showComments) =>
-          set({ showComments }, false, {
-            type: ACTIONS.SET_HOVERED_COMPONENT,
-            showComments,
-          }),
-        toggleComments: () =>
-          set({ showComments: !get().showComments }, false, {
-            type: ACTIONS.TOGGLE_COMMENTS,
-          }),
-        toggleCurrentLayout: (currentLayout) =>
-          set({ currentLayout }, false, {
-            type: ACTIONS.TOGGLE_CURRENT_LAYOUT,
-            currentLayout,
-          }),
-        setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
-        updateEditorState: (state) => set((prev) => ({ ...prev, ...state })),
-        updateQueryConfirmationList: (queryConfirmationList) => set({ queryConfirmationList }),
-        setHoveredComponent: (hoveredComponent) =>
-          set({ hoveredComponent }, false, {
-            type: ACTIONS.SET_HOVERED_COMPONENT,
-            hoveredComponent,
-          }),
-        setSelectionInProgress: (isSelectionInProgress) => {
-          set(
-            {
-              isSelectionInProgress,
-            },
-            false,
-            { type: ACTIONS.SET_SELECTION_IN_PROGRESS }
-          );
-        },
-        setSelectedComponents: (selectedComponents, isMulti = false) => {
-          const newSelectedComponents = isMulti
-            ? [...get().selectedComponents, ...selectedComponents]
-            : selectedComponents;
-
-          set({
-            selectedComponents: newSelectedComponents,
-          });
-        },
+  // Dev tools for this store are disabled comments since its freezing chrome tab
+  (set, get) => ({
+    ...initialState,
+    actions: {
+      setShowComments: (showComments) =>
+        set({ showComments }, false, {
+          type: ACTIONS.SET_HOVERED_COMPONENT,
+          showComments,
+        }),
+      toggleComments: () =>
+        set({ showComments: !get().showComments }, false, {
+          type: ACTIONS.TOGGLE_COMMENTS,
+        }),
+      toggleCurrentLayout: (currentLayout) =>
+        set({ currentLayout }, false, {
+          type: ACTIONS.TOGGLE_CURRENT_LAYOUT,
+          currentLayout,
+        }),
+      setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
+      updateEditorState: (state) => set((prev) => ({ ...prev, ...state })),
+      updateQueryConfirmationList: (queryConfirmationList) => set({ queryConfirmationList }),
+      setHoveredComponent: (hoveredComponent) =>
+        set({ hoveredComponent }, false, {
+          type: ACTIONS.SET_HOVERED_COMPONENT,
+          hoveredComponent,
+        }),
+      setSelectionInProgress: (isSelectionInProgress) => {
+        set(
+          {
+            isSelectionInProgress,
+          },
+          false,
+          { type: ACTIONS.SET_SELECTION_IN_PROGRESS }
+        );
       },
-    }),
-    { name: STORE_NAME }
-  )
+      setSelectedComponents: (selectedComponents, isMulti = false) => {
+        const newSelectedComponents = isMulti
+          ? [...get().selectedComponents, ...selectedComponents]
+          : selectedComponents;
+
+        set({
+          selectedComponents: newSelectedComponents,
+        });
+      },
+    },
+  }),
+  { name: STORE_NAME }
 );
 
 export const useEditorActions = () => useEditorStore((state) => state.actions);
