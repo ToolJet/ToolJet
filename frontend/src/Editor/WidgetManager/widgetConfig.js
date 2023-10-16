@@ -32,7 +32,7 @@ export const widgets = [
       },
       columns: {
         type: 'array',
-        displayName: 'Table columns',
+        displayName: 'Table Columns',
         // validation: {
         //   schema: {
         //     type: 'array',
@@ -354,7 +354,7 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -446,7 +446,7 @@ export const widgets = [
       },
       {
         handle: 'discardChanges',
-        displayName: 'Discard changes',
+        displayName: 'Discard Changes',
       },
       {
         handle: 'discardNewlyAddedRows',
@@ -557,7 +557,7 @@ export const widgets = [
     properties: {
       text: {
         type: 'code',
-        displayName: 'Button text',
+        displayName: 'Button Text',
         validation: {
           schema: { type: 'string' },
         },
@@ -763,7 +763,7 @@ export const widgets = [
       },
       jsonDescription: {
         type: 'json',
-        displayName: 'Json description',
+        displayName: 'Json Description',
         validation: {
           schema: {
             type: 'string',
@@ -943,7 +943,7 @@ export const widgets = [
       },
       modalHeight: {
         type: 'code',
-        displayName: 'Modal height',
+        displayName: 'Modal Height',
         validation: {
           schema: { type: 'string' },
         },
@@ -1051,7 +1051,7 @@ export const widgets = [
   },
   {
     name: 'TextInput',
-    displayName: 'Text input',
+    displayName: 'Text Input',
     description: 'User text input field',
     component: 'TextInput',
     defaultSize: {
@@ -1095,22 +1095,22 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text Color',
         validation: { schema: { type: 'string' } },
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background color',
+        displayName: 'Background Color',
         validation: { schema: { type: 'string' } },
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border color',
+        displayName: 'Border Color',
         validation: { schema: { type: 'string' } },
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error text color',
+        displayName: 'Error Text Color',
         validation: { schema: { type: 'string' } },
       },
       borderRadius: {
@@ -1182,7 +1182,7 @@ export const widgets = [
   },
   {
     name: 'NumberInput',
-    displayName: 'Number input',
+    displayName: 'Number Input',
     description: 'Numeric input field',
     component: 'NumberInput',
     defaultSize: {
@@ -1264,18 +1264,18 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background color',
+        displayName: 'Background Color',
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border color',
+        displayName: 'Border Color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textColor: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text Color',
         validation: { schema: { type: 'string' } },
       },
     },
@@ -1308,7 +1308,7 @@ export const widgets = [
   },
   {
     name: 'PasswordInput',
-    displayName: 'Password input',
+    displayName: 'Password Input',
     description: 'Secure text input',
     component: 'PasswordInput',
     defaultSize: {
@@ -1361,7 +1361,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background color',
+        displayName: 'Background Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1395,7 +1395,7 @@ export const widgets = [
   },
   {
     name: 'Datepicker',
-    displayName: 'Date picker',
+    displayName: 'Date Picker',
     description: 'Choose date and time',
     component: 'Datepicker',
     defaultSize: {
@@ -1543,14 +1543,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text Color',
         validation: {
           schema: { type: 'string' },
         },
       },
       checkboxColor: {
         type: 'color',
-        displayName: 'Checkbox color',
+        displayName: 'Checkbox Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1593,7 +1593,7 @@ export const widgets = [
   },
   {
     name: 'Radio-button',
-    displayName: 'Radio button',
+    displayName: 'Radio Button',
     description: 'Radio buttons',
     component: 'RadioButton',
     defaultSize: {
@@ -1673,7 +1673,7 @@ export const widgets = [
     actions: [
       {
         handle: 'selectOption',
-        displayName: 'Select option',
+        displayName: 'Select Option',
         params: [
           {
             handle: 'option',
@@ -1706,7 +1706,7 @@ export const widgets = [
   },
   {
     name: 'ToggleSwitch',
-    displayName: 'Toggle switch',
+    displayName: 'Toggle Switch',
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
@@ -1727,7 +1727,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'toggle',
-        displayName: 'Default status',
+        displayName: 'Default Status',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -1739,14 +1739,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text Color',
         validation: {
           schema: { type: 'string' },
         },
       },
       toggleSwitchColor: {
         type: 'color',
-        displayName: 'Toggle switch color',
+        displayName: 'Toggle Switch Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1847,7 +1847,7 @@ export const widgets = [
     actions: [
       {
         handle: 'setText',
-        displayName: 'Set text',
+        displayName: 'Set Text',
         params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
       },
       {
@@ -2006,7 +2006,7 @@ export const widgets = [
     styles: {
       fontWeight: {
         type: 'select',
-        displayName: 'Font weight',
+        displayName: 'Font Weight',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'bold', value: 'bold' },
@@ -2016,7 +2016,7 @@ export const widgets = [
       },
       decoration: {
         type: 'select',
-        displayName: 'Text decoration',
+        displayName: 'Text Decoration',
         options: [
           { name: 'none', value: 'none' },
           { name: 'overline', value: 'overline' },
@@ -2027,7 +2027,7 @@ export const widgets = [
       },
       transformation: {
         type: 'select',
-        displayName: 'Text transformation',
+        displayName: 'Text Transformation',
         options: [
           { name: 'none', value: 'none' },
           { name: 'uppercase', value: 'uppercase' },
@@ -2037,20 +2037,20 @@ export const widgets = [
       },
       fontStyle: {
         type: 'select',
-        displayName: 'Font style',
+        displayName: 'Font Style',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'italic', value: 'italic' },
           { name: 'oblique', value: 'oblique' },
         ],
       },
-      lineHeight: { type: 'number', displayName: 'Line height' },
-      textIndent: { type: 'number', displayName: 'Text indent' },
-      letterSpacing: { type: 'number', displayName: 'Letter spacing' },
-      wordSpacing: { type: 'number', displayName: 'Word spacing' },
+      lineHeight: { type: 'number', displayName: 'Line Height' },
+      textIndent: { type: 'number', displayName: 'Text Indent' },
+      letterSpacing: { type: 'number', displayName: 'Letter Spacing' },
+      wordSpacing: { type: 'number', displayName: 'Word Spacing' },
       fontVariant: {
         type: 'select',
-        displayName: 'Font variant',
+        displayName: 'Font Variant',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'small-caps', value: 'small-caps' },
@@ -2060,28 +2060,28 @@ export const widgets = [
       },
       textSize: {
         type: 'number',
-        displayName: 'Text size',
+        displayName: 'Text Size',
         validation: {
           schema: { type: 'number' },
         },
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background color',
+        displayName: 'Background Color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textColor: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text Color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textAlign: {
         type: 'alignButtons',
-        displayName: 'Align text',
+        displayName: 'Align Text',
         validation: {
           schema: { type: 'string' },
         },
@@ -2107,12 +2107,12 @@ export const widgets = [
     actions: [
       {
         handle: 'setText',
-        displayName: 'Set text',
+        displayName: 'Set Text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
       },
       {
         handle: 'visibility',
-        displayName: 'Set visibility',
+        displayName: 'Set Visibility',
         params: [{ handle: 'visibility', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],
@@ -2485,7 +2485,7 @@ export const widgets = [
       },
       selectedTextColor: {
         type: 'color',
-        displayName: 'Selected text color',
+        displayName: 'Selected Text Color',
         validation: {
           schema: {
             type: 'string',
@@ -2503,7 +2503,7 @@ export const widgets = [
       },
       justifyContent: {
         type: 'alignButtons',
-        displayName: 'Align text',
+        displayName: 'Align Text',
         validation: {
           schema: {
             type: 'string',
@@ -2686,7 +2686,7 @@ export const widgets = [
   },
   {
     name: 'RichTextEditor',
-    displayName: 'Text editor',
+    displayName: 'Text Editor',
     description: 'Rich text editor',
     component: 'RichTextEditor',
     defaultSize: {
@@ -2707,7 +2707,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'code',
-        displayName: 'Default value',
+        displayName: 'Default Value',
         validation: {
           schema: { type: 'string' },
         },
@@ -2841,7 +2841,7 @@ export const widgets = [
     actions: [
       {
         handle: 'setLocation',
-        displayName: 'Set location',
+        displayName: 'Set Location',
         params: [
           { handle: 'lat', displayName: 'Latitude' },
           { handle: 'lng', displayName: 'Longitude' },
@@ -2900,7 +2900,7 @@ export const widgets = [
   },
   {
     name: 'QrScanner',
-    displayName: 'QR scanner',
+    displayName: 'QR Scanner',
     description: 'Scan QR codes and hold its data',
     component: 'QrScanner',
     defaultSize: {
@@ -2998,19 +2998,19 @@ export const widgets = [
       },
     },
     events: {
-      onChange: { displayName: 'On change' },
+      onChange: { displayName: 'On Change' },
     },
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Star color',
+        displayName: 'Star Color',
         validation: {
           schema: { type: 'string' },
         },
       },
       labelColor: {
         type: 'color',
-        displayName: 'Label color',
+        displayName: 'Label Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3073,7 +3073,7 @@ export const widgets = [
     styles: {
       dividerColor: {
         type: 'color',
-        displayName: 'Divider color',
+        displayName: 'Divider Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3104,7 +3104,7 @@ export const widgets = [
   },
   {
     name: 'FilePicker',
-    displayName: 'File picker',
+    displayName: 'File Picker',
     description: 'File Picker',
     component: 'FilePicker',
     defaultSize: {
@@ -3218,9 +3218,9 @@ export const widgets = [
       },
     },
     events: {
-      onFileSelected: { displayName: 'On file selected' },
-      onFileLoaded: { displayName: 'On file loaded' },
-      onFileDeselected: { displayName: 'On file deselected' },
+      onFileSelected: { displayName: 'On File Selected' },
+      onFileLoaded: { displayName: 'On File Loaded' },
+      onFileDeselected: { displayName: 'On File Deselected' },
     },
     styles: {
       visibility: {
@@ -3317,10 +3317,10 @@ export const widgets = [
       },
     },
     events: {
-      onCalendarEventSelect: { displayName: 'On event select' },
-      onCalendarSlotSelect: { displayName: 'On slot select' },
-      onCalendarNavigate: { displayName: 'On date navigate' },
-      onCalendarViewChange: { displayName: 'On view change' },
+      onCalendarEventSelect: { displayName: 'On Event Select' },
+      onCalendarSlotSelect: { displayName: 'On Slot Select' },
+      onCalendarNavigate: { displayName: 'On Date Navigate' },
+      onCalendarViewChange: { displayName: 'On View Change' },
     },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
@@ -3450,7 +3450,7 @@ export const widgets = [
   },
   {
     name: 'CodeEditor',
-    displayName: 'Code editor',
+    displayName: 'Code Editor',
     description: 'Code Editor',
     component: 'CodeEditor',
     defaultSize: {
@@ -3612,7 +3612,7 @@ export const widgets = [
       },
       hideTabs: {
         type: 'toggle',
-        displayName: 'Hide tabs',
+        displayName: 'Hide Tabs',
         validation: {
           schema: {
             type: 'boolean',
@@ -3633,7 +3633,7 @@ export const widgets = [
     styles: {
       highlightColor: {
         type: 'color',
-        displayName: 'Highlight color',
+        displayName: 'Highlight Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3736,11 +3736,11 @@ export const widgets = [
     },
     validation: {},
     events: {
-      onStart: { displayName: 'On start' },
-      onResume: { displayName: 'On resume' },
-      onPause: { displayName: 'On pause' },
-      onCountDownFinish: { displayName: 'On Count down finish' },
-      onReset: { displayName: 'On reset' },
+      onStart: { displayName: 'On Start' },
+      onResume: { displayName: 'On Resume' },
+      onPause: { displayName: 'On Pause' },
+      onCountDownFinish: { displayName: 'On Count Down Finish' },
+      onReset: { displayName: 'On Reset' },
     },
     styles: {
       visibility: {
@@ -3796,7 +3796,7 @@ export const widgets = [
   },
   {
     name: 'Listview',
-    displayName: 'List view',
+    displayName: 'List View',
     description: 'List multiple items',
     defaultSize: {
       width: 20,
@@ -4067,7 +4067,7 @@ export const widgets = [
     },
     validation: {},
     events: {
-      onPageChange: { displayName: 'On page change' },
+      onPageChange: { displayName: 'On Page Change' },
     },
     styles: {
       visibility: {
@@ -4112,7 +4112,7 @@ export const widgets = [
   },
   {
     name: 'CircularProgressbar',
-    displayName: 'Circular progressbar',
+    displayName: 'Circular Progressbar',
     description: 'Show circular progress',
     component: 'CircularProgressBar',
     defaultSize: {
@@ -4150,35 +4150,35 @@ export const widgets = [
       },
       textColor: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text Color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textSize: {
         type: 'code',
-        displayName: 'Text size',
+        displayName: 'Text Size',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       strokeWidth: {
         type: 'code',
-        displayName: 'Stroke width',
+        displayName: 'Stroke Width',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       counterClockwise: {
         type: 'code',
-        displayName: 'Counter clockwise',
+        displayName: 'Counter Clockwise',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       circleRatio: {
         type: 'code',
-        displayName: 'Circle ratio',
+        displayName: 'Circle Ratio',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -4317,22 +4317,22 @@ export const widgets = [
     styles: {
       primaryLabelColour: {
         type: 'color',
-        displayName: 'Primary label colour',
+        displayName: 'Primary Label Colour',
         validation: { schema: { type: 'string' } },
       },
       primaryTextColour: {
         type: 'color',
-        displayName: 'Primary text  colour',
+        displayName: 'Primary Text  Colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryLabelColour: {
         type: 'color',
-        displayName: 'Secondary label colour',
+        displayName: 'Secondary Label Colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryTextColour: {
         type: 'color',
-        displayName: 'Secondary text colour',
+        displayName: 'Secondary Text Colour',
         validation: { schema: { type: 'string' } },
       },
       visibility: {
@@ -4366,7 +4366,7 @@ export const widgets = [
   },
   {
     name: 'RangeSlider',
-    displayName: 'Range slider',
+    displayName: 'Range Slider',
     description: 'Adjust value range',
     component: 'RangeSlider',
     defaultSize: {
@@ -4484,7 +4484,7 @@ export const widgets = [
       },
       hideDate: {
         type: 'toggle',
-        displayName: 'Hide date',
+        displayName: 'Hide Date',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -4529,13 +4529,13 @@ export const widgets = [
   },
   {
     name: 'SvgImage',
-    displayName: 'Svg image',
+    displayName: 'Svg Image',
     description: 'Svg image',
     component: 'SvgImage',
     properties: {
       data: {
         type: 'code',
-        displayName: 'Svg data',
+        displayName: 'Svg  data',
         validation: {
           schema: { type: 'string' },
         },
@@ -4581,7 +4581,7 @@ export const widgets = [
   },
   {
     name: 'Html',
-    displayName: 'HTML viewer',
+    displayName: 'HTML Viewer',
     description: 'HTML Viewer',
     component: 'Html',
     defaultSize: {
@@ -4631,7 +4631,7 @@ export const widgets = [
   },
   {
     name: 'VerticalDivider',
-    displayName: 'Vertical divider',
+    displayName: 'Vertical Divider',
     description: 'Vertical Separator between components',
     component: 'VerticalDivider',
     defaultSize: {
@@ -4647,7 +4647,7 @@ export const widgets = [
     styles: {
       dividerColor: {
         type: 'color',
-        displayName: 'Divider color',
+        displayName: 'Divider Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -4678,7 +4678,7 @@ export const widgets = [
   },
   {
     name: 'CustomComponent',
-    displayName: 'Custom component',
+    displayName: 'Custom Component',
     description: 'Create React components',
     component: 'CustomComponent',
     properties: {
@@ -4743,7 +4743,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'ButtonGroup',
-    displayName: 'Button group',
+    displayName: 'Button Group',
     description: 'Group of buttons',
     component: 'ButtonGroup',
     properties: {
@@ -5045,7 +5045,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'KanbanBoard',
-    displayName: 'Kanban board',
+    displayName: 'Kanban Board',
     description: 'Kanban Board',
     component: 'KanbanBoard',
     defaultSize: {
@@ -5058,8 +5058,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     properties: {
       columns: { type: 'code', displayName: 'Columns' },
-      cardData: { type: 'code', displayName: 'Card data' },
-      enableAddCard: { type: 'toggle', displayName: 'Enable add card' },
+      cardData: { type: 'code', displayName: 'Card Data' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
     },
     events: {
       onCardAdded: { displayName: 'Card added' },
@@ -5072,7 +5072,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       disabledState: { type: 'toggle', displayName: 'Disable' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       width: { type: 'number', displayName: 'Width' },
-      minWidth: { type: 'number', displayName: 'Min width' },
+      minWidth: { type: 'number', displayName: 'Min Width' },
       accentColor: { type: 'color', displayName: 'Accent color' },
     },
     exposedVariables: {
@@ -5158,24 +5158,24 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      columnData: { type: 'code', displayName: 'Column data' },
-      cardData: { type: 'code', displayName: 'Card data' },
+      columnData: { type: 'code', displayName: 'Column Data' },
+      cardData: { type: 'code', displayName: 'Card Data' },
       cardWidth: {
         type: 'code',
-        displayName: 'Card width',
+        displayName: 'Card Width',
         validation: {
           schema: { type: 'number' },
         },
       },
       cardHeight: {
         type: 'code',
-        displayName: 'Card height',
+        displayName: 'Card Height',
         validation: {
           schema: { type: 'number' },
         },
       },
-      enableAddCard: { type: 'toggle', displayName: 'Enable add card' },
-      showDeleteButton: { type: 'toggle', displayName: 'Show delete button' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
+      showDeleteButton: { type: 'toggle', displayName: 'Show Delete Button' },
     },
     events: {
       onUpdate: { displayName: 'On update' },
@@ -5197,31 +5197,31 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         params: [
           {
             handle: 'cardDetails',
-            displayName: 'Card details',
+            displayName: 'Card Details',
             defaultValue: `{{{ id: "c11", title: "Title 11", description: "Description 11", columnId: "r3" }}}`,
           },
         ],
       },
       {
         handle: 'deleteCard',
-        displayName: 'Delete card',
+        displayName: 'Delete Card',
         params: [
           { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
         ],
       },
       {
         handle: 'moveCard',
-        displayName: 'Move card',
+        displayName: 'Move Card',
         params: [
           { handle: 'cardId', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
-          { handle: 'columnId', displayName: 'Destination column id', defaultValue: '' },
+          { handle: 'columnId', displayName: 'Destination Column Id', defaultValue: '' },
         ],
       },
       {
         handle: 'updateCardData',
-        displayName: 'Update card data',
+        displayName: 'Update Card Data',
         params: [
-          { handle: 'id', displayName: 'Card id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+          { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
           {
             handle: 'value',
             displayName: 'Value',
@@ -5276,7 +5276,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'ColorPicker',
-    displayName: 'Color picker',
+    displayName: 'Color Picker',
     description: 'Color Picker Palette',
     component: 'ColorPicker',
     properties: {
@@ -5288,7 +5288,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     actions: [
       {
-        displayName: 'Set color',
+        displayName: 'Set Color',
         handle: 'setColor',
         params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
       },
@@ -5340,8 +5340,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       label: { type: 'code', displayName: 'Title' },
       data: { type: 'code', displayName: 'Structure' },
-      checkedData: { type: 'code', displayName: 'Checked values' },
-      expandedData: { type: 'code', displayName: 'Expanded values' },
+      checkedData: { type: 'code', displayName: 'Checked Values' },
+      expandedData: { type: 'code', displayName: 'Expanded Values' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -5349,8 +5349,8 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       onUnCheck: { displayName: 'On uncheck' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text color' },
-      checkboxColor: { type: 'color', displayName: 'Checkbox color' },
+      textColor: { type: 'color', displayName: 'Text Color' },
+      checkboxColor: { type: 'color', displayName: 'Checkbox Color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
     },
@@ -5419,21 +5419,21 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       linkTarget: {
         type: 'code',
-        displayName: 'Link target',
+        displayName: 'Link Target',
         validation: {
           schema: { type: 'string' },
         },
       },
       linkText: {
         type: 'code',
-        displayName: 'Link text',
+        displayName: 'Link Text',
         validation: {
           schema: { type: 'string' },
         },
       },
       targetType: {
         type: 'select',
-        displayName: 'Target type',
+        displayName: 'Target Type',
         options: [
           { name: 'New Tab', value: 'new' },
           { name: 'Same Tab', value: 'same' },
@@ -5450,14 +5450,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text Color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textSize: {
         type: 'number',
-        displayName: 'Text size',
+        displayName: 'Text Size',
         validation: {
           schema: { type: 'number' },
         },
@@ -5537,7 +5537,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       iconColor: {
         type: 'color',
-        displayName: 'Icon color',
+        displayName: 'Icon Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -5557,7 +5557,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         displayName: 'Click',
       },
       {
-        displayName: 'Set visibility',
+        displayName: 'Set Visibility',
         handle: 'setVisibility',
         params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
       },
@@ -5677,7 +5677,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       buttonToSubmit: {
         type: 'select',
-        displayName: 'Button to submit form',
+        displayName: 'Button To Submit Form',
         options: [{ name: 'None', value: 'none' }],
         validation: {
           schema: { type: 'string' },
@@ -5700,7 +5700,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       JSONSchema: {
         type: 'code',
-        displayName: 'JSON schema',
+        displayName: 'JSON Schema',
         conditionallyRender: {
           key: 'advanced',
           value: true,
@@ -5758,11 +5758,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     actions: [
       {
         handle: 'submitForm',
-        displayName: 'Submit form',
+        displayName: 'Submit Form',
       },
       {
         handle: 'resetForm',
-        displayName: 'Reset form',
+        displayName: 'Reset Form',
       },
     ],
     definition: {
@@ -5790,7 +5790,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'BoundedBox',
-    displayName: 'Bounded box',
+    displayName: 'Bounded Box',
     description: 'An infinitely customizable image annotation widget',
     component: 'BoundedBox',
     defaultSize: {
@@ -5804,7 +5804,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       imageUrl: {
         type: 'code',
-        displayName: 'Image url',
+        displayName: 'Image Url',
         validation: {
           schema: { type: 'string' },
         },
