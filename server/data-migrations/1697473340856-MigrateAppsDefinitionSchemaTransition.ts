@@ -1,39 +1,42 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { In, MigrationInterface, QueryRunner } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
 import { Component } from 'src/entities/component.entity';
 import { Page } from 'src/entities/page.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
-import { processDataInBatches } from 'src/helpers/utils.helper';
+import { DataQuery } from 'src/entities/data_query.entity';
+import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
 
 export class MigrateAppsDefinitionSchemaTransition1697473340856 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    let progress = 0;
+    // let progress = 0;
     const entityManager = queryRunner.manager;
     const appVersionRepository = entityManager.getRepository(AppVersion);
     const appVersions = await appVersionRepository.find();
     const totalApps = appVersions.length;
 
-    console.log(`Migrating Apps: 0/${totalApps}`);
+    const migrationProgress = new MigrationProgress('MigrateAppsDefinitionSchemaTransition1697473340856', totalApps);
 
     const batchSize = 100; // Number of apps to migrate at a time
 
     await processDataInBatches(
       entityManager,
       async (entityManager, skip, take) => {
-        return appVersions.slice(skip, skip + take);
+        return entityManager.find(AppVersion, {
+          where: { id: In(appVersions.map((appVersion) => appVersion.id)) },
+          take,
+          skip,
+        });
       },
       async (entityManager, versions: AppVersion[]) => {
-        const queryBuilder = queryRunner.connection.createQueryBuilder();
-
         for (const version of versions) {
-          progress++;
           const definition = version['definition'];
-          const dataQueries = await queryBuilder
-            .select()
-            .from('data_queries', 'data_queries')
-            .where('app_version_id = :appVersionId', { appVersionId: version.id })
-            .getRawMany();
+          console.log('-----arpit::: check definition', JSON.stringify({ definition }));
+
+          const dataQueriesRepository = entityManager.getRepository(DataQuery);
+          const dataQueries = await dataQueriesRepository.find({
+            where: { appVersionId: version.id },
+          });
 
           let updateHomepageId = null;
 
@@ -181,7 +184,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
             }
           }
 
-          console.log(`Migrating Apps: ${progress}/${totalApps}`);
+          migrationProgress.show();
           await entityManager.update(
             AppVersion,
             { id: version.id },
@@ -195,8 +198,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       },
       batchSize
     );
-
-    console.log(`Migrating Apps: ${progress}/${totalApps} - Completed!`);
   }
 
   private transformComponentData(data: object, componentEvents: any[]): Component[] {
