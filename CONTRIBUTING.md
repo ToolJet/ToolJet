@@ -17,10 +17,9 @@ We use GitHub to host code, to track issues and feature requests, as well as acc
 
 ## First-time contributors
 We've tagged some issues to make it easy to get started :smile:
-[Good first issues](https://github.com/ToolJet/ToolJet/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
-Looking for ReactJS issues? Check out our [Frontend issues](https://github.com/ToolJet/ToolJet/issues?q=is%3Aissue+is%3Aopen+label%3Afrontend)
+[Good first issues](https://github.com/ToolJet/ToolJet/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) 
 
-Add a comment on the issue and wait for the issue to be assigned before you start working on it. This helps to avoid multiple people working on similar issues.
+If you're interested in working on an issue, make sure it has either a `good-first-issue` or `up-for-grabs` label added. Add a comment on the issue and wait for the issue to be assigned before you start working on it. This helps to avoid multiple people working on similar issues.
 
 ## We Use [GitHub Flow](https://docs.github.com/en/get-started/quickstart/github-flow), So All Code Changes Happen Through Pull Requests
 Pull requests are the best way to propose changes to the codebase (we use [Git-Flow](https://nvie.com/posts/a-successful-git-branching-model/)). We actively welcome your pull requests:
