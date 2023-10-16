@@ -179,11 +179,16 @@ const EditorComponent = (props) => {
         updateState({
           currentUser: appUserDetails,
         });
-
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
             ...currentState.globals,
+            theme: { name: props?.darkMode ? 'dark' : 'light' },
+            urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
             currentUser: userVars,
+            /* Constant value.it will only change for viewer */
+            mode: {
+              value: 'edit',
+            },
           },
         });
       }
@@ -380,16 +385,7 @@ const EditorComponent = (props) => {
         threshold: 0,
       },
     });
-
-    const globals = {
-      ...currentState.globals,
-      theme: { name: props?.darkMode ? 'dark' : 'light' },
-      urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
-    };
-
     updateState({ appId: props?.params?.id });
-    useCurrentStateStore.getState().actions.setCurrentState({ globals });
-
     getCanvasWidth();
     initEditorWalkThrough();
   };
