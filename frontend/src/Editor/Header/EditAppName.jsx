@@ -75,11 +75,11 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
 
   const handleInput = (e) => {
     const newValue = e.target.value;
-    const trimmedValue = newValue.trim();
     setName(newValue);
-    if (trimmedValue.length === 50) {
+    if (newValue.length >= 50) {
       setWarningText('Maximum length has been reached');
     } else {
+      setWarningText('');
       clearError();
     }
   };
