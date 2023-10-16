@@ -355,8 +355,6 @@ export class AppImportExportService {
           appResourceMappings.dataQueryMapping
         );
 
-        // !-----
-
         let updateHomepageId = null;
 
         if (updatedDefinition?.pages) {
@@ -384,7 +382,10 @@ export class AppImportExportService {
             });
             const pageCreated = await manager.save(newPage);
 
+            appResourceMappings.pagesMapping[pageId] = pageCreated.id;
+
             mappedComponents.forEach((component) => {
+              appResourceMappings.componentsMapping[component.id] = component.id;
               component.page = pageCreated;
             });
 
@@ -450,8 +451,6 @@ export class AppImportExportService {
             }
           }
         }
-
-        //!----
 
         await manager.update(
           AppVersion,
@@ -735,7 +734,7 @@ export class AppImportExportService {
               name: event.eventId,
               sourceId: mappedNewDataQuery.id,
               target: Target.dataQuery,
-              event: event.event,
+              event: event,
               index: queryEvents.index || index,
               appVersionId: mappedNewDataQuery.appVersionId,
             };
