@@ -471,7 +471,8 @@ export class AppImportExportService {
         appVersionId,
         appResourceMappings.dataQueryMapping,
         appResourceMappings.componentsMapping,
-        appResourceMappings.pagesMapping
+        appResourceMappings.pagesMapping,
+        isNormalizedAppDefinitionSchema
       );
     }
 
@@ -1404,8 +1405,11 @@ export class AppImportExportService {
     versionId: string,
     oldDataQueryToNewMapping: Record<string, unknown>,
     oldComponentToNewComponentMapping: Record<string, unknown>,
-    oldPageToNewPageMapping: Record<string, unknown>
+    oldPageToNewPageMapping: Record<string, unknown>,
+    isNormalizedAppDefinitionSchema: boolean
   ) {
+    if (!isNormalizedAppDefinitionSchema) return;
+
     const allEvents = await manager.find(EventHandler, {
       where: { appVersionId: versionId },
     });
