@@ -119,6 +119,48 @@ export class MigrateAppsDefinitionSchemaTransition1695914619976 implements Migra
             });
           });
 
+          savedComponents.forEach(async (component) => {
+            if (component.type === 'Table') {
+              const tableActions = component.properties?.actions?.value || [];
+              const tableColumns = component.properties?.columns?.value || [];
+
+              const tableActionAndColumnEvents = [];
+
+              tableActions.forEach((action) => {
+                const actionEvents = action.events || [];
+
+                actionEvents.forEach((event, index) => {
+                  tableActionAndColumnEvents.push({
+                    name: event.eventId,
+                    sourceId: component.id,
+                    target: Target.tableAction,
+                    event: { ...event, ref: action.name },
+                    index: event.index ?? index,
+                    appVersionId: version.id,
+                  });
+                });
+              });
+
+              tableColumns.forEach((column) => {
+                if (column?.columnType !== 'toggle') return;
+                const columnEvents = column.events || [];
+
+                columnEvents.forEach((event, index) => {
+                  tableActionAndColumnEvents.push({
+                    name: event.eventId,
+                    sourceId: component.id,
+                    target: Target.tableColumn,
+                    event: { ...event, ref: column.name },
+                    index: event.index ?? index,
+                    appVersionId: version.id,
+                  });
+                });
+              });
+
+              await entityManager.save(EventHandler, tableActionAndColumnEvents);
+            }
+          });
+
           if (isHompage) {
             updateHomepageId = pageCreated.id;
           }
@@ -169,24 +211,16 @@ export class MigrateAppsDefinitionSchemaTransition1695914619976 implements Migra
       const transformedComponent: Component = new Component();
 
       transformedComponent.id = componentId;
-
       transformedComponent.name = componentData.name;
-
       transformedComponent.type = componentData.component;
-
       transformedComponent.properties = componentData.definition.properties || {};
-
       transformedComponent.styles = componentData.definition.styles || {};
-
       transformedComponent.validation = componentData.definition.validation || {};
-
       transformedComponent.parent = data[componentId].parent || null;
-
       transformedComponents.push(transformedComponent);
 
       componentEvents.push({
         componentId: componentId,
-
         event: componentData.definition.events,
       });
     }
