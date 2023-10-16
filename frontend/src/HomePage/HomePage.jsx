@@ -177,11 +177,10 @@ class HomePageComponent extends React.Component {
       const data = await appService.cloneApp(appName, appId);
       toast.success('App cloned successfully!');
       this.setState({ isCloningApp: false });
-      this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
+      this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
       return true;
     } catch (_error) {
       this.setState({ isCloningApp: false });
-      console.log(_error);
       if (_error.statusCode === 409) {
         return false;
       } else {
