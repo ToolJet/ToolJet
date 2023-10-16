@@ -446,6 +446,48 @@ export class AppImportExportService {
               });
             });
 
+            savedComponents.forEach(async (component) => {
+              if (component.type === 'Table') {
+                const tableActions = component.properties?.actions?.value || [];
+                const tableColumns = component.properties?.columns?.value || [];
+
+                const tableActionAndColumnEvents = [];
+
+                tableActions.forEach((action) => {
+                  const actionEvents = action.events || [];
+
+                  actionEvents.forEach((event, index) => {
+                    tableActionAndColumnEvents.push({
+                      name: event.eventId,
+                      sourceId: component.id,
+                      target: Target.tableAction,
+                      event: { ...event, ref: action.name },
+                      index: event.index ?? index,
+                      appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                    });
+                  });
+                });
+
+                tableColumns.forEach((column) => {
+                  if (column?.columnType !== 'toggle') return;
+                  const columnEvents = column.events || [];
+
+                  columnEvents.forEach((event, index) => {
+                    tableActionAndColumnEvents.push({
+                      name: event.eventId,
+                      sourceId: component.id,
+                      target: Target.tableColumn,
+                      event: { ...event, ref: column.name },
+                      index: event.index ?? index,
+                      appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                    });
+                  });
+                });
+
+                await manager.save(EventHandler, tableActionAndColumnEvents);
+              }
+            });
+
             if (isHompage) {
               updateHomepageId = pageCreated.id;
             }
