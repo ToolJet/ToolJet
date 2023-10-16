@@ -576,6 +576,20 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
 
+      const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+        if (componentParentId) {
+          const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+          const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+          if (parentComponent) {
+            return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+          }
+        }
+
+        return false;
+      };
+
       for (const page of importingPages) {
         const newPage = manager.create(Page, {
           name: page.name,
@@ -599,12 +613,26 @@ export class AppImportExportService {
         for (const component of pageComponents) {
           const newComponent = new Component();
 
+          let parentId = component.parent ? component.parent : null;
+
+          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
+
+          if (isParentTabOrCalendar) {
+            const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const mappedParentId = appResourceMappings.componentsMapping[_parentId];
+
+            parentId = `${mappedParentId}-${childTabId}`;
+          } else {
+            parentId = appResourceMappings.componentsMapping[parentId];
+          }
+
           newComponent.name = component.name;
           newComponent.type = component.type;
           newComponent.properties = component.properties;
           newComponent.styles = component.styles;
           newComponent.validation = component.validation;
-          newComponent.parent = component.parent || null;
+          newComponent.parent = component.parent ? parentId : null;
 
           newComponent.page = pageCreated;
 
