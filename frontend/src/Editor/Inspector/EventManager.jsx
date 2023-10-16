@@ -909,7 +909,7 @@ export const EventManager = ({
             <div {...droppableProps} ref={innerRef}>
               {events.map((event, index) => {
                 const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
-
+                console.log('---arpit:::: actionmeta', { actionMeta, ActionTypes, event });
                 // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                 return (
                   <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
