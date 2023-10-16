@@ -9,16 +9,12 @@ import { processDataInBatches } from 'src/helpers/utils.helper';
 export class MigrateAppsDefinitionSchemaTransition1697473340856 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     let progress = 0;
-
     const entityManager = queryRunner.manager;
-
-    const queryBuilder = queryRunner.connection.createQueryBuilder();
-
     const appVersionRepository = entityManager.getRepository(AppVersion);
-
     const appVersions = await appVersionRepository.find();
+    const totalApps = appVersions.length;
 
-    console.log(`MigrateAppsDefinitionSchemaTransition1695902112489 Progress ${progress} %`);
+    console.log(`Migrating Apps: 0/${totalApps}`);
 
     const batchSize = 100; // Number of apps to migrate at a time
 
@@ -28,10 +24,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         return appVersions.slice(skip, skip + take);
       },
       async (entityManager, versions: AppVersion[]) => {
-        for (const version of appVersions) {
+        const queryBuilder = queryRunner.connection.createQueryBuilder();
+
+        for (const version of versions) {
           progress++;
           const definition = version['definition'];
-
           const dataQueries = await queryBuilder
             .select()
             .from('data_queries', 'data_queries')
@@ -43,32 +40,23 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           if (definition?.pages) {
             for (const pageId of Object.keys(definition?.pages)) {
               const page = definition.pages[pageId];
-
               const pageEvents = page.events || [];
-
               const componentEvents = [];
-
-              const pagePostionIntheList = Object.keys(definition?.pages).indexOf(pageId);
-
-              const isHompage = (definition['homePageId'] as any) === pageId;
-
+              const pagePositionInTheList = Object.keys(definition?.pages).indexOf(pageId);
+              const isHomepage = (definition['homePageId'] as any) === pageId;
               const pageComponents = page.components;
-
               const componentLayouts = [];
-
               const mappedComponents = this.transformComponentData(pageComponents, componentEvents);
-
               const newPage = entityManager.create(Page, {
                 name: page.name,
                 handle: page.handle,
                 appVersionId: version.id,
                 disabled: page.disabled || false,
                 hidden: page.hidden || false,
-                index: pagePostionIntheList,
+                index: pagePositionInTheList,
               });
 
               const pageCreated = await entityManager.save(newPage);
-
               mappedComponents.forEach((component) => {
                 component.page = pageCreated;
               });
@@ -81,7 +69,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
                 if (componentLayout) {
                   for (const type in componentLayout) {
                     const layout = componentLayout[type];
-
                     const newLayout = new Layout();
                     newLayout.type = type;
                     newLayout.top = layout.top;
@@ -132,7 +119,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
                 if (component.type === 'Table') {
                   const tableActions = component.properties?.actions?.value || [];
                   const tableColumns = component.properties?.columns?.value || [];
-
                   const tableActionAndColumnEvents = [];
 
                   tableActions.forEach((action) => {
@@ -170,7 +156,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
                 }
               });
 
-              if (isHompage) {
+              if (isHomepage) {
                 updateHomepageId = pageCreated.id;
               }
             }
@@ -194,11 +180,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
               });
             }
           }
-          console.log(
-            `MigrateAppsDefinitionSchemaTransition1695902112489 Progress ${Math.round(
-              (progress / appVersions.length) * 100
-            )} %`
-          );
+
+          console.log(`Migrating Apps: ${progress}/${totalApps}`);
           await entityManager.update(
             AppVersion,
             { id: version.id },
@@ -212,6 +195,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       },
       batchSize
     );
+
+    console.log(`Migrating Apps: ${progress}/${totalApps} - Completed!`);
   }
 
   private transformComponentData(data: object, componentEvents: any[]): Component[] {
