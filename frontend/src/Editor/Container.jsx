@@ -413,17 +413,17 @@ export const Container = ({
 
   const paramUpdated = useCallback(
     (id, param, value) => {
-      if (Object.keys(value).length > 0) {
+      if (boxes.length && Object.keys(value)?.length > 0) {
         setBoxes((boxes) =>
           update(boxes, {
             [id]: {
               $merge: {
                 component: {
-                  ...boxes[id].component,
+                  ...boxes[id]?.component,
                   definition: {
-                    ...boxes[id].component.definition,
+                    ...boxes[id]?.component?.definition,
                     properties: {
-                      ...boxes[id].component.definition.properties,
+                      ...boxes?.[id]?.component?.definition?.properties,
                       [param]: value,
                     },
                   },
@@ -434,7 +434,7 @@ export const Container = ({
         );
       }
     },
-    [setBoxes]
+    [boxes, setBoxes]
   );
 
   const handleAddThread = async (e) => {

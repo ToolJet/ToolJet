@@ -29,6 +29,7 @@ import {
   removeSelectedComponent,
   buildAppDefinition,
   buildComponentMetaDefinition,
+  runQueries,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
@@ -55,11 +56,11 @@ import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
 import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
-import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -81,7 +82,8 @@ const EditorComponent = (props) => {
 
   const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving, createAppVersionEventHandlers } =
     useAppDataActions();
-  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents } = useEditorActions();
+  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents, setCurrentPageId } =
+    useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
   const { isVersionReleased, editingVersion, releasedVersionId } = useAppVersionState();
@@ -101,6 +103,7 @@ const EditorComponent = (props) => {
     showComments,
     showLeftSidebar,
     queryConfirmationList,
+    currentPageId,
   } = useEditorState();
 
   const dataQueries = useDataQueries();
@@ -121,7 +124,6 @@ const EditorComponent = (props) => {
 
   const currentState = useCurrentState();
 
-  const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isQueryPaneDragging, setIsQueryPaneDragging] = useState(false);
   const [isQueryPaneExpanded, setIsQueryPaneExpanded] = useState(false); //!check where this is used
@@ -275,6 +277,18 @@ const EditorComponent = (props) => {
     }
   };
 
+  const getEditorRef = () => {
+    const editorRef = {
+      appDefinition: useEditorStore.getState().appDefinition,
+      queryConfirmationList: useEditorStore.getState().queryConfirmationList,
+      updateQueryConfirmationList: updateQueryConfirmationList,
+      navigate: props.navigate,
+      switchPage: switchPage,
+      currentPageId: useEditorStore.getState().currentPageId,
+    };
+    return editorRef;
+  };
+
   const fetchApps = async (page) => {
     const { apps } = await appService.getAll(page);
 
@@ -391,7 +405,10 @@ const EditorComponent = (props) => {
   };
 
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    await useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad);
+    // // editorRef can be undefined when runQueriesOnAppLoad
+    await useDataQueriesStore
+      .getState()
+      .actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, getEditorRef());
   };
 
   const fetchDataSources = (id) => {
@@ -528,7 +545,7 @@ const EditorComponent = (props) => {
   };
 
   const handleEvent = (eventName, event, options) => {
-    return onEvent(editorRef, eventName, event, options, 'edit');
+    return onEvent(getEditorRef(), eventName, event, options, 'edit');
   };
 
   const handleRunQuery = (queryId, queryName) => runQuery(editorRef, queryId, queryName);
@@ -705,7 +722,7 @@ const EditorComponent = (props) => {
     await fetchDataQueries(data.editing_version?.id, true, true);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
-    await handleEvent('onPageLoad', currentPageEvents);
+    await handleEvent('onPageLoad', currentPageEvents, {}, true);
   };
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
@@ -1270,7 +1287,13 @@ const EditorComponent = (props) => {
   };
 
   const switchPage = (pageId, queryParams = []) => {
-    if (currentPageId === pageId && currentState.page.handle === appDefinition?.pages[pageId]?.handle) {
+    // This are fetched from store to handle runQueriesOnAppLoad
+    const currentPageId = useEditorStore.getState().currentPageId;
+    const appDefinition = useEditorStore.getState().appDefinition;
+    const appId = useAppDataStore.getState()?.appId;
+    const pageHandle = getCurrentState().pageHandle;
+
+    if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       return;
     }
     const { name, handle } = appDefinition.pages[pageId];
