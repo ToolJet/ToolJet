@@ -476,9 +476,7 @@ export class AppsService {
     for (const page of pages) {
       const savedPage = await manager.save(
         manager.create(Page, {
-          name: page.name,
-          handle: page.handle,
-          index: page.index,
+          ...page,
           appVersionId: appVersion.id,
         })
       );
