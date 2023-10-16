@@ -256,7 +256,7 @@ const EditorComponent = (props) => {
       canvasContainerRef.current.scrollLeft += editorMarginLeft;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editorMarginLeft]);
+  }, [editorMarginLeft, canvasContainerRef?.current]);
 
   useEffect(() => {
     if (mounted) {
