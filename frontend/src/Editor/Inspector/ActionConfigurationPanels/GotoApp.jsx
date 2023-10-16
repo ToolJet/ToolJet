@@ -6,8 +6,10 @@ import { useTranslation } from 'react-i18next';
 
 export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMode }) {
   const queryParamChangeHandler = (index, key, value) => {
-    event.queryParams[index][key] = value;
-    handlerChanged(eventIndex, 'queryParams', event.queryParams);
+    if (event?.queryParams?.[index]?.[key]) {
+      event.queryParams[index][key] = value;
+      handlerChanged(eventIndex, 'queryParams', event.queryParams);
+    }
   };
   const { t } = useTranslation();
 
