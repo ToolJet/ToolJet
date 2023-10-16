@@ -2707,7 +2707,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'code',
-        displayName: 'Default Value',
+        displayName: 'Default value',
         validation: {
           schema: { type: 'string' },
         },
