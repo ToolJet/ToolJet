@@ -1,4 +1,4 @@
-name: Render review deploy
+name: Render PR deploy
 on:
   pull_request_target:
     types: [labeled, unlabeled, closed]
@@ -11,8 +11,8 @@ permissions:
   issues: write
 
 jobs:
-  create-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-app' }}
+  create-review-pr-app:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-pr-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -83,7 +83,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-review-app'
+                name: 'create-review-pr-app'
               })
             } catch (e) {
               console.log(e)
@@ -93,11 +93,11 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-app']
+              labels: ['active-review-pr-app']
             })
 
-  destroy-review-app:
-    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-app') || github.event.action == 'closed' }}
+  destroy-review-pr-app:
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-pr-app') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -122,7 +122,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'destroy-review-app'
+                name: 'destroy-review-pr-app'
               })
             } catch (e) {
               console.log(e)
@@ -133,7 +133,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-review-app'
+                name: 'suspend-review-pr-app'
               })
             } catch (e) {
               console.log(e)
@@ -144,7 +144,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-review-app'
+                name: 'active-review-pr-app'
               })
             } catch (e) {
               console.log(e)
@@ -167,8 +167,8 @@ jobs:
         run: |
           PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
 
-  suspend-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}
+  suspend-review-pr-app:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-pr-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -193,14 +193,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-review-app'
+                name: 'active-review-pr-app'
               })
             } catch (e) {
               console.log(e)
             }
 
-  resume-review-app:
-    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-app' }}
+  resume-review-pr-app:
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-pr-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -224,7 +224,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-app']
+              labels: ['active-review-pr-app']
             })
 
             try {
@@ -232,7 +232,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-review-app'
+                name: 'suspend-review-pr-app'
               })
             } catch (e) {
               console.log(e)
