@@ -56,17 +56,16 @@ class Chart extends React.Component {
   }
 
   render() {
-    const { dataQueries, component, paramUpdated, componentMeta, components, currentState } = this.state;
-    const data = this.state.component.component.definition.properties.data;
+    const { dataQueries, component, paramUpdated, componentMeta, components, currentState } = this.props;
+    const data = this.props.component.component.definition.properties.data;
 
-    const jsonDescription = this.state.component.component.definition.properties.jsonDescription;
+    const jsonDescription = this.props.component.component.definition.properties.jsonDescription;
 
     const plotFromJson = resolveReferences(
-      this.state.component.component.definition.properties.plotFromJson?.value,
+      this.props.component.component.definition.properties.plotFromJson?.value,
       currentState
     );
-
-    const chartType = this.state.component.component.definition.properties.type.value;
+    const chartType = this.props.component.component.definition.properties.type.value;
 
     let items = [];
 
