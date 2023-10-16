@@ -464,6 +464,18 @@ export class AppImportExportService {
       }
     }
 
+    const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
+
+    for (const appVersionId of appVersionIds) {
+      await this.updateEventActionsForNewVersionWithNewMappingIds(
+        manager,
+        appVersionId,
+        appResourceMappings.dataQueryMapping,
+        appResourceMappings.componentsMapping,
+        appResourceMappings.pagesMapping
+      );
+    }
+
     await this.setEditingVersionAsLatestVersion(manager, appResourceMappings.appVersionMapping, importingAppVersions);
 
     return appResourceMappings;
@@ -657,14 +669,14 @@ export class AppImportExportService {
 
           if (componentEvents.length > 0) {
             componentEvents.forEach(async (componentEvent) => {
-              const newEvent = {
-                name: componentEvent.name,
-                sourceId: savedComponent.id,
-                target: componentEvent.target,
-                event: componentEvent.event,
-                index: componentEvent.index,
-                appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-              };
+              const newEvent = new EventHandler();
+              newEvent.name = componentEvent.name;
+              newEvent.sourceId = savedComponent.id;
+              newEvent.target = componentEvent.target;
+              newEvent.event = componentEvent.event;
+              newEvent.index = componentEvent.index;
+              newEvent.appVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
+
               await manager.save(EventHandler, newEvent);
             });
           }
@@ -703,18 +715,11 @@ export class AppImportExportService {
 
         if (importingQueryEvents.length > 0) {
           importingQueryEvents.forEach(async (dataQueryEvent) => {
-            const updatedEventDefinition = this.updateEventActionsForNewVersionWithNewMappingIds(
-              dataQueryEvent,
-              appResourceMappings.dataQueryMapping,
-              appResourceMappings.componentsMapping,
-              appResourceMappings.pagesMapping
-            );
-
             const newEvent = {
               name: dataQueryEvent.name,
               sourceId: mappedNewDataQuery.id,
               target: dataQueryEvent.target,
-              event: updatedEventDefinition,
+              event: dataQueryEvent.event,
               index: dataQueryEvent.index,
               appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
             };
@@ -726,18 +731,11 @@ export class AppImportExportService {
           delete mappedNewDataQuery?.options?.events;
 
           queryEvents.forEach(async (event, index) => {
-            const updatedEventDefinition = this.updateEventActionsForNewVersionWithNewMappingIds(
-              { event: event },
-              appResourceMappings.dataQueryMapping,
-              appResourceMappings.componentsMapping,
-              appResourceMappings.pagesMapping
-            );
-
             const newEvent = {
               name: event.eventId,
               sourceId: mappedNewDataQuery.id,
               target: Target.dataQuery,
-              event: updatedEventDefinition,
+              event: event.event,
               index: queryEvents.index || index,
               appVersionId: mappedNewDataQuery.appVersionId,
             };
@@ -1402,29 +1400,36 @@ export class AppImportExportService {
     return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id };
   }
 
-  updateEventActionsForNewVersionWithNewMappingIds(
-    queryEvent: EventHandler | { event: any },
+  async updateEventActionsForNewVersionWithNewMappingIds(
+    manager: EntityManager,
+    versionId: string,
     oldDataQueryToNewMapping: Record<string, unknown>,
     oldComponentToNewComponentMapping: Record<string, unknown>,
     oldPageToNewPageMapping: Record<string, unknown>
   ) {
-    const event = JSON.parse(JSON.stringify(queryEvent));
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionId },
+    });
 
-    const eventDefinition = event.event;
+    for (const event of allEvents) {
+      const eventDefinition = event.event;
 
-    if (eventDefinition?.actionId === 'run-query') {
-      eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
+      if (eventDefinition?.actionId === 'run-query') {
+        eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
+      }
+
+      if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
+      if (eventDefinition?.actionId === 'switch-page') {
+        eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
+      }
+
+      event.event = eventDefinition;
+
+      await manager.save(event);
     }
-
-    if (eventDefinition?.actionId === 'control-component') {
-      eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
-    }
-
-    if (eventDefinition?.actionId === 'switch-page') {
-      eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
-    }
-
-    return eventDefinition;
   }
 }
 
