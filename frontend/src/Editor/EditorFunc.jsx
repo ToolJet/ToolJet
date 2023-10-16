@@ -29,7 +29,6 @@ import {
   removeSelectedComponent,
   buildAppDefinition,
   buildComponentMetaDefinition,
-  runQueries,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
@@ -405,7 +404,6 @@ const EditorComponent = (props) => {
   };
 
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    // // editorRef can be undefined when runQueriesOnAppLoad
     await useDataQueriesStore
       .getState()
       .actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, getEditorRef());
@@ -1009,8 +1007,22 @@ const EditorComponent = (props) => {
       setUndoStack((prev) => prev.slice(0, prev.length - 1));
       setRedoStack((prev) => [...prev, diffToPatches(_diffPatches)]);
 
+      let undoOpts = optsStack.undo[optsStack.undo.length - 1];
+
+      if (undoOpts?.componentDeleted) {
+        undoOpts = {
+          componentAdded: true,
+        };
+      }
+
+      if (undoOpts?.componentAdded) {
+        undoOpts = {
+          componentDeleted: true,
+        };
+      }
+
       updateState({
-        appDiffOptions: optsStack.undo[optsStack.undo.length - 1],
+        appDiffOptions: undoOpts,
       });
 
       setOptsStack((prev) => ({
