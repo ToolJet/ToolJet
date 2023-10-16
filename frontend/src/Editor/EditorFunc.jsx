@@ -676,11 +676,12 @@ const EditorComponent = (props) => {
 
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
     setAppVersions(appVersions.appVersions);
+    const currentOrgId = data?.organization_id || data?.organizationId;
 
     updateState({
       slug: data.slug,
       isMaintenanceOn: data?.is_maintenance_on,
-      organizationId: data?.organization_id,
+      organizationId: currentOrgId,
       isPublic: data?.is_public,
       appName: data?.name,
       userId: data?.user_id,

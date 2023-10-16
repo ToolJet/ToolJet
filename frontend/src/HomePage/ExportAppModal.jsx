@@ -54,7 +54,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     const requestBody = {
       ...appOpts,
       ...(exportTjDb && { tooljet_database: tables }),
-      organization_id: app.organization_id,
+      organization_id: app.organization_id ?? app.organizationId,
     };
 
     appService
