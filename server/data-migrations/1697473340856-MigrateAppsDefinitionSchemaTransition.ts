@@ -31,7 +31,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       async (entityManager, versions: AppVersion[]) => {
         for (const version of versions) {
           const definition = version['definition'];
-          console.log('-----arpit::: check definition', JSON.stringify({ definition }));
+
+          if (!definition) return;
 
           const dataQueriesRepository = entityManager.getRepository(DataQuery);
           const dataQueries = await dataQueriesRepository.find({
@@ -190,7 +191,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
             { id: version.id },
             {
               homePageId: updateHomepageId,
-              showViewerNavigation: definition.showViewerNavigation || true,
+              showViewerNavigation: definition?.showViewerNavigation || true,
               globalSettings: definition.globalSettings,
             }
           );
