@@ -939,8 +939,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, getCurrentState());
 
   if (dataQuery.options?.requestConfirmation) {
-    const runOnPageLoad = dataQuery.options?.runOnPageLoad ?? false;
-    const queryConfirmationList = runOnPageLoad ? _ref.queryConfirmationList : [];
+    const queryConfirmationList = useEditorStore.getState().queryConfirmationList
+      ? [...useEditorStore.getState().queryConfirmationList]
+      : [];
 
     const queryConfirmation = {
       queryId,
@@ -1175,9 +1176,23 @@ export function renderTooltip({ props, text }) {
   );
 }
 
+/*
+@computeComponentState: (components = {}) => Promise<void>
+This change is made to enhance the code readability by optimizing the logic
+for computing component state. It replaces the previous try-catch block with
+a more efficient approach, precomputing the parent component types and using
+conditional checks for better performance and error handling.*/
+
 export function computeComponentState(components = {}) {
   let componentState = {};
   const currentComponents = getCurrentState().components;
+
+  // Precompute parent component types
+  const parentComponentTypes = {};
+  Object.keys(components).forEach((key) => {
+    const { component } = components[key];
+    parentComponentTypes[key] = component.component;
+  });
 
   Object.keys(components).forEach((key) => {
     if (!components[key]) return;
@@ -1189,17 +1204,9 @@ export function computeComponentState(components = {}) {
     const existingValues = currentComponents[existingComponentName];
 
     if (component.parent) {
-      const parentComponent = components[component.parent];
-      let isListView = false,
-        isForm = false;
-      try {
-        isListView = parentComponent.component.component === 'Listview';
-        isForm = parentComponent.component.component === 'Form';
-      } catch {
-        console.log('error');
-      }
+      const parentComponentType = parentComponentTypes[component.parent];
 
-      if (!isListView && !isForm) {
+      if (parentComponentType !== 'Listview' && parentComponentType !== 'Form') {
         componentState[component.name] = {
           ...componentMeta.exposedVariables,
           id: key,
@@ -1390,11 +1397,27 @@ export const cloneComponents = (
   if (selectedComponents.length < 1) return getSelectedText();
 
   const { components: allComponents } = appDefinition.pages[currentPageId];
+
+  // if parent is selected, then remove the parent from the selected components
+  const filteredSelectedComponents = selectedComponents.filter((component) => {
+    const parentComponentId = component.component?.parent;
+    if (parentComponentId) {
+      // Check if the parent component is also selected
+      const isParentSelected = selectedComponents.some((comp) => comp.id === parentComponentId);
+
+      // If the parent is selected, filter out the child component
+      if (isParentSelected) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   let newDefinition = _.cloneDeep(appDefinition);
   let newComponents = [],
     newComponentObj = {},
     addedComponentId = new Set();
-  for (let selectedComponent of selectedComponents) {
+  for (let selectedComponent of filteredSelectedComponents) {
     if (addedComponentId.has(selectedComponent.id)) continue;
     const component = {
       component: allComponents[selectedComponent.id]?.component,
@@ -1416,6 +1439,7 @@ export const cloneComponents = (
       newComponents,
       isCloning,
       isCut,
+      currentPageId,
     };
   }
 
@@ -1490,7 +1514,7 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
     });
   });
 };
-
+//
 const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
   const parentId = componentParentId ?? component.component?.parent?.split('-').slice(0, -1).join('-');
 
@@ -1514,7 +1538,7 @@ export const addComponents = (
   const finalComponents = {};
   const componentMap = {};
   let parentComponent = undefined;
-  const { isCloning, isCut, newComponents: pastedComponents = [] } = newComponentObj;
+  const { isCloning, isCut, newComponents: pastedComponents = [], currentPageId } = newComponentObj;
 
   if (parentId) {
     const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
@@ -1528,17 +1552,21 @@ export const addComponents = (
       ...finalComponents,
     });
 
-    const isParentAlsoCopied = component.component.parent && componentMap[component.component.parent];
+    const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pastedComponents, parentId);
+    const parentRef = isParentTabOrCalendar
+      ? component.component.parent.split('-').slice(0, -1).join('-')
+      : component.component.parent;
+    const isParentAlsoCopied = parentRef && componentMap[parentRef];
 
     componentMap[component.componentId] = newComponentId;
-    let isChild = parentId ? parentId : component.component.parent;
+    let isChild = isParentAlsoCopied ? component.component.parent : parentId;
     const componentData = JSON.parse(JSON.stringify(component.component));
 
     if (isCloning && parentId && !componentData.parent) {
       isChild = component.component.parent;
     }
 
-    if (!parentComponent && !isParentAlsoCopied && isChild && fromClipboard) {
+    if (!parentComponent && !isParentAlsoCopied && fromClipboard) {
       isChild = undefined;
       componentData.parent = undefined;
     }
@@ -1563,10 +1591,13 @@ export const addComponents = (
       },
       layouts: component.layouts,
     };
+
     finalComponents[newComponentId] = newComponent;
   });
 
-  !isCloning && updateComponentLayout(pastedComponents, parentId, isCut);
+  if (currentPageId === pageId) {
+    updateComponentLayout(pastedComponents, parentId, isCut);
+  }
 
   updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
   !isCloning && toast.success('Component pasted succesfully');

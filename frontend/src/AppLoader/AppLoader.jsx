@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
 import { withTranslation } from 'react-i18next';
 import { appService, organizationService, authenticationService } from '@/_services';
-import { Editor } from '../Editor/Editor';
+import { Editor, EditorFunc } from '@/Editor';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import config from 'config';
 import { safelyParseJSON, stripTrailingSlash, redirectToDashboard, getSubpath, getWorkspaceId } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
 import { useAppDataActions } from '@/_stores/appDataStore';
-import Spinner from '@/_ui/Spinner';
 import _ from 'lodash';
 
 const AppLoaderComponent = (props) => {
@@ -24,7 +23,7 @@ const AppLoaderComponent = (props) => {
 
   const loadAppDetails = () => {
     appService
-      .getApp(appId, 'edit')
+      .fetchApp(appId, 'edit')
       .then((data) => {
         setShouldLoadApp(true);
         updateState({
@@ -78,12 +77,12 @@ const AppLoaderComponent = (props) => {
     }
   };
 
-  if (!shouldLoadApp) return <Spinner />;
+  if (!shouldLoadApp) return <></>;
 
   return config.ENABLE_MULTIPLAYER_EDITING ? (
     <RealtimeEditor {...props} shouldLoadApp={shouldLoadApp} />
   ) : (
-    <Editor {...props} shouldLoadApp={shouldLoadApp} />
+    <EditorFunc {...props} shouldLoadApp={shouldLoadApp} />
   );
 };
 

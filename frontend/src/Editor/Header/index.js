@@ -29,7 +29,6 @@ export default function EditorHeader({
   onVersionRelease,
   saveEditingVersion,
   onVersionDelete,
-  isMaintenanceOn,
   slug,
   darkMode,
 }) {
@@ -65,7 +64,8 @@ export default function EditorHeader({
     updatePresence(initialPresence);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
-  const handleLogoClick = () => {
+  const handleLogoClick = (e) => {
+    e.preventDefault();
     // Force a reload for clearing interval triggers
     window.location.href = '/';
   };

@@ -6,6 +6,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const BoardContext = React.createContext({});
 
+// This one is deprecated and not deleted to support backward compatibility
 export const KanbanBoard = ({
   id,
   height,

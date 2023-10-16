@@ -28,16 +28,11 @@ import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
 
-import { PageService } from '@services/page.service';
-import { EventsService } from '@services/events_handler.service';
-
 @Controller('apps')
 export class AppsController {
   constructor(
     private appsService: AppsService,
     private foldersService: FoldersService,
-    private pageService: PageService,
-    private eventsService: EventsService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
 
@@ -84,15 +79,9 @@ export class AppsController {
     }
 
     const response = decamelizeKeys(app);
-
     const seralizedQueries = [];
     const dataQueriesForVersion = app.editingVersion
       ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)
-      : [];
-
-    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(app.editingVersion.id) : [];
-    const eventsForVersion = app.editingVersion
-      ? await this.eventsService.findEventsForVersion(app.editingVersion.id)
       : [];
 
     // serialize queries
@@ -104,8 +93,6 @@ export class AppsController {
 
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
-    response['pages'] = pagesForVersion;
-    response['events'] = eventsForVersion;
 
     //! if editing version exists, camelize the definition
     if (app.editingVersion && app.editingVersion.definition) {
@@ -136,9 +123,6 @@ export class AppsController {
       ? await this.appsService.findVersion(app.currentVersionId)
       : await this.appsService.findVersion(app.editingVersion?.id);
 
-    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
-    const eventsForVersion = app.editingVersion ? await this.eventsService.findEventsForVersion(versionToLoad.id) : [];
-
     // serialize
     return {
       current_version_id: app['currentVersionId'],
@@ -148,11 +132,6 @@ export class AppsController {
       is_maintenance_on: app.isMaintenanceOn,
       name: app.name,
       slug: app.slug,
-      events: eventsForVersion,
-      pages: pagesForVersion,
-      homePageId: versionToLoad.homePageId,
-      globalSettings: versionToLoad.globalSettings,
-      showViewerNavigation: versionToLoad.showViewerNavigation,
     };
   }
 
@@ -308,25 +287,7 @@ export class AppsController {
       );
     }
 
-    const pagesForVersion = await this.pageService.findPagesForVersion(versionId);
-    const eventsForVersion = await this.eventsService.findEventsForVersion(versionId);
-
-    const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
-
-    delete appCurrentEditingVersion['app'];
-
-    const appData = {
-      ...app,
-    };
-
-    delete appData['editingVersion'];
-
-    return {
-      ...appData,
-      editing_version: camelizeKeys(appCurrentEditingVersion),
-      pages: pagesForVersion,
-      events: eventsForVersion,
-    };
+    return { ...appVersion, data_queries: appVersion.dataQueries };
   }
 
   @UseGuards(JwtAuthGuard)

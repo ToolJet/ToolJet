@@ -5,6 +5,7 @@ import {
   appVersionService,
   orgEnvironmentVariableService,
   appEnvironmentService,
+  orgEnvironmentConstantService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -123,7 +124,7 @@ const EditorComponent = (props) => {
   const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isQueryPaneDragging, setIsQueryPaneDragging] = useState(false);
-  const [isQueryPaneExpanded, setIsQueryPaneExpanded] = useState(false);
+  const [isQueryPaneExpanded, setIsQueryPaneExpanded] = useState(false); //!check where this is used
   const [selectionInProgress, setSelectionInProgress] = useState(false);
   const [hoveredComponent, setHoveredComponent] = useState(null);
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
@@ -156,15 +157,13 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     updateState({ isLoading: true });
-    // 1. Get the current session and current user from the authentication service
+
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = currentSession?.current_user;
 
-    // 2. Subscribe to changes in the current session using RxJS observable pattern
+    // Subscribe to changes in the current session using RxJS observable pattern
     const subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      // 3. Check if the current user and group permissions are available
       if (currentUser && currentSession?.group_permissions) {
-        // 4. Prepare user details in a format suitable for the application
         const userVars = {
           email: currentUser.email,
           firstName: currentUser.first_name,
@@ -227,10 +226,17 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
+  useEffect(
+    () => {
+      const components = appDefinition?.pages?.[currentPageId]?.components || {};
+      computeComponentState(components);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentPageId]
+  );
+
   useEffect(() => {
     // This effect runs when lastKeyPressTimestamp changes
-    // You can place your database update logic here
-    // Ensure that you only update the database if the timestamp is recent
     if (Date.now() - lastKeyPressTimestamp < 500) {
       updateEditorState({
         isUpdatingEditorStateInProcess: true,
@@ -289,6 +295,21 @@ const EditorComponent = (props) => {
     });
   };
 
+  const fetchOrgEnvironmentConstants = () => {
+    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
+    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+      const orgConstants = {};
+      constants.map((constant) => {
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
+      });
+
+      useCurrentStateStore.getState().actions.setCurrentState({
+        constants: orgConstants,
+      });
+    });
+  };
+
   const initComponentVersioning = () => {
     updateEditorState({
       canUndo: false,
@@ -327,6 +348,7 @@ const EditorComponent = (props) => {
     });
   };
 
+  //! websocket events do not work
   const initEventListeners = () => {
     socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
@@ -343,9 +365,9 @@ const EditorComponent = (props) => {
     window.addEventListener('message', handleMessage);
 
     await fetchApp(props.params.pageHandle, true);
-
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
+    await fetchOrgEnvironmentConstants();
     initComponentVersioning();
     initRealtimeSave();
     initEventListeners();
@@ -469,7 +491,6 @@ const EditorComponent = (props) => {
   const handleQueryPaneDragging = (bool) => setIsQueryPaneDragging(bool);
   const handleQueryPaneExpanding = (bool) => setIsQueryPaneExpanded(bool);
 
-  //! Needs attention
   const handleOnComponentOptionChanged = (component, optionName, value) => {
     return onComponentOptionChanged(component, optionName, value);
   };
@@ -631,15 +652,8 @@ const EditorComponent = (props) => {
     appDefinitionChanged(newAppDefinition, {
       globalSettings: true,
     });
-
-    // props.ymap?.set('appDef', {
-    //   newDefinition: appDefinition,
-    //   editingVersionId: props.editingVersion?.id,
-    // });
-    // autoSave();
   };
 
-  //!--------
   const callBack = async (data, startingPageHandle, versionSwitched = false) => {
     setWindowTitle(data.name);
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
@@ -698,28 +712,19 @@ const EditorComponent = (props) => {
     await handleEvent('onPageLoad', currentPageEvents);
   };
 
-  //****** */
-
   const fetchApp = async (startingPageHandle, onMount = false) => {
     const _appId = props?.params?.id;
 
     if (!onMount) {
-      await appService.getApp(_appId).then((data) => callBack(data, startingPageHandle));
+      await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
     } else {
       callBack(app, startingPageHandle);
     }
   };
 
-  // !--------
-  const setAppDefinitionFromVersion = (appData, isCurrentVersionReleased = true) => {
+  const setAppDefinitionFromVersion = (appData) => {
     const version = appData?.editing_version?.id;
     if (version?.id !== editingVersion?.id) {
-      // !Need to fix this
-      // appDefinitionChanged(defaults(version.definition, defaultDefinition(props.darkMode)), {
-      //   skipAutoSave: true,
-      //   skipYmapUpdate: true,
-      //   versionChanged: true,
-      // });
       if (version?.id === currentVersionId) {
         updateEditorState({
           canUndo: false,
@@ -732,7 +737,6 @@ const EditorComponent = (props) => {
       });
 
       callBack(appData, null, true);
-
       initComponentVersioning();
     }
   };
@@ -756,7 +760,6 @@ const EditorComponent = (props) => {
         resolve();
       });
     }
-
     let updatedAppDefinition;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
@@ -830,8 +833,6 @@ const EditorComponent = (props) => {
         isUpdatingEditorStateInProcess: updatingEditorStateInProcess,
         appDefinition: updatedAppDefinition,
       });
-
-      computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
     }
 
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
@@ -893,9 +894,9 @@ const EditorComponent = (props) => {
         isUpdatingEditorStateInProcess: false,
       });
     } else if (!isEmpty(editingVersion)) {
-      // param diff ofr table columns needs the complte column data or else the json structure is not correct computeComponentPropertyDiff function handles this
+      //! The computeComponentPropertyDiff function manages the calculation of differences in table columns by requiring complete column data. Without this complete data, the resulting JSON structure may be incorrect.
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
-      const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions);
+      const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
 
       updateAppVersion(appId, editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
@@ -1080,7 +1081,6 @@ const EditorComponent = (props) => {
   const removeComponent = (componentId) => {
     if (!isVersionReleased) {
       let newDefinition = cloneDeep(appDefinition);
-      // Delete child components when parent is deleted
 
       let childComponents = [];
 
@@ -1198,7 +1198,7 @@ const EditorComponent = (props) => {
           icon: '🗑️',
         });
       }
-      // appDefinitionChanged(newDefinition);
+
       handleInspectorView();
     } else if (isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
@@ -1230,6 +1230,11 @@ const EditorComponent = (props) => {
 
     if (pageExists) {
       toast.error('Page name already exists');
+      return;
+    }
+
+    if (name.length > 32) {
+      toast.error('Page name cannot be more than 32 characters');
       return;
     }
 
@@ -1516,8 +1521,6 @@ const EditorComponent = (props) => {
     });
   };
 
-  // !-------
-
   const appVersionPreviewLink = editingVersion
     ? `/applications/${appId}/versions/${editingVersion.id}/${currentState.page.handle}`
     : '';
@@ -1558,6 +1561,7 @@ const EditorComponent = (props) => {
     );
   }
 
+  //! Need to move conditionally rendered components to separate components => Widget Manger or Widget Inspector
   const shouldrenderWidgetInspector =
     currentSidebarTab === 1 &&
     selectedComponents?.length === 1 &&
@@ -1589,7 +1593,6 @@ const EditorComponent = (props) => {
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
-          // toggleAppMaintenance={toggleAppMaintenance}
           editingVersion={editingVersion}
           appVersionPreviewLink={appVersionPreviewLink}
           canUndo={canUndo}

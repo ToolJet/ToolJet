@@ -288,7 +288,7 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     let headers = columns.map((column) => {
-      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+      return { exportValue: String(column?.exportValue), key: column.key ? String(column.key) : column?.key };
     });
     let data = globalFilteredRows.map((row) => {
       return headers.reduce((accumulator, header) => {
@@ -412,7 +412,7 @@ export function Table({
   columnData = useMemo(
     () =>
       columnData.filter((column) => {
-        if (resolveReferences(column.columnVisibility, currentState)) {
+        if (resolveReferences(column?.columnVisibility, currentState)) {
           return column;
         }
       }),
@@ -457,7 +457,7 @@ export function Table({
     return wrapOption?.textWrap;
   };
 
-  const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
+  const optionsData = columnData.map((column) => column?.columnOptions?.selectOptions);
   const columns = useMemo(
     () => {
       return [...leftActionsCellData, ...columnData, ...rightActionsCellData];
@@ -917,7 +917,7 @@ export function Table({
           </div>
           {allColumns.map(
             (column) =>
-              typeof column.Header === 'string' && (
+              typeof column?.Header === 'string' && (
                 <div key={column.id}>
                   <div>
                     <label className="dropdown-item d-flex cursor-pointer">
@@ -1547,15 +1547,7 @@ export function Table({
                 ))}
             </div>
             <div className={`col d-flex justify-content-center h-100 ${loadingState && 'w-100'}`}>
-              {loadingState && (
-                <div className="w-100">
-                  <SkeletonTheme baseColor="var(--slate3)" width="100%">
-                    <Skeleton count={1} width={'100%'} height={28} className="mb-1" />
-                  </SkeletonTheme>
-                </div>
-              )}
-
-              {enablePagination && !loadingState && (
+              {enablePagination && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}
@@ -1570,6 +1562,7 @@ export function Table({
                   enablePrevButton={enablePrevButton}
                   darkMode={darkMode}
                   tableWidth={width}
+                  loadingState={loadingState}
                 />
               )}
             </div>
