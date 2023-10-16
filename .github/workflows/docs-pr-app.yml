@@ -41,19 +41,28 @@ jobs:
               {
                 "key": "NODE_ENV",
                 "value": "production"
-              },            
+              },
+              {
+                "key": "NODE_VERSION"
+                "value": "16.18.1."
+              },
+              {
+                "key": "NPM_VERSION"
+                "value": "8.19.2"
+              },
+              {
+                "key": "GA_MID"
+                "value": "dummy"
+              }   
             "serviceDetails": {
-                "buildCommand": "npm run build",
-                "publishPath": "build",
+                "buildCommand": "npm i; npm run build",
+                "publishPath": "/build",
                 "openPorts": [{
                 "port": 3000,
                 "protocol": "TCP"
                 }],
                 "pullRequestPreviewsEnabled": "no",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com",
-                "buildEnvironment": {
-                  "nodeVersion": "16.14.2"
-                }
             }    
           }')
 
