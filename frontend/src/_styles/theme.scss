@@ -11081,6 +11081,13 @@ tbody {
   }
 }
 
+.slug-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 150px; 
+}
+
 .app-slug-container,
 .shareable-link-container,
 .workspace-folder-modal {

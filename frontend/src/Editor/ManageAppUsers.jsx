@@ -229,7 +229,7 @@ class ManageAppUsersComponent extends React.Component {
                     {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
                   </label>
                   <div className="input-group">
-                    <span className="input-group-text applink-text flex-grow-1" data-cy="app-link">
+                    <span className="input-group-text applink-text flex-grow-1 slug-ellipsis" data-cy="app-link">
                       {appLink}
                     </span>
                     <div className="input-with-icon">
@@ -242,6 +242,7 @@ class ManageAppUsersComponent extends React.Component {
                           e.persist();
                           this.delayedSlugChange(e);
                         }}
+                        style={{ maxWidth: '150px' }}
                         defaultValue={this.props.slug}
                         data-cy="app-name-slug-input"
                       />
