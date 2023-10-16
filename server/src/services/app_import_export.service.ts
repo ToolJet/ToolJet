@@ -576,6 +576,20 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
 
+      const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+        if (componentParentId) {
+          const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+          const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+          if (parentComponent) {
+            return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+          }
+        }
+
+        return false;
+      };
+
       for (const page of importingPages) {
         const newPage = manager.create(Page, {
           name: page.name,
@@ -595,20 +609,6 @@ export class AppImportExportService {
         }
 
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
-
-        const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-          if (componentParentId) {
-            const parentId = component?.parent?.split('-').slice(0, -1).join('-');
-
-            const parentComponent = allComponents.find((comp) => comp.id === parentId);
-
-            if (parentComponent) {
-              return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
-            }
-          }
-
-          return false;
-        };
 
         for (const component of pageComponents) {
           const newComponent = new Component();
