@@ -1,0 +1,214 @@
+name: Cypress App-Builder
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, closed]
+
+  workflow_dispatch:
+
+env:
+  PR_NUMBER: ${{ github.event.number }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  Cypress-App-Builder:
+    runs-on: ubuntu-22.04
+
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-app-builder' }}
+
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
+
+      - name: Set up Docker
+        uses: docker-practice/actions-setup-docker@master
+
+      - name: Run PosgtreSQL Database Docker Container
+        run: |
+          sudo docker network create tooljet
+          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Install and build dependencies
+        run: |
+          npm cache clean --force
+          npm install
+          npm install --prefix server
+          npm install --prefix frontend
+          npm run build:plugins
+
+      - name: Set up environment variables
+        run: |
+          echo "TOOLJET_HOST=http://localhost:8082" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
+          echo "PG_HOST=localhost" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
+          echo "TOOLJET_DB_HOST=localhost" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
+
+      - name: Set up database
+        run: |
+          npm run --prefix server db:create
+          npm run --prefix server db:reset
+          npm run --prefix server db:seed
+
+      - name: sleep 5
+        run: sleep 5
+
+      - name: Run PostgREST Docker Container
+        run: |
+          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
+          -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+          postgrest/postgrest:v10.1.1.20221215
+
+      - name: Run plugins compilation in watch mode
+        run: cd plugins && npm start &
+
+      - name: Run the server
+        run: cd server && npm run start:dev &
+
+      - name: Run the client
+        run: cd frontend && npm start &
+
+      - name: Wait for the server to be ready
+        run: |
+          timeout 1500 bash -c '
+          until curl --silent --fail http://localhost:8082; do
+            sleep 5
+          done'
+
+      - name: docker logs
+        run: sudo docker logs postgrest
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
+
+      - name: App builder
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:8082"
+          config-file: cypress-app-builder.config.js
+
+      - name: Capture Screenshots
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: screenshots
+          path: cypress-tests/cypress/screenshots
+
+  Cypress-App-builder-Subpath:
+    runs-on: ubuntu-22.04
+
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-app-builder-subpath' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      # Create Docker Buildx builder with platform configuration
+      - name: Set up Docker Buildx
+        run: |
+          mkdir -p ~/.docker/cli-plugins
+          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+          chmod a+x ~/.docker/cli-plugins/docker-buildx
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx use mybuilder
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: use mybuilder buildx
+        run: docker buildx use mybuilder
+
+      - name: Build docker image
+        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypress
+
+      - name: Set up environment variables
+        run: |
+          echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
+          echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
+          echo "TOOLJET_DB_HOST=postgres" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=postgrest" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
+          echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "SUB_PATH=/apps/tooljet/" >> .env
+          echo "NODE_ENV=production" >> .env
+          echo "SERVE_CLIENT=true" >> .env
+
+      - name: Pulling the docker-compose file
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+      - name: Run docker-compose file
+        run: docker-compose up -d
+
+      - name: Checking containers
+        run: docker ps -a
+
+      - name: docker logs
+        run: sudo docker logs Tooljet-app
+
+      - name: Wait for the server to be ready
+        run: |
+          timeout 1500 bash -c '
+          until curl --silent --fail http://localhost:80/apps/tooljet/; do
+            sleep 5
+          done'
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
+
+      - name: App Builder subpath
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:80/apps/tooljet/"
+          config-file: cypress-app-builder.config.js
+
+      - name: Capture Screenshots
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: screenshots
+          path: cypress-tests/cypress/screenshots

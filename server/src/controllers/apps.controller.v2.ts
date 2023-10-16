@@ -20,8 +20,8 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { App } from 'src/entities/app.entity';
 import { User } from 'src/decorators/user.decorator';
 
-import { VersionEditDto } from '@dto/version-edit.dto';
-import { CreatePageDto, UpdatePageDto } from '@dto/pages.dto';
+import { CreatePageDto, DeletePageDto } from '@dto/pages.dto';
+import { CreateComponentDto, DeleteComponentDto, UpdateComponentDto, LayoutUpdateDto } from '@dto/component.dto';
 
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
@@ -30,6 +30,7 @@ import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { CreateEventHandlerDto, UpdateEventHandlerDto } from '@dto/event-handler.dto';
 
 @Controller({
   path: 'apps',
@@ -40,6 +41,7 @@ export class AppsControllerV2 {
     private appsService: AppsService,
     private componentsService: ComponentsService,
     private pageService: PageService,
+    private eventsService: EventsService,
     private eventService: EventsService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
@@ -73,6 +75,9 @@ export class AppsControllerV2 {
       : [];
 
     const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(app.editingVersion.id) : [];
+    const eventsForVersion = app.editingVersion
+      ? await this.eventsService.findEventsForVersion(app.editingVersion.id)
+      : [];
 
     // serialize queries
     for (const query of dataQueriesForVersion) {
@@ -84,6 +89,7 @@ export class AppsControllerV2 {
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
     response['pages'] = pagesForVersion;
+    response['events'] = eventsForVersion;
 
     //! if editing version exists, camelize the definition
     if (app.editingVersion && app.editingVersion.definition) {
@@ -93,6 +99,84 @@ export class AppsControllerV2 {
       };
     }
     return response;
+  }
+
+  async appFromSlug(@User() user, @AppDecorator() app: App) {
+    if (user) {
+      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+      if (!ability.can('viewApp', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+    }
+
+    const versionToLoad = app.currentVersionId
+      ? await this.appsService.findVersion(app.currentVersionId)
+      : await this.appsService.findVersion(app.editingVersion?.id);
+
+    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
+    const eventsForVersion = app.editingVersion ? await this.eventsService.findEventsForVersion(versionToLoad.id) : [];
+
+    // serialize
+    return {
+      current_version_id: app['currentVersionId'],
+      data_queries: versionToLoad?.dataQueries,
+      definition: versionToLoad?.definition,
+      is_public: app.isPublic,
+      is_maintenance_on: app.isMaintenanceOn,
+      name: app.name,
+      slug: app.slug,
+      events: eventsForVersion,
+      pages: pagesForVersion,
+      homePageId: versionToLoad.homePageId,
+      globalSettings: versionToLoad.globalSettings,
+      showViewerNavigation: versionToLoad.showViewerNavigation,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Get(':id/versions/:versionId')
+  async version(@User() user, @Param('id') id, @Param('versionId') versionId) {
+    const appVersion = await this.appsService.findVersion(versionId);
+    const app = appVersion.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+    if (!ability.can('fetchVersions', app)) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
+    }
+
+    const pagesForVersion = await this.pageService.findPagesForVersion(versionId);
+    const eventsForVersion = await this.eventsService.findEventsForVersion(versionId);
+
+    const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
+
+    delete appCurrentEditingVersion['app'];
+
+    const appData = {
+      ...app,
+    };
+
+    delete appData['editingVersion'];
+
+    return {
+      ...appData,
+      editing_version: camelizeKeys(appCurrentEditingVersion),
+      pages: pagesForVersion,
+      events: eventsForVersion,
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -118,6 +202,7 @@ export class AppsControllerV2 {
 
     return await this.appsService.updateAppVersion(version, appVersionUpdateDto);
   }
+
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id/versions/:versionId/global_settings')
@@ -150,7 +235,7 @@ export class AppsControllerV2 {
     @User() user,
     @Param('id') id,
     @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
+    @Body() createComponentDto: CreateComponentDto
   ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
@@ -164,7 +249,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.create(versionEditDto.diff, versionEditDto.pageId, versionId);
+    await this.componentsService.create(createComponentDto.diff, createComponentDto.pageId, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -174,7 +259,7 @@ export class AppsControllerV2 {
     @User() user,
     @Param('id') id,
     @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
+    @Body() updateComponentDto: UpdateComponentDto
   ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
@@ -188,7 +273,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.update(versionEditDto.diff);
+    await this.componentsService.update(updateComponentDto.diff, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -198,7 +283,7 @@ export class AppsControllerV2 {
     @User() user,
     @Param('id') id,
     @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
+    @Body() deleteComponentDto: DeleteComponentDto
   ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
@@ -212,7 +297,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.delete(versionEditDto.diff);
+    await this.componentsService.delete(deleteComponentDto.diff, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -222,7 +307,7 @@ export class AppsControllerV2 {
     @User() user,
     @Param('id') id,
     @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
+    @Body() updateComponentLayout: LayoutUpdateDto
   ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
@@ -236,7 +321,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.componentLayoutChange(versionEditDto.diff);
+    await this.componentsService.componentLayoutChange(updateComponentLayout.diff, versionId);
   }
 
   // pages api
@@ -282,11 +367,50 @@ export class AppsControllerV2 {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id/versions/:versionId/pages')
-  async updatePages(
+  async updatePages(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() updatePageDto) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    await this.pageService.updatePage(updatePageDto, versionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Delete(':id/versions/:versionId/pages')
+  async deletePage(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() deletePageDto: DeletePageDto) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    await this.pageService.deletePage(deletePageDto.pageId, versionId);
+  }
+
+  // events api
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Post(':id/versions/:versionId/events')
+  async createEvent(
     @User() user,
     @Param('id') id,
     @Param('versionId') versionId,
-    @Body() updatePageDto: Partial<UpdatePageDto>
+    @Body() createEventHandlerDto: CreateEventHandlerDto
   ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
@@ -300,57 +424,17 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.pageService.updatePage({ pageId: updatePageDto.pageId, diff: updatePageDto.diff });
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
-  @Delete(':id/versions/:versionId/pages')
-  async deletePage(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
-    const version = await this.appsService.findVersion(versionId);
-    const app = version.app;
-
-    if (app.id !== id) {
-      throw new BadRequestException();
-    }
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
-
-    if (!ability.can('updateVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-
-    const { pageId } = body;
-
-    if (pageId) {
-      await this.pageService.deletePage(pageId, versionId);
-    }
-  }
-
-  // events api
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
-  @Post(':id/versions/:versionId/events')
-  async createEvent(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
-    const version = await this.appsService.findVersion(versionId);
-    const app = version.app;
-
-    if (app.id !== id) {
-      throw new BadRequestException();
-    }
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
-
-    if (!ability.can('updateVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-
-    const { event } = body;
-
-    return this.eventService.createEvent(event, versionId);
+    return this.eventService.createEvent(createEventHandlerDto, versionId);
   }
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id/versions/:versionId/events')
-  async updateEvents(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
+  async updateEvents(
+    @User() user,
+    @Param('id') id,
+    @Param('versionId') versionId,
+    @Body() updateEventHandlerDto: UpdateEventHandlerDto
+  ) {
     const version = await this.appsService.findVersion(versionId);
     const app = version.app;
 
@@ -363,7 +447,9 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.eventService.updateEvent(body?.events, body?.updateType);
+    const { events, updateType } = updateEventHandlerDto;
+
+    return await this.eventService.updateEvent(events, updateType, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -382,6 +468,6 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.eventService.deleteEvent(eventId);
+    return await this.eventService.deleteEvent(eventId, versionId);
   }
 }

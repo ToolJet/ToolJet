@@ -14,7 +14,7 @@ import { EventManager } from '@/Editor/Inspector/EventManager';
 import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
@@ -95,14 +95,6 @@ export const QueryManagerBody = ({
 
   const optionsChanged = (newOptions) => {
     validateNewOptions(newOptions);
-  };
-
-  const eventsChanged = (events) => {
-    optionchanged('events', events);
-    //added this here since the subscriber added in QueryManager component does not detect this change
-    useDataQueriesStore
-      .getState()
-      .actions.saveData({ ...selectedQuery, options: { ...selectedQuery.options, events: events } });
   };
 
   const toggleOption = (option) => {

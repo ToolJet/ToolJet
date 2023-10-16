@@ -386,7 +386,7 @@ export const SubContainer = ({
       enableReleasedVersionPopupState();
       return;
     }
-    console.log('---arpit---onDragStop---');
+
     const canvasWidth = getContainerCanvasWidth();
     const nodeBounds = direction.node.getBoundingClientRect();
 
