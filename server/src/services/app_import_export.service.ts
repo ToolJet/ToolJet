@@ -602,7 +602,9 @@ export class AppImportExportService {
         return false;
       };
 
-      for (const page of importingPages) {
+      const pagesOfAppVersion = importingPages.filter((page) => page.appVersionId === importingAppVersion.id);
+
+      for (const page of pagesOfAppVersion) {
         const newPage = manager.create(Page, {
           name: page.name,
           handle: page.handle,
