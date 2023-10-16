@@ -139,7 +139,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx
         run: |
           mkdir -p ~/.docker/cli-plugins
