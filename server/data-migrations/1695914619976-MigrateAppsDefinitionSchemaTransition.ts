@@ -51,11 +51,10 @@ export class MigrateAppsDefinitionSchemaTransition1695914619976 implements Migra
 
           const newPage = entityManager.create(Page, {
             name: page.name,
-
             handle: page.handle,
-
             appVersionId: version.id,
-
+            disabled: page.disabled || false,
+            hidden: page.hidden || false,
             index: pagePostionIntheList,
           });
 
@@ -75,19 +74,12 @@ export class MigrateAppsDefinitionSchemaTransition1695914619976 implements Migra
                 const layout = componentLayout[type];
 
                 const newLayout = new Layout();
-
                 newLayout.type = type;
-
                 newLayout.top = layout.top;
-
                 newLayout.left = layout.left;
-
                 newLayout.width = layout.width;
-
                 newLayout.height = layout.height;
-
                 newLayout.component = component;
-
                 componentLayouts.push(newLayout);
               }
             }
@@ -99,15 +91,10 @@ export class MigrateAppsDefinitionSchemaTransition1695914619976 implements Migra
             pageEvents.forEach(async (event, index) => {
               const newEvent = {
                 name: event.eventId,
-
                 sourceId: pageCreated.id,
-
                 target: Target.page,
-
                 event: event,
-
                 index: pageEvents.index || index,
-
                 appVersionId: version.id,
               };
 
@@ -121,15 +108,10 @@ export class MigrateAppsDefinitionSchemaTransition1695914619976 implements Migra
             eventObj.event.forEach(async (event, index) => {
               const newEvent = {
                 name: event.eventId,
-
                 sourceId: eventObj.componentId,
-
                 target: Target.component,
-
                 event: event,
-
                 index: eventObj.index || index,
-
                 appVersionId: version.id,
               };
 
