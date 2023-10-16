@@ -18,7 +18,6 @@ COPY babel.config.js ./
 COPY docusaurus.config.js ./
 COPY sidebars.js ./
 COPY versions.json ./
-COPY yarn.lock ./
 
 # Install project dependencies
 RUN npm install
