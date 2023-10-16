@@ -100,19 +100,13 @@ export function AppModal({
   const handleInputChange = (e) => {
     const newAppName = e.target.value;
     const trimmedName = newAppName.trim();
-    if (trimmedName.length > 50) {
+    setNewAppName(newAppName);
+    if (newAppName.length >= 50) {
       setInfoText('Maximum length has been reached');
     } else {
       setInfoText('');
       const error = validateAppName(trimmedName);
       setErrorText(error?.errorMsg || '');
-
-      if (clearInput) {
-        setNewAppName('');
-        setClearInput(false);
-      } else {
-        setNewAppName(newAppName);
-      }
     }
   };
 
@@ -148,7 +142,7 @@ export function AppModal({
             placeholder={'Enter app name'}
             value={newAppName}
             data-cy="app-name-input"
-            maxLength={51}
+            maxLength={50}
             autoFocus
             ref={inputRef}
             style={{
