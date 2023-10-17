@@ -121,9 +121,9 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
       <InfoOrErrorBox
         active={isError || isEditing}
         message={
-          errorMessage || warningText || name.length >= 50
-            ? 'Maximum length has been reached'
-            : 'App name should be unique and max 50 characters'
+          errorMessage ||
+          warningText ||
+          (name.length >= 50 ? 'Maximum length has been reached' : 'App name should be unique and max 50 characters')
         }
         isWarning={warningText || name.length >= 50}
         isError={isError}
