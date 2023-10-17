@@ -11,6 +11,9 @@ export class ImportResourcesDto {
   app: ImportAppDto[];
 
   @IsOptional()
+  appName: string;
+
+  @IsOptional()
   tooljet_database: ImportTooljetDatabaseDto[];
 }
 
