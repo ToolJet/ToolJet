@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ToolTip } from '@/_components';
 import { appService } from '@/_services';
-import { handleHttpErrorMessages, validateAppName, validateName } from '@/_helpers/utils';
+import { handleHttpErrorMessages, validateName } from '@/_helpers/utils';
 import InfoOrErrorBox from './InfoOrErrorBox';
 import { toast } from 'react-hot-toast';
 
@@ -32,7 +32,7 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
 
   const saveAppName = async (newName) => {
     const trimmedName = newName.trim();
-    if (validateName(trimmedName, 'App name', true)?.errorMsg) {
+    if (validateName(trimmedName, 'App', false, true)?.errorMsg) {
       setName(appName);
       clearError();
       setIsEditing(false);
