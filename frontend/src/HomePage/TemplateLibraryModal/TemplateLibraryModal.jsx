@@ -63,7 +63,7 @@ export default function TemplateLibraryModal(props) {
         toast.success('App created.', {
           position: 'top-center',
         });
-        navigate(`/${getWorkspaceId()}/apps/${data.id}`);
+        navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`);
       })
       .catch((e) => {
         toast.error(e.error, {

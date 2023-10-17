@@ -1528,21 +1528,14 @@ export function Table({
                 ) : (
                   !loadingState && (
                     <span data-cy={`footer-number-of-records`} className="font-weight-500 color-slate11">
-                      {`${globalFilteredRows.length} Records`}
+                      {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
+                      {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                     </span>
                   )
                 ))}
             </div>
             <div className={`col d-flex justify-content-center h-100 ${loadingState && 'w-100'}`}>
-              {loadingState && (
-                <div className="w-100">
-                  <SkeletonTheme baseColor="var(--slate3)" width="100%">
-                    <Skeleton count={1} width={'100%'} height={28} className="mb-1" />
-                  </SkeletonTheme>
-                </div>
-              )}
-
-              {enablePagination && !loadingState && (
+              {enablePagination && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}
@@ -1557,6 +1550,7 @@ export function Table({
                   enablePrevButton={enablePrevButton}
                   darkMode={darkMode}
                   tableWidth={width}
+                  loadingState={loadingState}
                 />
               )}
             </div>

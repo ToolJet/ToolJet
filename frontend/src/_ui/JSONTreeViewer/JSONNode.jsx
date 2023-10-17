@@ -246,6 +246,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             onClick={() => {
               moreActions['actions'][0].dispatchAction(data, currentNode);
             }}
+            data-cy={`copy-value-to-clicpboard`}
           >
             <SolidIcon width="12" height="12" name="copy" />
           </span>

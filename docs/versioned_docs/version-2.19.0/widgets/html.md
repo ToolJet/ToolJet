@@ -1,9 +1,9 @@
 ---
 id: html
-title: HTML 
+title: HTML Viewer
 ---
 
-# HTML
+# HTML Viewer
 
 HTML widget can be used to create your own HTML-CSS layout.
 

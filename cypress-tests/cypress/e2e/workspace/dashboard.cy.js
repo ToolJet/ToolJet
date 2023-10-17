@@ -284,7 +284,7 @@ describe("dashboard", () => {
       commonSelectors.toastMessage,
       dashboardText.appClonedToast
     );
-    cy.waitForAppLoad();
+    // cy.waitForAppLoad();
     cy.wait(2000);
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.dragAndDropWidget("button", 25, 25);
