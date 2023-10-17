@@ -18,7 +18,6 @@ import {
   generatePayloadForLimits,
   catchDbException,
   defaultAppEnvironments,
-  generateNextName,
 } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
@@ -107,37 +106,41 @@ export class AppsService {
     });
   }
 
-  async create(user: User, manager: EntityManager, type: string): Promise<App> {
+  async create(name: string, user: User, type: string, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const generateNameFor = type === 'workflow' ? 'My workflow' : 'My app';
-      const name = await generateNextName(generateNameFor);
-      const app = await manager.save(
-        manager.create(App, {
-          type,
-          name: name,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          organizationId: user.organizationId,
-          userId: user.id,
-          isMaintenanceOn: type === 'workflow' ? true : false,
-        })
+      return await catchDbException(
+        async () => {
+          const app = await manager.save(
+            manager.create(App, {
+              type,
+              name,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              organizationId: user.organizationId,
+              userId: user.id,
+              isMaintenanceOn: type === 'workflow' ? true : false,
+            })
+          );
+
+          //create default app version
+          await this.createVersion(user, app, 'v1', null, null, manager);
+
+          await manager.save(
+            manager.create(AppUser, {
+              userId: user.id,
+              appId: app.id,
+              role: 'admin',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            })
+          );
+
+          await this.createAppGroupPermissionsForAdmin(app, manager);
+          return app;
+        },
+        DataBaseConstraints.APP_NAME_UNIQUE,
+        'This app name is already taken.'
       );
-
-      //create default app version
-      await this.createVersion(user, app, 'v1', null, null, manager);
-
-      await manager.save(
-        manager.create(AppUser, {
-          userId: user.id,
-          appId: app.id,
-          role: 'admin',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
-      );
-
-      await this.createAppGroupPermissionsForAdmin(app, manager);
-      return app;
     }, manager);
   }
 
@@ -177,9 +180,9 @@ export class AppsService {
     }
   }
 
-  async clone(existingApp: App, user: User): Promise<App> {
+  async clone(existingApp: App, user: User, appName: string): Promise<App> {
     const appWithRelations = await this.appImportExportService.export(user, existingApp.id);
-    const clonedApp = await this.appImportExportService.import(user, appWithRelations);
+    const clonedApp = await this.appImportExportService.import(user, appWithRelations, appName);
 
     return clonedApp;
   }

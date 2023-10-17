@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 
 export const AppMenu = function AppMenu({
   deleteApp,
-  cloneApp,
   exportApp,
   canCreateApp,
   canDeleteApp,
@@ -50,6 +49,12 @@ export const AppMenu = function AppMenu({
               <div data-cy="card-options">
                 {canUpdateApp && (
                   <Field
+                    text={t('homePage.appCard.renameApp', 'Rename app')}
+                    onClick={() => openAppActionModal('rename-app')}
+                  />
+                )}
+                {canUpdateApp && (
+                  <Field
                     text={t('homePage.appCard.changeIcon', 'Change Icon')}
                     onClick={() => openAppActionModal('change-icon')}
                   />
@@ -68,7 +73,10 @@ export const AppMenu = function AppMenu({
                       />
                     )}
                     {appType !== 'workflow' && (
-                      <Field text={t('homePage.appCard.cloneApp', 'Clone app')} onClick={cloneApp} />
+                      <Field
+                        text={t('homePage.appCard.cloneApp', 'Clone app')}
+                        onClick={() => openAppActionModal('clone-app')}
+                      />
                     )}
                     {appType !== 'workflow' && (
                       <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />

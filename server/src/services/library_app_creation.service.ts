@@ -14,7 +14,7 @@ export class LibraryAppCreationService {
     private readonly logger: Logger
   ) {}
 
-  async perform(currentUser: User, identifier: string) {
+  async perform(currentUser: User, identifier: string, appName: string) {
     const templateDefinition = this.findTemplateDefinition(identifier);
     const importDto = new ImportResourcesDto();
     importDto.organization_id = currentUser.organizationId;
@@ -24,7 +24,7 @@ export class LibraryAppCreationService {
     if (this.isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
       return await this.importExportResourcesService.import(currentUser, importDto);
     } else {
-      const importedApp = await this.appImportExportService.import(currentUser, templateDefinition);
+      const importedApp = await this.appImportExportService.import(currentUser, templateDefinition, appName);
       return {
         app: [importedApp],
         tooljet_database: [],

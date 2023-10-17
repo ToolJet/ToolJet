@@ -14,18 +14,15 @@ describe("App share functionality", () => {
   const slug = data.appName.toLowerCase().replace(/\s+/g, "-");
   const firstUserEmail = data.email
   const envVar = Cypress.env("environment");
-
   beforeEach(() => {
     cy.appUILogin();
   });
 
   if (envVar === "Community") {
-
     it("Verify private and public app share funtionality", () => {
       cy.apiLogin();
-      cy.apiCreateApp();
+      cy.apiCreateApp(data.appName);
       cy.openApp();
-      cy.renameApp(data.appName);
       cy.dragAndDropWidget("Table", 250, 250);
 
       cy.get(commonWidgetSelector.shareAppButton).click();

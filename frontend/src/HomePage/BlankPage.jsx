@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import { toast } from 'react-hot-toast';
-import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useTranslation } from 'react-i18next';
-import { libraryAppService, appService } from '@/_services';
+import { appService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { useNavigate } from 'react-router-dom';
 
 export const BlankPage = function BlankPage({
-  createApp,
-  darkMode,
-  creatingApp,
-  handleImportApp,
+  readAndImport,
   isImportingApp,
   fileInput,
+  openCreateAppModal,
+  openCreateAppFromTemplateModal,
+  creatingApp,
+  darkMode,
   showTemplateLibraryModal,
   hideTemplateLibraryModal,
   viewTemplateLibraryModal,
@@ -23,9 +22,7 @@ export const BlankPage = function BlankPage({
   canCreateApp,
 }) {
   const { t } = useTranslation();
-  const [deploying, setDeploying] = useState(false);
   const [appsLimit, setAppsLimit] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAppsLimit();
@@ -36,27 +33,6 @@ export const BlankPage = function BlankPage({
     { id: 'job-application-tracker', name: 'Job application tracker' },
     { id: 'whatsapp-and-sms-crm', name: 'Whatsapp and sms crm' },
   ];
-
-  function deployApp(id) {
-    if (!deploying) {
-      const loadingToastId = toast.loading('Deploying app...');
-      setDeploying(true);
-      libraryAppService
-        .deploy(id)
-        .then((data) => {
-          setDeploying(false);
-          toast.dismiss(loadingToastId);
-          setDeploying(false);
-          toast.success('App created.');
-          navigate(`/${getWorkspaceId()}/apps/${data.id}`);
-        })
-        .catch((e) => {
-          toast.dismiss(loadingToastId);
-          e.statusCode !== 451 && toast.error(e.error);
-          setDeploying(false);
-        });
-    }
-  }
 
   function fetchAppsLimit() {
     appService.getAppsLimit().then((data) => {
@@ -74,7 +50,13 @@ export const BlankPage = function BlankPage({
       <div className="row" data-cy="app-template-row">
         {staticTemplates.map(({ id, name }) => {
           return (
-            <div key={id} className="col-4 app-template-card-wrapper" onClick={() => deployApp(id)}>
+            <div
+              key={id}
+              className="col-4 app-template-card-wrapper"
+              onClick={() => {
+                openCreateAppFromTemplateModal({ id, name });
+              }}
+            >
               <div
                 className="template-card cursor-pointer"
                 data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
@@ -148,7 +130,7 @@ export const BlankPage = function BlankPage({
                       <ButtonSolid
                         disabled={appCreationDisabled}
                         leftIcon="plus"
-                        onClick={createApp}
+                        onClick={openCreateAppModal}
                         isLoading={creatingApp}
                         data-cy="button-new-app-from-scratch"
                         className="col"
@@ -161,7 +143,7 @@ export const BlankPage = function BlankPage({
                           <ButtonSolid
                             disabled={appCreationDisabled}
                             leftIcon="folderdownload"
-                            onChange={handleImportApp}
+                            onChange={readAndImport}
                             isLoading={isImportingApp}
                             data-cy="button-import-an-app"
                             className="col"
@@ -200,6 +182,7 @@ export const BlankPage = function BlankPage({
           onHide={hideTemplateLibraryModal}
           onCloseButtonClick={hideTemplateLibraryModal}
           darkMode={darkMode}
+          appCreationDisabled={appCreationDisabled}
         />
       </div>
     )

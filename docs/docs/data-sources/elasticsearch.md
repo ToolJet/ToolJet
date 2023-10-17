@@ -9,7 +9,7 @@ ToolJet can connect to your Elasticsearch cluster to read and write data.
 ## Connection 
 Please make sure the host/IP of the Elasticsearch cluster is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist our IP**.
 
-To add a new Elasticsearch database, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select Elasticsearch from the modal that pops up.
+To establish a connection with the ElasticSearch data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your Elasticsearch cluster: 
 - **Host**
@@ -24,7 +24,7 @@ ToolJet requires the following to connect to your Elasticsearch cluster:
 
 </div>
 
-Elastic search datasource is also providing an option for connecting services with ssl certificates. 
+Elastic search data source is also providing an option for connecting services with ssl certificates. 
 - You can either use CA / Client certificates option. 
   
 <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/ssl.png" alt="Elastic ssl" />
