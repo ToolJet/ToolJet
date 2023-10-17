@@ -413,7 +413,7 @@ export const Container = ({
 
   const paramUpdated = useCallback(
     (id, param, value) => {
-      if (boxes.length && Object.keys(value)?.length > 0) {
+      if (Object.keys(value)?.length > 0) {
         setBoxes((boxes) =>
           update(boxes, {
             [id]: {
