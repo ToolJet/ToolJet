@@ -68,8 +68,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [versionId]);
 
-  const exportApp = (app, versionId, exportTjDb, exportTtables) => {
-    // const finalTable = isDownload === 'true' ? allTables : tables
+  const exportApp = (app, versionId, exportTjDb, exportTables) => {
     const appOpts = {
       app: [
         {
@@ -81,7 +80,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
 
     const requestBody = {
       ...appOpts,
-      ...(exportTjDb && { tooljet_database: exportTtables }),
+      ...(exportTjDb && { tooljet_database: exportTables }),
       organization_id: app.organization_id,
     };
 
