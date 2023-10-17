@@ -34,7 +34,7 @@ describe('library apps controller', () => {
 
       let response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'github-contributors' })
+        .send({ identifier: 'github-contributors', appName: 'Github Contributors' })
         .set('tj-workspace-id', nonAdminUserData.user.defaultOrganizationId)
         .set('Cookie', nonAdminUserData['tokenCookie']);
 
@@ -42,7 +42,7 @@ describe('library apps controller', () => {
 
       response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'github-contributors' })
+        .send({ identifier: 'github-contributors', appName: 'GitHub Contributor Leaderboard' })
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
@@ -61,7 +61,7 @@ describe('library apps controller', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/library_apps')
-        .send({ identifier: 'non-existent-template' })
+        .send({ identifier: 'non-existent-template', appName: 'Non existent template' })
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
 
