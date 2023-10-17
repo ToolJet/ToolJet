@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast';
 import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
-import { validateAppName } from '@/_helpers/utils';
+import { validateName } from '@/_helpers/utils';
 
 export function AppModal({
   closeModal,
@@ -105,7 +105,7 @@ export function AppModal({
       setInfoText('Maximum length has been reached');
     } else {
       setInfoText('');
-      const error = validateAppName(trimmedName);
+      const error = validateName(trimmedName);
       setErrorText(error?.errorMsg || '');
     }
   };
