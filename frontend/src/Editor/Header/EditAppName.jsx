@@ -32,7 +32,7 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
 
   const saveAppName = async (newName) => {
     const trimmedName = newName.trim();
-    if (validateName(trimmedName, 'App name', true)?.errorMsg) {
+    if (validateName(trimmedName, 'App', false, true)?.errorMsg) {
       setName(appName);
       clearError();
       setIsEditing(false);
