@@ -1,21 +1,25 @@
 ---
 id: using-fx
-title: Using FX
+title: Using the FX Functionality
 ---
 
+Clicking on the **fx** symbol in ToolJet opens up a code editor that allows you to write custom JavaScript expressions. You can find **fx** in the configuration panel on the right, next to various properties and settings of a component.
 
-The **fx** symbol in ToolJet represents the function editor, a powerful feature that allows you to write custom JavaScript expressions directly within the App-Builder. By clicking on the "fx" icon next to various properties and settings, you can open the function editor to add dynamic behavior to your components and queries. 
+With **fx**, you can manipulate data, perform calculations, or set conditional logic without leaving the ToolJet interface. It's an invaluable tool for adding complexity and interactivity to your applications.
 
-This enables you to manipulate data, perform calculations, or set conditional logic without leaving the ToolJet interface. It's an invaluable tool for adding complexity and interactivity to your applications.
+## Toggle Button 
 
-Array Of Use-Cases
-The function editor is highly versatile and integrates seamlessly with other features in ToolJet. For example, you can use "fx" to dynamically set the color of a component based on a query result, calculate the sum of a column in a table, or even concatenate strings from multiple text fields. The expressions you write in the function editor can access all the variables, queries, and components within your application. This allows you to create intricate relationships between different parts of your app, making it more responsive and user-friendly.
+When using **fx** buttons associated with toggle buttons, the expected output of the code you enter should be a boolean value - true or false. 
 
-Error Tracking
-The function editor provides error checking, making it easier to write and debug your code. Additionally, ToolJet's documentation offers various examples and guidelines on how to effectively use the "fx" feature to enhance your application. Whether you're a seasoned developer or a business user with limited coding experience, the "fx" function editor offers a straightforward way to add custom logic and dynamic behavior to your ToolJet applications.
+For other cases, the expected value is a string. For example, Ii you are setting `Text color`, `Background Color`, `Loader Color`, etc. You need to pass in a JavaScript code that returns a hex code as a string.  
+
+## Access all Variables, Queries, and Components
+
+The expressions you write in the code editor can access all the variables, queries, and components within your application. This allows you to create intricate relationships between different parts of your app, making it more responsive and user-friendly.
 
 
 
 
 
-Regenerate
+
+

@@ -3,8 +3,6 @@ id: what-are-components
 title: What Are Components?
 ---
 
-<div style={{marginLeft: "40px", marginRight: "40px"}}>
-
 Components in ToolJet serve as the building blocks for creating applications. They are pre-designed elements that you can drag and drop onto the canvas in the App-Builder. ToolJet comes with 45+ built-in components. 
 
 <div style={{textAlign: 'center'}}>
@@ -16,8 +14,7 @@ These components range from basic UI elements like buttons, text fields, and tab
 
 ## Customizing Components
 
-Components are highly customizable and interactive. Once you place a component on the canvas, you can easily modify its properties, styles, and behaviors through the configuration panel on the right side of the App-Builder. This allows you to make your application dynamic and responsive. For example, you can configure a button to run a specific query when clicked, or set up a table to display the results of a database query.
-
+Components are highly customizable and interactive. Once you place a component on the canvas, you can easily modify its properties, styles, and behaviors through the configuration panel on the right side of the App-Builder. This allows you to make your application dynamic and responsive. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-components/component-config.gif" alt="Component Configuration" />
@@ -31,6 +28,15 @@ In ToolJet, components can be easily connected to various data sources like data
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-components/adding-data-to-component.png" alt="Adding Data To Component" />
 </div>
 
+## Custom Components
+
+ToolJet allows for the creation of custom components using React. This feature is invaluable for developers who require functionalities beyond the 45+ built-in components that ToolJet offers. To create a custom component, you can drag and drop a **Custom Component** on the canvas and configure its data and code. 
+
+<div style={{textAlign: 'center'}}>
+    <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-components/custom-components.png" alt="Custom Components" />
 </div>
+
+By incorporating custom React components, you can significantly extend the capabilities of your ToolJet applications, allowing for a more tailored and unique user experience. 
+
 
 

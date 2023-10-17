@@ -13,6 +13,17 @@ const sidebars = {
     'getting-started',
     {
       'type': 'category',
+      'label': 'ToolJet Concepts',
+      'items': [
+        'tooljet-concepts/what-are-components',
+        'tooljet-concepts/integrating-data',
+        'tooljet-concepts/writing-custom-code',
+        'tooljet-concepts/using-fx',
+        'tooljet-concepts/permissions',
+      ],
+    },
+    {
+      'type': 'category',
       'label': 'Setup',
       'link': {
         'type': 'doc',
@@ -212,16 +223,7 @@ const sidebars = {
         'tutorial/keyboard-shortcuts',
       ],
     },
-    {
-      'type': 'category',
-      'label': 'ToolJet Concepts',
-      'items': [
-        'tooljet-concepts/what-are-components',
-        'tooljet-concepts/styling-components',
-        'tooljet-concepts/integrating-data',
 
-      ],
-    },
     {
       'type': 'category',
       'label': 'Workflows',
