@@ -68,8 +68,8 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [versionId]);
 
-  const exportApp = (app, versionId, exportTjDb, tables, isDownload) => {
-    const finalTable = isDownload === 'true' ? allTables : tables
+  const exportApp = (app, versionId, exportTjDb, exportTtables) => {
+    // const finalTable = isDownload === 'true' ? allTables : tables
     const appOpts = {
       app: [
         {
@@ -81,7 +81,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
 
     const requestBody = {
       ...appOpts,
-      ...(exportTjDb && { tooljet_database: finalTable }),
+      ...(exportTjDb && { tooljet_database: exportTtables }),
       organization_id: app.organization_id,
     };
 
@@ -191,14 +191,14 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               className="import-export-footer-btns"
               variant="tertiary"
               data-cy="export-all-button"
-              onClick={() => exportApp(app, null, exportTjDb, tables, 'true')}
+              onClick={() => exportApp(app, null, exportTjDb, allTables)}
             >
               Export All
             </ButtonSolid>
             <ButtonSolid
               className="import-export-footer-btns"
               data-cy="export-selected-version-button"
-              onClick={() => exportApp(app, versionId, exportTjDb, tables, 'false')}
+              onClick={() => exportApp(app, versionId, exportTjDb, tables)}
             >
               Export selected version
             </ButtonSolid>
