@@ -11,8 +11,8 @@ permissions:
   issues: write
 
 jobs:
-  create-review-pr-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-pr-app' }}
+  create-review-docs-app:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-docs-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -83,7 +83,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-review-pr-app'
+                name: 'create-review-docs-app'
               })
             } catch (e) {
               console.log(e)
@@ -93,11 +93,11 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-pr-app']
+              labels: ['active-review-docs-app']
             })
 
-  destroy-review-pr-app:
-    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-pr-app') || github.event.action == 'closed' }}
+  destroy-review-docs-app:
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-docs-app') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -122,7 +122,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'destroy-review-pr-app'
+                name: 'destroy-review-docs-app'
               })
             } catch (e) {
               console.log(e)
@@ -133,7 +133,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-review-pr-app'
+                name: 'suspend-review-docs-app'
               })
             } catch (e) {
               console.log(e)
@@ -144,14 +144,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-review-pr-app'
+                name: 'active-review-docs-app'
               })
             } catch (e) {
               console.log(e)
             }
 
-  suspend-review-pr-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-pr-app' }}
+  suspend-review-docs-app:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-docs-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -176,14 +176,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-review-pr-app'
+                name: 'active-review-docs-app'
               })
             } catch (e) {
               console.log(e)
             }
 
-  resume-review-pr-app:
-    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-pr-app' }}
+  resume-review-docs-app:
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-docs-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -207,7 +207,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-pr-app']
+              labels: ['active-review-docs-app']
             })
 
             try {
@@ -215,7 +215,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-review-pr-app'
+                name: 'suspend-review-docs-app'
               })
             } catch (e) {
               console.log(e)

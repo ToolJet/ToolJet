@@ -1,4 +1,4 @@
-name: Label for stale PR render deploys
+name: Label for stale Docs PR render deploys
 on:
   workflow_dispatch:
   schedule:
@@ -17,7 +17,7 @@ jobs:
         id: stale-label
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          stale-label: "active-review-pr-app"
+          stale-label: "active-review-docs-app"
           stale-time: "86400"
           type: "pull_request"
       - name: Get stale numbers
@@ -40,6 +40,6 @@ jobs:
                 issue_number: prNumber,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                labels: ['suspend-review-pr-app']
+                labels: ['suspend-review-docs-app']
               })
             }
