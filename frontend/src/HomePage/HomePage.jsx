@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
-import { appService, folderService, authenticationService } from '@/_services';
-import { ConfirmDialog } from '@/_components';
+import { appService, folderService, authenticationService, libraryAppService } from '@/_services';
+import { ConfirmDialog, AppModal } from '@/_components';
 import Select from '@/_ui/Select';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
@@ -61,6 +61,15 @@ class HomePageComponent extends React.Component {
       appOperations: {},
       showTemplateLibraryModal: false,
       app: {},
+      showCreateAppModal: false,
+      showCreateAppFromTemplateModal: false,
+      showImportAppModal: false,
+      showCloneAppModal: false,
+      showRenameAppModal: false,
+      fileContent: '',
+      fileName: '',
+      selectedTemplate: null,
+      deploying: false,
     };
   }
 
@@ -119,88 +128,140 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = () => {
+  createApp = async (appName) => {
     let _self = this;
     _self.setState({ creatingApp: true });
-    appService
-      .createApp({ icon: sample(iconList) })
-      .then((data) => {
-        const workspaceId = getWorkspaceId();
-        _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
-      })
-      .catch(({ error }) => {
-        toast.error(error);
+    try {
+      const data = await appService.createApp({ icon: sample(iconList), name: appName });
+
+      const workspaceId = getWorkspaceId();
+      _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
+      toast.success('App created successfully!');
+      return true;
+    } catch (errorResponse) {
+      if (errorResponse.statusCode === 409) {
         _self.setState({ creatingApp: false });
-      });
+        return false;
+      } else {
+        throw errorResponse;
+      }
+    }
+  };
+
+  renameApp = async (newAppName, appId) => {
+    let _self = this;
+    _self.setState({ renamingApp: true });
+    try {
+      await appService.saveApp(appId, { name: newAppName });
+      await this.fetchApps();
+      toast.success('App name has been updated!');
+      return true;
+    } catch (errorResponse) {
+      if (errorResponse.statusCode === 409) {
+        console.log(errorResponse);
+        _self.setState({ renamingApp: false });
+        return false;
+      } else {
+        throw errorResponse;
+      }
+    }
   };
 
   deleteApp = (app) => {
     this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
   };
 
-  cloneApp = (app) => {
+  cloneApp = async (appId, appName) => {
     this.setState({ isCloningApp: true });
-    appService
-      .cloneResource({ app: [{ id: app.id }], organization_id: getWorkspaceId() })
-      .then((data) => {
-        toast.success('App cloned successfully.');
-        this.setState({ isCloningApp: false });
-        this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
-      })
-      .catch(({ _error }) => {
-        toast.error('Could not clone the app.');
-        this.setState({ isCloningApp: false });
-        console.log(_error);
-      });
+    try {
+      const data = await appService.cloneApp(appName, appId);
+      toast.success('App cloned successfully!');
+      this.setState({ isCloningApp: false });
+      this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
+      return true;
+    } catch (_error) {
+      this.setState({ isCloningApp: false });
+      if (_error.statusCode === 409) {
+        return false;
+      } else {
+        throw _error;
+      }
+    }
   };
 
   exportApp = async (app) => {
     this.setState({ isExportingApp: true, app: app });
   };
 
-  handleImportApp = (event) => {
-    const fileReader = new FileReader();
-    fileReader.readAsText(event.target.files[0], 'UTF-8');
-    fileReader.onload = (event) => {
-      const fileContent = event.target.result;
-      this.setState({ isImportingApp: true });
-      try {
-        const organization_id = getWorkspaceId();
-        let importJSON = JSON.parse(fileContent);
-        // For backward compatibility with legacy app import
-        const isLegacyImport = isEmpty(importJSON.tooljet_version);
-        if (isLegacyImport) {
-          importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
-        }
-        const requestBody = { organization_id, ...importJSON };
-        appService
-          .importResource(requestBody)
-          .then((data) => {
-            toast.success('Imported successfully.');
-            this.setState({
-              isImportingApp: false,
-            });
-            if (!isEmpty(data.imports.app)) {
-              this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
-            } else if (!isEmpty(data.imports.tooljet_database)) {
-              this.props.navigate(`/${getWorkspaceId()}/database`);
-            }
-          })
-          .catch(({ error }) => {
-            toast.error(`Could not import: ${error}`);
-            this.setState({
-              isImportingApp: false,
-            });
-          });
-      } catch (error) {
-        toast.error(`Could not import: ${error}`);
-        this.setState({
-          isImportingApp: false,
-        });
-      }
-      // set file input as null to handle same file upload
+  readAndImport = (event) => {
+    try {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const fileReader = new FileReader();
+      const fileName = file.name.replace('.json', '').substring(0, 50);
+      fileReader.readAsText(file, 'UTF-8');
+      fileReader.onload = (event) => {
+        const result = event.target.result;
+        const fileContent = JSON.parse(result);
+        this.setState({ fileContent, fileName, showImportAppModal: true });
+      };
+      fileReader.onerror = (error) => {
+        throw new Error(`Could not import the app: ${error}`);
+      };
       event.target.value = null;
-    };
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  importFile = async (importJSON, appName) => {
+    this.setState({ isImportingApp: true });
+    // For backward compatibility with legacy app import
+    const organization_id = getWorkspaceId();
+    const isLegacyImport = isEmpty(importJSON.tooljet_version);
+    if (isLegacyImport) {
+      importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
+    }
+    const requestBody = { organization_id, appName, ...importJSON };
+    try {
+      const data = await appService.importResource(requestBody);
+      toast.success('App imported successfully.');
+      this.setState({
+        isImportingApp: false,
+      });
+      if (!isEmpty(data.imports.app)) {
+        this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
+      } else if (!isEmpty(data.imports.tooljet_database)) {
+        this.props.navigate(`/${getWorkspaceId()}/database`);
+      }
+    } catch (error) {
+      this.setState({
+        isImportingApp: false,
+      });
+      if (error.statusCode === 409) {
+        return false;
+      }
+    }
+  };
+
+  deployApp = async (event, appName, selectedApp) => {
+    event.preventDefault();
+    const id = selectedApp.id;
+    this.setState({ deploying: true });
+    try {
+      const data = await libraryAppService.deploy(id, appName);
+      this.setState({ deploying: false });
+      toast.success('App created successfully!', { position: 'top-center' });
+      this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`);
+    } catch (e) {
+      this.setState({ deploying: false });
+      if (e.statusCode === 409) {
+        return false;
+      } else {
+        return e;
+      }
+    }
   };
 
   canUserPerform(user, action, app) {
@@ -387,6 +448,18 @@ class HomePageComponent extends React.Component {
           showRemoveAppFromFolderConfirmation: true,
         });
         break;
+      case 'clone-app':
+        this.setState({
+          appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+          showCloneAppModal: true,
+        });
+        break;
+      case 'rename-app':
+        this.setState({
+          appOperations: { ...appOperations, selectedApp: app },
+          showRenameAppModal: true,
+        });
+        break;
     }
   };
 
@@ -442,6 +515,22 @@ class HomePageComponent extends React.Component {
     this.setState({ showTemplateLibraryModal: false });
   };
 
+  openCreateAppFromTemplateModal = (template) => {
+    this.setState({ showCreateAppFromTemplateModal: true, selectedTemplate: template });
+  };
+
+  closeCreateAppFromTemplateModal = () => {
+    this.setState({ showCreateAppFromTemplateModal: false, selectedTemplate: null });
+  };
+
+  openCreateAppModal = () => {
+    this.setState({ showCreateAppModal: true });
+  };
+
+  closeCreateAppModal = () => {
+    this.setState({ showCreateAppModal: false });
+  };
+
   render() {
     const {
       apps,
@@ -457,14 +546,78 @@ class HomePageComponent extends React.Component {
       appSearchKey,
       showAddToFolderModal,
       showChangeIconModal,
+      showCloneAppModal,
       appOperations,
       isExportingApp,
       appToBeDeleted,
       app,
+      showCreateAppModal,
+      showImportAppModal,
+      fileContent,
+      fileName,
+      showRenameAppModal,
+      showCreateAppFromTemplateModal,
     } = this.state;
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
+          {showCreateAppModal && (
+            <AppModal
+              closeModal={this.closeCreateAppModal}
+              processApp={this.createApp}
+              show={this.openCreateAppModal}
+              title={'Create app'}
+              actionButton={'+ Create app'}
+              actionLoadingButton={'Creating'}
+            />
+          )}
+          {showCloneAppModal && (
+            <AppModal
+              closeModal={() => this.setState({ showCloneAppModal: false })}
+              processApp={this.cloneApp}
+              show={() => this.setState({ showCloneAppModal: true })}
+              selectedAppId={appOperations?.selectedApp?.id}
+              selectedAppName={appOperations?.selectedApp?.name}
+              title={'Clone app'}
+              actionButton={'Clone app'}
+              actionLoadingButton={'Cloning'}
+            />
+          )}
+          {showImportAppModal && (
+            <AppModal
+              closeModal={() => this.setState({ showImportAppModal: false })}
+              processApp={this.importFile}
+              fileContent={fileContent}
+              show={() => this.setState({ showImportAppModal: true })}
+              selectedAppName={fileName}
+              title={'Import app'}
+              actionButton={'Import app'}
+              actionLoadingButton={'Importing'}
+            />
+          )}
+          {showCreateAppFromTemplateModal && (
+            <AppModal
+              show={this.openCreateAppFromTemplateModal}
+              templateDetails={this.state.selectedTemplate}
+              processApp={this.deployApp}
+              closeModal={this.closeCreateAppFromTemplateModal}
+              title={'Create new app from template'}
+              actionButton={'+ Create app'}
+              actionLoadingButton={'Creating'}
+            />
+          )}
+          {showRenameAppModal && (
+            <AppModal
+              show={() => this.setState({ showRenameAppModal: true })}
+              closeModal={() => this.setState({ showRenameAppModal: false })}
+              processApp={this.renameApp}
+              selectedAppId={appOperations.selectedApp.id}
+              selectedAppName={appOperations.selectedApp.name}
+              title={'Rename app'}
+              actionButton={'Rename app'}
+              actionLoadingButton={'Renaming'}
+            />
+          )}
           <ConfirmDialog
             show={showAppDeletionConfirmation}
             message={this.props.t(
@@ -479,7 +632,6 @@ class HomePageComponent extends React.Component {
             onCancel={() => this.cancelDeleteAppDialog()}
             darkMode={this.props.darkMode}
           />
-
           <ConfirmDialog
             show={showRemoveAppFromFolderConfirmation}
             message={this.props.t(
@@ -598,7 +750,7 @@ class HomePageComponent extends React.Component {
                   <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                     <Button
                       className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                      onClick={this.createApp}
+                      onClick={() => this.setState({ showCreateAppModal: true })}
                       data-cy="create-new-app-button"
                     >
                       {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
@@ -616,7 +768,7 @@ class HomePageComponent extends React.Component {
                       <label
                         className="homepage-dropdown-style tj-text tj-text-xsm"
                         data-cy="import-option-label"
-                        onChange={this.handleImportApp}
+                        onChange={this.readAndImport}
                       >
                         {this.props.t('homePage.header.import', 'Import')}
                         <input
@@ -661,10 +813,11 @@ class HomePageComponent extends React.Component {
                 )}
                 {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
                   <BlankPage
-                    createApp={this.createApp}
+                    readAndImport={this.readAndImport}
                     isImportingApp={isImportingApp}
                     fileInput={this.fileInput}
-                    handleImportApp={this.handleImportApp}
+                    openCreateAppModal={this.openCreateAppModal}
+                    openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
                     creatingApp={creatingApp}
                     darkMode={this.props.darkMode}
                     showTemplateLibraryModal={this.state.showTemplateLibraryModal}
@@ -714,6 +867,7 @@ class HomePageComponent extends React.Component {
               onHide={() => this.setState({ showTemplateLibraryModal: false })}
               onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
               darkMode={this.props.darkMode}
+              openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
             />
           </div>
         </div>
