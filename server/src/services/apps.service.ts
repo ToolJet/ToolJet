@@ -535,6 +535,7 @@ export class AppsService {
         newComponent.validation = component.validation;
         newComponent.general = component.general;
         newComponent.generalStyles = component.generalStyles;
+        newComponent.displayPreferences = component.displayPreferences;
         newComponent.parent = component.parent ? parentId : null;
         newComponent.page = savedPage;
 
