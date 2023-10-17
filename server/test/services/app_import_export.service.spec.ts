@@ -164,7 +164,8 @@ describe('AppImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       const adminUser = adminUserData.user;
-      await expect(service.import(adminUser, 'hello world')).rejects.toThrow('Invalid params for app import');
+      const appName = 'my app';
+      await expect(service.import(adminUser, 'hello world', appName)).rejects.toThrow('Invalid params for app import');
     });
 
     it('should import app with empty related associations', async () => {
@@ -180,8 +181,8 @@ describe('AppImportExportService', () => {
       });
 
       const { appV2: exportedApp } = await service.export(adminUser, app.id);
-
-      const result = await service.import(adminUser, exportedApp);
+      const appName = 'my app';
+      const result = await service.import(adminUser, exportedApp, appName);
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
@@ -261,7 +262,8 @@ describe('AppImportExportService', () => {
       });
 
       const { appV2: exportedApp } = await service.export(adminUser, application.id);
-      const result = await service.import(adminUser, exportedApp);
+      const appName = 'my app';
+      const result = await service.import(adminUser, exportedApp, appName);
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
