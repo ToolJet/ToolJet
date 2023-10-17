@@ -47,7 +47,7 @@ jobs:
                 "value": "16.18.1"
               },
               {
-                "key": "ENABLE_MARKETPLACE_FEATURE",
+                "key": "NPM_VERSION",
                 "value": "8.19.2"
               }
             ],
