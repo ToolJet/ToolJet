@@ -16,7 +16,7 @@ import 'react-phone-input-2/lib/style.css';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source }) {
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source = null }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -46,6 +46,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           companySize: formData.companySize,
           role: formData.role,
           token: token,
+          source,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
           phoneNumber: formData?.phoneNumber,
