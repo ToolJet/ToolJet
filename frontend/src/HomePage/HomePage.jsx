@@ -133,14 +133,14 @@ class HomePageComponent extends React.Component {
     _self.setState({ creatingApp: true });
     try {
       const data = await appService.createApp({ icon: sample(iconList), name: appName });
-
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       toast.success('App created successfully!');
+      _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
+      _self.setState({ creatingApp: false });
       if (errorResponse.statusCode === 409) {
-        _self.setState({ creatingApp: false });
         return false;
       } else {
         throw errorResponse;
@@ -155,11 +155,11 @@ class HomePageComponent extends React.Component {
       await appService.saveApp(appId, { name: newAppName });
       await this.fetchApps();
       toast.success('App name has been updated!');
+      _self.setState({ renamingApp: false });
       return true;
     } catch (errorResponse) {
+      _self.setState({ renamingApp: false });
       if (errorResponse.statusCode === 409) {
-        console.log(errorResponse);
-        _self.setState({ renamingApp: false });
         return false;
       } else {
         throw errorResponse;
@@ -171,13 +171,17 @@ class HomePageComponent extends React.Component {
     this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
   };
 
-  cloneApp = async (appId, appName) => {
+  cloneApp = async (appName, appId) => {
     this.setState({ isCloningApp: true });
     try {
-      const data = await appService.cloneApp(appName, appId);
+      console.log(appId, appName);
+      const data = await appService.cloneResource({
+        app: [{ id: appId, name: appName }],
+        organization_id: getWorkspaceId(),
+      });
       toast.success('App cloned successfully!');
-      this.setState({ isCloningApp: false });
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
+      this.setState({ isCloningApp: false });
       return true;
     } catch (_error) {
       this.setState({ isCloningApp: false });
@@ -221,9 +225,9 @@ class HomePageComponent extends React.Component {
     const organization_id = getWorkspaceId();
     const isLegacyImport = isEmpty(importJSON.tooljet_version);
     if (isLegacyImport) {
-      importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
+      importJSON = { app: [{ definition: importJSON, appName: appName }], tooljet_version: importJSON.tooljetVersion };
     }
-    const requestBody = { organization_id, appName, ...importJSON };
+    const requestBody = { organization_id, ...importJSON };
     try {
       const data = await appService.importResource(requestBody);
       toast.success('App imported successfully.');
