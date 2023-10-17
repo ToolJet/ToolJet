@@ -21,7 +21,12 @@ import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap, generateInviteURL, generateNextName, generateOrgInviteURL } from 'src/helpers/utils.helper';
+import {
+  dbTransactionWrap,
+  generateInviteURL,
+  generateNextNameAndSlug,
+  generateOrgInviteURL,
+} from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -121,9 +126,8 @@ export class AuthService {
           organization = organizationList[0];
         } else {
           // no form login enabled organization available for user - creating new one
-          const organizationName = generateNextName('My workspace');
-          const slug = organizationName.replace(/\s+/g, '-').toLowerCase();
-          organization = await this.organizationsService.create(organizationName, slug, user, manager);
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          organization = await this.organizationsService.create(name, slug, user, manager);
         }
 
         user.organizationId = organization.id;
@@ -265,9 +269,8 @@ export class AuthService {
       // Create default organization
       //TODO: check if there any case available that the firstname will be nil
 
-      const organizationName = generateNextName('My workspace');
-      const slug = organizationName.replace(/\s+/g, '-').toLowerCase();
-      organization = await this.organizationsService.create(organizationName, slug, null, manager);
+      const { name, slug } = generateNextNameAndSlug('My workspace');
+      organization = await this.organizationsService.create(name, slug, null, manager);
       const user = await this.usersService.create(
         {
           email,

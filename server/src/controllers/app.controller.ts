@@ -78,9 +78,6 @@ export class AppController {
       currentOrganization = organization;
     }
 
-    if (currentOrganization && user.organizationIds?.includes(currentOrganization.id)) {
-      user.organization_id = currentOrganization.id;
-    }
     return this.authService.generateSessionPayload(user, currentOrganization);
   }
 

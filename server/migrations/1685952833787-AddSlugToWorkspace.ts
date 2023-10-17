@@ -8,6 +8,7 @@ export class AddSlugToWorkspace1685952833787 implements MigrationInterface {
       new TableColumn({
         name: 'slug',
         type: 'varchar',
+        length: '50',
         isNullable: true,
       })
     );

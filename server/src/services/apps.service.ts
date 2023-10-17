@@ -17,7 +17,7 @@ import {
   cleanObject,
   dbTransactionWrap,
   defaultAppEnvironments,
-  generateNextName,
+  generateNextNameAndSlug,
 } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
@@ -111,7 +111,7 @@ export class AppsService {
 
   async create(user: User, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const name = await generateNextName('My app');
+      const { name } = generateNextNameAndSlug('My app');
       const app = await manager.save(
         manager.create(App, {
           name,

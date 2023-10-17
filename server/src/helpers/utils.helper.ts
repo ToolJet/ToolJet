@@ -158,8 +158,13 @@ export const processDataInBatches = async <T>(
   } while (data.length === batchSize);
 };
 
-export const generateNextName = (firstWord: string) => {
-  return `${firstWord} ${Date.now()}`;
+export const generateNextNameAndSlug = (firstWord: string) => {
+  const name = `${firstWord} ${Date.now()}`;
+  const slug = name.replace(/\s+/g, '-').toLowerCase();
+  return {
+    name,
+    slug,
+  };
 };
 
 export const truncateAndReplace = (name) => {

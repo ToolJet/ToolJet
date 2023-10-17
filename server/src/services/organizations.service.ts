@@ -5,7 +5,13 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { catchDbException, cleanObject, dbTransactionWrap, isPlural, generateNextName } from 'src/helpers/utils.helper';
+import {
+  catchDbException,
+  cleanObject,
+  dbTransactionWrap,
+  isPlural,
+  generateNextNameAndSlug,
+} from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -148,7 +154,7 @@ export class OrganizationsService {
     try {
       organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug'] });
     } catch (error) {
-      organization = await this.organizationsRepository.findOne(slug, { select: ['id', 'slug'] });
+      organization = await this.organizationsRepository.findOne({ where: { id: slug }, select: ['id', 'slug'] });
     }
     return organization;
   }
@@ -352,6 +358,23 @@ export class OrganizationsService {
       .getOne();
   }
 
+  constructOrgFindQuery(slug: string, id: string, statusList?: Array<boolean>) {
+    const query = createQueryBuilder(Organization, 'organization').leftJoinAndSelect(
+      'organization.ssoConfigs',
+      'organisation_sso',
+      'organisation_sso.enabled IN (:...statusList)',
+      {
+        statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
+      }
+    );
+    if (slug) {
+      query.andWhere(`organization.slug = :slug`, { slug });
+    } else {
+      query.andWhere(`organization.id = :id`, { id });
+    }
+    return query;
+  }
+
   async fetchOrganizationDetails(
     organizationId: string,
     statusList?: Array<boolean>,
@@ -360,29 +383,9 @@ export class OrganizationsService {
   ): Promise<DeepPartial<Organization>> {
     let result: DeepPartial<Organization>;
     try {
-      result = await createQueryBuilder(Organization, 'organization')
-        .leftJoinAndSelect(
-          'organization.ssoConfigs',
-          'organisation_sso',
-          'organisation_sso.enabled IN (:...statusList)',
-          {
-            statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
-          }
-        )
-        .andWhere('organization.slug = :slug', { slug: organizationId })
-        .getOneOrFail();
+      result = await this.constructOrgFindQuery(organizationId, null, statusList).getOneOrFail();
     } catch (error) {
-      result = await createQueryBuilder(Organization, 'organization')
-        .leftJoinAndSelect(
-          'organization.ssoConfigs',
-          'organisation_sso',
-          'organisation_sso.enabled IN (:...statusList)',
-          {
-            statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
-          }
-        )
-        .andWhere('organization.id = :id', { id: organizationId })
-        .getOne();
+      result = await this.constructOrgFindQuery(null, organizationId, statusList).getOne();
     }
 
     if (!result) return;
@@ -596,9 +599,8 @@ export class OrganizationsService {
         // User not exist
         shouldSendWelcomeMail = true;
         // Create default organization if user not exist
-        const organizationName = generateNextName('My workspace');
-        const slug = organizationName.replace(/\s+/g, '-').toLowerCase();
-        defaultOrganization = await this.create(organizationName, slug, null, manager);
+        const { name, slug } = generateNextNameAndSlug('My workspace');
+        defaultOrganization = await this.create(name, slug, null, manager);
       } else if (user.invitationToken) {
         // User not setup
         shouldSendWelcomeMail = true;
