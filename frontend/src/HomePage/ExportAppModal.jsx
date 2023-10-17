@@ -109,7 +109,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         closeModal();
       });
   };
-  var isDownload = ''
+
   return (
     <BootstrapModal
       onHide={() => closeModal(false)}
@@ -191,14 +191,14 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               className="import-export-footer-btns"
               variant="tertiary"
               data-cy="export-all-button"
-              onClick={() => exportApp(app, null, exportTjDb, tables, isDownload = 'true')}
+              onClick={() => exportApp(app, null, exportTjDb, tables, 'true')}
             >
               Export All
             </ButtonSolid>
             <ButtonSolid
               className="import-export-footer-btns"
               data-cy="export-selected-version-button"
-              onClick={() => exportApp(app, versionId, exportTjDb, tables, isDownload = 'false')}
+              onClick={() => exportApp(app, versionId, exportTjDb, tables, 'false')}
             >
               Export selected version
             </ButtonSolid>
