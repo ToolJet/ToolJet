@@ -354,8 +354,7 @@ export function Page3({ formData, setFormData, setPage, page, setCompleted, isLo
         }}
         onKeyDown={(event) => {
           if (event.key === 'Enter') {
-            setIsLoading(true);
-            setCompleted(true);
+            setPage((currPage) => currPage + 1);
           }
         }}
         isValid={(inputNumber, country, countries) => {
