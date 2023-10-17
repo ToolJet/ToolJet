@@ -379,6 +379,8 @@ export class AppImportExportService {
               handle: page.handle,
               appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
               index: pagePostionIntheList,
+              disabled: page.disabled || false,
+              hidden: page.hidden || false,
             });
             const pageCreated = await manager.save(newPage);
 
@@ -652,6 +654,8 @@ export class AppImportExportService {
           handle: page.handle,
           appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
           index: page.index,
+          disabled: page.disabled || false,
+          hidden: page.hidden || false,
         });
 
         const pageCreated = await manager.save(newPage);
