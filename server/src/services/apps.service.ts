@@ -479,6 +479,8 @@ export class AppsService {
           name: page.name,
           handle: page.handle,
           index: page.index,
+          disabled: page.disabled,
+          hidden: page.hidden,
           appVersionId: appVersion.id,
         })
       );
