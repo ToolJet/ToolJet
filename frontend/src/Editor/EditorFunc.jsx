@@ -871,33 +871,28 @@ const EditorComponent = (props) => {
 
     const newComponentIds = Object.keys(componentUpdateDiff);
 
-    const mappedEvents = [];
-
     newComponentIds.forEach((componentId) => {
       const sourceComponentId = getKeyFromComponentMap(componentMap, componentId);
       if (!sourceComponentId) return;
 
-      const componentEvents = events.filter((event) => event.sourceId === sourceComponentId);
+      appVersionService
+        .findAllEventsWithSourceId(appId, currentVersionId, sourceComponentId)
+        .then((componentEvents) => {
+          if (!componentEvents) return;
+          componentEvents.forEach((event) => {
+            const newEvent = {
+              event: {
+                ...event?.event,
+              },
+              eventType: event?.target,
+              attachedTo: componentMap[event?.sourceId],
+              index: event?.index,
+            };
 
-      mappedEvents.push(...componentEvents);
+            createAppVersionEventHandlers(newEvent);
+          });
+        });
     });
-
-    if (mappedEvents.length === 0) return;
-
-    return Promise.all(
-      mappedEvents.map((event) => {
-        const newEvent = {
-          event: {
-            ...event?.event,
-          },
-          eventType: event?.target,
-          attachedTo: componentMap[event?.sourceId],
-          index: event?.index,
-        };
-
-        createAppVersionEventHandlers(newEvent);
-      })
-    );
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
