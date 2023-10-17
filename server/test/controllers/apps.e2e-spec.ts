@@ -82,11 +82,15 @@ describe('apps controller', () => {
         });
         await createApplicationVersion(app, application);
 
+        const appName = 'My app';
         for (const userData of [viewerUserData, developerUserData]) {
           const response = await request(app.getHttpServer())
             .post(`/api/apps`)
             .set('tj-workspace-id', userData.user.defaultOrganizationId)
-            .set('Cookie', userData['tokenCookie']);
+            .set('Cookie', userData['tokenCookie'])
+            .send({
+              name: appName,
+            });
 
           expect(response.statusCode).toBe(403);
         }
@@ -94,7 +98,10 @@ describe('apps controller', () => {
         const response = await request(app.getHttpServer())
           .post(`/api/apps`)
           .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-          .set('Cookie', adminUserData['tokenCookie']);
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({
+            name: appName,
+          });
 
         expect(response.statusCode).toBe(201);
         expect(response.body.name).toContain('My app');
@@ -115,10 +122,14 @@ describe('apps controller', () => {
 
       await createAppEnvironments(app, adminUserData.organization.id);
 
+      const appName = 'My app';
       const response = await request(app.getHttpServer())
         .post(`/api/apps`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie);
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({
+          name: appName,
+        });
 
       expect(response.statusCode).toBe(201);
       expect(response.body.name).toContain('My app');
@@ -535,7 +546,8 @@ describe('apps controller', () => {
       let response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-        .set('Cookie', adminUserData['tokenCookie']);
+        .set('Cookie', adminUserData['tokenCookie'])
+        .send({ name: 'App to clone_Copy' });
 
       expect(response.statusCode).toBe(201);
 
@@ -546,14 +558,16 @@ describe('apps controller', () => {
       response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
         .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
-        .set('Cookie', developerUserData['tokenCookie']);
+        .set('Cookie', developerUserData['tokenCookie'])
+        .send({ name: 'App to clone_Copy' });
 
       expect(response.statusCode).toBe(403);
 
       response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
         .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
-        .set('Cookie', viewerUserData['tokenCookie']);
+        .set('Cookie', viewerUserData['tokenCookie'])
+        .send({ name: 'App to clone_Copy' });
 
       expect(response.statusCode).toBe(403);
 
@@ -583,7 +597,8 @@ describe('apps controller', () => {
       const response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
         .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie);
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({ name: 'name_Copy' });
 
       expect(response.statusCode).toBe(403);
 
@@ -2121,7 +2136,8 @@ describe('apps controller', () => {
         const response = await request(app.getHttpServer())
           .post('/api/apps/import')
           .set('tj-workspace-id', userData.user.defaultOrganizationId)
-          .set('Cookie', userData['tokenCookie']);
+          .set('Cookie', userData['tokenCookie'])
+          .send({ app: application, name: 'name' });
 
         expect(response.statusCode).toBe(403);
       }
@@ -2130,7 +2146,7 @@ describe('apps controller', () => {
         .post('/api/apps/import')
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie'])
-        .send({ name: 'Imported App' });
+        .send({ app: application, name: 'Imported App' });
 
       expect(response.statusCode).toBe(201);
 
