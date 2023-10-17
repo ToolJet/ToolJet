@@ -101,6 +101,7 @@ export default function TemplateLibraryModal(props) {
                         }}
                         isLoading={deploying}
                         className="ms-2"
+                        disabled={props.appCreationDisabled}
                       >
                         {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
                       </ButtonSolid>

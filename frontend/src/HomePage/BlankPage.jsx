@@ -16,6 +16,7 @@ export const BlankPage = function BlankPage({
   showTemplateLibraryModal,
   hideTemplateLibraryModal,
   viewTemplateLibraryModal,
+  canCreateApp,
 }) {
   const { t } = useTranslation();
   const [deploying, setDeploying] = useState(false);
@@ -26,6 +27,8 @@ export const BlankPage = function BlankPage({
     { id: 'job-application-tracker', name: 'Job application tracker' },
     { id: 'whatsapp-and-sms-crm', name: 'Whatsapp and sms crm' },
   ];
+
+  const appCreationDisabled = !canCreateApp();
 
   return (
     <div>
@@ -53,6 +56,7 @@ export const BlankPage = function BlankPage({
                       data-cy="button-new-app-from-scratch"
                       className="col"
                       fill={'#FDFDFE'}
+                      disabled={appCreationDisabled}
                     >
                       Create new application
                     </ButtonSolid>
@@ -63,12 +67,14 @@ export const BlankPage = function BlankPage({
                         isLoading={isImportingApp}
                         data-cy="button-import-an-app"
                         className="col"
-                        variant="tertiary"
+                        disabled={appCreationDisabled}
+                        variant={!appCreationDisabled ? 'tertiary' : 'primary'}
                       >
                         <label
                           className="cursor-pointer"
                           style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
                           data-cy="import-an-application"
+                          disabled={appCreationDisabled}
                         >
                           &nbsp;{t('blankPage.importApplication', 'Import an app')}
                           <input
@@ -76,6 +82,7 @@ export const BlankPage = function BlankPage({
                             ref={fileInput}
                             style={{ display: 'none' }}
                             data-cy="import-option-input"
+                            disabled={appCreationDisabled}
                           />
                         </label>
                       </ButtonSolid>
@@ -86,41 +93,45 @@ export const BlankPage = function BlankPage({
                   <EmptyIllustration />
                 </div>
               </div>
-              <div className="hr-text" data-cy="action-option">
-                Or choose from templates
-              </div>
-              <div className="row" data-cy="app-template-row">
-                {staticTemplates.map(({ id, name }) => {
-                  return (
-                    <div
-                      key={id}
-                      className="col-4 app-template-card-wrapper"
-                      onClick={() => {
-                        openCreateAppFromTemplateModal({ id, name });
-                      }}
-                    >
-                      <div
-                        className="template-card cursor-pointer"
-                        data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
-                      >
+              {!appCreationDisabled && (
+                <div>
+                  <div className="hr-text" data-cy="action-option">
+                    Or choose from templates
+                  </div>
+                  <div className="row" data-cy="app-template-row">
+                    {staticTemplates.map(({ id, name }) => {
+                      return (
                         <div
-                          className="img-responsive img-responsive-21x9 card-img-top template-card-img"
-                          style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
-                          data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
-                        />
-                        <div className="card-body">
-                          <h3
-                            className="tj-text-md font-weight-500"
-                            data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-title`}
+                          key={id}
+                          className="col-4 app-template-card-wrapper"
+                          onClick={() => {
+                            openCreateAppFromTemplateModal({ id, name });
+                          }}
+                        >
+                          <div
+                            className="template-card cursor-pointer"
+                            data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
                           >
-                            {name}
-                          </h3>
+                            <div
+                              className="img-responsive img-responsive-21x9 card-img-top template-card-img"
+                              style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
+                              data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
+                            />
+                            <div className="card-body">
+                              <h3
+                                className="tj-text-md font-weight-500"
+                                data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-title`}
+                              >
+                                {name}
+                              </h3>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="m-auto text-center mt-4">
                 <button
                   className="see-all-temlplates-link tj-text-sm font-weight-600 bg-transparent border-0"
@@ -139,6 +150,7 @@ export const BlankPage = function BlankPage({
         onHide={hideTemplateLibraryModal}
         onCloseButtonClick={hideTemplateLibraryModal}
         darkMode={darkMode}
+        appCreationDisabled={appCreationDisabled}
       />
     </div>
   );
