@@ -159,7 +159,7 @@ export function AppModal({
             >
               {errorText}
             </small>
-          ) : infoText ? (
+          ) : infoText || newAppName.length >= 50 ? (
             <small
               className="tj-input-error"
               style={{
@@ -167,7 +167,7 @@ export function AppModal({
                 color: '#ED5F00',
               }}
             >
-              {infoText}
+              {infoText || 'Maximum length has been reached'}
             </small>
           ) : (
             <small
