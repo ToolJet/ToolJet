@@ -64,15 +64,17 @@ Debugger consists of two main sections:
 
 To configure the app's global settings, click on the kebab menu(three vertical dots) on the left of the app name. Global settings include:
 
+- **Unique app slug**: The unique slug of the application. This slug is used in the URL of the application.
+- **App link**: The link to the application. This link can be used to share the application with other users of the workspace. If you want to share the application with users outside the workspace, you can make the application public from the **[Share](/docs/app-builder/share)** modal.
 - **Hide header for launched apps**: Toggle this on to the hide the tooljet's header when the applications are launched
 - **Maintenance mode**: Toggle this on to put the application in maintenance mode. When in **maintenance mode**, on launching the app, the user will get an error message that **the app is under maintenance**.
-- **Max width of canvas**: Modify the width of the canvas in **px** or **%**. The default width is 1292 px.
-- **Max height of canvas**: Modify the width of the canvas in **px** or **%**. The default height is 2400 px and currently it is the maximum height limit.
+- **Max width of canvas**: Modify the width of the canvas in **px** or **%**. The default width is `1292` px.
 - **Background color of canvas**: Enter the hex color code or choose a color from the picker to change the background color of the canvas. You can also click on the **Fx** to programmatically set the value.
+- **Export app**: Click on the [Export app](/docs/dashboard/#export-app) button to export the application as a JSON file. You can import this JSON file in any other workspace to use the application.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/globalnew.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/globalsettings.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 

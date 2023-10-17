@@ -15,15 +15,36 @@ Furthermore, the dashboard serves as a gateway to various essential sections, su
 
 ## Workspace Manager
 
-The workspace manager is located on the top left corner of the dashboard. Clicking on the workspace manager will open a dropdown menu with a list of all the workspaces you are a part of. You can switch between workspaces by clicking on the workspace name from the dropdown menu.
-
-You can also create a new workspace by clicking on the `Add new workspace` button on the bottom of the dropdown menu. Clicking on this button will open a modal, enter the name of the workspace and click on the `Create Workspace` button to create a new workspace. Workspaces can be **renamed** by clicking on the `edit` icon on the right side of the workspace name.
+The workspace manager is located on the bottom left corner of the dashboard. Clicking on the workspace manager will open a dropdown menu with a list of all the workspaces you are a part of. You can switch between workspaces by clicking on the workspace name from the dropdown menu.
 
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/dashboard/workspacemenu.png" alt="Dashboard"/>
 
 </div>
+
+### Add new workspace
+
+On clicking the `Add new workspace` button, a modal will open where you can enter the name of the workspace, enter the unique workspace slug, and can see the preview of the workspace URL. Click on the `+ Create Workspace` button to create a new workspace.
+
+#### Conditions for workspace slug
+
+- The workspace slug should be unique.
+- The workspace slug should not contain any special characters except `-`.
+- The workspace slug should not contain any spaces.
+- The workspace slug should not contain any capital letters.
+- The workspace slug should not be empty.
+
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/dashboard/newworkmodal.png" alt="Dashboard"/>
+
+</div>
+
+### Edit workspace
+
+Similar to the `Add new workspace` button, clicking on the `Edit workspace` button will open a modal where you can edit the name of the workspace and the workspace slug. Click on the `Save` button to update the changes.
 
 ## Create a new app
 
@@ -37,6 +58,9 @@ To create a new app, click on the `Create new app` button on the top left corner
 <br/>
 
 There are three dots on the right side of the `Create new app` button. Clicking on these dots will open a dropdown menu with two options:
+
+- **[Choose from templates](#choose-from-templates)**
+- **[Import](#import)**
 
 ### Choose from templates
 
@@ -76,7 +100,8 @@ When the app(JSON file) that includes the table schema is imported, and the tabl
 
 If the table with the same name is already present in the workspace, the new table will be created with the name `<table name>_<unix timestamp>`. Example: `<tablename>_1627980000`.
 
-## Create a new folder
+## Folders
+### Create a new folder
 
 Folders can be created to organize your apps. To create a new folder, click on the `+` button on the left drawer of the dashboard. Clicking on this button will open a modal, enter the name of the folder and click on the `Create Folder` button to create a new folder.
 
@@ -100,6 +125,18 @@ Folders can be searched by clicking on the search icon on the left drawer of the
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/dashboard/search.png" alt="Dashboard"/>
+
+</div>
+
+### Slug for folders
+
+The slug for folders is automatically generated based on the name of the folder. The slug for folders can be used to access the folder directly from the URL. 
+
+Example: If the name of the folder is `customer support`, The folder can be accessed directly from the URL `https://tooljet.com/<workspace-name>?folder=customer%20support`.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/dashboard/appurl.png" alt="Dashboard"/>
 
 </div>
 
