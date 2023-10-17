@@ -564,7 +564,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading state',
+        displayName: 'Loading State',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -714,7 +714,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading state',
+        displayName: 'Loading State',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -901,7 +901,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading state',
+        displayName: 'Loading State',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2312,7 +2312,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border radius',
+        displayName: 'Border Radius',
         validation: {
           schema: {
             type: 'union',
@@ -4311,7 +4311,7 @@ export const widgets = [
 
         validation: { schema: { type: 'string' } },
       },
-      loadingState: { type: 'toggle', displayName: 'Loading state', validation: { schema: { type: 'boolean' } } },
+      loadingState: { type: 'toggle', displayName: 'Loading State', validation: { schema: { type: 'boolean' } } },
     },
     events: {},
     styles: {
@@ -5721,7 +5721,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border radius',
+        displayName: 'Border Radius',
         validation: {
           schema: {
             type: 'union',
