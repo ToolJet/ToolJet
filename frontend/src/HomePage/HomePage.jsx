@@ -174,7 +174,6 @@ class HomePageComponent extends React.Component {
   cloneApp = async (appName, appId) => {
     this.setState({ isCloningApp: true });
     try {
-      console.log(appId, appName);
       const data = await appService.cloneResource({
         app: [{ id: appId, name: appName }],
         organization_id: getWorkspaceId(),
