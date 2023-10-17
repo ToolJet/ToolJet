@@ -640,3 +640,6 @@
 .th:has(.resizer:hover){
   border-right:4px solid var(--slate5, #ECEEF0) !important; 
 }
+.active-column-tab{
+  border-bottom: 1px solid red;
+}
