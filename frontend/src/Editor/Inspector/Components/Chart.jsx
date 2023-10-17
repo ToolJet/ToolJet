@@ -57,7 +57,7 @@ class Chart extends React.Component {
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState } = this.props;
-    const data = this.props.component.component.definition.properties.data;
+    const data = this.props.component.component.definition.properties.data; // since component is not unmounting on every render in current scenario
 
     const jsonDescription = this.props.component.component.definition.properties.jsonDescription;
 
