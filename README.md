@@ -109,7 +109,7 @@ You can use ToolJet Cloud for a fully managed solution. If you want to self-host
 | :------------- | :------------- |
 | Digital Ocean | [Link](https://docs.tooljet.com/docs/setup/digitalocean)  |
 | Docker  | [Link](https://docs.tooljet.com/docs/setup/docker)   |
-| Heroku  | [Link](https://docs.tooljet.com/docs/setup/heroku)  |
+| Heroku  | [Link](https://docs.tooljet.com/docs/2.1.0/setup/heroku)  |
 | AWS EC2 | [Link](https://docs.tooljet.com/docs/setup/ec2)  |
 | AWS ECS | [Link](https://docs.tooljet.com/docs/setup/ecs)   |
 | OpenShift | [Link](https://docs.tooljet.com/docs/setup/openshift)   |
