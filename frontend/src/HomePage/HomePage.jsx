@@ -823,6 +823,7 @@ class HomePageComponent extends React.Component {
                     showTemplateLibraryModal={this.state.showTemplateLibraryModal}
                     viewTemplateLibraryModal={this.showTemplateLibraryModal}
                     hideTemplateLibraryModal={this.hideTemplateLibraryModal}
+                    canCreateApp={this.canCreateApp}
                   />
                 )}
                 {!isLoading && meta.total_count === 0 && appSearchKey && (
@@ -868,6 +869,7 @@ class HomePageComponent extends React.Component {
               onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
               darkMode={this.props.darkMode}
               openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+              appCreationDisabled={!this.canCreateApp()}
             />
           </div>
         </div>
