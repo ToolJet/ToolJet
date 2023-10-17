@@ -533,6 +533,8 @@ export class AppsService {
         newComponent.properties = component.properties;
         newComponent.styles = component.styles;
         newComponent.validation = component.validation;
+        newComponent.general = component.general;
+        newComponent.generalStyles = component.generalStyles;
         newComponent.parent = component.parent ? parentId : null;
         newComponent.page = savedPage;
 
