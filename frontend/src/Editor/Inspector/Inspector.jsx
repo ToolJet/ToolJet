@@ -99,13 +99,6 @@ export const Inspector = ({
     componentNameRef.current = newComponentName;
   }, [newComponentName]);
 
-  useEffect(() => {
-    return () => {
-      handleComponentNameChange(componentNameRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const validateComponentName = (name) => {
     const isValid = !Object.values(allComponents)
       .map((component) => component.component.name)
