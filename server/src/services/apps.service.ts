@@ -12,13 +12,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import {
-  catchDbException,
-  cleanObject,
-  dbTransactionWrap,
-  defaultAppEnvironments,
-  generateNextNameAndSlug,
-} from 'src/helpers/utils.helper';
+import { catchDbException, cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
@@ -109,35 +103,36 @@ export class AppsService {
     });
   }
 
-  async create(user: User, manager: EntityManager): Promise<App> {
+  async create(name: string, user: User, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const { name } = generateNextNameAndSlug('My app');
-      const app = await manager.save(
-        manager.create(App, {
-          name,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          organizationId: user.organizationId,
-          userId: user.id,
-        })
-      );
+      return await catchDbException(async () => {
+        const app = await manager.save(
+          manager.create(App, {
+            name,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            organizationId: user.organizationId,
+            userId: user.id,
+          })
+        );
 
-      //create default app version
-      await this.createVersion(user, app, 'v1', null, null, manager);
+        //create default app version
+        await this.createVersion(user, app, 'v1', null, null, manager);
 
-      await manager.save(
-        manager.create(AppUser, {
-          userId: user.id,
-          appId: app.id,
-          role: 'admin',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
-      );
+        await manager.save(
+          manager.create(AppUser, {
+            userId: user.id,
+            appId: app.id,
+            role: 'admin',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        );
 
-      await this.createAppGroupPermissionsForAdmin(app, manager);
-      return app;
-    }, manager);
+        await this.createAppGroupPermissionsForAdmin(app, manager);
+        return app;
+      }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+    });
   }
 
   async createAppGroupPermissionsForAdmin(app: App, manager: EntityManager): Promise<void> {
@@ -176,9 +171,9 @@ export class AppsService {
     }
   }
 
-  async clone(existingApp: App, user: User): Promise<App> {
+  async clone(existingApp: App, user: User, appName: string): Promise<App> {
     const appWithRelations = await this.appImportExportService.export(user, existingApp.id);
-    const clonedApp = await this.appImportExportService.import(user, appWithRelations);
+    const clonedApp = await this.appImportExportService.import(user, appWithRelations, appName);
 
     return clonedApp;
   }

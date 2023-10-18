@@ -22,12 +22,14 @@ import { FoldersService } from '@services/folders.service';
 import { App } from 'src/entities/app.entity';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
+import { AppCreateDto } from '@dto/app-create.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
 import { VersionEditDto } from '@dto/version-edit.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
+import { AppCloneDto } from '@dto/app-clone.dto';
 
 @Controller('apps')
 export class AppsController {
@@ -39,17 +41,20 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@User() user, @Body('icon') icon: string) {
+  async create(@User() user, @Body() appCreateDto: AppCreateDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
+    const name = appCreateDto.name;
+    const icon = appCreateDto.icon;
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsService.create(user, manager);
+      const app = await this.appsService.create(name, user, manager);
 
       const appUpdateDto = new AppUpdateDto();
+      appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
       await this.appsService.update(app.id, appUpdateDto, manager);
@@ -220,14 +225,14 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/clone')
-  async clone(@User() user, @AppDecorator() app: App) {
+  async clone(@User() user, @AppDecorator() app: App, @Body() appCloneDto: AppCloneDto) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('cloneApp', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-
-    const result = await this.appsService.clone(app, user);
+    const appName = appCloneDto.name;
+    const result = await this.appsService.clone(app, user, appName);
     const response = decamelizeKeys(result);
 
     return response;

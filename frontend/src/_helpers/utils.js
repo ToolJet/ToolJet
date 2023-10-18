@@ -863,6 +863,7 @@ export function isExpectedDataType(data, expectedDataType) {
 export const validateName = (
   name,
   nameType,
+  emptyCheck = true,
   showError = false,
   allowSpecialChars = true,
   allowSpaces = true,
@@ -870,7 +871,7 @@ export const validateName = (
 ) => {
   const newName = name;
   let errorMsg = '';
-  if (!newName) {
+  if (emptyCheck && !newName) {
     errorMsg = `${nameType} can't be empty`;
     showError &&
       toast.error(errorMsg, {
