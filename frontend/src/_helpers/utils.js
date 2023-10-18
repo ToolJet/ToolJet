@@ -920,26 +920,10 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
-export const validateAppName = (name, showError = false) => {
+export const validateName = (name, nameType, emptyCheck = true, showError = false, allowSpecialChars = true) => {
   const newName = name.trim();
   let errorMsg = '';
-  if (newName.length > 50) {
-    errorMsg = `Maximum length has been reached`;
-    showError &&
-      toast.error(errorMsg, {
-        id: '1',
-      });
-  }
-  return {
-    status: !(errorMsg.length > 0),
-    errorMsg,
-  };
-};
-
-export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
-  const newName = name.trim();
-  let errorMsg = '';
-  if (!newName) {
+  if (emptyCheck && !newName) {
     errorMsg = `${nameType} can't be empty`;
     showError &&
       toast.error(errorMsg, {
