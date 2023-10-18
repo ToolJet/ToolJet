@@ -391,7 +391,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -3124,21 +3124,21 @@ export const widgets = [
     properties: {
       instructionText: {
         type: 'code',
-        displayName: 'Instruction Text',
+        displayName: 'Instruction text',
         validation: {
           schema: { type: 'string' },
         },
       },
       enableDropzone: {
         type: 'code',
-        displayName: 'Use Drop zone',
+        displayName: 'Use drop zone',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       enablePicker: {
         type: 'code',
-        displayName: 'Use File Picker',
+        displayName: 'Use file picker',
         validation: {
           schema: { type: 'boolean' },
         },
