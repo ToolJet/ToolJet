@@ -155,10 +155,10 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ creatingApp: true });
     try {
-      const data = await appService.createApp({ icon: sample(iconList), name: appName });
+      const data = await appService.createApp({ icon: sample(iconList), name: appName, type: this.props.appType });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
-      toast.success('App created successfully!');
+      toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} created successfully!`);
       _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
@@ -603,8 +603,8 @@ class HomePageComponent extends React.Component {
               closeModal={this.closeCreateAppModal}
               processApp={this.createApp}
               show={this.openCreateAppModal}
-              title={'Create app'}
-              actionButton={'+ Create app'}
+              title={this.props.appType == 'workflow' ? 'Create workflow' : 'Create app'}
+              actionButton={this.props.appType == 'workflow' ? '+ Create workflow' : '+ Create app'}
               actionLoadingButton={'Creating'}
             />
           )}

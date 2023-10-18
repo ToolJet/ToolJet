@@ -10,7 +10,7 @@ export class AppCreateDto {
   @IsString()
   icon?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  type?: string;
+  type: string;
 }
