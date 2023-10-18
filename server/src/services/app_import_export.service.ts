@@ -439,14 +439,14 @@ export class AppImportExportService {
               if (eventObj.event?.length === 0) return;
 
               eventObj.event.forEach(async (event, index) => {
-                const newEvent = {
+                const newEvent = await manager.create(EventHandler, {
                   name: event.eventId,
-                  sourceId: eventObj.componentId,
+                  sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                   target: Target.component,
                   event: event,
                   index: eventObj.index || index,
                   appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                };
+                });
 
                 await manager.save(EventHandler, newEvent);
               });
@@ -500,6 +500,15 @@ export class AppImportExportService {
           }
         }
 
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appResourceMappings.appVersionMapping[importingAppVersion.id],
+          appResourceMappings.dataQueryMapping,
+          appResourceMappings.componentsMapping,
+          appResourceMappings.pagesMapping,
+          isNormalizedAppDefinitionSchema
+        );
+
         await manager.update(
           AppVersion,
           { id: appResourceMappings.appVersionMapping[importingAppVersion.id] },
@@ -511,17 +520,19 @@ export class AppImportExportService {
       }
     }
 
-    const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
+    if (isNormalizedAppDefinitionSchema) {
+      const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
 
-    for (const appVersionId of appVersionIds) {
-      await this.updateEventActionsForNewVersionWithNewMappingIds(
-        manager,
-        appVersionId,
-        appResourceMappings.dataQueryMapping,
-        appResourceMappings.componentsMapping,
-        appResourceMappings.pagesMapping,
-        isNormalizedAppDefinitionSchema
-      );
+      for (const appVersionId of appVersionIds) {
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appVersionId,
+          appResourceMappings.dataQueryMapping,
+          appResourceMappings.componentsMapping,
+          appResourceMappings.pagesMapping,
+          isNormalizedAppDefinitionSchema
+        );
+      }
     }
 
     await this.setEditingVersionAsLatestVersion(manager, appResourceMappings.appVersionMapping, importingAppVersions);
@@ -1460,7 +1471,7 @@ export class AppImportExportService {
     oldPageToNewPageMapping: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean
   ) {
-    if (!isNormalizedAppDefinitionSchema) return;
+    // if (!isNormalizedAppDefinitionSchema) return;
 
     const allEvents = await manager.find(EventHandler, {
       where: { appVersionId: versionId },
@@ -1469,7 +1480,7 @@ export class AppImportExportService {
     for (const event of allEvents) {
       const eventDefinition = event.event;
 
-      if (eventDefinition?.actionId === 'run-query') {
+      if (isNormalizedAppDefinitionSchema && eventDefinition?.actionId === 'run-query') {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 
