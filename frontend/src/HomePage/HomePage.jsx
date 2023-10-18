@@ -225,6 +225,8 @@ class HomePageComponent extends React.Component {
     const isLegacyImport = isEmpty(importJSON.tooljet_version);
     if (isLegacyImport) {
       importJSON = { app: [{ definition: importJSON, appName: appName }], tooljet_version: importJSON.tooljetVersion };
+    } else {
+      importJSON.app[0].appName = appName;
     }
     const requestBody = { organization_id, ...importJSON };
     try {
