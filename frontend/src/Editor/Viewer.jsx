@@ -226,7 +226,7 @@ class ViewerComponent extends React.Component {
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
       if (query.options.runOnPageLoad && isQueryRunnable(query)) {
-        runQuery(this, query.id, query.name, undefined, 'view');
+        runQuery(this.getViewerRef(), query.id, query.name, undefined, 'view');
       }
     });
   };
@@ -553,17 +553,19 @@ class ViewerComponent extends React.Component {
       );
   };
 
-  handleEvent = (eventName, events, options) => {
-    const { appDefinition, currentPageId } = this.state;
-    const viewerRef = {
-      appDefinition: appDefinition,
+  getViewerRef() {
+    return {
+      appDefinition: this.state.appDefinition,
       queryConfirmationList: this.props.queryConfirmationList,
       updateQueryConfirmationList: this.updateQueryConfirmationList,
       navigate: this.props.navigate,
       switchPage: this.switchPage,
-      currentPageId: currentPageId,
+      currentPageId: this.state.currentPageId,
     };
-    onEvent(viewerRef, eventName, events, options, 'view');
+  }
+
+  handleEvent = (eventName, events, options) => {
+    onEvent(this.getViewerRef(), eventName, events, options, 'view');
   };
 
   computeCanvasMaxWidth = () => {

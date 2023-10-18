@@ -13,6 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
+import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
 import { AppsService } from '../services/apps.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
@@ -101,6 +102,8 @@ export class AppsControllerV2 {
     return response;
   }
 
+  @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
+  @Get('slugs/:slug')
   async appFromSlug(@User() user, @AppDecorator() app: App) {
     if (user) {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);

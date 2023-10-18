@@ -1703,24 +1703,34 @@ export function snapToGrid(canvasWidth, x, y) {
   return [snappedX, snappedY];
 }
 export const removeSelectedComponent = (pageId, newDefinition, selectedComponents, updateAppDefinition) => {
-  selectedComponents.forEach((component) => {
-    let childComponents = [];
+  const toDeleteComponents = [];
 
-    if (newDefinition.pages[pageId].components[component.id]?.component?.component === 'Tabs') {
-      childComponents = Object.keys(newDefinition.pages[pageId].components).filter((key) =>
-        newDefinition.pages[pageId].components[key].parent?.startsWith(component.id)
-      );
-    } else {
-      childComponents = Object.keys(newDefinition.pages[pageId].components).filter(
-        (key) => newDefinition.pages[pageId].components[key].parent === component.id
-      );
+  if (selectedComponents.length < 1) return getSelectedText();
+
+  const { components: allComponents } = newDefinition.pages[pageId];
+
+  const findAllChildComponents = (componentId) => {
+    if (!toDeleteComponents.includes(componentId)) {
+      toDeleteComponents.push(componentId);
+
+      // Find the children of this component
+      const children = getAllChildComponents(allComponents, componentId).map((child) => child.componentId);
+
+      if (children.length > 0) {
+        // Recursively find children of children
+        children.forEach((child) => {
+          findAllChildComponents(child);
+        });
+      }
     }
+  };
 
-    childComponents.forEach((componentId) => {
-      delete newDefinition.pages[pageId].components[componentId];
-    });
+  selectedComponents.forEach((component) => {
+    findAllChildComponents(component.id);
+  });
 
-    delete newDefinition.pages[pageId].components[component.id];
+  toDeleteComponents.forEach((componentId) => {
+    delete newDefinition.pages[pageId].components[componentId];
   });
 
   updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true });
