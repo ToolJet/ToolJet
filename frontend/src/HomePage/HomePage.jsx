@@ -248,6 +248,7 @@ class HomePageComponent extends React.Component {
       if (error.statusCode === 409) {
         return false;
       }
+      toast.error("Couldn't import the app");
     }
   };
 
