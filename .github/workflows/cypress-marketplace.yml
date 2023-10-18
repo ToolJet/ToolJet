@@ -69,7 +69,10 @@ jobs:
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml && mkdir postgres_data
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml
+
+      - name: Folder creation
+        run: mkdir postgres_data && mkdir redis_data
 
       - name: Run docker-compose file
         run: docker-compose up -d
