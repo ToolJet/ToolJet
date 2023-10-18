@@ -7,6 +7,11 @@ import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
 
+interface AppResourceMappings {
+  pagesMapping: Record<string, string>;
+  componentsMapping: Record<string, string>;
+}
+
 export class MigrateAppsDefinitionSchemaTransition1697473340856 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
@@ -51,6 +56,10 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
       let updateHomepageId = null;
 
+      const appResourceMappings: AppResourceMappings = {
+        pagesMapping: {},
+        componentsMapping: {},
+      };
       if (definition?.pages) {
         for (const pageId of Object.keys(definition?.pages)) {
           const page = definition.pages[pageId];
@@ -71,7 +80,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           });
 
           const pageCreated = await entityManager.save(newPage);
+
+          appResourceMappings.pagesMapping[pageId] = pageCreated.id;
+
           transformedComponents.forEach((component) => {
+            appResourceMappings.componentsMapping[component.id] = component.id;
             component.page = pageCreated;
           });
 
@@ -195,6 +208,12 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         }
       }
 
+      await this.updateEventActionsForNewVersionWithNewMappingIds(
+        entityManager,
+        version.id,
+        appResourceMappings.pagesMapping
+      );
+
       migrationProgress.show();
       await entityManager.update(
         AppVersion,
@@ -205,6 +224,28 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           globalSettings: definition.globalSettings,
         }
       );
+    }
+  }
+
+  async updateEventActionsForNewVersionWithNewMappingIds(
+    manager: EntityManager,
+    versionId: string,
+    oldPageToNewPageMapping: Record<string, unknown>
+  ) {
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionId },
+    });
+
+    for (const event of allEvents) {
+      const eventDefinition = event.event;
+
+      if (eventDefinition?.actionId === 'switch-page') {
+        eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
+      }
+
+      event.event = eventDefinition;
+
+      await manager.save(event);
     }
   }
 
