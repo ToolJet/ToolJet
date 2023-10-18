@@ -207,7 +207,7 @@ class HomePageComponent extends React.Component {
       const fileReader = new FileReader();
       const fileName = file.name.replace('.json', '').substring(0, 50);
       fileReader.readAsText(file, 'UTF-8');
-      fileReader.onload = async (event) => {
+      fileReader.onload = (event) => {
         const result = event.target.result;
         let fileContent;
         try {
