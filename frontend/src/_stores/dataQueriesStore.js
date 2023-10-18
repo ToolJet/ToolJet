@@ -31,7 +31,7 @@ export const useDataQueriesStore = create(
       ...initialState,
       actions: {
         // TODO: Remove editor state while changing currentState
-        fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
+        fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
           set({ loadingDataQueries: true });
           const data = await dataqueryService.getAll(appVersionId);
           set((state) => ({
@@ -62,7 +62,7 @@ export const useDataQueriesStore = create(
           }
 
           // Runs query on loading application
-          if (runQueriesOnAppLoad) runQueries(data.data_queries, {});
+          if (runQueriesOnAppLoad) runQueries(data.data_queries, ref);
         },
         setDataQueries: (dataQueries) => set({ dataQueries }),
         deleteDataQueries: (queryId) => {

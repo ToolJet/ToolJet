@@ -355,8 +355,6 @@ export class AppImportExportService {
           appResourceMappings.dataQueryMapping
         );
 
-        // !-----
-
         let updateHomepageId = null;
 
         if (updatedDefinition?.pages) {
@@ -381,10 +379,15 @@ export class AppImportExportService {
               handle: page.handle,
               appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
               index: pagePostionIntheList,
+              disabled: page.disabled || false,
+              hidden: page.hidden || false,
             });
             const pageCreated = await manager.save(newPage);
 
+            appResourceMappings.pagesMapping[pageId] = pageCreated.id;
+
             mappedComponents.forEach((component) => {
+              appResourceMappings.componentsMapping[component.id] = component.id;
               component.page = pageCreated;
             });
 
@@ -445,13 +448,53 @@ export class AppImportExportService {
               });
             });
 
+            savedComponents.forEach(async (component) => {
+              if (component.type === 'Table') {
+                const tableActions = component.properties?.actions?.value || [];
+                const tableColumns = component.properties?.columns?.value || [];
+
+                const tableActionAndColumnEvents = [];
+
+                tableActions.forEach((action) => {
+                  const actionEvents = action.events || [];
+
+                  actionEvents.forEach((event, index) => {
+                    tableActionAndColumnEvents.push({
+                      name: event.eventId,
+                      sourceId: component.id,
+                      target: Target.tableAction,
+                      event: { ...event, ref: action.name },
+                      index: event.index ?? index,
+                      appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                    });
+                  });
+                });
+
+                tableColumns.forEach((column) => {
+                  if (column?.columnType !== 'toggle') return;
+                  const columnEvents = column.events || [];
+
+                  columnEvents.forEach((event, index) => {
+                    tableActionAndColumnEvents.push({
+                      name: event.eventId,
+                      sourceId: component.id,
+                      target: Target.tableColumn,
+                      event: { ...event, ref: column.name },
+                      index: event.index ?? index,
+                      appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
+                    });
+                  });
+                });
+
+                await manager.save(EventHandler, tableActionAndColumnEvents);
+              }
+            });
+
             if (isHompage) {
               updateHomepageId = pageCreated.id;
             }
           }
         }
-
-        //!----
 
         await manager.update(
           AppVersion,
@@ -462,6 +505,19 @@ export class AppImportExportService {
           }
         );
       }
+    }
+
+    const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
+
+    for (const appVersionId of appVersionIds) {
+      await this.updateEventActionsForNewVersionWithNewMappingIds(
+        manager,
+        appVersionId,
+        appResourceMappings.dataQueryMapping,
+        appResourceMappings.componentsMapping,
+        appResourceMappings.pagesMapping,
+        isNormalizedAppDefinitionSchema
+      );
     }
 
     await this.setEditingVersionAsLatestVersion(manager, appResourceMappings.appVersionMapping, importingAppVersions);
@@ -576,12 +632,30 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
 
-      for (const page of importingPages) {
+      const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+        if (componentParentId) {
+          const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+          const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+          if (parentComponent) {
+            return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+          }
+        }
+
+        return false;
+      };
+
+      const pagesOfAppVersion = importingPages.filter((page) => page.appVersionId === importingAppVersion.id);
+
+      for (const page of pagesOfAppVersion) {
         const newPage = manager.create(Page, {
           name: page.name,
           handle: page.handle,
           appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
           index: page.index,
+          disabled: page.disabled || false,
+          hidden: page.hidden || false,
         });
 
         const pageCreated = await manager.save(newPage);
@@ -599,12 +673,26 @@ export class AppImportExportService {
         for (const component of pageComponents) {
           const newComponent = new Component();
 
+          let parentId = component.parent ? component.parent : null;
+
+          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
+
+          if (isParentTabOrCalendar) {
+            const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const mappedParentId = appResourceMappings.componentsMapping[_parentId];
+
+            parentId = `${mappedParentId}-${childTabId}`;
+          } else {
+            parentId = appResourceMappings.componentsMapping[parentId];
+          }
+
           newComponent.name = component.name;
           newComponent.type = component.type;
           newComponent.properties = component.properties;
           newComponent.styles = component.styles;
           newComponent.validation = component.validation;
-          newComponent.parent = component.parent || null;
+          newComponent.parent = component.parent ? parentId : null;
 
           newComponent.page = pageCreated;
 
@@ -629,14 +717,14 @@ export class AppImportExportService {
 
           if (componentEvents.length > 0) {
             componentEvents.forEach(async (componentEvent) => {
-              const newEvent = {
-                name: componentEvent.name,
-                sourceId: savedComponent.id,
-                target: componentEvent.target,
-                event: componentEvent.event,
-                index: componentEvent.index,
-                appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-              };
+              const newEvent = new EventHandler();
+              newEvent.name = componentEvent.name;
+              newEvent.sourceId = savedComponent.id;
+              newEvent.target = componentEvent.target;
+              newEvent.event = componentEvent.event;
+              newEvent.index = componentEvent.index;
+              newEvent.appVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
+
               await manager.save(EventHandler, newEvent);
             });
           }
@@ -675,18 +763,11 @@ export class AppImportExportService {
 
         if (importingQueryEvents.length > 0) {
           importingQueryEvents.forEach(async (dataQueryEvent) => {
-            const updatedEventDefinition = this.updateEventActionsForNewVersionWithNewMappingIds(
-              dataQueryEvent,
-              appResourceMappings.dataQueryMapping,
-              appResourceMappings.componentsMapping,
-              appResourceMappings.pagesMapping
-            );
-
             const newEvent = {
               name: dataQueryEvent.name,
               sourceId: mappedNewDataQuery.id,
               target: dataQueryEvent.target,
-              event: updatedEventDefinition,
+              event: dataQueryEvent.event,
               index: dataQueryEvent.index,
               appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
             };
@@ -698,18 +779,11 @@ export class AppImportExportService {
           delete mappedNewDataQuery?.options?.events;
 
           queryEvents.forEach(async (event, index) => {
-            const updatedEventDefinition = this.updateEventActionsForNewVersionWithNewMappingIds(
-              { event: event },
-              appResourceMappings.dataQueryMapping,
-              appResourceMappings.componentsMapping,
-              appResourceMappings.pagesMapping
-            );
-
             const newEvent = {
               name: event.eventId,
               sourceId: mappedNewDataQuery.id,
               target: Target.dataQuery,
-              event: updatedEventDefinition,
+              event: event,
               index: queryEvents.index || index,
               appVersionId: mappedNewDataQuery.appVersionId,
             };
@@ -1374,29 +1448,39 @@ export class AppImportExportService {
     return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id };
   }
 
-  updateEventActionsForNewVersionWithNewMappingIds(
-    queryEvent: EventHandler | { event: any },
+  async updateEventActionsForNewVersionWithNewMappingIds(
+    manager: EntityManager,
+    versionId: string,
     oldDataQueryToNewMapping: Record<string, unknown>,
     oldComponentToNewComponentMapping: Record<string, unknown>,
-    oldPageToNewPageMapping: Record<string, unknown>
+    oldPageToNewPageMapping: Record<string, unknown>,
+    isNormalizedAppDefinitionSchema: boolean
   ) {
-    const event = JSON.parse(JSON.stringify(queryEvent));
+    if (!isNormalizedAppDefinitionSchema) return;
 
-    const eventDefinition = event.event;
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionId },
+    });
 
-    if (eventDefinition?.actionId === 'run-query') {
-      eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
+    for (const event of allEvents) {
+      const eventDefinition = event.event;
+
+      if (eventDefinition?.actionId === 'run-query') {
+        eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
+      }
+
+      if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
+      if (eventDefinition?.actionId === 'switch-page') {
+        eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
+      }
+
+      event.event = eventDefinition;
+
+      await manager.save(event);
     }
-
-    if (eventDefinition?.actionId === 'control-component') {
-      eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
-    }
-
-    if (eventDefinition?.actionId === 'switch-page') {
-      eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
-    }
-
-    return eventDefinition;
   }
 }
 
