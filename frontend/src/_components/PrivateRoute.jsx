@@ -1,30 +1,76 @@
-import React, { useEffect } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { authenticationService } from '@/_services';
-import { excludeWorkspaceIdFromURL, appendWorkspaceId } from '../_helpers/utils';
+import { appendWorkspaceId, excludeWorkspaceIdFromURL, getPathname } from '@/_helpers/routes';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
+import { getWorkspaceId } from '@/_helpers/utils';
+import { handleAppAccess } from '@/_helpers/handleAppAccess';
 
 export const PrivateRoute = ({ children }) => {
   const [session, setSession] = React.useState(authenticationService.currentSessionValue);
   const location = useLocation();
+  const navigate = useNavigate();
+  const params = useParams();
+  const [extraProps, setExtraProps] = useState({});
+  const [isValidatingUserAccess, setUserValidationStatus] = useState(true);
+
+  const pathname = getPathname(null, true);
+  const isEditorOrViewerGoingToRender = pathname.startsWith('/apps/') || pathname.startsWith('/applications/');
+
+  const validateRoutes = async (group_permissions, callback) => {
+    /* validate the app access if the route either /apps/ or /application/ and 
+      user has a valid session also user isn't switching between pages on editor 
+    */
+    const isSwitchingPages = location.state?.isSwitchingPage;
+    /* replacing the state. otherwise the route will keep isSwitchingPage value `true` */
+    navigate(
+      { pathname: location.pathname, search: location.search },
+      { replace: true, state: Object.assign({}, location?.state || {}, { isSwitchingPage: false }) }
+    );
+    if (isEditorOrViewerGoingToRender && group_permissions && !isSwitchingPages) {
+      const componentType = pathname.startsWith('/apps/') ? 'editor' : 'viewer';
+      const { slug } = params;
+
+      /* Validate the app permissions */
+      const accessDetails = await handleAppAccess(componentType, slug);
+      setExtraProps(accessDetails);
+      callback();
+    } else {
+      callback();
+    }
+  };
+
   useEffect(() => {
-    const subject = authenticationService.currentSession.subscribe((newSession) => {
+    const subject = authenticationService.currentSession.subscribe(async (newSession) => {
       setSession(newSession);
     });
 
     () => subject.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const wid = session?.current_organization_id;
-  const path = appendWorkspaceId(wid, location.pathname, true);
-  if (location.pathname === '/:workspaceId' && wid) window.history.replaceState(null, null, path);
+  useEffect(() => {
+    setUserValidationStatus(true);
+    /* When route changes (not hard reload). will validate the access */
+    validateRoutes(session?.group_permissions, () => {
+      setUserValidationStatus(false);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, session]);
 
-  // authorised so return component
+  //get either slug or id from the session and replace
+  const { current_organization_slug, current_organization_id } = session;
+  if (location.pathname.startsWith('/:workspaceId')) {
+    const path = appendWorkspaceId(current_organization_slug || current_organization_id, location.pathname, true);
+    (current_organization_slug || current_organization_id) && window.history.replaceState(null, null, path);
+  }
+
   if (
-    session?.group_permissions ||
-    location.pathname.startsWith('/applications/') ||
-    (location.pathname === '/switch-workspace' && session?.current_organization_id)
+    (session?.group_permissions && !isValidatingUserAccess) ||
+    (pathname.startsWith('/applications/') && !isValidatingUserAccess) ||
+    (pathname === '/switch-workspace' && session?.current_organization_id)
   ) {
-    return children;
+    return isEditorOrViewerGoingToRender ? React.cloneElement(children, extraProps) : children;
   } else {
     if (
       (session?.authentication_status === false || session?.authentication_failed) &&
@@ -34,7 +80,7 @@ export const PrivateRoute = ({ children }) => {
       return (
         <Navigate
           to={{
-            pathname: '/login',
+            pathname: `/login${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`,
             search: `?redirectTo=${excludeWorkspaceIdFromURL(location.pathname)}`,
             state: { from: location },
           }}
@@ -43,15 +89,7 @@ export const PrivateRoute = ({ children }) => {
       );
     }
 
-    return (
-      <div className="spin-loader">
-        <div className="load">
-          <div className="one"></div>
-          <div className="two"></div>
-          <div className="three"></div>
-        </div>
-      </div>
-    );
+    return <TJLoader />;
   }
 };
 
@@ -89,7 +127,7 @@ export const AdminRoute = ({ children }) => {
       return (
         <Navigate
           to={{
-            pathname: '/login',
+            pathname: `/login${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`,
             search: `?redirectTo=${location.pathname}`,
             state: { from: location },
           }}
@@ -98,14 +136,6 @@ export const AdminRoute = ({ children }) => {
       );
     }
 
-    return (
-      <div className="spin-loader">
-        <div className="load">
-          <div className="one"></div>
-          <div className="two"></div>
-          <div className="three"></div>
-        </div>
-      </div>
-    );
+    return <TJLoader />;
   }
 };
