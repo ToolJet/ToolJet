@@ -3726,8 +3726,8 @@ export const widgets = [
         type: 'select',
         displayName: 'Timer type',
         options: [
-          { name: 'Count Up', value: 'countUp' },
-          { name: 'Count Down', value: 'countDown' },
+          { name: 'Count up', value: 'countUp' },
+          { name: 'Count down', value: 'countDown' },
         ],
         validation: {
           schema: { type: 'string' },
