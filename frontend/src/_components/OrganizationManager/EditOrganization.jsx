@@ -81,6 +81,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     let error = validateName(
       value,
       `Workspace ${field}`,
+      true,
       false,
       !(field === 'slug'),
       !(field === 'slug'),

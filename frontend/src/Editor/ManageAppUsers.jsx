@@ -129,7 +129,7 @@ class ManageAppUsersComponent extends React.Component {
       },
     });
 
-    const error = validateName(value, `App ${field}`, false, !(field === 'slug'), !(field === 'slug'));
+    const error = validateName(value, `App ${field}`, true, false, !(field === 'slug'), !(field === 'slug'));
 
     if (!_.isEmpty(value) && value !== this.props.slug && _.isEmpty(error.errorMsg)) {
       this.setState({
