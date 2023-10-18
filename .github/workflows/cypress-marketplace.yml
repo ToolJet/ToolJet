@@ -62,9 +62,14 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "REDIS_HOST=redis" >> .env
+          echo "REDIS_PORT=6379" >> .env
+          echo "REDIS_USER=default" >> .env
+          echo "REDIS_PASSWORD=" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml && mkdir postgres_data
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -158,9 +163,14 @@ jobs:
           echo "SUB_PATH=/apps/tooljet/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
+          echo "REDIS_HOST=redis" >> .env
+          echo "REDIS_PORT=6379" >> .env
+          echo "REDIS_USER=default" >> .env
+          echo "REDIS_PASSWORD=" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml && mkdir postgres_data
 
       - name: Run docker-compose file
         run: docker-compose up -d
