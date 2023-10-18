@@ -57,6 +57,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     let error = validateName(
       value,
       `Workspace ${field}`,
+      true,
       false,
       !(field === 'slug'),
       !(field === 'slug'),
