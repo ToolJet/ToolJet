@@ -213,7 +213,7 @@ class HomePageComponent extends React.Component {
         try {
           fileContent = JSON.parse(result);
         } catch (parseError) {
-          toast.error('Could not import: File content is not valid!');
+          toast.error(`Could not import: ${parseError}`);
           return;
         }
         this.setState({ fileContent, fileName, showImportAppModal: true });
