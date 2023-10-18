@@ -32,7 +32,7 @@ export const widgets = [
       },
       columns: {
         type: 'array',
-        displayName: 'Table Columns',
+        displayName: 'Table columns',
         // validation: {
         //   schema: {
         //     type: 'array',
@@ -354,14 +354,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       actionButtonRadius: {
         type: 'code',
-        displayName: 'Action Button Radius',
+        displayName: 'Action button radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
         },
@@ -391,7 +391,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -446,7 +446,7 @@ export const widgets = [
       },
       {
         handle: 'discardChanges',
-        displayName: 'Discard Changes',
+        displayName: 'Discard changes',
       },
       {
         handle: 'discardNewlyAddedRows',
@@ -557,14 +557,14 @@ export const widgets = [
     properties: {
       text: {
         type: 'code',
-        displayName: 'Button Text',
+        displayName: 'Button text',
         validation: {
           schema: { type: 'string' },
         },
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -642,7 +642,7 @@ export const widgets = [
       },
       {
         handle: 'setText',
-        displayName: 'Set Text',
+        displayName: 'Set text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New Text' }],
       },
       {
@@ -714,7 +714,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -763,7 +763,7 @@ export const widgets = [
       },
       jsonDescription: {
         type: 'json',
-        displayName: 'Json Description',
+        displayName: 'Json description',
         validation: {
           schema: {
             type: 'string',
@@ -772,7 +772,7 @@ export const widgets = [
       },
       plotFromJson: {
         type: 'toggle',
-        displayName: 'Use Plotly JSON schema',
+        displayName: 'Use plotly JSON schema',
         validation: {
           schema: {
             type: 'boolean',
@@ -901,7 +901,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -943,7 +943,7 @@ export const widgets = [
       },
       modalHeight: {
         type: 'code',
-        displayName: 'Modal Height',
+        displayName: 'Modal height',
         validation: {
           schema: { type: 'string' },
         },
@@ -1051,7 +1051,7 @@ export const widgets = [
   },
   {
     name: 'TextInput',
-    displayName: 'Text Input',
+    displayName: 'Text input',
     description: 'User text input field',
     component: 'TextInput',
     defaultSize: {
@@ -1088,29 +1088,29 @@ export const widgets = [
     },
     events: {
       onChange: { displayName: 'On change' },
-      onEnterPressed: { displayName: 'On Enter Pressed' },
+      onEnterPressed: { displayName: 'On enter pressed' },
       onFocus: { displayName: 'On focus' },
       onBlur: { displayName: 'On blur' },
     },
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: { schema: { type: 'string' } },
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: { schema: { type: 'string' } },
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border Color',
+        displayName: 'Border color',
         validation: { schema: { type: 'string' } },
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error Text Color',
+        displayName: 'Error text color',
         validation: { schema: { type: 'string' } },
       },
       borderRadius: {
@@ -1264,18 +1264,18 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border Color',
+        displayName: 'Border color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: { schema: { type: 'string' } },
       },
     },
@@ -1308,7 +1308,7 @@ export const widgets = [
   },
   {
     name: 'PasswordInput',
-    displayName: 'Password Input',
+    displayName: 'Password input',
     description: 'Secure text input',
     component: 'PasswordInput',
     defaultSize: {
@@ -1361,7 +1361,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1395,7 +1395,7 @@ export const widgets = [
   },
   {
     name: 'Datepicker',
-    displayName: 'Date Picker',
+    displayName: 'Date picker',
     description: 'Choose date and time',
     component: 'Datepicker',
     defaultSize: {
@@ -1593,7 +1593,7 @@ export const widgets = [
   },
   {
     name: 'Radio-button',
-    displayName: 'Radio Button',
+    displayName: 'Radio button',
     description: 'Radio buttons',
     component: 'RadioButton',
     defaultSize: {
@@ -1643,7 +1643,7 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1673,7 +1673,7 @@ export const widgets = [
     actions: [
       {
         handle: 'selectOption',
-        displayName: 'Select Option',
+        displayName: 'Select option',
         params: [
           {
             handle: 'option',
@@ -1706,7 +1706,7 @@ export const widgets = [
   },
   {
     name: 'ToggleSwitch',
-    displayName: 'Toggle Switch',
+    displayName: 'Toggle switch',
     description: 'Toggle Switch',
     component: 'ToggleSwitch',
     defaultSize: {
@@ -1727,7 +1727,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'toggle',
-        displayName: 'Default Status',
+        displayName: 'Default status',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -1739,14 +1739,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       toggleSwitchColor: {
         type: 'color',
-        displayName: 'Toggle Switch Color',
+        displayName: 'Toggle switch color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1847,7 +1847,7 @@ export const widgets = [
     actions: [
       {
         handle: 'setText',
-        displayName: 'Set Text',
+        displayName: 'Set text',
         params: [{ handle: 'text', displayName: 'text', defaultValue: 'New Text' }],
       },
       {
@@ -1877,7 +1877,7 @@ export const widgets = [
   },
   {
     name: 'DateRangePicker',
-    displayName: 'Range Picker',
+    displayName: 'Range picker',
     description: 'Choose date ranges',
     component: 'DaterangePicker',
     defaultSize: {
@@ -2006,7 +2006,7 @@ export const widgets = [
     styles: {
       fontWeight: {
         type: 'select',
-        displayName: 'Font Weight',
+        displayName: 'Font weight',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'bold', value: 'bold' },
@@ -2016,7 +2016,7 @@ export const widgets = [
       },
       decoration: {
         type: 'select',
-        displayName: 'Text Decoration',
+        displayName: 'Text decoration',
         options: [
           { name: 'none', value: 'none' },
           { name: 'overline', value: 'overline' },
@@ -2027,7 +2027,7 @@ export const widgets = [
       },
       transformation: {
         type: 'select',
-        displayName: 'Text Transformation',
+        displayName: 'Text transformation',
         options: [
           { name: 'none', value: 'none' },
           { name: 'uppercase', value: 'uppercase' },
@@ -2037,7 +2037,7 @@ export const widgets = [
       },
       fontStyle: {
         type: 'select',
-        displayName: 'Font Style',
+        displayName: 'Font style',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'italic', value: 'italic' },
@@ -2050,7 +2050,7 @@ export const widgets = [
       wordSpacing: { type: 'number', displayName: 'Word Spacing' },
       fontVariant: {
         type: 'select',
-        displayName: 'Font Variant',
+        displayName: 'Font variant',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'small-caps', value: 'small-caps' },
@@ -2060,28 +2060,28 @@ export const widgets = [
       },
       textSize: {
         type: 'number',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'number' },
         },
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textAlign: {
         type: 'alignButtons',
-        displayName: 'Align Text',
+        displayName: 'Align text',
         validation: {
           schema: { type: 'string' },
         },
@@ -2107,12 +2107,12 @@ export const widgets = [
     actions: [
       {
         handle: 'setText',
-        displayName: 'Set Text',
+        displayName: 'Set text',
         params: [{ handle: 'text', displayName: 'Text', defaultValue: 'New text' }],
       },
       {
         handle: 'visibility',
-        displayName: 'Set Visibility',
+        displayName: 'Set visibility',
         params: [{ handle: 'visibility', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],
@@ -2295,7 +2295,7 @@ export const widgets = [
     properties: {
       loadingState: {
         type: 'toggle',
-        displayName: 'loading state',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2312,7 +2312,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
@@ -2485,7 +2485,7 @@ export const widgets = [
       },
       selectedTextColor: {
         type: 'color',
-        displayName: 'Selected Text Color',
+        displayName: 'Selected text color',
         validation: {
           schema: {
             type: 'string',
@@ -2503,7 +2503,7 @@ export const widgets = [
       },
       justifyContent: {
         type: 'alignButtons',
-        displayName: 'Align Text',
+        displayName: 'Align text',
         validation: {
           schema: {
             type: 'string',
@@ -2582,7 +2582,7 @@ export const widgets = [
       },
       {
         handle: 'deselectOption',
-        displayName: 'Deselect Option',
+        displayName: 'Deselect option',
         params: [
           {
             handle: 'option',
@@ -2626,7 +2626,7 @@ export const widgets = [
       },
       showAllOption: {
         type: 'toggle',
-        displayName: 'Enable select All option',
+        displayName: 'Enable select all option',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2686,7 +2686,7 @@ export const widgets = [
   },
   {
     name: 'RichTextEditor',
-    displayName: 'Text Editor',
+    displayName: 'Text editor',
     description: 'Rich text editor',
     component: 'RichTextEditor',
     defaultSize: {
@@ -2756,7 +2756,7 @@ export const widgets = [
   {
     name: 'Map',
     displayName: 'Map',
-    description: 'Display Google Maps',
+    description: 'Display Google maps',
     component: 'Map',
     defaultSize: {
       width: 16,
@@ -2841,7 +2841,7 @@ export const widgets = [
     actions: [
       {
         handle: 'setLocation',
-        displayName: 'Set Location',
+        displayName: 'Set location',
         params: [
           { handle: 'lat', displayName: 'Latitude' },
           { handle: 'lng', displayName: 'Longitude' },
@@ -2900,7 +2900,7 @@ export const widgets = [
   },
   {
     name: 'QrScanner',
-    displayName: 'QR Scanner',
+    displayName: 'QR scanner',
     description: 'Scan QR codes and hold its data',
     component: 'QrScanner',
     defaultSize: {
@@ -3073,7 +3073,7 @@ export const widgets = [
     styles: {
       dividerColor: {
         type: 'color',
-        displayName: 'Divider Color',
+        displayName: 'Divider color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3104,7 +3104,7 @@ export const widgets = [
   },
   {
     name: 'FilePicker',
-    displayName: 'File Picker',
+    displayName: 'File picker',
     description: 'File Picker',
     component: 'FilePicker',
     defaultSize: {
@@ -3124,21 +3124,21 @@ export const widgets = [
     properties: {
       instructionText: {
         type: 'code',
-        displayName: 'Instruction Text',
+        displayName: 'Instruction text',
         validation: {
           schema: { type: 'string' },
         },
       },
       enableDropzone: {
         type: 'code',
-        displayName: 'Use Drop zone',
+        displayName: 'Use drop zone',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       enablePicker: {
         type: 'code',
-        displayName: 'Use File Picker',
+        displayName: 'Use file picker',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -3218,9 +3218,9 @@ export const widgets = [
       },
     },
     events: {
-      onFileSelected: { displayName: 'On File Selected' },
-      onFileLoaded: { displayName: 'On File Loaded' },
-      onFileDeselected: { displayName: 'On File Deselected' },
+      onFileSelected: { displayName: 'On file selected' },
+      onFileLoaded: { displayName: 'On file loaded' },
+      onFileDeselected: { displayName: 'On file deselected' },
     },
     styles: {
       visibility: {
@@ -3317,10 +3317,10 @@ export const widgets = [
       },
     },
     events: {
-      onCalendarEventSelect: { displayName: 'On Event Select' },
-      onCalendarSlotSelect: { displayName: 'On Slot Select' },
-      onCalendarNavigate: { displayName: 'On Date Navigate' },
-      onCalendarViewChange: { displayName: 'On View Change' },
+      onCalendarEventSelect: { displayName: 'On event select' },
+      onCalendarSlotSelect: { displayName: 'On slot select' },
+      onCalendarNavigate: { displayName: 'On date navigate' },
+      onCalendarViewChange: { displayName: 'On view change' },
     },
     styles: {
       visibility: { type: 'toggle', displayName: 'Visibility' },
@@ -3450,7 +3450,7 @@ export const widgets = [
   },
   {
     name: 'CodeEditor',
-    displayName: 'Code Editor',
+    displayName: 'Code editor',
     description: 'Code Editor',
     component: 'CodeEditor',
     defaultSize: {
@@ -3464,7 +3464,7 @@ export const widgets = [
     properties: {
       enableLineNumber: {
         type: 'code',
-        displayName: 'Show Line Number',
+        displayName: 'Show line number',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -3612,7 +3612,7 @@ export const widgets = [
       },
       hideTabs: {
         type: 'toggle',
-        displayName: 'Hide Tabs',
+        displayName: 'Hide tabs',
         validation: {
           schema: {
             type: 'boolean',
@@ -3736,11 +3736,11 @@ export const widgets = [
     },
     validation: {},
     events: {
-      onStart: { displayName: 'On Start' },
-      onResume: { displayName: 'On Resume' },
-      onPause: { displayName: 'On Pause' },
-      onCountDownFinish: { displayName: 'On Count Down Finish' },
-      onReset: { displayName: 'On Reset' },
+      onStart: { displayName: 'On start' },
+      onResume: { displayName: 'On resume' },
+      onPause: { displayName: 'On pause' },
+      onCountDownFinish: { displayName: 'On count down finish' },
+      onReset: { displayName: 'On reset' },
     },
     styles: {
       visibility: {
@@ -3796,7 +3796,7 @@ export const widgets = [
   },
   {
     name: 'Listview',
-    displayName: 'List View',
+    displayName: 'List view',
     description: 'List multiple items',
     defaultSize: {
       width: 20,
@@ -4067,7 +4067,7 @@ export const widgets = [
     },
     validation: {},
     events: {
-      onPageChange: { displayName: 'On Page Change' },
+      onPageChange: { displayName: 'On page change' },
     },
     styles: {
       visibility: {
@@ -4112,7 +4112,7 @@ export const widgets = [
   },
   {
     name: 'CircularProgressbar',
-    displayName: 'Circular Progressbar',
+    displayName: 'Circular progressbar',
     description: 'Show circular progress',
     component: 'CircularProgressBar',
     defaultSize: {
@@ -4150,35 +4150,35 @@ export const widgets = [
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textSize: {
         type: 'code',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       strokeWidth: {
         type: 'code',
-        displayName: 'Stroke Width',
+        displayName: 'Stroke width',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       counterClockwise: {
         type: 'code',
-        displayName: 'Counter Clockwise',
+        displayName: 'Counter clockwise',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       circleRatio: {
         type: 'code',
-        displayName: 'Circle Ratio',
+        displayName: 'Circle ratio',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -4317,22 +4317,22 @@ export const widgets = [
     styles: {
       primaryLabelColour: {
         type: 'color',
-        displayName: 'Primary Label Colour',
+        displayName: 'Primary label colour',
         validation: { schema: { type: 'string' } },
       },
       primaryTextColour: {
         type: 'color',
-        displayName: 'Primary Text  Colour',
+        displayName: 'Primary text colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryLabelColour: {
         type: 'color',
-        displayName: 'Secondary Label Colour',
+        displayName: 'Secondary label colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryTextColour: {
         type: 'color',
-        displayName: 'Secondary Text Colour',
+        displayName: 'Secondary text colour',
         validation: { schema: { type: 'string' } },
       },
       visibility: {
@@ -4366,7 +4366,7 @@ export const widgets = [
   },
   {
     name: 'RangeSlider',
-    displayName: 'Range Slider',
+    displayName: 'Range slider',
     description: 'Adjust value range',
     component: 'RangeSlider',
     defaultSize: {
@@ -4631,7 +4631,7 @@ export const widgets = [
   },
   {
     name: 'VerticalDivider',
-    displayName: 'Vertical Divider',
+    displayName: 'Vertical divider',
     description: 'Vertical Separator between components',
     component: 'VerticalDivider',
     defaultSize: {
@@ -4678,7 +4678,7 @@ export const widgets = [
   },
   {
     name: 'CustomComponent',
-    displayName: 'Custom Component',
+    displayName: 'Custom component',
     description: 'Create React components',
     component: 'CustomComponent',
     properties: {
@@ -4743,7 +4743,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'ButtonGroup',
-    displayName: 'Button Group',
+    displayName: 'Button group',
     description: 'Group of buttons',
     component: 'ButtonGroup',
     properties: {
@@ -5045,7 +5045,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'KanbanBoard',
-    displayName: 'Kanban Board',
+    displayName: 'Kanban board',
     description: 'Kanban Board',
     component: 'KanbanBoard',
     defaultSize: {
@@ -5072,7 +5072,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       disabledState: { type: 'toggle', displayName: 'Disable' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       width: { type: 'number', displayName: 'Width' },
-      minWidth: { type: 'number', displayName: 'Min Width' },
+      minWidth: { type: 'number', displayName: 'Min width' },
       accentColor: { type: 'color', displayName: 'Accent color' },
     },
     exposedVariables: {
@@ -5169,13 +5169,13 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       cardHeight: {
         type: 'code',
-        displayName: 'Card Height',
+        displayName: 'Card height',
         validation: {
           schema: { type: 'number' },
         },
       },
-      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
-      showDeleteButton: { type: 'toggle', displayName: 'Show Delete Button' },
+      enableAddCard: { type: 'toggle', displayName: 'Enable add card' },
+      showDeleteButton: { type: 'toggle', displayName: 'Show delete button' },
     },
     events: {
       onUpdate: { displayName: 'On update' },
@@ -5193,25 +5193,25 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     actions: [
       {
         handle: 'addCard',
-        displayName: 'Add Card',
+        displayName: 'Add card',
         params: [
           {
             handle: 'cardDetails',
-            displayName: 'Card Details',
+            displayName: 'Card details',
             defaultValue: `{{{ id: "c11", title: "Title 11", description: "Description 11", columnId: "r3" }}}`,
           },
         ],
       },
       {
         handle: 'deleteCard',
-        displayName: 'Delete Card',
+        displayName: 'Delete card',
         params: [
           { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
         ],
       },
       {
         handle: 'moveCard',
-        displayName: 'Move Card',
+        displayName: 'Move card',
         params: [
           { handle: 'cardId', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
           { handle: 'columnId', displayName: 'Destination Column Id', defaultValue: '' },
@@ -5219,7 +5219,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       {
         handle: 'updateCardData',
-        displayName: 'Update Card Data',
+        displayName: 'Update card data',
         params: [
           { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
           {
@@ -5276,7 +5276,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'ColorPicker',
-    displayName: 'Color Picker',
+    displayName: 'Color picker',
     description: 'Color Picker Palette',
     component: 'ColorPicker',
     properties: {
@@ -5288,7 +5288,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
     actions: [
       {
-        displayName: 'Set Color',
+        displayName: 'Set color',
         handle: 'setColor',
         params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
       },
@@ -5326,7 +5326,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   },
   {
     name: 'TreeSelect',
-    displayName: 'Tree Select',
+    displayName: 'Tree select',
     description: 'Select values from a tree view',
     defaultSize: {
       width: 12,
@@ -5419,21 +5419,21 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       linkTarget: {
         type: 'code',
-        displayName: 'Link Target',
+        displayName: 'Link target',
         validation: {
           schema: { type: 'string' },
         },
       },
       linkText: {
         type: 'code',
-        displayName: 'Link Text',
+        displayName: 'Link text',
         validation: {
           schema: { type: 'string' },
         },
       },
       targetType: {
         type: 'select',
-        displayName: 'Target Type',
+        displayName: 'Target type',
         options: [
           { name: 'New Tab', value: 'new' },
           { name: 'Same Tab', value: 'same' },
@@ -5537,7 +5537,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       iconColor: {
         type: 'color',
-        displayName: 'Icon Color',
+        displayName: 'Icon color',
         validation: {
           schema: { type: 'string' },
         },
@@ -5557,7 +5557,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         displayName: 'Click',
       },
       {
-        displayName: 'Set Visibility',
+        displayName: 'Set visibility',
         handle: 'setVisibility',
         params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
       },
@@ -5721,7 +5721,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
