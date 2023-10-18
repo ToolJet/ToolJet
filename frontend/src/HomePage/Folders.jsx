@@ -112,7 +112,7 @@ export const Folders = function Folders({
 
   function updateFolderQuery(name) {
     const path = `${name ? `?folder=${name}` : ''}`;
-    navigate(path);
+    navigate({ pathname: location.pathname, search: path }, { replace: true });
   }
 
   function deleteFolder(folder) {
