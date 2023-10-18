@@ -156,7 +156,6 @@ class HomePageComponent extends React.Component {
     _self.setState({ creatingApp: true });
     try {
       const data = await appService.createApp({ icon: sample(iconList), name: appName });
-
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       toast.success('App created successfully!');
@@ -195,7 +194,7 @@ class HomePageComponent extends React.Component {
     this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
   };
 
-  cloneApp = async (appId, appName) => {
+  cloneApp = async (appName, appId) => {
     this.setState({ isCloningApp: true });
     try {
       const data = await appService.cloneResource({
@@ -203,8 +202,8 @@ class HomePageComponent extends React.Component {
         organization_id: getWorkspaceId(),
       });
       toast.success('App cloned successfully!');
+      this.props.navigate(`/${getWorkspaceId()}/apps/${data?.imports?.app[0]?.id}`);
       this.setState({ isCloningApp: false });
-      this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
       return true;
     } catch (_error) {
       this.setState({ isCloningApp: false });
@@ -248,9 +247,9 @@ class HomePageComponent extends React.Component {
     const organization_id = getWorkspaceId();
     const isLegacyImport = isEmpty(importJSON.tooljet_version);
     if (isLegacyImport) {
-      importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
+      importJSON = { app: [{ definition: importJSON, appName: appName }], tooljet_version: importJSON.tooljetVersion };
     }
-    const requestBody = { organization_id, appName, ...importJSON };
+    const requestBody = { organization_id, ...importJSON };
     try {
       const data = await appService.importResource(requestBody);
       toast.success('App imported successfully.');
@@ -908,7 +907,6 @@ class HomePageComponent extends React.Component {
                       canDeleteApp={this.canDeleteApp}
                       canUpdateApp={this.canUpdateApp}
                       deleteApp={this.deleteApp}
-                      cloneApp={this.cloneApp}
                       exportApp={this.exportApp}
                       meta={meta}
                       currentFolder={currentFolder}
