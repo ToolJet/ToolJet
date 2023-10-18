@@ -64,7 +64,7 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml && mkdir postgres_data
 
       - name: Run docker-compose file
         run: docker-compose up -d
@@ -160,7 +160,7 @@ jobs:
           echo "SERVE_CLIENT=true" >> .env
 
       - name: Pulling the docker-compose file
-        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml && mkdir postgres_data
 
       - name: Run docker-compose file
         run: docker-compose up -d
