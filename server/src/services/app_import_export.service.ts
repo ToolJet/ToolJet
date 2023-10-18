@@ -22,6 +22,7 @@ import { Page } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
+import { v4 as uuid } from 'uuid';
 
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
@@ -370,7 +371,11 @@ export class AppImportExportService {
 
             const pageComponents = page.components;
 
-            const mappedComponents = transformComponentData(pageComponents, componentEvents);
+            const mappedComponents = transformComponentData(
+              pageComponents,
+              componentEvents,
+              appResourceMappings.componentsMapping
+            );
 
             const componentLayouts = [];
 
@@ -387,14 +392,13 @@ export class AppImportExportService {
             appResourceMappings.pagesMapping[pageId] = pageCreated.id;
 
             mappedComponents.forEach((component) => {
-              appResourceMappings.componentsMapping[component.id] = component.id;
               component.page = pageCreated;
             });
 
             const savedComponents = await manager.save(Component, mappedComponents);
 
-            savedComponents.forEach((component) => {
-              const componentLayout = pageComponents[component.id]['layouts'];
+            for (const componentId in pageComponents) {
+              const componentLayout = pageComponents[componentId]['layouts'];
 
               if (componentLayout) {
                 for (const type in componentLayout) {
@@ -405,12 +409,12 @@ export class AppImportExportService {
                   newLayout.left = layout.left;
                   newLayout.width = layout.width;
                   newLayout.height = layout.height;
-                  newLayout.component = component;
+                  newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
                 }
               }
-            });
+            }
 
             await manager.save(Layout, componentLayouts);
 
@@ -1495,14 +1499,18 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   return appParamsWithMultipageSchema;
 }
 
-function transformComponentData(data: object, componentEvents: any[]): Component[] {
+function transformComponentData(
+  data: object,
+  componentEvents: any[],
+  componentsMapping: Record<string, string>
+): Component[] {
   const transformedComponents: Component[] = [];
 
   for (const componentId in data) {
     const componentData = data[componentId]['component'];
 
     const transformedComponent: Component = new Component();
-    transformedComponent.id = componentId;
+    transformedComponent.id = uuid();
     transformedComponent.name = componentData.name;
     transformedComponent.type = componentData.component;
     transformedComponent.properties = componentData.definition.properties || {};
@@ -1516,6 +1524,7 @@ function transformComponentData(data: object, componentEvents: any[]): Component
       componentId: componentId,
       event: componentData.definition.events,
     });
+    componentsMapping[componentId] = transformedComponent.id;
   }
 
   return transformedComponents;

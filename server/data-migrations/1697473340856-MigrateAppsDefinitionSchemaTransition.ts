@@ -6,6 +6,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
+import { v4 as uuid } from 'uuid';
 
 interface AppResourceMappings {
   pagesMapping: Record<string, string>;
@@ -63,13 +64,20 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       if (definition?.pages) {
         for (const pageId of Object.keys(definition?.pages)) {
           const page = definition.pages[pageId];
-          const pageEvents = page.events || [];
-          const componentEvents = [];
           const pagePositionInTheList = Object.keys(definition?.pages).indexOf(pageId);
-          const isHomepage = (definition['homePageId'] as any) === pageId;
+          const pageEvents = page.events || [];
           const pageComponents = page.components;
+
+          const isHomepage = (definition['homePageId'] as any) === pageId;
+
+          const componentEvents = [];
           const componentLayouts = [];
-          const transformedComponents = this.transformComponentData(pageComponents, componentEvents);
+          const transformedComponents = this.transformComponentData(
+            pageComponents,
+            componentEvents,
+            appResourceMappings.componentsMapping
+          );
+
           const newPage = entityManager.create(Page, {
             name: page.name,
             handle: page.handle,
@@ -84,14 +92,13 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           appResourceMappings.pagesMapping[pageId] = pageCreated.id;
 
           transformedComponents.forEach((component) => {
-            appResourceMappings.componentsMapping[component.id] = component.id;
             component.page = pageCreated;
           });
 
           const savedComponents = await entityManager.save(Component, transformedComponents);
 
-          savedComponents.forEach((component) => {
-            const componentLayout = pageComponents[component.id]['layouts'];
+          for (const componentId in pageComponents) {
+            const componentLayout = pageComponents[componentId]['layouts'];
 
             if (componentLayout) {
               for (const type in componentLayout) {
@@ -102,11 +109,12 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
                 newLayout.left = layout.left;
                 newLayout.width = layout.width;
                 newLayout.height = layout.height;
-                newLayout.component = component;
+                newLayout.componentId = appResourceMappings.componentsMapping[componentId];
+
                 componentLayouts.push(newLayout);
               }
             }
-          });
+          }
 
           await entityManager.save(Layout, componentLayouts);
 
@@ -242,14 +250,17 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       if (eventDefinition?.actionId === 'switch-page') {
         eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
       }
-
       event.event = eventDefinition;
 
       await manager.save(event);
     }
   }
 
-  private transformComponentData(data: object, componentEvents: any[]): Component[] {
+  private transformComponentData(
+    data: object,
+    componentEvents: any[],
+    componentsMapping: Record<string, string>
+  ): Component[] {
     const transformedComponents: Component[] = [];
 
     for (const componentId in data) {
@@ -257,7 +268,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
       const transformedComponent: Component = new Component();
 
-      transformedComponent.id = componentId;
+      transformedComponent.id = uuid();
       transformedComponent.name = componentData.name;
       transformedComponent.type = componentData.component;
       transformedComponent.properties = componentData.definition.properties || {};
@@ -270,6 +281,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         componentId: componentId,
         event: componentData.definition.events,
       });
+      componentsMapping[componentId] = transformedComponent.id;
     }
 
     return transformedComponents;
