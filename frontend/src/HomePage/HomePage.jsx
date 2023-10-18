@@ -844,7 +844,6 @@ class HomePageComponent extends React.Component {
                       canDeleteApp={this.canDeleteApp}
                       canUpdateApp={this.canUpdateApp}
                       deleteApp={this.deleteApp}
-                      cloneApp={this.cloneApp}
                       exportApp={this.exportApp}
                       meta={meta}
                       currentFolder={currentFolder}

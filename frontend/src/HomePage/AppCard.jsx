@@ -20,7 +20,6 @@ export default function AppCard({
   canCreateApp,
   canDeleteApp,
   deleteApp,
-  cloneApp,
   exportApp,
   appActionModal,
   canUpdateApp,
