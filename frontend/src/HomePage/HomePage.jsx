@@ -207,13 +207,20 @@ class HomePageComponent extends React.Component {
       const fileReader = new FileReader();
       const fileName = file.name.replace('.json', '').substring(0, 50);
       fileReader.readAsText(file, 'UTF-8');
-      fileReader.onload = (event) => {
+      fileReader.onload = async (event) => {
         const result = event.target.result;
-        const fileContent = JSON.parse(result);
+        let fileContent;
+        try {
+          fileContent = JSON.parse(result);
+        } catch (parseError) {
+          toast.error('Could not import: File content is not valid!');
+          return;
+        }
         this.setState({ fileContent, fileName, showImportAppModal: true });
       };
       fileReader.onerror = (error) => {
-        throw new Error(`Could not import the app: ${error}`);
+        toast.errorr(`Could not import the app: ${error}`);
+        return;
       };
       event.target.value = null;
     } catch (error) {
