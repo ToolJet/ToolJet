@@ -11572,26 +11572,29 @@ tbody {
     width: 170px !important;
   }
 }
-.custom-gap-8{
-  gap: 8px;
-}
 .color-slate-11{
   color: var(--slate11) !important;
-}
-.custom-gap-6{
-  gap:6px
 }
 .custom-gap-2{
   gap:2px
 }
+.custom-gap-3{
+  gap: 3px;
+}
 .custom-gap-4{
   gap: 4px;
 }
-.text-black-000{
-  color: var(--text-black-000) !important;
+.custom-gap-6{
+  gap:6px
+}
+.custom-gap-8{
+  gap: 8px;
 }
 .custom-gap-12{
   gap:12px
+}
+.text-black-000{
+  color: var(--text-black-000) !important;
 }
 #inspector-tabpane-properties{
   .accordion {
