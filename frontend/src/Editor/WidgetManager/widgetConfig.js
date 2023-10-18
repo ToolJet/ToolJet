@@ -564,7 +564,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading state',
+        displayName: 'Loading State',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -714,7 +714,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
