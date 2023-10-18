@@ -34,7 +34,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams } from '@/_helpers/routes';
+import { getPreviewQueryParams, redirectToDashboard } from '@/_helpers/routes';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -236,7 +236,7 @@ class ViewerComponent extends React.Component {
     return variables;
   };
 
-  loadApplicationBySlug = (slug) => {
+  loadApplicationBySlug = (slug, authentication_failed = false) => {
     appsService
       .getAppBySlug(slug)
       .then((data) => {
@@ -244,10 +244,14 @@ class ViewerComponent extends React.Component {
         this.setStateForContainer(data);
         this.setWindowTitle(data.name);
       })
-      .catch(() => {
+      .catch((error) => {
         this.setState({
           isLoading: false,
         });
+        if (authentication_failed && error?.statusCode === 404) {
+          /* User is not authenticated. but the app url is wrong */
+          redirectToDashboard();
+        }
       });
   };
 
@@ -295,7 +299,7 @@ class ViewerComponent extends React.Component {
           });
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
-          this.loadApplicationBySlug(slug);
+          this.loadApplicationBySlug(slug, true);
         }
       }
       this.setState({ isLoading: false });
