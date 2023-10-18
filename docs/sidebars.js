@@ -11,17 +11,17 @@
 const sidebars = {
   docs: [
     'getting-started',
-    {
-      'type': 'category',
-      'label': 'ToolJet Concepts',
-      'items': [
-        'tooljet-concepts/what-are-components',
-        'tooljet-concepts/integrating-data',
-        'tooljet-concepts/writing-custom-code',
-        'tooljet-concepts/using-fx',
-        'tooljet-concepts/permissions',
-      ],
-    },
+    // {
+    //   'type': 'category',
+    //   'label': 'ToolJet Concepts',
+    //   'items': [
+    //     'tooljet-concepts/what-are-components',
+    //     'tooljet-concepts/integrating-data',
+    //     'tooljet-concepts/writing-custom-code',
+    //     'tooljet-concepts/using-fx',
+    //     'tooljet-concepts/permissions',
+    //   ],
+    // },
     {
       'type': 'category',
       'label': 'Setup',

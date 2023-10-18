@@ -12,20 +12,20 @@ Components in ToolJet serve as the building blocks for creating applications. Th
 These components range from basic UI elements like buttons, text fields, and tables, to more complex widgets like tables, kanban, charts and maps. By using components, you can quickly assemble a functional and visually appealing application without having to write code from scratch.
 
 
-## Customizing Components
+### Customizing Components
 
 Components are highly customizable and interactive. Once you place a component on the canvas, you can easily modify its properties, styles, and behaviors through the configuration panel on the right side of the App-Builder. This allows you to make your application dynamic and responsive. 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-components/component-config.gif" alt="Component Configuration" />
+    <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-components/component-config.gif" alt="Component Configuration" />
 </div>
 
-## Using Components With Data
+### Using Components With Data
 
 In ToolJet, components can be easily connected to various data sources like databases, APIs, and third-party services. This is done through the Query Panel, where you can write custom queries or use create queries with low-code to fetch, update, or manipulate data. Once the data is fetched, you can bind it to components. 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-components/adding-data-to-component.png" alt="Adding Data To Component" />
+    <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-components/adding-data-to-component.png" alt="Adding Data To Component" />
 </div>
 
 ## Custom Components
