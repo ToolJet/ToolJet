@@ -2295,7 +2295,7 @@ export const widgets = [
     properties: {
       loadingState: {
         type: 'toggle',
-        displayName: 'loading state',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2312,7 +2312,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
