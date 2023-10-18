@@ -391,7 +391,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -2312,7 +2312,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
@@ -2626,7 +2626,7 @@ export const widgets = [
       },
       showAllOption: {
         type: 'toggle',
-        displayName: 'Enable select All option',
+        displayName: 'Enable select all option',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2707,7 +2707,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'code',
-        displayName: 'Default Value',
+        displayName: 'Default value',
         validation: {
           schema: { type: 'string' },
         },
@@ -5721,7 +5721,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
