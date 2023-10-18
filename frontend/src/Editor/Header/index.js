@@ -12,8 +12,10 @@ import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 export default function EditorHeader({
   M,
@@ -43,6 +45,7 @@ export default function EditorHeader({
     }),
     shallow
   );
+  const currentState = useCurrentState();
 
   const updatePresence = useUpdatePresence();
   useEffect(() => {
@@ -61,7 +64,7 @@ export default function EditorHeader({
   }, [currentUser]);
   const handleLogoClick = () => {
     // Force a reload for clearing interval triggers
-    window.location.href = '/';
+    redirectToDashboard();
   };
 
   return (
@@ -148,9 +151,10 @@ export default function EditorHeader({
                     <ManageAppUsers
                       app={app}
                       slug={slug}
-                      M={M}
-                      handleSlugChange={handleSlugChange}
                       darkMode={darkMode}
+                      handleSlugChange={handleSlugChange}
+                      pageHandle={currentState?.page?.handle}
+                      M={M}
                     />
                   )}
                 </div>
