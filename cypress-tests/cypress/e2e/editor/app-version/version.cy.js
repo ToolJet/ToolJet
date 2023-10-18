@@ -42,9 +42,8 @@ describe("App Version Functionality", () => {
   });
 
   it("Verify the elements of the version module", () => {
-    cy.createApp();
+    cy.createApp(data.appName);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.renameApp(data.appName);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "have.value",
       data.appName
