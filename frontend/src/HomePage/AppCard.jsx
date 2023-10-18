@@ -20,7 +20,6 @@ export default function AppCard({
   canCreateApp,
   canDeleteApp,
   deleteApp,
-  cloneApp,
   exportApp,
   appActionModal,
   canUpdateApp,
@@ -85,7 +84,6 @@ export default function AppCard({
                   canDeleteApp={canDeleteApp(app)}
                   canUpdateApp={canUpdateApp(app)}
                   deleteApp={() => deleteApp(app)}
-                  cloneApp={() => cloneApp(app)}
                   exportApp={() => exportApp(app)}
                   isMenuOpen={isMenuOpen}
                   darkMode={darkMode}
