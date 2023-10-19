@@ -49,7 +49,6 @@ class ManageAppUsersComponent extends React.Component {
     const appId = this.props.app.id;
     this.fetchAppUsers();
     this.setState({ appId });
-    this.validateThePreExistingSlugs();
   }
 
   fetchAppUsers = () => {
@@ -77,7 +76,6 @@ class ManageAppUsersComponent extends React.Component {
       isSlugVerificationInProgress: false,
       isSlugUpdated: false,
     });
-    this.validateThePreExistingSlugs();
   };
 
   addUser = () => {
@@ -197,7 +195,13 @@ class ManageAppUsersComponent extends React.Component {
 
     return (
       <div title="Share" className="manage-app-users editor-header-icon tj-secondary-btn" data-cy="share-button-link">
-        <span className="d-flex" onClick={() => this.setState({ showModal: true })}>
+        <span
+          className="d-flex"
+          onClick={() => {
+            this.validateThePreExistingSlugs();
+            this.setState({ showModal: true });
+          }}
+        >
           <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
         </span>
         <Modal
