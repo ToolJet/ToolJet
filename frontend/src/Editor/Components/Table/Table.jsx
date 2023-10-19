@@ -752,6 +752,8 @@ export function Table({
       if (!serverSidePagination && clientSidePagination) {
         setPageSize(rowsPerPage || 10);
       }
+    } else {
+      setPageSize(rows?.length || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
   useEffect(() => {
