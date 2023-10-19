@@ -667,6 +667,9 @@
       color: var(--slate12) !important;
       padding-bottom: 2px;
     }
+    .ToggleGroupItem{
+      flex : 1 1 0;
+    }
   }
   .popover-header{
     padding: 4px 0 0 0 !important;
