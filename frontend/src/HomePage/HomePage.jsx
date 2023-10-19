@@ -209,11 +209,18 @@ class HomePageComponent extends React.Component {
       fileReader.readAsText(file, 'UTF-8');
       fileReader.onload = (event) => {
         const result = event.target.result;
-        const fileContent = JSON.parse(result);
+        let fileContent;
+        try {
+          fileContent = JSON.parse(result);
+        } catch (parseError) {
+          toast.error(`Could not import: ${parseError}`);
+          return;
+        }
         this.setState({ fileContent, fileName, showImportAppModal: true });
       };
       fileReader.onerror = (error) => {
-        throw new Error(`Could not import the app: ${error}`);
+        toast.error(`Could not import the app: ${error}`);
+        return;
       };
       event.target.value = null;
     } catch (error) {
