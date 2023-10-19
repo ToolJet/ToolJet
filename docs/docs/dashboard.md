@@ -133,6 +133,8 @@ Folders can be searched by clicking on the search icon on the left drawer of the
 
 The folder's URL slug is generated automatically from its name, providing direct access to the folder using the slug.
 
+To get the URL of a specific folder, the user will have to select that folder and then copy the URL from the address bar of the browser. The copied URL can be used to share with other users of the workspace.
+
 Example: If the name of the folder is `customer support`, The folder can be accessed directly from the URL `https://tooljet.com/<workspace-name>?folder=customer%20support`.
 
 <div style={{textAlign: 'center'}}>
