@@ -219,7 +219,7 @@ class HomePageComponent extends React.Component {
         this.setState({ fileContent, fileName, showImportAppModal: true });
       };
       fileReader.onerror = (error) => {
-        toast.errorr(`Could not import the app: ${error}`);
+        toast.error(`Could not import the app: ${error}`);
         return;
       };
       event.target.value = null;
