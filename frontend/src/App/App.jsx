@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { authenticationService, tooljetService } from '@/_services';

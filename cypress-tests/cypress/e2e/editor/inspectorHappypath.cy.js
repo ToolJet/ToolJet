@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import {
   verifyMultipleComponentValuesFromInspector,
   verifyComponentValueFromInspector,
@@ -15,7 +16,7 @@ import { multipageSelector } from "Selectors/multipage";
 describe("Editor- Inspector", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
   });
 

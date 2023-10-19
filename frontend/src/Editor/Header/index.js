@@ -14,13 +14,13 @@ import PromoteConfirmationModal from '../EnvironmentsManager/PromoteConfirmation
 import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { licenseService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import UpdatePresence from './UpdatePresence';
 import { redirectToDashboard } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
 
 export default function EditorHeader({
   M,
@@ -57,7 +57,6 @@ export default function EditorHeader({
     }),
     shallow
   );
-
   const currentState = useCurrentState();
 
   useEffect(() => {

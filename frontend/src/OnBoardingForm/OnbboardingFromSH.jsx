@@ -8,7 +8,7 @@ import AdminSetup from './AdminSetup';
 import OnboardingBubblesSH from './OnboardingBubblesSH';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
 import { getuserName } from '@/_helpers/utils';
-import { redirectToDashboard, getSubpath } from '@/_helpers/routes';
+import { redirectToDashboard } from '@/_helpers/routes';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import LogoLightMode from '@assets/images/Logomark.svg';
 import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
@@ -375,7 +375,6 @@ export function TrialPage({
   setCompleted,
   isLoading,
   setSkipLoading,
-  skipLoading,
   setIsLoading,
   darkMode,
 }) {

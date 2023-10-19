@@ -234,11 +234,18 @@ class HomePageComponent extends React.Component {
       fileReader.readAsText(file, 'UTF-8');
       fileReader.onload = (event) => {
         const result = event.target.result;
-        const fileContent = JSON.parse(result);
+        let fileContent;
+        try {
+          fileContent = JSON.parse(result);
+        } catch (parseError) {
+          toast.error(`Could not import: ${parseError}`);
+          return;
+        }
         this.setState({ fileContent, fileName, showImportAppModal: true });
       };
       fileReader.onerror = (error) => {
-        throw new Error(`Could not import the app: ${error}`);
+        toast.error(`Could not import the app: ${error}`);
+        return;
       };
       event.target.value = null;
     } catch (error) {
@@ -253,6 +260,8 @@ class HomePageComponent extends React.Component {
     const isLegacyImport = isEmpty(importJSON.tooljet_version);
     if (isLegacyImport) {
       importJSON = { app: [{ definition: importJSON, appName: appName }], tooljet_version: importJSON.tooljetVersion };
+    } else {
+      importJSON.app[0].appName = appName;
     }
     const requestBody = { organization_id, ...importJSON };
     try {
@@ -273,6 +282,7 @@ class HomePageComponent extends React.Component {
       if (error.statusCode === 409) {
         return false;
       }
+      toast.error("Couldn't import the app");
     }
   };
 

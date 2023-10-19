@@ -12,6 +12,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 
 import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
+import { validateName } from '@/_helpers/utils';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -47,6 +48,11 @@ export default function AppCard({
     },
     [app, appActionModal, currentFolder]
   );
+
+  const isValidSlug = (slug) => {
+    const validate = validateName(slug, 'slug', true, false, false, false);
+    return validate.status;
+  };
 
   useEffect(() => {
     !isMenuOpen && setFocused(!!isHovered);
@@ -171,7 +177,7 @@ export default function AppCard({
               <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                 <Link
                   to={getPrivateRoute('editor', {
-                    slug: app.slug,
+                    slug: isValidSlug(app.slug) ? app.slug : app.id,
                   })}
                 >
                   <button

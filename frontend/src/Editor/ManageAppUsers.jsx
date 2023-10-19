@@ -5,7 +5,6 @@ import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Skeleton from 'react-loading-skeleton';
 import _, { debounce } from 'lodash';
-import Textarea from '@/_ui/Textarea';
 import { retrieveWhiteLabelText, validateName } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -31,9 +30,22 @@ class ManageAppUsersComponent extends React.Component {
         error: '',
       },
       isSlugUpdated: false,
-      currentEnvironment: props?.currentEnvironment,
     };
   }
+
+  /* 
+    Only will fail for existed apps before the app/workspace url revamp which has 
+    special chars or spaces in their app slugs 
+  */
+  validateThePreExistingSlugs = () => {
+    const existedSlugErrors = validateName(this.props.slug, 'App slug', true, false, false, false);
+    this.setState({
+      newSlug: {
+        value: this.props.slug,
+        error: existedSlugErrors.errorMsg,
+      },
+    });
+  };
 
   componentDidMount() {
     const appId = this.props.app.id;
@@ -133,7 +145,7 @@ class ManageAppUsersComponent extends React.Component {
       },
     });
 
-    const error = validateName(value, `App ${field}`, false, !(field === 'slug'), !(field === 'slug'));
+    const error = validateName(value, `App ${field}`, true, false, !(field === 'slug'), !(field === 'slug'));
 
     if (!_.isEmpty(value) && value !== this.props.slug && _.isEmpty(error.errorMsg)) {
       this.setState({
@@ -176,7 +188,7 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, app, isSlugVerificationInProgress, newSlug, isSlugUpdated, currentEnvironment } = this.state;
+    const { isLoading, app, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
     const appId = app.id;
     const appLink = `${getHostURL()}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
@@ -197,6 +209,7 @@ class ManageAppUsersComponent extends React.Component {
               'share-disabled': !this.props?.currentEnvironment?.is_default,
             })}
             onClick={() => {
+              this.validateThePreExistingSlugs();
               this.props?.currentEnvironment?.is_default &&
                 this.props.multiEnvironmentEnabled &&
                 this.setState({ showModal: true });

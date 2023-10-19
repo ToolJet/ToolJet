@@ -7,6 +7,7 @@ import {
   getRedirectToWithParams,
   redirectToDashboard,
 } from './routes';
+import toast from 'react-hot-toast';
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
@@ -40,7 +41,16 @@ export const authorizeWorkspace = () => {
       .catch((error) => {
         if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
           const subpath = getSubpath();
-          window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
+          if (appId) {
+            /* If the user is trying to load the app viewer and the app id / slug not found */
+            toast.error("Couldn't find the app. \n Please verify the app URL again.");
+            setTimeout(() => {
+              window.location.href = subpath ? `${subpath}` : '/';
+            }, 3000);
+            return;
+          } else {
+            window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
+          }
         }
         if (!isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
           /* CASE-3 */

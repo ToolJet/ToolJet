@@ -54,7 +54,12 @@ export const GlobalSettings = ({
   };
 
   useEffect(() => {
-    setSlug({ value: oldSlug, error: '' });
+    /* 
+    Only will fail for existed apps before the app/workspace url revamp which has 
+    special chars or spaces in their app slugs 
+  */
+    const existedSlugErrors = validateName(oldSlug, 'App slug', true, false, false, false);
+    setSlug({ value: oldSlug, error: existedSlugErrors.errorMsg });
   }, [oldSlug]);
 
   const handleInputChange = (value, field) => {
@@ -63,7 +68,7 @@ export const GlobalSettings = ({
       error: null,
     });
 
-    const error = validateName(value, `App ${field}`, false, !(field === 'slug'), !(field === 'slug'));
+    const error = validateName(value, `App ${field}`, true, false, !(field === 'slug'), !(field === 'slug'));
 
     if (!_.isEmpty(value) && value !== oldSlug && _.isEmpty(error.errorMsg)) {
       setSlugProgress(true);
