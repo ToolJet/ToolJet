@@ -47,9 +47,7 @@ export const Color = ({
 
   return (
     <div
-      className={`field mb-3 ${
-        shouldFlexDirectionBeRow && 'd-flex custom-gap-12 align-items-center align-self-stretch'
-      }`}
+      className={`field ${shouldFlexDirectionBeRow && 'd-flex custom-gap-12 align-items-center align-self-stretch'}`}
     >
       <ToolTip label={displayName} meta={paramMeta} labelClass={shouldFlexDirectionBeRow && 'flex-fill'} />
 

@@ -648,7 +648,7 @@
     display: flex;
     flex-direction: column;
     padding: 16px 16px 24px 16px!important;
-    gap: 7px !important;
+    gap: 16px !important;
     align-self: stretch;
     background-color: var(--slate1) !important;
     border-radius: 0;
@@ -659,6 +659,13 @@
       display: flex;
       flex-direction: column;
       gap:10px;
+    }
+    label{
+      @extend .tj-text;
+      @extend .tj-text-xsm;
+      font-weight: 500;
+      color: var(--slate12) !important;
+      padding-bottom: 2px;
     }
   }
   .popover-header{
