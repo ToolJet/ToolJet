@@ -139,7 +139,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
             eventObj.event.forEach(async (event, index) => {
               const newEvent = {
                 name: event.eventId,
-                sourceId: eventObj.componentId,
+                sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                 target: Target.component,
                 event: event,
                 index: eventObj.index || index,
@@ -216,13 +216,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         }
       }
 
-      await this.updateEventActionsForNewVersionWithNewMappingIds(
-        entityManager,
-        version.id,
-        appResourceMappings.pagesMapping
-      );
-
-      migrationProgress.show();
       await entityManager.update(
         AppVersion,
         { id: version.id },
@@ -232,12 +225,22 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           globalSettings: definition.globalSettings,
         }
       );
+
+      await this.updateEventActionsForNewVersionWithNewMappingIds(
+        entityManager,
+        version.id,
+        appResourceMappings.componentsMapping,
+        appResourceMappings.pagesMapping
+      );
+
+      migrationProgress.show();
     }
   }
 
   async updateEventActionsForNewVersionWithNewMappingIds(
     manager: EntityManager,
     versionId: string,
+    oldComponentToNewComponentMapping: Record<string, unknown>,
     oldPageToNewPageMapping: Record<string, unknown>
   ) {
     const allEvents = await manager.find(EventHandler, {
@@ -250,6 +253,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       if (eventDefinition?.actionId === 'switch-page') {
         eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
       }
+
+      if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
       event.event = eventDefinition;
 
       await manager.save(event);

@@ -500,15 +500,6 @@ export class AppImportExportService {
           }
         }
 
-        await this.updateEventActionsForNewVersionWithNewMappingIds(
-          manager,
-          appResourceMappings.appVersionMapping[importingAppVersion.id],
-          appResourceMappings.dataQueryMapping,
-          appResourceMappings.componentsMapping,
-          appResourceMappings.pagesMapping,
-          isNormalizedAppDefinitionSchema
-        );
-
         await manager.update(
           AppVersion,
           { id: appResourceMappings.appVersionMapping[importingAppVersion.id] },
@@ -516,6 +507,15 @@ export class AppImportExportService {
             definition: updatedDefinition,
             homePageId: updateHomepageId,
           }
+        );
+
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appResourceMappings.appVersionMapping[importingAppVersion.id],
+          appResourceMappings.dataQueryMapping,
+          appResourceMappings.componentsMapping,
+          appResourceMappings.pagesMapping,
+          isNormalizedAppDefinitionSchema
         );
       }
     }
@@ -1471,8 +1471,6 @@ export class AppImportExportService {
     oldPageToNewPageMapping: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean
   ) {
-    // if (!isNormalizedAppDefinitionSchema) return;
-
     const allEvents = await manager.find(EventHandler, {
       where: { appVersionId: versionId },
     });
