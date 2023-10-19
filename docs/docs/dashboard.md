@@ -49,11 +49,11 @@ Similar to the `Add new workspace` button, clicking on the `Edit workspace` butt
 
 ## Create a new app
 
-To create a new app, click on the `Create new app` button on the top left corner of the dashboard. Clicking on this button will instantly create a new app and open the **[app builder](/docs/next/app-builder/overview)**. 
+To create a new app, click on the `Create new app` button on the top left corner of the dashboard. Clicking on this button will open a modal where you can enter the name of the app and then click on the `+ Create app` button to create a new app. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/dashboard/newapp.gif" alt="Dashboard"/>
+<img className="screenshot-full" src="/img/dashboard/newappmodal.png" alt="Dashboard"/>
 
 </div>
 <br/>
