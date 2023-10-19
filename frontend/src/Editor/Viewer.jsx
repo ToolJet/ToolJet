@@ -35,6 +35,7 @@ import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, redirectToDashboard } from '@/_helpers/routes';
+import toast from 'react-hot-toast';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -250,7 +251,10 @@ class ViewerComponent extends React.Component {
         });
         if (authentication_failed && error?.statusCode === 404) {
           /* User is not authenticated. but the app url is wrong */
-          redirectToDashboard();
+          toast.error("Couldn't find the app. \n Please verify the app URL again.");
+          setTimeout(() => {
+            redirectToDashboard();
+          }, 3000);
         }
       });
   };
