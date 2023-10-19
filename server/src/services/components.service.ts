@@ -199,6 +199,8 @@ export class ComponentsService {
       transformedComponent.styles = componentData.styles || {};
       transformedComponent.validation = componentData.validation || {};
       transformedComponent.displayPreferences = componentData.others || null;
+      transformedComponent.general = componentData.general || null;
+      transformedComponent.generalStyles = componentData.generalStyles || null;
 
       transformedComponents.push(transformedComponent);
     }
