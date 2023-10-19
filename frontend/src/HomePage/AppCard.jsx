@@ -11,8 +11,7 @@ import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 
-import { getPrivateRoute } from '@/_helpers/routes';
-import { getSubpath } from '@/_helpers/utils';
+import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -172,7 +171,7 @@ export default function AppCard({
               <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                 <Link
                   to={getPrivateRoute('editor', {
-                    id: app.id,
+                    slug: app.slug,
                   })}
                 >
                   <button

@@ -11,6 +11,7 @@ import {
   Body,
   BadRequestException,
   UseInterceptors,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -81,9 +82,16 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
-  @Get(':id')
-  async show(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
+  @Get('validate-private-app-access/:slug')
+  async appAccess(
+    @User() user,
+    @Param('slug') appSlug: string,
+    @Query('access_type') accessType: string,
+    @Query('version_name') versionName: string,
+    @Query('environment_name') environmentName: string
+  ) {
+    const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
+
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
@@ -94,6 +102,50 @@ export class AppsController {
     }
 
     if (accessType === 'edit' && !ability.can('editApp', app)) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
+    }
+
+    const { id, slug, type } = app;
+    const response = {
+      id,
+      slug,
+      type,
+    };
+    /* If the request comes from preview which needs version id */
+    if (versionName && environmentName) {
+      if (!ability.can('fetchVersions', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+
+      const version = await this.appsService.findVersionFromName(versionName, id);
+      if (!version) {
+        throw new NotFoundException("Couldn't found app version. Please check the version name");
+      }
+      const environmentId = await this.appsService.validateVersionEnvironment(
+        environmentName,
+        version.currentEnvironmentId,
+        user.organizationId
+      );
+      response['versionId'] = version.id;
+      response['environmentId'] = environmentId;
+    }
+    return response;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Get(':id')
+  async show(@User() user, @AppDecorator() app: App) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -125,6 +177,28 @@ export class AppsController {
       };
     }
     return response;
+  }
+
+  @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
+  @Get('validate-released-app-access/:slug')
+  async releasedAppAccess(@User() user, @AppDecorator() app: App) {
+    if (user) {
+      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+      if (!ability.can('viewApp', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+    }
+
+    const { id, slug } = app;
+    return {
+      slug: slug,
+      id: id,
+    };
   }
 
   @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public

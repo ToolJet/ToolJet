@@ -122,10 +122,10 @@
         "preview": "Preview",
         "share": "Share",
         "shareModal": {
-            "makeApplicationPublic": "Make application public?",
-            "shareableLink": "Get shareable link for this application",
+            "makeApplicationPublic": "Make application public",
+            "shareableLink": "Shareable app link",
             "copy": "copy",
-            "embeddableLink": "Get embeddable link for this application",
+            "embeddableLink": "Embedded app link",
             "manageUsers": "Users"
         },
         "appVersionManager": {
@@ -239,7 +239,7 @@
             "addNewWorkSpace": "Add new workspace",
             "loadOrganizations": "Load Organizations",
             "createWorkspace": "Create workspace",
-            "workspaceName": "workspace name",
+            "workspaceName": "Workspace name",
             "editWorkspace": "Edit workspace",
             "menus": {
                 "addWorkspace": "Add workspace",

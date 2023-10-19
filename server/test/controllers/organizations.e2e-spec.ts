@@ -92,7 +92,7 @@ describe('organizations controller', () => {
         for (const [index, userData] of [user, superAdminUserData.user].entries()) {
           const response = await request(app.getHttpServer())
             .post('/api/organizations')
-            .send({ name: `My workspace ${index}` })
+            .send({ name: `My workspace ${index}`, slug: `my-workspace-${index}` })
             .set('tj-workspace-id', organization.id)
             .set('Cookie', userData['tokenCookie']);
 
@@ -107,7 +107,7 @@ describe('organizations controller', () => {
 
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: 'My workspace' })
+          .send({ name: 'My workspace', slug: 'my-workspace' })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', user['tokenCookie']);
 
@@ -123,7 +123,7 @@ describe('organizations controller', () => {
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: '' })
+          .send({ name: '', slug: 'slug' })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
 
@@ -135,7 +135,7 @@ describe('organizations controller', () => {
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: '100000000000000000000000000000000000000000000000000000000000000909' })
+          .send({ name: '100000000000000000000000000000000000000000000000000000000000000909', slug: 'sdsdds23423' })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
 
@@ -149,7 +149,7 @@ describe('organizations controller', () => {
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: 'My workspace' })
+          .send({ name: 'My workspace', slug: ' my-workspace' })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
 
@@ -200,7 +200,7 @@ describe('organizations controller', () => {
 
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: '1000000000000000000000000000000000000000000000000000000000000009' })
+          .send({ name: '1000000000000000000000000000000000000000000000000000000000000009', slug: 'slug' })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
 
@@ -403,6 +403,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: `${user.email}'s workspace`,
+            id: organization.id,
             enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
@@ -464,6 +465,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: `${user.email}'s workspace`,
+            id: organization.id,
             enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
@@ -522,6 +524,7 @@ describe('organizations controller', () => {
         expect(getResponse.body).toEqual({
           sso_configs: {
             name: `${user.email}'s workspace`,
+            id: organization.id,
             enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,

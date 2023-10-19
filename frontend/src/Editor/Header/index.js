@@ -12,7 +12,6 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components/ToolTip';
 import PromoteConfirmationModal from '../EnvironmentsManager/PromoteConfirmationModal';
 import cx from 'classnames';
-import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
@@ -21,6 +20,7 @@ import { licenseService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import UpdatePresence from './UpdatePresence';
 import { redirectToDashboard } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export default function EditorHeader({
   M,
@@ -45,20 +45,20 @@ export default function EditorHeader({
   darkMode,
   setCurrentAppVersionPromoted,
 }) {
-  const { is_maintenance_on } = app;
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [promoteModalData, setPromoteModalData] = useState(null);
   const [featureAccess, setFeatureAccess] = useState({});
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
-  const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
+  const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
       editingVersion: state.editingVersion,
-      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
+
+  const currentState = useCurrentState();
 
   useEffect(() => {
     fetchFeatureAccess();
@@ -202,6 +202,7 @@ export default function EditorHeader({
                         slug={slug}
                         M={M}
                         handleSlugChange={handleSlugChange}
+                        pageHandle={currentState?.page?.handle}
                         darkMode={darkMode}
                       />
                     )}

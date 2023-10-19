@@ -1,15 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authenticationService } from '@/_services';
+import { getRedirectTo } from '@/_helpers/routes';
 
-export default function LdapSSOLoginButton({ configs }) {
+export default function LdapSSOLoginButton({ configs, organizationSlug }) {
   const navigate = useNavigate();
-  const organizationId = authenticationService.getLoginOrganizationId();
   const name = configs?.name;
 
   const redirectToLdapPage = (e) => {
     e.preventDefault();
-    organizationId && navigate(`/ldap/${organizationId}`);
+    const redirectPath = getRedirectTo();
+    organizationSlug && navigate(`/ldap/${organizationSlug}${redirectPath ? `?redirectTo=${redirectPath}` : ''}`);
   };
   return (
     <div data-cy="ldap-tile">

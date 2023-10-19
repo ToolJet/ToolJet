@@ -154,6 +154,7 @@ export class UsersService {
       if (!organizationId) {
         user = await manager.findOne(User, {
           where: { email },
+          relations: ['organization'],
         });
       } else {
         const statusList = status
@@ -598,7 +599,9 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
-  async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean; isReleased: boolean }> {
+  async retrieveAppDataUsingSlug(
+    slug: string
+  ): Promise<{ organizationId: string; isPublic: boolean; isReleased: boolean }> {
     let app: App;
     try {
       app = await this.appsRepository.findOneOrFail(slug);

@@ -6,7 +6,8 @@ import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
 import AppLogo from '../_components/AppLogo';
-import { getuserName, getSubpath, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { getuserName, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { redirectToDashboard } from '@/_helpers/routes';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import LogoLightMode from '@assets/images/Logomark.svg';
 import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
@@ -52,9 +53,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
         .then((data) => {
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
-          window.location = getSubpath()
-            ? `${getSubpath()}/${data.current_organization_id}`
-            : `/${data.current_organization_id}`;
+          redirectToDashboard(data);
           setCompleted(false);
         })
         .catch((res) => {

@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useTranslation } from 'react-i18next';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
@@ -35,7 +35,7 @@ export const BlankPage = function BlankPage({
   ];
 
   function fetchAppsLimit() {
-    appService.getAppsLimit().then((data) => {
+    appsService.getAppsLimit().then((data) => {
       setAppsLimit({ ...data?.appsCount });
     });
   }

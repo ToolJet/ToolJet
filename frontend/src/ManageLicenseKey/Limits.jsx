@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons.jsx';
-import { userService, organizationService, appService, tooljetDatabaseService } from '@/_services';
+import { userService, organizationService, appsService, tooljetDatabaseService } from '@/_services';
 import { LoadingScreen } from './LoadingScreen';
 
 const Limits = () => {
@@ -14,7 +14,7 @@ const Limits = () => {
       setIsLoading(true);
       let service;
       if (currentTab === 'apps') {
-        service = await appService.getAppsLimit();
+        service = await appsService.getAppsLimit();
       } else if (currentTab === 'workspaces') {
         service = await organizationService.getWorkspacesLimit();
       } else if (currentTab === 'users') {

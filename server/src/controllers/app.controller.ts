@@ -9,6 +9,7 @@ import {
   BadRequestException,
   Query,
   Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -33,13 +34,16 @@ import { Response } from 'express';
 import { SessionAuthGuard } from 'src/modules/auth/session-auth-guard';
 import { UsersService } from '@services/users.service';
 import { SessionService } from '@services/session.service';
+import { OrganizationsService } from '@services/organizations.service';
+import { Organization } from 'src/entities/organization.entity';
 
 @Controller()
 export class AppController {
   constructor(
     private authService: AuthService,
     private userService: UsersService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private organizationService: OrganizationsService
   ) {}
 
   @Post('authenticate')
@@ -60,18 +64,23 @@ export class AppController {
 
   @UseGuards(SessionAuthGuard)
   @Get('session')
-  async getSessionDetails(@User() user, @Query('appId') appId: string) {
-    let appOrganizationId: string;
+  async getSessionDetails(@User() user, @Query('appId') appId: string, @Query('workspaceSlug') workspaceSlug: string) {
+    let currentOrganization: Organization;
     let appData: any;
     if (appId) {
-      appData = await this.userService.returnOrgIdOfAnApp(appId);
-      //if the user has a session and the app is public, we don't need to authorize the app organization id
-      if (!appData?.isPublic) appOrganizationId = appData.organizationId;
-      if (appOrganizationId && user.organizationIds?.includes(appOrganizationId)) {
-        user.organization_id = appOrganizationId;
-      }
+      appData = await this.userService.retrieveAppDataUsingSlug(appId);
     }
-    return this.authService.generateSessionPayload(user, appOrganizationId, appData);
+
+    /* if the user has a session and the app is public, we don't need to authorize the app organization id */
+    if ((appData && !appData?.isPublic) || workspaceSlug) {
+      const organization = await this.organizationService.fetchOrganization(workspaceSlug || appData.organizationId);
+      if (!organization) {
+        throw new NotFoundException("Coudn't found workspace. workspace id or slug is incorrect!.");
+      }
+      currentOrganization = organization;
+    }
+
+    return this.authService.generateSessionPayload(user, currentOrganization, appData);
   }
 
   @UseGuards(JwtAuthGuard)
