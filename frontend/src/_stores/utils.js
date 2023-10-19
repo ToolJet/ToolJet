@@ -112,11 +112,26 @@ export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
   if (!opts?.isParamFromTableColumn) {
     return appDiff;
   }
-  const path = generatePath(appDiff, 'columns') || generatePath(appDiff, 'actions');
+  const columnsPath = generatePath(appDiff, 'columns');
+  const actionsPath = generatePath(appDiff, 'actions');
+  const deletionHistoryPath = generatePath(appDiff, 'columnDeletionHistory');
 
-  const value2 = getValueFromJson(definition, path);
+  let _diff = _.cloneDeep(appDiff);
 
-  const _diff = updateValueInJson(_.cloneDeep(appDiff), path, value2);
+  if (columnsPath) {
+    const columnsValue = getValueFromJson(definition, columnsPath);
+    _diff = updateValueInJson(_diff, columnsPath, columnsValue);
+  }
+
+  if (actionsPath) {
+    const actionsValue = getValueFromJson(definition, actionsPath);
+    _diff = updateValueInJson(_diff, actionsPath, actionsValue);
+  }
+
+  if (deletionHistoryPath) {
+    const deletionHistoryValue = getValueFromJson(definition, deletionHistoryPath);
+    _diff = updateValueInJson(_diff, deletionHistoryPath, deletionHistoryValue);
+  }
 
   return _diff;
 };
