@@ -1525,6 +1525,9 @@ function transformComponentData(
     transformedComponent.properties = componentData.definition.properties || {};
     transformedComponent.styles = componentData.definition.styles || {};
     transformedComponent.validation = componentData.definition.validation || {};
+    transformedComponent.general = componentData.definition.general || {};
+    transformedComponent.generalStyles = componentData.definition.generalStyles || {};
+    transformedComponent.displayPreferences = componentData.definition.others || {};
     transformedComponent.parent = data[componentId].parent || null;
 
     transformedComponents.push(transformedComponent);
