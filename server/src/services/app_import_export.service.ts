@@ -647,20 +647,6 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
 
-      const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-        if (componentParentId) {
-          const parentId = component?.parent?.split('-').slice(0, -1).join('-');
-
-          const parentComponent = allComponents.find((comp) => comp.id === parentId);
-
-          if (parentComponent) {
-            return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
-          }
-        }
-
-        return false;
-      };
-
       const pagesOfAppVersion = importingPages.filter((page) => page.appVersionId === importingAppVersion.id);
 
       for (const page of pagesOfAppVersion) {
@@ -690,7 +676,7 @@ export class AppImportExportService {
 
           let parentId = component.parent ? component.parent : null;
 
-          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
+          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId); //from here
 
           if (isParentTabOrCalendar) {
             const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
@@ -1515,10 +1501,33 @@ function transformComponentData(
 ): Component[] {
   const transformedComponents: Component[] = [];
 
+  const allComponents = Object.keys(data).map((key) => {
+    return {
+      id: key,
+      ...data[key],
+    };
+  });
+
   for (const componentId in data) {
-    const componentData = data[componentId]['component'];
+    const component = data[componentId];
+    const componentData = component['component'];
 
     const transformedComponent: Component = new Component();
+
+    let parentId = component.parent ? component.parent : null;
+
+    const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, allComponents, parentId);
+
+    if (isParentTabOrCalendar) {
+      const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const mappedParentId = componentsMapping[_parentId];
+
+      parentId = `${mappedParentId}-${childTabId}`;
+    } else {
+      parentId = componentsMapping[parentId];
+    }
+
     transformedComponent.id = uuid();
     transformedComponent.name = componentData.name;
     transformedComponent.type = componentData.component;
@@ -1528,7 +1537,7 @@ function transformComponentData(
     transformedComponent.general = componentData.definition.general || {};
     transformedComponent.generalStyles = componentData.definition.generalStyles || {};
     transformedComponent.displayPreferences = componentData.definition.others || {};
-    transformedComponent.parent = data[componentId].parent || null;
+    transformedComponent.parent = component.parent ? parentId : null;
 
     transformedComponents.push(transformedComponent);
 
@@ -1541,3 +1550,17 @@ function transformComponentData(
 
   return transformedComponents;
 }
+
+const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+  if (componentParentId) {
+    const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+    const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+    if (parentComponent) {
+      return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+    }
+  }
+
+  return false;
+};

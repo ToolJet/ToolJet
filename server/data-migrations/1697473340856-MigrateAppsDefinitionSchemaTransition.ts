@@ -271,10 +271,32 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   ): Component[] {
     const transformedComponents: Component[] = [];
 
+    const allComponents = Object.keys(data).map((key) => {
+      return {
+        id: key,
+        ...data[key],
+      };
+    });
+
     for (const componentId in data) {
-      const componentData = data[componentId]['component'];
+      const component = data[componentId];
+      const componentData = component['component'];
 
       const transformedComponent: Component = new Component();
+
+      let parentId = component.parent ? component.parent : null;
+
+      const isParentTabOrCalendar = this.isChildOfTabsOrCalendar(component, allComponents, parentId);
+
+      if (isParentTabOrCalendar) {
+        const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+        const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+        const mappedParentId = componentsMapping[_parentId];
+
+        parentId = `${mappedParentId}-${childTabId}`;
+      } else {
+        parentId = componentsMapping[parentId];
+      }
 
       transformedComponent.id = uuid();
       transformedComponent.name = componentData.name;
@@ -285,7 +307,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       transformedComponent.general = componentData.definition.general || {};
       transformedComponent.generalStyles = componentData.definition.generalStyles || {};
       transformedComponent.displayPreferences = componentData.definition.others || {};
-      transformedComponent.parent = data[componentId].parent || null;
+      transformedComponent.parent = component.parent ? parentId : null;
+
       transformedComponents.push(transformedComponent);
 
       componentEvents.push({
@@ -297,6 +320,20 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
     return transformedComponents;
   }
+
+  isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+    if (componentParentId) {
+      const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+      const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+      if (parentComponent) {
+        return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+      }
+    }
+
+    return false;
+  };
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('DELETE FROM page');
