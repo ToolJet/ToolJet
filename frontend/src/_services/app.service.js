@@ -33,12 +33,14 @@ function getConfig() {
   return fetch(`${config.apiUrl}/config`, requestOptions).then(handleResponse);
 }
 
-function getAll(page, folder, searchKey) {
+function getAll(page, folder, searchKey, onlyNamesAndIds = false) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${
+        folder || ''
+      }&searchKey=${searchKey}&onlyNamesAndIds=${onlyNamesAndIds}`,
       requestOptions
     ).then(handleResponse);
 }

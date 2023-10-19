@@ -192,6 +192,7 @@ export class AppsController {
     const page = query.page;
     const folderId = query.folder;
     const searchKey = query.searchKey || '';
+    const skipDefinition = query.skipDefinition === 'true';
 
     let apps = [];
     let totalFolderCount = 0;
@@ -214,6 +215,10 @@ export class AppsController {
       folder_count: totalFolderCount,
       current_page: parseInt(page || 1),
     };
+
+    if (skipDefinition) {
+      apps = apps.map((app) => ({ id: app.id, name: app.name, slug: app.slug }));
+    }
 
     const response = {
       meta,

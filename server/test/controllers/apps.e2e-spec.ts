@@ -506,6 +506,35 @@ describe('apps controller', () => {
         await logoutUser(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
       });
     });
+
+    describe('skip definition', () => {
+      it('should return apps with only their names and ids', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+
+        const loggedUser = await authenticateUser(app);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        await createApplication(app, {
+          name: 'Public App',
+          user: adminUserData.user,
+          isPublic: true,
+        });
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public&skipDefinition=true`)
+          .set('tj-workspace-id', adminUserData.organization.id)
+          .set('Cookie', adminUserData['tokenCookie']);
+
+        expect(response.statusCode).toBe(200);
+
+        const { apps } = response.body;
+
+        expect(Object.keys(apps[0])).toEqual(['id', 'name', 'slug']);
+      });
+    });
   });
 
   describe('POST /api/apps/:id/clone', () => {
