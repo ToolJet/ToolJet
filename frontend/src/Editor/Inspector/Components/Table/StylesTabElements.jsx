@@ -5,6 +5,9 @@ import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { Color } from '../../Elements/Color';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import AlignLeft from '@/_ui/Icon/solidIcons/AlignLeft';
+import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
+import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
 export const StylesTabElements = ({
   column,
   index,
@@ -28,9 +31,15 @@ export const StylesTabElements = ({
           defaultValue={column?.horizontalAlignment || 'left'}
           style={{ flex: '1 1 0' }}
         >
-          <ToggleGroupItem value="left">Left</ToggleGroupItem>
-          <ToggleGroupItem value="center">Center</ToggleGroupItem>
-          <ToggleGroupItem value="right">Right</ToggleGroupItem>
+          <ToggleGroupItem value="left">
+            <AlignLeft width={14} />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="center">
+            <AlignCenter width={14} />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="right">
+            <AlignRight width={14} />
+          </ToggleGroupItem>
         </ToggleGroup>
       </div>
       {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
