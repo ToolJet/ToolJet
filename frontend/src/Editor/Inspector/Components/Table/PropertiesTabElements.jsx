@@ -354,8 +354,8 @@ export const PropertiesTabElements = ({
               </div>
             )}
             {column.columnType === 'number' && (
-              <div>
-                <div data-cy={`input-and-label-min-value`} className="field mb-2">
+              <div className="d-flex align-item-start align-self-stretch custom-gap-3">
+                <div data-cy={`input-and-label-min-value`} className="field flex-fill">
                   <label className="form-label">{t('widget.Table.minValue', 'Min value')}</label>
                   <CodeHinter
                     currentState={currentState}
@@ -363,7 +363,7 @@ export const PropertiesTabElements = ({
                     theme={darkMode ? 'monokai' : 'default'}
                     mode="javascript"
                     lineNumbers={false}
-                    placeholder={''}
+                    placeholder={'Enter min length'}
                     onChange={(value) => onColumnItemChange(index, 'minValue', value)}
                     componentName={getPopoverFieldSource(column.columnType, 'minValue')}
                     popOverCallback={(showing) => {
@@ -371,7 +371,7 @@ export const PropertiesTabElements = ({
                     }}
                   />
                 </div>
-                <div data-cy={`input-and-label-max-value`} className="field mb-2">
+                <div data-cy={`input-and-label-max-value`} className="field flex-fill">
                   <label className="form-label">{t('widget.Table.maxValue', 'Max value')}</label>
                   <CodeHinter
                     currentState={currentState}
@@ -379,7 +379,7 @@ export const PropertiesTabElements = ({
                     theme={darkMode ? 'monokai' : 'default'}
                     mode="javascript"
                     lineNumbers={false}
-                    placeholder={''}
+                    placeholder={'Enter max length'}
                     onChange={(value) => onColumnItemChange(index, 'maxValue', value)}
                     componentName={getPopoverFieldSource(column.columnType, 'maxValue')}
                     popOverCallback={(showing) => {
