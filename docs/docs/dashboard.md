@@ -27,7 +27,7 @@ The workspace manager is located on the bottom left corner of the dashboard. Cli
 
 On clicking the `Add new workspace` button, a modal will open where you can enter the name of the workspace, enter the unique workspace slug, and can see the preview of the workspace URL. Click on the `+ Create Workspace` button to create a new workspace.
 
-Previously, the workspace slug was the workspace id which was generated automatically. An example of the workspace slug was `https://tooljet.com/262750db-b2b8-4abb-9404-8995c2ecb2a0`. The new workspace slug is a unique name that you can choose for your workspace. An example of the new workspace slug is  `https://tooljet.com/apac-team `.
+Previously, the workspace slug was an automatically generated workspace ID, like this: `https://tooljet.com/262750db-b2b8-4abb-9404-8995c2ecb2a0`. Now, you can set a custom, unique slug for your workspace which will generate a more accessible or readable URL such as `https://tooljet.com/apac-team)`.
 
 #### Conditions for workspace slug
 
