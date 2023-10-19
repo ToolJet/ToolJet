@@ -17,7 +17,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, generateInviteURL, generateNextName } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateInviteURL, generateNextNameAndSlug } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -79,8 +79,8 @@ export class OauthService {
     }
 
     if (!user) {
-      const organizationName = generateNextName('My workspace');
-      defaultOrganization = await this.organizationService.create(organizationName, null, manager);
+      const { name, slug } = generateNextNameAndSlug('My workspace');
+      defaultOrganization = await this.organizationService.create(name, slug, null, manager);
     }
 
     const groups = ['all_users'];
@@ -221,8 +221,8 @@ export class OauthService {
           let defaultOrganization: DeepPartial<Organization> = organization;
 
           // Not logging in to specific organization, creating new
-          const organizationName = generateNextName('My workspace');
-          defaultOrganization = await this.organizationService.create(organizationName, null, manager);
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          defaultOrganization = await this.organizationService.create(name, slug, null, manager);
 
           const groups = ['all_users', 'admin'];
           userDetails = await this.usersService.create(
@@ -263,8 +263,8 @@ export class OauthService {
             organizationDetails = organizationList[0];
           } else {
             // no SSO login enabled organization available for user - creating new one
-            const organizationName = generateNextName('My workspace');
-            organizationDetails = await this.organizationService.create(organizationName, userDetails, manager);
+            const { name, slug } = generateNextNameAndSlug('My workspace');
+            organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
           }
         } else if (!userDetails) {
           throw new UnauthorizedException('User does not exist, please sign up');

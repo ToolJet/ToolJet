@@ -144,7 +144,7 @@ jobs:
         run: docker buildx use mybuilder
 
       - name: Build docker image
-        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypress
+        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypressplaform
 
       - name: Set up environment variables
         run: |
