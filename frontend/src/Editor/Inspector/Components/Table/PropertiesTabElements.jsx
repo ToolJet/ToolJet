@@ -310,7 +310,7 @@ export const PropertiesTabElements = ({
                       theme={darkMode ? 'monokai' : 'default'}
                       mode="javascript"
                       lineNumbers={false}
-                      placeholder={''}
+                      placeholder={'Enter min length'}
                       onChange={(value) => onColumnItemChange(index, 'minLength', value)}
                       componentName={getPopoverFieldSource(column.columnType, 'minLength')}
                       popOverCallback={(showing) => {
@@ -326,7 +326,7 @@ export const PropertiesTabElements = ({
                       theme={darkMode ? 'monokai' : 'default'}
                       mode="javascript"
                       lineNumbers={false}
-                      placeholder={''}
+                      placeholder={'Enter max length'}
                       onChange={(value) => onColumnItemChange(index, 'maxLength', value)}
                       componentName={getPopoverFieldSource(column.columnType, 'maxLength')}
                       popOverCallback={(showing) => {
@@ -343,7 +343,7 @@ export const PropertiesTabElements = ({
                     theme={darkMode ? 'monokai' : 'default'}
                     mode="javascript"
                     lineNumbers={false}
-                    placeholder={''}
+                    placeholder={'eg. {{ 1 < 2 }}'}
                     onChange={(value) => onColumnItemChange(index, 'customRule', value)}
                     componentName={getPopoverFieldSource(column.columnType, 'customRule')}
                     popOverCallback={(showing) => {
