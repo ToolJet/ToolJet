@@ -22,6 +22,7 @@ export class LibraryAppCreationService {
     importDto.tooljet_database = templateDefinition.tooljet_database;
 
     if (this.isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
+      importDto.app[0].appName = appName;
       return await this.importExportResourcesService.import(currentUser, importDto);
     } else {
       const importedApp = await this.appImportExportService.import(currentUser, templateDefinition, appName);

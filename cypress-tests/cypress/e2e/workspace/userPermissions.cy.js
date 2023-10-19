@@ -19,13 +19,12 @@ data.folderName = `${fake.companyName.toLowerCase()}-folder`;
 describe("User permissions", () => {
   before(() => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.apiCreateApp(data.appName);
+    cy.visit('/')
     permissions.reset();
     cy.get(commonSelectors.homePageLogo).click();
     cy.wait("@homePage");
-    cy.createApp(data.appName);
-    cy.dragAndDropWidget("Table", 250, 250);
-    cy.get(commonSelectors.editorPageLogo).click();
     permissions.addNewUserMW(data.firstName, data.email);
     common.logout();
   });
