@@ -462,18 +462,19 @@ class TableComponent extends React.Component {
                                       primaryText={resolvedItemName}
                                       secondaryText={capitalize(item?.columnType)}
                                       data-cy={`column-${resolvedItemName}`}
-                                      enableActionsMenu
+                                      enableActionsMenu={false}
                                       isEditable={item.isEditable === '{{true}}'}
                                       onMenuOptionClick={(listItem, menuOptionLabel) => {
                                         if (menuOptionLabel === 'Delete') this.removeColumn(index);
                                       }}
                                       darkMode={darkMode}
-                                      menuActions={[
-                                        {
-                                          label: 'Delete',
-                                          icon: '',
-                                        },
-                                      ]}
+                                      // menuActions={[
+                                      //   {
+                                      //     label: 'Delete',
+                                      //     icon: '',
+                                      //   },
+                                      // ]}
+                                      deleteIconOutsideMenu={true}
                                     />
                                   </div>
                                 </OverlayTrigger>
