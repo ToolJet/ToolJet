@@ -3,7 +3,8 @@ import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { Color } from '../../Elements/Color';
-
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 export const StylesTabElements = ({
   column,
   index,
@@ -18,80 +19,57 @@ export const StylesTabElements = ({
 
   return (
     <div className="column-style-tab">
-      <div className="field mb-2">
-        <label className="form-label">{t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}</label>
-        <SelectSearch
-          className={'select-search'}
-          options={[
-            { name: 'Left', value: 'left' },
-            { name: 'Center', value: 'center' },
-            { name: 'Right', value: 'right' },
-          ]}
-          value={column?.horizontalAlignment ?? 'left'}
-          search={true}
-          closeOnSelect={true}
-          onChange={(value) => {
-            onColumnItemChange(index, 'horizontalAlignment', value);
-          }}
-          fuzzySearch
-          placeholder={t('globals.select', 'Select') + '...'}
-        />
+      <div className="field mb-2 d-flex custom-gap-12 align-items-center align-self-stretch">
+        <label className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
+          {t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}
+        </label>
+        <ToggleGroup
+          onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
+          defaultValue={column?.horizontalAlignment || 'left'}
+          style={{ flex: '1 1 0' }}
+        >
+          <ToggleGroupItem value="left">Left</ToggleGroupItem>
+          <ToggleGroupItem value="center">Center</ToggleGroupItem>
+          <ToggleGroupItem value="right">Right</ToggleGroupItem>
+        </ToggleGroup>
       </div>
       {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
         <div>
-          <div data-cy={`input-overflow`} className="field mb-2">
-            <label data-cy={`label-overflow`} className="form-label">
+          <div
+            data-cy={`input-overflow`}
+            className="field mb-2 d-flex custom-gap-12 align-items-center align-self-stretch"
+          >
+            <label data-cy={`label-overflow`} className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
               {t('widget.Table.overflow', 'Overflow')}
             </label>
-            <SelectSearch
-              className={'select-search'}
-              options={[
-                { name: 'Wrap', value: 'wrap' },
-                { name: 'Scroll', value: 'scroll' },
-                { name: 'Hide', value: 'hide' },
-              ]}
-              value={column.textWrap}
-              search={true}
-              closeOnSelect={true}
-              onChange={(value) => {
-                onColumnItemChange(index, 'textWrap', value);
-              }}
-              fuzzySearch
-              placeholder={t('globals.select', 'Select') + '...'}
-            />
+            <ToggleGroup
+              onValueChange={(_value) => onColumnItemChange(index, 'horizontalAlignment', _value)}
+              defaultValue={column.textWrap || 'wrap'}
+              style={{ flex: '1 1 0' }}
+            >
+              <ToggleGroupItem value="wrap">Wrap</ToggleGroupItem>
+              <ToggleGroupItem value="scroll">Scroll</ToggleGroupItem>
+              <ToggleGroupItem value="hide">Hide</ToggleGroupItem>
+            </ToggleGroup>
           </div>
-          <div data-cy={`input-and-label-text-color`} className="field mb-2">
-            <label className="form-label">{t('widget.Table.textColor', 'Text color')}</label>
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column.textColor}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={'Text color of the cell'}
-              onChange={(value) => onColumnItemChange(index, 'textColor', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'textColor')}
-              fieldMeta={column}
-              component={component}
-              popOverCallback={(showing) => {
-                setColumnPopoverRootCloseBlocker('textColor', showing);
-              }}
+          <div data-cy={`input-and-label-text-color`} className="field mb-2 ">
+            <Color
+              param={{ name: 'Text color' }}
+              paramType="properties"
+              componentMeta={{ properties: { color: { displayName: 'Text color' } } }}
+              definition={{ value: column.textColor || '#11181C' }}
+              onChange={(name, value, color) => onColumnItemChange(index, 'textColor', color)}
+              shouldFlexDirectionBeRow={true}
             />
           </div>
           <div className="field mb-2" data-cy={`input-and-label-cell-background-color`}>
-            <label className="form-label">{t('widget.Table.cellBgColor', 'Cell Background Color')}</label>
-            <CodeHinter
-              currentState={currentState}
-              initialValue={column.cellBackgroundColor ?? 'inherit'}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              placeholder={''}
-              onChange={(value) => onColumnItemChange(index, 'cellBackgroundColor', value)}
-              componentName={getPopoverFieldSource(column.columnType, 'cellBackgroundColor')}
-              popOverCallback={(showing) => {
-                setColumnPopoverRootCloseBlocker('cellBackgroundColor', showing);
-              }}
+            <Color
+              param={{ name: 'Cell BG' }}
+              paramType="properties"
+              componentMeta={{ properties: { color: { displayName: 'Cell Background Color' } } }}
+              definition={{ value: column.cellBackgroundColor }}
+              onChange={(name, value, color) => onColumnItemChange(index, 'cellBackgroundColor', color)}
+              shouldFlexDirectionBeRow={true}
             />
           </div>
         </div>
