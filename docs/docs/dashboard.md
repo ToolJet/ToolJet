@@ -131,7 +131,7 @@ Folders can be searched by clicking on the search icon on the left drawer of the
 
 ### Slug for folders
 
-The slug for folders is automatically generated based on the name of the folder. The slug for folders can be used to access the folder directly from the URL. 
+The folder's URL slug is generated automatically from its name, providing direct access to the folder using the slug.
 
 Example: If the name of the folder is `customer support`, The folder can be accessed directly from the URL `https://tooljet.com/<workspace-name>?folder=customer%20support`.
 
