@@ -968,6 +968,8 @@ class EditorComponent extends React.Component {
             toast.error('App could not save.');
           });
         });
+    } else if (!isEmpty(this.props?.editingVersion)) {
+      useAppDataStore.getState().actions.setIsSaving(false);
     }
   };
 
