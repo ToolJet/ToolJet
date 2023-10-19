@@ -716,6 +716,10 @@ const EditorComponent = (props) => {
       isUpdatingEditorStateInProcess: false,
     });
 
+    if (versionSwitched) {
+      props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${appJson.pages[homePageId]?.handle}`);
+    }
+
     await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id);
     await fetchDataSources(data.editing_version?.id);
     await fetchDataQueries(data.editing_version?.id, true, true);
