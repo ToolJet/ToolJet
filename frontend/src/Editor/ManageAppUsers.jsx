@@ -31,10 +31,25 @@ class ManageAppUsersComponent extends React.Component {
     };
   }
 
+  /* 
+    Only will fail for existed apps before the app/workspace url revamp which has 
+    special chars or spaces in their app slugs 
+  */
+  validateThePreExistingSlugs = () => {
+    const existedSlugErrors = validateName(this.props.slug, 'App slug', true, false, false, false);
+    this.setState({
+      newSlug: {
+        value: this.props.slug,
+        error: existedSlugErrors.errorMsg,
+      },
+    });
+  };
+
   componentDidMount() {
     const appId = this.props.app.id;
     this.fetchAppUsers();
     this.setState({ appId });
+    this.validateThePreExistingSlugs();
   }
 
   fetchAppUsers = () => {
@@ -62,6 +77,7 @@ class ManageAppUsersComponent extends React.Component {
       isSlugVerificationInProgress: false,
       isSlugUpdated: false,
     });
+    this.validateThePreExistingSlugs();
   };
 
   addUser = () => {
