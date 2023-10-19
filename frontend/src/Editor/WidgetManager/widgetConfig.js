@@ -391,7 +391,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border radius',
+        displayName: 'Border Radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -1100,7 +1100,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background color',
+        displayName: 'Background Color',
         validation: { schema: { type: 'string' } },
       },
       borderColor: {
@@ -1264,7 +1264,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background color',
+        displayName: 'Background Color',
       },
       borderColor: {
         type: 'color',
@@ -2067,7 +2067,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background color',
+        displayName: 'Background Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -2312,7 +2312,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border radius',
+        displayName: 'Border Radius',
         validation: {
           schema: {
             type: 'union',
@@ -5721,7 +5721,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border radius',
+        displayName: 'Border Radius',
         validation: {
           schema: {
             type: 'union',
