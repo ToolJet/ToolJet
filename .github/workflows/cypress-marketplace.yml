@@ -91,7 +91,7 @@ jobs:
           done'
 
       - name: Seeding
-        run: docker exec -it Tooljet-app bash && npm run db:seed:prod
+        run: docker exec Tooljet-app npm run db:seed:prod
 
       - name: Create Cypress environment file
         id: create-json
