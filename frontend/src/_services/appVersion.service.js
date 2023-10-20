@@ -13,6 +13,7 @@ export const appVersionService = {
   createAppVersionEventHandler,
   deleteAppVersionEventHandler,
   clonePage,
+  findAllEventsWithSourceId,
 };
 
 function getAll(appId) {
@@ -154,4 +155,18 @@ function clonePage(appId, versionId, pageId) {
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/pages/${pageId}/clone`, requestOptions).then(
     handleResponse
   );
+}
+
+function findAllEventsWithSourceId(appId, versionId, sourceId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+
+  return fetch(
+    `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events${sourceId ? `?sourceId=${sourceId}` : ''}
+  `,
+    requestOptions
+  ).then(handleResponse);
 }
