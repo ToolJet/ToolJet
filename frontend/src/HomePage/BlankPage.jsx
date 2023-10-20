@@ -40,7 +40,7 @@ export const BlankPage = function BlankPage({
     });
   }
 
-  const appCreationDisabled = (appsLimit?.canAddUnlimited && !canCreateApp()) || appsLimit?.percentage >= 100;
+  const appCreationDisabled = !canCreateApp() || (!appsLimit?.canAddUnlimited && appsLimit?.percentage >= 100);
 
   const templateOptionsView = (
     <>
@@ -172,7 +172,7 @@ export const BlankPage = function BlankPage({
                     <EmptyIllustration />
                   </div>
                 </div>
-                {appType !== 'workflow' && templateOptionsView}
+                {appType !== 'workflow' && !appCreationDisabled && templateOptionsView}
               </div>
             </div>
           </div>
