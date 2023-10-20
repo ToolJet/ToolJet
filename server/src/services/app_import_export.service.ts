@@ -22,6 +22,7 @@ import { Page } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
+import { v4 as uuid } from 'uuid';
 
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
@@ -370,7 +371,11 @@ export class AppImportExportService {
 
             const pageComponents = page.components;
 
-            const mappedComponents = transformComponentData(pageComponents, componentEvents);
+            const mappedComponents = transformComponentData(
+              pageComponents,
+              componentEvents,
+              appResourceMappings.componentsMapping
+            );
 
             const componentLayouts = [];
 
@@ -387,14 +392,13 @@ export class AppImportExportService {
             appResourceMappings.pagesMapping[pageId] = pageCreated.id;
 
             mappedComponents.forEach((component) => {
-              appResourceMappings.componentsMapping[component.id] = component.id;
               component.page = pageCreated;
             });
 
             const savedComponents = await manager.save(Component, mappedComponents);
 
-            savedComponents.forEach((component) => {
-              const componentLayout = pageComponents[component.id]['layouts'];
+            for (const componentId in pageComponents) {
+              const componentLayout = pageComponents[componentId]['layouts'];
 
               if (componentLayout) {
                 for (const type in componentLayout) {
@@ -405,12 +409,12 @@ export class AppImportExportService {
                   newLayout.left = layout.left;
                   newLayout.width = layout.width;
                   newLayout.height = layout.height;
-                  newLayout.component = component;
+                  newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
                 }
               }
-            });
+            }
 
             await manager.save(Layout, componentLayouts);
 
@@ -435,14 +439,14 @@ export class AppImportExportService {
               if (eventObj.event?.length === 0) return;
 
               eventObj.event.forEach(async (event, index) => {
-                const newEvent = {
+                const newEvent = await manager.create(EventHandler, {
                   name: event.eventId,
-                  sourceId: eventObj.componentId,
+                  sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                   target: Target.component,
                   event: event,
                   index: eventObj.index || index,
                   appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                };
+                });
 
                 await manager.save(EventHandler, newEvent);
               });
@@ -504,20 +508,31 @@ export class AppImportExportService {
             homePageId: updateHomepageId,
           }
         );
+
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appResourceMappings.appVersionMapping[importingAppVersion.id],
+          appResourceMappings.dataQueryMapping,
+          appResourceMappings.componentsMapping,
+          appResourceMappings.pagesMapping,
+          isNormalizedAppDefinitionSchema
+        );
       }
     }
 
-    const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
+    if (isNormalizedAppDefinitionSchema) {
+      const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
 
-    for (const appVersionId of appVersionIds) {
-      await this.updateEventActionsForNewVersionWithNewMappingIds(
-        manager,
-        appVersionId,
-        appResourceMappings.dataQueryMapping,
-        appResourceMappings.componentsMapping,
-        appResourceMappings.pagesMapping,
-        isNormalizedAppDefinitionSchema
-      );
+      for (const appVersionId of appVersionIds) {
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appVersionId,
+          appResourceMappings.dataQueryMapping,
+          appResourceMappings.componentsMapping,
+          appResourceMappings.pagesMapping,
+          isNormalizedAppDefinitionSchema
+        );
+      }
     }
 
     await this.setEditingVersionAsLatestVersion(manager, appResourceMappings.appVersionMapping, importingAppVersions);
@@ -632,20 +647,6 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
 
-      const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-        if (componentParentId) {
-          const parentId = component?.parent?.split('-').slice(0, -1).join('-');
-
-          const parentComponent = allComponents.find((comp) => comp.id === parentId);
-
-          if (parentComponent) {
-            return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
-          }
-        }
-
-        return false;
-      };
-
       const pagesOfAppVersion = importingPages.filter((page) => page.appVersionId === importingAppVersion.id);
 
       for (const page of pagesOfAppVersion) {
@@ -675,7 +676,7 @@ export class AppImportExportService {
 
           let parentId = component.parent ? component.parent : null;
 
-          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
+          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId); //from here
 
           if (isParentTabOrCalendar) {
             const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
@@ -1456,8 +1457,6 @@ export class AppImportExportService {
     oldPageToNewPageMapping: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean
   ) {
-    if (!isNormalizedAppDefinitionSchema) return;
-
     const allEvents = await manager.find(EventHandler, {
       where: { appVersionId: versionId },
     });
@@ -1465,7 +1464,7 @@ export class AppImportExportService {
     for (const event of allEvents) {
       const eventDefinition = event.event;
 
-      if (eventDefinition?.actionId === 'run-query') {
+      if (isNormalizedAppDefinitionSchema && eventDefinition?.actionId === 'run-query') {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 
@@ -1495,14 +1494,41 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   return appParamsWithMultipageSchema;
 }
 
-function transformComponentData(data: object, componentEvents: any[]): Component[] {
+function transformComponentData(
+  data: object,
+  componentEvents: any[],
+  componentsMapping: Record<string, string>
+): Component[] {
   const transformedComponents: Component[] = [];
 
+  const allComponents = Object.keys(data).map((key) => {
+    return {
+      id: key,
+      ...data[key],
+    };
+  });
+
   for (const componentId in data) {
-    const componentData = data[componentId]['component'];
+    const component = data[componentId];
+    const componentData = component['component'];
 
     const transformedComponent: Component = new Component();
-    transformedComponent.id = componentId;
+
+    let parentId = component.parent ? component.parent : null;
+
+    const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, allComponents, parentId);
+
+    if (isParentTabOrCalendar) {
+      const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const mappedParentId = componentsMapping[_parentId];
+
+      parentId = `${mappedParentId}-${childTabId}`;
+    } else {
+      parentId = componentsMapping[parentId];
+    }
+
+    transformedComponent.id = uuid();
     transformedComponent.name = componentData.name;
     transformedComponent.type = componentData.component;
     transformedComponent.properties = componentData.definition.properties || {};
@@ -1511,7 +1537,7 @@ function transformComponentData(data: object, componentEvents: any[]): Component
     transformedComponent.general = componentData.definition.general || {};
     transformedComponent.generalStyles = componentData.definition.generalStyles || {};
     transformedComponent.displayPreferences = componentData.definition.others || {};
-    transformedComponent.parent = data[componentId].parent || null;
+    transformedComponent.parent = component.parent ? parentId : null;
 
     transformedComponents.push(transformedComponent);
 
@@ -1519,7 +1545,22 @@ function transformComponentData(data: object, componentEvents: any[]): Component
       componentId: componentId,
       event: componentData.definition.events,
     });
+    componentsMapping[componentId] = transformedComponent.id;
   }
 
   return transformedComponents;
 }
+
+const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+  if (componentParentId) {
+    const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+    const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+    if (parentComponent) {
+      return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+    }
+  }
+
+  return false;
+};
