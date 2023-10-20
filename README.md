@@ -58,7 +58,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - **Run JS & Python code:** Execute custom JavaScript and Python snippets.
 - **Granular access control:** Set permissions at both group and app levels.
 - **Low-code:** Use JS code almost anywhere within the builder, such as setting text color based on status with 
-`status === 'success' ? 'green' : 'red`.
+`status === 'success' ? 'green' : 'red'`.
 - **No-code query editors:** Query Editors available for all supported data sources.
 - **Join and transform data:** Transform query results using JavaScript or Python code.
 - **Secure:** All the credentials are securely encrypted using `aes-256-gcm`.
