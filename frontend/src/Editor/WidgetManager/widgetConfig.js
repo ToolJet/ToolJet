@@ -557,14 +557,14 @@ export const widgets = [
     properties: {
       text: {
         type: 'code',
-        displayName: 'Button Text',
+        displayName: 'Button text',
         validation: {
           schema: { type: 'string' },
         },
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
