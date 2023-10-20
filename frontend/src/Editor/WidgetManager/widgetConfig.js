@@ -5537,7 +5537,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       iconColor: {
         type: 'color',
-        displayName: 'Icon Color',
+        displayName: 'Icon color',
         validation: {
           schema: { type: 'string' },
         },
