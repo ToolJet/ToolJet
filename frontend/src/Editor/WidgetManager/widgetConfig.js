@@ -1789,7 +1789,7 @@ export const widgets = [
   },
   {
     name: 'Textarea',
-    displayName: 'Textarea',
+    displayName: 'Text Area',
     description: 'Multi-line text input',
     component: 'TextArea',
     defaultSize: {
