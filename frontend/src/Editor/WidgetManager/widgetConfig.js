@@ -4157,28 +4157,28 @@ export const widgets = [
       },
       textSize: {
         type: 'code',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       strokeWidth: {
         type: 'code',
-        displayName: 'Stroke Width',
+        displayName: 'Stroke width',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       counterClockwise: {
         type: 'code',
-        displayName: 'Counter Clockwise',
+        displayName: 'Counter clockwise',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       circleRatio: {
         type: 'code',
-        displayName: 'Circle Ratio',
+        displayName: 'Circle ratio',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
