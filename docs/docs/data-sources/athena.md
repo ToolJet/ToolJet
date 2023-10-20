@@ -9,6 +9,8 @@ ToolJet can connect to Amazon Athena which is an interactive query service that 
 
 ## Connection
 
+To establish a connection with the Amazon Athena data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+
 ToolJet requires the following to connect to your Athena.
 
 - **Database**
@@ -29,13 +31,7 @@ You can also configure for **[additional optional parameters](https://github.com
 
 - Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the datasource. Query manager then can be used to write SQL queries.
 
-
-<img className="screenshot-full" src="/img/datasource-reference/athena/athena-query.png" alt="Athena query" />
-
-
 - Click on the `run` button to run the query. 
-
-**NOTE:** Query should be saved before running.
 
 :::tip
 **Refer amazon athena docs here for more info:** [link](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)

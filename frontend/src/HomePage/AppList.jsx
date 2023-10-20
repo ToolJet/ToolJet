@@ -39,7 +39,6 @@ const AppList = (props) => {
                     canDeleteApp={props.canDeleteApp}
                     canUpdateApp={props.canUpdateApp}
                     deleteApp={props.deleteApp}
-                    cloneApp={props.cloneApp}
                     exportApp={props.exportApp}
                     appActionModal={props.appActionModal}
                   />

@@ -48,5 +48,6 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
     CredentialsService,
     PostgrestProxyService,
   ],
+  exports: [ImportExportResourcesService],
 })
 export class ImportExportResourcesModule {}
