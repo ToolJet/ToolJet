@@ -157,7 +157,7 @@ class LoginPageComponent extends React.Component {
     e.preventDefault();
     this.setRedirectUrlToCookie();
 
-    this.setState({ isLoading: true, formLogin: true });
+    this.setState({ isLoading: true });
 
     const { email, password } = this.state;
 
@@ -240,41 +240,8 @@ class LoginPageComponent extends React.Component {
                               'No login methods enabled for this workspace'
                             )}
                           </h2>
-                          {this.organizationId && (
-                            <p
-                              className="text-center-onboard workspace-login-description"
-                              data-cy="workspace-sign-in-sub-header"
-                            >
-                              Sign in to your workspace - {configs?.name}
-                            </p>
-                          )}
-                          <div className="tj-text-input-label">
-                            {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
-                              <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
-                                {this.props.t('newToTooljet', 'New to ToolJet?')}
-                                <Link
-                                  to={'/signup'}
-                                  tabIndex="-1"
-                                  style={{ marginLeft: '4px' }}
-                                  data-cy="create-an-account-link"
-                                >
-                                  {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
-                                </Link>
-                              </div>
-                            )}
-                          </div>
                         </div>
                       )}
-                    {this.state?.configs?.git?.enabled && (
-                      <div className="login-sso-wrapper">
-                        <GitSSOLoginButton
-                          configs={this.state?.configs?.git?.configs}
-                          setRedirectUrlToCookie={() => {
-                            this.setRedirectUrlToCookie();
-                          }}
-                        />
-                      </div>
-                    )}
                     <div>
                       {(this.state?.configs?.google?.enabled ||
                         this.state?.configs?.git?.enabled ||

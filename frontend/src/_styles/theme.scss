@@ -11699,97 +11699,6 @@ tbody {
   }
 }
 
-.dark-theme{
-  .manage-app-users-footer {
-    .default-secondary-button {
-      background-color: var(--indigo9);
-      color: var(--base-black);
-    }
-  }
-}
-
-.break-all {
-  word-break: break-all;
-}
-
-.workspace-folder-modal{
-  .tj-text-input.dark {
-    background:  #202425;
-    border-color: var(--slate7) !important;
-  }
-}
-
-.slug-ellipsis {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 150px; 
-}
-
-.app-slug-container,
-.shareable-link-container,
-.workspace-folder-modal {
-  .tj-app-input {
-    padding-bottom: 0px !important;
-  }
-
-  .label {
-    font-weight: 400;
-    font-size: 10px;
-    height: 0px;
-    padding: 4px 0px 16px 0px;
-  }
-
-  .tj-input-error {
-    color: var(--tomato10);
-  }
-
-  .tj-text-input {
-    width: auto !important;
-    background: var(--slate3);
-    color: var(--slate9);
-    height: auto !important;
-    margin-bottom: 5px;
-    border-color: var(--slate7);
-
-    &:hover {
-      box-shadow: none;
-    }
-    
-    &:active {
-      border: 1px solid #D7DBDF;
-      box-shadow: none;
-    }
-  }
-
-  .input-with-icon {
-    flex: none;
-    .icon-container {
-      right: 20px;
-      top: calc(50% - 13px);
-    }
-  }
-
-  .label-info {
-    color: #687076;
-  }
-
-  .label-success {
-    color: #3D9A50;
-  }
-
-  
-  .workspace-spinner {
-    color: #889096 !important;
-    width: 16px;
-    height: 16px;
-    align-self: center;
-  }
-
-  .cancel-btn {
-    color: var(--indigo9);
-  }
-}
 .confirm-dialogue-modal {
   background: var(--base);
 }
@@ -12167,6 +12076,10 @@ tbody {
   .released-button {
     background-color: #F1F3F5;
     color: #C1C8CD;
+  }
+
+  .nav-item {
+    background-color: transparent !important;
   }
 }
 

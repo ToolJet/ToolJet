@@ -36,7 +36,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams, redirectToDashboard } from '@/_helpers/routes';
+import { getPreviewQueryParams, getQueryParams, redirectToDashboard } from '@/_helpers/routes';
 import toast from 'react-hot-toast';
 
 class ViewerComponent extends React.Component {
@@ -567,6 +567,12 @@ class ViewerComponent extends React.Component {
         );
       } else {
         const pageArray = Object.values(this.state.appDefinition?.pages || {});
+        const { env, version, ...restQueryParams } = getQueryParams();
+        const queryParamsString = Object.keys(restQueryParams)
+          .map((key) => `${key}=${restQueryParams[key]}`)
+          .join('&');
+        const constructTheURL = (homeHandle) =>
+          `/applications/${this.state.slug}/${homeHandle}${env && version ? `?env=${env}&version=${version}` : ''}`;
         //checking if page is disabled
         if (
           pageArray.find((page) => page.handle === this.props.params.pageHandle)?.disabled &&
@@ -574,11 +580,7 @@ class ViewerComponent extends React.Component {
           this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
         ) {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/environments/${this.state.environmentId}/${homeHandle}`;
-          if (this.state.slug) {
-            url = `/applications/${this.state.slug}/${homeHandle}`;
-          }
-          return <Navigate to={url} replace />;
+          return <Navigate to={constructTheURL(homeHandle)} replace />;
         }
 
         //checking if page exists
@@ -587,11 +589,15 @@ class ViewerComponent extends React.Component {
           this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
         ) {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/environments/${this.state.environmentId}/${homeHandle}`;
-          if (this.state.slug) {
-            url = `/applications/${this.state.slug}/${homeHandle}`;
-          }
-          return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
+
+          return (
+            <Navigate
+              to={`${constructTheURL(homeHandle)}${
+                this.props.params.pageHandle ? '' : `${env && version ? '&' : '?'}${queryParamsString}`
+              }`}
+              replace
+            />
+          );
         }
 
         return (

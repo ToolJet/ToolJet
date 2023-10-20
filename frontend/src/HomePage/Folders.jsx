@@ -12,7 +12,7 @@ import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
-import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
 import { useNavigate } from 'react-router-dom';
 
 export const Folders = function Folders({
@@ -112,8 +112,11 @@ export const Folders = function Folders({
   }
 
   function updateFolderQuery(name) {
-    const path = `${name ? `?folder=${name}` : ''}`;
-    navigate({ pathname: location.pathname, search: path }, { replace: true });
+    const search = `${name ? `?folder=${name}` : ''}`;
+    navigate(
+      { pathname: `/${getWorkspaceId()}${appType === 'workflow' ? '/workflows' : ''}`, search },
+      { replace: true }
+    );
   }
 
   function deleteFolder(folder) {
