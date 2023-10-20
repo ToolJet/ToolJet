@@ -92,6 +92,7 @@ jobs:
 
   unit-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
     container: node:18.3.0-buster
     services:
@@ -130,6 +131,7 @@ jobs:
 
   e2e-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30 # Set a timeout of 30 minutes
     needs: build
     container: node:18.3.0-buster
     services:
