@@ -4,9 +4,6 @@ import config from 'config';
 import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
 import { Editor, EditorFunc } from '@/Editor';
-
-import useRouter from '@/_hooks/use-router';
-import { useParams } from 'react-router-dom';
 const Y = require('yjs');
 const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
@@ -29,18 +26,15 @@ const getWebsocketUrl = () => {
 };
 
 export const RealtimeEditor = (props) => {
-  const params = useParams();
-  const appId = params.id;
+  const appId = props.id;
   const [provider, setProvider] = React.useState();
-  const router = useRouter();
 
   React.useEffect(() => {
+    /* TODO: when we convert the editor.jsx to fn component. please try to avoid this extra call */
     const domain = psl.parse(window.location.host).domain;
     document.cookie = domain ? `domain=.${domain}; path=/` : `path=/`;
-    document.cookie = domain
-      ? `app_id=${router.query.id}; domain=.${domain}; path=/`
-      : `app_id=${router.query.id}; path=/`;
-    document.cookie = `app_id=${router.query.id}; domain=.${domain}; path=/`;
+    document.cookie = domain ? `app_id=${appId}; domain=.${domain}; path=/` : `app_id=${appId}; path=/`;
+    document.cookie = `app_id=${appId}; domain=.${domain}; path=/`;
     setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);

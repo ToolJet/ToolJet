@@ -29,8 +29,8 @@ import {
   resolveReferences,
   safelyParseJSON,
   stripTrailingSlash,
-  getSubpath,
-  excludeWorkspaceIdFromURL,
+  // getSubpath,
+  // excludeWorkspaceIdFromURL,
   isQueryRunnable,
   redirectToDashboard,
   getWorkspaceId,
@@ -47,6 +47,9 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataActions } from '@/_stores/appDataStore';
+
+const getSubpath = () => '';
+const excludeWorkspaceIdFromURL = () => '';
 
 class ViewerComponent extends React.Component {
   constructor(props) {

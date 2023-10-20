@@ -4,7 +4,7 @@ import { appService, organizationService, authenticationService } from '@/_servi
 import { Editor, EditorFunc } from '@/Editor';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import config from 'config';
-import { safelyParseJSON, stripTrailingSlash, redirectToDashboard, getSubpath, getWorkspaceId } from '@/_helpers/utils';
+import { safelyParseJSON, stripTrailingSlash, redirectToDashboard, getWorkspaceId } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
 import { useAppDataActions } from '@/_stores/appDataStore';
@@ -49,6 +49,7 @@ const AppLoaderComponent = (props) => {
   };
 
   const handleError = (error) => {
+    const getSubpath = () => '';
     try {
       if (error?.data) {
         const statusCode = error.data?.statusCode;
