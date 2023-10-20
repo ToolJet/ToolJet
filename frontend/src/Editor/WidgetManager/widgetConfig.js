@@ -361,7 +361,7 @@ export const widgets = [
       },
       actionButtonRadius: {
         type: 'code',
-        displayName: 'Action Button Radius',
+        displayName: 'Action button radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
         },
@@ -391,7 +391,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -544,7 +544,7 @@ export const widgets = [
   {
     name: 'Button',
     displayName: 'Button',
-    description: 'Trigger actions: queries, alerts etc',
+    description: 'Trigger actions: queries, alerts, set variables etc.',
     component: 'Button',
     defaultSize: {
       width: 3,
@@ -557,14 +557,14 @@ export const widgets = [
     properties: {
       text: {
         type: 'code',
-        displayName: 'Button Text',
+        displayName: 'Button text',
         validation: {
           schema: { type: 'string' },
         },
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -685,7 +685,7 @@ export const widgets = [
   {
     name: 'Chart',
     displayName: 'Chart',
-    description: 'Display charts',
+    description: 'Visualize data',
     component: 'Chart',
     defaultSize: {
       width: 20,
@@ -881,7 +881,7 @@ export const widgets = [
   {
     name: 'Modal',
     displayName: 'Modal',
-    description: 'Modal triggered by events',
+    description: 'Show pop-up windows',
     component: 'Modal',
     defaultSize: {
       width: 10,
@@ -901,7 +901,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -943,7 +943,7 @@ export const widgets = [
       },
       modalHeight: {
         type: 'code',
-        displayName: 'Modal Height',
+        displayName: 'Modal height',
         validation: {
           schema: { type: 'string' },
         },
@@ -1095,22 +1095,22 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: { schema: { type: 'string' } },
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: { schema: { type: 'string' } },
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border Color',
+        displayName: 'Border color',
         validation: { schema: { type: 'string' } },
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error Text Color',
+        displayName: 'Error text color',
         validation: { schema: { type: 'string' } },
       },
       borderRadius: {
@@ -1503,7 +1503,7 @@ export const widgets = [
   {
     name: 'Checkbox',
     displayName: 'Checkbox',
-    description: 'A single checkbox',
+    description: 'Single checkbox toggle',
     component: 'Checkbox',
     defaultSize: {
       width: 5,
@@ -1594,7 +1594,7 @@ export const widgets = [
   {
     name: 'Radio-button',
     displayName: 'Radio Button',
-    description: 'Radio buttons',
+    description: 'Select one from multiple choices',
     component: 'RadioButton',
     defaultSize: {
       width: 6,
@@ -1643,14 +1643,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       activeColor: {
         type: 'color',
-        displayName: 'Active Color',
+        displayName: 'Active color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1707,7 +1707,7 @@ export const widgets = [
   {
     name: 'ToggleSwitch',
     displayName: 'Toggle Switch',
-    description: 'Toggle Switch',
+    description: 'User-controlled on-off switch',
     component: 'ToggleSwitch',
     defaultSize: {
       width: 6,
@@ -1789,8 +1789,8 @@ export const widgets = [
   },
   {
     name: 'Textarea',
-    displayName: 'Textarea',
-    description: 'Text area form field',
+    displayName: 'Text Area',
+    description: 'Multi-line text input',
     component: 'TextArea',
     defaultSize: {
       width: 6,
@@ -2295,7 +2295,7 @@ export const widgets = [
     properties: {
       loadingState: {
         type: 'toggle',
-        displayName: 'loading state',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2312,7 +2312,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
@@ -2365,7 +2365,7 @@ export const widgets = [
   {
     name: 'Dropdown',
     displayName: 'Dropdown',
-    description: 'Select one value from options',
+    description: 'Single item selector',
     defaultSize: {
       width: 8,
       height: 30,
@@ -2559,7 +2559,7 @@ export const widgets = [
   {
     name: 'Multiselect',
     displayName: 'Multiselect',
-    description: 'Select multiple values from options',
+    description: 'Multiple item selector',
     defaultSize: {
       width: 12,
       height: 30,
@@ -2707,7 +2707,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'code',
-        displayName: 'Default Value',
+        displayName: 'Default value',
         validation: {
           schema: { type: 'string' },
         },
@@ -2756,7 +2756,7 @@ export const widgets = [
   {
     name: 'Map',
     displayName: 'Map',
-    description: 'Display Google Maps',
+    description: 'Display map locations',
     component: 'Map',
     defaultSize: {
       width: 16,
@@ -3284,7 +3284,7 @@ export const widgets = [
   {
     name: 'Calendar',
     displayName: 'Calendar',
-    description: 'Calendar',
+    description: 'Display calendar events',
     component: 'Calendar',
     defaultSize: {
       width: 30,
@@ -3395,7 +3395,7 @@ export const widgets = [
   {
     name: 'Iframe',
     displayName: 'Iframe',
-    description: 'Display an Iframe',
+    description: 'Embed external content',
     defaultSize: {
       width: 10,
       height: 310,
@@ -3451,7 +3451,7 @@ export const widgets = [
   {
     name: 'CodeEditor',
     displayName: 'Code Editor',
-    description: 'Code Editor',
+    description: 'Edit source code',
     component: 'CodeEditor',
     defaultSize: {
       width: 15,
@@ -3532,7 +3532,7 @@ export const widgets = [
   {
     name: 'Tabs',
     displayName: 'Tabs',
-    description: 'Tabs component',
+    description: 'Organize content in tabs',
     defaultSize: {
       width: 30,
       height: 300,
@@ -4157,28 +4157,28 @@ export const widgets = [
       },
       textSize: {
         type: 'code',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       strokeWidth: {
         type: 'code',
-        displayName: 'Stroke Width',
+        displayName: 'Stroke width',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       counterClockwise: {
         type: 'code',
-        displayName: 'Counter Clockwise',
+        displayName: 'Counter clockwise',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       circleRatio: {
         type: 'code',
-        displayName: 'Circle Ratio',
+        displayName: 'Circle ratio',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -4311,28 +4311,28 @@ export const widgets = [
 
         validation: { schema: { type: 'string' } },
       },
-      loadingState: { type: 'toggle', displayName: 'Loading State', validation: { schema: { type: 'boolean' } } },
+      loadingState: { type: 'toggle', displayName: 'Loading state', validation: { schema: { type: 'boolean' } } },
     },
     events: {},
     styles: {
       primaryLabelColour: {
         type: 'color',
-        displayName: 'Primary Label Colour',
+        displayName: 'Primary label colour',
         validation: { schema: { type: 'string' } },
       },
       primaryTextColour: {
         type: 'color',
-        displayName: 'Primary Text  Colour',
+        displayName: 'Primary text  colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryLabelColour: {
         type: 'color',
-        displayName: 'Secondary Label Colour',
+        displayName: 'Secondary label colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryTextColour: {
         type: 'color',
-        displayName: 'Secondary Text Colour',
+        displayName: 'Secondary text colour',
         validation: { schema: { type: 'string' } },
       },
       visibility: {
@@ -4472,7 +4472,7 @@ export const widgets = [
   {
     name: 'Timeline',
     displayName: 'Timeline',
-    description: 'Visual representation of a sequence of events',
+    description: 'Show event timeline',
     component: 'Timeline',
     properties: {
       data: {
@@ -4530,7 +4530,7 @@ export const widgets = [
   {
     name: 'SvgImage',
     displayName: 'Svg Image',
-    description: 'Svg image',
+    description: 'Display SVG graphics',
     component: 'SvgImage',
     properties: {
       data: {
@@ -4582,7 +4582,7 @@ export const widgets = [
   {
     name: 'Html',
     displayName: 'HTML Viewer',
-    description: 'HTML Viewer',
+    description: 'View HTML content',
     component: 'Html',
     defaultSize: {
       width: 10,
@@ -4632,7 +4632,7 @@ export const widgets = [
   {
     name: 'VerticalDivider',
     displayName: 'Vertical Divider',
-    description: 'Vertical Separator between components',
+    description: 'Vertical line separator',
     component: 'VerticalDivider',
     defaultSize: {
       width: 2,
@@ -4647,7 +4647,7 @@ export const widgets = [
     styles: {
       dividerColor: {
         type: 'color',
-        displayName: 'Divider Color',
+        displayName: 'Divider color',
         validation: {
           schema: { type: 'string' },
         },
@@ -5046,7 +5046,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'KanbanBoard',
     displayName: 'Kanban Board',
-    description: 'Kanban Board',
+    description: 'Task management board',
     component: 'KanbanBoard',
     defaultSize: {
       width: 40,
@@ -5112,7 +5112,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'Kanban',
     displayName: 'Kanban',
-    description: 'Kanban',
+    description: 'Task management board',
     component: 'Kanban',
     defaultSize: {
       width: 40,
@@ -5277,7 +5277,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'ColorPicker',
     displayName: 'Color Picker',
-    description: 'Color Picker Palette',
+    description: 'Choose colors from a palette',
     component: 'ColorPicker',
     properties: {
       defaultColor: { type: 'color', displayName: 'Default Color' },
@@ -5327,7 +5327,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'TreeSelect',
     displayName: 'Tree Select',
-    description: 'Select values from a tree view',
+    description: 'Hierarchical item selector',
     defaultSize: {
       width: 12,
       height: 200,
@@ -5537,7 +5537,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       iconColor: {
         type: 'color',
-        displayName: 'Icon Color',
+        displayName: 'Icon color',
         validation: {
           schema: { type: 'string' },
         },
