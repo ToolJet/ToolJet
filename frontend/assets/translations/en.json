@@ -865,19 +865,19 @@
         },
         "Timeline": {
             "displayName": "Timeline",
-            "description": "Visual representation of a sequence of events"
+            "description": "Show event timeline"
         },
         "SvgImage": {
             "displayName": "Svg Image",
-            "description": "Svg image"
+            "description": "Display SVG graphics"
         },
         "Html": {
             "displayName": "HTML Viewer",
-            "description": "HTML Viewer"
+            "description": "View HTML content"
         },
         "VerticalDivider": {
             "displayName": "Vertical Divider",
-            "description": "Vertical Separator between components"
+            "description": "Vertical line separator"
         },
         "CustomComponent": {
             "displayName": "Custom Component",
