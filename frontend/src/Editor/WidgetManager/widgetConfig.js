@@ -544,7 +544,7 @@ export const widgets = [
   {
     name: 'Button',
     displayName: 'Button',
-    description: 'Trigger actions: queries, alerts etc',
+    description: 'Trigger actions: queries, alerts, set variables etc.',
     component: 'Button',
     defaultSize: {
       width: 3,
@@ -685,7 +685,7 @@ export const widgets = [
   {
     name: 'Chart',
     displayName: 'Chart',
-    description: 'Display charts',
+    description: 'Visualize data',
     component: 'Chart',
     defaultSize: {
       width: 20,
@@ -881,7 +881,7 @@ export const widgets = [
   {
     name: 'Modal',
     displayName: 'Modal',
-    description: 'Modal triggered by events',
+    description: 'Show pop-up windows',
     component: 'Modal',
     defaultSize: {
       width: 10,
