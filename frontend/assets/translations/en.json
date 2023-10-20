@@ -725,15 +725,15 @@
         },
         "Button": {
             "displayName": "Button",
-            "description": "Trigger actions: queries, alerts etc"
+            "description": "Trigger actions: queries, alerts, set variables etc."
         },
         "Chart": {
             "displayName": "Chart",
-            "description": "Display charts"
+            "description": "Visualize data"
         },
         "Modal": {
             "displayName": "Modal",
-            "description": "Modal triggered by events"
+            "description": "Show pop-up windows"
         },
         "TextInput": {
             "displayName": "Text Input",
