@@ -753,19 +753,19 @@
         },
         "Checkbox": {
             "displayName": "Checkbox",
-            "description": "A single checkbox"
+            "description": "Single checkbox toggle"
         },
         "Radio-button": {
             "displayName": "Radio Button",
-            "description": "Radio buttons"
+            "description": "Select one from multiple choices"
         },
         "ToggleSwitch": {
             "displayName": "Toggle Switch",
-            "description": "Toggle Switch"
+            "description": "User-controlled on-off switch"
         },
         "Textarea": {
             "displayName": "Textarea",
-            "description": "Text area form field"
+            "description": "Multi-line text input"
         },
         "DateRangePicker": {
             "displayName": "Range Picker",

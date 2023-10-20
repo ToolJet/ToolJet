@@ -1503,7 +1503,7 @@ export const widgets = [
   {
     name: 'Checkbox',
     displayName: 'Checkbox',
-    description: 'A single checkbox',
+    description: 'Single checkbox toggle',
     component: 'Checkbox',
     defaultSize: {
       width: 5,
@@ -1594,7 +1594,7 @@ export const widgets = [
   {
     name: 'Radio-button',
     displayName: 'Radio Button',
-    description: 'Radio buttons',
+    description: 'Select one from multiple choices',
     component: 'RadioButton',
     defaultSize: {
       width: 6,
@@ -1707,7 +1707,7 @@ export const widgets = [
   {
     name: 'ToggleSwitch',
     displayName: 'Toggle Switch',
-    description: 'Toggle Switch',
+    description: 'User-controlled on-off switch',
     component: 'ToggleSwitch',
     defaultSize: {
       width: 6,
@@ -1790,7 +1790,7 @@ export const widgets = [
   {
     name: 'Textarea',
     displayName: 'Textarea',
-    description: 'Text area form field',
+    description: 'Multi-line text input',
     component: 'TextArea',
     defaultSize: {
       width: 6,
