@@ -406,6 +406,27 @@ export class AppsControllerV2 {
   }
 
   // events api
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Get(':id/versions/:versionId/events')
+  async getEvents(@User() user, @Param('id') id, @Param('versionId') versionId, @Query('sourceId') sourceId) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('viewApp', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return this.eventService.findAllEventsWithSourceId(sourceId);
+  }
+
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/versions/:versionId/events')
