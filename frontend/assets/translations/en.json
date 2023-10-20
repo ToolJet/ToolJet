@@ -817,19 +817,19 @@
         },
         "Calendar": {
             "displayName": "Calendar",
-            "description": "Calendar"
+            "description": "Display calendar events"
         },
         "Iframe": {
             "displayName": "Iframe",
-            "description": "Display an Iframe"
+            "description": "Embed external content"
         },
         "CodeEditor": {
             "displayName": "Code Editor",
-            "description": "Code Editor"
+            "description": "Edit source code"
         },
         "Tabs": {
             "displayName": "Tabs",
-            "description": "Tabs component"
+            "description": "Organize content in tabs"
         },
         "Timer": {
             "displayName": "Timer",
