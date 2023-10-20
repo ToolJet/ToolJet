@@ -139,7 +139,7 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-  Cypress-Platform:
+  Cypress-Platform-subpath:
     runs-on: ubuntu-22.04
 
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-workspace-subpath' }}
@@ -198,6 +198,10 @@ jobs:
           echo "REDIS_USER=default" >> .env
           echo "REDIS_PASSWORD=" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=http://ec2-54-193-40-51.us-west-1.compute.amazonaws.com:8080/.well-known/openid-configuration" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml
@@ -220,6 +224,9 @@ jobs:
           until curl --silent --fail http://localhost:80/apps/tooljet/; do
             sleep 5
           done'
+
+      - name: Seeding
+        run: docker exec Tooljet-app npm run db:seed:prod
 
       - name: Create Cypress environment file
         id: create-json
