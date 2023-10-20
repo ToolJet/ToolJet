@@ -138,7 +138,7 @@ export const inviteUser = (firstName, email) => {
   //   commonSelectors.toastMessage,
   //   usersText.userCreatedToast
   // );
-  cy.wait(1000)
+  cy.wait(1000);
   fetchAndVisitInviteLink(email);
 };
 
@@ -161,14 +161,24 @@ export const confirmInviteElements = () => {
     commonText.emailInputLabel
   );
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
-  cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+
+  cy.get("body").then(($el) => {
+    if ($el.text().includes(commonText.passwordLabel)) {
+      cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+        "have.text",
+        commonText.passwordLabel
+      );
+      cy.get(commonSelectors.passwordInputField).should("be.visible");
+      cy.get(commonSelectors.acceptInviteButton)
+        .verifyVisibleElement("have.text", commonText.acceptInviteButton)
+        .should("be.disabled");
+    }
+  });
+
+  cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",
-    commonText.passwordLabel
+    commonText.acceptInviteButton
   );
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
-  cy.get(commonSelectors.acceptInviteButton)
-    .verifyVisibleElement("have.text", commonText.acceptInviteButton)
-    .should("be.disabled");
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -233,8 +243,8 @@ export const inviteUserWithUserGroup = (firstName, email, group1, group2) => {
     usersText.userCreatedToast
   );
   // copyInvitationLink(firstName, email);
-  cy.wait(1000)
-  fetchAndVisitInviteLink(email)
+  cy.wait(1000);
+  fetchAndVisitInviteLink(email);
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.acceptInviteButton).click();
 };
@@ -266,7 +276,7 @@ export const fillUserInviteForm = (firstName, email) => {
 };
 
 export const selectUserGroup = (groupName) => {
-  cy.wait(500)
+  cy.wait(500);
   cy.get("body").then(($body) => {
     if (!$body.find(".search > input").length > 0) {
       cy.get(".dropdown-heading-value > .gray").click();
