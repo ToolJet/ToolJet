@@ -2365,7 +2365,7 @@ export const widgets = [
   {
     name: 'Dropdown',
     displayName: 'Dropdown',
-    description: 'Select one value from options',
+    description: 'Single item selector',
     defaultSize: {
       width: 8,
       height: 30,
@@ -2559,7 +2559,7 @@ export const widgets = [
   {
     name: 'Multiselect',
     displayName: 'Multiselect',
-    description: 'Select multiple values from options',
+    description: 'Multiple item selector',
     defaultSize: {
       width: 12,
       height: 30,
@@ -2756,7 +2756,7 @@ export const widgets = [
   {
     name: 'Map',
     displayName: 'Map',
-    description: 'Display Google Maps',
+    description: 'Display map locations',
     component: 'Map',
     defaultSize: {
       width: 16,
