@@ -361,7 +361,7 @@ export const widgets = [
       },
       actionButtonRadius: {
         type: 'code',
-        displayName: 'Action Button Radius',
+        displayName: 'Action button radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
         },
@@ -391,7 +391,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
