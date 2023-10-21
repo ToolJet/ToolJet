@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { appService, folderService, authenticationService, libraryAppService } from '@/_services';
+import { appsService, folderService, authenticationService, libraryAppService } from '@/_services';
 import { ConfirmDialog, AppModal } from '@/_components';
 import Select from '@/_ui/Select';
 import { Folders } from './Folders';
@@ -36,6 +36,7 @@ class HomePageComponent extends React.Component {
     this.state = {
       currentUser: {
         id: currentSession?.current_user.id,
+        organization_id: currentSession?.current_organization_id,
       },
       users: null,
       isLoading: true,
@@ -87,7 +88,7 @@ class HomePageComponent extends React.Component {
       appSearchKey,
     });
 
-    appService.getAll(page, folder, appSearchKey).then((data) =>
+    appsService.getAll(page, folder, appSearchKey).then((data) =>
       this.setState({
         apps: data.apps,
         meta: { ...this.state.meta, ...data.meta },
@@ -104,14 +105,16 @@ class HomePageComponent extends React.Component {
     });
 
     folderService.getAll(appSearchKey).then((data) => {
-      const currentFolder = data?.folders?.filter(
-        (folder) => this.state.currentFolder?.id && folder.id === this.state.currentFolder?.id
-      )?.[0];
+      const folder_slug = new URL(window.location.href)?.searchParams?.get('folder');
+      const folder = data?.folders?.find((folder) => folder.name === folder_slug);
+      const currentFolderId = folder ? folder.id : this.state.currentFolder?.id;
+      const currentFolder = data?.folders?.find((folder) => currentFolderId && folder.id === currentFolderId);
       this.setState({
         folders: data.folders,
         foldersLoading: false,
         currentFolder: currentFolder || {},
       });
+      currentFolder && this.fetchApps(1, currentFolder.id);
     });
   };
 
@@ -132,15 +135,15 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ creatingApp: true });
     try {
-      const data = await appService.createApp({ icon: sample(iconList), name: appName });
-
+      const data = await appsService.createApp({ icon: sample(iconList), name: appName });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       toast.success('App created successfully!');
+      _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
+      _self.setState({ creatingApp: false });
       if (errorResponse.statusCode === 409) {
-        _self.setState({ creatingApp: false });
         return false;
       } else {
         throw errorResponse;
@@ -152,14 +155,14 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appService.saveApp(appId, { name: newAppName });
+      await appsService.saveApp(appId, { name: newAppName });
       await this.fetchApps();
       toast.success('App name has been updated!');
+      _self.setState({ renamingApp: false });
       return true;
     } catch (errorResponse) {
+      _self.setState({ renamingApp: false });
       if (errorResponse.statusCode === 409) {
-        console.log(errorResponse);
-        _self.setState({ renamingApp: false });
         return false;
       } else {
         throw errorResponse;
@@ -171,13 +174,16 @@ class HomePageComponent extends React.Component {
     this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
   };
 
-  cloneApp = async (appId, appName) => {
+  cloneApp = async (appName, appId) => {
     this.setState({ isCloningApp: true });
     try {
-      const data = await appService.cloneApp(appName, appId);
+      const data = await appsService.cloneResource({
+        app: [{ id: appId, name: appName }],
+        organization_id: this.state.currentUser?.organization_id,
+      });
       toast.success('App cloned successfully!');
+      this.props.navigate(`/${getWorkspaceId()}/apps/${data?.imports?.app[0]?.id}`);
       this.setState({ isCloningApp: false });
-      this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
       return true;
     } catch (_error) {
       this.setState({ isCloningApp: false });
@@ -203,11 +209,18 @@ class HomePageComponent extends React.Component {
       fileReader.readAsText(file, 'UTF-8');
       fileReader.onload = (event) => {
         const result = event.target.result;
-        const fileContent = JSON.parse(result);
+        let fileContent;
+        try {
+          fileContent = JSON.parse(result);
+        } catch (parseError) {
+          toast.error(`Could not import: ${parseError}`);
+          return;
+        }
         this.setState({ fileContent, fileName, showImportAppModal: true });
       };
       fileReader.onerror = (error) => {
-        throw new Error(`Could not import the app: ${error}`);
+        toast.error(`Could not import the app: ${error}`);
+        return;
       };
       event.target.value = null;
     } catch (error) {
@@ -218,14 +231,16 @@ class HomePageComponent extends React.Component {
   importFile = async (importJSON, appName) => {
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
-    const organization_id = getWorkspaceId();
+    const organization_id = this.state.currentUser?.organization_id;
     const isLegacyImport = isEmpty(importJSON.tooljet_version);
     if (isLegacyImport) {
-      importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
+      importJSON = { app: [{ definition: importJSON, appName: appName }], tooljet_version: importJSON.tooljetVersion };
+    } else {
+      importJSON.app[0].appName = appName;
     }
-    const requestBody = { organization_id, appName, ...importJSON };
+    const requestBody = { organization_id, ...importJSON };
     try {
-      const data = await appService.importResource(requestBody);
+      const data = await appsService.importResource(requestBody);
       toast.success('App imported successfully.');
       this.setState({
         isImportingApp: false,
@@ -242,6 +257,7 @@ class HomePageComponent extends React.Component {
       if (error.statusCode === 409) {
         return false;
       }
+      toast.error("Couldn't import the app");
     }
   };
 
@@ -347,7 +363,7 @@ class HomePageComponent extends React.Component {
 
   executeAppDeletion = () => {
     this.setState({ isDeletingApp: true });
-    appService
+    appsService
       .deleteApp(this.state.appToBeDeleted.id)
       // eslint-disable-next-line no-unused-vars
       .then((data) => {
@@ -489,7 +505,7 @@ class HomePageComponent extends React.Component {
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
-    appService
+    appsService
       .changeIcon(appOperations.selectedIcon, appOperations.selectedApp.id)
       .then(() => {
         toast.success('Icon updated.');
@@ -841,7 +857,6 @@ class HomePageComponent extends React.Component {
                       canDeleteApp={this.canDeleteApp}
                       canUpdateApp={this.canUpdateApp}
                       deleteApp={this.deleteApp}
-                      cloneApp={this.cloneApp}
                       exportApp={this.exportApp}
                       meta={meta}
                       currentFolder={currentFolder}

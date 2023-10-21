@@ -17,12 +17,16 @@ describe("App share functionality", () => {
   beforeEach(() => {
     cy.appUILogin();
   });
+  before(() => {
+    cy.apiLogin();
+    cy.apiCreateApp(data.appName);
+    cy.visit('/')
+    logout();
+  })
 
   if (envVar === "Community") {
     it("Verify private and public app share funtionality", () => {
-      cy.apiLogin();
-      cy.apiCreateApp(data.appName);
-      cy.openApp();
+      cy.openApp(data.appName);
       cy.dragAndDropWidget("Table", 250, 250);
 
       cy.get(commonWidgetSelector.shareAppButton).click();
@@ -35,7 +39,7 @@ describe("App share functionality", () => {
           commonText.shareModalElements[elements]
         );
       }
-
+      cy.get(commonWidgetSelector.copyAppLinkButton).should("be.visible");
       cy.get(commonWidgetSelector.makePublicAppToggle).should("be.visible");
       cy.get(commonWidgetSelector.appLink).should("be.visible");
       cy.get(commonWidgetSelector.appNameSlugInput).should("be.visible");

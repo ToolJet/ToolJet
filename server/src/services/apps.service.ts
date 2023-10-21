@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, MoreThan, Repository } from 'typeorm';
@@ -86,6 +86,12 @@ export class AppsService {
     ).app;
   }
 
+  async findVersionFromName(name: string, appId: string): Promise<AppVersion> {
+    return await this.appVersionsRepository.findOne({
+      where: { name, appId },
+    });
+  }
+
   async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return manager
@@ -99,37 +105,33 @@ export class AppsService {
 
   async create(name: string, user: User, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await catchDbException(
-        async () => {
-          const app = await manager.save(
-            manager.create(App, {
-              name,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              organizationId: user.organizationId,
-              userId: user.id,
-            })
-          );
+      return await catchDbException(async () => {
+        const app = await manager.save(
+          manager.create(App, {
+            name,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            organizationId: user.organizationId,
+            userId: user.id,
+          })
+        );
 
-          //create default app version
-          await this.createVersion(user, app, 'v1', null, null, manager);
+        //create default app version
+        await this.createVersion(user, app, 'v1', null, null, manager);
 
-          await manager.save(
-            manager.create(AppUser, {
-              userId: user.id,
-              appId: app.id,
-              role: 'admin',
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            })
-          );
+        await manager.save(
+          manager.create(AppUser, {
+            userId: user.id,
+            appId: app.id,
+            role: 'admin',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        );
 
-          await this.createAppGroupPermissionsForAdmin(app, manager);
-          return app;
-        },
-        DataBaseConstraints.APP_NAME_UNIQUE,
-        'This app name is already taken.'
-      );
+        await this.createAppGroupPermissionsForAdmin(app, manager);
+        return app;
+      }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
     });
   }
 
@@ -236,13 +238,12 @@ export class AppsService {
           throw new BadRequestException('You can only release when the version is promoted to production');
         }
       }
-      return await catchDbException(
-        async () => {
-          return await manager.update(App, appId, updatableParams);
-        },
-        DataBaseConstraints.APP_NAME_UNIQUE,
-        'This app name is already taken.'
-      );
+      return await catchDbException(async () => {
+        return await manager.update(App, appId, updatableParams);
+      }, [
+        { dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' },
+        { dbConstraint: DataBaseConstraints.APP_SLUG_UNIQUE, message: 'This app slug is already taken.' },
+      ]);
     }, manager);
   }
 
@@ -652,6 +653,22 @@ export class AppsService {
         credential_id: options[key]['credential_id'],
       };
     });
+  }
+
+  async findAppWithIdOrSlug(slug: string): Promise<App> {
+    let app: App;
+    try {
+      app = await this.find(slug);
+    } catch (error) {
+      /* means: UUID error. so the slug isn't not the id of the app */
+      if (error?.code === `22P02`) {
+        /* Search against slug */
+        app = await this.findBySlug(slug);
+      }
+    }
+
+    if (!app) throw new NotFoundException('App not found. Invalid app id');
+    return app;
   }
 
   async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
