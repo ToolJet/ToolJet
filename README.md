@@ -78,7 +78,7 @@ You can deploy ToolJet on Heroku using one-click deployment.
 </p>
 
 ### Try using Docker
-Want to give ToolJet a quick spin on your local machine? You can immediately run the following command from your terminal to have ToolJet up.
+Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
 
 ```bash
 docker run \
@@ -123,7 +123,7 @@ You can use ToolJet Cloud for a fully managed solution. If you want to self-host
 | Deploying ToolJet on a Subpath  | [Link](https://docs.tooljet.com/docs/setup/tooljet-subpath/)   |
 
 ## Marketplace 
-ToolJet can now be found on both AWS and Azure Marketplaces, making accessing and deploying our app-building platform simpler than ever.
+ToolJet can now be found on both AWS and Azure Marketplaces, making it simpler than ever to access and deploy our app-building platform.
 
 Find ToolJet on AWS Marketplace [here](https://aws.amazon.com/marketplace/pp/prodview-fxjto27jkpqfg?sr=0-1&ref_=beagle&applicationId=AWSMPContessa) and explore seamless integration on Azure Marketplace [here](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/tooljetsolutioninc1679496832216.tooljet?tab=Overview).
 
@@ -135,7 +135,7 @@ For general help using ToolJet, please refer to the official [documentation](htt
 - [Twitter](https://twitter.com/ToolJet) - Get the product updates quickly.
 
 ## Roadmap
-Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and learn about what's coming.
+Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and learn about what's coming next.
 
 ## Branching model
 We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
