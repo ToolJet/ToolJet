@@ -7,7 +7,7 @@ ToolJet apps offer two sharing options: they can either be shared privately with
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/share/sharenew.png" alt="Share modal" width='700'/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/share/sharenew1.png" alt="Share modal" width='700'/>
 
 </div>
 
@@ -17,7 +17,7 @@ To share the app with external end users and make it accessible to anyone on the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/share/publicnew.png" alt="Share modal" width='700'/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/share/publicnew1.png" alt="Share modal" width='700'/>
 
 </div>
 
@@ -27,7 +27,7 @@ By default, ToolJet will generate a unique URL for your application. However, yo
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/share/edit.png" alt="Share modal" width='700'/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/share/edit1.png" alt="Share modal" width='700'/>
 
 </div>
 

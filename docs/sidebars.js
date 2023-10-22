@@ -271,6 +271,7 @@ const sidebars = {
                   ],
                 },
                 'user-authentication/sso/ldap',
+                'user-authentication/sso/saml',
               ],
             },
           ],

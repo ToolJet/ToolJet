@@ -10,7 +10,14 @@ describe('oauth controller', () => {
   let orgRepository: Repository<Organization>;
   let mockConfig;
 
-  const authResponseKeys = ['id', 'email', 'first_name', 'last_name', 'current_organization_id'].sort();
+  const authResponseKeys = [
+    'id',
+    'email',
+    'first_name',
+    'last_name',
+    'current_organization_id',
+    'current_organization_slug',
+  ].sort();
 
   beforeEach(async () => {
     await clearDB();
