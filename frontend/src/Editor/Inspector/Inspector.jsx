@@ -382,11 +382,11 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(() => {
     switchSidebarTab(2);
     removeComponent(component);
     setWidgetDeleteConfirmation(false);
-  };
+  }, [switchSidebarTab, removeComponent, component, setWidgetDeleteConfirmation]);
 
   React.useEffect(()=>{
     const handleKeyPress = (event) => {
@@ -399,7 +399,7 @@ export const Inspector = ({
     return () => {
         document.removeEventListener('keydown', handleKeyPress);
     };
-  },[showWidgetDeleteConfirmation, handleDeleteConfirm]);
+  }, [showWidgetDeleteConfirmation, handleDeleteConfirm]);
 
   return (
     <div className="inspector">
