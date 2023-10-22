@@ -63,22 +63,21 @@ export class AppController {
   @Get('session')
   async getSessionDetails(@User() user, @Query('appId') appId: string, @Query('workspaceSlug') workspaceSlug: string) {
     let currentOrganization: Organization;
-
-    let app: { organizationId: string; isPublic: boolean };
+    let appData: any;
     if (appId) {
-      app = await this.userService.returnOrgIdOfAnApp(appId);
+      appData = await this.userService.retrieveAppDataUsingSlug(appId);
     }
 
     /* if the user has a session and the app is public, we don't need to authorize the app organization id */
-    if ((app && !app?.isPublic) || workspaceSlug) {
-      const organization = await this.organizationService.fetchOrganization(workspaceSlug || app.organizationId);
+    if ((appData && !appData?.isPublic) || workspaceSlug) {
+      const organization = await this.organizationService.fetchOrganization(workspaceSlug || appData.organizationId);
       if (!organization) {
         throw new NotFoundException("Coudn't found workspace. workspace id or slug is incorrect!.");
       }
       currentOrganization = organization;
     }
 
-    return this.authService.generateSessionPayload(user, currentOrganization);
+    return this.authService.generateSessionPayload(user, currentOrganization, appData);
   }
 
   @UseGuards(JwtAuthGuard)
