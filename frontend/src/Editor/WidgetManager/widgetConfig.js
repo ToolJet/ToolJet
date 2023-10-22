@@ -4484,7 +4484,7 @@ export const widgets = [
       },
       hideDate: {
         type: 'toggle',
-        displayName: 'Hide Date',
+        displayName: 'Hide date',
         validation: {
           schema: { type: 'boolean' },
         },
