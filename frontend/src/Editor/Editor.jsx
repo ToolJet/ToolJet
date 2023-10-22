@@ -234,7 +234,10 @@ class EditorComponent extends React.Component {
       if (!isEqual(this.props.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId)) return;
       if (isEqual(this.state.appDefinition, this.props.ymap?.get('appDef').newDefinition)) return;
 
-      this.realtimeSave(this.props.ymap?.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
+      this.realtimeSave(this.props.ymap?.get('appDef').newDefinition, {
+        skipAutoSave: true,
+        skipYmapUpdate: true,
+      });
     });
   };
 
@@ -1461,7 +1464,10 @@ class EditorComponent extends React.Component {
   };
 
   getPagesWithIds = () => {
-    return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({ ...page, id }));
+    return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({
+      ...page,
+      id,
+    }));
   };
 
   getCanvasMinWidth = () => {
@@ -1822,7 +1828,10 @@ const withStore = (Component) => (props) => {
     shallow
   );
   const { isVersionReleased, editingVersion } = useAppVersionStore(
-    (state) => ({ isVersionReleased: state.isVersionReleased, editingVersion: state.editingVersion }),
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersion: state.editingVersion,
+    }),
     shallow
   );
   const currentState = useCurrentState();

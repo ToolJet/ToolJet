@@ -1,0 +1,8 @@
+{
+  "name": "Inventory and Order Manager",
+  "description": "A template to effortlessly track sales, product inventory, and orders in real time. Make informed decisions with comprehensive insights, optimizing operations for success.",
+  "widgets": ["Table", "File Picker"],
+  "sources": [{ "name": "Google Sheets", "id": "googlesheets" }],
+  "id": "inventory-and-order-manager",
+  "category": "supply-chain-management"
+}
