@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-// eslint-disable-next-line import/no-unresolved
 import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap'; // Import OverlayTrigger and Tooltip
 
 export const Icon = ({
   properties,
@@ -13,10 +13,10 @@ export const Icon = ({
   darkMode,
   dataCy,
   component,
+  tooltipMessage, // Add tooltipMessage prop
 }) => {
   const { icon } = properties;
   const { iconColor, visibility, boxShadow } = styles;
-  // eslint-disable-next-line import/namespace
   const IconElement = Icons[icon];
   const { definition } = component;
   const { events = [] } = definition;
@@ -27,7 +27,6 @@ export const Icon = ({
 
   useEffect(() => {
     showIcon !== visibility && setIconVisibility(visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export const Icon = ({
     setExposedVariable('click', async function () {
       fireEvent('onClick');
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIconVisibility]);
 
   return (
@@ -45,19 +43,27 @@ export const Icon = ({
       className={cx('icon-widget', { 'd-none': !showIcon }, { 'cursor-pointer': events.length > 0 })}
       data-cy={dataCy}
     >
-      <IconElement
-        color={color}
-        style={{ width, height, boxShadow, color: iconColor }}
-        onClick={(event) => {
-          event.stopPropagation();
-          fireEvent('onClick');
-        }}
-        onMouseOver={(event) => {
-          event.stopPropagation();
-          fireEvent('onHover');
-        }}
-        stroke={1.5}
-      />
+      <OverlayTrigger
+        overlay={<Tooltip>{tooltipMessage}</Tooltip>}
+        placement="top" // Set the placement for the tooltip
+        delay={{ show: 800, hide: 100 }}
+      >
+        <div>
+          <IconElement
+            color={color}
+            style={{ width, height, boxShadow, color: iconColor }}
+            onClick={(event) => {
+              event.stopPropagation();
+              fireEvent('onClick');
+            }}
+            onMouseOver={(event) => {
+              event.stopPropagation();
+              fireEvent('onHover');
+            }}
+            stroke={1.5}
+          />
+        </div>
+      </OverlayTrigger>
     </div>
   );
 };
