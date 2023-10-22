@@ -400,7 +400,7 @@ export const Inspector = ({
         document.removeEventListener('keydown', handleKeyPress);
     };
   }, [showWidgetDeleteConfirmation, handleDeleteConfirm]);
-
+  
   return (
     <div className="inspector">
       <ConfirmDialog
