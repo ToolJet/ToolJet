@@ -770,7 +770,7 @@ class TableComponent extends React.Component {
             <input
               data-cy={`action-button-text-input-field`}
               type="text"
-              className="form-control text-field"
+              className="tj-input-element text-field"
               onChange={(e) => {
                 e.stopPropagation();
                 this.onActionButtonPropertyChanged(index, 'buttonText', e.target.value);

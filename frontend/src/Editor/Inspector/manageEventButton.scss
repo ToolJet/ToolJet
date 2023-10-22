@@ -1,9 +1,9 @@
 .manage-event-btn {
   border-radius: 6px;
-  background-color: var(--layer-03);
+  background-color: var(--layer-02);
 
   &:hover {
-    background-color: var(--slate4);
+    background-color: var(--layer-02-hover);
   }
 
   .event-handler-text {

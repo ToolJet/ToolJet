@@ -11,7 +11,7 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
   return (
     <div style={{ marginBottom: '8px' }}>
       <div
-        className="manage-event-btn border-0"
+        className="manage-event-btn  border-0"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >

@@ -8,11 +8,11 @@ export default function ErrorModal() {
   };
 
   return (
-    <div>
+    <div style={{ backgroundColor: 'var(--layer-01' }}>
       {show ? (
         <div className="modal-dialog" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
+          <div className="modal-content" style={{ backgroundColor: 'var(--layer-01' }}>
+            <div className="modal-header" style={{ backgroundColor: 'var(--layer-01' }}>
               <h5 className="modal-title">QR Scanner is not working</h5>
               <button
                 type="button"

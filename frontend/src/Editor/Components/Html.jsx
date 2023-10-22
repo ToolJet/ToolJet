@@ -4,7 +4,7 @@ import DOMPurify from 'dompurify';
 export const Html = function ({ height, properties, styles, darkMode, dataCy }) {
   const { rawHtml: stringifyHTML } = properties;
   const baseStyle = {
-    backgroundColor: darkMode ? '#47505D' : '#ffffff',
+    backgroundColor: 'var(--layer-01)',
     color: darkMode ? 'white' : 'black',
   };
   const { visibility, boxShadow } = styles;

@@ -15,11 +15,11 @@ export const Statistics = function Statistics({ width, height, properties, style
 
   const baseStyle = {
     borderRadius: 4,
-    backgroundColor: darkMode ? '#47505D' : '#ffffff',
+    backgroundColor: 'var(--layer-01)',
     alignItems: 'center',
     flexDirection: 'column',
     margin: '0px auto',
-    border: darkMode ? ' 0.75px solid #232A35' : ' 0.75px solid #A6B6CC',
+    border: ' 0.75px solid var(--border-subtle-01)',
     fontFamily: 'Inter',
     justifyContent: 'center',
     display: visibility ? 'flex' : 'none',

@@ -56,7 +56,7 @@ const Preview = ({ darkMode }) => {
                 <div className="spinner-border text-azure mt-5" role="status"></div>
               </center>
             )}
-            <Row className="py-2 border-bottom preview-section-header m-0">
+            <Row className="py-2 preview-section-header m-0">
               <Col className="d-flex align-items-center color-slate9">Preview</Col>
               <Col className="keys text-center d-flex align-items-center">
                 <ListGroup
@@ -96,7 +96,6 @@ const Preview = ({ darkMode }) => {
                 style={{
                   overflowWrap: 'anywhere',
                   padding: 0,
-                  border: '1px solid var(--slate5)',
                   borderBottomLeftRadius: '6px',
                   borderBottomRightRadius: '6px',
                 }}

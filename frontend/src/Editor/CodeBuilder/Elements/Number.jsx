@@ -7,7 +7,7 @@ export const Number = ({ value, onChange, cyLabel }) => {
     <>
       <div className="field tj-app-input" style={{ padding: '0.225rem 0.35rem' }}>
         <input
-          className={'inspector-field-number'}
+          className={'tj-input-element'}
           type="number"
           onChange={(e) => {
             setNumber(e.target.value);

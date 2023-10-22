@@ -64,7 +64,7 @@
 :root {
     --base-black: #18181A;
     --text-black-000: #000000;
-    --slate12: #313739;
+    // --slate12: #313739;
 
     --background-strong: #F8F9FA;
     --background-subtle: #FBFCFD;
@@ -180,7 +180,7 @@
     /* Remap your colors for dark mode */
     --base-black: #18181A;
     --text-black-000: #000000;
-    --slate12: #313739;
+    // --slate12: #313739;
 
     --background-strong: #26292B;
     --background-subtle: #151718;
@@ -265,6 +265,13 @@
     --button-ghost-active: #313538;
     --button-ghost-icon: #4C5155;
     --button-ghost-text: #ECEDEE;
+
+    --button-secondary-danger: #FFF0EE;
+    --button-secondary-border: #F3B0A2;
+    --button-primary-danger: #E54D2E;
+
+
+
 
 
     --alerts-info-border: #3A3F42;

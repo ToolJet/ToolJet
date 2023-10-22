@@ -2171,8 +2171,8 @@ body {
 }
 
 .RichEditor-root {
-  background: #ffffff;
-  border: 1px solid #ddd;
+  background-color: var(--layer-01) !important;
+  border: 1px solid var(--border-subtle-01) !important;
   font-family: "Georgia", serif;
   font-size: 14px;
   padding: 15px;
@@ -2486,16 +2486,34 @@ hr {
   width: 100%;
   font-size: 0.875rem;
   font-weight: 400;
-  color: var(--slate9);
-  background-color: var(--background-strong) !important;
+  color: var(--text-primary);
   background-clip: padding-box;
-  border: 1px solid var(--border-subtle-01);
+  background-color: var(--input-box-fill-default);
+  border: 1px solid var(--input-box-border-default);
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   border-radius: 4px;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   height: 30px;
+
+  &:hover {
+    background: var(--input-box-fill-hover);
+    border: 1px solid var(--input-box-border-default);
+  }
+
+  &:focus-visible {
+    background: var(--input-box-fill-default);
+    border: 1px solid var(--input-box-border-default);
+    outline: none;
+    // box-shadow: 0px 0px 0px 4px #DFE3E6;
+  }
+
+  &:active {
+    background: var(--input-box-fill-clicked);
+    border: 1px solid var(--input-box-fill-clicked-border);
+    box-shadow: none;
+  }
 
   .CodeMirror {
     font-family: "Roboto", sans-serif;
@@ -2906,7 +2924,6 @@ input:focus-visible {
 
 
 .color-picker-input {
-  border: solid 1px rgb(223, 223, 223);
   cursor: pointer;
 }
 
@@ -3043,11 +3060,11 @@ input:focus-visible {
   }
 
   .DateInput {
-    background: #1f2936;
+    background-color: var(--layer-01);
   }
 
   .DateInput_input {
-    background-color: #1f2936;
+    background-color: var(--layer-01);
     color: #ffffff;
   }
 
@@ -3058,15 +3075,15 @@ input:focus-visible {
   }
 
   .DateRangePickerInput {
-    background-color: #1f2936;
+    background-color: var(--layer-01);
   }
 
   .DateInput_input__focused {
-    background: #1f2936;
+    background-color: var(--layer-01);
   }
 
   .DateRangePickerInput__withBorder {
-    border: 1px solid #1f2936;
+    border: 1px solid var(--border-subtle-01);
   }
 
   .main .canvas-container .canvas-area {
@@ -3149,7 +3166,7 @@ input:focus-visible {
   }
 
   .jet-container {
-    background-color: #1f2936;
+    background-color: var(--layer-01);
   }
 
   .nav-tabs .nav-item.show .nav-link,
@@ -3514,6 +3531,7 @@ input[type="text"] {
     display: flex;
     align-items: center;
     border-radius: inherit;
+    background-color: var(--layer-01);
   }
 
   .rmsc {
@@ -3885,7 +3903,7 @@ input[type="text"] {
 }
 
 .calendar-widget.dark-mode {
-  background-color: #1d2a39;
+  background-color: var(--layer-01);
 
   .rbc-toolbar {
     button {
@@ -3949,6 +3967,7 @@ input[type="text"] {
 .jet-listview {
   overflow-y: overlay;
   overflow-x: hidden;
+  background-color: var(--layer-01);
 }
 
 .jet-listview::-webkit-scrollbar-track {
@@ -3991,8 +4010,8 @@ input[type="text"] {
     .modal-content {
       width: 100% !important;
       height: 100%;
-      background-color: var(--slate3) !important;
-      border: none !important;
+      // background-color: var(--slate3) !important;
+      border: 1px solid var(--border-subtle-01) !important;
 
       .modal-body {
         width: 100% !important;
@@ -4022,7 +4041,7 @@ input[type="text"] {
       width: 100% !important;
       border-bottom: 1px solid var(--border-subtle-01, #26292B);
       outline: 1px solid var(--border-subtle-01, #26292B);
-      background-color: var(--slate1) !important;
+      background-color: var(--layer-03) !important;
     }
 
     .resize-handle {
@@ -4060,8 +4079,8 @@ input[type="text"] {
     height: 302px !important;
     padding: 0px !important;
     margin: 0px !important;
-    margin-left: -1px !important; //fix the modal body code mirror margin
-
+    // margin-left: -1px !important; //fix the modal body code mirror margin
+    // border: 1px solid var(--border-subtle-02) !important;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     border-bottom-left-radius: 5px;
@@ -4069,6 +4088,7 @@ input[type="text"] {
     border-bottom: 0.75px solid;
     border-left: 0.75px solid;
     border-right: 0.75px solid;
+    background-color: var(--layer-02) !important;
 
     @include theme-border($light-theme: true);
 
@@ -5878,7 +5898,7 @@ div#driver-page-overlay {
 
 //Kanban board
 .kanban-container.dark-themed {
-  background-color: $bg-dark-light  !important;
+  // background-color: $bg-dark-light  !important;
 
   .kanban-column {
     .card-header {
@@ -5888,7 +5908,7 @@ div#driver-page-overlay {
 }
 
 .kanban-container {
-  background-color: #fefefe;
+  background-color: var(--layer-01);
 
   .kanban-column {
     background-color: #f4f4f4;
@@ -6209,7 +6229,7 @@ input.hide-input-arrows {
 
 .custom-checkbox-tree {
   overflow-y: scroll;
-  color: #3e525b;
+  color: var(--text-primary);
 
   .react-checkbox-tree label:hover {
     background: none !important;
@@ -6675,7 +6695,11 @@ tbody {
   .CalendarMonthGrid,
   .DayPicker_focusRegion,
   .DayPicker {
-    background-color: #232e3c;
+    background-color: var(--layer-01);
+  }
+
+  .DayPicker_focusRegion {
+    border: 1px solid var(--border-subtle-01);
   }
 
   .DayPicker_weekHeader_ul,
@@ -7696,7 +7720,7 @@ tbody {
 
   .react-select__control {
     border: none !important;
-    background-color: var(--layer-01) !important;
+    background-color: var(--input-box-fill-default) !important;
   }
 }
 
@@ -9420,7 +9444,6 @@ tbody {
 
     .dropdown-content {
       .panel-content {
-        background: var(--background-strong);
         border: 1px solid var(--slate3);
         box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
         border-radius: 6px;
@@ -9479,8 +9502,9 @@ tbody {
   }
 
   .dropdown-content {
+
     .panel-content {
-      background: var(--background-strong);
+      background-color: var(--layer-01);
       border: 1px solid var(--slate3);
       box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
       border-radius: 6px;
@@ -10690,7 +10714,7 @@ tbody {
     z-index: 1;
 
     .popup-content {
-      background-color: #121212;
+      background-color: var(--layer-01);
       padding: 16px 18px 0px 16px;
       border-radius: 6px;
 
@@ -11541,7 +11565,7 @@ tbody {
   border: none;
   border-radius: 6px;
   border: 1px solid var(--border-subtle-01) !important;
-  background: var(--layer-01);
+  background-color: var(--layer-01) !important;
   box-shadow: 0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10);
 }
 
@@ -11586,16 +11610,12 @@ tbody {
 }
 
 .color-picker-input {
-  border: solid 1px #333c48;
   height: 36px;
-  background-color: var(--slate1);
-  border: 1px solid var(--border-subtle-01);
+  // background-color: var(--slate1);
+  // border: 1px solid var(--border-subtle-01);
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
 
-  &:hover {
-    background-color: var(--slate4);
-    border: 1px solid var(--slate8);
-
-  }
 }
 
 #popover-basic-2 {
@@ -11641,4 +11661,13 @@ tbody {
       border-bottom: none !important;
     }
   }
+}
+
+.tj-widget-base {
+  background-color: var(--layer-01) !important;
+  border: 1px solid var(--border-subtle-01) !important;
+}
+
+.cm-s-monokai .CodeMirror-gutters {
+  background-color: var(--layer-01);
 }

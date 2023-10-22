@@ -1,7 +1,7 @@
 // for selects and dropdowns across app dashboard
 .react-select__control {
-    background-color: var(--layer-01) !important;
-    border: 1px solid var(--border-subtle-01) !important;
+    background-color: var(--input-box-fill-default) !important;
+    border: 1px solid var(--input-box-border-default) !important;
 
     &:active {
         border: 1px solid var(--indigo9);
@@ -84,7 +84,7 @@
 .select-column-field,
 .records-dropdown-field {
     .react-select__control {
-        border: 1px solid var(--border-subtle-01) !important;
+        border: 1px solid var(--input-box-border-default) !important;
     }
 }
 

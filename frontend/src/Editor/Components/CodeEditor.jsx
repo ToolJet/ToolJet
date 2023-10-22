@@ -49,6 +49,7 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
           overflow: 'auto',
           borderRadius: `${styles.borderRadius}px`,
           boxShadow: styles.boxShadow,
+          backgroundColor: 'var(--layer-01)',
         }}
       >
         <CodeMirror

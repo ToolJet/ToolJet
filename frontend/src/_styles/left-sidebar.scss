@@ -161,6 +161,7 @@
 .debugger {
   .leftsidebar-panel-header {
     border-bottom: none;
+    background-color: var(--layer-02);
   }
 
   .text-slate-12 {
@@ -182,7 +183,7 @@
   }
 
   .nav-item .nav-link {
-    background-color: var(--slate3) !important;
+    background-color: var(--layer-03) !important;
     color: var(--text-secondary) !important;
   }
 
@@ -591,6 +592,13 @@
   height: 100vh;
   margin-top: 0px;
   border-radius: 0px !important;
+  background-color: var(--layer-01) !important;
+
+
+  div {
+    // height: 100%;
+    // background-color: var(--layer-02);
+  }
 
   .add-datasource-btn {
     position: absolute;

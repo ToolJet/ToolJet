@@ -133,7 +133,7 @@ $border-radius: 4px;
     }
 
     &:hover {
-      background: var(--slate3) !important;
+      background: var(--layer-02-hover) !important;
 
     }
 
@@ -503,8 +503,7 @@ $border-radius: 4px;
         }
 
         .code-hinter.codehinter-default-input:focus-within {
-          border: 1px solid var(--indigo9) !important;
-          background-color: #F8FAFF;
+
           border-radius: 0;
         }
 
@@ -928,12 +927,6 @@ $border-radius: 4px;
     }
   }
 
-  .code-hinter.codehinter-default-input {
-    &:hover {
-      background-color: #FBFCFD;
-      border-radius: 6px;
-    }
-  }
 
   .breadcrum {
     width: 15.33px;
@@ -975,6 +968,9 @@ $border-radius: 4px;
   }
 
   .preview-section {
+    border: 1px solid var(--border-subtle-01);
+    border-radius: 6px;
+
     ul {
       margin: 0 !important;
       padding: 0.5em !important;
@@ -989,7 +985,7 @@ $border-radius: 4px;
 
     .tab-pane.active {
       ul {
-        background-color: var(--slate3) !important;
+        background-color: var(--layer-02) !important;
       }
 
     }
@@ -997,7 +993,7 @@ $border-radius: 4px;
     .preview-section-header {
       background-color: var(--layer-03);
       border-radius: 6px 6px 0px 0px;
-      border: 1px solid var(--slate5);
+      // border: 1px solid var(--border-subtle-01);
     }
   }
 
@@ -1038,9 +1034,9 @@ $border-radius: 4px;
       border-radius: 6px !important;
 
       &:focus-within {
-        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-        border: 1px solid var(--indigo9) !important;
-        background-color: #F8FAFF;
+        // box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+        // border: 1px solid var(--indigo9) !important;
+        // background-color: #F8FAFF;
         position: relative;
         z-index: 1 !important;
       }
@@ -1096,10 +1092,9 @@ $border-radius: 4px;
 
     .codehinter-default-input:focus-within,
     .query-manager-input-elem>input:focus {
-      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-      border: 1px solid var(--indigo9) !important;
-      background-color: #F8FAFF;
-
+      // box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+      // border: 1px solid var(--indigo9) !important;
+      // background-color: #F8FAFF;
     }
 
     .code-hinter.codehinter-default-input,
@@ -1248,10 +1243,10 @@ $border-radius: 4px;
     }
 
     .code-hinter.codehinter-plugins:focus-within {
-      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-      border: 1px solid var(--indigo9) !important;
-      border-radius: 6px;
-      background-color: #F8FAFF;
+      // box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+      // border: 1px solid var(--indigo9) !important;
+      // border-radius: 6px;
+      // background-color: #F8FAFF;
     }
 
     &>.row:first-child {
@@ -1530,17 +1525,12 @@ $border-radius: 4px;
 }
 
 .copilot-section-header {
-  background-color: var(--slate2);
-  border: 1px solid var(--slate5);
+  background-color: var(--layer-03);
+  border: 1px solid var(--border-subtle-01);
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
 }
 
-.query-manager-input-elem {
-  input {
-    background-color: var(--background-strong) !important;
-  }
-}
 
 .query-hinter {
   // border: 1px solid var(--slate5);

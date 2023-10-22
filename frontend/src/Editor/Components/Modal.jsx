@@ -132,13 +132,13 @@ export const Modal = function Modal({
     modalBody: {
       height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
-        ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
+        ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? 'var(--layer-01)' : bodyBackgroundColor,
       overflowX: 'hidden',
       overflowY: 'auto',
     },
     modalHeader: {
       backgroundColor:
-        ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+        ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? 'var(--layer-01)' : headerBackgroundColor,
       color: ['#000', '#000000', '#000000ff'].includes(headerTextColor) && darkMode ? '#fff' : headerTextColor,
     },
     buttonStyles: {

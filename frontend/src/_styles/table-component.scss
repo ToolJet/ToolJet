@@ -5,8 +5,9 @@
   padding: 8px;
 
   &.jet-table {
-    background-color: var(--background-strong) !important;
+    background-color: var(--layer-01) !important;
     box-shadow: 0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10);
+    border: 1px solid var(--border-subtle-01);
   }
 
   .table-filters {
@@ -19,7 +20,7 @@
 
   .card-footer,
   .card {
-    background-color: var(--background-strong) !important;
+    background-color: var(--layer-02) !important;
   }
 
   .card {
@@ -570,7 +571,7 @@
 .jet-table {
   .tr {
     .th {
-      background: var(--slate3, #F1F3F5) !important;
+      background: var(--layer-02) !important;
       border-bottom: 1px solid var(--slate5, #E6E8EB) !important;
       border-top: 0 !important;
       padding: 6px 12px;

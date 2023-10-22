@@ -54,7 +54,7 @@ export const FilePicker = ({
   const parsedWidgetVisibility =
     typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility, currentState) : widgetVisibility;
 
-  const bgThemeColor = darkMode ? '#232E3C' : '#fff';
+  const bgThemeColor = 'var(--layer-01)';
 
   const baseStyle = {
     flex: 1,
@@ -64,7 +64,7 @@ export const FilePicker = ({
     padding: '20px',
     borderWidth: 1.5,
     borderRadius: `${styles.borderRadius}px`,
-    borderColor: '#42536A',
+    borderColor: 'var(--border-subtle-01)',
     borderStyle: 'dashed',
     color: '#bdbdbd',
     outline: 'none',

@@ -95,10 +95,10 @@ $btn-dark-color: #FFFFFF;
 }
 
 .leftsidebar-panel-header {
-  background-color: var(--laye-03);
+  background-color: var(--layer-03);
   padding: 12px 16px;
   min-height: 52px;
-  border-bottom: 1px solid var(--slate5);
+  border-bottom: 1px solid var(--border-subtle-02);
 
 
   .panel-header-container {
@@ -125,7 +125,7 @@ $btn-dark-color: #FFFFFF;
 .page-selector-panel-body {
   height: 100%;
   padding: 12px 16px;
-  background-color: var(--background-strong);
+  background-color: var(--layer-01);
 
   .page-handler {
     height: 32px !important;
@@ -151,17 +151,19 @@ $btn-dark-color: #FFFFFF;
     }
 
     .card.active {
-      background: var(--slate5);
+      background: var(--layer-02-selected);
       gap: 0px;
     }
 
     .card.non-active-page {
       border: none;
       box-shadow: none;
+      background: none;
+
     }
 
     .card:hover {
-      background: var(--slate4);
+      background: var(--layer-02-hover);
     }
 
     .card:focus {

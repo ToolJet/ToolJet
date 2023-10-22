@@ -200,7 +200,7 @@ export const GlobalSettings = ({
                   )}
                   {forceCodeBox && (
                     <div
-                      className="row mx-0 color-picker-input d-flex"
+                      className="row mx-0 color-picker-input d-flex tj-input-element "
                       onClick={() => setShowPicker(true)}
                       style={outerStyles}
                     >
