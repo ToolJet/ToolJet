@@ -6,19 +6,19 @@ export class Layout {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'enum', enumName: 'layout_type', name: 'type', enum: ['desktop', 'mobile'] })
+  @Column({ type: 'enum', enumName: 'layout_type', enum: ['desktop', 'mobile'] })
   type: string;
 
-  @Column({ name: 'top', type: 'double precision' })
+  @Column({ type: 'double precision' })
   top: number;
 
-  @Column({ name: 'left', type: 'double precision' })
+  @Column({ type: 'double precision' })
   left: number;
 
-  @Column({ name: 'width', type: 'double precision' })
+  @Column({ type: 'double precision' })
   width: number;
 
-  @Column({ name: 'height', type: 'double precision' })
+  @Column({ type: 'double precision' })
   height: number;
 
   @Column({ name: 'component_id' })
