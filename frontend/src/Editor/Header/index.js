@@ -12,9 +12,11 @@ import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 export default function EditorHeader({
   M,
@@ -34,11 +36,7 @@ export default function EditorHeader({
 }) {
   const currentUser = useCurrentUser();
 
-  const { updateState } = useAppDataActions();
   const { isSaving, appId, appName, app, isPublic } = useAppInfo();
-  const handleSlugChange = (newSlug) => {
-    updateState({ slug: newSlug });
-  };
 
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
@@ -47,6 +45,7 @@ export default function EditorHeader({
     }),
     shallow
   );
+  const currentState = useCurrentState();
 
   const updatePresence = useUpdatePresence();
 
@@ -67,7 +66,7 @@ export default function EditorHeader({
   const handleLogoClick = (e) => {
     e.preventDefault();
     // Force a reload for clearing interval triggers
-    window.location.href = '/';
+    redirectToDashboard();
   };
 
   return (
@@ -155,9 +154,9 @@ export default function EditorHeader({
                       app={app}
                       appId={appId}
                       slug={slug}
-                      M={M}
-                      handleSlugChange={handleSlugChange}
                       darkMode={darkMode}
+                      pageHandle={currentState?.page?.handle}
+                      M={M}
                       isPublic={isPublic ?? false}
                     />
                   )}

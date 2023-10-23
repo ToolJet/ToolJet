@@ -11,6 +11,7 @@ export const organizationService = {
   switchOrganization,
   getSSODetails,
   editOrganizationConfigs,
+  checkWorkspaceUniqueness,
 };
 
 function getUsers(page, options) {
@@ -28,12 +29,12 @@ function getUsersByValue(searchInput) {
   );
 }
 
-function createOrganization(name) {
+function createOrganization(data) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ name }),
+    body: JSON.stringify(data),
   };
   return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
 }
@@ -71,4 +72,10 @@ function editOrganizationConfigs(params) {
     body: JSON.stringify(params),
   };
   return fetch(`${config.apiUrl}/organizations/configs`, requestOptions).then(handleResponse);
+}
+
+function checkWorkspaceUniqueness(name, slug) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const query = queryString.stringify({ name, slug });
+  return fetch(`${config.apiUrl}/organizations/is-unique?${query}`, requestOptions).then(handleResponse);
 }
