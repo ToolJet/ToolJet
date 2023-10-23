@@ -913,6 +913,21 @@ const EditorComponent = (props) => {
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
       const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
 
+      if (updateDiff['error']) {
+        const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+        const isPlatformMac = platform.toLowerCase().indexOf('mac') > -1;
+        const toastMessage = `Unable to save changes! ${isPlatformMac ? '(⌘ + Z to undo)' : '(ctrl + Z to undo)'}`;
+
+        toast(toastMessage, {
+          icon: '🚫',
+        });
+
+        return updateEditorState({
+          saveError: true,
+          isUpdatingEditorStateInProcess: false,
+        });
+      }
+
       updateAppVersion(appId, editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {
