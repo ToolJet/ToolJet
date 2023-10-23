@@ -24,8 +24,6 @@ export const GlobalSettings = ({
   isMaintenanceOn,
   backgroundFxQuery,
   realState,
-  handleSlugChange,
-  slug: oldSlug,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor } = globalSettings;
@@ -44,7 +42,7 @@ export const GlobalSettings = ({
     shallow
   );
 
-  const { app } = useAppInfo();
+  const { app, slug: oldSlug } = useAppInfo();
 
   const coverStyles = {
     position: 'fixed',
@@ -81,8 +79,8 @@ export const GlobalSettings = ({
             error: '',
           });
           setSlugProgress(false);
-          handleSlugChange(value);
           setSlugUpdatedState(true);
+
           replaceEditorURL(value, realState?.page?.handle);
         })
         .catch(({ error }) => {
