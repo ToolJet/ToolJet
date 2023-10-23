@@ -1658,7 +1658,7 @@ export const addNewWidgetToTheEditor = (
     [left, top] = snapToGrid(subContainerWidth, left, top);
   }
 
-  const gridWidth = subContainerWidth / 43;
+  const gridWidth = subContainerWidth / 24;
   left = Math.round(left / gridWidth);
   console.log('Top calc', { top, initialClientOffset, delta, zoomLevel, offsetFromTopOfWindow, subContainerWidth });
   // left = (left * 100) / subContainerWidth;

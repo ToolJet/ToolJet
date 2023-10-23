@@ -13,7 +13,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
-const NO_OF_GRIDS = 43;
+const NO_OF_GRIDS = 24;
 
 const resizerClasses = {
   topRight: 'top-right',
