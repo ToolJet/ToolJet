@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -24,7 +24,7 @@ export const ReleaseVersionButton = function DeployVersionButton({ appId, appNam
     setShowPageDeletionConfirmation(false);
     setIsReleasing(true);
 
-    appService
+    appsService
       .saveApp(appId, {
         name: appName,
         current_version_id: editingVersion.id,

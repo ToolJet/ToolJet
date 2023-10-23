@@ -2,9 +2,9 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
-const protobuf = require('protobufjs');
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
+const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -100,21 +100,26 @@ export async function dbTransactionForAppVersionAssociationsUpdate(
   });
 }
 
-export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
-export async function catchDbException(
-  operation: () => any,
-  dbConstraint: DataBaseConstraints,
-  errorMessage: string
-): Promise<any> {
+type DbContraintAndMsg = {
+  dbConstraint: DataBaseConstraints;
+  message: string;
+};
+
+export async function catchDbException(operation: () => any, dbConstraints: DbContraintAndMsg[]): Promise<any> {
   try {
     return await operation();
   } catch (err) {
-    if (err?.message?.includes(dbConstraint)) {
-      throw new ConflictException(errorMessage);
-    }
+    dbConstraints.map((dbConstraint) => {
+      if (err?.message?.includes(dbConstraint.dbConstraint)) {
+        throw new ConflictException(dbConstraint.message);
+      }
+    });
+
     throw err;
   }
 }
+
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
 
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
@@ -173,8 +178,13 @@ export const processDataInBatches = async <T>(
   } while (data.length === batchSize);
 };
 
-export const generateNextName = (firstWord: string) => {
-  return `${firstWord} ${Date.now()}`;
+export const generateNextNameAndSlug = (firstWord: string) => {
+  const name = `${firstWord} ${Date.now()}`;
+  const slug = name.replace(/\s+/g, '-').toLowerCase();
+  return {
+    name,
+    slug,
+  };
 };
 
 export const truncateAndReplace = (name) => {

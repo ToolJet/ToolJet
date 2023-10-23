@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import moment from 'moment';
-import { appService } from '@/_services/app.service';
+import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { ButtonSolid } from '@/_components/AppButton';
 
@@ -15,7 +15,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   useEffect(() => {
     async function fetchAppVersions() {
       try {
-        const fetchVersions = await appService.getVersions(app.id);
+        const fetchVersions = await appsService.getVersions(app.id);
         const { versions } = fetchVersions;
         setVersions(versions);
       } catch (error) {
@@ -27,7 +27,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     }
     async function fetchAppTables() {
       try {
-        const fetchTables = await appService.getTables(app.id);
+        const fetchTables = await appsService.getTables(app.id);
         const { tables } = fetchTables;
         setTables(tables);
       } catch (error) {
@@ -57,7 +57,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       organization_id: app.organization_id ?? app.organizationId,
     };
 
-    appService
+    appsService
       .exportResource(requestBody)
       .then((data) => {
         const appName = app.name.replace(/\s+/g, '-').toLowerCase();

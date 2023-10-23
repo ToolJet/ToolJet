@@ -398,7 +398,7 @@ const EditorComponent = (props) => {
         threshold: 0,
       },
     });
-    updateState({ appId: props?.params?.id });
+
     getCanvasWidth();
     initEditorWalkThrough();
   };
@@ -908,7 +908,7 @@ const EditorComponent = (props) => {
       //! The computeComponentPropertyDiff function manages the calculation of differences in table columns by requiring complete column data. Without this complete data, the resulting JSON structure may be incorrect.
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
       const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
-
+      console.log('----arpit::: appid ==> ', { appId });
       updateAppVersion(appId, editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {

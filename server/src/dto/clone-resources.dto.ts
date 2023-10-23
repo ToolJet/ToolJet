@@ -1,4 +1,4 @@
-import { IsUUID, IsOptional } from 'class-validator';
+import { IsUUID, IsOptional, IsString } from 'class-validator';
 
 export class CloneResourcesDto {
   @IsOptional()
@@ -14,6 +14,9 @@ export class CloneResourcesDto {
 export class CloneAppDto {
   @IsUUID()
   id: string;
+
+  @IsString()
+  name: string;
 }
 
 export class CloneTooljetDatabaseDto {

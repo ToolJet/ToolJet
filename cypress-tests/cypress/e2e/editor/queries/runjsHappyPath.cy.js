@@ -64,7 +64,7 @@ import { deleteDownloadsFolder } from "Support/utils/common";
 describe("RunJS", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
