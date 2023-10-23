@@ -1184,56 +1184,61 @@ a more efficient approach, precomputing the parent component types and using
 conditional checks for better performance and error handling.*/
 
 export function computeComponentState(components = {}) {
-  let componentState = {};
-  const currentComponents = getCurrentState().components;
+  try {
+    let componentState = {};
+    const currentComponents = getCurrentState().components;
 
-  // Precompute parent component types
-  const parentComponentTypes = {};
-  Object.keys(components).forEach((key) => {
-    const { component } = components[key];
-    parentComponentTypes[key] = component.component;
-  });
+    // Precompute parent component types
+    const parentComponentTypes = {};
+    Object.keys(components).forEach((key) => {
+      const { component } = components[key];
+      parentComponentTypes[key] = component.component;
+    });
 
-  Object.keys(components).forEach((key) => {
-    if (!components[key]) return;
+    Object.keys(components).forEach((key) => {
+      if (!components[key]) return;
 
-    const { component } = components[key];
-    const componentMeta = componentTypes.find((comp) => component.component === comp.component);
+      const { component } = components[key];
+      const componentMeta = componentTypes.find((comp) => component.component === comp.component);
 
-    const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
-    const existingValues = currentComponents[existingComponentName];
+      const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
+      const existingValues = currentComponents[existingComponentName];
 
-    if (component.parent) {
-      const parentComponentType = parentComponentTypes[component.parent];
+      if (component.parent) {
+        const parentComponentType = parentComponentTypes[component.parent];
 
-      if (parentComponentType !== 'Listview' && parentComponentType !== 'Form') {
+        if (parentComponentType !== 'Listview' && parentComponentType !== 'Form') {
+          componentState[component.name] = {
+            ...componentMeta.exposedVariables,
+            id: key,
+            ...existingValues,
+          };
+        }
+      } else {
         componentState[component.name] = {
           ...componentMeta.exposedVariables,
           id: key,
           ...existingValues,
         };
       }
-    } else {
-      componentState[component.name] = {
-        ...componentMeta.exposedVariables,
-        id: key,
-        ...existingValues,
-      };
-    }
-  });
-
-  useCurrentStateStore.getState().actions.setCurrentState({
-    components: {
-      ...componentState,
-    },
-  });
-
-  return new Promise((resolve) => {
-    useEditorStore.getState().actions.updateEditorState({
-      defaultComponentStateComputed: true,
     });
-    resolve();
-  });
+
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: {
+        ...componentState,
+      },
+    });
+
+    return new Promise((resolve) => {
+      useEditorStore.getState().actions.updateEditorState({
+        defaultComponentStateComputed: true,
+      });
+      resolve();
+    });
+  } catch (error) {
+    console.log(error);
+    return Promise.reject(error);
+  }
 }
 
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
