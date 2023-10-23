@@ -11,7 +11,13 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { User } from 'src/entities/user.entity';
 import { EntityManager } from 'typeorm';
 import { DataSourcesService } from './data_sources.service';
-import { dbTransactionWrap, defaultAppEnvironments, catchDbException } from 'src/helpers/utils.helper';
+import {
+  dbTransactionWrap,
+  defaultAppEnvironments,
+  catchDbException,
+  extractMajorVersion,
+  isTooljetVersionWithNormalizedAppDefinitionSchem,
+} from 'src/helpers/utils.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
@@ -181,14 +187,19 @@ export class AppImportExportService {
         multiPages: true,
         multiEnv: true,
         globalDataSources: true,
-        normalizedAppDefinitionSchema: true,
       };
 
       return { appV2: appToExport };
     });
   }
 
-  async import(user: User, appParamsObj: any, appName: string, externalResourceMappings = {}): Promise<App> {
+  async import(
+    user: User,
+    appParamsObj: any,
+    appName: string,
+    externalResourceMappings = {},
+    tooljetVersion = ''
+  ): Promise<App> {
     if (typeof appParamsObj !== 'object') {
       throw new BadRequestException('Invalid params for app import');
     }
@@ -208,7 +219,8 @@ export class AppImportExportService {
       : convertSinglePageSchemaToMultiPageSchema(appParams);
     schemaUnifiedAppParams.name = appName;
 
-    const isNormalizedAppDefinitionSchema = appParams?.schemaDetails?.normalizedAppDefinitionSchema;
+    const importedAppTooljetVersion = extractMajorVersion(tooljetVersion);
+    const isNormalizedAppDefinitionSchema = isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
     await this.setupImportedAppAssociations(
