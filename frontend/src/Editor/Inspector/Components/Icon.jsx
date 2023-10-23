@@ -44,7 +44,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     return (
       <Popover
         id="popover-basic"
-        style={{ width: '460px', maxWidth: '460px' }}
+        style={{ width: '460px', maxWidth: '460px', border: 'none' }}
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow icon-widget-popover`}
       >
         <Popover.Header style={{ backgroundColor: darkMode && '#2B2F31' }}>
@@ -108,7 +108,11 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                 rootClose={true}
                 overlay={eventPopover()}
               >
-                <div className="row p-2" style={{ borderRadius: '4px' }} role="button">
+                <div
+                  className="row p-2"
+                  style={{ borderRadius: '4px', backgroundColor: 'var(--layer-02)' }}
+                  role="button"
+                >
                   <div className="col-auto">
                     <IconElement
                       color={`${darkMode ? '#fff' : '#000'}`}

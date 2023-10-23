@@ -162,7 +162,7 @@ $focused-outline-color: #4c9ffe;
   .subcontainer-container {
     width: 100%;
     height: 100%;
-    background-color: var(--layer-02);
+    background-color: var(--layer-02) !important;
   }
 
   .handle-container {

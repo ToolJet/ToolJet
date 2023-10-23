@@ -222,16 +222,16 @@
 /* // Danger-variants--- */
 
 .tj-primary-danger-btn {
-    background: var(--button-primary);
+    background: var(--button-danger-primary);
     border: none;
     color: var(--button-primary-text);
 
     &:hover {
-        background: var(--button-primary-hover);
+        background: var(--button-danger-primary-hover);
     }
 
     &:active {
-        background: var(--button-primary-active);
+        background: var(--button-danger-primary-active);
         color: var(--button-primary-text);
     }
 
@@ -245,29 +245,29 @@
 }
 
 .tj-secondary-danger-btn {
-    background: var(--button-secondary);
+    background: var(--button-danger-secondary);
     border: 1px solid var(--button-secondary-border);
-    color: var(--button-secondary-text);
+    color: var(--button-danger-secondary-text) !important;
 
     &:hover {
-        background: var(--button-secondary-hover);
-        color: var(--button-secondary-text);
-        border: 1px solid var(--button-secondary-border);
+        background: var(--button-danger-secondary-hover);
+        color: var(--button-danger-secondary-text);
+        border: 1px solid var(--button-danger-secondary-border);
 
     }
 
     &:active {
-        background: var(--button-secondary-active);
-        color: var(--button-secondary-text);
-        border: 1px solid var(--button-secondary-border);
+        background: var(--button-danger-secondary-active);
+        color: var(--button-danger-secondary-text);
+        border: 1px solid var(--button-danger-secondary-border);
 
     }
 
     &:focus-visible {
         background: var(--tomato4);
-        border: 1px solid var(--button-secondary-border);
+        border: 1px solid var(--button-danger-secondary-border);
         box-shadow: 0px 0px 0px 4px var(--tomato6);
-        color: var(--button-secondary-text);
+        color: var(--button-danger-secondary-text);
         outline: none;
     }
 }
@@ -285,7 +285,7 @@
 
     &:active {
         background: var(--button-secondary-active);
-        color: var(--button-secondary-text);
+        color: var(--button-danger-secondary-text);
         border: 1px solid var(--button-secondary-border);
     }
 

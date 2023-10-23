@@ -15,13 +15,13 @@ export const Container = function Container({
   dataCy,
   properties,
 }) {
-  const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
+  const { visibility, disabledState, borderRadius, boxShadow } = styles;
   const backgroundColor =
-    ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
+    ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#2B2F31' : styles.backgroundColor;
   const computedStyles = {
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
-    border: `1px solid ${borderColor}`,
+    border: `1px solid ${['#FBFCFD'].includes(styles.borderColor) && darkMode ? '#3A3F42' : styles.borderColor}`,
     height,
     display: visibility ? 'flex' : 'none',
     overflow: 'hidden auto',
