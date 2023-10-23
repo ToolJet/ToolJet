@@ -717,7 +717,11 @@ const EditorComponent = (props) => {
     });
 
     if (versionSwitched) {
-      props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${appJson.pages[homePageId]?.handle}`);
+      props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${appJson.pages[homePageId]?.handle}`, {
+        state: {
+          isSwitchingPage: true,
+        },
+      });
     }
 
     await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id);
@@ -1295,7 +1299,11 @@ const EditorComponent = (props) => {
       switchPage: true,
       pageId: newPageId,
     });
-    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${newHandle}`);
+    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${newHandle}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
   };
 
   const switchPage = (pageId, queryParams = []) => {
@@ -1314,7 +1322,11 @@ const EditorComponent = (props) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${handle}?${queryParamsString}`);
+    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
 
     const { globals: existingGlobals } = currentState;
 
