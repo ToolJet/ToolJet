@@ -67,23 +67,25 @@ export const AppVersionsManager = function ({ appId, setAppDefinitionFromVersion
     appVersionService
       .del(appId, versionId)
       .then(() => {
-        onVersionDelete();
         toast.dismiss(deleteingToastId);
         toast.success(`Version - ${versionName} Deleted`);
         resetDeleteModal();
         setGetAppVersionStatus(appVersionLoadingStatus.loading);
-        appVersionService.getAll(appId).then((data) => {
-          setAppVersions(data.versions);
-        });
       })
       .catch((error) => {
         toast.dismiss(deleteingToastId);
         toast.error(error?.error ?? 'Oops, something went wrong');
         setGetAppVersionStatus(appVersionLoadingStatus.error);
         resetDeleteModal();
+      })
+      .finally(() => {
+        appVersionService.getAll(appId, true).then((data) => {
+          setAppVersions(data.versions);
+          onVersionDelete();
+        });
       });
   };
-  //this
+
   const options = appVersions.map((appVersion) => ({
     value: appVersion.id,
     isReleasedVersion: appVersion.id === releasedVersionId,
