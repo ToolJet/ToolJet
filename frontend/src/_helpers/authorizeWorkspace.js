@@ -1,15 +1,16 @@
 import { organizationService, authenticationService } from '@/_services';
+import ReactDOM from 'react-dom';
 import {
   pathnameToArray,
   getSubpath,
   getWorkspaceIdOrSlugFromURL,
   getPathname,
   getRedirectToWithParams,
-  redirectToDashboard,
   getPreviewQueryParams,
 } from './routes';
 import toast from 'react-hot-toast';
 import _ from 'lodash';
+import { StaticErrorModalValues } from './messages';
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
@@ -130,7 +131,13 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, appDa
       if (appData) {
         /* Restrict the users from accessing the sharable app url if the app is not released */
         if (!appData.is_released && _.isEmpty(getPreviewQueryParams())) {
-          redirectToDashboard();
+          updateCurrentSession({
+            ...data,
+            errorModal: {
+              show: true,
+              errorType: StaticErrorModalValues.notReleasedAppError.key,
+            },
+          });
         }
       }
 
