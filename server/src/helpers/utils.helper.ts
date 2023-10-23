@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 const protobuf = require('protobufjs');
+const semver = require('semver');
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -216,3 +217,21 @@ export const generateOrgInviteURL = (organizationToken: string, organizationId?:
     organizationId ? `?oid=${organizationId}` : ''
   }`;
 };
+
+export function extractMajorVersion(version) {
+  return semver.valid(semver.coerce(version));
+}
+
+/**
+ * Checks if a given Tooljet version is compatible with normalized app definition schemas.
+ *
+ * This function uses the 'semver' library to compare the provided version with a minimum version requirement
+ * for normalized app definition schemas (2.22.1). It returns true if the version is greater than or equal to
+ * the required version, indicating compatibility.
+ *
+ * @param {string} version - The Tooljet version to check.
+ * @returns {boolean} - True if the version is compatible, false otherwise.
+ */
+export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
+  return semver.satisfies(semver.coerce(version), '>= 2.22.1');
+}
