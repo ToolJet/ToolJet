@@ -103,7 +103,7 @@ Documentation is available at https://docs.tooljet.com.
 - [Component Reference](https://docs.tooljet.com/docs/widgets/button)
 
 ## Self-hosted
-You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, Heroku and more.
+You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, Heroku, and more.
 
 | Provider  | Documentation |
 | :------------- | :------------- |
@@ -138,7 +138,7 @@ For general help using ToolJet, please refer to the official [documentation](htt
 Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and to learn about what's coming next.
 
 ## Branching model
-We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
+We use the git-flow branching model. The base branch is `developed`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
 
 ## Contributing
 Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself with ToolJet's development process, how to suggest bug fixes and improvements, and the steps for building and testing your changes. <br>
