@@ -760,7 +760,7 @@ class EditorComponent extends React.Component {
         let top = draft[selectedComponent.id].layouts[this.props.currentLayout].top;
         let left = draft[selectedComponent.id].layouts[this.props.currentLayout].left;
 
-        const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
+        const gridWidth = (1 * 100) / 24; // width of the canvas grid in percentage
 
         switch (direction) {
           case 'ArrowLeft':

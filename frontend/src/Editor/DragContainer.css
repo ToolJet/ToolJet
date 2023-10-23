@@ -11,4 +11,5 @@
 	/* font-weight: bold; */
 	border: 1px solid #333;
 	box-sizing: border-box;
+	/* transition: transform 0.1s; */
 }

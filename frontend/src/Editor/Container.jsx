@@ -24,7 +24,7 @@ import _ from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 
-const NO_OF_GRIDS = 43;
+const NO_OF_GRIDS = 24;
 
 export const Container = ({
   canvasWidth,
@@ -51,6 +51,7 @@ export const Container = ({
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
+  const [subContainerWidths, setSubContainerWidths] = useState({});
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
     (state) => ({
@@ -384,16 +385,19 @@ export const Container = ({
         ...boxesObj,
         [id]: {
           ...boxes[id],
+          component: {
+            ...boxes[id]['component'],
+            parent: parent ? parent : boxes[id]['component']?.parent,
+          },
           layouts: {
             ...boxes[id]['layouts'],
             [currentLayout]: {
               ...boxes[id]['layouts'][currentLayout],
               // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
               top: y,
-              left: Math.round(x / gridWidth),
+              left: Math.round(x / (parent ? subContainerWidths[parent] : gridWidth)),
             },
           },
-          parent: parent ? parent : boxes[id].parent,
         },
       }),
       {}
@@ -415,7 +419,6 @@ export const Container = ({
       //   parent: parent ? parent : boxes[id].parent,
       // },
     };
-
     setBoxes(newBoxes);
   }
 
@@ -739,6 +742,8 @@ export const Container = ({
             currentPageId,
             childComponents,
             setIsChildDragged,
+            setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
+            parentGridWidth: gridWidth,
           }}
           isVersionReleased={isVersionReleased}
         />
@@ -755,7 +760,7 @@ export const Container = ({
         drop(el);
       }}
       style={{ ...styles, height: canvasHeight }}
-      className={cx('real-canvas', {
+      className={cx('real-canvas show-grid', {
         'show-grid': isDragging || isResizing,
       })}
       id="real-canvas"
@@ -795,6 +800,7 @@ export const Container = ({
         onDrag={onDragStop2}
         gridWidth={gridWidth}
         selectedComponents={selectedComponents}
+        setIsDragging={setIsDragging}
       />
       {/* {Object.keys(boxes).map((key) => {
         const box = boxes[key];

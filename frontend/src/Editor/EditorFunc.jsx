@@ -1145,7 +1145,7 @@ const EditorComponent = (props) => {
   };
 
   const moveComponents = (direction) => {
-    const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
+    const gridWidth = (1 * 100) / 24; // width of the canvas grid in percentage
     const _appDefinition = _.cloneDeep(appDefinition);
     let newComponents = _appDefinition?.pages[currentPageId].components;
 
@@ -1689,7 +1689,7 @@ const EditorComponent = (props) => {
             {!showComments && (
               <Selecto
                 dragContainer={'.canvas-container'}
-                selectableTargets={['.react-draggable']}
+                selectableTargets={['.widget-target']}
                 hitRate={0}
                 selectByClick={true}
                 toggleContinueSelect={['shift']}

@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Moveable from 'react-moveable';
+import Moveable, { makeAble } from 'react-moveable';
 import './DragContainer.css';
 import { isEmpty } from 'lodash';
-const NO_OF_GRIDS = 43;
+const NO_OF_GRIDS = 24;
+
+const MouseEnterLeaveAble = makeAble('enterLeave', {
+  mouseEnter(moveable) {
+    console.log('moveable', moveable);
+  },
+  mouseLeave(moveable) {
+    console.log('moveable2', moveable);
+  },
+});
 
 export default function DragContainer({
   boxes,
@@ -14,6 +23,7 @@ export default function DragContainer({
   setIsChildDragged,
   parent,
   parentLayout,
+  parentGridWidth,
 }) {
   const [dragTarget, setDragTarget] = useState();
   const boxList = boxes.map((box) => ({
@@ -32,7 +42,7 @@ export default function DragContainer({
 
   useEffect(() => {
     moveableRef.current.updateRect();
-  }, [...Object.values(parentLayout)]);
+  }, [...Object.values(parentLayout), boxes?.length]);
 
   // const [isChildDragged, setIsChildDragged] = useState(false);
 
@@ -78,11 +88,16 @@ export default function DragContainer({
         <Moveable
           ref={moveableRef}
           target={`.target-${parent}`}
+          origin={false}
+          ables={[MouseEnterLeaveAble]}
+          props={{
+            enterLeave: true,
+          }}
           individualGroupable={true}
           draggable={true}
           resizable={true}
           keepRatio={false}
-          rotatable={true}
+          rotatable={false}
           key={list.length}
           individualGroupableProps={(element) => {
             if (element?.classList.contains('target2')) {
@@ -101,29 +116,59 @@ export default function DragContainer({
           checkInput
           onDrag={(e) => {
             setIsChildDragged(true);
-            onDrag(e.target.id, e.translate[0], e.translate[1]);
             // if (!isChildDragged) {
             e.target.style.transform = `translate(${Math.round(e.translate[0] / gridWidth) * gridWidth}px, ${
               Math.round(e.translate[1] / 10) * 10
             }px)`;
             // }
 
-            // let draggedOverElemId;
-            // if (document.elementFromPoint(e.clientX, e.clientY)) {
-            //   const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-            //   // targetElems.forEach((e) => console.log('Element=>', { id: e.id, clist: e.classList, class: e.className }));
-            //   const draggedOverElem = targetElems.find(
-            //     (ele) => ele.id !== e.target.id && ele.classList.contains('target')
-            //   );
-            //   setDragTarget(draggedOverElem?.id);
-            //   console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
-            //   draggedOverElemId = draggedOverElem?.id;
-            // }
+            let draggedOverElemId;
+            if (document.elementFromPoint(e.clientX, e.clientY)) {
+              const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+              // targetElems.forEach((e) => console.log('Element=>', { id: e.id, clist: e.classList, class: e.className }));
+              const draggedOverElem = targetElems.find(
+                (ele) => ele.id !== e.target.id && ele.classList.contains('target')
+              );
+              setDragTarget(draggedOverElem?.id);
+              console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
+              draggedOverElemId = draggedOverElem?.id;
+            }
+            console.log('draggedOverElemId child', draggedOverElemId);
+
             // onDrag(e.target.id, e.translate[0], e.translate[1], draggedOverElemId);
           }}
           //snap settgins
           snappable={true}
-          onDragEnd={() => setIsChildDragged(false)}
+          onDragEnd={(e) => {
+            setIsChildDragged(false);
+            // if (!isChildDragged) {
+            // e.target.style.transform = `translate(${Math.round(e.translate[0] / gridWidth) * gridWidth}px, ${
+            //   Math.round(e.translate[1] / 10) * 10
+            // }px)`;
+            // }
+
+            let draggedOverElemId;
+            if (document.elementFromPoint(e.clientX, e.clientY)) {
+              const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+              // targetElems.forEach((e) => console.log('Element=>', { id: e.id, clist: e.classList, class: e.className }));
+              const draggedOverElem = targetElems.find(
+                (ele) => ele.id !== e.target.id && ele.classList.contains('target')
+              );
+              setDragTarget(draggedOverElem?.id);
+              console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
+              draggedOverElemId = draggedOverElem?.id;
+            }
+            let left = e.lastEvent.translate[0];
+            let top = e.lastEvent.translate[1];
+            console.log('draggedOverElemId child', draggedOverElemId);
+            if (!draggedOverElemId) {
+              left = left + parentLayout.left * (parentGridWidth / 24);
+              top = top + parentLayout.top;
+            }
+            // onDrag(e.target.id, e.translate[0], e.translate[1], draggedOverElemId);
+
+            onDrag(e.target.id, left, top, draggedOverElemId);
+          }}
           snapDirections={{ top: true, left: true, bottom: true, right: true }}
           snapThreshold={5}
           elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}` }))}
