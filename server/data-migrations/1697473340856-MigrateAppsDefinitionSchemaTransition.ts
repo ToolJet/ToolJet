@@ -18,9 +18,12 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     const entityManager = queryRunner.manager;
     const appVersionRepository = entityManager.getRepository(AppVersion);
     const appVersions = await appVersionRepository.find();
-    const totalApps = appVersions.length;
+    const totalVersions = appVersions.length;
 
-    const migrationProgress = new MigrationProgress('MigrateAppsDefinitionSchemaTransition1697473340856', totalApps);
+    const migrationProgress = new MigrationProgress(
+      'MigrateAppsDefinitionSchemaTransition1697473340856',
+      totalVersions
+    );
 
     const batchSize = 100; // Number of apps to migrate at a time
 
