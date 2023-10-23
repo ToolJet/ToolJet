@@ -151,7 +151,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="text"
-                    style={{ ...cellStyles, maxWidth: width }}
+                    style={{ ...cellStyles }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -224,7 +224,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="number"
-                    style={{ ...cellStyles, maxWidth: width }}
+                    style={{ ...cellStyles }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -274,7 +274,6 @@ export default function generateColumnsData({
                   darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
                 }`}
                 readOnly={!isEditable}
-                style={{ maxWidth: width }}
                 onBlur={(e) => {
                   if (isEditable && e.target.defaultValue !== e.target.value) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
@@ -354,7 +353,11 @@ export default function generateColumnsData({
           case 'badge':
           case 'badges': {
             return (
-              <div className="h-100 d-flex align-items-center">
+              <div
+                className={`h-100 d-flex align-items-center justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
+              >
                 <CustomSelect
                   options={columnOptions.selectOptions}
                   value={cellValue}
