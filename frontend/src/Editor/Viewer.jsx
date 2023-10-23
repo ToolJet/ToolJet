@@ -533,7 +533,7 @@ class ViewerComponent extends React.Component {
     } = this.state;
 
     const currentCanvasWidth = canvasWidth;
-    const queryConfirmationList = this.props.queryConfirmationList;
+    const queryConfirmationList = this.props?.queryConfirmationList ?? [];
 
     const canvasMaxWidth = this.computeCanvasMaxWidth();
 
