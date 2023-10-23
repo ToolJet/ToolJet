@@ -733,7 +733,7 @@ const EditorComponent = (props) => {
   };
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
-    const _appId = props?.params?.id;
+    const _appId = props?.params?.id || props?.params?.slug;
 
     if (!onMount) {
       await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
@@ -912,7 +912,7 @@ const EditorComponent = (props) => {
       //! The computeComponentPropertyDiff function manages the calculation of differences in table columns by requiring complete column data. Without this complete data, the resulting JSON structure may be incorrect.
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
       const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
-      console.log('----arpit::: appid ==> ', { appId });
+
       updateAppVersion(appId, editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {
