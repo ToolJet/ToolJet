@@ -61,22 +61,12 @@ tar xJf postgrest-v10.1.1-linux-static-x64.tar.xz
 sudo mv ./postgrest /bin/postgrest
 sudo rm postgrest-v10.1.1-linux-static-x64.tar.xz
 
+# Add the Redis APT repository
+sudo add-apt-repository ppa:redislabs/redis -y
+
 # Install redis
 sudo apt-get update
-# Install Tcl
-sudo apt-get install -y tcl
-
-# Download and Extract the latest stable Redis version
-wget https://download.redis.io/redis-stable.tar.gz
-tar xzf redis-stable.tar.gz
-cd redis-stable
-
-# Compile Redis
-sudo make
-# Test the Redis Installation
-sudo make test
-# Install Redis
-sudo make install
+sudo apt-get install redis-server -y
 
 # Setup app, postgrest and redis as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
