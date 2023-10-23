@@ -12,6 +12,7 @@ import {
   BadRequestException,
   UseInterceptors,
   NotFoundException,
+  NotImplementedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -166,6 +167,10 @@ export class AppsController {
           })
         );
       }
+    }
+
+    if (!app.currentVersionId) {
+      throw new NotImplementedException('App is not released yet');
     }
 
     const { id, slug } = app;

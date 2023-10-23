@@ -1,12 +1,27 @@
-import { StaticErrorModalValues } from '@/_helpers/messages';
+import { ERROR_MESSAGES } from '@/_helpers/constants';
 import { redirectToDashboard } from '@/_helpers/routes';
 import React from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
+import './static-modal.scss';
 
-export const StaticErrorModal = ({ errorType, ...props }) => {
+export default function ErrorPage({ darkMode }) {
+  const params = useParams();
+  const errorType = params?.errorType;
+  const errorMsg = ERROR_MESSAGES[errorType];
+
+  if (!errorMsg) redirectToDashboard();
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <ErrorModal errorMsg={errorMsg} show={true} darkMode={darkMode} />
+    </div>
+  );
+}
+
+export const ErrorModal = ({ errorMsg, ...props }) => {
   const { t } = useTranslation();
-  const errorMsg = StaticErrorModalValues[errorType];
 
   return (
     <div className="custom-backdrop">
@@ -32,10 +47,12 @@ export const StaticErrorModal = ({ errorType, ...props }) => {
           </svg>
           <span className="header-text">{t('globals.static-error-modal.title', errorMsg?.title)}</span>
           <p>{t('globals.static-error-modal.description', errorMsg?.message)}</p>
+        </Modal.Header>
+        <Modal.Footer>
           <button className="btn btn-primary action-btn" onClick={() => redirectToDashboard()}>
             {t('globals.workspace-modal.continue-btn', errorMsg?.cta)}
           </button>
-        </Modal.Header>
+        </Modal.Footer>
       </Modal>
     </div>
   );

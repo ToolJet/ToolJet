@@ -29,7 +29,7 @@ import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
-import { StaticErrorModal } from '@/_components/ErrorModal';
+import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 
 const AppWrapper = (props) => {
   return (
@@ -96,7 +96,6 @@ class AppComponent extends React.Component {
 
   render() {
     const { updateAvailable, darkMode } = this.state;
-    const errorModal = authenticationService.currentSessionValue?.errorModal;
 
     let toastOptions = {
       style: {
@@ -250,6 +249,11 @@ class AppComponent extends React.Component {
               <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
               <Route
                 exact
+                path="/error/:errorType"
+                element={<ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+              />
+              <Route
+                exact
                 path="/switch-workspace"
                 element={
                   <PrivateRoute>
@@ -279,7 +283,6 @@ class AppComponent extends React.Component {
           </BreadCrumbContext.Provider>
         </div>
 
-        <StaticErrorModal errorType={errorModal?.errorType} show={errorModal?.show} />
         <Toast toastOptions={toastOptions} />
       </>
     );

@@ -1,16 +1,13 @@
 import { organizationService, authenticationService } from '@/_services';
-import ReactDOM from 'react-dom';
 import {
   pathnameToArray,
   getSubpath,
   getWorkspaceIdOrSlugFromURL,
   getPathname,
   getRedirectToWithParams,
-  getPreviewQueryParams,
 } from './routes';
 import toast from 'react-hot-toast';
 import _ from 'lodash';
-import { StaticErrorModalValues } from './messages';
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
@@ -31,10 +28,10 @@ export const authorizeWorkspace = () => {
     /* CASE-1 */
     authenticationService
       .validateSession(appId, workspaceIdOrSlug)
-      .then(({ current_organization_id, current_organization_slug, app_data }) => {
+      .then(({ current_organization_id, current_organization_slug }) => {
         if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
           /*CASE-2*/
-          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, app_data);
+          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
         } else {
           updateCurrentSession({
             current_organization_id,
@@ -118,7 +115,7 @@ const updateCurrentSession = (newSession) => {
     CASE-3: If CASE-2 fails (indicating the need to log in to the workspace or having an invalid session), the user is directed to the workspace login page.
     CASE-4: During the execution of CASE-2, if the user has a valid session but encounters errors such as an incorrect workspace ID or non-existent workspace, they will be directed to the switch-workspace page.
 */
-export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, appData = null) => {
+export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
   const subpath = getSubpath();
   //initial session details
   updateCurrentSession({
@@ -128,19 +125,6 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, appDa
   authenticationService
     .authorize()
     .then((data) => {
-      if (appData) {
-        /* Restrict the users from accessing the sharable app url if the app is not released */
-        if (!appData.is_released && _.isEmpty(getPreviewQueryParams())) {
-          updateCurrentSession({
-            ...data,
-            errorModal: {
-              show: true,
-              errorType: StaticErrorModalValues.notReleasedAppError.key,
-            },
-          });
-        }
-      }
-
       /* CASE-1 */
       const { current_organization_id } = data;
       fetchOrganizations(current_organization_id, ({ organizations, current_organization }) => {
