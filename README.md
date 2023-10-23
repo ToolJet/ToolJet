@@ -143,7 +143,7 @@ We use the git-flow branching model. The base branch is `develop`. If you are lo
 ## Contributing
 Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself with ToolJet's development process, how to suggest bug fixes and improvements, and the steps for building and testing your changes. <br>
 
-## Contributors
+## Meet Our Amazing Contributors 🚀
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=400&columns=20" />
   <img src="https://us-central1-tooljet-hub.cloudfunctions.net/github" width="0" height="0" />
