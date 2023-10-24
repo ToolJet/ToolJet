@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 
-export default function SAMLSSOLoginButton({ configId, configs, text = 'Sign in with ' }) {
+export default function SAMLSSOLoginButton({ configId, configs, text = 'Sign in with ', setRedirectUrlToCookie }) {
   const [isLoading, setLoading] = useState(false);
 
   const doLogin = (e) => {
     e.preventDefault();
+    setRedirectUrlToCookie();
     setLoading(true);
     fetch(`${config.apiUrl}/oauth/saml/configs/${configId}`, {
       method: 'GET',

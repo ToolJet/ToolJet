@@ -61,14 +61,16 @@ describe("App Import Functionality", () => {
     cy.get(importSelectors.importOptionInput).selectFile(appFile, {
       force: true,
     });
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      importText.appImportedToastMessage
-    );
+    cy.get('[data-cy="import-app-title"]').should("be.visible");
+    cy.get('[data-cy="Import app"]').click();
+    cy.get(".go3958317564")
+      .should("be.visible")
+      .and("have.text", importText.appImportedToastMessage);
+
     cy.get(".driver-close-btn").click();
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "contain.value",
-      appData.name
+      appData.name.toLowerCase()
     );
     cy.modifyCanvasSize(900, 600);
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
@@ -107,10 +109,12 @@ describe("App Import Functionality", () => {
       cy.get(importSelectors.importOptionInput).selectFile(exportedFilePath, {
         force: true,
       });
-      cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        importText.appImportedToastMessage
-      );
+
+      cy.get('[data-cy="import-app-title"]').should("be.visible");
+      cy.get('[data-cy="Import app"]').click();
+      cy.get(".go3958317564")
+        .should("be.visible")
+        .and("have.text", importText.appImportedToastMessage);
       cy.get(
         `[data-cy="draggable-widget-${buttonText.defaultWidgetName}"]`
       ).should("be.visible");
@@ -119,7 +123,7 @@ describe("App Import Functionality", () => {
 
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
           "contain.value",
-          exportedAppData.app[0].definition.appV2.name
+          exportedAppData.app[0].definition.appV2.name.toLowerCase()
         );
         cy.get(
           appVersionSelectors.currentVersionField((currentVersion = "v1"))
@@ -178,10 +182,11 @@ describe("App Import Functionality", () => {
                   force: true,
                 }
               );
-              cy.verifyToastMessage(
-                commonSelectors.toastMessage,
-                importText.appImportedToastMessage
-              );
+              cy.get('[data-cy="import-app-title"]').should("be.visible");
+              cy.get('[data-cy="Import app"]').click();
+              cy.get(".go3958317564")
+                .should("be.visible")
+                .and("have.text", importText.appImportedToastMessage);
               cy.get(appVersionSelectors.appVersionMenuField).click();
               cy.get(appVersionSelectors.appVersionContentList).should(
                 "have.text",
@@ -195,7 +200,7 @@ describe("App Import Functionality", () => {
 
                 cy.get(commonSelectors.appNameInput).verifyVisibleElement(
                   "contain.value",
-                  exportedAppData.app[0].definition.appV2.name
+                  exportedAppData.app[0].definition.appV2.name.toLowerCase()
                 );
                 cy.get(
                   appVersionSelectors.currentVersionField(

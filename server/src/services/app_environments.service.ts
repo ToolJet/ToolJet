@@ -204,6 +204,13 @@ export class AppEnvironmentService {
     }, manager);
   }
 
+  async getEnvironmentByName(name: string, organizationId: string, manager?: EntityManager): Promise<AppEnvironment> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return manager.findOne(AppEnvironment, {
+        where: { name, organizationId },
+      });
+    }, manager);
+  }
   async createOrgConstantsInAllEnvironments(organizationId: string, orgConstantId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const allEnvs = await this.getAll(organizationId, manager);

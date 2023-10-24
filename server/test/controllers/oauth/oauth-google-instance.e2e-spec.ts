@@ -24,6 +24,7 @@ describe('oauth controller', () => {
     'organization',
     'organization_id',
     'super_admin',
+    'current_organization_slug',
   ].sort();
 
   beforeEach(async () => {

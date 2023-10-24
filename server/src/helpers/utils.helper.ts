@@ -5,6 +5,10 @@ import { isEmpty } from 'lodash';
 import { USER_TYPE } from './user_lifecycle';
 import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
+import { ConflictException } from '@nestjs/common';
+import { DataBaseConstraints } from './db_constraints.constants';
+const protobuf = require('protobufjs');
+import { LICENSE_LIMIT } from './license.helper';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -13,10 +17,6 @@ export function parseJson(jsonString: string, errorMessage?: string): object {
     throw new QueryError(errorMessage, err.message, {});
   }
 }
-const protobuf = require('protobufjs');
-import { ConflictException } from '@nestjs/common';
-import { DataBaseConstraints } from './db_constraints.constants';
-import { LICENSE_LIMIT } from './license.helper';
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -93,17 +93,22 @@ export const defaultAppEnvironments = [
 export const isSuperAdmin = (user) => {
   return !!(user?.userType === USER_TYPE.INSTANCE);
 };
-export async function catchDbException(
-  operation: () => any,
-  dbConstraint: DataBaseConstraints,
-  errorMessage: string
-): Promise<any> {
+
+type DbContraintAndMsg = {
+  dbConstraint: DataBaseConstraints;
+  message: string;
+};
+
+export async function catchDbException(operation: () => any, dbConstraints: DbContraintAndMsg[]): Promise<any> {
   try {
     return await operation();
   } catch (err) {
-    if (err?.message?.includes(dbConstraint)) {
-      throw new ConflictException(errorMessage);
-    }
+    dbConstraints.map((dbConstraint) => {
+      if (err?.message?.includes(dbConstraint.dbConstraint)) {
+        throw new ConflictException(dbConstraint.message);
+      }
+    });
+
     throw err;
   }
 }
@@ -237,8 +242,13 @@ export const processDataInBatches = async <T>(
   } while (data.length === batchSize);
 };
 
-export const generateNextName = (firstWord: string) => {
-  return `${firstWord} ${Date.now()}`;
+export const generateNextNameAndSlug = (firstWord: string) => {
+  const name = `${firstWord} ${Date.now()}`;
+  const slug = name.replace(/\s+/g, '-').toLowerCase();
+  return {
+    name,
+    slug,
+  };
 };
 
 export const truncateAndReplace = (name) => {

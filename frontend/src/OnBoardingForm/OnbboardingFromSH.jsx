@@ -7,7 +7,8 @@ import OnBoardingRadioInput from './OnBoardingRadioInput';
 import AdminSetup from './AdminSetup';
 import OnboardingBubblesSH from './OnboardingBubblesSH';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
-import { getuserName, getSubpath } from '@/_helpers/utils';
+import { getuserName } from '@/_helpers/utils';
+import { redirectToDashboard } from '@/_helpers/routes';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import LogoLightMode from '@assets/images/Logomark.svg';
 import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
@@ -68,10 +69,8 @@ function OnbboardingFromSH({ darkMode }) {
         .then((user) => {
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
-          window.location = getSubpath()
-            ? `${getSubpath()}/${user?.current_organization_id}`
-            : `/${user?.current_organization_id}`;
           setCompleted(false);
+          redirectToDashboard(user);
         })
         .catch((res) => {
           setShowTrialErrorMessage(res?.error || 'Something went wrong');
@@ -376,7 +375,6 @@ export function TrialPage({
   setCompleted,
   isLoading,
   setSkipLoading,
-  skipLoading,
   setIsLoading,
   darkMode,
 }) {

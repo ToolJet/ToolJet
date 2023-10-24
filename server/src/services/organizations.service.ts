@@ -1,4 +1,10 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  Injectable,
+  NotAcceptableException,
+} from '@nestjs/common';
 import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -11,7 +17,7 @@ import {
   isPlural,
   generatePayloadForLimits,
   catchDbException,
-  generateNextName,
+  generateNextNameAndSlug,
   isSuperAdmin,
 } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
@@ -40,6 +46,7 @@ import { AppEnvironmentService } from './app_environments.service';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { OrganizationUpdateDto } from '@dto/organization.dto';
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 const MAX_ROW_COUNT = 500;
@@ -63,6 +70,18 @@ interface UserCsvRow {
   email: string;
   groups?: any;
 }
+
+const orgConstraints = [
+  {
+    dbConstraint: DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
+    message: 'This workspace name is already taken.',
+  },
+  {
+    dbConstraint: DataBaseConstraints.WORKSPACE_SLUG_UNIQUE,
+    message: 'This workspace slug is already taken.',
+  },
+];
+
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -82,28 +101,25 @@ export class OrganizationsService {
     private licenseService: LicenseService
   ) {}
 
-  async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
+  async create(name: string, slug: string, user: User, manager?: EntityManager): Promise<Organization> {
     let organization: Organization;
     await dbTransactionWrap(async (manager: EntityManager) => {
-      organization = await catchDbException(
-        async () => {
-          return await manager.save(
-            manager.create(Organization, {
-              ssoConfigs: [
-                {
-                  sso: 'form',
-                  enabled: true,
-                },
-              ],
-              name,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            })
-          );
-        },
-        DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
-        'This workspace name is already taken.'
-      );
+      organization = await catchDbException(async () => {
+        return await manager.save(
+          manager.create(Organization, {
+            ssoConfigs: [
+              {
+                sso: 'form',
+                enabled: true,
+              },
+            ],
+            name,
+            slug,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        );
+      }, orgConstraints);
 
       await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
 
@@ -165,6 +181,16 @@ export class OrganizationsService {
 
   async get(id: string): Promise<Organization> {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
+  }
+
+  async fetchOrganization(slug: string): Promise<Organization> {
+    let organization: Organization;
+    try {
+      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug'] });
+    } catch (error) {
+      organization = await this.organizationsRepository.findOne({ where: { id: slug }, select: ['id', 'slug'] });
+    }
+    return organization;
   }
 
   async getSingleOrganization(): Promise<Organization> {
@@ -395,25 +421,35 @@ export class OrganizationsService {
       .getOne();
   }
 
+  constructOrgFindQuery(slug: string, id: string, statusList?: Array<boolean>) {
+    const query = createQueryBuilder(Organization, 'organization').leftJoinAndSelect(
+      'organization.ssoConfigs',
+      'organisation_sso',
+      'organisation_sso.enabled IN (:...statusList)',
+      {
+        statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
+      }
+    );
+    if (slug) {
+      query.andWhere(`organization.slug = :slug`, { slug });
+    } else {
+      query.andWhere(`organization.id = :id`, { id });
+    }
+    return query;
+  }
+
   async fetchOrganizationDetails(
     organizationId: string,
     statusList?: Array<boolean>,
     isHideSensitiveData?: boolean,
     addInstanceLevelSSO?: boolean
   ): Promise<DeepPartial<Organization>> {
-    const result: DeepPartial<Organization> = await createQueryBuilder(Organization, 'organization')
-      .leftJoinAndSelect(
-        'organization.ssoConfigs',
-        'organisation_sso',
-        'organisation_sso.enabled IN (:...statusList)',
-        {
-          statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
-        }
-      )
-      .andWhere('organization.id = :organizationId', {
-        organizationId,
-      })
-      .getOne();
+    let result: DeepPartial<Organization>;
+    try {
+      result = await this.constructOrgFindQuery(organizationId, null, statusList).getOneOrFail();
+    } catch (error) {
+      result = await this.constructOrgFindQuery(null, organizationId, statusList).getOne();
+    }
 
     if (!result) return;
 
@@ -504,11 +540,16 @@ export class OrganizationsService {
       }
       return result;
     }
-    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp);
+    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp, result.id);
   }
 
-  private hideSSOSensitiveData(ssoConfigs: DeepPartial<SSOConfigs>[], organizationName, enableSignUp): any {
-    const configs = { name: organizationName, enableSignUp };
+  private hideSSOSensitiveData(
+    ssoConfigs: DeepPartial<SSOConfigs>[],
+    organizationName: string,
+    enableSignUp: boolean,
+    organizationId: string
+  ): any {
+    const configs = { name: organizationName, enableSignUp, id: organizationId };
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
         const configId = config['id'];
@@ -587,11 +628,12 @@ export class OrganizationsService {
     );
   }
 
-  async updateOrganization(organizationId: string, params) {
-    const { name, domain, enableSignUp, inheritSSO } = params;
+  async updateOrganization(organizationId: string, params: OrganizationUpdateDto) {
+    const { name, slug, domain, enableSignUp, inheritSSO } = params;
 
     const updatableParams = {
       name,
+      slug,
       domain,
       enableSignUp,
       inheritSSO,
@@ -600,13 +642,9 @@ export class OrganizationsService {
     // removing keys with undefined values
     cleanObject(updatableParams);
 
-    return await catchDbException(
-      async () => {
-        return await this.organizationsRepository.update(organizationId, updatableParams);
-      },
-      DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
-      'This workspace name is already taken.'
-    );
+    return await catchDbException(async () => {
+      return await this.organizationsRepository.update(organizationId, updatableParams);
+    }, orgConstraints);
   }
 
   async updateOrganizationConfigs(organizationId: string, params: any) {
@@ -697,8 +735,8 @@ export class OrganizationsService {
           (await this.instanceSettingsService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true'
         ) {
           // Create default organization if user not exist
-          const organizationName = generateNextName('My workspace');
-          defaultOrganization = await this.create(organizationName, null, manager);
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          defaultOrganization = await this.create(name, slug, null, manager);
         }
       } else if (user.invitationToken) {
         // User not setup
@@ -948,5 +986,17 @@ export class OrganizationsService {
         LICENSE_LIMITS_LABEL.WORKSPACES
       ),
     };
+  }
+
+  async checkWorkspaceUniqueness(name: string, slug: string) {
+    if (!(slug || name)) {
+      throw new NotAcceptableException('Request should contain the slug or name');
+    }
+    const result = await getManager().findOne(Organization, {
+      ...(name && { name }),
+      ...(slug && { slug }),
+    });
+    if (result) throw new ConflictException(`${name ? 'Name' : 'Slug'} must be unique`);
+    return;
   }
 }

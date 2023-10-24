@@ -7,8 +7,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Toggle from '@/_ui/Toggle/index';
 import { LicenseBanner } from '@/LicenseBanner';
-import { getSubpath } from '@/_helpers/utils';
 import { ssoConfMessages } from '@/_helpers';
+import { getHostURL } from '@/_helpers/routes';
 
 export function OpenId({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -190,10 +190,7 @@ export function OpenId({ settings, updateData }) {
                   {t('header.organization.menus.manageSSO.openid.redirectUrl', 'Redirect URL')}
                 </label>
                 <div className="d-flex justify-content-between form-control align-items-center">
-                  <p
-                    data-cy="redirect-url"
-                    id="redirect-url"
-                  >{`${window.public_config?.TOOLJET_HOST}/sso/openid/${configId}`}</p>
+                  <p data-cy="redirect-url" id="redirect-url">{`${getHostURL()}/sso/openid/${configId}`}</p>
                   <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
                 </div>
               </div>

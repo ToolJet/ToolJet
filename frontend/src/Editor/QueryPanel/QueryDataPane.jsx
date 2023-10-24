@@ -213,6 +213,7 @@ const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
     (state) => ({
       isVersionReleased: state.isVersionReleased,
       isEditorFreezed: state.isEditorFreezed,
+      editingVersionId: state.editingVersion?.id,
     }),
     shallow
   );
