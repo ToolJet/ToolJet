@@ -203,7 +203,11 @@ class ManageAppUsersComponent extends React.Component {
         placement={!this.props.isVersionReleased ? 'bottom' : 'left'}
         show={shouldWeDisableShareModal}
       >
-        <div title="Share" className="manage-app-users editor-header-icon tj-secondary-btn" data-cy="share-button-link">
+        <div
+          title={!shouldWeDisableShareModal ? 'Share' : ''}
+          className="manage-app-users editor-header-icon tj-secondary-btn"
+          data-cy="share-button-link"
+        >
           <span
             className={cx('d-flex', {
               'share-disabled': shouldWeDisableShareModal,
