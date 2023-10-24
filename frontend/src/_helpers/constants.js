@@ -43,5 +43,5 @@ export const ERROR_MESSAGES = {
 };
 
 export const TOOLTIP_MESSAGES = {
-  SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released in production',
+  SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
 };
