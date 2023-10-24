@@ -14,7 +14,7 @@ import ExportAppModal from '../../HomePage/ExportAppModal';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { useAppInfo } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -35,6 +35,7 @@ export const GlobalSettings = ({
   const [slug, setSlug] = useState({ value: null, error: '' });
   const [slugProgress, setSlugProgress] = useState(false);
   const [isSlugUpdated, setSlugUpdatedState] = useState(false);
+  const { updateState } = useAppDataActions();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -80,8 +81,10 @@ export const GlobalSettings = ({
           });
           setSlugProgress(false);
           setSlugUpdatedState(true);
-
           replaceEditorURL(value, realState?.page?.handle);
+          updateState({
+            slug: value,
+          });
         })
         .catch(({ error }) => {
           setSlug({

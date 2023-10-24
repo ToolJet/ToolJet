@@ -14,13 +14,12 @@ import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
-import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
+import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { redirectToDashboard } from '@/_helpers/routes';
 
 export default function EditorHeader({
   M,
-  appVersionPreviewLink,
   canUndo,
   canRedo,
   handleUndo,
@@ -36,7 +35,7 @@ export default function EditorHeader({
 }) {
   const currentUser = useCurrentUser();
 
-  const { isSaving, appId, appName, app, isPublic } = useAppInfo();
+  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink } = useAppInfo();
 
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
@@ -63,6 +62,7 @@ export default function EditorHeader({
     updatePresence(initialPresence);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
+
   const handleLogoClick = (e) => {
     e.preventDefault();
     // Force a reload for clearing interval triggers
