@@ -41,3 +41,7 @@ export const ERROR_MESSAGES = {
     queryParams: [],
   },
 };
+
+export const TOOLTIP_MESSAGES = {
+  SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released in production',
+};
