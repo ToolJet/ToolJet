@@ -79,8 +79,14 @@ const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
-  const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving, createAppVersionEventHandlers } =
-    useAppDataActions();
+  const {
+    updateState,
+    updateAppDefinitionDiff,
+    updateAppVersion,
+    setIsSaving,
+    createAppVersionEventHandlers,
+    setAppPreviewLink,
+  } = useAppDataActions();
   const { updateEditorState, updateQueryConfirmationList, setSelectedComponents, setCurrentPageId } =
     useEditorActions();
 
@@ -1580,9 +1586,18 @@ const EditorComponent = (props) => {
     });
   };
 
-  const appVersionPreviewLink = editingVersion
-    ? `/applications/${appId}/versions/${editingVersion.id}/${currentState.page.handle}`
-    : '';
+  useEffect(() => {
+    const previewQuery = queryString.stringify({ version: editingVersion?.name });
+    const appVersionPreviewLink = editingVersion
+      ? `/applications/${slug || appId}/${currentState.page.handle}${
+          !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
+        }`
+      : '';
+
+    setAppPreviewLink(appVersionPreviewLink);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
   const deviceWindowWidth = 450;
 
   const editorRef = {
@@ -1653,7 +1668,6 @@ const EditorComponent = (props) => {
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
           editingVersion={editingVersion}
-          appVersionPreviewLink={appVersionPreviewLink}
           canUndo={canUndo}
           canRedo={canRedo}
           handleUndo={handleUndo}
