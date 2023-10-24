@@ -18,13 +18,12 @@ data.folderName = `${fake.companyName.toLowerCase()}-folder`;
 
 describe("User permissions", () => {
   before(() => {
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
     cy.visit('/')
     permissions.reset();
     cy.get(commonSelectors.homePageLogo).click();
-    cy.wait("@homePage");
+    cy.wait(2000);
     permissions.addNewUserMW(data.firstName, data.email);
     common.logout();
   });

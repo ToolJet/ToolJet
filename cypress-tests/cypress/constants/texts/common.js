@@ -170,7 +170,7 @@ export const commonText = {
     // ifameLinkCopyButton: "copy",
     copyAppLinkButton: "copy",
   },
-  iframeLinkLabel: "Get embeddable link for this application",
+  iframeLinkLabel: "Embedded app link",
   ifameLinkCopyButton: "copy",
   groupInputFieldLabel: "Select Group",
   documentationLink: "Read Documentation",

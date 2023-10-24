@@ -333,6 +333,7 @@ class ManageAppUsersComponent extends React.Component {
                             viewBox="0 0 17 18"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
+                            data-cy="copy-app-link-button"
                           >
                             <path
                               d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
@@ -356,11 +357,11 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                   {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                     <div className="tj-app-input">
-                      <label className="field-name">
+                      <label className="field-name" data-cy="iframe-link-label">
                         {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
                       </label>
                       <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
-                        <span>{embeddableLink}</span>
+                        <span data-cy="iframe-link">{embeddableLink}</span>
                         <span className="copy-container">
                           <CopyToClipboard
                             text={embeddableLink}
@@ -373,6 +374,7 @@ class ManageAppUsersComponent extends React.Component {
                               viewBox="0 0 17 18"
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
+                              data-cy="iframe-link-copy-button"
                             >
                               <path
                                 d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"

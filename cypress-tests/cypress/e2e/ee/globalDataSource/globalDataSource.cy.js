@@ -45,8 +45,7 @@ describe("Global Datasource Manager", () => {
 
     before(() => {
         cy.appUILogin();
-        cy.createApp();
-        cy.renameApp(data.appName);
+        cy.createApp(data.appName);
         cy.dragAndDropWidget("Button", 50, 50);
         cy.get(commonSelectors.editorPageLogo).click();
         cy.reloadAppForTheElement(data.appName);
@@ -294,6 +293,7 @@ describe("Global Datasource Manager", () => {
         cy.get(".p-2 > .tj-base-btn").should("not.exist");
     });
     it("Should verify the query creation and scope changing functionality.", () => {
+        data.appName = `${fake.companyName}-App`;
         selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds3);
         cy.clearAndType(
             dataSourceSelector.dsNameInputField,
@@ -323,7 +323,7 @@ describe("Global Datasource Manager", () => {
         logout();
         cy.login(data.userEmail1, "password");
 
-        cy.createApp();
+        cy.createApp(data.appName);
         cy.dragAndDropWidget("Button", 50, 50);
 
         resizeQueryPanel("80");

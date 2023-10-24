@@ -43,14 +43,11 @@ describe("Multi env", () => {
   const slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
   beforeEach(() => {
-    cy.appUILogin();
-    cy.viewport(1200, 1300);
-    cy.createApp();
-    cy.renameApp(data.appName);
-    cy.dragAndDropWidget("Text", 350, 350);
-  });
-  it("Verify the datasource configuration and data on each env", () => {
     cy.apiLogin();
+    cy.viewport(1200, 1300);
+  });
+
+  it("Verify the datasource configuration and data on each env", () => {
     cy.apiCreateGDS(
       "http://localhost:3000/api/v2/data_sources",
       data.ds,
@@ -82,7 +79,8 @@ describe("Multi env", () => {
         { key: "ssl_certificate", value: "none", encrypted: false },
       ]
     );
-    cy.visit("/");
+    cy.apiCreateApp(data.appName);
+    cy.visit('/my-workspace')
     cy.get(commonSelectors.globalDataSourceIcon).click();
     selectDatasource(data.ds);
     cy.get('[data-cy="development-label"]').click();
@@ -93,7 +91,7 @@ describe("Multi env", () => {
     cy.get(dataSourceSelector.buttonSave).click();
     cy.get(commonSelectors.dashboardIcon).click();
 
-    navigateToAppEditor(data.appName);
+    cy.openApp();
     cy.get(`[data-cy="${data.ds}-add-query-card"] > .text-truncate`).click();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     cy.get(".custom-toggle-switch>.switch>").eq(3).click();
@@ -267,6 +265,10 @@ describe("Multi env", () => {
   });
 
   it("Verify the multi env components UI", () => {
+    data.appName = `${fake.companyName} App`;
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
+    cy.dragAndDropWidget("Text", 550, 650);
     cy.get(multiEnvSelector.envContainer).should("be.visible");
     cy.get(multiEnvSelector.currentEnvName)
       .verifyVisibleElement("have.text", "Development")
