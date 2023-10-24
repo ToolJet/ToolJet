@@ -792,7 +792,12 @@ export class AppImportExportService {
             await manager.save(EventHandler, newEvent);
           });
         } else {
+          this.replaceDataQueryOptionsWithNewDataQueryIds(
+            mappedNewDataQuery.options,
+            appResourceMappings.dataQueryMapping
+          );
           const queryEvents = mappedNewDataQuery.options?.events || [];
+
           delete mappedNewDataQuery?.options?.events;
 
           queryEvents.forEach(async (event, index) => {
