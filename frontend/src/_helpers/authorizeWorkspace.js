@@ -7,7 +7,6 @@ import {
   getRedirectToWithParams,
 } from './routes';
 import toast from 'react-hot-toast';
-import _ from 'lodash';
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
