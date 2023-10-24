@@ -273,12 +273,16 @@ export default function DragContainer({
             if (parentElem) {
               left = left - parentElem.left * gridWidth;
               top = top - parentElem.top;
+            } else {
+              e.target.style.transform = `translate(${Math.round(left / gridWidth) * gridWidth}px, ${
+                Math.round(top / 10) * 10
+              }px)`;
             }
             onDrag([
               {
                 id: e.target.id,
                 x: left,
-                y: top,
+                y: Math.round(top / 10) * 10,
                 parent: draggedOverElemId,
               },
             ]);
@@ -337,6 +341,8 @@ export default function DragContainer({
           snapThreshold={5}
           elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}` }))}
           isDisplaySnapDigit={false}
+          snapGridWidth={gridWidth * 2}
+          // snapGridHeight={10}
           // verticalGuidelines={[50, 150, 250, 450, 550]}
           // horizontalGuidelines={[0, 100, 200, 400, 500]}
         />
