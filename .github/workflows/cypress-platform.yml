@@ -170,7 +170,7 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "TOOLJET_HOST=http://localhost:80" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
@@ -198,6 +198,10 @@ jobs:
           echo "REDIS_USER=default" >> .env
           echo "REDIS_PASSWORD=" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "SSO_OPENID_WELL_KNOWN_URL=http://ec2-54-193-40-51.us-west-1.compute.amazonaws.com:8080/.well-known/openid-configuration" >> .env
 
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yml
@@ -220,6 +224,9 @@ jobs:
           until curl --silent --fail http://localhost:80/apps/tooljet/; do
             sleep 5
           done'
+
+      - name: Seeding
+        run: docker exec Tooljet-app npm run db:seed:prod
 
       - name: Create Cypress environment file
         id: create-json
