@@ -147,7 +147,7 @@ export const BlankPage = function BlankPage({
                       <ButtonSolid
                         disabled={appCreationDisabled}
                         leftIcon="plus"
-                        onClick={openCreateAppModal}
+                        onClick={() => openCreateAppModal('blank_page')}
                         isLoading={creatingApp}
                         data-cy="button-new-app-from-scratch"
                         className="col"

@@ -162,18 +162,18 @@ class HomePageComponent extends React.Component {
     _self.setState({ creatingApp: true });
     try {
       const data = await appsService.createApp({ icon: sample(iconList), name: appName, type: this.props.appType });
-       /* Posthog Event */
-       posthog.capture('click_new_app', {
+      /* Posthog Event */
+      posthog.capture('click_new_app', {
         workspace_id:
           authenticationService?.currentUserValue?.organization_id ||
           authenticationService?.currentSessionValue?.current_organization_id,
         app_id: data?.id,
-        button_name: posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
+        button_name: this.state.posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
       });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} created successfully!`);
-      _self.setState({ creatingApp: false });
+      _self.setState({ creatingApp: false, posthog_from: null });
       return true;
     } catch (errorResponse) {
       _self.setState({ creatingApp: false });
@@ -589,8 +589,8 @@ class HomePageComponent extends React.Component {
     this.setState({ showCreateAppFromTemplateModal: false, selectedTemplate: null });
   };
 
-  openCreateAppModal = () => {
-    this.setState({ showCreateAppModal: true });
+  openCreateAppModal = (posthog_from) => {
+    this.setState({ showCreateAppModal: true, posthog_from });
   };
 
   closeCreateAppModal = () => {
