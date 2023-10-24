@@ -198,7 +198,8 @@ export class AppImportExportService {
     appParamsObj: any,
     appName: string,
     externalResourceMappings = {},
-    tooljetVersion = ''
+    tooljetVersion = '',
+    cloning = false
   ): Promise<App> {
     if (typeof appParamsObj !== 'object') {
       throw new BadRequestException('Invalid params for app import');
@@ -220,7 +221,9 @@ export class AppImportExportService {
     schemaUnifiedAppParams.name = appName;
 
     const importedAppTooljetVersion = extractMajorVersion(tooljetVersion);
-    const isNormalizedAppDefinitionSchema = isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
+    const isNormalizedAppDefinitionSchema = cloning
+      ? true
+      : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
     await this.setupImportedAppAssociations(
