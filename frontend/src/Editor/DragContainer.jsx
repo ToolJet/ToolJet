@@ -16,6 +16,7 @@ export default function DragContainer({
   gridWidth,
   selectedComponents = [],
   setIsDragging,
+  currentLayout,
 }) {
   const [dragTarget, setDragTarget] = useState();
   const [draggedTarget, setDraggedTarget] = useState();
@@ -36,7 +37,7 @@ export default function DragContainer({
   useEffect(() => {
     moveableRef.current.updateRect();
     setTimeout(() => moveableRef.current.updateRect(), 100);
-  }, [selectedComponents.length, JSON.stringify(boxes)]);
+  }, [selectedComponents.length, JSON.stringify(boxes), currentLayout]);
 
   useEffect(() => {
     setList(boxList);

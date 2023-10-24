@@ -23,6 +23,7 @@ import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
+import { correctBounds } from './gridUtils';
 
 const NO_OF_GRIDS = 24;
 
@@ -92,6 +93,13 @@ export const Container = ({
   const [newThread, addNewThread] = useState({});
   const [isContainerFocused, setContainerFocus] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(null);
+
+  useEffect(() => {
+    if (currentLayout === 'mobile') {
+      const mobLayouts = boxes.map((box) => box?.layout?.mobile);
+      correctBounds(mobLayouts, { cols: 6 });
+    }
+  }, [currentLayout]);
 
   const router = useRouter();
   const canvasRef = useRef(null);
@@ -801,6 +809,7 @@ export const Container = ({
         gridWidth={gridWidth}
         selectedComponents={selectedComponents}
         setIsDragging={setIsDragging}
+        currentLayout
       />
       {/* {Object.keys(boxes).map((key) => {
         const box = boxes[key];
