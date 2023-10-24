@@ -65,7 +65,7 @@ export default function DragContainer({
   const movableTargets = [groupedTargets];
   console.log('selectedComponents movableTargets', movableTargets);
   console.log('selectedComponents hoveredComponent', hoveredComponent);
-  if (hoveredComponent && !groupedTargets?.length) {
+  if (hoveredComponent && groupedTargets?.length <= 1) {
     movableTargets.push('.ele-' + hoveredComponent);
   }
 
@@ -336,6 +336,7 @@ export default function DragContainer({
           elementSnapDirections={{ top: true, left: true, bottom: true, right: true, center: true, middle: true }}
           snapThreshold={5}
           elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}` }))}
+          isDisplaySnapDigit={false}
           // verticalGuidelines={[50, 150, 250, 450, 550]}
           // horizontalGuidelines={[0, 100, 200, 400, 500]}
         />
