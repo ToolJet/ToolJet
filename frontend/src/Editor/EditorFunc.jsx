@@ -1596,7 +1596,7 @@ const EditorComponent = (props) => {
 
     setAppPreviewLink(appVersionPreviewLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+  }, [slug, currentVersionId]);
 
   const deviceWindowWidth = 450;
 
