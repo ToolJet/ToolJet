@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, MoreThan, Repository } from 'typeorm';
@@ -18,7 +18,6 @@ import {
   generatePayloadForLimits,
   catchDbException,
   defaultAppEnvironments,
-  generateNextName,
 } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
@@ -96,6 +95,12 @@ export class AppsService {
     ).app;
   }
 
+  async findVersionFromName(name: string, appId: string): Promise<AppVersion> {
+    return await this.appVersionsRepository.findOne({
+      where: { name, appId },
+    });
+  }
+
   async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return manager
@@ -107,37 +112,37 @@ export class AppsService {
     });
   }
 
-  async create(user: User, manager: EntityManager, type: string): Promise<App> {
+  async create(name: string, user: User, type: string, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const generateNameFor = type === 'workflow' ? 'My workflow' : 'My app';
-      const name = await generateNextName(generateNameFor);
-      const app = await manager.save(
-        manager.create(App, {
-          type,
-          name: name,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          organizationId: user.organizationId,
-          userId: user.id,
-          isMaintenanceOn: type === 'workflow' ? true : false,
-        })
-      );
+      return await catchDbException(async () => {
+        const app = await manager.save(
+          manager.create(App, {
+            type,
+            name,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            organizationId: user.organizationId,
+            userId: user.id,
+            isMaintenanceOn: type === 'workflow' ? true : false,
+          })
+        );
 
-      //create default app version
-      await this.createVersion(user, app, 'v1', null, null, manager);
+        //create default app version
+        await this.createVersion(user, app, 'v1', null, null, manager);
 
-      await manager.save(
-        manager.create(AppUser, {
-          userId: user.id,
-          appId: app.id,
-          role: 'admin',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
-      );
+        await manager.save(
+          manager.create(AppUser, {
+            userId: user.id,
+            appId: app.id,
+            role: 'admin',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        );
 
-      await this.createAppGroupPermissionsForAdmin(app, manager);
-      return app;
+        await this.createAppGroupPermissionsForAdmin(app, manager);
+        return app;
+      }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
     }, manager);
   }
 
@@ -177,9 +182,9 @@ export class AppsService {
     }
   }
 
-  async clone(existingApp: App, user: User): Promise<App> {
+  async clone(existingApp: App, user: User, appName: string): Promise<App> {
     const appWithRelations = await this.appImportExportService.export(user, existingApp.id);
-    const clonedApp = await this.appImportExportService.import(user, appWithRelations);
+    const clonedApp = await this.appImportExportService.import(user, appWithRelations, appName);
 
     return clonedApp;
   }
@@ -266,13 +271,12 @@ export class AppsService {
           throw new BadRequestException('You can only release when the version is promoted to production');
         }
       }
-      return await catchDbException(
-        async () => {
-          return await manager.update(App, appId, updatableParams);
-        },
-        DataBaseConstraints.APP_NAME_UNIQUE,
-        'This app name is already taken.'
-      );
+      return await catchDbException(async () => {
+        return await manager.update(App, appId, updatableParams);
+      }, [
+        { dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' },
+        { dbConstraint: DataBaseConstraints.APP_SLUG_UNIQUE, message: 'This app slug is already taken.' },
+      ]);
     }, manager);
   }
 
@@ -731,6 +735,45 @@ export class AppsService {
     };
   }
 
+  async findAppWithIdOrSlug(slug: string): Promise<App> {
+    let app: App;
+    try {
+      app = await this.find(slug);
+    } catch (error) {
+      /* means: UUID error. so the slug isn't not the id of the app */
+      if (error?.code === `22P02`) {
+        /* Search against slug */
+        app = await this.findBySlug(slug);
+      }
+    }
+
+    if (!app) throw new NotFoundException('App not found. Invalid app id');
+    return app;
+  }
+
+  async validateVersionEnvironment(
+    environmentName: string,
+    currentEnvIdOfVersion: string,
+    organizationId: string
+  ): Promise<string> {
+    const environment: AppEnvironment = await this.appEnvironmentService.getEnvironmentByName(
+      environmentName,
+      organizationId
+    );
+    if (!environment) {
+      throw new NotFoundException("Couldn't found environment in the organization");
+    }
+
+    const currentEnvOfVersion: AppEnvironment = await this.appEnvironmentService.get(
+      organizationId,
+      currentEnvIdOfVersion
+    );
+    if (environment.priority <= currentEnvOfVersion.priority) {
+      return environment.id;
+    } else {
+      throw new NotAcceptableException('Version is not promoted to the environment yet.');
+    }
+  }
   async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const tooljetDbDataQueries = await manager

@@ -3,7 +3,7 @@ import Layout from '@/_ui/Layout';
 import { withRouter } from '@/_hoc/withRouter';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import cx from 'classnames';
-import { auditLogsService, organizationService, appService, authenticationService, licenseService } from '@/_services';
+import { auditLogsService, organizationService, appsService, authenticationService, licenseService } from '@/_services';
 import ReactJson from 'react-json-view';
 import { DateRangePicker, Tag } from '@/ToolJetUI/';
 import { MultiSelectUser, ToolTip } from '@/_components';
@@ -15,6 +15,7 @@ import { BreadCrumbContext } from '@/App/App';
 import { LicenseBanner } from '@/LicenseBanner';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { getWorkspaceId } from '@/_helpers/utils';
 
 const AuditLogs = (props) => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const AuditLogs = (props) => {
 
   const fetchAllApps = () => {
     setIsLoadingApps(true);
-    appService.getAll(0).then((data) => {
+    appsService.getAll(0).then((data) => {
       setApps(data.apps);
       setIsLoadingApps(false);
     });
@@ -121,9 +122,8 @@ const AuditLogs = (props) => {
     };
 
     fetchAuditLogs(urlParams);
-    const { current_organization_id } = authenticationService.currentSessionValue;
     props.navigate({
-      pathname: `/${current_organization_id}/audit-logs`,
+      pathname: `/${getWorkspaceId()}/audit-logs`,
       search: new URLSearchParams(urlParams).toString(),
     });
   };

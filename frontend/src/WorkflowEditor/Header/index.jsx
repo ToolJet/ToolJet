@@ -7,6 +7,7 @@ import { Toggle } from '../../Editor/CodeBuilder/Elements/Toggle';
 import { appService } from '@/_services';
 import { ToolTip } from '@/_components/ToolTip';
 import Beta from '../../_ui/Beta';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 import './styles.scss';
 import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
@@ -22,13 +23,18 @@ const Header = (props) => {
 
   const isRunnable = editorSession.queries && editorSession.queries.length > 0;
 
+  const handleLogoClick = () => {
+    // Force a reload for clearing interval triggers
+    redirectToDashboard(null, '/workflows');
+  };
+
   return (
     <div className="header workflow-header">
       <div className="grid">
         <div className="row" style={{ height: '40px' }}>
           <div className="items">
             <div className="logo-section">
-              <Link to="/">
+              <Link onClick={handleLogoClick}>
                 <AppLogo isLoadingFromHeader={false} />
               </Link>
             </div>

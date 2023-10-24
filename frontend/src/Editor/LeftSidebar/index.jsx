@@ -55,6 +55,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     toggleAppMaintenance,
     app,
     disableEnablePage,
+    slug,
+    handleSlugChange,
   } = props;
   const { is_maintenance_on } = app;
 
@@ -227,6 +229,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
         app={app}
         backgroundFxQuery={backgroundFxQuery}
         realState={realState}
+        slug={slug}
+        handleSlugChange={handleSlugChange}
       />
     ),
   };

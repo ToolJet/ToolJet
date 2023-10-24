@@ -12,11 +12,14 @@ export class OidcOAuthService {
     private readonly organizationsService: OrganizationsService
   ) {
     this.tooljetHost = this.configService.get<string>('TOOLJET_HOST');
+    this.supath = this.configService.get<string>('SUB_PATH');
   }
   private readonly tooljetHost: string;
+  private readonly supath: string;
   private oidcClient: BaseClient;
 
-  #getRedirectURL = (configId: string) => `${this.tooljetHost}/sso/openid${configId ? `/${configId}` : ''}`;
+  #getRedirectURL = (configId: string) =>
+    `${this.tooljetHost}${this.supath || '/'}sso/openid${configId ? `/${configId}` : ''}`;
 
   async #setClient(configs: any, configId: string) {
     let ssoConfigs: any;

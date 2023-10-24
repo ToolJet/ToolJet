@@ -18,7 +18,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, generateInviteURL, isSuperAdmin, generateNextName } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateInviteURL, isSuperAdmin, generateNextNameAndSlug } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -94,8 +94,8 @@ export class OauthService {
     }
 
     if (!user && allowPersonalWorkspace) {
-      const organizationName = generateNextName('My workspace');
-      defaultOrganization = await this.organizationService.create(organizationName, null, manager);
+      const { name, slug } = generateNextNameAndSlug('My workspace');
+      defaultOrganization = await this.organizationService.create(name, slug, null, manager);
     }
 
     const groups = ['all_users', ...(ssoGroups ? ssoGroups : [])];
@@ -289,8 +289,8 @@ export class OauthService {
           let defaultOrganization: DeepPartial<Organization> = organization;
 
           // Not logging in to specific organization, creating new
-          const organizationName = generateNextName('My workspace');
-          defaultOrganization = await this.organizationService.create(organizationName, null, manager);
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          defaultOrganization = await this.organizationService.create(name, slug, null, manager);
 
           const groups = ['all_users', 'admin'];
           userDetails = await this.usersService.create(
@@ -337,8 +337,8 @@ export class OauthService {
             organizationDetails = organizationList[0];
           } else if (allowPersonalWorkspace) {
             // no SSO login enabled organization available for user - creating new one
-            const organizationName = generateNextName('My workspace');
-            organizationDetails = await this.organizationService.create(organizationName, userDetails, manager);
+            const { name, slug } = generateNextNameAndSlug('My workspace');
+            organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
           } else {
             throw new UnauthorizedException(
               'User not included in any workspace or workspace does not supports SSO login'

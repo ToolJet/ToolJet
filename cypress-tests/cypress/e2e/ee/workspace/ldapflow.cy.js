@@ -131,8 +131,7 @@ describe("LDAP flow", () => {
     it("Verify the LDAP SSO user info on inspector", () => {
         cy.intercept("GET", "api/library_apps").as("apps");
 
-        cy.createApp();
-        cy.renameApp(data.appName);
+        cy.createApp(data.appName);
         cy.dragAndDropWidget("Table", 250, 250);
         cy.get(commonSelectors.editorPageLogo).click();
         navigateToManageGroups();

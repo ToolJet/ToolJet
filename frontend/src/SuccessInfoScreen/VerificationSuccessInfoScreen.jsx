@@ -14,10 +14,12 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery, retrieveWhiteLabelText, getSubpath } from '@/_helpers/utils';
+import { buildURLWithQuery, retrieveWhiteLabelText } from '@/_helpers/utils';
 import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
+import { redirectToDashboard } from '@/_helpers/routes';
+import { setCookie } from '@/_helpers/cookie';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -38,6 +40,13 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const organizationId = new URLSearchParams(location?.search).get('oid');
   const source = new URLSearchParams(location?.search).get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const setRedirectUrlToCookie = () => {
+    const params = new URL(window.location.href).searchParams;
+    const redirectPath = params.get('redirectTo');
+    authenticationService.saveLoginOrganizationId(organizationId);
+    redirectPath && setCookie('redirectPath', redirectPath);
+  };
 
   const getUserDetails = () => {
     setIsLoading(true);
@@ -130,9 +139,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         });
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        window.location = getSubpath()
-          ? `${getSubpath()}/${user?.current_organization_id}`
-          : `/${user?.current_organization_id}`;
+        redirectToDashboard(user);
       })
       .catch((res) => {
         setIsLoading(false);
@@ -181,43 +188,53 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                           : `${retrieveWhiteLabelText()}.`
                       }`}
                     </div>
-                    {(configs?.google?.enabled || configs?.git?.enabled) && source !== 'sso' && (
-                      <div className="d-flex flex-column align-items-center separator-bottom">
-                        {configs?.google?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GoogleSSOLoginButton
-                              text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                              configs={configs?.google?.configs}
-                              configId={configs?.google?.config_id}
-                            />
-                          </div>
-                        )}
-                        {configs?.git?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GitSSOLoginButton
-                              text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                              configs={configs?.git?.configs}
-                            />
-                          </div>
-                        )}
-                        {configs?.openid?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <OIDCSSOLoginButton
-                              configId={configs?.openid?.config_id}
-                              configs={configs?.openid?.configs}
-                              text={t('confirmationPage.signupWithOpenid', `Sign up with`)}
-                            />
-                          </div>
-                        )}
-                        <div className="separator-onboarding " style={{ width: '100%' }}>
-                          <div className="mt-2 separator" data-cy="onboarding-separator">
-                            <h2>
-                              <span>{t('confirmationPage.or', 'OR')}</span>
-                            </h2>
+                    {(configs?.google?.enabled || configs?.git?.enabled || configs?.openid?.enabled) &&
+                      source !== 'sso' && (
+                        <div className="d-flex flex-column align-items-center separator-bottom">
+                          {configs?.google?.enabled && (
+                            <div className="login-sso-wrapper">
+                              <GoogleSSOLoginButton
+                                text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
+                                configs={configs?.google?.configs}
+                                configId={configs?.google?.config_id}
+                                setRedirectUrlToCookie={() => {
+                                  setRedirectUrlToCookie();
+                                }}
+                              />
+                            </div>
+                          )}
+                          {configs?.git?.enabled && (
+                            <div className="login-sso-wrapper">
+                              <GitSSOLoginButton
+                                text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
+                                configs={configs?.git?.configs}
+                                setRedirectUrlToCookie={() => {
+                                  setRedirectUrlToCookie();
+                                }}
+                              />
+                            </div>
+                          )}
+                          {configs?.openid?.enabled && (
+                            <div className="login-sso-wrapper">
+                              <OIDCSSOLoginButton
+                                configId={configs?.openid?.config_id}
+                                configs={configs?.openid?.configs}
+                                text={t('confirmationPage.signupWithOpenid', `Sign up with`)}
+                                setRedirectUrlToCookie={() => {
+                                  setRedirectUrlToCookie();
+                                }}
+                              />
+                            </div>
+                          )}
+                          <div className="separator-onboarding " style={{ width: '100%' }}>
+                            <div className="mt-2 separator" data-cy="onboarding-separator">
+                              <h2>
+                                <span>{t('confirmationPage.or', 'OR')}</span>
+                              </h2>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     <div className="org-page-inputs-wrapper">
                       <label className="tj-text-input-label" data-cy="name-input-label">

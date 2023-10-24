@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Container, Row, Col } from 'react-bootstrap';
 import Categories from './Categories';
 import AppList from './AppList';
@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import posthog from 'posthog-js';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { getWorkspaceId } from '../../_helpers/utils';
 
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
@@ -19,13 +18,13 @@ const identifyUniqueCategories = (templates) =>
   }));
 
 export default function TemplateLibraryModal(props) {
-  const navigate = useNavigate();
   const [libraryApps, setLibraryApps] = useState([]);
   const [selectedCategory, selectCategory] = useState({ id: 'all', count: 0 });
   const filteredApps = libraryApps.filter(
     (app) => selectedCategory.id === 'all' || app.category === selectedCategory.id
   );
   const [selectedApp, selectApp] = useState(undefined);
+  const [showCreateAppFromTemplateModal, setShowCreateAppFromTemplateModal] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -63,40 +62,10 @@ export default function TemplateLibraryModal(props) {
 
   const [deploying, setDeploying] = useState(false);
 
-  function deployApp(event) {
-    event.preventDefault();
-    const id = selectedApp.id;
-    setDeploying(true);
-    posthog.capture('create_application_from_template', {
-      workspace_id:
-        authenticationService?.currentUserValue?.organization_id ||
-        authenticationService?.currentSessionValue?.current_organization_id,
-      template_category_id: selectedCategory?.id,
-      template_name: selectedApp?.name,
-      button_name: 'create_application_from_template',
-      previous_action_button_name: props.fromButton,
-    });
-    libraryAppService
-      .deploy(id)
-      .then((data) => {
-        setDeploying(false);
-        props.onCloseButtonClick();
-        toast.success('App created.', {
-          position: 'top-center',
-        });
-        navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`);
-      })
-      .catch((e) => {
-        toast.error(e.error, {
-          position: 'top-center',
-        });
-        setDeploying(false);
-      });
-  }
-
   return (
     <Modal
-      {...props}
+      show={props.show}
+      onHide={props.onCloseButtonClick}
       className={`template-library-modal ${props.darkMode ? 'dark-mode dark-theme' : ''}`}
       aria-labelledby="contained-modal-title-vcenter"
       centered
@@ -135,11 +104,23 @@ export default function TemplateLibraryModal(props) {
                         {t('globals.cancel', 'Cancel')}
                       </ButtonSolid>
                       <ButtonSolid
-                        onClick={(e) => {
-                          deployApp(e);
+                        onClick={() => {
+                          posthog.capture('create_application_from_template', {
+                            workspace_id:
+                              authenticationService?.currentUserValue?.organization_id ||
+                              authenticationService?.currentSessionValue?.current_organization_id,
+                            template_category_id: selectedCategory?.id,
+                            template_name: selectedApp?.name,
+                            button_name: 'create_application_from_template',
+                            previous_action_button_name: props.fromButton,
+                          });
+                          props.openCreateAppFromTemplateModal(selectedApp);
+                          setShowCreateAppFromTemplateModal(false);
+                          props.onCloseButtonClick();
                         }}
                         isLoading={deploying}
-                        className=" ms-2 "
+                        className="ms-2"
+                        disabled={props.appCreationDisabled}
                       >
                         {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
                       </ButtonSolid>

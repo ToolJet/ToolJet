@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function TJLoader() {
+export const TJLoader = () => {
   return (
     <div className="spin-loader">
       <div className="load">
@@ -10,4 +10,4 @@ export function TJLoader() {
       </div>
     </div>
   );
-}
+};

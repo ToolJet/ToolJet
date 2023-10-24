@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import posthog from 'posthog-js';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +34,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
     setIsReleasing(true);
     saveEditingVersion();
     posthog.capture('click_release', { appId }); //posthog event
-    appService
+    appsService
       .saveApp(appId, {
         name: appName,
         current_version_id: editingVersion.id,
