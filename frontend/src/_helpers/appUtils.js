@@ -1551,7 +1551,7 @@ export const addComponents = (
   }
 
   pastedComponents.forEach((component) => {
-    const newComponentId = uuidv4();
+    const newComponentId = isCut ? component.componentId : uuidv4();
     const componentName = computeComponentName(component.component.component, {
       ...appDefinition.pages[pageId].components,
       ...finalComponents,
@@ -1735,7 +1735,7 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
     delete newDefinition.pages[pageId].components[componentId];
   });
 
-  updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true });
+  updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true, componentCut: true });
 };
 
 const getSelectedText = () => {

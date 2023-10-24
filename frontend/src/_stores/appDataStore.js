@@ -38,6 +38,8 @@ export const useAppDataStore = create(
         updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
           return new Promise((resolve) => {
             useAppDataStore.getState().actions.setIsSaving(true);
+            const isComponentCutProcess = get().appDiffOptions?.componentCut === true;
+
             appVersionService
               .autoSaveApp(
                 appId,
@@ -46,7 +48,8 @@ export const useAppDataStore = create(
                 appDefinitionDiff.type,
                 pageId,
                 appDefinitionDiff.operation,
-                isUserSwitchedVersion
+                isUserSwitchedVersion,
+                isComponentCutProcess
               )
               .then(() => {
                 useAppDataStore.getState().actions.setIsSaving(false);

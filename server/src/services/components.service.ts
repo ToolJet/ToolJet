@@ -109,7 +109,7 @@ export class ComponentsService {
     }, appVersionId);
   }
 
-  async delete(componentIds: string[], appVersionId: string) {
+  async delete(componentIds: string[], appVersionId: string, isComponentCut = false) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const components = await manager.findByIds(Component, componentIds);
 
@@ -121,9 +121,11 @@ export class ComponentsService {
         };
       }
 
-      components.forEach((component) => {
-        this.eventHandlerService.cascadeDeleteEvents(component.id);
-      });
+      if (!isComponentCut) {
+        components.forEach((component) => {
+          this.eventHandlerService.cascadeDeleteEvents(component.id);
+        });
+      }
 
       await manager.delete(Component, componentIds);
     }, appVersionId);

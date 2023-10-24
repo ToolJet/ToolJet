@@ -300,7 +300,7 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.componentsService.delete(deleteComponentDto.diff, versionId);
+    await this.componentsService.delete(deleteComponentDto.diff, versionId, deleteComponentDto.is_component_cut);
   }
 
   @UseGuards(JwtAuthGuard)
