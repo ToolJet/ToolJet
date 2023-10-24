@@ -942,7 +942,11 @@ const EditorComponent = (props) => {
           };
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
 
-          if (updateDiff?.type === 'components' && updateDiff?.operation === 'delete') {
+          if (
+            updateDiff?.type === 'components' &&
+            updateDiff?.operation === 'delete' &&
+            !appDiffOptions?.componentCut
+          ) {
             const appEvents = Array.isArray(events) && events.length > 0 ? JSON.parse(JSON.stringify(events)) : [];
 
             const updatedEvents = appEvents.filter((event) => {
