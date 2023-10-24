@@ -154,7 +154,7 @@ class ManageAppUsersComponent extends React.Component {
         isSlugVerificationInProgress: true,
       });
       appsService
-        .setSlug(this.state.app.id, value)
+        .setSlug(this.state.appId, value)
         .then(() => {
           this.setState({
             newSlug: {
