@@ -4647,7 +4647,7 @@ export const widgets = [
     styles: {
       dividerColor: {
         type: 'color',
-        displayName: 'Divider color',
+        displayName: 'Divider Color',
         validation: {
           schema: { type: 'string' },
         },
