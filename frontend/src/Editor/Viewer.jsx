@@ -342,6 +342,7 @@ class ViewerComponent extends React.Component {
             userVars,
             versionId,
           });
+
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
           this.loadApplicationBySlug(slug, true);

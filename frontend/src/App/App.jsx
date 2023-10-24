@@ -178,7 +178,7 @@ class AppComponent extends React.Component {
               />
               <Route
                 exact
-                path="/applications/:slug/:pageHandle?/*"
+                path="/applications/:slug/:pageHandle?"
                 element={
                   <PrivateRoute>
                     <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
