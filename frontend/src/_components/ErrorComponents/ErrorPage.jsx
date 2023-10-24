@@ -46,7 +46,7 @@ export const ErrorModal = ({ errorMsg, ...props }) => {
             />
           </svg>
           <span className="header-text">{t('globals.static-error-modal.title', errorMsg?.title)}</span>
-          <p>{t('globals.static-error-modal.description', errorMsg?.message)}</p>
+          <p className="description">{t('globals.static-error-modal.description', errorMsg?.message)}</p>
         </Modal.Header>
         <Modal.Footer>
           <button className="btn btn-primary action-btn" onClick={() => redirectToDashboard()}>
