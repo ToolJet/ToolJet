@@ -1041,9 +1041,7 @@ const EditorComponent = (props) => {
         undoOpts = {
           componentAdded: true,
         };
-      }
-
-      if (undoOpts?.componentAdded) {
+      } else if (undoOpts?.componentAdded) {
         undoOpts = {
           componentDeleted: true,
         };
