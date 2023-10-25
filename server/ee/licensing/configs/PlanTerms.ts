@@ -22,6 +22,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     whiteLabelling: false,
     multiEnvironment: false,
     multiPlayerEdit: false,
+    comments: false,
   },
   domains: [],
 };
@@ -43,6 +44,9 @@ export const BASIC_PLAN_SETTINGS = {
     feature: LICENSE_FIELD.WHITE_LABEL,
   },
   ENABLE_MULTIPLAYER_EDITING: {
+    value: 'false',
+  },
+  ENABLE_COMMENTS: {
     value: 'false',
   },
 };

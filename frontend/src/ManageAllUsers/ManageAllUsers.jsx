@@ -218,6 +218,8 @@ class ManageAllUsersComponent extends React.Component {
 
     const { superadminsCount } = this.state.userLimits;
 
+    const { isLicenseExpired, isLicenseValid } = this.props;
+
     const usersTableCustomStyle = { height: 'calc(100vh - 400px)' };
 
     return (

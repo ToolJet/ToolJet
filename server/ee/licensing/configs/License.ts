@@ -15,6 +15,7 @@ export default class License {
   private _isWhiteLabelling: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
+  private _isComments: boolean;
   private _expiryDate: Date;
   private _updatedDate: Date;
   private _editorUsersCount: number | string;
@@ -55,6 +56,7 @@ export default class License {
         this._isWhiteLabelling = licenseData?.features?.whiteLabelling === false ? false : true;
         this._isMultiEnvironment = licenseData?.features?.multiEnvironment === false ? false : true;
         this._isMultiPlayerEdit = licenseData?.features?.multiPlayerEdit === false ? false : true;
+        this._isComments = licenseData?.features?.comments === false ? false : true;
         this._expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
         this._updatedDate = updatedDate;
         this._isLicenseValid = true;
@@ -202,6 +204,13 @@ export default class License {
     return this._isMultiPlayerEdit;
   }
 
+  public get comments(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.comments;
+    }
+    return this._isComments;
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -220,6 +229,7 @@ export default class License {
       whiteLabelling: this.whiteLabelling,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
+      comments: this.comments,
     };
   }
 
@@ -243,6 +253,7 @@ export default class License {
       customStylingEnabled: this.customStyling,
       multiEnvironmentEnabled: this.multiEnvironment,
       multiPlayerEditEnabled: this.multiPlayerEdit,
+      commentsEnabled: this.comments,
       expiryDate: this._expiryDate,
       isExpired: this.isExpired,
       isLicenseValid: this._isLicenseValid,

@@ -27,7 +27,7 @@ export const LeftSidebarComment = forwardRef(
     const [isActive, toggleActive] = React.useState(false);
     const [notifications, setNotifications] = React.useState([]);
     const router = useRouter();
-    const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+    const shouldEnableComments = window.public_config?.ENABLE_COMMENTS === 'true';
     const [basicPlan, setBasicPlan] = useState(false);
 
     React.useEffect(() => {
@@ -69,7 +69,7 @@ export const LeftSidebarComment = forwardRef(
         title={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
         icon={'comments'}
         className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
-          disabled: !appVersionsId || isVersionReleased || isEditorFreezed || !shouldEnableMultiplayer,
+          disabled: !appVersionsId || isVersionReleased || isEditorFreezed || !shouldEnableComments,
         })}
         onClick={() => {
           toggleActive(!isActive);
