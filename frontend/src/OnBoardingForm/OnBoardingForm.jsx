@@ -6,16 +6,14 @@ import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
 import AppLogo from '../_components/AppLogo';
-import { getuserName, getSubpath, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { getuserName, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { redirectToDashboard } from '@/_helpers/routes';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
-import LogoLightMode from '@assets/images/Logomark.svg';
-import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
-  const Logo = darkMode ? LogoDarkMode : LogoLightMode;
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source = null }) {
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +42,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           companySize: formData.companySize,
           role: formData.role,
           token: token,
+          source,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
           phoneNumber: formData?.phoneNumber,
@@ -51,9 +50,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
         .then((data) => {
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
-          window.location = getSubpath()
-            ? `${getSubpath()}/${data.current_organization_id}`
-            : `/${data.current_organization_id}`;
+          redirectToDashboard(data);
           setCompleted(false);
         })
         .catch((res) => {

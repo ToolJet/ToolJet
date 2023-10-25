@@ -7,7 +7,6 @@ import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
 import { resolveReferences } from '@/_helpers/utils';
-import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
@@ -18,6 +17,7 @@ import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 
 const NO_OF_GRIDS = 43;
@@ -71,6 +71,12 @@ export const Container = ({
     }),
     shallow
   );
+  const { appId } = useAppDataStore(
+    (state) => ({
+      appId: state?.appId,
+    }),
+    shallow
+  );
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -79,7 +85,6 @@ export const Container = ({
   const [newThread, addNewThread] = useState({});
   const [isContainerFocused, setContainerFocus] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(null);
-  const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
   useHotkeys('meta+z, control+z', () => handleUndo());
@@ -421,7 +426,7 @@ export const Container = ({
     ]);
 
     const { data } = await commentsService.createThread({
-      appId: router.query.id,
+      appId,
       x: x,
       y: e.nativeEvent.offsetY,
       appVersionsId,
@@ -437,7 +442,7 @@ export const Container = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'threads', appId: router.query.id },
+        data: { message: 'threads', appId },
       })
     );
 
@@ -466,7 +471,7 @@ export const Container = ({
       },
     ]);
     const { data } = await commentsService.createThread({
-      appId: router.query.id,
+      appId,
       x,
       y: y - 130,
       appVersionsId,
@@ -482,7 +487,7 @@ export const Container = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'threads', appId: router.query.id },
+        data: { message: 'threads', appId },
       })
     );
 
@@ -657,7 +662,7 @@ export const Container = ({
               our&nbsp;
               <a
                 className="color-indigo9 "
-                href="https://docs.tooljet.com/docs#the-very-quick-quickstart"
+                href="https://docs.tooljet.com/docs/#quickstart-guide"
                 target="_blank"
                 rel="noreferrer"
               >

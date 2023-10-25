@@ -27,31 +27,23 @@ export class FoldersService {
   ) {}
 
   async create(user: User, folderName, type = 'front-end'): Promise<Folder> {
-    return await catchDbException(
-      async () => {
-        return await this.foldersRepository.save(
-          this.foldersRepository.create({
-            name: folderName,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            organizationId: user.organizationId,
-            type,
-          })
-        );
-      },
-      DataBaseConstraints.FOLDER_NAME_UNIQUE,
-      'This folder name is already taken.'
-    );
+    return await catchDbException(async () => {
+      return await this.foldersRepository.save(
+        this.foldersRepository.create({
+          name: folderName,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          organizationId: user.organizationId,
+          type,
+        })
+      );
+    }, [{ dbConstraint: DataBaseConstraints.FOLDER_NAME_UNIQUE, message: 'This folder name is already taken.' }]);
   }
 
   async update(folderId: string, folderName: string): Promise<UpdateResult> {
-    return await catchDbException(
-      async () => {
-        return await this.foldersRepository.update({ id: folderId }, { name: folderName });
-      },
-      DataBaseConstraints.FOLDER_NAME_UNIQUE,
-      'This folder name is already taken.'
-    );
+    return await catchDbException(async () => {
+      return await this.foldersRepository.update({ id: folderId }, { name: folderName });
+    }, [{ dbConstraint: DataBaseConstraints.FOLDER_NAME_UNIQUE, message: 'This folder name is already taken.' }]);
   }
 
   async allFolders(user: User, searchKey?: string, type = 'front-end'): Promise<Folder[]> {

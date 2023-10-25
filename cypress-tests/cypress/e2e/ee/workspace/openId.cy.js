@@ -26,6 +26,7 @@ describe("Verify OIDC user onboarding", () => {
     cy.appUILogin();
     cy.intercept('GET', 'api/library_apps').as('apps')
   });
+
   it("Verify user onboarding using workspace OIDC", () => {
     common.navigateToManageSSO();
     SSO.disableDefaultSSO();
@@ -56,7 +57,7 @@ describe("Verify OIDC user onboarding", () => {
     cy.get(commonEeSelectors.saveButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      ssoEeText.oidcUpdatedToast
+      ssoText.toggleUpdateToast('OpenID')
     );
 
     SSO.visitWorkspaceLoginPage();
@@ -81,7 +82,7 @@ describe("Verify OIDC user onboarding", () => {
     cy.get(".superadmin-button").click();
 
     confirmInviteElements();
-    cy.clearAndType(commonSelectors.passwordInputField, "password");
+
     cy.get(commonSelectors.acceptInviteButton).click();
     cy.wait('@apps')
     common.logout();
@@ -97,7 +98,8 @@ describe("Verify OIDC user onboarding", () => {
       });
 
     common.logout();
-    cy.login("superadmin@tooljet.com", "password");
+    cy.get(ssoEeSelector.oidcSSOText).realClick();
+    cy.get(".superadmin-button").click();
   });
 
   it("Verify invited user onboarding using instance level OIDC", () => {
@@ -114,10 +116,11 @@ describe("Verify OIDC user onboarding", () => {
       }
     });
     VerifyWorkspaceInvitePageElements();
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-button").click();
     cy.wait(1000)
-    cy.clearAndType(commonSelectors.passwordInputField, "password");
+
     cy.get(commonSelectors.acceptInviteButton).click();
     cy.wait('@apps')
     cy.contains("My workspace").should("be.visible");
@@ -126,25 +129,19 @@ describe("Verify OIDC user onboarding", () => {
 
     cy.appUILogin();
     cy.wait(2000)
-    trunOffAllowPersonalWorkspace();
-
-    common.navigateToManageUsers();
-    inviteUser("user two", "usertwo@tooljet.com");
-    cy.get(ssoEeSelector.oidcSSOText).realClick();
-    cy.get(".user-two-button").click();
-    cy.clearAndType(commonSelectors.passwordInputField, "password");
-    cy.get(commonSelectors.acceptInviteButton).click();
-    cy.wait('@apps')
-    cy.contains("My workspace").should("be.visible");
-    common.logout();
-
-    cy.appUILogin();
-    cy.wait(2000)
-    resetAllowPersonalWorkspace();
     SSO.disableSignUp();
 
     common.navigateToManageUsers();
-    inviteUser("user three", "userthree@tooljet.com");
+    cy.wait(1000)
+    cy.get("body").then(($el) => {
+      if (!$el.text().includes("userthree@tooljet.com", { timeout: 2000 })) {
+        inviteUser("user", "userthree@tooljet.com");
+      }
+      else {
+        WorkspaceInvitationLink("userthree@tooljet.com");
+      }
+    });
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-four-button").click();
 
@@ -157,10 +154,9 @@ describe("Verify OIDC user onboarding", () => {
     cy.wait(2000)
     SSO.enableSignUp();
     WorkspaceInvitationLink("userthree@tooljet.com");
-
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-four-button").click();
-    cy.clearAndType(commonSelectors.passwordInputField, "password");
     cy.get(commonSelectors.acceptInviteButton).click();
     cy.wait('@apps')
     common.logout();
@@ -176,6 +172,7 @@ describe("Verify OIDC user onboarding", () => {
   });
 
   it("Verify user onboarding using instance level OIDC", () => {
+
     resetAllowPersonalWorkspace();
     common.logout();
     cy.visit('/');
@@ -183,12 +180,9 @@ describe("Verify OIDC user onboarding", () => {
     cy.get(".admin-button").click();
 
     verifySSOSignUpPageElements();
-    cy.clearAndType(commonSelectors.passwordInputField, "password");
+
     cy.get(commonSelectors.acceptInviteButton).click();
     cy.wait('@apps')
-
-    common.logout();
-    cy.login("admin@tooljet.com", "password");
 
     common.logout();
     cy.appUILogin();
@@ -200,10 +194,37 @@ describe("Verify OIDC user onboarding", () => {
       "have.text",
       usersText.activeStatus
     );
+
+    common.logout();
+    cy.visit('/');
+    cy.get(ssoEeSelector.oidcSSOText).realClick();
+    cy.get(".admin-button").click();
   });
 
   it("Verify archived user login using OIDC", () => {
+    enableDefaultSSO();
     trunOffAllowPersonalWorkspace();
+    common.navigateToManageUsers();
+
+    cy.wait(1000);
+    cy.get("body").then(($el) => {
+      if (!$el.text().includes("usertwo@tooljet.com", { timeout: 2000 })) {
+        inviteUser("user two", "usertwo@tooljet.com");
+      }
+      else {
+        WorkspaceInvitationLink("usertwo@tooljet.com");
+      }
+    });
+    cy.wait(2000)
+    cy.get(ssoEeSelector.oidcSSOText).realClick();
+    cy.get(".user-two-button").click();
+
+    cy.get(commonSelectors.acceptInviteButton).click();
+    cy.wait('@apps')
+    cy.contains("My workspace").should("be.visible");
+    common.logout();
+
+    cy.appUILogin();
     common.navigateToManageUsers();
     common.searchUser("usertwo@tooljet.com");
     cy.contains("td", "usertwo@tooljet.com")
@@ -221,7 +242,8 @@ describe("Verify OIDC user onboarding", () => {
       usersText.archivedToast
     );
     common.logout();
-    cy.visit('/');
+    cy.visit('/my-workspace');
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-two-button").click();
 
@@ -234,7 +256,7 @@ describe("Verify OIDC user onboarding", () => {
     cy.wait(2000)
     resetAllowPersonalWorkspace();
     common.logout();
-
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-two-button").click();
   });

@@ -19,17 +19,16 @@ import {
 } from "Texts/common";
 
 describe("Editor- Global Settings", () => {
+  const data = {};
   beforeEach(() => {
+    data.appName = `${fake.companyName}-App`;
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(data.appName);
     cy.openApp();
   });
 
   it("should verify global settings", () => {
-    const data = {};
     data.backgroundColor = fake.randomRgba;
-    data.appName = `${fake.companyName}-App`;
-    cy.renameApp(data.appName);
     cy.get("[data-cy='left-sidebar-settings-button']").click();
 
     cy.get('[data-cy="label-global settings"]').verifyVisibleElement(

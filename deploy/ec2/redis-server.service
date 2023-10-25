@@ -42,4 +42,4 @@ ReadWriteDirectories=-/etc/redis
 
 [Install]
 WantedBy=multi-user.target
-Alias=redis.service
+Alias=redis-server.service

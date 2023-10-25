@@ -260,7 +260,8 @@
                     "user-authentication/sso/openid/google-openid"
                   ]
                 },
-                "user-authentication/sso/ldap"
+                "user-authentication/sso/ldap",
+                "user-authentication/sso/saml"
               ]
             }
           ]

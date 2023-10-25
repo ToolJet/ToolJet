@@ -8,7 +8,8 @@ import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
-import { getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from '@/_helpers/utils';
+import { returnWorkspaceIdIfNeed } from '@/_helpers/utils';
+import { getRedirectTo, getSubpath } from '@/_helpers/routes';
 
 const LdapLoginPageComponent = ({ darkMode, ...props }) => {
   const [username, setUserName] = useState('');
@@ -17,7 +18,8 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
   const [isGettingConfigs, setGettingConfigsState] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { organizationId } = useParams();
+  const { organizationId: organizationSlug } = useParams();
+  const [loginOrganizationId, setLoginOrganizationId] = useState(organizationSlug);
 
   const handleChange = (event) => {
     switch (event.target.name) {
@@ -35,10 +37,12 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
   useEffect(() => {
     setGettingConfigsState(true);
     authenticationService.deleteLoginOrganizationId();
-    authenticationService.getOrganizationConfigs(organizationId).then(
+    authenticationService.getOrganizationConfigs(organizationSlug).then(
       (configs) => {
+        if (configs?.id) setLoginOrganizationId(configs.id);
         if (!configs?.ldap?.enabled) {
-          return props.navigate(`/login${organizationId} ? '/${organizationId} ? ''`);
+          const redirectPath = getRedirectTo();
+          return props.navigate(`/login${organizationSlug ? `/${organizationSlug}` : ''}?redirectTo=${redirectPath}`);
         }
         setConfig(configs?.ldap);
         setGettingConfigsState(false);
@@ -61,15 +65,15 @@ const LdapLoginPageComponent = ({ darkMode, ...props }) => {
     if (username && password) {
       setLoading(true);
       authenticationService
-        .signInViaOAuth(config?.config_id, 'ldap', { username, password, organizationId })
-        .then(({ redirect_url, organization_id }) => {
+        .signInViaOAuth(config?.config_id, 'ldap', { username, password, organizationId: loginOrganizationId })
+        .then(({ redirect_url }) => {
           if (redirect_url) {
             window.location.href = redirect_url;
             return;
           }
           setLoading(false);
-          const path = eraseRedirectUrl();
-          const redirectPath = `${returnWorkspaceIdIfNeed(path, organization_id)}${path && path !== '/' ? path : ''}`;
+          const path = getRedirectTo();
+          const redirectPath = `${returnWorkspaceIdIfNeed(path, organizationSlug)}${path && path !== '/' ? path : ''}`;
           window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
         })
         .catch((err) => {

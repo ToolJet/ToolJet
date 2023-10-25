@@ -9,6 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
+import { getWorkspaceIdOrSlugFromURL, getSubpath } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
@@ -820,75 +821,14 @@ export const getuserName = (formData) => {
   return '';
 };
 
-export const pathnameWithoutSubpath = (path) => {
-  const subpath = getSubpath();
-  if (subpath) return path.replace(subpath, '');
-  return path;
-};
-
-// will replace or append workspace-id in a path
-export const appendWorkspaceId = (workspaceId, path, replaceId = false) => {
-  const subpath = getSubpath();
-  path = pathnameWithoutSubpath(path);
-
-  let newPath = path;
-  if (path === '/:workspaceId' || path.split('/').length === 2) {
-    newPath = `/${workspaceId}`;
-  } else {
-    const paths = path.split('/').filter((path) => path !== '');
-    if (replaceId) {
-      paths[0] = workspaceId;
-    } else {
-      paths.unshift(workspaceId);
-    }
-    newPath = `/${paths.join('/')}`;
-  }
-  return subpath ? `${subpath}${newPath}` : newPath;
-};
-
-export const getWorkspaceIdFromURL = () => {
-  const pathname = window.location.pathname;
-  const pathnameArray = pathname.split('/').filter((path) => path !== '');
-  const subpath = window?.public_config?.SUB_PATH;
-  const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
-  const existedPaths = [
-    'forgot-password',
-    'switch-workspace',
-    'reset-password',
-    'invitations',
-    'organization-invitations',
-    'sso',
-    'setup',
-    'confirm',
-    ':workspaceId',
-    'confirm-invite',
-    'oauth2',
-    'applications',
-    'integrations',
-    'instance-settings',
-    'license',
-  ];
-
-  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
-  if (workspaceId === 'login') {
-    return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
-  }
-
-  return !existedPaths.includes(workspaceId) ? workspaceId : '';
+export const removeSpaceFromWorkspace = (name) => {
+  return name?.replace(' ', '-') || '';
 };
 
 export const getWorkspaceId = () =>
-  getWorkspaceIdFromURL() || authenticationService.currentSessionValue?.current_organization_id;
-
-export const excludeWorkspaceIdFromURL = (pathname) => {
-  if (!pathname.includes('/applications/')) {
-    const paths = pathname?.split('/').filter((path) => path !== '');
-    paths.shift();
-    const newPath = paths.join('/');
-    return newPath ? `/${newPath}` : '/';
-  }
-  return pathname;
-};
+  getWorkspaceIdOrSlugFromURL() ||
+  authenticationService.currentSessionValue?.current_organization_slug ||
+  authenticationService.currentSessionValue?.current_organization_id;
 
 export const handleUnSubscription = (subsciption) => {
   setTimeout(() => {
@@ -909,8 +849,6 @@ export const getAvatar = (organization) => {
   }
 };
 
-export const getSubpath = () =>
-  window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
 export function isExpectedDataType(data, expectedDataType) {
   function getCurrentDataType(node) {
     return Object.prototype.toString.call(node).slice(8, -1).toLowerCase();
@@ -957,10 +895,18 @@ export function convertDateFormat(dateString) {
 
 export const returnDevelopmentEnv = (environments) => environments.find((env) => env.priority === 1);
 
-export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
-  const newName = name.trim();
+export const validateName = (
+  name,
+  nameType,
+  emptyCheck = true,
+  showError = false,
+  allowSpecialChars = true,
+  allowSpaces = true,
+  checkReservedWords = false
+) => {
+  const newName = name;
   let errorMsg = '';
-  if (!newName) {
+  if (emptyCheck && !newName) {
     errorMsg = `${nameType} can't be empty`;
     showError &&
       toast.error(errorMsg, {
@@ -972,33 +918,78 @@ export const validateName = (name, nameType, showError = false, allowSpecialChar
     };
   }
 
-  //check for alphanumeric
-  if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
-    if (/[A-Z]/.test(newName)) {
-      errorMsg = 'Only lowercase letters are accepted.';
-    } else {
-      errorMsg = `Special characters are not accepted.`;
+  if (newName) {
+    //check for alphanumeric
+    if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
+      if (/[A-Z]/.test(newName)) {
+        errorMsg = 'Only lowercase letters are accepted.';
+      } else {
+        errorMsg = `Special characters are not accepted.`;
+      }
+      showError &&
+        toast.error(errorMsg, {
+          id: '2',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
     }
-    showError &&
-      toast.error(errorMsg, {
-        id: '2',
-      });
-    return {
-      status: false,
-      errorMsg,
-    };
-  }
 
-  if (newName.length > 50) {
-    errorMsg = `Maximum length has been reached.`;
-    showError &&
-      toast.error(errorMsg, {
-        id: '3',
-      });
-    return {
-      status: false,
-      errorMsg,
-    };
+    if (!allowSpaces && /\s/g.test(newName)) {
+      errorMsg = 'Cannot contain spaces';
+      showError &&
+        toast.error(errorMsg, {
+          id: '3',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
+    }
+
+    if (newName.length > 50) {
+      errorMsg = `Maximum length has been reached.`;
+      showError &&
+        toast.error(errorMsg, {
+          id: '3',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
+    }
+
+    /* Add more reserved paths here, which doesn't have /:workspace-id prefix */
+    const reservedPaths = [
+      'forgot-password',
+      'switch-workspace',
+      'reset-password',
+      'invitations',
+      'organization-invitations',
+      'sso',
+      'setup',
+      'confirm',
+      ':workspaceId',
+      'confirm-invite',
+      'oauth2',
+      'applications',
+      'integrations',
+      'login',
+      'signup',
+    ];
+
+    if (checkReservedWords && reservedPaths.includes(newName)) {
+      errorMsg = `Reserved words are not allowed.`;
+      showError &&
+        toast.error(errorMsg, {
+          id: '3',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
+    }
   }
 
   return {

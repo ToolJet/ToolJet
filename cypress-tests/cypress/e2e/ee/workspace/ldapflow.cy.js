@@ -11,7 +11,7 @@ import {
     searchUser,
     pinInspector,
     navigateToAppEditor,
-    navigateToManageGroups
+    navigateToManageGroups,
 } from "Support/utils/common";
 import { ssoText } from "Texts/manageSSO";
 import {
@@ -69,10 +69,7 @@ describe("LDAP flow", () => {
         cy.clearAndType(ssoEeSelector.nameInput, "Tooljet LDAP Auth");
         cy.clearAndType(ssoEeSelector.hostInput, Cypress.env("ldap_host"));
         cy.clearAndType(ssoEeSelector.portInput, "10389");
-        cy.clearAndType(
-            ssoEeSelector.baseDnInput,
-            Cypress.env("ldap_base_dn")
-        );
+        cy.clearAndType(ssoEeSelector.baseDnInput, Cypress.env("ldap_base_dn"));
         cy.get(ssoEeSelector.sslToggleInput).uncheck();
 
         enableToggle(ssoEeSelector.ldapToggle);
@@ -128,21 +125,20 @@ describe("LDAP flow", () => {
             "have.text",
             "professor@planetexpress.com"
         );
-        cy.clearAndType(commonSelectors.passwordInputField, "password");
+
         cy.get(commonSelectors.acceptInviteButton).click();
     });
     it("Verify the LDAP SSO user info on inspector", () => {
         cy.intercept("GET", "api/library_apps").as("apps");
 
-        cy.createApp();
-        cy.renameApp(data.appName);
+        cy.createApp(data.appName);
         cy.dragAndDropWidget("Table", 250, 250);
         cy.get(commonSelectors.editorPageLogo).click();
-        navigateToManageGroups()
+        navigateToManageGroups();
         addAppToGroup(data.appName);
         cy.get(commonSelectors.dashboardIcon).click();
         cy.wait("@apps");
-        logout()
+        logout();
 
         cy.get(ssoEeSelector.ldapSSOText).click();
         cy.clearAndType(commonSelectors.nameInputField, "Hubert J. Farnsworth");
@@ -152,16 +148,16 @@ describe("LDAP flow", () => {
         cy.wait("@apps");
         cy.wait(1000);
         navigateToAppEditor(data.appName);
-        pinInspector()
-        cy.get('[data-cy="inspector-node-globals"] > .node-key').click()
-        cy.get('[data-cy="inspector-node-currentuser"] > .node-key').click()
+        pinInspector();
+        cy.get('[data-cy="inspector-node-globals"] > .node-key').click();
+        cy.get('[data-cy="inspector-node-currentuser"] > .node-key').click();
         cy.get('[data-cy="inspector-node-ssouserinfo"] > .node-key').click();
         cy.get('[data-cy="inspector-node-mail"] > .node-key').click();
-        cy.get('[data-cy="inspector-node-0"] > .mx-2').verifyVisibleElement("have.text", `"professor@planetexpress.com"`)
-
-
-
-    })
+        cy.get('[data-cy="inspector-node-0"] > .mx-2').verifyVisibleElement(
+            "have.text",
+            `"professor@planetexpress.com"`
+        );
+    });
     it("Verify archive and unarchive functionality", () => {
         navigateToManageUsers();
         searchUser("professor@planetexpress.com");
@@ -192,8 +188,8 @@ describe("LDAP flow", () => {
             "LDAP login failed - User does not exist in the workspace"
         );
 
-        cy.login("professor@planetexpress.com", "password");
-        logout();
+        // cy.login("professor@planetexpress.com", "password");
+        // logout();
 
         cy.appUILogin();
         navigateToManageUsers();

@@ -18,16 +18,12 @@ data.folderName = `${fake.companyName.toLowerCase()}-folder`;
 
 describe("User permissions", () => {
   before(() => {
-    cy.intercept("GET", "/api/folders?searchKey=&type=front-end").as("homePage");
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.apiCreateApp(data.appName);
+    cy.visit('/')
     permissions.reset();
     cy.get(commonSelectors.homePageLogo).click();
-    cy.wait("@homePage");
-    cy.createApp();
-    cy.renameApp(data.appName);
-    cy.dragAndDropWidget("Table", 250, 250);
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.reloadAppForTheElement(data.appName);
+    cy.wait(2000);
     permissions.addNewUserMW(data.firstName, data.email);
     common.logout();
   });
@@ -41,11 +37,7 @@ describe("User permissions", () => {
     cy.login(data.email, usersText.password);
     cy.get("body").then(($title) => {
       if ($title.text().includes(dashboardText.emptyPageDescription)) {
-        cy.get(commonSelectors.dashboardAppCreateButton).click();
-        cy.verifyToastMessage(
-          commonSelectors.toastMessage,
-          usersText.createAppPermissionToast
-        );
+        cy.get(commonSelectors.dashboardAppCreateButton).should('be.disabled');
       } else {
         cy.contains(dashboardText.createAppButton).should("not.exist");
       }
@@ -120,7 +112,21 @@ describe("User permissions", () => {
   });
 
   it("Should verify the Create and Delete app permission", () => {
+    data.appName = `${fake.companyName}-App`;
+    cy.createApp(data.appName);
+    cy.get(commonSelectors.editorPageLogo).click();
+    cy.wait(1000);
     common.navigateToManageGroups();
+    cy.get(groupsSelector.appSearchBox).click();
+    cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
+    cy.get(groupsSelector.selectAddButton).click();
+    cy.get("table").contains("td", data.appName);
+    cy.contains("td", data.appName)
+      .parent()
+      .within(() => {
+        cy.get("td input").first().should("be.checked");
+      });
+    cy.wait(500)
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsCreateCheck).check();
     cy.get(groupsSelector.permissionsLink).click();
@@ -141,11 +147,10 @@ describe("User permissions", () => {
     common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("not.exist");
 
-    cy.createApp();
-    cy.renameApp(data.email);
+    cy.createApp(data.email);
+
     cy.dragAndDropWidget("Table", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
-    cy.reloadAppForTheElement(data.email);
     common.viewAppCardOptions(data.email);
     cy.contains("Delete app").should("exist");
     cy.get(commonSelectors.appCardOptions(commonText.deleteAppOption)).click();

@@ -19,7 +19,7 @@ import {
   addQuery,
   addQueryN,
   verifyValueOnInspector,
-  selectDatasource
+  selectDatasource,
 } from "Support/utils/dataSource";
 
 import { buttonText } from "Texts/button";
@@ -42,16 +42,12 @@ describe("Multi env", () => {
   data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
   const slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
-
   beforeEach(() => {
-    cy.appUILogin();
-    cy.viewport(1200, 1300);
-    cy.createApp();
-    cy.renameApp(data.appName);
-    cy.dragAndDropWidget("Text", 350, 350);
-  });
-  it("Verify the datasource configuration and data on each env", () => {
     cy.apiLogin();
+    cy.viewport(1200, 1300);
+  });
+
+  it("Verify the datasource configuration and data on each env", () => {
     cy.apiCreateGDS(
       "http://localhost:3000/api/v2/data_sources",
       data.ds,
@@ -83,15 +79,19 @@ describe("Multi env", () => {
         { key: "ssl_certificate", value: "none", encrypted: false },
       ]
     );
-    cy.visit("/");
+    cy.apiCreateApp(data.appName);
+    cy.visit('/my-workspace')
     cy.get(commonSelectors.globalDataSourceIcon).click();
     selectDatasource(data.ds);
-    cy.get('[data-cy="development-label"]').click()
-    cy.clearAndType('[data-cy="base-url-text-field"]', "https://reqres.in/api/users?page=1")
-    cy.get(dataSourceSelector.buttonSave).click()
+    cy.get('[data-cy="development-label"]').click();
+    cy.clearAndType(
+      '[data-cy="base-url-text-field"]',
+      "https://reqres.in/api/users?page=1"
+    );
+    cy.get(dataSourceSelector.buttonSave).click();
     cy.get(commonSelectors.dashboardIcon).click();
 
-    navigateToAppEditor(data.appName);
+    cy.openApp();
     cy.get(`[data-cy="${data.ds}-add-query-card"] > .text-truncate`).click();
     cy.get(dataSourceSelector.queryCreateAndRunButton).click();
     cy.get(".custom-toggle-switch>.switch>").eq(3).click();
@@ -132,7 +132,7 @@ describe("Multi env", () => {
       commonWidgetSelector.draggableWidget(data.constName)
     ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
 
-    cy.go('back');
+    cy.go("back");
     cy.waitForAppLoad();
     cy.wait(3000);
     cy.get(commonEeSelectors.promoteButton).click();
@@ -140,15 +140,23 @@ describe("Multi env", () => {
     cy.waitForAppLoad();
     cy.wait(3000);
 
-    cy.get(dataSourceSelector.queryCreateAndRunButton, { timeout: 20000 }).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query could not be completed")
+    cy.get(dataSourceSelector.queryCreateAndRunButton, {
+      timeout: 20000,
+    }).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Query could not be completed"
+    );
 
     cy.get(commonSelectors.editorPageLogo).click();
     cy.get(commonSelectors.globalDataSourceIcon).click();
     selectDatasource(data.ds);
-    cy.get('[data-cy="staging-label"]').click()
-    cy.clearAndType('[data-cy="base-url-text-field"]', "https://reqres.in/api/users?page=2")
-    cy.get(dataSourceSelector.buttonSave).click()
+    cy.get('[data-cy="staging-label"]').click();
+    cy.clearAndType(
+      '[data-cy="base-url-text-field"]',
+      "https://reqres.in/api/users?page=2"
+    );
+    cy.get(dataSourceSelector.buttonSave).click();
 
     cy.get(commonSelectors.dashboardIcon).click();
     navigateToAppEditor(data.appName);
@@ -181,7 +189,7 @@ describe("Multi env", () => {
 
     // cy.get('[data-cy="viewer-page-logo"]').click();
     // navigateToAppEditor(data.appName);
-    cy.go('back');
+    cy.go("back");
     cy.waitForAppLoad();
     cy.wait(3000);
     cy.get(commonEeSelectors.promoteButton).click();
@@ -189,15 +197,23 @@ describe("Multi env", () => {
     cy.waitForAppLoad();
     cy.wait(3000);
 
-    cy.get(dataSourceSelector.queryCreateAndRunButton, { timeout: 20000 }).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Query could not be completed")
+    cy.get(dataSourceSelector.queryCreateAndRunButton, {
+      timeout: 20000,
+    }).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Query could not be completed"
+    );
 
     cy.get(commonSelectors.editorPageLogo).click();
     cy.get(commonSelectors.globalDataSourceIcon).click();
     selectDatasource(data.ds);
-    cy.get('[data-cy="production-label"]').click()
-    cy.clearAndType('[data-cy="base-url-text-field"]', "https://reqres.in/api/users?page=1")
-    cy.get(dataSourceSelector.buttonSave).click()
+    cy.get('[data-cy="production-label"]').click();
+    cy.clearAndType(
+      '[data-cy="base-url-text-field"]',
+      "https://reqres.in/api/users?page=1"
+    );
+    cy.get(dataSourceSelector.buttonSave).click();
 
     cy.get(commonSelectors.dashboardIcon).click();
     navigateToAppEditor(data.appName);
@@ -228,28 +244,31 @@ describe("Multi env", () => {
       commonWidgetSelector.draggableWidget(data.constName)
     ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
 
-    cy.go('back');
+    cy.go("back");
     cy.waitForAppLoad();
     cy.wait(3000);
     cy.get(commonSelectors.releaseButton).click();
     cy.get(commonSelectors.yesButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
-    cy.wait(500);
+    cy.wait(4000);
 
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
-    cy.get(commonWidgetSelector.modalCloseButton).click();
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.wait(500)
+    cy.wait(2000);
+    cy.get(commonWidgetSelector.modalCloseButton).click()
+
 
     cy.visit(`/applications/${slug}`);
     cy.get(
       commonWidgetSelector.draggableWidget(data.constName)
     ).verifyVisibleElement("have.text", "george.bluth@reqres.in");
-
   });
 
   it("Verify the multi env components UI", () => {
+    data.appName = `${fake.companyName} App`;
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
+    cy.dragAndDropWidget("Text", 550, 650);
     cy.get(multiEnvSelector.envContainer).should("be.visible");
     cy.get(multiEnvSelector.currentEnvName)
       .verifyVisibleElement("have.text", "Development")
@@ -363,7 +382,10 @@ describe("Multi env", () => {
       "Create new version"
     );
 
-    verifyTooltip(multiEnvSelector.createNewVersionButton, "New versions can only be created in development")
+    verifyTooltip(
+      multiEnvSelector.createNewVersionButton,
+      "New versions can only be created in development"
+    );
     cy.get(".datasource-picker").should("have.class", "disabled");
     cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
     cy.get(".components-container").should("have.class", "disabled");
@@ -466,14 +488,14 @@ describe("Multi env", () => {
       "have.text",
       "This version of the app is released. Please create a new version in development to make any changes."
     );
-    cy.get('[data-cy="v1-current-version-text"]').click()
-    verifyTooltip(multiEnvSelector.createNewVersionButton, "New versions can only be created in development")
+    cy.get('[data-cy="v1-current-version-text"]').click();
+    verifyTooltip(
+      multiEnvSelector.createNewVersionButton,
+      "New versions can only be created in development"
+    );
     cy.get(".datasource-picker").should("have.class", "disabled");
     cy.get(commonEeSelectors.AddQueryButton).should("be.disabled");
     cy.get(".components-container").should("have.class", "disabled");
     cy.get(commonSelectors.releaseButton).should("be.disabled");
   });
-
-
-
 });
