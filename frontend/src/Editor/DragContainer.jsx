@@ -23,10 +23,10 @@ export default function DragContainer({
   const moveableRef = useRef();
   const boxList = boxes.map((box) => ({
     id: box.id,
-    height: box?.layouts?.desktop?.height,
-    left: box?.layouts?.desktop?.left,
-    top: box?.layouts?.desktop?.top,
-    width: box?.layouts?.desktop?.width,
+    height: box?.layouts?.[currentLayout]?.height,
+    left: box?.layouts?.[currentLayout]?.left,
+    top: box?.layouts?.[currentLayout]?.top,
+    width: box?.layouts?.[currentLayout]?.width,
     parent: box?.component?.parent,
   }));
   const [list, setList] = useState(boxList);
@@ -37,7 +37,13 @@ export default function DragContainer({
   useEffect(() => {
     moveableRef.current.updateRect();
     setTimeout(() => moveableRef.current.updateRect(), 100);
-  }, [selectedComponents.length, JSON.stringify(boxes), currentLayout]);
+  }, [selectedComponents.length, JSON.stringify(boxes)]);
+
+  useEffect(() => {
+    moveableRef.current.updateRect();
+    moveableRef.current.updateTarget();
+    moveableRef.current.updateSelectors();
+  }, [currentLayout]);
 
   useEffect(() => {
     setList(boxList);
@@ -47,11 +53,13 @@ export default function DragContainer({
 
   const getDimensions = (id) => {
     const box = boxes.find((b) => b.id === id);
-    const layoutData = box?.layouts?.desktop;
+    const layoutData = box?.layouts?.[currentLayout];
+    console.log('layoutData -->', layoutData);
     if (isEmpty(layoutData)) {
       return {};
     }
-    const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
+    // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
+    const width = gridWidth * layoutData.width;
 
     return {
       width: width + 'px',
@@ -90,7 +98,7 @@ export default function DragContainer({
               key={i.id}
               id={i.id}
               widgetid={i.id}
-              widget-pos={JSON.stringify(boxes.find((b) => b.id === i.id)?.layouts?.desktop)}
+              widget-pos={JSON.stringify(boxes.find((b) => b.id === i.id)?.layouts?.[currentLayout])}
               style={{ transform: `translate(332px, -134px)`, ...getDimensions(i.id) }}
             >
               {/* Target {i.id} */}
@@ -128,7 +136,6 @@ export default function DragContainer({
             }
           }}
           onResize={(e) => {
-            // console.log('Resize >>>>>>>>>>>>>>', e);
             const width = Math.round(e.width / gridWidth) * gridWidth;
 
             const currentLayout = list.find(({ id }) => id === e.target.id);
@@ -341,7 +348,7 @@ export default function DragContainer({
           snapThreshold={5}
           elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}` }))}
           isDisplaySnapDigit={false}
-          snapGridWidth={gridWidth * 2}
+          snapGridWidth={gridWidth}
           // snapGridHeight={10}
           // verticalGuidelines={[50, 150, 250, 450, 550]}
           // horizontalGuidelines={[0, 100, 200, 400, 500]}
