@@ -350,25 +350,17 @@ class ViewerComponent extends React.Component {
             this.switchOrganization(errorObj?.organizationId, appId, versionId);
             return;
           }
-          /* router dom Navigate is not working now. so hard reloading */
-          redirectToDashboard();
-          return <Navigate replace to={'/'} />;
+          window.location.href = `applications/${appId}/restricted`;
         } else if (statusCode === 401) {
           window.location = `${getSubpath() ?? ''}/login${
             !_.isEmpty(getWorkspaceId()) ? `/${getWorkspaceId()}` : ''
-          }?redirectTo=${this.props.location.pathname}`;
-        } else if (statusCode === 404) {
-          toast.error(errorDetails?.error ?? 'App not found', {
-            position: 'top-center',
-          });
+          }?redirectTo=${() => this.props.location.pathname}`;
         } else {
-          redirectToDashboard();
-          return <Navigate replace to={'/'} />;
+          window.location.href = `applications/${appId}/error`;
         }
       }
     } catch (err) {
-      redirectToDashboard();
-      return <Navigate replace to={'/'} />;
+      window.location.href = `applications/${appId}/error`;
     }
   };
 

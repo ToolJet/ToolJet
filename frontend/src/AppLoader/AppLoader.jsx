@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { withTranslation } from 'react-i18next';
+import { withTranslation, useTranslation } from 'react-i18next';
 import { appService, organizationService, authenticationService } from '@/_services';
 import { Editor } from '../Editor/Editor';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
-import config from 'config';
-import { safelyParseJSON, stripTrailingSlash, redirectToDashboard, getSubpath, getWorkspaceId } from '@/_helpers/utils';
-import { toast } from 'react-hot-toast';
+import { safelyParseJSON, stripTrailingSlash, getSubpath, getWorkspaceId } from '@/_helpers/utils';
 import { useParams } from 'react-router-dom';
 import WorkflowEditor from '../WorkflowEditor';
 import _ from 'lodash';
+import RestrictedAccessModal from './RestrictedAccessModal';
+import ErrorModal from './ErrorModal';
 
 const AppLoaderComponent = (props) => {
   const params = useParams();
   const appId = params.id;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+
+  // State variable to control the modal
+  const [showRestrictedAccessModal, setShowRestrictedAccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => loadAppDetails(), []);
@@ -49,24 +53,37 @@ const AppLoaderComponent = (props) => {
             switchOrganization(errorObj?.organizationId);
             return;
           }
-          redirectToDashboard();
+          setShowRestrictedAccessModal(true);
         } else if (statusCode === 401) {
           window.location = `${getSubpath() ?? ''}/login${
             !_.isEmpty(getWorkspaceId()) ? `/${getWorkspaceId()}` : ''
           }?redirectTo=${this.props.location.pathname}`;
           return;
-        } else if (statusCode === 404 || statusCode === 422) {
-          toast.error(error?.error ?? 'App not found');
+        } else {
+          setShowErrorModal(true);
         }
-        redirectToDashboard();
       }
     } catch (err) {
-      redirectToDashboard();
+      setShowErrorModal(true);
     }
   };
 
   if (app?.type === 'front-end') return shouldEnableMultiplayer ? <RealtimeEditor {...props} /> : <Editor {...props} />;
   else if (app?.type === 'workflow') return <WorkflowEditor {...props} />;
+
+  return (
+    <>
+      {showRestrictedAccessModal && (
+        <RestrictedAccessModal
+          show={true}
+          darkMode={props.darkMode}
+          onClose={() => setShowRestrictedAccessModal(false)}
+        />
+      )}
+
+      {showErrorModal && <ErrorModal show={true} darkMode={props.darkMode} onClose={() => setShowErrorModal(false)} />}
+    </>
+  );
 };
 
 export const AppLoader = withTranslation()(AppLoaderComponent);
