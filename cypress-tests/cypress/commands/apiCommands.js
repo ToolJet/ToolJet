@@ -1,6 +1,10 @@
 Cypress.Commands.add(
   "apiLogin",
-  (userEmail = "dev@tooljet.io", userPassword = "password", workspaceId = '') => {
+  (
+    userEmail = "dev@tooljet.io",
+    userPassword = "password",
+    workspaceId = ""
+  ) => {
     cy.request({
       url: `http://localhost:3000/api/authenticate/${workspaceId}`,
       method: "POST",
@@ -73,6 +77,7 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
         organization_id: "",
         updated_at: "",
         user_id: "",
+        type: "front-end",
       },
     }).then((response) => {
       expect(response.status).to.equal(201);
@@ -138,4 +143,24 @@ Cypress.Commands.add(
 //   ]
 // );
 
-
+Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "POST",
+        url: "http://localhost:3000/api/organizations",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+        body: {
+          name: workspaceName,
+          slug: workspaceSlug,
+        },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(201);
+    });
+  });
+});

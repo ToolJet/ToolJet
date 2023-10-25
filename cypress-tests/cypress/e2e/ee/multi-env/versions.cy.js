@@ -38,12 +38,13 @@ describe("App Version Functionality", () => {
     let newVersion = [];
     let versionFrom = "";
     beforeEach(() => {
-        cy.appUILogin();
-
+        cy.apiLogin();
     });
 
     it("Verify the elements of the version module", () => {
-        cy.createApp();
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
+        cy.dragAndDropWidget("Text", 50, 50);
         cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
         navigateToCreateNewVersionModal((currentVersion = "v1"));
         cy.wait(500)
@@ -59,8 +60,9 @@ describe("App Version Functionality", () => {
     });
 
     it("Verify all functionality for the app version", () => {
-        cy.createApp();
-        cy.renameApp(data.appName);
+        data.appName = `${fake.companyName}-App`;
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
 
         cy.dragAndDropWidget("Toggle Switch", 50, 50);
         verifyComponent("toggleswitch1");

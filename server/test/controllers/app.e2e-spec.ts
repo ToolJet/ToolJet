@@ -369,6 +369,7 @@ describe('Authentication', () => {
             'organization',
             'organization_id',
             'super_admin',
+            'current_organization_slug',
           ].sort()
         );
 
@@ -412,6 +413,7 @@ describe('Authentication', () => {
             'organization',
             'organization_id',
             'super_admin',
+            'current_organization_slug',
           ].sort()
         );
 

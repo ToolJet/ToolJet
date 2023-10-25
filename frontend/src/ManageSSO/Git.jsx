@@ -65,14 +65,9 @@ export function Git({ settings, updateData }) {
       },
       () => {
         setSaving(false);
-        toast.error(
-          ssoConfMessages(ssoConfMessages('GitHub', 'sso_update_failed'), {
-            toggle_action: enabled_tmp ? 'enabled' : 'disabled',
-          }),
-          {
-            position: 'top-center',
-          }
-        );
+        toast.error(ssoConfMessages('GitHub', 'sso_update_failed'), {
+          position: 'top-center',
+        });
       }
     );
   };

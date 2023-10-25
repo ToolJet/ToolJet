@@ -9,6 +9,7 @@ import { User } from 'src/decorators/user.decorator';
 import { AuditLoggerService } from '@services/audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AppCountGuard } from '@ee/licensing/guards/app.guard';
+import { AppImportDto } from '@dto/app-import.dto';
 
 @Controller('apps')
 export class AppsImportExportController {
@@ -21,13 +22,15 @@ export class AppsImportExportController {
 
   @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post('/import')
-  async import(@User() user, @Body() body) {
+  async import(@User() user, @Body() appImportDto: AppImportDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const app = await this.appImportExportService.import(user, body);
+
+    const { name: appName, app: appContent } = appImportDto;
+    const app = await this.appImportExportService.import(user, appContent, appName);
 
     await this.auditLoggerService.perform({
       userId: user.id,

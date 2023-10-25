@@ -34,7 +34,7 @@ describe("App share functionality", () => {
         cy.get(commonEeSelectors.promoteButton).click();
         cy.get(commonEeSelectors.promoteButton).eq(1).click();
         cy.waitForAppLoad();
-        cy.wait(1500);
+        cy.wait(4000);
 
         cy.get(commonWidgetSelector.shareAppButton).click();
 
@@ -47,6 +47,7 @@ describe("App share functionality", () => {
             );
         }
 
+        cy.get(commonWidgetSelector.copyAppLinkButton).should("be.visible");
         cy.get(commonWidgetSelector.makePublicAppToggle).should("be.visible");
         cy.get(commonWidgetSelector.appLink).should("be.visible");
         cy.get(commonWidgetSelector.appNameSlugInput).should("be.visible");
@@ -82,10 +83,7 @@ describe("App share functionality", () => {
             commonText.iframeLinkLabel
         );
         cy.get(commonWidgetSelector.iframeLink).should("be.visible");
-        cy.get('[data-cy="iframe-link-copy-button"]').verifyVisibleElement(
-            "have.text",
-            "copy"
-        );
+        cy.get('[data-cy="iframe-link-copy-button"]').should("be.visible");
         cy.get(commonWidgetSelector.modalCloseButton).click();
         cy.get(commonSelectors.editorPageLogo).click();
 

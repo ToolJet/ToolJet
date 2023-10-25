@@ -57,5 +57,6 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
     AuditLoggerService,
     PostgrestProxyService,
   ],
+  exports: [ImportExportResourcesService],
 })
 export class ImportExportResourcesModule {}

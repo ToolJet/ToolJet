@@ -51,7 +51,7 @@ describe('organizations controller', () => {
           .post('/api/organizations')
           .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie)
-          .send({ name: 'My workspace' })
+          .send({ name: 'My workspace', slug: 'my-workspace' })
           .expect(201);
       });
     });

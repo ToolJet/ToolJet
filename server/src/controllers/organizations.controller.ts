@@ -86,7 +86,7 @@ export class OrganizationsController {
     @Body() organizationCreateDto: OrganizationCreateDto,
     @Res({ passthrough: true }) response: Response
   ) {
-    const result = await this.organizationsService.create(organizationCreateDto.name, user);
+    const result = await this.organizationsService.create(organizationCreateDto.name, organizationCreateDto.slug, user);
 
     if (!result) {
       throw new Error();
@@ -106,6 +106,8 @@ export class OrganizationsController {
     }
 
     const result = await this.organizationsService.fetchOrganizationDetails(organizationId, [true], true, true);
+    if (!result) throw new NotFoundException();
+
     return decamelizeKeys({ ssoConfigs: result });
   }
 
@@ -135,7 +137,8 @@ export class OrganizationsController {
     if (!name?.trim()) {
       throw new NotAcceptableException('Workspace name can not be empty');
     }
-    await this.organizationsService.updateOrganization(user.organizationId, { name });
+    //TODO-url
+    await this.organizationsService.updateOrganization(user.organizationId, { name, slug: '' });
     return {};
   }
 
@@ -145,5 +148,11 @@ export class OrganizationsController {
   async updateConfigs(@Body() body, @User() user) {
     const result: any = await this.organizationsService.updateOrganizationConfigs(user.organizationId, body);
     return decamelizeKeys({ id: result.id });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/is-unique')
+  async checkWorkspaceUnique(@User() user, @Query('name') name: string, @Query('slug') slug: string) {
+    return this.organizationsService.checkWorkspaceUniqueness(name, slug);
   }
 }
