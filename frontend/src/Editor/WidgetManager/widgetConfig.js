@@ -2626,7 +2626,7 @@ export const widgets = [
       },
       showAllOption: {
         type: 'toggle',
-        displayName: 'Enable select All option',
+        displayName: 'Enable select all option',
         validation: {
           schema: { type: 'boolean' },
         },
