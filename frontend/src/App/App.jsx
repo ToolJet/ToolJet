@@ -45,6 +45,7 @@ import LdapLoginPage from '../LdapLogin';
 import RestrictedAccessModal from '@/AppLoader/RestrictedAccessModal';
 import ErrorModal from '@/AppLoader/ErrorModal';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
+import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 
 const AppWrapper = (props) => {
   return (
@@ -379,6 +380,11 @@ class AppComponent extends React.Component {
                 />
               )}
               <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
+              <Route
+                exact
+                path="/error/:errorType"
+                element={<ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+              />
               <Route
                 exact
                 path="/switch-workspace"
