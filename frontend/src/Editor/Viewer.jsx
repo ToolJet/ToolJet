@@ -669,6 +669,7 @@ const withStore = (Component) => (props) => {
   const { currentLayout, queryConfirmationList } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
+      queryConfirmationList: state?.queryConfirmationList,
     }),
     shallow
   );
