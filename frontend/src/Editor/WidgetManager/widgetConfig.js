@@ -5349,7 +5349,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       onUnCheck: { displayName: 'On uncheck' },
     },
     styles: {
-      textColor: { type: 'color', displayName: 'Text color' },
+      textColor: { type: 'color', displayName: 'Text Color' },
       checkboxColor: { type: 'color', displayName: 'Checkbox color' },
       visibility: { type: 'toggle', displayName: 'Visibility' },
       disabledState: { type: 'toggle', displayName: 'Disable' },
