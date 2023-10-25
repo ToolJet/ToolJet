@@ -345,7 +345,7 @@ export class TooljetDbService {
     // join tables with conditions
     queryJson.joins.forEach((join) => {
       const joinAlias = internalTableIdToNameMap[join.table];
-      const conditions = this.constructNestedConditions(join.conditions, internalTableIdToNameMap, true);
+      const conditions = this.constructFilterConditions(join.conditions, internalTableIdToNameMap, true);
 
       const joinFunction = queryBuilder[camelCase(join.joinType) + 'Join'];
       joinFunction.call(queryBuilder, join.table, joinAlias, conditions.query, conditions.params);
@@ -357,7 +357,7 @@ export class TooljetDbService {
       queryBuilder.where(conditions.query, conditions.params);
     }
 
-    // order By
+    // order by
     if (queryJson.order_by) {
       queryJson.order_by.forEach((order) => {
         const orderByColumn = `"${internalTableIdToNameMap[order.table]}"."${order.columnName}"`;
