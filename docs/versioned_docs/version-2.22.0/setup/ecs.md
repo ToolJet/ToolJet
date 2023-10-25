@@ -25,7 +25,9 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/C
 
 ## Redis
 
-ToolJet requires configuration for Redis which is used for enabling multiplayer editing and for background jobs.
+:::info
+ToolJet requires configuring Redis which is used for enabling multiplayer editing and for background jobs.
+:::
 
 To deploy Redis on an ECS cluster, please follow the steps outlined below.
 
