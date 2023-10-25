@@ -19,13 +19,13 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
-import _ from 'lodash';
+import _, { cloneDeep } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
-import { correctBounds } from './gridUtils';
+import { compact, correctBounds } from './gridUtils';
 
-const NO_OF_GRIDS = 24;
+// const noOfGrids = 24;
 
 export const Container = ({
   canvasWidth,
@@ -52,6 +52,7 @@ export const Container = ({
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
+  const [noOfGrids, setNoOfGrids] = useState(24);
   const [subContainerWidths, setSubContainerWidths] = useState({});
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
@@ -63,7 +64,7 @@ export const Container = ({
     shallow
   );
 
-  const gridWidth = canvasWidth / NO_OF_GRIDS;
+  const gridWidth = canvasWidth / noOfGrids;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     maxWidth: `${canvasWidth}px`,
@@ -96,8 +97,21 @@ export const Container = ({
 
   useEffect(() => {
     if (currentLayout === 'mobile') {
-      const mobLayouts = boxes.map((box) => box?.layout?.mobile);
-      correctBounds(mobLayouts, { cols: 6 });
+      setNoOfGrids(6);
+      const mobLayouts = Object.keys(boxes).map((key) => {
+        return { ...cloneDeep(boxes[key]?.layouts?.desktop), i: key };
+      });
+      const updatedBoxes = cloneDeep(boxes);
+      let newmMobLayouts = correctBounds(mobLayouts, { cols: 6 });
+      newmMobLayouts = compact(newmMobLayouts, 'vertical', 6);
+      Object.keys(boxes).forEach((id) => {
+        const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
+        updatedBoxes[id].layouts.mobile = mobLayout;
+      });
+      setBoxes({ ...updatedBoxes });
+      // console.log('currentLayout', data);
+    } else {
+      setNoOfGrids(24);
     }
   }, [currentLayout]);
 
@@ -360,7 +374,7 @@ export const Container = ({
 
   const onResizeStop2 = (boxList, id, height, width, x, y) => {
     const newBoxes = boxList.reduce((newBoxList, { id, height, width, x, y }) => {
-      const newWidth = (width * NO_OF_GRIDS) / canvasWidth;
+      const newWidth = (width * noOfGrids) / canvasWidth;
       return {
         ...newBoxList,
         [id]: {
@@ -460,10 +474,10 @@ export const Container = ({
       const canvasWidth = boundingRect?.width;
 
       //round the width to nearest multiple of gridwidth before converting to %
-      const currentWidth = (canvasWidth * width) / NO_OF_GRIDS;
+      const currentWidth = (canvasWidth * width) / noOfGrids;
       let newWidth = currentWidth + deltaWidth;
       newWidth = Math.round(newWidth / gridWidth) * gridWidth;
-      width = (newWidth * NO_OF_GRIDS) / canvasWidth;
+      width = (newWidth * noOfGrids) / canvasWidth;
 
       height = height + deltaHeight;
 
@@ -809,7 +823,7 @@ export const Container = ({
         gridWidth={gridWidth}
         selectedComponents={selectedComponents}
         setIsDragging={setIsDragging}
-        currentLayout
+        currentLayout={currentLayout}
       />
       {/* {Object.keys(boxes).map((key) => {
         const box = boxes[key];
