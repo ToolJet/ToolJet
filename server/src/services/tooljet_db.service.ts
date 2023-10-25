@@ -1,8 +1,9 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import { EntityManager, In, QueryFailedError } from 'typeorm';
+import { EntityManager, In, ObjectLiteral, QueryFailedError, SelectQueryBuilder, TypeORMError } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty } from 'lodash';
+import { camelCase } from 'lodash';
 
 export type TableColumnSchema = {
   column_name: string;
@@ -16,6 +17,25 @@ export type TableColumnSchema = {
 };
 
 export type SupportedDataTypes = 'character varying' | 'integer' | 'bigint' | 'serial' | 'double precision' | 'boolean';
+
+// Patching TypeORM SelectQueryBuilder to handle for right and full outer joins
+declare module 'typeorm' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface SelectQueryBuilder<Entity> {
+    rightJoin(entityOrProperty: string, alias: string, condition?: string, parameters?: ObjectLiteral): this;
+    fullOuterJoin(entityOrProperty: string, alias: string, condition?: string, parameters?: ObjectLiteral): this;
+  }
+}
+
+SelectQueryBuilder.prototype.rightJoin = function (entityOrProperty, alias, condition, parameters) {
+  this.join('RIGHT', entityOrProperty, alias, condition, parameters);
+  return this;
+};
+
+SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, condition, parameters) {
+  this.join('FULL OUTER', entityOrProperty, alias, condition, parameters);
+  return this;
+};
 
 @Injectable()
 export class TooljetDbService {
@@ -288,21 +308,13 @@ export class TooljetDbService {
       };
     }, {});
 
-    const { finalQuery, sqlParamsList } = await this.buildJoinQuery(
-      organizationId,
-      joinQueryJson,
-      internalTableIdToNameMap
-    );
-
-    console.log('Finaly Query---------------', finalQuery);
-    console.log('sqlParamsList*************', sqlParamsList);
-
     try {
-      return await this.tooljetDbManager.query(finalQuery, sqlParamsList);
+      const queryBuilder = this.buildJoinQuery(joinQueryJson, internalTableIdToNameMap);
+      return await queryBuilder.getRawMany();
     } catch (error) {
       // custom error handling - for Query error
-      if (error instanceof QueryFailedError) {
-        let customErrorMessage: string = (error as QueryFailedError).message;
+      if (error instanceof QueryFailedError || error instanceof TypeORMError) {
+        let customErrorMessage: string = error.message;
         Object.entries(internalTableIdToNameMap).forEach(([key, value]) => {
           customErrorMessage = customErrorMessage.replace(key, value as string);
         });
@@ -312,176 +324,97 @@ export class TooljetDbService {
     }
   }
 
-  private async buildJoinQuery(_organizationId: string, queryJson, internalTableIdToNameMap) {
-    // Pending: For Subquery, Alias is its table name. Need to handle it on Internal Table details mapping
-    // Pending: SELECT Statement - Nested params --> SUM( price * quantity )
-    const sqlParamsCounter = {
-      counter: 0,
+  private buildJoinQuery(queryJson, internalTableIdToNameMap): SelectQueryBuilder<any> {
+    const queryBuilder: SelectQueryBuilder<any> = this.tooljetDbManager.createQueryBuilder();
+
+    // mandatory attributes
+    if (isEmpty(queryJson.fields)) throw new BadRequestException('Select statement is empty');
+    if (isEmpty(queryJson.from)) throw new BadRequestException('From table is not selected');
+
+    // select with aliased column names
+    queryJson.fields.forEach((field) => {
+      queryBuilder.addSelect(
+        `"${internalTableIdToNameMap[field.table]}"."${field.name}"`,
+        `${internalTableIdToNameMap[field.table]}_${field.name}`
+      );
+    });
+
+    // from table
+    queryBuilder.from(queryJson.from.name, internalTableIdToNameMap[queryJson.from.name]);
+
+    // join tables with conditions
+    queryJson.joins.forEach((join) => {
+      const joinAlias = internalTableIdToNameMap[join.table];
+      const conditions = this.constructNestedConditions(join.conditions, internalTableIdToNameMap, true);
+
+      const joinFunction = queryBuilder[camelCase(join.joinType) + 'Join'];
+      joinFunction.call(queryBuilder, join.table, joinAlias, conditions.query, conditions.params);
+    });
+
+    // conditions
+    if (queryJson.conditions) {
+      const conditions = this.constructFilterConditions(queryJson.conditions, internalTableIdToNameMap);
+      queryBuilder.where(conditions.query, conditions.params);
+    }
+
+    // order By
+    if (queryJson.order_by) {
+      queryJson.order_by.forEach((order) => {
+        const orderByColumn = `"${internalTableIdToNameMap[order.table]}"."${order.columnName}"`;
+        queryBuilder.addOrderBy(orderByColumn, order.direction as 'ASC' | 'DESC');
+      });
+    }
+    // limit and offset
+    if (queryJson.limit) queryBuilder.limit(parseInt(queryJson.limit, 10));
+    if (queryJson.offset) queryBuilder.offset(parseInt(queryJson.offset, 10));
+
+    return queryBuilder;
+  }
+
+  private constructFilterConditions(conditions, internalTableIdToNameMap, isJoin = false) {
+    let conditionString = '';
+    const conditionParams = {};
+
+    const maybeParameterizeValue = (operator, paramName, value) => {
+      switch (operator) {
+        case 'IS':
+          if (value !== 'NULL' && value !== 'NOT NULL') {
+            throw new BadRequestException('Invalid value for IS operator. Allowed values are NULL or NOT NULL.');
+          }
+          return value;
+        case 'IN':
+          if (!Array.isArray(value)) {
+            throw new BadRequestException('Invalid value for IN operator. Expected an array.');
+          }
+          return `(:...${paramName})`;
+        default:
+          return `:${paramName}`; // Handle other operators if necessary
+      }
     };
 
-    const sqlParamsList = [];
+    conditions.conditionsList.forEach((condition, index) => {
+      const paramName = `${condition.leftField.columnName}_${index}`;
 
-    // @description: Only SELECT & FROM statement is Mandatory, else is Optional
-    let finalQuery = ``;
-    finalQuery += `SELECT ${await this.constructSelectStatement(queryJson.fields, internalTableIdToNameMap)}`;
+      const leftField =
+        condition.leftField.type == 'Column'
+          ? `"${internalTableIdToNameMap[condition.leftField.table]}"."${condition.leftField.columnName}"`
+          : `${condition.leftField.columnName}`;
 
-    finalQuery += `\nFROM ${await this.constructFromStatement(queryJson, internalTableIdToNameMap)}`;
+      const rightField =
+        condition.rightField.type == 'Column'
+          ? `"${internalTableIdToNameMap[condition.rightField.table]}"."${condition.rightField.columnName}"`
+          : maybeParameterizeValue(condition.operator, paramName, condition.rightField.value);
 
-    if (queryJson?.joins?.length)
-      finalQuery += `\n${await this.constructJoinStatements(
-        queryJson.joins,
-        internalTableIdToNameMap,
-        sqlParamsCounter,
-        sqlParamsList
-      )}`;
+      conditionString += `${leftField} ${condition.operator} ${rightField}`;
 
-    if (
-      queryJson?.conditions &&
-      Object.keys(queryJson?.conditions).length &&
-      queryJson?.conditions?.conditionsList.length
-    )
-      finalQuery += `\nWHERE ${await this.constructWhereStatement(
-        queryJson.conditions,
-        internalTableIdToNameMap,
-        sqlParamsCounter,
-        sqlParamsList
-      )}`;
+      conditionParams[paramName] = condition.rightField.value;
 
-    if (queryJson?.group_by?.length)
-      finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(queryJson.group_by, internalTableIdToNameMap)}`;
+      if (index < conditions.conditionsList.length - 1) {
+        conditionString += ` ${conditions.operator} `;
+      }
+    });
 
-    if (queryJson?.having && Object.keys(queryJson?.having).length)
-      finalQuery += `\nHAVING ${await this.constructWhereStatement(
-        queryJson.having,
-        internalTableIdToNameMap,
-        sqlParamsCounter,
-        sqlParamsList
-      )}`;
-
-    if (queryJson?.order_by?.length)
-      finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by, internalTableIdToNameMap)}`;
-
-    if (queryJson?.limit && queryJson?.limit.length) {
-      sqlParamsList.push(queryJson.limit);
-      finalQuery += `\nLIMIT $${++sqlParamsCounter.counter}`;
-    }
-
-    if (queryJson?.offset && queryJson?.offset.length) {
-      sqlParamsList.push(queryJson.offset);
-      finalQuery += `\nOFFSET $${++sqlParamsCounter.counter}`;
-    }
-
-    return { finalQuery, sqlParamsList };
-  }
-
-  // Assuming tableId is being passed, tableName to tableId mapping is removed
-  private constructSelectStatement(selectStatementInputList, internalTableIdToNameMap) {
-    if (selectStatementInputList.length) {
-      const selectQueryFields = selectStatementInputList
-        .map((field) => {
-          let fieldExpression = ``;
-          if (field.function) fieldExpression += `${field.function}(`;
-          fieldExpression += `${field.table ? '"' + field.table + '"' + '.' : ''}${field.name}`;
-          if (field.function) fieldExpression += `)`;
-          if (field.alias) {
-            fieldExpression += ` AS ${field.alias}`;
-          } else {
-            // By Default Alias has been added here for tooljetdb join flow
-            fieldExpression += ` AS ${internalTableIdToNameMap[field.table]}_${field.name}`;
-          }
-          return fieldExpression;
-        })
-        .join(', ');
-      return selectQueryFields;
-    }
-
-    throw new BadRequestException('Select statement is empty');
-  }
-
-  private constructFromStatement(queryJson, _internalTableIdToNameMap) {
-    const { from } = queryJson;
-    if (from.name) {
-      return `${'"' + from.name + '"'} ${from.alias ? from.alias : ''}`;
-    }
-
-    throw new BadRequestException('From table is not selected');
-  }
-
-  private constructJoinStatements(joinsInputList, internalTableIdToNameMap, sqlParamsCounter, sqlParamsList) {
-    const joinStatementOutput = joinsInputList
-      .map((joinCondition) => {
-        const { table, joinType, conditions } = joinCondition;
-        return `${joinType} JOIN ${'"' + table + '"'} ${
-          joinCondition.alias ? joinCondition.alias : ''
-        } ON ${this.constructWhereStatement(conditions, internalTableIdToNameMap, sqlParamsCounter, sqlParamsList)}`;
-      })
-      .join('\n');
-    return joinStatementOutput;
-  }
-
-  private constructWhereStatement(whereStatementConditions, internalTableIdToNameMap, sqlParamsCounter, sqlParamsList) {
-    const { operator = 'AND', conditionsList = [] } = whereStatementConditions;
-    const whereConditionOutput = conditionsList
-      .map((condition) => {
-        // @description: Recursive call to build - Sub-condition
-        if (condition.conditions)
-          return `(${this.constructWhereStatement(
-            condition.conditions,
-            internalTableIdToNameMap,
-            sqlParamsCounter,
-            sqlParamsList
-          )})`;
-        // @description: Building a Condition for 'WHERE & HAVING statements' - LHS, operator and RHS
-        // @description: In LHS & RHS it is not mandatory to provide table name, but column name is mandatory
-        // @description: In LHS & RHS - We get function only in HAVING statement
-        const { operator, leftField, rightField } = condition;
-        // @desc: When 'IS' operator is choosed, 'NULL' & 'NOT NULL' keywords will be provided as value and it should not be converted to string
-        const keywords = ['NULL', 'NOT NULL'];
-
-        let leftSideInput = ``;
-        if (leftField.type === 'Value') {
-          const dontAddQuotes =
-            (keywords.includes(leftField.value) && operator === 'IS') || operator === 'IN' || operator === 'NOT IN';
-
-          leftSideInput += dontAddQuotes ? leftField.value : this.addQuotesIfString(leftField.value);
-        } else {
-          if (leftField.function) leftSideInput += `${leftField.function}(`;
-          leftSideInput += `${leftField.table ? '"' + leftField.table + '"' + '.' : ''}${leftField.columnName}`;
-          if (leftField.function) leftSideInput += `)`;
-        }
-
-        let rightSideInput = ``;
-        if (rightField.type === 'Value') {
-          const dontAddQuotes =
-            (keywords.includes(rightField.value) && operator === 'IS') || operator === 'IN' || operator === 'NOT IN';
-
-          rightSideInput += dontAddQuotes ? rightField.value : this.addQuotesIfString(rightField.value);
-        } else {
-          if (rightField.function) rightSideInput += `${rightField.function}(`;
-          rightSideInput += `${rightField.table ? '"' + rightField.table + '"' + '.' : ''}${rightField.columnName}`;
-          if (rightField.function) rightSideInput += `)`;
-        }
-
-        return `${leftSideInput} ${operator} ${rightSideInput}`;
-      })
-      .join(` ${operator} `);
-    return whereConditionOutput;
-  }
-
-  private constructGroupByStatement(groupByInputList, _internalTableIdToNameMap) {
-    return groupByInputList
-      .map((groupByInput) => `${'"' + groupByInput.table + '"'}.${groupByInput.columnName}`)
-      .join(', ');
-  }
-
-  private constructOrderByStatement(orderByInputList, internalTableIdToNameMap) {
-    // @description: For "ORDER BY" statement table field is optional. But column_name & order_by direction is mandatory
-    return orderByInputList
-      .map((orderByInput) => {
-        const { columnName, direction } = orderByInput;
-        return `${orderByInput.table ? '"' + orderByInput.table + '"' + '.' : ''}${columnName} ${direction}`;
-      })
-      .join(`, `);
+    return { query: `(${conditionString})`, params: conditionParams };
   }
 
   private async findOrFailInternalTableFromTableId(requestedTableIdList: Array<string>, organizationId: string) {
