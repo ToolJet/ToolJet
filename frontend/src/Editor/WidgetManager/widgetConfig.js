@@ -1055,7 +1055,7 @@ export const widgets = [
     description: 'Text field for forms',
     component: 'TextInput',
     defaultSize: {
-      width: 6,
+      width: 14,
       height: 30,
     },
     others: {
@@ -1072,6 +1072,11 @@ export const widgets = [
           },
         },
       },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: { schema: { type: 'string' } },
+      },
       placeholder: {
         type: 'code',
         displayName: 'Placeholder',
@@ -1085,6 +1090,7 @@ export const widgets = [
       minLength: { type: 'code', displayName: 'Min length' },
       maxLength: { type: 'code', displayName: 'Max length' },
       customRule: { type: 'code', displayName: 'Custom validation' },
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -1120,6 +1126,46 @@ export const widgets = [
       },
       visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
       disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
+      alignment: {
+        type: 'switch',
+        displayName: 'Alignment',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Side', value: 'side' },
+          { displayName: 'Top', value: 'top' },
+        ],
+      },
+      direction: {
+        type: 'switch',
+        displayName: 'Direction',
+        validation: { schema: { type: 'string' } },
+        showLabel: false,
+        isIcon: true,
+        options: [
+          { displayName: 'alignleftinspector', value: 'alignleftinspector' },
+          { displayName: 'alignrightinspector', value: 'alignrightinspector' },
+        ],
+      },
+      width: {
+        type: 'slider',
+        displayName: 'Width',
+        validation: { schema: { type: 'string' } },
+        conditionallyRender: {
+          key: 'auto',
+          value: true,
+        },
+      },
+      auto: {
+        type: 'checkbox',
+        displayName: 'auto',
+        showLabel: false,
+        validation: { schema: { type: 'boolean' } },
+      },
+      color: {
+        type: 'color',
+        displayName: 'Color',
+        validation: { schema: { type: 'boolean' } },
+      },
     },
     exposedVariables: {
       value: '',
@@ -1159,13 +1205,16 @@ export const widgets = [
         minLength: { value: null },
         maxLength: { value: null },
         customRule: { value: null },
+        mandatory: { value: false },
       },
+
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
         value: { value: '' },
+        label: { value: 'Label' },
         placeholder: { value: 'Enter your input' },
       },
       events: [],
@@ -1173,10 +1222,15 @@ export const widgets = [
         textColor: { value: '#000' },
         borderColor: { value: '#dadcde' },
         errTextColor: { value: '#ff0000' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{6}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         backgroundColor: { value: '#fff' },
+        direction: { value: 'alignleftinspector' },
+        width: { value: '33' },
+        alignment: { value: 'side' },
+        color: { value: '#11181C' },
+        auto: { value: '{{false}}' },
       },
     },
   },

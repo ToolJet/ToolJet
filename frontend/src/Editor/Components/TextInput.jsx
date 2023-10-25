@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-
+import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 export const TextInput = function TextInput({
   height,
   validate,
@@ -18,14 +19,18 @@ export const TextInput = function TextInput({
   const [visibility, setVisibility] = useState(styles.visibility);
   const { isValid, validationError } = validate(value);
   const [showValidationError, setShowValidationError] = useState(false);
+  const currentState = useCurrentState();
+
+  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
 
   const computedStyles = {
-    height,
+    height: height,
     borderRadius: `${styles.borderRadius}px`,
     color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
     borderColor: styles.borderColor,
     backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
     boxShadow: styles.boxShadow,
+    paddingLeft: '9px',
   };
 
   useEffect(() => {
@@ -78,7 +83,26 @@ export const TextInput = function TextInput({
   }, [setValue]);
 
   return (
-    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
+    <div
+      data-disabled={disable}
+      className={`text-input d-flex ${styles.alignment == 'top' && 'flex-column'}  ${
+        styles.direction == 'alignrightinspector' && styles.alignment == 'side' && 'flex-row-reverse'
+      }
+      ${styles.direction == 'alignrightinspector' && styles.alignment == 'top' && 'text-right'}
+      ${visibility || 'invisible'}`}
+      style={{ height: height }}
+    >
+      <label
+        style={{
+          color: darkMode && styles.color == '#11181C' ? '#fff' : styles.color,
+          width: styles.auto ? 'auto' : `${styles.width}%`,
+          maxWidth: styles.auto ? '70%' : '100%',
+          lineBreak: 'anywhere',
+        }}
+      >
+        {properties.label}
+        <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+      </label>
       <input
         ref={textInputRef}
         onKeyUp={(e) => {

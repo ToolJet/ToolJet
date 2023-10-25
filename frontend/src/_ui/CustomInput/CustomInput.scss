@@ -1,0 +1,14 @@
+.form-text {
+    position: relative;
+}
+
+input {
+    padding: 5px 10px !important;
+}
+
+.static-value {
+    position: absolute;
+    right: 10px;
+    color: var(--slate9);
+    top: 6px;
+}

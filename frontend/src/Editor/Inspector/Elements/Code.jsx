@@ -93,12 +93,13 @@ export const Code = ({
         componentName={`component/${componentName}::${getfieldName}`}
         type={paramMeta.type}
         paramName={param.name}
-        paramLabel={displayName}
+        paramLabel={paramMeta?.showLabel !== false ? displayName : ' '}
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
         fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx
         component={component}
         verticalLine={verticalLine}
+        isIcon={paramMeta?.isIcon}
       />
     </div>
   );
