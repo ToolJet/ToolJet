@@ -1327,6 +1327,20 @@ const EditorComponent = (props) => {
         isSwitchingPage: true,
       },
     });
+
+    const { globals: existingGlobals } = currentState;
+
+    const page = {
+      id: newPageId,
+      name,
+      handle,
+      variables: copyOfAppDefinition.pages[newPageId]?.variables ?? {},
+    };
+
+    const globals = {
+      ...existingGlobals,
+    };
+    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
 
   const switchPage = (pageId, queryParams = []) => {
