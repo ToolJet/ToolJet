@@ -100,6 +100,25 @@ class ComponentDto {
   parent: string;
 }
 
+@ValidatorConstraint({ name: 'CreateComponentDtoValidator', async: false })
+class CreateComponentDtoValidator implements ValidatorConstraintInterface {
+  validate(value: any, args: ValidationArguments) {
+    // Check if the diff structure is valid
+    for (const key in value.diff) {
+      if (!value.diff[key] || typeof value.diff[key] !== 'object') {
+        return false;
+      }
+      // You can add additional checks for the component structure here
+    }
+
+    return true;
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return `Invalid structure in diff for CreateComponentDto`;
+  }
+}
+
 export class CreateComponentDto {
   @IsBoolean()
   is_user_switched_version: boolean;
@@ -108,6 +127,7 @@ export class CreateComponentDto {
   pageId: string;
 
   @IsObject()
+  @Validate(CreateComponentDtoValidator)
   diff: Record<string, ComponentDto>;
 }
 
@@ -119,6 +139,7 @@ export class UpdateComponentDto {
   pageId: string;
 
   @IsObject()
+  @Validate(CreateComponentDtoValidator)
   diff: Record<string, ComponentDto>;
 }
 
