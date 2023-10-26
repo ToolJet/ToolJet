@@ -419,7 +419,7 @@ export class AppImportExportService {
             for (const componentId in pageComponents) {
               const componentLayout = pageComponents[componentId]['layouts'];
 
-              if (componentLayout) {
+              if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
                 for (const type in componentLayout) {
                   const layout = componentLayout[type];
                   const newLayout = new Layout();
@@ -691,6 +691,7 @@ export class AppImportExportService {
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
 
         for (const component of pageComponents) {
+          let skipComponent = false;
           const newComponent = new Component();
 
           let parentId = component.parent ? component.parent : null;
@@ -704,49 +705,55 @@ export class AppImportExportService {
 
             parentId = `${mappedParentId}-${childTabId}`;
           } else {
+            if (component.parent && !appResourceMappings.componentsMapping[parentId]) {
+              skipComponent = true;
+            }
+
             parentId = appResourceMappings.componentsMapping[parentId];
           }
 
-          newComponent.name = component.name;
-          newComponent.type = component.type;
-          newComponent.properties = component.properties;
-          newComponent.styles = component.styles;
-          newComponent.validation = component.validation;
-          newComponent.parent = component.parent ? parentId : null;
+          if (!skipComponent) {
+            newComponent.name = component.name;
+            newComponent.type = component.type;
+            newComponent.properties = component.properties;
+            newComponent.styles = component.styles;
+            newComponent.validation = component.validation;
+            newComponent.parent = component.parent ? parentId : null;
 
-          newComponent.page = pageCreated;
+            newComponent.page = pageCreated;
 
-          const savedComponent = await manager.save(newComponent);
+            const savedComponent = await manager.save(newComponent);
 
-          appResourceMappings.componentsMapping[component.id] = savedComponent.id;
-          const componentLayout = component.layouts;
+            appResourceMappings.componentsMapping[component.id] = savedComponent.id;
+            const componentLayout = component.layouts;
 
-          componentLayout.forEach(async (layout) => {
-            const newLayout = new Layout();
-            newLayout.type = layout.type;
-            newLayout.top = layout.top;
-            newLayout.left = layout.left;
-            newLayout.width = layout.width;
-            newLayout.height = layout.height;
-            newLayout.component = savedComponent;
+            componentLayout.forEach(async (layout) => {
+              const newLayout = new Layout();
+              newLayout.type = layout.type;
+              newLayout.top = layout.top;
+              newLayout.left = layout.left;
+              newLayout.width = layout.width;
+              newLayout.height = layout.height;
+              newLayout.component = savedComponent;
 
-            await manager.save(newLayout);
-          });
-
-          const componentEvents = importingEvents.filter((event) => event.sourceId === component.id);
-
-          if (componentEvents.length > 0) {
-            componentEvents.forEach(async (componentEvent) => {
-              const newEvent = new EventHandler();
-              newEvent.name = componentEvent.name;
-              newEvent.sourceId = savedComponent.id;
-              newEvent.target = componentEvent.target;
-              newEvent.event = componentEvent.event;
-              newEvent.index = componentEvent.index;
-              newEvent.appVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
-
-              await manager.save(EventHandler, newEvent);
+              await manager.save(newLayout);
             });
+
+            const componentEvents = importingEvents.filter((event) => event.sourceId === component.id);
+
+            if (componentEvents.length > 0) {
+              componentEvents.forEach(async (componentEvent) => {
+                const newEvent = new EventHandler();
+                newEvent.name = componentEvent.name;
+                newEvent.sourceId = savedComponent.id;
+                newEvent.target = componentEvent.target;
+                newEvent.event = componentEvent.event;
+                newEvent.index = componentEvent.index;
+                newEvent.appVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
+
+                await manager.save(EventHandler, newEvent);
+              });
+            }
           }
         }
 
@@ -1536,6 +1543,7 @@ function transformComponentData(
     const component = data[componentId];
     const componentData = component['component'];
 
+    let skipComponent = false;
     const transformedComponent: Component = new Component();
 
     let parentId = component.parent ? component.parent : null;
@@ -1549,27 +1557,32 @@ function transformComponentData(
 
       parentId = `${mappedParentId}-${childTabId}`;
     } else {
+      if (component.parent && !componentsMapping[parentId]) {
+        skipComponent = true;
+      }
       parentId = componentsMapping[parentId];
     }
 
-    transformedComponent.id = uuid();
-    transformedComponent.name = componentData.name;
-    transformedComponent.type = componentData.component;
-    transformedComponent.properties = componentData.definition.properties || {};
-    transformedComponent.styles = componentData.definition.styles || {};
-    transformedComponent.validation = componentData.definition.validation || {};
-    transformedComponent.general = componentData.definition.general || {};
-    transformedComponent.generalStyles = componentData.definition.generalStyles || {};
-    transformedComponent.displayPreferences = componentData.definition.others || {};
-    transformedComponent.parent = component.parent ? parentId : null;
+    if (!skipComponent) {
+      transformedComponent.id = uuid();
+      transformedComponent.name = componentData.name;
+      transformedComponent.type = componentData.component;
+      transformedComponent.properties = componentData.definition.properties || {};
+      transformedComponent.styles = componentData.definition.styles || {};
+      transformedComponent.validation = componentData.definition.validation || {};
+      transformedComponent.general = componentData.definition.general || {};
+      transformedComponent.generalStyles = componentData.definition.generalStyles || {};
+      transformedComponent.displayPreferences = componentData.definition.others || {};
+      transformedComponent.parent = component.parent ? parentId : null;
 
-    transformedComponents.push(transformedComponent);
+      transformedComponents.push(transformedComponent);
 
-    componentEvents.push({
-      componentId: componentId,
-      event: componentData.definition.events,
-    });
-    componentsMapping[componentId] = transformedComponent.id;
+      componentEvents.push({
+        componentId: componentId,
+        event: componentData.definition.events,
+      });
+      componentsMapping[componentId] = transformedComponent.id;
+    }
   }
 
   return transformedComponents;
