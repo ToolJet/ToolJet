@@ -1,4 +1,5 @@
 export function correctBounds(layout, bounds) {
+  layout = scaleLayouts(layout);
   const collidesWith = [];
   for (let i = 0, len = layout.length; i < len; i++) {
     const l = layout[i];
@@ -18,7 +19,18 @@ export function correctBounds(layout, bounds) {
       }
     }
   }
-  return layout;
+  return removePaddingLeft(layout);
+}
+
+function removePaddingLeft(layouts) {
+  return layouts.map((layout) => {
+    if (layout.left == 1) {
+      if (!layouts.find((l) => l.top > layout.top && l.top < layout.top + layout.height && l.left < 1)) {
+        return { ...layout, left: 0 };
+      }
+    }
+    return { ...layout };
+  });
 }
 
 function collides(l1, l2) {
@@ -211,4 +223,11 @@ function sortLayoutItemsByRowCol(layout) {
     }
     return -1;
   });
+}
+
+function scaleLayouts(layouts, cols = 6) {
+  return layouts.map((layout) => ({
+    ...layout,
+    width: layout.width <= 4 ? 2 : layout.width,
+  }));
 }
