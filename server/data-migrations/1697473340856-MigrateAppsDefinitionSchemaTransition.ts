@@ -103,7 +103,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           for (const componentId in pageComponents) {
             const componentLayout = pageComponents[componentId]['layouts'];
 
-            if (componentLayout) {
+            if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
               for (const type in componentLayout) {
                 const layout = componentLayout[type];
                 const newLayout = new Layout();
@@ -285,6 +285,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       const component = data[componentId];
       const componentData = component['component'];
 
+      let skipComponent = false;
       const transformedComponent: Component = new Component();
 
       let parentId = component.parent ? component.parent : null;
@@ -298,27 +299,33 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
         parentId = `${mappedParentId}-${childTabId}`;
       } else {
+        if (component.parent && !componentsMapping[parentId]) {
+          skipComponent = true;
+          break;
+        }
         parentId = componentsMapping[parentId];
       }
 
-      transformedComponent.id = uuid();
-      transformedComponent.name = componentData.name;
-      transformedComponent.type = componentData.component;
-      transformedComponent.properties = componentData.definition.properties || {};
-      transformedComponent.styles = componentData.definition.styles || {};
-      transformedComponent.validation = componentData.definition.validation || {};
-      transformedComponent.general = componentData.definition.general || {};
-      transformedComponent.generalStyles = componentData.definition.generalStyles || {};
-      transformedComponent.displayPreferences = componentData.definition.others || {};
-      transformedComponent.parent = component.parent ? parentId : null;
+      if (!skipComponent) {
+        transformedComponent.id = uuid();
+        transformedComponent.name = componentData.name;
+        transformedComponent.type = componentData.component;
+        transformedComponent.properties = componentData.definition.properties || {};
+        transformedComponent.styles = componentData.definition.styles || {};
+        transformedComponent.validation = componentData.definition.validation || {};
+        transformedComponent.general = componentData.definition.general || {};
+        transformedComponent.generalStyles = componentData.definition.generalStyles || {};
+        transformedComponent.displayPreferences = componentData.definition.others || {};
+        transformedComponent.parent = component.parent ? parentId : null;
 
-      transformedComponents.push(transformedComponent);
+        transformedComponents.push(transformedComponent);
 
-      componentEvents.push({
-        componentId: componentId,
-        event: componentData.definition.events,
-      });
-      componentsMapping[componentId] = transformedComponent.id;
+        componentEvents.push({
+          componentId: componentId,
+          event: componentData.definition.events,
+        });
+        componentsMapping[componentId] = transformedComponent.id;
+      }
     }
 
     return transformedComponents;
