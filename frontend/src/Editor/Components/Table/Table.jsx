@@ -1032,7 +1032,6 @@ export function Table({
             {displaySearchBox && !loadingState && (
               <GlobalFilter
                 globalFilter={state.globalFilter}
-                useAsyncDebounce={useAsyncDebounce}
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
