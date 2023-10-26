@@ -56,7 +56,7 @@ import { resizeQueryPanel } from "Support/utils/dataSource";
 describe("Table", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
     deleteDownloadsFolder();
     cy.viewport(1400, 2200);

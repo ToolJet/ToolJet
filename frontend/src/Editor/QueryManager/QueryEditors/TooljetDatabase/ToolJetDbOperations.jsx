@@ -160,7 +160,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   }, [options['join_table']?.['joins'], tables]);
 
   useEffect(() => {
-    selectedTableId && fetchTableInformation(selectedTableId);
+    selectedTableId && fetchTableInformation(selectedTableId, false, tables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTableId]);
 
@@ -266,6 +266,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     });
   };
 
+  const findTableDetailsWithTableList = (tableId, tableList) => {
+    return tableList.find((table) => table.table_id == tableId);
+  };
+
   const findTableDetails = (tableId) => {
     return tables.find((table) => table.table_id == tableId);
   };
@@ -329,15 +333,16 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     }
 
     if (Array.isArray(data?.result)) {
-      setTables(
+      const tableList =
         data.result.map((table) => {
           return { table_name: table.table_name, table_id: table.id };
-        }) || []
-      );
+        }) || [];
+
+      setTables(tableList);
       const selectedTableInfo = data.result.find((table) => table.id === options['table_id']);
       if (selectedTableInfo) {
         setSelectedTableId(selectedTableInfo.id);
-        fetchTableInformation(selectedTableInfo.id);
+        fetchTableInformation(selectedTableInfo.id, false, tableList);
       }
     }
   };
@@ -345,8 +350,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   /**
    * TODO: This function to be removed and replaced with loadTableInformation function everywhere
    */
-  const fetchTableInformation = async (tableId, isNewTableAdded) => {
-    const tableDetails = findTableDetails(tableId);
+  const fetchTableInformation = async (tableId, isNewTableAdded, tableList) => {
+    const tableDetails = findTableDetailsWithTableList(tableId, tableList);
     if (tableDetails?.table_name) {
       const { table_name } = tableDetails;
       const { error, data } = await tooljetDatabaseService.viewTable(organizationId, table_name);
@@ -402,7 +407,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
 
   const handleTableNameSelect = (tableId) => {
     setSelectedTableId(tableId);
-    fetchTableInformation(tableId, true);
+    fetchTableInformation(tableId, true, tables);
     optionchanged('organization_id', organizationId);
     optionchanged('table_id', tableId);
 

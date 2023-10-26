@@ -642,7 +642,7 @@ export function Table({
     }
     if (mounted) setExposedVariable('sortApplied', sortOptions);
     fireEvent('onSort');
-  }, [sortOptions]);
+  }, [JSON.stringify(sortOptions)]);
 
   useEffect(() => {
     setExposedVariable('setPage', async function (targetPageIndex) {
@@ -752,6 +752,8 @@ export function Table({
       if (!serverSidePagination && clientSidePagination) {
         setPageSize(rowsPerPage || 10);
       }
+    } else {
+      setPageSize(rows?.length || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
   useEffect(() => {
@@ -1535,15 +1537,7 @@ export function Table({
                 ))}
             </div>
             <div className={`col d-flex justify-content-center h-100 ${loadingState && 'w-100'}`}>
-              {loadingState && (
-                <div className="w-100">
-                  <SkeletonTheme baseColor="var(--slate3)" width="100%">
-                    <Skeleton count={1} width={'100%'} height={28} className="mb-1" />
-                  </SkeletonTheme>
-                </div>
-              )}
-
-              {enablePagination && !loadingState && (
+              {enablePagination && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}
@@ -1558,6 +1552,7 @@ export function Table({
                   enablePrevButton={enablePrevButton}
                   darkMode={darkMode}
                   tableWidth={width}
+                  loadingState={loadingState}
                 />
               )}
             </div>

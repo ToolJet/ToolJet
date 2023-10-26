@@ -1,10 +1,9 @@
 import React from 'react';
 import {
-  appService,
+  appsService,
   authenticationService,
   orgEnvironmentVariableService,
   orgEnvironmentConstantService,
-  organizationService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -23,27 +22,20 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import {
-  resolveReferences,
-  safelyParseJSON,
-  stripTrailingSlash,
-  getSubpath,
-  excludeWorkspaceIdFromURL,
-  isQueryRunnable,
-  redirectToDashboard,
-  getWorkspaceId,
-} from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
-import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
 import { useEditorStore } from '@/_stores/editorStore';
 import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { getPreviewQueryParams, redirectToDashboard } from '@/_helpers/routes';
+import toast from 'react-hot-toast';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -52,15 +44,10 @@ class ViewerComponent extends React.Component {
     const deviceWindowWidth = window.screen.width - 5;
 
     const slug = this.props.params.slug;
-    const appId = this.props.params.id;
-    const versionId = this.props.params.versionId;
-
     this.subscription = null;
 
     this.state = {
       slug,
-      appId,
-      versionId,
       deviceWindowWidth,
       currentUser: null,
       isLoading: true,
@@ -68,9 +55,6 @@ class ViewerComponent extends React.Component {
       appDefinition: { pages: {} },
       queryConfirmationList: [],
       isAppLoaded: false,
-      errorAppId: null,
-      errorVersionId: null,
-      errorDetails: null,
       pages: {},
       homepage: null,
     };
@@ -253,8 +237,8 @@ class ViewerComponent extends React.Component {
     return variables;
   };
 
-  loadApplicationBySlug = (slug) => {
-    appService
+  loadApplicationBySlug = (slug, authentication_failed = false) => {
+    appsService
       .getAppBySlug(slug)
       .then((data) => {
         this.setStateForApp(data);
@@ -263,90 +247,42 @@ class ViewerComponent extends React.Component {
       })
       .catch((error) => {
         this.setState({
-          errorDetails: error,
-          errorAppId: slug,
-          errorVersionId: null,
           isLoading: false,
         });
+        if (authentication_failed && error?.statusCode === 404) {
+          /* User is not authenticated. but the app url is wrong */
+          toast.error("Couldn't find the app. \n Please verify the app URL again.");
+          setTimeout(() => {
+            redirectToDashboard();
+          }, 3000);
+        }
       });
   };
 
   loadApplicationByVersion = (appId, versionId) => {
-    appService
+    appsService
       .getAppByVersion(appId, versionId)
       .then((data) => {
         this.setStateForApp(data);
         this.setStateForContainer(data);
       })
-      .catch((error) => {
+      .catch(() => {
         this.setState({
-          errorDetails: error,
-          errorAppId: appId,
-          errorVersionId: versionId,
           isLoading: false,
         });
       });
   };
 
-  switchOrganization = (orgId, appId, versionId) => {
-    const path = `/applications/${appId}${versionId ? `/versions/${versionId}` : ''}`;
-    const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
-
-    organizationService.switchOrganization(orgId).then(
-      () => {
-        window.location.href = `${sub_path}${path}`;
-      },
-      () => {
-        return (window.location.href = `${sub_path}/login/${orgId}?redirectTo=${path}`);
-      }
-    );
-  };
-
-  handleError = (errorDetails, appId, versionId) => {
-    try {
-      if (errorDetails?.data) {
-        const statusCode = errorDetails.data?.statusCode;
-        if (statusCode === 403) {
-          const errorObj = safelyParseJSON(errorDetails.data?.message);
-          const currentSessionValue = authenticationService.currentSessionValue;
-          if (
-            errorObj?.organizationId &&
-            this.state.currentUser &&
-            currentSessionValue.current_organization_id !== errorObj?.organizationId
-          ) {
-            this.switchOrganization(errorObj?.organizationId, appId, versionId);
-            return;
-          }
-          /* router dom Navigate is not working now. so hard reloading */
-          redirectToDashboard();
-          return <Navigate replace to={'/'} />;
-        } else if (statusCode === 401) {
-          window.location = `${getSubpath() ?? ''}/login${
-            !_.isEmpty(getWorkspaceId()) ? `/${getWorkspaceId()}` : ''
-          }?redirectTo=${this.props.location.pathname}`;
-        } else if (statusCode === 404) {
-          toast.error(errorDetails?.error ?? 'App not found', {
-            position: 'top-center',
-          });
-        } else {
-          redirectToDashboard();
-          return <Navigate replace to={'/'} />;
-        }
-      }
-    } catch (err) {
-      redirectToDashboard();
-      return <Navigate replace to={'/'} />;
-    }
-  };
-
   setupViewer() {
-    const slug = this.props.params.slug;
-    const appId = this.props.params.id;
-    const versionId = this.props.params.versionId;
-
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      if (currentSession?.load_app) {
+      const slug = this.props.params.slug;
+      const appId = this.props.id;
+      const versionId = this.props.versionId;
+
+      if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
+          useAppDataStore.getState().actions.setAppId(appId);
+
           const currentUser = currentSession.current_user;
           const userVars = {
             email: currentUser.email,
@@ -362,16 +298,12 @@ class ViewerComponent extends React.Component {
           });
           this.setState({
             currentUser,
-
             userVars,
+            versionId,
           });
-          slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
-        } else if (currentSession?.authentication_failed && !slug) {
-          const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-          const pathname = getSubpath() ? window.location.pathname.replace(getSubpath(), '') : window.location.pathname;
-          window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
-        } else {
-          slug && this.loadApplicationBySlug(slug);
+          versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
+        } else if (currentSession?.authentication_failed) {
+          this.loadApplicationBySlug(slug, true);
         }
       }
       this.setState({ isLoading: false });
@@ -508,6 +440,8 @@ class ViewerComponent extends React.Component {
 
   switchPage = (id, queryParams = []) => {
     document.getElementById('real-canvas').scrollIntoView();
+    /* Keep default query params for preview */
+    const defaultParams = getPreviewQueryParams();
 
     if (this.state.currentPageId === id) return;
 
@@ -515,11 +449,16 @@ class ViewerComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    if (this.state.slug) this.props.navigate(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
-    else
-      this.props.navigate(
-        `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
-      );
+    this.props.navigate(
+      `/applications/${this.state.slug}/${handle}?${
+        !_.isEmpty(defaultParams) ? `version=${defaultParams.version}` : ''
+      }${queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''}`,
+      {
+        state: {
+          isSwitchingPage: true,
+        },
+      }
+    );
   };
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'view');
@@ -550,9 +489,6 @@ class ViewerComponent extends React.Component {
       defaultComponentStateComputed,
       dataQueries,
       queryConfirmationList,
-      errorAppId,
-      errorVersionId,
-      errorDetails,
       canvasWidth,
     } = this.state;
 
@@ -585,38 +521,6 @@ class ViewerComponent extends React.Component {
           </div>
         );
       } else {
-        if (errorDetails) {
-          this.handleError(errorDetails, errorAppId, errorVersionId);
-        }
-
-        const pageArray = Object.values(this.state.appDefinition?.pages || {});
-        //checking if page is disabled
-        if (
-          pageArray.find((page) => page.handle === this.props.params.pageHandle)?.disabled &&
-          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is disabled
-          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
-        ) {
-          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
-          if (this.state.slug) {
-            url = `/applications/${this.state.slug}/${homeHandle}`;
-          }
-          return <Navigate to={url} replace />;
-        }
-
-        //checking if page exists
-        if (
-          !pageArray.find((page) => page.handle === this.props.params.pageHandle) &&
-          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
-        ) {
-          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
-          if (this.state.slug) {
-            url = `/applications/${this.state.slug}/${homeHandle}`;
-          }
-          return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
-        }
-
         return (
           <div className="viewer wrapper">
             <Confirm
