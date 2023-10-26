@@ -1331,16 +1331,16 @@ describe('apps controller', () => {
             options: { method: 'get' },
           });
 
-          // const version4 = await request(app.getHttpServer())
-          //   .post(`/api/apps/${application.id}/versions`)
-          //   .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-          //   .set('Cookie', adminUserData['tokenCookie'])
-          //   .send({
-          //     versionName: 'v4',
-          //     versionFromId: 'a77b051a-dd48-4633-a01f-089a845d5f88',
-          //   });
+          const version4 = await request(app.getHttpServer())
+            .post(`/api/apps/${application.id}/versions`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', adminUserData['tokenCookie'])
+            .send({
+              versionName: 'v4',
+              versionFromId: 'a77b051a-dd48-4633-a01f-089a845d5f88',
+            });
 
-          // expect(version4.statusCode).toBe(500);
+          expect(version4.statusCode).toBe(500);
           await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
         });
 
