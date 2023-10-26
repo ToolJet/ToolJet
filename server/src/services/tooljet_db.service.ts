@@ -333,10 +333,9 @@ export class TooljetDbService {
 
     // select with aliased column names
     queryJson.fields.forEach((field) => {
-      queryBuilder.addSelect(
-        `"${internalTableIdToNameMap[field.table]}"."${field.name}"`,
-        `${internalTableIdToNameMap[field.table]}_${field.name}`
-      );
+      const fieldName = `"${internalTableIdToNameMap[field.table]}"."${field.name}"`;
+      const fieldAlias = `${internalTableIdToNameMap[field.table]}_${field.name}`;
+      queryBuilder.addSelect(fieldName, fieldAlias);
     });
 
     // from table
@@ -345,7 +344,7 @@ export class TooljetDbService {
     // join tables with conditions
     queryJson.joins.forEach((join) => {
       const joinAlias = internalTableIdToNameMap[join.table];
-      const conditions = this.constructFilterConditions(join.conditions, internalTableIdToNameMap, true);
+      const conditions = this.constructFilterConditions(join.conditions, internalTableIdToNameMap);
 
       const joinFunction = queryBuilder[camelCase(join.joinType) + 'Join'];
       joinFunction.call(queryBuilder, join.table, joinAlias, conditions.query, conditions.params);
@@ -371,7 +370,7 @@ export class TooljetDbService {
     return queryBuilder;
   }
 
-  private constructFilterConditions(conditions, internalTableIdToNameMap, isJoin = false) {
+  private constructFilterConditions(conditions, internalTableIdToNameMap) {
     let conditionString = '';
     const conditionParams = {};
 
@@ -388,7 +387,7 @@ export class TooljetDbService {
           }
           return `(:...${paramName})`;
         default:
-          return `:${paramName}`; // Handle other operators if necessary
+          return `:${paramName}`;
       }
     };
 
