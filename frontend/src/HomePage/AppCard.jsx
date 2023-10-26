@@ -11,8 +11,8 @@ import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 
-import { getPrivateRoute } from '@/_helpers/routes';
-import { getSubpath } from '@/_helpers/utils';
+import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
+import { validateName } from '@/_helpers/utils';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -46,6 +46,11 @@ export default function AppCard({
     },
     [app, appActionModal, currentFolder]
   );
+
+  const isValidSlug = (slug) => {
+    const validate = validateName(slug, 'slug', true, false, false, false);
+    return validate.status;
+  };
 
   useEffect(() => {
     !isMenuOpen && setFocused(!!isHovered);
@@ -120,7 +125,7 @@ export default function AppCard({
               <ToolTip message="Open in app builder">
                 <Link
                   to={getPrivateRoute('editor', {
-                    id: app.id,
+                    slug: isValidSlug(app.slug) ? app.slug : app.id,
                   })}
                 >
                   <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">

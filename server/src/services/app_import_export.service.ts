@@ -196,24 +196,20 @@ export class AppImportExportService {
   }
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
-    return await catchDbException(
-      async () => {
-        const importedApp = manager.create(App, {
-          name: appParams.name,
-          organizationId: user.organizationId,
-          userId: user.id,
-          slug: null,
-          icon: appParams.icon,
-          isPublic: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-        await manager.save(importedApp);
-        return importedApp;
-      },
-      DataBaseConstraints.APP_NAME_UNIQUE,
-      'This app name is already taken.'
-    );
+    return await catchDbException(async () => {
+      const importedApp = manager.create(App, {
+        name: appParams.name,
+        organizationId: user.organizationId,
+        userId: user.id,
+        slug: null,
+        icon: appParams.icon,
+        isPublic: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await manager.save(importedApp);
+      return importedApp;
+    }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
   }
 
   extractImportDataFromAppParams(appParams: Record<string, any>): {
