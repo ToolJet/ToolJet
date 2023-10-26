@@ -30,7 +30,6 @@ export default function DragContainer({
     parent: box?.component?.parent,
   }));
   const [list, setList] = useState(boxList);
-  console.log('>>>>>>>>>>>>>> Rerender');
 
   const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
 
@@ -40,9 +39,12 @@ export default function DragContainer({
   }, [selectedComponents.length, JSON.stringify(boxes)]);
 
   useEffect(() => {
-    moveableRef.current.updateRect();
-    moveableRef.current.updateTarget();
-    moveableRef.current.updateSelectors();
+    setList(boxList);
+    setTimeout(() => {
+      moveableRef.current.updateRect();
+      moveableRef.current.updateTarget();
+      moveableRef.current.updateSelectors();
+    }, 100);
   }, [currentLayout]);
 
   useEffect(() => {
@@ -54,7 +56,6 @@ export default function DragContainer({
   const getDimensions = (id) => {
     const box = boxes.find((b) => b.id === id);
     const layoutData = box?.layouts?.[currentLayout];
-    console.log('layoutData -->', layoutData);
     if (isEmpty(layoutData)) {
       return {};
     }
@@ -69,20 +70,14 @@ export default function DragContainer({
   };
 
   const groupedTargets = [...selectedComponents.map((component) => '.ele-' + component.id)];
-  console.log('selectedComponents', selectedComponents);
   const movableTargets = [groupedTargets];
-  console.log('selectedComponents movableTargets', movableTargets);
-  console.log('selectedComponents hoveredComponent', hoveredComponent);
   if (hoveredComponent && groupedTargets?.length <= 1) {
     movableTargets.push('.ele-' + hoveredComponent);
   }
 
-  console.log('selectedComponents draggedTarget', draggedTarget);
   if (draggedTarget && !movableTargets.includes(`.ele-${draggedTarget}`)) {
     movableTargets.push('.ele-' + draggedTarget);
   }
-
-  console.log('selectedComponents movableTargets', movableTargets, isChildDragged);
 
   //   console.log("movableTargets", movableTargets, hoveredComponent);
 
