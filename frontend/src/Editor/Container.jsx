@@ -93,6 +93,7 @@ export const Container = ({
   const [isContainerFocused, setContainerFocus] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(null);
 
+  const paramUpdatesOptsRef = useRef({});
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
   useHotkeys('meta+z, control+z', () => handleUndo());
@@ -195,7 +196,9 @@ export const Container = ({
 
     const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
 
-    const opts = { containerChanges: true };
+    const opts = _.isEmpty(paramUpdatesOptsRef.current) ? { containerChanges: true } : paramUpdatesOptsRef.current;
+
+    paramUpdatesOptsRef.current = {};
 
     if (componendAdded) {
       opts.componentAdded = true;
@@ -413,7 +416,7 @@ export const Container = ({
   );
 
   const paramUpdated = useCallback(
-    (id, param, value) => {
+    (id, param, value, opts = {}) => {
       if (Object.keys(value)?.length > 0) {
         setBoxes((boxes) =>
           update(boxes, {
@@ -433,6 +436,9 @@ export const Container = ({
             },
           })
         );
+        if (!_.isEmpty(opts)) {
+          paramUpdatesOptsRef.current = opts;
+        }
       }
     },
     [boxes, setBoxes]
