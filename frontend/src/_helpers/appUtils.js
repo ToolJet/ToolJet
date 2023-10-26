@@ -1471,35 +1471,6 @@ export const cloneComponents = (
   });
 };
 
-// const getAllChildComponents = (allComponents, parentId) => {
-//   const childComponents = [];
-
-//   Object.keys(allComponents).forEach((componentId) => {
-//     const componentParentId = allComponents[componentId].component?.parent;
-
-//     const isParentTabORCalendar =
-//       allComponents[parentId]?.component?.component === 'Tabs' ||
-//       allComponents[parentId]?.component?.component === 'Calendar';
-
-//     if (componentParentId && isParentTabORCalendar) {
-//       const childComponent = allComponents[componentId];
-//       const childTabId = componentParentId.split('-').at(-1);
-//       if (componentParentId === `${parentId}-${childTabId}`) {
-//         childComponent.componentId = componentId;
-//         childComponents.push(childComponent);
-//       }
-//     }
-
-//     if (componentParentId === parentId) {
-//       const childComponent = allComponents[componentId];
-//       childComponent.componentId = componentId;
-//       childComponents.push(childComponent);
-//     }
-//   });
-
-//   return childComponents;
-// };
-
 const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
 
