@@ -158,14 +158,17 @@ export class AppImportExportService {
         .orderBy('pages.created_at', 'ASC')
         .getMany();
 
-      const components = await manager
-        .createQueryBuilder(Component, 'components')
-        .leftJoinAndSelect('components.layouts', 'layouts')
-        .where('components.pageId IN(:...pageId)', {
-          pageId: pages.map((v) => v.id),
-        })
-        .orderBy('components.created_at', 'ASC')
-        .getMany();
+      const components =
+        pages.length > 0
+          ? await manager
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
+          : [];
 
       const events = await manager
         .createQueryBuilder(EventHandler, 'event_handlers')
@@ -220,12 +223,13 @@ export class AppImportExportService {
       : convertSinglePageSchemaToMultiPageSchema(appParams);
     schemaUnifiedAppParams.name = appName;
 
-    const importedAppTooljetVersion = extractMajorVersion(tooljetVersion);
+    const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
     const isNormalizedAppDefinitionSchema = cloning
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
+
     await this.setupImportedAppAssociations(
       this.entityManager,
       importedApp,
@@ -257,6 +261,7 @@ export class AppImportExportService {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+
       await manager.save(importedApp);
       return importedApp;
     }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
