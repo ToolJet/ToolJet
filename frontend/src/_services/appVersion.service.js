@@ -69,7 +69,16 @@ function save(appId, versionId, values, isUserSwitchedVersion = false) {
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwitchedVersion = false) {
+function autoSaveApp(
+  appId,
+  versionId,
+  diff,
+  type,
+  pageId,
+  operation,
+  isUserSwitchedVersion = false,
+  isComponentCutProcess = false
+) {
   const OPERATION = {
     create: 'POST',
     update: 'PUT',
@@ -93,6 +102,10 @@ function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwit
         pageId,
         diff,
       };
+
+  if (type === 'components' && operation === 'delete' && isComponentCutProcess) {
+    body['is_component_cut'] = true;
+  }
 
   const requestOptions = {
     method: OPERATION[operation],

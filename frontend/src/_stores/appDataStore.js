@@ -23,6 +23,7 @@ const initialState = {
   isSaving: false,
   appId: null,
   areOthersOnSameVersionAndPage: false,
+  appVersionPreviewLink: null,
 };
 
 export const useAppDataStore = create(
@@ -37,6 +38,8 @@ export const useAppDataStore = create(
         updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
           return new Promise((resolve) => {
             useAppDataStore.getState().actions.setIsSaving(true);
+            const isComponentCutProcess = get().appDiffOptions?.componentCut === true;
+
             appVersionService
               .autoSaveApp(
                 appId,
@@ -45,7 +48,8 @@ export const useAppDataStore = create(
                 appDefinitionDiff.type,
                 pageId,
                 appDefinitionDiff.operation,
-                isUserSwitchedVersion
+                isUserSwitchedVersion,
+                isComponentCutProcess
               )
               .then(() => {
                 useAppDataStore.getState().actions.setIsSaving(false);
@@ -107,6 +111,7 @@ export const useAppDataStore = create(
 
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
+        setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
       },
     }),
     { name: 'App Data Store' }
