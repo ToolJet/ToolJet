@@ -1,6 +1,6 @@
 import React, { useReducer, useEffect, useMemo, useCallback } from 'react';
 import {
-  appService,
+  appsService,
   datasourceService,
   globalDatasourceService,
   appVersionService,
@@ -27,7 +27,8 @@ import LogsPanel from './LogsPanel';
 
 // Wherever this file uses the term 'app', it means 'workflow'
 function WorkflowEditor(props) {
-  const { id: appId, versionId: appVersionId } = props.params;
+  const { versionId: appVersionId } = props.params;
+  const { id: appId } = props;
 
   const [editorSession, dispatch] = useReducer(reducer, initialState({ appId, appVersionId }));
 
@@ -43,7 +44,7 @@ function WorkflowEditor(props) {
 
   // This useEffect fetches the app, and then the corresponding datasources
   useEffect(() => {
-    appService
+    appsService
       .getApp(editorSession.app.id)
       .then((appData) => {
         const versionId = appData.editing_version.id;
@@ -97,7 +98,7 @@ function WorkflowEditor(props) {
       });
       return;
     }
-    await appService
+    await appsService
       .saveApp(appId, { name })
       .then(() => {
         editorSessionActions.setAppName(name);

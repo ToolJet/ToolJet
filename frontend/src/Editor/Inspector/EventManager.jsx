@@ -22,6 +22,7 @@ import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import ManageEventButton from './ManageEventButton';
 import NoListItem from './Components/Table/NoListItem';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 export const EventManager = ({
   component,
@@ -47,7 +48,12 @@ export const EventManager = ({
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
-  const router = useRouter();
+  const { appId } = useAppDataStore(
+    (state) => ({
+      appId: state?.appId,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     setEvents(component.component.definition.events || []);
@@ -241,7 +247,7 @@ export const EventManager = ({
     });
     setEvents(newEvents);
     eventsChanged(newEvents);
-    posthog.capture('click_add_event_handler', { widget: component.component.component, appId: router.query.id });
+    posthog.capture('click_add_event_handler', { widget: component.component.component, appId });
   }
 
   //following two are functions responsible for on change and value for the control specific actions

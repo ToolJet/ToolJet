@@ -212,7 +212,7 @@ class DataSourceManagerComponent extends React.Component {
     const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
 
-    posthog.capture('save_connection_datasource', { dataSource: kind, appId: this.state.appId }); //posthog event
+    posthog.capture('save_connection_datasource', { dataSource: kind, appId }); //posthog event
 
     const parsedOptions = Object?.keys(options)?.map((key) => {
       const keyMeta = selectedDataSource.options[key];

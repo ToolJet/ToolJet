@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 
-export default function OIDCSSOLoginButton({ configId, configs, text }) {
+export default function OIDCSSOLoginButton({ configId, configs, text, setRedirectUrlToCookie }) {
   const [isLoading, setLoading] = useState(false);
 
   const doLogin = (e) => {
     e.preventDefault();
+    setRedirectUrlToCookie();
     setLoading(true);
     fetch(`${config.apiUrl}/oauth/openid/configs${configId ? `/${configId}` : ''}`, {
       method: 'GET',

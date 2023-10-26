@@ -1,21 +1,13 @@
 import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { Link, Navigate } from 'react-router-dom';
-import queryString from 'query-string';
+import { Link } from 'react-router-dom';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
 import LdapSSOLoginButton from '@ee/components/LoginPage/LdapSSOLoginButton';
+import { validateEmail, retrieveWhiteLabelText, eraseRedirectUrl, redirectToWorkspace } from '@/_helpers/utils';
 import SAMLSSOLoginButton from '@ee/components/LoginPage/SAMLSSOLoginButton';
-import {
-  getSubpath,
-  validateEmail,
-  retrieveWhiteLabelText,
-  eraseRedirectUrl,
-  redirectToWorkspace,
-  returnWorkspaceIdIfNeed,
-} from '@/_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -24,10 +16,12 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
-import { setCookie } from '@/_helpers/cookie';
 import posthog from 'posthog-js';
-import { withRouter } from '@/_hoc/withRouter';
 import initPosthog from '../_helpers/initPosthog';
+import { withRouter } from '@/_hoc/withRouter';
+import { pathnameToArray, redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
+import { setCookie } from '@/_helpers/cookie';
+
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -37,7 +31,6 @@ class LoginPageComponent extends React.Component {
       isGettingConfigs: true,
       configs: undefined,
       emailError: false,
-      navigateToLogin: false,
       current_organization_name: null,
     };
     this.organizationId = props.params.organizationId;
@@ -45,51 +38,38 @@ class LoginPageComponent extends React.Component {
   darkMode = localStorage.getItem('darkMode') === 'true';
 
   componentDidMount() {
-    // Page is loaded inside an iframe
-    const appInsideIframe = window !== window.top;
-
-    if (appInsideIframe) {
-      const params = new URL(window.location.href).searchParams;
-
-      const redirectPath = params.get('redirectTo') || '/';
-      window.parent.postMessage(
-        {
-          type: 'redirectTo',
-          payload: {
-            redirectPath: redirectPath,
-          },
-        },
-        '*'
-      );
-    }
-
-    this.setRedirectUrlToCookie(appInsideIframe);
+    /* remove login oranization's id and slug from the cookie */
     authenticationService.deleteLoginOrganizationId();
+    authenticationService.deleteLoginOrganizationSlug();
+    /* 
+      If the user is already authenticated and try to reload the login page with a redirect path. 
+      this func will help to set the redirect cookie.
+    */
+    this.setRedirectUrlToCookie();
+
+    this.organizationSlug = this.organizationId;
     this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
       if (newSession?.current_organization_name)
         this.setState({ current_organization_name: newSession.current_organization_name });
       if (newSession?.group_permissions || newSession?.id) {
         if (
           (!this.organizationId && newSession?.current_organization_id) ||
-          (this.organizationId && newSession?.current_organization_id === this.organizationId)
+          (!this.state.isGettingConfigs &&
+            this.organizationId &&
+            newSession?.current_organization_id === this.organizationId)
         ) {
-          // redirect to home if already logged in
-          // set redirect path for sso login
-          // redirect to instance settings if license expired
-          if (newSession?.super_admin) {
-            return redirectToWorkspace();
-          }
+          return redirectToWorkspace();
         }
       }
     });
 
-    if (this.organizationId) {
-      authenticationService.saveLoginOrganizationId(this.organizationId);
-    }
-
-    authenticationService.getOrganizationConfigs(this.organizationId).then(
+    authenticationService.getOrganizationConfigs(this.organizationSlug).then(
       (configs) => {
-        this.setState({ isGettingConfigs: false, configs });
+        this.organizationId = configs.id;
+        this.setState({
+          isGettingConfigs: false,
+          configs,
+        });
       },
       (response) => {
         if (response.data.statusCode !== 404 && response.data.statusCode !== 422) {
@@ -102,10 +82,10 @@ class LoginPageComponent extends React.Component {
         // If there is no organization found for single organization setup
         // show form to sign up
         // redirected here for self hosted version
-        response.data.statusCode !== 422 && this.props.navigate('/setup');
+        response.data.statusCode !== 422 && !this.organizationSlug && this.props.navigate('/setup');
 
         // if wrong workspace id then show workspace-switching page
-        if (response.data.statusCode === 422) {
+        if (response.data.statusCode === 422 || (response.data.statusCode === 404 && this.organizationSlug)) {
           authenticationService
             .validateSession()
             .then(({ current_organization_id }) => {
@@ -115,7 +95,7 @@ class LoginPageComponent extends React.Component {
               this.props.history.push('/switch-workspace');
             })
             .catch(() => {
-              window.location = '/login';
+              if (pathnameToArray()[0] !== 'login') window.location = '/login';
             });
         }
 
@@ -150,15 +130,34 @@ class LoginPageComponent extends React.Component {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
   };
 
-  setRedirectUrlToCookie(iframe) {
+  setRedirectUrlToCookie() {
+    // Page is loaded inside an iframe
+    const iframe = window !== window.top;
+
+    if (iframe) {
+      const redirectPath = getRedirectTo();
+      window.parent.postMessage(
+        {
+          type: 'redirectTo',
+          payload: {
+            redirectPath: redirectPath,
+          },
+        },
+        '*'
+      );
+    }
+
     const params = iframe ? new URL(window.location.href).searchParams : new URL(location.href).searchParams;
     const redirectPath = params.get('redirectTo');
 
+    authenticationService.saveLoginOrganizationId(this.organizationId);
+    authenticationService.saveLoginOrganizationSlug(this.organizationSlug);
     redirectPath && setCookie('redirectPath', redirectPath, iframe);
   }
 
   authUser = (e) => {
     e.preventDefault();
+    this.setRedirectUrlToCookie();
 
     this.setState({ isLoading: true });
 
@@ -183,23 +182,16 @@ class LoginPageComponent extends React.Component {
       .then(this.authSuccessHandler, this.authFailureHandler);
   };
 
+  //TODO: remove this code if we don't need
   authSuccessHandler = (currentUser) => {
     const { organization_id, current_organization_id, email } = currentUser;
+    this.setState({ isLoading: false });
+    eraseRedirectUrl();
     initPosthog(currentUser);
     posthog.capture('signin_email', {
       email,
       workspace_id: organization_id || current_organization_id,
     });
-    authenticationService.deleteLoginOrganizationId();
-    const params = queryString.parse(this.props.location.search);
-    const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-    if (from.pathname !== '/confirm')
-      // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
-      from.pathname = `${returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
-    const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
-    this.setState({ isLoading: false });
-    eraseRedirectUrl();
-    window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
   };
 
   authFailureHandler = (res) => {
@@ -213,35 +205,42 @@ class LoginPageComponent extends React.Component {
     this.setState({ isLoading: false });
   };
 
-  redirectToUrl = () => {
-    const redirectPath = eraseRedirectUrl();
-    return redirectPath ? redirectPath : '/';
-  };
-
   render() {
-    const { isLoading, configs, isGettingConfigs, navigateToLogin } = this.state;
+    const { isLoading, configs, isGettingConfigs } = this.state;
     return (
       <>
-        {navigateToLogin ? (
-          <Navigate to={this.redirectToUrl()} />
-        ) : (
-          <div className="common-auth-section-whole-wrapper page">
-            <div className="common-auth-section-left-wrapper">
-              <OnboardingNavbar darkMode={this.darkMode} />
-              <div className="common-auth-section-left-wrapper-grid">
-                {this.state.isGettingConfigs && (
+        <div className="common-auth-section-whole-wrapper page">
+          <div className="common-auth-section-left-wrapper">
+            <OnboardingNavbar darkMode={this.darkMode} />
+            <div className="common-auth-section-left-wrapper-grid">
+              {this.state.isGettingConfigs && (
+                <div className="loader-wrapper">
+                  <ShowLoading />
+                </div>
+              )}
+              <form action="." method="get" autoComplete="off">
+                {isGettingConfigs ? (
                   <div className="loader-wrapper">
                     <ShowLoading />
                   </div>
-                )}
-                <form action="." method="get" autoComplete="off">
-                  {isGettingConfigs ? (
-                    <div className="loader-wrapper">
-                      <ShowLoading />
-                    </div>
-                  ) : (
-                    <div className="common-auth-container-wrapper ">
-                      {!configs?.form && !configs?.git && !configs?.google && !configs?.openid && !configs?.saml && (
+                ) : /* If the configs don't have any organization id. that means the workspace slug is invalid */
+                this.organizationSlug && !configs?.id ? (
+                  <div className="text-center-onboard">
+                    <h2 data-cy="no-workspace">
+                      {this.props.t(
+                        'loginSignupPage.workspaceDoesntExist',
+                        'Workspace does not exist. Please check the workspace login url again'
+                      )}
+                    </h2>
+                  </div>
+                ) : (
+                  <div className="common-auth-container-wrapper ">
+                    {!configs?.form &&
+                      !configs?.git &&
+                      !configs?.google &&
+                      !configs?.openid &&
+                      !configs?.ldap &&
+                      !configs?.saml && (
                         <div className="text-center-onboard">
                           <h2 data-cy="no-login-methods-warning">
                             {this.props.t(
@@ -251,237 +250,243 @@ class LoginPageComponent extends React.Component {
                           </h2>
                         </div>
                       )}
-                      <div>
-                        {(this.state?.configs?.google?.enabled ||
-                          this.state?.configs?.git?.enabled ||
-                          configs?.form?.enabled ||
-                          configs?.ldap?.enabled ||
-                          configs?.saml?.enabled ||
-                          this.state?.configs?.openid?.enabled) && (
-                          <>
-                            <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
-                              {this.props.t('loginSignupPage.signIn', `Sign in`)}
-                            </h2>
-                            {this.organizationId && (
-                              <p
-                                className="text-center-onboard workspace-login-description"
-                                data-cy="workspace-sign-in-sub-header"
-                              >
-                                Sign in to your workspace - {configs?.name}
-                              </p>
-                            )}
-                            <div className="tj-text-input-label">
-                              {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
-                                <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
-                                  {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
-                                    whiteLabelText: retrieveWhiteLabelText(),
-                                  })}
-                                  <Link
-                                    to={'/signup'}
-                                    tabIndex="-1"
-                                    style={{ marginLeft: '4px' }}
-                                    data-cy="create-an-account-link"
-                                  >
-                                    {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
-                                  </Link>
-                                </div>
-                              )}
-                            </div>
-                          </>
-                        )}
-                        {this.state?.configs?.git?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GitSSOLoginButton configs={this.state?.configs?.git?.configs} />
-                          </div>
-                        )}
-                        {this.state?.configs?.saml?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <SAMLSSOLoginButton
-                              configs={this.state?.configs?.saml?.configs}
-                              configId={this.state?.configs?.saml?.config_id}
-                            />
-                          </div>
-                        )}
-                        {this.state?.configs?.google?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GoogleSSOLoginButton
-                              configs={this.state?.configs?.google?.configs}
-                              configId={this.state?.configs?.google?.config_id}
-                            />
-                          </div>
-                        )}
-                        {this.state?.configs?.ldap?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <LdapSSOLoginButton configs={this.state?.configs?.ldap?.configs} />
-                          </div>
-                        )}
-                        {this.state?.configs?.openid?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <OidcSSOLoginButton
-                              configId={this.state.configs?.openid?.config_id}
-                              configs={this.state.configs?.openid?.configs}
-                              text="Sign in with"
-                            />
-                          </div>
-                        )}
-                        {(this.state?.configs?.google?.enabled ||
-                          this.state?.configs?.git?.enabled ||
-                          configs?.ldap?.enabled ||
-                          configs?.saml?.enabled ||
-                          this.state?.configs?.openid?.enabled) &&
-                          configs?.form?.enabled && (
-                            <div className="separator-onboarding ">
-                              <div className="mt-2 separator" data-cy="onboarding-separator">
-                                <h2>
-                                  <span>OR</span>
-                                </h2>
-                              </div>
-                            </div>
+                    <div>
+                      {(this.state?.configs?.google?.enabled ||
+                        this.state?.configs?.git?.enabled ||
+                        configs?.form?.enabled ||
+                        configs?.ldap?.enabled ||
+                        configs?.saml?.enabled ||
+                        this.state?.configs?.openid?.enabled) && (
+                        <>
+                          <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
+                            {this.props.t('loginSignupPage.signIn', `Sign in`)}
+                          </h2>
+                          {this.organizationId && (
+                            <p
+                              className="text-center-onboard workspace-login-description"
+                              data-cy="workspace-sign-in-sub-header"
+                            >
+                              Sign in to your workspace - {configs?.name}
+                            </p>
                           )}
-                        {configs?.form?.enabled && (
-                          <>
-                            <div className="signin-email-wrap">
-                              <label className="tj-text-input-label" data-cy="work-email-label">
-                                {this.props.t('loginSignupPage.workEmail', 'Email?')}
-                              </label>
+                          <div className="tj-text-input-label">
+                            {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
+                              <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
+                                {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
+                                  whiteLabelText: retrieveWhiteLabelText(),
+                                })}
+                                <Link
+                                  to={'/signup'}
+                                  tabIndex="-1"
+                                  style={{ marginLeft: '4px' }}
+                                  data-cy="create-an-account-link"
+                                >
+                                  {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
+                                </Link>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                      {this.state?.configs?.git?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <GitSSOLoginButton
+                            configs={this.state?.configs?.git?.configs}
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
+                          />
+                        </div>
+                      )}
+                      {this.state?.configs?.google?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <GoogleSSOLoginButton
+                            configs={this.state?.configs?.google?.configs}
+                            configId={this.state?.configs?.google?.config_id}
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
+                          />
+                        </div>
+                      )}
+                      {this.state?.configs?.ldap?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <LdapSSOLoginButton
+                            configs={this.state?.configs?.ldap?.configs}
+                            organizationSlug={this.organizationSlug}
+                          />
+                        </div>
+                      )}
+                      {this.state?.configs?.openid?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <OidcSSOLoginButton
+                            configId={this.state.configs?.openid?.config_id}
+                            configs={this.state.configs?.openid?.configs}
+                            text="Sign in with"
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
+                          />
+                        </div>
+                      )}
+                      {this.state?.configs?.saml?.enabled && (
+                        <div className="login-sso-wrapper">
+                          <SAMLSSOLoginButton
+                            configs={this.state?.configs?.saml?.configs}
+                            configId={this.state?.configs?.saml?.config_id}
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
+                          />
+                        </div>
+                      )}
+                      {(this.state?.configs?.google?.enabled ||
+                        this.state?.configs?.git?.enabled ||
+                        configs?.saml?.enabled ||
+                        configs?.ldap?.enabled ||
+                        this.state?.configs?.openid?.enabled) &&
+                        configs?.form?.enabled && (
+                          <div className="separator-onboarding ">
+                            <div className="mt-2 separator" data-cy="onboarding-separator">
+                              <h2>
+                                <span>OR</span>
+                              </h2>
+                            </div>
+                          </div>
+                        )}
+                      {configs?.form?.enabled && (
+                        <>
+                          <div className="signin-email-wrap">
+                            <label className="tj-text-input-label" data-cy="work-email-label">
+                              {this.props.t('loginSignupPage.workEmail', 'Email?')}
+                            </label>
+                            <input
+                              onChange={this.handleChange}
+                              name="email"
+                              type="email"
+                              className="tj-text-input"
+                              placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your email')}
+                              style={{ marginBottom: '0px' }}
+                              data-cy="work-email-input"
+                              autoFocus
+                              autoComplete="off"
+                            />
+                            {this.state?.emailError && (
+                              <span className="tj-text-input-error-state" data-cy="email-error-message">
+                                {this.state?.emailError}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <label className="tj-text-input-label" data-cy="password-label">
+                              {this.props.t('loginSignupPage.password', 'Password')}
+                              <span style={{ marginLeft: '4px' }}>
+                                <Link
+                                  to={'/forgot-password'}
+                                  tabIndex="-1"
+                                  className="login-forgot-password"
+                                  style={{ color: this.darkMode && '#3E63DD' }}
+                                  data-cy="forgot-password-link"
+                                >
+                                  {this.props.t('loginSignupPage.forgot', 'Forgot?')}
+                                </Link>
+                              </span>
+                            </label>
+                            <div className="login-password">
                               <input
                                 onChange={this.handleChange}
-                                name="email"
-                                type="email"
+                                name="password"
+                                type={this.state?.showPassword ? 'text' : 'password'}
                                 className="tj-text-input"
-                                placeholder={this.props.t('loginSignupPage.enterWorkEmail', 'Enter your email')}
-                                style={{ marginBottom: '0px' }}
-                                data-cy="work-email-input"
-                                autoFocus
-                                autoComplete="off"
+                                placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
+                                data-cy="password-input-field"
+                                autoComplete="new-password"
                               />
-                              {this.state?.emailError && (
-                                <span className="tj-text-input-error-state" data-cy="email-error-message">
-                                  {this.state?.emailError}
-                                </span>
-                              )}
-                            </div>
-                            <div>
-                              <label className="tj-text-input-label" data-cy="password-label">
-                                {this.props.t('loginSignupPage.password', 'Password')}
-                                <span style={{ marginLeft: '4px' }}>
-                                  <Link
-                                    to={'/forgot-password'}
-                                    tabIndex="-1"
-                                    className="login-forgot-password"
-                                    style={{ color: this.darkMode && '#3E63DD' }}
-                                    data-cy="forgot-password-link"
-                                  >
-                                    {this.props.t('loginSignupPage.forgot', 'Forgot?')}
-                                  </Link>
-                                </span>
-                              </label>
-                              <div className="login-password">
-                                <input
-                                  onChange={this.handleChange}
-                                  name="password"
-                                  type={this.state?.showPassword ? 'text' : 'password'}
-                                  className="tj-text-input"
-                                  placeholder={this.props.t('loginSignupPage.EnterPassword', 'Enter password')}
-                                  data-cy="password-input-field"
-                                  autoComplete="new-password"
-                                />
 
-                                <div
-                                  className="login-password-hide-img"
-                                  onClick={this.handleOnCheck}
-                                  data-cy="show-password-icon"
-                                >
-                                  {this.state?.showPassword ? (
-                                    <EyeHide
-                                      fill={
-                                        this.darkMode
-                                          ? this.state?.password?.length
-                                            ? '#D1D5DB'
-                                            : '#656565'
-                                          : this.state?.password?.length
-                                          ? '#384151'
-                                          : '#D1D5DB'
-                                      }
-                                    />
-                                  ) : (
-                                    <EyeShow
-                                      fill={
-                                        this.darkMode
-                                          ? this.state?.password?.length
-                                            ? '#D1D5DB'
-                                            : '#656565'
-                                          : this.state?.password?.length
-                                          ? '#384151'
-                                          : '#D1D5DB'
-                                      }
-                                    />
-                                  )}
-                                </div>
+                              <div
+                                className="login-password-hide-img"
+                                onClick={this.handleOnCheck}
+                                data-cy="show-password-icon"
+                              >
+                                {this.state?.showPassword ? (
+                                  <EyeHide
+                                    fill={
+                                      this.darkMode
+                                        ? this.state?.password?.length
+                                          ? '#D1D5DB'
+                                          : '#656565'
+                                        : this.state?.password?.length
+                                        ? '#384151'
+                                        : '#D1D5DB'
+                                    }
+                                  />
+                                ) : (
+                                  <EyeShow
+                                    fill={
+                                      this.darkMode
+                                        ? this.state?.password?.length
+                                          ? '#D1D5DB'
+                                          : '#656565'
+                                        : this.state?.password?.length
+                                        ? '#384151'
+                                        : '#D1D5DB'
+                                    }
+                                  />
+                                )}
                               </div>
                             </div>
-                          </>
-                        )}
-                      </div>
-
-                      <div
-                        className={` d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''}`}
-                      >
-                        {configs?.form?.enabled && (
-                          <ButtonSolid
-                            className="login-btn"
-                            onClick={this.authUser}
-                            disabled={isLoading}
-                            data-cy="login-button"
-                          >
-                            {isLoading ? (
-                              <div className="spinner-center">
-                                <Spinner />
-                              </div>
-                            ) : (
-                              <>
-                                <span> {this.props.t('loginSignupPage.loginTo', 'Login')}</span>
-                                <EnterIcon
-                                  className="enter-icon-onboard"
-                                  fill={
-                                    isLoading || !this.state?.email || !this.state?.password
-                                      ? this.darkMode
-                                        ? '#656565'
-                                        : ' #D1D5DB'
-                                      : '#fff'
-                                  }
-                                ></EnterIcon>
-                              </>
-                            )}
-                          </ButtonSolid>
-                        )}
-                        {this.state.current_organization_name && this.organizationId && (
-                          <div
-                            className="text-center-onboard mt-3"
-                            data-cy={`back-to-${String(this.state.current_organization_name)
-                              .toLowerCase()
-                              .replace(/\s+/g, '-')}`}
-                          >
-                            back to&nbsp;{' '}
-                            <Link
-                              onClick={() =>
-                                (window.location = `${getSubpath() ? getSubpath() : ''}/${
-                                  authenticationService.currentSessionValue?.current_organization_id
-                                }`)
-                              }
-                            >
-                              {this.state.current_organization_name}
-                            </Link>
                           </div>
-                        )}
-                      </div>
+                        </>
+                      )}
                     </div>
-                  )}
-                </form>
-              </div>
+
+                    <div className={` d-flex flex-column align-items-center ${!configs?.form?.enabled ? 'mt-0' : ''}`}>
+                      {configs?.form?.enabled && (
+                        <ButtonSolid
+                          className="login-btn"
+                          onClick={this.authUser}
+                          disabled={isLoading}
+                          data-cy="login-button"
+                        >
+                          {isLoading ? (
+                            <div className="spinner-center">
+                              <Spinner />
+                            </div>
+                          ) : (
+                            <>
+                              <span> {this.props.t('loginSignupPage.loginTo', 'Login')}</span>
+                              <EnterIcon
+                                className="enter-icon-onboard"
+                                fill={
+                                  isLoading || !this.state?.email || !this.state?.password
+                                    ? this.darkMode
+                                      ? '#656565'
+                                      : ' #D1D5DB'
+                                    : '#fff'
+                                }
+                              ></EnterIcon>
+                            </>
+                          )}
+                        </ButtonSolid>
+                      )}
+                      {this.state.current_organization_name && this.organizationId && (
+                        <div
+                          className="text-center-onboard mt-3"
+                          data-cy={`back-to-${String(this.state.current_organization_name)
+                            .toLowerCase()
+                            .replace(/\s+/g, '-')}`}
+                        >
+                          back to&nbsp;{' '}
+                          <Link onClick={() => redirectToDashboard()}>{this.state.current_organization_name}</Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </form>
             </div>
           </div>
-        )}
+        </div>
       </>
     );
   }

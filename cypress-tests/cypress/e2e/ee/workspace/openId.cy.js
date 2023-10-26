@@ -116,7 +116,7 @@ describe("Verify OIDC user onboarding", () => {
       }
     });
     VerifyWorkspaceInvitePageElements();
-    cy.wait(1000)
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-button").click();
     cy.wait(1000)
@@ -141,7 +141,7 @@ describe("Verify OIDC user onboarding", () => {
         WorkspaceInvitationLink("userthree@tooljet.com");
       }
     });
-    cy.wait(1000)
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-four-button").click();
 
@@ -154,7 +154,7 @@ describe("Verify OIDC user onboarding", () => {
     cy.wait(2000)
     SSO.enableSignUp();
     WorkspaceInvitationLink("userthree@tooljet.com");
-    cy.wait(1000)
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-four-button").click();
     cy.get(commonSelectors.acceptInviteButton).click();
@@ -215,6 +215,7 @@ describe("Verify OIDC user onboarding", () => {
         WorkspaceInvitationLink("usertwo@tooljet.com");
       }
     });
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-two-button").click();
 
@@ -241,7 +242,8 @@ describe("Verify OIDC user onboarding", () => {
       usersText.archivedToast
     );
     common.logout();
-    cy.visit('/');
+    cy.visit('/my-workspace');
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-two-button").click();
 
@@ -254,7 +256,7 @@ describe("Verify OIDC user onboarding", () => {
     cy.wait(2000)
     resetAllowPersonalWorkspace();
     common.logout();
-
+    cy.wait(2000)
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-two-button").click();
   });

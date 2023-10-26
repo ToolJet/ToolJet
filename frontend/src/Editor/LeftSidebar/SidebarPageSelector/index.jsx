@@ -14,6 +14,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -49,6 +50,12 @@ const LeftSidebarPageSelector = ({
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
       isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
+  const { appId } = useAppDataStore(
+    (state) => ({
+      appId: state?.appId,
     }),
     shallow
   );
@@ -106,7 +113,7 @@ const LeftSidebarPageSelector = ({
                     workspace_id:
                       authenticationService?.currentUserValue?.organization_id ||
                       authenticationService?.currentSessionValue?.current_organization_id,
-                    appId: router.query.id,
+                    appId,
                   });
                   if (isVersionReleased || isEditorFreezed) {
                     enableReleasedVersionPopupState();

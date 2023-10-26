@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import { toast } from 'react-hot-toast';
-import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
+import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useTranslation } from 'react-i18next';
-import { libraryAppService, authenticationService, appService } from '@/_services';
+import { authenticationService, appsService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
 import posthog from 'posthog-js';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { useNavigate } from 'react-router-dom';
 
 export const BlankPage = function BlankPage({
-  createApp,
-  darkMode,
-  creatingApp,
-  handleImportApp,
+  readAndImport,
   isImportingApp,
   fileInput,
+  openCreateAppModal,
+  openCreateAppFromTemplateModal,
+  creatingApp,
+  darkMode,
   showTemplateLibraryModal,
   hideTemplateLibraryModal,
   viewTemplateLibraryModal,
@@ -24,9 +23,7 @@ export const BlankPage = function BlankPage({
   canCreateApp,
 }) {
   const { t } = useTranslation();
-  const [deploying, setDeploying] = useState(false);
   const [appsLimit, setAppsLimit] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAppsLimit();
@@ -38,34 +35,13 @@ export const BlankPage = function BlankPage({
     { id: 'whatsapp-and-sms-crm', name: 'Whatsapp and sms crm' },
   ];
 
-  function deployApp(id) {
-    if (!deploying) {
-      const loadingToastId = toast.loading('Deploying app...');
-      setDeploying(true);
-      libraryAppService
-        .deploy(id)
-        .then((data) => {
-          setDeploying(false);
-          toast.dismiss(loadingToastId);
-          setDeploying(false);
-          toast.success('App created.');
-          navigate(`/${getWorkspaceId()}/apps/${data.id}`);
-        })
-        .catch((e) => {
-          toast.dismiss(loadingToastId);
-          e.statusCode !== 451 && toast.error(e.error);
-          setDeploying(false);
-        });
-    }
-  }
-
   function fetchAppsLimit() {
-    appService.getAppsLimit().then((data) => {
+    appsService.getAppsLimit().then((data) => {
       setAppsLimit({ ...data?.appsCount });
     });
   }
 
-  const appCreationDisabled = (appsLimit?.canAddUnlimited && !canCreateApp()) || appsLimit?.percentage >= 100;
+  const appCreationDisabled = !canCreateApp() || (!appsLimit?.canAddUnlimited && appsLimit?.percentage >= 100);
 
   const templateOptionsView = (
     <>
@@ -87,7 +63,7 @@ export const BlankPage = function BlankPage({
                   template_name: name,
                   button_name: 'create_application_from_template_card',
                 });
-                deployApp(id);
+                openCreateAppFromTemplateModal({ id, name });
               }}
             >
               <div
@@ -171,7 +147,7 @@ export const BlankPage = function BlankPage({
                       <ButtonSolid
                         disabled={appCreationDisabled}
                         leftIcon="plus"
-                        onClick={createApp}
+                        onClick={() => openCreateAppModal('blank_page')}
                         isLoading={creatingApp}
                         data-cy="button-new-app-from-scratch"
                         className="col"
@@ -184,7 +160,7 @@ export const BlankPage = function BlankPage({
                           <ButtonSolid
                             disabled={appCreationDisabled}
                             leftIcon="folderdownload"
-                            onChange={handleImportApp}
+                            onChange={readAndImport}
                             isLoading={isImportingApp}
                             data-cy="button-import-an-app"
                             className="col"
@@ -222,7 +198,7 @@ export const BlankPage = function BlankPage({
                     <EmptyIllustration />
                   </div>
                 </div>
-                {appType !== 'workflow' && templateOptionsView}
+                {appType !== 'workflow' && !appCreationDisabled && templateOptionsView}
               </div>
             </div>
           </div>
@@ -232,6 +208,7 @@ export const BlankPage = function BlankPage({
           onHide={hideTemplateLibraryModal}
           onCloseButtonClick={hideTemplateLibraryModal}
           darkMode={darkMode}
+          appCreationDisabled={appCreationDisabled}
         />
       </div>
     )

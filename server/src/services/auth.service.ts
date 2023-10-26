@@ -38,7 +38,7 @@ import {
   dbTransactionWrap,
   isSuperAdmin,
   generateInviteURL,
-  generateNextName,
+  generateNextNameAndSlug,
   generateOrgInviteURL,
 } from 'src/helpers/utils.helper';
 import { InstanceSettingsService } from './instance_settings.service';
@@ -145,7 +145,8 @@ export class AuthService {
           organization = organizationList[0];
         } else if (allowPersonalWorkspace) {
           // no form login enabled organization available for user - creating new one
-          organization = await this.organizationsService.create(generateNextName('My workspace'), user, manager);
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          organization = await this.organizationsService.create(name, slug, user, manager);
         } else {
           throw new UnauthorizedException('User is not assigned to any workspaces');
         }
@@ -233,7 +234,11 @@ export class AuthService {
       if (user.defaultOrganizationId !== user.organizationId)
         await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
+      const organization = await this.organizationsService.get(user.organizationId);
+
       return decamelizeKeys({
+        currentOrganizationId: user.organizationId,
+        currentOrganizationSlug: organization.slug,
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         super_admin: user.userType === 'instance',
         groupPermissions: await this.usersService.groupPermissions(user, manager),
@@ -309,8 +314,8 @@ export class AuthService {
       // Create default organization
       //TODO: check if there any case available that the firstname will be nil
 
-      const organizationName = generateNextName('My workspace');
-      organization = await this.organizationsService.create(organizationName, null, manager);
+      const { name, slug } = generateNextNameAndSlug('My workspace');
+      organization = await this.organizationsService.create(name, slug, null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -396,7 +401,12 @@ export class AuthService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
-      const organization = await this.organizationsService.create(workspace || 'My workspace', null, manager);
+      const organization = await this.organizationsService.create(
+        workspace || 'My workspace',
+        'my-workspace',
+        null,
+        manager
+      );
       const user = await this.usersService.create(
         {
           email,
@@ -703,14 +713,15 @@ export class AuthService {
     };
   }
 
-  generateSessionPayload(user: User, appOrganizationId: string, appData?: any) {
+  generateSessionPayload(user: User, currentOrganization: Organization, appData?: any) {
     return decamelizeKeys({
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      currentOrganizationId: appOrganizationId
-        ? appOrganizationId
+      currentOrganizationSlug: currentOrganization?.slug,
+      currentOrganizationId: currentOrganization?.id
+        ? currentOrganization?.id
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0],
@@ -790,6 +801,7 @@ export class AuthService {
       appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
       dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
       currentOrganizationId: organization.id,
+      currentOrganizationSlug: organization.slug,
     });
   }
 }

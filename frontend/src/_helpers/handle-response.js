@@ -1,16 +1,16 @@
-import { authenticationService } from '@/_services';
 import React from 'react';
 import * as ReactDOM from 'react-dom';
 import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
+import { authenticationService } from '@/_services';
 
 const copyFunction = (input) => {
   let text = document.getElementById(input).innerHTML;
   copyToClipboard(text);
 };
 
-export function handleResponse(response) {
+export function handleResponse(response, avoidRedirection = false) {
   return response.text().then((text) => {
     let modalBody = (
       <>
@@ -29,8 +29,7 @@ export function handleResponse(response) {
     if (!response.ok) {
       if ([401].indexOf(response.status) !== -1) {
         // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-        authenticationService.logout();
-        // location.reload(true);
+        avoidRedirection ? authenticationService.logout() : location.reload(true);
       } else if ([451].indexOf(response.status) !== -1) {
         // a popup will show when the response meet the following conditions
         const url = response.url;

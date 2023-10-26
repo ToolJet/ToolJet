@@ -164,11 +164,13 @@ export const commonText = {
 
   shareModalElements: {
     modalHeader: "Share",
-    makePublicAppToggleLabel: "Make application public?",
-    shareableAppLink: "Get shareable link for this application",
+    makePublicAppToggleLabel: "Make application public",
+    shareableAppLink: "Shareable app link",
+    // iframeLinkLabel: "Get embeddable link for this application",
+    // ifameLinkCopyButton: "copy",
     copyAppLinkButton: "copy",
   },
-  iframeLinkLabel: "Get embeddable link for this application",
+  iframeLinkLabel: "Embedded app link",
   ifameLinkCopyButton: "copy",
   groupInputFieldLabel: "Select Group",
   documentationLink: "Read Documentation",

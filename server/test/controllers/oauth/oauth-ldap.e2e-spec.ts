@@ -18,6 +18,7 @@ describe('oauth controller', () => {
     'first_name',
     'last_name',
     'current_organization_id',
+    'current_organization_slug',
     'admin',
     'created_at',
     'app_group_permissions',

@@ -13,6 +13,7 @@ export const organizationService = {
   getSSODetails,
   editOrganizationConfigs,
   getWorkspacesLimit,
+  checkWorkspaceUniqueness,
 };
 
 function getUsers(page, options) {
@@ -30,12 +31,12 @@ function getUsersByValue(searchInput) {
   );
 }
 
-function createOrganization(name) {
+function createOrganization(data) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ name }),
+    body: JSON.stringify(data),
   };
   return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
 }
@@ -83,4 +84,10 @@ function editOrganizationConfigs(params) {
 function getWorkspacesLimit() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/organizations/limits`, requestOptions).then(handleResponse);
+}
+
+function checkWorkspaceUniqueness(name, slug) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const query = queryString.stringify({ name, slug });
+  return fetch(`${config.apiUrl}/organizations/is-unique?${query}`, requestOptions).then(handleResponse);
 }

@@ -1,7 +1,7 @@
 import React, { useState, useContext, useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService, appService } from '@/_services';
+import { tooljetDatabaseService, appsService } from '@/_services';
 import { ListItemPopover } from './ActionsPopover';
 import { TooljetDatabaseContext } from '../index';
 import { ToolTip } from '@/_components';
@@ -22,7 +22,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   }
 
   const handleExportTable = () => {
-    appService
+    appsService
       .exportResource({
         tooljet_database: [{ table_id: selectedTable.id }],
         organization_id: organizationId,

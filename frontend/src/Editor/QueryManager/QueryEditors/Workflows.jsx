@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Select from '@/_ui/Select';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import './workflows-query.scss';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,7 +11,7 @@ export function Workflows({ options, optionsChanged, currentState, appId }) {
   const [params, setParams] = useState([...(options.params ?? [{ key: '', value: '' }])]);
 
   useEffect(() => {
-    appService.getWorkflows(appId).then(({ workflows }) => {
+    appsService.getWorkflows(appId).then(({ workflows }) => {
       setWorkflowOptions(
         workflows.map((workflow) => ({
           value: workflow.id,

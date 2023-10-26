@@ -56,6 +56,8 @@ Cypress.Commands.add("createApp", (appName) => {
 
   cy.get("body").then(($title) => {
     cy.get(getAppButtonSelector($title)).click();
+    cy.clearAndType('[data-cy="app-name-input"]', appName);
+    cy.get('[data-cy="+ Create app"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();

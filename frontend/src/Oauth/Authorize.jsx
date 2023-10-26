@@ -5,7 +5,8 @@ import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import posthog from 'posthog-js';
 import initPosthog from '../_helpers/initPosthog';
-import { TJLoader } from '@/_components';
+import { getCookie } from '@/_helpers';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { redirectToWorkspace } from '@/_helpers/utils';
 
 export function Authorize() {
@@ -13,6 +14,8 @@ export function Authorize() {
   const router = useRouter();
 
   const organizationId = authenticationService.getLoginOrganizationId();
+  const organizationSlug = authenticationService.getLoginOrganizationSlug();
+  const redirectUrl = getCookie('redirectPath');
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
@@ -53,13 +56,13 @@ export function Authorize() {
         //logged users should send tj-workspace-id when login to unauthorized workspace
         if (session.authentication_status === false || session.current_organization_id) {
           signIn(authParams, configs);
+          subsciption.unsubscribe();
         }
       });
     } else {
       signIn(authParams, configs);
     }
 
-    () => subsciption && subsciption.unsubscribe();
     // Disabled for useEffect not being called for updation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -98,7 +101,9 @@ export function Authorize() {
       {error && (
         <Navigate
           replace
-          to={`/login${error && organizationId ? `/${organizationId}` : ''}`}
+          to={`/login${error && organizationSlug ? `/${organizationSlug}` : '/'}${
+            redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+          }`}
           state={{ errorMessage: error && error }}
         />
       )}
