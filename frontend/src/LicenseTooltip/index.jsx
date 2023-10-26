@@ -20,6 +20,7 @@ const LicenseTooltip = ({
     'Custom styles': 'customStyling',
     'OpenID Connect': 'openid',
     LDAP: 'ldap',
+    SAML: 'saml',
     'Multi-environments': 'multiEnvironment',
   };
 
