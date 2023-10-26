@@ -26,6 +26,9 @@ export interface Terms {
     comments?: boolean;
   };
   type?: LICENSE_TYPE;
+  auditLogs?: {
+    maximumDays?: number | string;
+  };
   meta?: {
     customerName?: string;
     generatedFrom?: 'API';

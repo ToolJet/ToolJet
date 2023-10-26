@@ -62,6 +62,9 @@ export class LicenseService {
       case LICENSE_FIELD.AUDIT_LOGS:
         return License.Instance().auditLogs;
 
+      case LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS:
+        return License.Instance().maxDurationForAuditLogs;
+
       case LICENSE_FIELD.MULTI_ENVIRONMENT:
         return License.Instance().multiEnvironment;
 

@@ -25,6 +25,9 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     comments: false,
   },
   domains: [],
+  auditLogs: {
+    maximumDays: 0,
+  },
 };
 
 export const BASIC_PLAN_SETTINGS = {
@@ -48,5 +51,17 @@ export const BASIC_PLAN_SETTINGS = {
   },
   ENABLE_COMMENTS: {
     value: 'false',
+  },
+};
+
+export const BUSINESS_PLAN_TERMS = {
+  auditLogs: {
+    maximumDays: 14,
+  },
+};
+
+export const ENTERPRISE_PLAN_TERMS = {
+  auditLogs: {
+    maximumDays: 30,
   },
 };
