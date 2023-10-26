@@ -382,7 +382,7 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
-  const handleDeleteConfirm = useCallback(() => {
+  const handleDeleteConfirm = React.useCallback(() => {
     switchSidebarTab(2);
     removeComponent(component);
     setWidgetDeleteConfirmation(false);
