@@ -3,7 +3,7 @@ import React from 'react';
 import config from 'config';
 import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
-import { EditorFunc } from '@/Editor'; //!Update: EditorFunc to Editor.jsx
+import { Editor } from '@/Editor';
 const Y = require('yjs');
 const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
@@ -65,7 +65,7 @@ export const RealtimeEditor = (props) => {
 
   return (
     <RoomProvider awareness={provider.awareness} initialPresence={initialPresence}>
-      <EditorFunc provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
+      <Editor provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
     </RoomProvider>
   );
 };
