@@ -301,7 +301,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       } else {
         if (component.parent && !componentsMapping[parentId]) {
           skipComponent = true;
-          break;
         }
         parentId = componentsMapping[parentId];
       }

@@ -707,7 +707,6 @@ export class AppImportExportService {
           } else {
             if (component.parent && !appResourceMappings.componentsMapping[parentId]) {
               skipComponent = true;
-              break;
             }
 
             parentId = appResourceMappings.componentsMapping[parentId];
@@ -1560,7 +1559,6 @@ function transformComponentData(
     } else {
       if (component.parent && !componentsMapping[parentId]) {
         skipComponent = true;
-        break;
       }
       parentId = componentsMapping[parentId];
     }
