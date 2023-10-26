@@ -127,11 +127,9 @@ module.exports = {
           customCss: require.resolve('./src/css/custom.css'),
         },
         sitemap: {},
-        gtag: isProd
+        googleTagManager: isProd
           ? {
-            trackingID: process.env.GA_MID,
-            // Optional fields.
-            anonymizeIP: true, // Should IPs be anonymized?
+            containerId: process.env.GTM,
           }
           : undefined,
       },
