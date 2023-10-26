@@ -7,11 +7,11 @@ ToolJet can connect to MySQL databases to read and write data.
 
 ## Connection
 
-To establish a connection with the MySQL datasource, you can either click on the `+Add New` button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the MySQL data source, you can either click on the `+Add New` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/addmysql.gif" alt="MySQL datasource"/>
+<img className="screenshot-full" src="/img/datasource-reference/mysql/addmysql.gif" alt="MySQL data source"/>
 
 </div>
 <br/>
@@ -20,31 +20,30 @@ To establish a connection with the MySQL datasource, you can either click on the
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
 :::
 
-
 **ToolJet requires the following to connect to your MySQL database:**
 
-| Parameter | Description |
-|:--- |:--- |
-| Username | Username of the MySQL database |
-| Password | Password of the MySQL database |
-| Database name | Name of the MySQL database |
+| Parameter       | Description                                                               |
+| :-------------- | :------------------------------------------------------------------------ |
+| Username        | Username of the MySQL database                                            |
+| Password        | Password of the MySQL database                                            |
+| Database name   | Name of the MySQL database                                                |
 | Connection type | Connection type of the MySQL database: either **Hostname** or **Socket**. |
 
 If you are using **Hostname** as the connection type, you will need to provide the following information:
 
-| Parameter | Description |
-|:--- |:--- |
-| Host/IP | Hostname or IP address of the MySQL database |
-| Port | Port number of the MySQL database |
-| SSL | Enable SSL connection to the MySQL database |
+| Parameter | Description                                  |
+| :-------- | :------------------------------------------- |
+| Host/IP   | Hostname or IP address of the MySQL database |
+| Port      | Port number of the MySQL database            |
+| SSL       | Enable SSL connection to the MySQL database  |
 
 If you are using **Socket** as the connection type, you will need to provide the following information:
 
-| Parameter | Description |
-|:--- |:--- |
+| Parameter   | Description             |
+| :---------- | :---------------------- |
 | Socket path | Path of the socket file |
 
-It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet. 
+It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
 
 <div style={{textAlign: 'center'}}>
 
@@ -63,9 +62,10 @@ Once the MySQL data source is added, you can create queries to read and write da
 
 ### SQL mode
 
-SQL mode can be used to query MySQL database using SQL queries. Select SQL mode from the dropdown and then enter the SQL query in the editor. 
+SQL mode can be used to query MySQL database using SQL queries. Select SQL mode from the dropdown and then enter the SQL query in the editor.
 
 **Example:**
+
 ```sql
 SELECT * FROM users
 ```
@@ -80,7 +80,8 @@ SELECT * FROM users
 
 GUI mode can be used to query MySQL database without writing queries. Select GUI mode from the dropdown and then choose the operation **Bulk update using primary key**. Enter the **Table** name and **Primary key column** name. Now, in the editor enter the records in the form of an array of objects. Each object should contain the primary key column and the columns to be updated.
 
-**Example:** 
+**Example:**
+
 ```json
 {{ [ {id: 1, channel: 33}, {id:2, channel:24} ] }}
 ```

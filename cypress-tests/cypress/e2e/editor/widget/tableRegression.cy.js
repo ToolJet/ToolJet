@@ -56,7 +56,7 @@ import { resizeQueryPanel } from "Support/utils/dataSource";
 describe("Table", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
     deleteDownloadsFolder();
     cy.viewport(1400, 2200);
@@ -275,6 +275,10 @@ describe("Table", () => {
       "have.text",
       "Button Position"
     ); // dropdown_type
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
+    openEditorSidebar(data.widgetName);
+    cy.get('[data-cy="pages-name-fakename1"]').click();
 
     cy.get('[data-cy="rightActions-cell-2"]')
       .eq(0)
@@ -291,6 +295,9 @@ describe("Table", () => {
     );
 
     cy.get('[data-cy="add-event-handler"]').eq(1).click();
+    cy.waitForAutoSave();
+    openEditorSidebar(data.widgetName);
+    cy.get('[data-cy="pages-name-fakename1"]').click();
     cy.get('[data-cy="leftActions-cell-0"]').eq(0).find("button").click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Hello world!");
     openEditorSidebar(data.widgetName);
@@ -1098,7 +1105,7 @@ describe("Table", () => {
     verifyNodeData(tableText.defaultWidgetName, "Object", "22 entries ");
     cy.wait(1000);
     openNode(tableText.defaultWidgetName, 0, 1);
-    openNode(tableText.defaultWidgetName, 0, 1);
+    // openNode(tableText.defaultWidgetName, 0, 1);
     verifyNodeData("newRows", "Array", "1 item ");
     openNode("newRows");
     verifyNodeData("0", "Object", "3 entries ");

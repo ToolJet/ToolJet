@@ -140,7 +140,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
   useEffect(() => {
-    setRealState(currentState);
+    setRealState(currentState); //!ceck this
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
 

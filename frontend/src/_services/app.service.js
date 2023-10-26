@@ -22,13 +22,8 @@ export const appService = {
   saveApp,
   getAppUsers,
   createAppUser,
-  setVisibility,
-  setMaintenance,
-  setSlug,
   setPasswordFromToken,
   acceptInvite,
-  getVersions,
-  getTables,
 };
 
 function getConfig() {
@@ -128,11 +123,9 @@ function getApp(id, accessType) {
 }
 
 // v2 api for fetching app
-function fetchApp(id, accessType) {
+function fetchApp(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/${id}${accessType ? `?access_type=${accessType}` : ''}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${config.apiUrl}/v2/apps/${id}`, requestOptions).then(handleResponse);
 }
 
 function deleteApp(id) {
@@ -183,36 +176,6 @@ function createAppUser(app_id, org_user_id, role) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/app_users`, requestOptions).then(handleResponse);
-}
-
-function setVisibility(appId, visibility) {
-  const requestOptions = {
-    method: 'PUT',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify({ app: { is_public: visibility } }),
-  };
-  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
-}
-
-function setMaintenance(appId, value) {
-  const requestOptions = {
-    method: 'PUT',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify({ app: { is_maintenance_on: value } }),
-  };
-  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
-}
-
-function setSlug(appId, slug) {
-  const requestOptions = {
-    method: 'PUT',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify({ app: { slug: slug } }),
-  };
-  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }
 
 function setPasswordFromToken({ token, password, organization, role, firstName, lastName, organizationToken }) {

@@ -79,8 +79,14 @@ const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
-  const { updateState, updateAppDefinitionDiff, updateAppVersion, setIsSaving, createAppVersionEventHandlers } =
-    useAppDataActions();
+  const {
+    updateState,
+    updateAppDefinitionDiff,
+    updateAppVersion,
+    setIsSaving,
+    createAppVersionEventHandlers,
+    setAppPreviewLink,
+  } = useAppDataActions();
   const { updateEditorState, updateQueryConfirmationList, setSelectedComponents, setCurrentPageId } =
     useEditorActions();
 
@@ -398,7 +404,7 @@ const EditorComponent = (props) => {
         threshold: 0,
       },
     });
-    updateState({ appId: props?.params?.id });
+
     getCanvasWidth();
     initEditorWalkThrough();
   };
@@ -717,7 +723,11 @@ const EditorComponent = (props) => {
     });
 
     if (versionSwitched) {
-      props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${appJson.pages[homePageId]?.handle}`);
+      props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${appJson.pages[homePageId]?.handle}`, {
+        state: {
+          isSwitchingPage: true,
+        },
+      });
     }
 
     await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id);
@@ -729,7 +739,7 @@ const EditorComponent = (props) => {
   };
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
-    const _appId = props?.params?.id;
+    const _appId = props?.params?.id || props?.params?.slug;
 
     if (!onMount) {
       await appService.fetchApp(_appId).then((data) => callBack(data, startingPageHandle));
@@ -909,6 +919,21 @@ const EditorComponent = (props) => {
       const paramDiff = computeComponentPropertyDiff(appDefinitionDiff, appDefinition, appDiffOptions);
       const updateDiff = computeAppDiff(paramDiff, currentPageId, appDiffOptions, currentLayout);
 
+      if (updateDiff['error']) {
+        const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+        const isPlatformMac = platform.toLowerCase().indexOf('mac') > -1;
+        const toastMessage = `Unable to save changes! ${isPlatformMac ? '(⌘ + Z to undo)' : '(ctrl + Z to undo)'}`;
+
+        toast(toastMessage, {
+          icon: '🚫',
+        });
+
+        return updateEditorState({
+          saveError: true,
+          isUpdatingEditorStateInProcess: false,
+        });
+      }
+
       updateAppVersion(appId, editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {
@@ -917,7 +942,11 @@ const EditorComponent = (props) => {
           };
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
 
-          if (updateDiff?.type === 'components' && updateDiff?.operation === 'delete') {
+          if (
+            updateDiff?.type === 'components' &&
+            updateDiff?.operation === 'delete' &&
+            !appDiffOptions?.componentCut
+          ) {
             const appEvents = Array.isArray(events) && events.length > 0 ? JSON.parse(JSON.stringify(events)) : [];
 
             const updatedEvents = appEvents.filter((event) => {
@@ -1012,9 +1041,7 @@ const EditorComponent = (props) => {
         undoOpts = {
           componentAdded: true,
         };
-      }
-
-      if (undoOpts?.componentAdded) {
+      } else if (undoOpts?.componentAdded) {
         undoOpts = {
           componentDeleted: true,
         };
@@ -1295,7 +1322,25 @@ const EditorComponent = (props) => {
       switchPage: true,
       pageId: newPageId,
     });
-    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${newHandle}`);
+    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${newHandle}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
+
+    const { globals: existingGlobals } = currentState;
+
+    const page = {
+      id: newPageId,
+      name,
+      handle,
+      variables: copyOfAppDefinition.pages[newPageId]?.variables ?? {},
+    };
+
+    const globals = {
+      ...existingGlobals,
+    };
+    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
 
   const switchPage = (pageId, queryParams = []) => {
@@ -1314,7 +1359,11 @@ const EditorComponent = (props) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${handle}?${queryParamsString}`);
+    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
 
     const { globals: existingGlobals } = currentState;
 
@@ -1553,9 +1602,18 @@ const EditorComponent = (props) => {
     });
   };
 
-  const appVersionPreviewLink = editingVersion
-    ? `/applications/${appId}/versions/${editingVersion.id}/${currentState.page.handle}`
-    : '';
+  useEffect(() => {
+    const previewQuery = queryString.stringify({ version: editingVersion?.name });
+    const appVersionPreviewLink = editingVersion
+      ? `/applications/${slug || appId}/${currentState.page.handle}${
+          !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
+        }`
+      : '';
+
+    setAppPreviewLink(appVersionPreviewLink);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, currentVersionId]);
+
   const deviceWindowWidth = 450;
 
   const editorRef = {
@@ -1626,7 +1684,6 @@ const EditorComponent = (props) => {
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
           editingVersion={editingVersion}
-          appVersionPreviewLink={appVersionPreviewLink}
           canUndo={canUndo}
           canRedo={canRedo}
           handleUndo={handleUndo}

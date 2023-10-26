@@ -18,16 +18,16 @@ export class Component {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'name' })
+  @Column()
   name: string;
 
-  @Column({ name: 'type' })
+  @Column()
   type: string;
 
   @Column({ name: 'page_id' })
   pageId: string;
 
-  @Column({ name: 'parent', nullable: true })
+  @Column({ nullable: true })
   parent: string;
 
   @Column('simple-json')

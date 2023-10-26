@@ -11,17 +11,25 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { User } from 'src/entities/user.entity';
 import { EntityManager } from 'typeorm';
 import { DataSourcesService } from './data_sources.service';
-import { dbTransactionWrap, defaultAppEnvironments, truncateAndReplace } from 'src/helpers/utils.helper';
+import {
+  dbTransactionWrap,
+  defaultAppEnvironments,
+  catchDbException,
+  extractMajorVersion,
+  isTooljetVersionWithNormalizedAppDefinitionSchem,
+} from 'src/helpers/utils.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { Organization } from 'src/entities/organization.entity';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { Plugin } from 'src/entities/plugin.entity';
 import { Page } from 'src/entities/page.entity';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
+import { v4 as uuid } from 'uuid';
 
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
@@ -179,14 +187,20 @@ export class AppImportExportService {
         multiPages: true,
         multiEnv: true,
         globalDataSources: true,
-        normalizedAppDefinitionSchema: true,
       };
 
       return { appV2: appToExport };
     });
   }
 
-  async import(user: User, appParamsObj: any, externalResourceMappings = {}): Promise<App> {
+  async import(
+    user: User,
+    appParamsObj: any,
+    appName: string,
+    externalResourceMappings = {},
+    tooljetVersion = '',
+    cloning = false
+  ): Promise<App> {
     if (typeof appParamsObj !== 'object') {
       throw new BadRequestException('Invalid params for app import');
     }
@@ -204,8 +218,12 @@ export class AppImportExportService {
     const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
       ? appParams
       : convertSinglePageSchemaToMultiPageSchema(appParams);
+    schemaUnifiedAppParams.name = appName;
 
-    const isNormalizedAppDefinitionSchema = appParams?.schemaDetails?.normalizedAppDefinitionSchema;
+    const importedAppTooljetVersion = extractMajorVersion(tooljetVersion);
+    const isNormalizedAppDefinitionSchema = cloning
+      ? true
+      : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
     await this.setupImportedAppAssociations(
@@ -228,18 +246,20 @@ export class AppImportExportService {
   }
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
-    const importedApp = manager.create(App, {
-      name: truncateAndReplace(appParams.name),
-      organizationId: user.organizationId,
-      userId: user.id,
-      slug: null, // Prevent db unique constraint error.
-      icon: appParams.icon,
-      isPublic: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await manager.save(importedApp);
-    return importedApp;
+    return await catchDbException(async () => {
+      const importedApp = manager.create(App, {
+        name: appParams.name,
+        organizationId: user.organizationId,
+        userId: user.id,
+        slug: null,
+        icon: appParams.icon,
+        isPublic: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await manager.save(importedApp);
+      return importedApp;
+    }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
   }
 
   extractImportDataFromAppParams(appParams: Record<string, any>): {
@@ -370,7 +390,11 @@ export class AppImportExportService {
 
             const pageComponents = page.components;
 
-            const mappedComponents = transformComponentData(pageComponents, componentEvents);
+            const mappedComponents = transformComponentData(
+              pageComponents,
+              componentEvents,
+              appResourceMappings.componentsMapping
+            );
 
             const componentLayouts = [];
 
@@ -387,16 +411,15 @@ export class AppImportExportService {
             appResourceMappings.pagesMapping[pageId] = pageCreated.id;
 
             mappedComponents.forEach((component) => {
-              appResourceMappings.componentsMapping[component.id] = component.id;
               component.page = pageCreated;
             });
 
             const savedComponents = await manager.save(Component, mappedComponents);
 
-            savedComponents.forEach((component) => {
-              const componentLayout = pageComponents[component.id]['layouts'];
+            for (const componentId in pageComponents) {
+              const componentLayout = pageComponents[componentId]['layouts'];
 
-              if (componentLayout) {
+              if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
                 for (const type in componentLayout) {
                   const layout = componentLayout[type];
                   const newLayout = new Layout();
@@ -405,12 +428,12 @@ export class AppImportExportService {
                   newLayout.left = layout.left;
                   newLayout.width = layout.width;
                   newLayout.height = layout.height;
-                  newLayout.component = component;
+                  newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
                 }
               }
-            });
+            }
 
             await manager.save(Layout, componentLayouts);
 
@@ -435,14 +458,14 @@ export class AppImportExportService {
               if (eventObj.event?.length === 0) return;
 
               eventObj.event.forEach(async (event, index) => {
-                const newEvent = {
+                const newEvent = await manager.create(EventHandler, {
                   name: event.eventId,
-                  sourceId: eventObj.componentId,
+                  sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                   target: Target.component,
                   event: event,
                   index: eventObj.index || index,
                   appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
-                };
+                });
 
                 await manager.save(EventHandler, newEvent);
               });
@@ -504,20 +527,31 @@ export class AppImportExportService {
             homePageId: updateHomepageId,
           }
         );
+
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appResourceMappings.appVersionMapping[importingAppVersion.id],
+          appResourceMappings.dataQueryMapping,
+          appResourceMappings.componentsMapping,
+          appResourceMappings.pagesMapping,
+          isNormalizedAppDefinitionSchema
+        );
       }
     }
 
-    const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
+    if (isNormalizedAppDefinitionSchema) {
+      const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
 
-    for (const appVersionId of appVersionIds) {
-      await this.updateEventActionsForNewVersionWithNewMappingIds(
-        manager,
-        appVersionId,
-        appResourceMappings.dataQueryMapping,
-        appResourceMappings.componentsMapping,
-        appResourceMappings.pagesMapping,
-        isNormalizedAppDefinitionSchema
-      );
+      for (const appVersionId of appVersionIds) {
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appVersionId,
+          appResourceMappings.dataQueryMapping,
+          appResourceMappings.componentsMapping,
+          appResourceMappings.pagesMapping,
+          isNormalizedAppDefinitionSchema
+        );
+      }
     }
 
     await this.setEditingVersionAsLatestVersion(manager, appResourceMappings.appVersionMapping, importingAppVersions);
@@ -632,20 +666,6 @@ export class AppImportExportService {
         appResourceMappings.dataQueryMapping = dataQueryMapping;
       }
 
-      const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-        if (componentParentId) {
-          const parentId = component?.parent?.split('-').slice(0, -1).join('-');
-
-          const parentComponent = allComponents.find((comp) => comp.id === parentId);
-
-          if (parentComponent) {
-            return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
-          }
-        }
-
-        return false;
-      };
-
       const pagesOfAppVersion = importingPages.filter((page) => page.appVersionId === importingAppVersion.id);
 
       for (const page of pagesOfAppVersion) {
@@ -671,11 +691,12 @@ export class AppImportExportService {
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
 
         for (const component of pageComponents) {
+          let skipComponent = false;
           const newComponent = new Component();
 
           let parentId = component.parent ? component.parent : null;
 
-          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
+          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId); //from here
 
           if (isParentTabOrCalendar) {
             const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
@@ -684,49 +705,55 @@ export class AppImportExportService {
 
             parentId = `${mappedParentId}-${childTabId}`;
           } else {
+            if (component.parent && !appResourceMappings.componentsMapping[parentId]) {
+              skipComponent = true;
+            }
+
             parentId = appResourceMappings.componentsMapping[parentId];
           }
 
-          newComponent.name = component.name;
-          newComponent.type = component.type;
-          newComponent.properties = component.properties;
-          newComponent.styles = component.styles;
-          newComponent.validation = component.validation;
-          newComponent.parent = component.parent ? parentId : null;
+          if (!skipComponent) {
+            newComponent.name = component.name;
+            newComponent.type = component.type;
+            newComponent.properties = component.properties;
+            newComponent.styles = component.styles;
+            newComponent.validation = component.validation;
+            newComponent.parent = component.parent ? parentId : null;
 
-          newComponent.page = pageCreated;
+            newComponent.page = pageCreated;
 
-          const savedComponent = await manager.save(newComponent);
+            const savedComponent = await manager.save(newComponent);
 
-          appResourceMappings.componentsMapping[component.id] = savedComponent.id;
-          const componentLayout = component.layouts;
+            appResourceMappings.componentsMapping[component.id] = savedComponent.id;
+            const componentLayout = component.layouts;
 
-          componentLayout.forEach(async (layout) => {
-            const newLayout = new Layout();
-            newLayout.type = layout.type;
-            newLayout.top = layout.top;
-            newLayout.left = layout.left;
-            newLayout.width = layout.width;
-            newLayout.height = layout.height;
-            newLayout.component = savedComponent;
+            componentLayout.forEach(async (layout) => {
+              const newLayout = new Layout();
+              newLayout.type = layout.type;
+              newLayout.top = layout.top;
+              newLayout.left = layout.left;
+              newLayout.width = layout.width;
+              newLayout.height = layout.height;
+              newLayout.component = savedComponent;
 
-            await manager.save(newLayout);
-          });
-
-          const componentEvents = importingEvents.filter((event) => event.sourceId === component.id);
-
-          if (componentEvents.length > 0) {
-            componentEvents.forEach(async (componentEvent) => {
-              const newEvent = new EventHandler();
-              newEvent.name = componentEvent.name;
-              newEvent.sourceId = savedComponent.id;
-              newEvent.target = componentEvent.target;
-              newEvent.event = componentEvent.event;
-              newEvent.index = componentEvent.index;
-              newEvent.appVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
-
-              await manager.save(EventHandler, newEvent);
+              await manager.save(newLayout);
             });
+
+            const componentEvents = importingEvents.filter((event) => event.sourceId === component.id);
+
+            if (componentEvents.length > 0) {
+              componentEvents.forEach(async (componentEvent) => {
+                const newEvent = new EventHandler();
+                newEvent.name = componentEvent.name;
+                newEvent.sourceId = savedComponent.id;
+                newEvent.target = componentEvent.target;
+                newEvent.event = componentEvent.event;
+                newEvent.index = componentEvent.index;
+                newEvent.appVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
+
+                await manager.save(EventHandler, newEvent);
+              });
+            }
           }
         }
 
@@ -775,7 +802,12 @@ export class AppImportExportService {
             await manager.save(EventHandler, newEvent);
           });
         } else {
+          this.replaceDataQueryOptionsWithNewDataQueryIds(
+            mappedNewDataQuery.options,
+            appResourceMappings.dataQueryMapping
+          );
           const queryEvents = mappedNewDataQuery.options?.events || [];
+
           delete mappedNewDataQuery?.options?.events;
 
           queryEvents.forEach(async (event, index) => {
@@ -1456,8 +1488,6 @@ export class AppImportExportService {
     oldPageToNewPageMapping: Record<string, unknown>,
     isNormalizedAppDefinitionSchema: boolean
   ) {
-    if (!isNormalizedAppDefinitionSchema) return;
-
     const allEvents = await manager.find(EventHandler, {
       where: { appVersionId: versionId },
     });
@@ -1465,7 +1495,7 @@ export class AppImportExportService {
     for (const event of allEvents) {
       const eventDefinition = event.event;
 
-      if (eventDefinition?.actionId === 'run-query') {
+      if (isNormalizedAppDefinitionSchema && eventDefinition?.actionId === 'run-query') {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 
@@ -1495,31 +1525,79 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   return appParamsWithMultipageSchema;
 }
 
-function transformComponentData(data: object, componentEvents: any[]): Component[] {
+function transformComponentData(
+  data: object,
+  componentEvents: any[],
+  componentsMapping: Record<string, string>
+): Component[] {
   const transformedComponents: Component[] = [];
 
+  const allComponents = Object.keys(data).map((key) => {
+    return {
+      id: key,
+      ...data[key],
+    };
+  });
+
   for (const componentId in data) {
-    const componentData = data[componentId]['component'];
+    const component = data[componentId];
+    const componentData = component['component'];
 
+    let skipComponent = false;
     const transformedComponent: Component = new Component();
-    transformedComponent.id = componentId;
-    transformedComponent.name = componentData.name;
-    transformedComponent.type = componentData.component;
-    transformedComponent.properties = componentData.definition.properties || {};
-    transformedComponent.styles = componentData.definition.styles || {};
-    transformedComponent.validation = componentData.definition.validation || {};
-    transformedComponent.general = componentData.definition.general || {};
-    transformedComponent.generalStyles = componentData.definition.generalStyles || {};
-    transformedComponent.displayPreferences = componentData.definition.others || {};
-    transformedComponent.parent = data[componentId].parent || null;
 
-    transformedComponents.push(transformedComponent);
+    let parentId = component.parent ? component.parent : null;
 
-    componentEvents.push({
-      componentId: componentId,
-      event: componentData.definition.events,
-    });
+    const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, allComponents, parentId);
+
+    if (isParentTabOrCalendar) {
+      const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const mappedParentId = componentsMapping[_parentId];
+
+      parentId = `${mappedParentId}-${childTabId}`;
+    } else {
+      if (component.parent && !componentsMapping[parentId]) {
+        skipComponent = true;
+      }
+      parentId = componentsMapping[parentId];
+    }
+
+    if (!skipComponent) {
+      transformedComponent.id = uuid();
+      transformedComponent.name = componentData.name;
+      transformedComponent.type = componentData.component;
+      transformedComponent.properties = componentData.definition.properties || {};
+      transformedComponent.styles = componentData.definition.styles || {};
+      transformedComponent.validation = componentData.definition.validation || {};
+      transformedComponent.general = componentData.definition.general || {};
+      transformedComponent.generalStyles = componentData.definition.generalStyles || {};
+      transformedComponent.displayPreferences = componentData.definition.others || {};
+      transformedComponent.parent = component.parent ? parentId : null;
+
+      transformedComponents.push(transformedComponent);
+
+      componentEvents.push({
+        componentId: componentId,
+        event: componentData.definition.events,
+      });
+      componentsMapping[componentId] = transformedComponent.id;
+    }
   }
 
   return transformedComponents;
 }
+
+const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+  if (componentParentId) {
+    const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+    const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+    if (parentComponent) {
+      return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+    }
+  }
+
+  return false;
+};

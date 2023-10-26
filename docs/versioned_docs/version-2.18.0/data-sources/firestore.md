@@ -4,13 +4,14 @@ title: Cloud Firestore
 ---
 
 # Cloud Firestore
+ToolJet can connect to Cloud Firestore databases to read and write data.
 
 ## Connection 
-ToolJet connects to your Cloud Firestore using JSON key of your GCP service account.
-To generate a new key, check out [Firestore's official documentation](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-console).
+ToolJet connects to your Cloud Firestore using JSON key of your GCP service account. Get your service account key as JSON from GCP console. For generating a new key, check out [Firestore's official documentation](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-console).
 
-Once the key is downloaded, click on `+` button of data sources panel at the left-bottom corner of the app editor. Select Firestore from the modal that pops up. Paste the key in the field for GCP key. Click on **Test connection** button to verify if the service account can access Firestore from ToolJet server. Click on **Save** button to save the datasource.
+Once you have the key, open it in a text editor and copy the contents. Paste the contents in the **Private key** field of the Firestore data source modal.
 
+Click on **Test connection** button to verify if the key is valid. Click on **Save** button to save the data source.
 
 <img className="screenshot-full" src="/img/datasource-reference/firestore/add-ds-firestore.gif"  alt="firestore add ds"/>
 

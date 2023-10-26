@@ -87,6 +87,10 @@ export class DeleteComponentDto {
 
   @IsArray()
   diff: string[];
+
+  @IsBoolean()
+  @IsOptional()
+  is_component_cut: boolean;
 }
 
 export class LayoutUpdateDto {

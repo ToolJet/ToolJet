@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import {
   verifyMultipleComponentValuesFromInspector,
   verifyComponentValueFromInspector,
@@ -15,7 +16,7 @@ import { multipageSelector } from "Selectors/multipage";
 describe("Editor- Inspector", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
   });
 
@@ -82,6 +83,9 @@ describe("Editor- Inspector", () => {
       .click()
       .type("home{enter}");
     cy.get('[data-cy="button-add-query-param"]').click();
+    cy.wait(1000);
+    cy.get('[data-cy="button-add-query-param"]').click();
+
     addSupportCSAData("query-param-key", "key");
     addSupportCSAData("query-param-value", "value");
 
@@ -90,6 +94,8 @@ describe("Editor- Inspector", () => {
     selectEvent("On click", "Set variable");
     addSupportCSAData("key", "globalVar");
     addSupportCSAData("variable", "globalVar");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("button2")).click();
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
@@ -97,6 +103,8 @@ describe("Editor- Inspector", () => {
     selectEvent("On click", "Set page variable");
     addSupportCSAData("key", "pageVar");
     addSupportCSAData("variable", "pageVar");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("button3")).click();
 
     cy.get(commonWidgetSelector.sidebarinspector).click();

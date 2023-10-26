@@ -22,7 +22,7 @@ export class EventHandler {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'name' })
+  @Column()
   name: string;
 
   @Column()
@@ -34,7 +34,7 @@ export class EventHandler {
   @Column({ name: 'source_id' })
   sourceId: string;
 
-  @Column({ name: 'target' })
+  @Column()
   target: Target;
 
   @Column({ name: 'app_version_id' })

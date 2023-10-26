@@ -47,9 +47,9 @@ const updateType = Object.freeze({
 });
 
 export const computeAppDiff = (appDiff, currentPageId, opts, currentLayout) => {
-  const { updateDiff, type, operation } = updateFor(appDiff, currentPageId, opts, currentLayout);
+  const { updateDiff, type, operation, error } = updateFor(appDiff, currentPageId, opts, currentLayout);
 
-  return { updateDiff, type, operation };
+  return { updateDiff, type, operation, error };
 };
 
 // for table column diffs, we need to compute the diff for each column separately and send the the entire column data
@@ -170,7 +170,11 @@ const updateFor = (appDiff, currentPageId, opts, currentLayout) => {
     const optionsTypes = _.intersection(options, updateTypes);
 
     if (optionsTypes.length > 0) {
-      return processingFunction(appDiff, currentPageId, optionsTypes, currentLayout);
+      try {
+        return processingFunction(appDiff, currentPageId, optionsTypes, currentLayout);
+      } catch (error) {
+        return { error, updateDiff: {}, type: null, operation: null };
+      }
     }
   }
 
