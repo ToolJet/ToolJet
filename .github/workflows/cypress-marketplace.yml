@@ -14,7 +14,7 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-marketplace' || contains(github.event.pull_request.tags, 'cypress-release')) }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-marketplace' || contains(github.event.pull_request.tags, 'run-cypress')) }}
 
     steps:
       - name: Checkout
