@@ -5,14 +5,20 @@ import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import queryString from 'query-string';
 
-export const handleAppAccess = (componentType, slug) => {
+/*  appId, versionId are olny for old preview URLs */
+export const handleAppAccess = (componentType, slug, version_id) => {
   const previewQueryParams = getPreviewQueryParams();
+  const isOldLocalPreview = version_id ? true : false;
   const isLocalPreview = !_.isEmpty(previewQueryParams);
-  const queryParams = { ...previewQueryParams, access_type: isLocalPreview ? 'view' : 'edit' };
+  const queryParams = {
+    ...previewQueryParams,
+    ...(isOldLocalPreview && { version_id }),
+    access_type: isLocalPreview ? 'view' : 'edit',
+  };
   const query = queryString.stringify(previewQueryParams);
   const redirectPath = !_.isEmpty(query) ? `/applications/${slug}${query ? `?${query}` : ''}` : `/apps/${slug}`;
 
-  if (componentType === 'editor' || isLocalPreview) {
+  if (componentType === 'editor' || isLocalPreview || isOldLocalPreview) {
     /* Editor or app preview */
     return appsService.validatePrivateApp(slug, queryParams).catch((error) => {
       handleError(componentType, error, slug, redirectPath);

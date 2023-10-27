@@ -69,7 +69,8 @@ export class AppsController {
     @User() user,
     @Param('slug') appSlug: string,
     @Query('access_type') accessType: string,
-    @Query('version_name') versionName: string
+    @Query('version_name') versionName: string,
+    @Query('version_id') versionId: string
   ) {
     const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
 
@@ -96,7 +97,7 @@ export class AppsController {
       slug,
     };
     /* If the request comes from preview which needs version id */
-    if (versionName) {
+    if (versionName || versionId) {
       if (!ability.can('fetchVersions', app)) {
         throw new ForbiddenException(
           JSON.stringify({
@@ -105,10 +106,14 @@ export class AppsController {
         );
       }
 
-      const version = await this.appsService.findVersionFromName(versionName, id);
+      /* Adding backward compatibility for old URLs */
+      const version = versionId
+        ? await this.appsService.findVersion(versionId)
+        : await this.appsService.findVersionFromName(versionName, id);
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
       }
+      if (versionId) response['versionName'] = version.name;
       response['versionId'] = version.id;
     }
     return response;
