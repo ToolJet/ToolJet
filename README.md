@@ -1,4 +1,4 @@
-ToolJet is an **open-source low-code framework** to build and deploy internal tools with minimal engineering effort. ToolJet's drag and drop frontend builder allows you to create complex, responsive frontends within minutes. Additionally, you can integrate various data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; as well as object storage services like S3, GCS, and Minio, to fetch and write data.
+ToolJet is an **open-source low-code framework** to build and deploy internal tools with minimal engineering effort. ToolJet's drag-and-drop frontend builder allows you to create complex, responsive frontends within minutes. Additionally, you can integrate various data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; as well as object storage services like S3, GCS, and Minio, to fetch and write data.
 
 ⭐ If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
 
@@ -59,7 +59,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - **Granular access control:** Set permissions at both group and app levels.
 - **Low-code:** Use JS code almost anywhere within the builder, such as setting text color based on status with 
 `status === 'success' ? 'green' : 'red`.
-- **No-code query editors:** Query Editors available for all supported data sources.
+- **No-code query editors:** Query Editors are available for all supported data sources.
 - **Join and transform data:** Transform query results using JavaScript or Python code.
 - **Secure:** All the credentials are securely encrypted using `aes-256-gcm`.
 - **Data Privacy:** ToolJet serves solely as a proxy and does not store data.
@@ -70,7 +70,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ## Quickstart
 The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/).
 
-You can deploy ToolJet on Heroku using one-click-deployment.
+You can deploy ToolJet on Heroku using one-click deployment.
 
 <p align="center">
   <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height=32></a>
@@ -103,7 +103,7 @@ Documentation is available at https://docs.tooljet.com.
 - [Component Reference](https://docs.tooljet.com/docs/widgets/button)
 
 ## Self-hosted
-You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, Heroku and more.
+You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, Heroku, and more.
 
 | Provider  | Documentation |
 | :------------- | :------------- |
@@ -132,10 +132,10 @@ For general help using ToolJet, please refer to the official [documentation](htt
 
 - [Slack](https://tooljet.com/slack) - Discussions with the community and the team.
 - [GitHub](https://github.com/ToolJet/ToolJet/issues) - For bug reports and feature requests.
-- [Twitter](https://twitter.com/ToolJet) - Get the product updates easily.
+- [Twitter](https://twitter.com/ToolJet) - Get the product updates quickly.
 
 ## Roadmap
-Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and to learn about what's coming next.
+Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and learn about what's coming next.
 
 ## Branching model
 We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
