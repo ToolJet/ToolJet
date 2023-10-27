@@ -11,17 +11,18 @@
 const sidebars = {
   docs: [
     'getting-started',
-    // {
-    //   'type': 'category',
-    //   'label': 'ToolJet Concepts',
-    //   'items': [
-    //     'tooljet-concepts/what-are-components',
-    //     'tooljet-concepts/integrating-data',
-    //     'tooljet-concepts/writing-custom-code',
-    //     'tooljet-concepts/using-fx',
-    //     'tooljet-concepts/permissions',
-    //   ],
-    // },
+    {
+      'type': 'category',
+      'label': 'ToolJet Concepts',
+      'items': [
+        'tooljet-concepts/what-are-components',
+        'tooljet-concepts/what-are-datasources',
+        'tooljet-concepts/what-are-queries',
+        'tooljet-concepts/what-are-events',
+        'tooljet-concepts/how-to-access-values',
+        'tooljet-concepts/permissions',
+      ],
+    },
     {
       'type': 'category',
       'label': 'Setup',

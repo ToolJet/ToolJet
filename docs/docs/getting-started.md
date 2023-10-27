@@ -91,10 +91,10 @@ Click and drag a **[Table](/docs/widgets/table)** component to the canvas.
 ### 3. Integrate Data
 
 To fetch data in the App-Builder:
-- Click on **Add** in the **[query panel](/docs/app-builder/query-panel.md)**, select **ToolJet Database**
-- Choose `employees` as Table name, **List rows** as Operations.
-- Click **Run** to fetch data, rename query to `getEmployees`.
-- Toggle **Run this query on application load?** to automatically run the query when the app starts.
+- Click on the **Add** button in the **[Query Panel](/docs/app-builder/query-panel.md)**, select ToolJet Database
+- Choose `employees` as Table name, **List rows** as Operations
+- Click on **Run** to fetch data and rename the query to `getEmployees`
+- Toggle **Run this query on application load?** to automatically run the query when the app starts
 
 
 <div style={{marginBottom:'15px', height:'400px'}}>
@@ -159,10 +159,10 @@ Now the Table component is filled with the data returned by the `getEmployees` q
 
 Next step is to create a way to add data for new employees. 
 
-- Click on **Add** in the query panel, select **ToolJet Database**
-- Select `employees` for Table name, **Create row** for Operations.
-- Rename query to `addEmployees`.
-- Click **+ Add Column** to add required columns.
+- Click on **Add** in the query panel, select ToolJet Database
+- Select `employees` as Table name, **Create row** as Operations
+- Rename the query to `addEmployee`
+- Click **Add Column** to add required columns
 - Enter code below for **email** and **firstname** column keys:
 
 ```js
@@ -177,22 +177,22 @@ Frame all the remaining keys in the same format.
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/add-employee-query-v2.png" alt="Add Employee Query" />
 </div>
 
-Let's continue working on this query. The data needs to reload once this query runs since we want the Table component to be populated with the new data. Follow the below steps to run the `getEmployees` query after the `addEmployees` query is completed. 
+Let's continue working on this query. The data needs to reload once this query runs since we want the Table component to be populated with the updated data. Follow the below steps to run the `getEmployees` query after the `addEmployee` query is completed. 
 
 - Scroll down and click on **New Event Handler**
-- Select **Query Success** as the Event and **Run Query** as the Action
-- For the Query dropdown, select the previously created query - `getEmployees`
+- Select **Query Success** as Event and **Run Query** as Action
+- Select `getEmployees` as Query
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px', marginBottom:'15px'}} className="screenshot-full" src="/img/quickstart-guide/reload-data-v2.png" alt="Reload Table Data" />
 </div>
 
-Let's link this query to a button for adding new employee data.
+We are ready with a query that will allow us to add new employee data. Let's link this query to a button.
 
-In the bottom-right corner of the Table component, there is a `+`/Add new row button. To run this query on click of this button: 
-- Click on the Table component, go to **Events** in configuration panel, add a new event handler.
-- Choose **Add new rows** for event, **Run Query** for Action.
-- Select `addEmployee` for the Query.
+In the bottom-right corner of the Table component, there is a `+`/Add new row button. Follow the below steps to run the `addEmployee` query on click of the `+`/Add new row button: 
+- Click on the Table component, go to **Events** in configuration panel, add a **New event handler**
+- Choose **Add new rows** as Event, **Run Query** as Action
+- Select `addEmployee` as the Query
 
 <div style={{marginBottom:'15px', height:'400px'}}>
     <iframe
@@ -230,7 +230,7 @@ Now if you click on the `+`/Add new row button, enter the employee data and clic
 
 The **Share**, **Preview** and **Promote** icons are on the top-right of the App-Builder. 
 
-- Click on the Preview on the top-right of app builder to preview the current version of the app.
+- Click on the Preview on the top-right of app builder to preview the app.
 - Click on the Promote button to promote the application to a different environment.
 - Share option allows you to share the the application with other users or you can also make the app public and anyone with the URL will be able to use the app.
 
@@ -240,7 +240,7 @@ The **Share**, **Preview** and **Promote** icons are on the top-right of the App
 
 Congratulations! You've successfully built a employee directory application and, in the process, covered the fundamentals of ToolJet. 
 
-Continue exploring the docs to learn more.
+To learn more about how ToolJet works, explore the subjects covered in **[ToolJet Concepts](/docs/tooljet-concepts/what-are-components.md)**.
 
 </div>
 
