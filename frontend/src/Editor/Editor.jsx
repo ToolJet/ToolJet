@@ -6,6 +6,7 @@ import {
   orgEnvironmentVariableService,
   appEnvironmentService,
   orgEnvironmentConstantService,
+  appsService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -431,7 +432,7 @@ const EditorComponent = (props) => {
   const toggleAppMaintenance = () => {
     const newState = !isMaintenanceOn;
 
-    appService.setMaintenance(appId, newState).then(() => {
+    appsService.setMaintenance(appId, newState).then(() => {
       updateState({
         isMaintenanceOn: newState,
       });
