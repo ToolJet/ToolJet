@@ -140,9 +140,7 @@ function getAppBySlug(slug) {
 
 function fetchAppBySlug(slug) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/slugs/${slug}`, requestOptions).then((resp) => {
-    handleResponse(resp, true);
-  });
+  return fetch(`${config.apiUrl}/v2/apps/slugs/${slug}`, requestOptions).then((resp) => handleResponse(resp, true));
 }
 
 function getAppByVersion(appId, versionId) {
