@@ -18,6 +18,7 @@ export const Code = ({
   fxActive,
   component,
   verticalLine,
+  accordian,
 }) => {
   const currentState = useCurrentState();
 
@@ -50,8 +51,8 @@ export const Code = ({
   };
 
   let initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
-  const paramMeta = componentMeta[paramType][param.name];
-  const displayName = paramMeta.displayName || param.name;
+  const paramMeta = componentMeta[paramType]?.[accordian]?.[param.name];
+  const displayName = paramMeta?.displayName || param?.name;
 
   /*
     following block is written for cellSize Prop to support backward compatibility, 
