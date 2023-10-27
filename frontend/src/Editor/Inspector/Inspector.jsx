@@ -3,7 +3,7 @@ import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
-import { renderElement } from './Utils';
+import { renderElement, renderCustomStyles } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
@@ -517,17 +517,42 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
         component.component?.definition[widgetPropertyDefinition]
       );
     }
-
-    return renderElement(
-      component,
-      componentMeta,
-      paramUpdated,
-      dataQueries,
-      style,
-      'styles',
-      currentState,
-      allComponents
-    );
+    console.log('component--', component.component.component);
+    if (component.component.component == 'TextInput') {
+      return (
+        <>
+          <p className="tj-text-md text-capitalize">{style}</p>
+          {Object.entries(componentMeta.styles[style]).map(([key, value]) => {
+            return (
+              <>
+                {renderCustomStyles(
+                  component,
+                  componentMeta,
+                  paramUpdated,
+                  dataQueries,
+                  key,
+                  'styles',
+                  currentState,
+                  allComponents,
+                  value.accordian
+                )}
+              </>
+            );
+          })}
+        </>
+      );
+    } else {
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        style,
+        'styles',
+        currentState,
+        allComponents
+      );
+    }
   });
 };
 
