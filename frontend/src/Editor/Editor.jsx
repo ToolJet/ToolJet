@@ -352,7 +352,7 @@ const EditorComponent = (props) => {
     if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
 
     // Observe changes in the 'appDef' property of the 'ymap' object
-    props.ymap?.observe(() => {
+    props.ymap?.observeDeep(() => {
       const ymapUpdates = props.ymap?.get('appDef');
 
       // Check if there is a new session and if others are on the same version and page
