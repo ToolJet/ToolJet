@@ -138,6 +138,13 @@ else
   exit 1
 fi
 
+if sudo systemctl start redis-server && sudo systemctl enable redis-server
+then
+  echo "Successfully started Redis!"
+else
+  echo "Failed to start and enable Redis"
+fi
+
 if sudo -E systemctl start openresty
 then
   echo "Successfully started reverse proxy!"
