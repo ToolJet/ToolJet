@@ -789,6 +789,8 @@ export class AppImportExportService {
           (dq) => dq.id === appResourceMappings.dataQueryMapping[importedDataQuery.id]
         );
 
+        if (!mappedNewDataQuery) continue;
+
         const importingQueryEvents = importingEvents.filter(
           (event) => event.target === Target.dataQuery && event.sourceId === importedDataQuery.id
         );
@@ -808,25 +810,27 @@ export class AppImportExportService {
           });
         } else {
           this.replaceDataQueryOptionsWithNewDataQueryIds(
-            mappedNewDataQuery.options,
+            mappedNewDataQuery?.options,
             appResourceMappings.dataQueryMapping
           );
-          const queryEvents = mappedNewDataQuery.options?.events || [];
+          const queryEvents = mappedNewDataQuery?.options?.events || [];
 
           delete mappedNewDataQuery?.options?.events;
 
-          queryEvents.forEach(async (event, index) => {
-            const newEvent = {
-              name: event.eventId,
-              sourceId: mappedNewDataQuery.id,
-              target: Target.dataQuery,
-              event: event,
-              index: queryEvents.index || index,
-              appVersionId: mappedNewDataQuery.appVersionId,
-            };
+          if (queryEvents.length > 0) {
+            queryEvents.forEach(async (event, index) => {
+              const newEvent = {
+                name: event.eventId,
+                sourceId: mappedNewDataQuery.id,
+                target: Target.dataQuery,
+                event: event,
+                index: queryEvents.index || index,
+                appVersionId: mappedNewDataQuery.appVersionId,
+              };
 
-            await manager.save(EventHandler, newEvent);
-          });
+              await manager.save(EventHandler, newEvent);
+            });
+          }
         }
 
         await manager.save(mappedNewDataQuery);
@@ -1167,7 +1171,20 @@ export class AppImportExportService {
       } else {
         version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
-        version.globalSettings = appVersion.definition?.globalSettings;
+
+        if (!appVersion.definition?.globalSettings) {
+          version.globalSettings = {
+            hideHeader: false,
+            appInMaintenance: false,
+            canvasMaxWidth: 100,
+            canvasMaxWidthType: '%',
+            canvasMaxHeight: 2400,
+            canvasBackgroundColor: '#edeff5',
+            backgroundFxQuery: '',
+          };
+        } else {
+          version.globalSettings = appVersion.definition?.globalSettings;
+        }
       }
 
       await manager.save(version);
