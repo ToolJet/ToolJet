@@ -75,7 +75,6 @@ sudo cp /tmp/redis-server.service /lib/systemd/system/redis-server.service
 
 # Start and enable Redis service
 sudo systemctl daemon-reload
-sudo systemctl start redis-server
 
 # Setup app directory
 mkdir -p ~/app
