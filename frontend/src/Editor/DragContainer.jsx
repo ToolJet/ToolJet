@@ -131,6 +131,7 @@ export default function DragContainer({
             }
           }}
           onResize={(e) => {
+            console.log('onResize', e);
             const width = Math.round(e.width / gridWidth) * gridWidth;
 
             const currentLayout = list.find(({ id }) => id === e.target.id);
@@ -171,57 +172,61 @@ export default function DragContainer({
             // ]);
           }}
           onResizeEnd={(e) => {
-            console.log('onResizeEnd>>>>>>>>>>>>>>', e);
-            // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
-            // e.target.style.width = `${width}px`;
-            // e.target.style.height = `${e.lastEvent.height}px`;
-            // e.target.style.transform = e.lastEvent.drag.transform;
-            // onResizeStop([
-            //   {
-            //     id: e.target.id,
-            //     height: e.lastEvent.height,
-            //     width: width,
-            //     x: e.lastEvent.drag.translate[0],
-            //     y: e.lastEvent.drag.translate[1],
-            //   },
-            // ]);
+            try {
+              console.log('onResizeEnd>>>>>>>>>>>>>>', e);
+              // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
+              // e.target.style.width = `${width}px`;
+              // e.target.style.height = `${e.lastEvent.height}px`;
+              // e.target.style.transform = e.lastEvent.drag.transform;
+              // onResizeStop([
+              //   {
+              //     id: e.target.id,
+              //     height: e.lastEvent.height,
+              //     width: width,
+              //     x: e.lastEvent.drag.translate[0],
+              //     y: e.lastEvent.drag.translate[1],
+              //   },
+              // ]);
 
-            const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
-            const height = Math.round(e.lastEvent.height / 10) * 10;
+              const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
+              const height = Math.round(e.lastEvent.height / 10) * 10;
 
-            const currentLayout = list.find(({ id }) => id === e.target.id);
-            const currentWidth = currentLayout.width * gridWidth;
-            const diffWidth = e.lastEvent.width - currentWidth;
-            const diffHeight = e.lastEvent.height - currentLayout.height;
-            console.log('onResizeEnd data', currentWidth, e.width, diffWidth, e.direction, diffHeight);
-            const isLeftChanged = e.lastEvent.direction[0] === -1;
-            const isTopChanged = e.lastEvent.direction[1] === -1;
+              const currentLayout = list.find(({ id }) => id === e.target.id);
+              const currentWidth = currentLayout.width * gridWidth;
+              const diffWidth = e.lastEvent.width - currentWidth;
+              const diffHeight = e.lastEvent.height - currentLayout.height;
+              console.log('onResizeEnd data', currentWidth, e.width, diffWidth, e.direction, diffHeight);
+              const isLeftChanged = e.lastEvent.direction[0] === -1;
+              const isTopChanged = e.lastEvent.direction[1] === -1;
 
-            console.log(
-              'onResizeEnd => currentLayout transform',
-              `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
-              `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
-            );
+              console.log(
+                'onResizeEnd => currentLayout transform',
+                `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
+                `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
+              );
 
-            let transformX = currentLayout.left * gridWidth;
-            let transformY = currentLayout.top;
-            if (isLeftChanged) {
-              transformX = currentLayout.left * gridWidth - diffWidth;
+              let transformX = currentLayout.left * gridWidth;
+              let transformY = currentLayout.top;
+              if (isLeftChanged) {
+                transformX = currentLayout.left * gridWidth - diffWidth;
+              }
+              if (isTopChanged) {
+                transformY = currentLayout.top - diffHeight;
+              }
+
+              // e.target.style.transform = e.drag.transform;
+              onResizeStop([
+                {
+                  id: e.target.id,
+                  height: height,
+                  width: width,
+                  x: transformX,
+                  y: transformY,
+                },
+              ]);
+            } catch (error) {
+              console.error('ResizeEnd error ->', error);
             }
-            if (isTopChanged) {
-              transformY = currentLayout.top - diffHeight;
-            }
-
-            // e.target.style.transform = e.drag.transform;
-            onResizeStop([
-              {
-                id: e.target.id,
-                height: height,
-                width: width,
-                x: transformX,
-                y: transformY,
-              },
-            ]);
           }}
           onResizeGroup={({ events }) => {
             const newBoxs = [];

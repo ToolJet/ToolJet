@@ -228,6 +228,6 @@ function sortLayoutItemsByRowCol(layout) {
 function scaleLayouts(layouts, cols = 6) {
   return layouts.map((layout) => ({
     ...layout,
-    width: layout.width <= 4 ? 2 : layout.width,
+    width: layout.width <= 4 ? 2 : layout.width <= 8 ? 3 : layout.width,
   }));
 }
