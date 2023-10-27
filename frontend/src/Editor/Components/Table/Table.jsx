@@ -655,7 +655,7 @@ export function Table({
     }
     if (mounted) setExposedVariable('sortApplied', sortOptions);
     fireEvent('onSort');
-  }, [sortOptions]);
+  }, [JSON.stringify(sortOptions)]);
 
   useEffect(() => {
     setExposedVariable('setPage', async function (targetPageIndex) {
