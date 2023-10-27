@@ -227,6 +227,13 @@ const EditorComponent = (props) => {
       prevAppDefinition.current = appDefinition;
     }
 
+    const isYampUpdate = appDiffOptions?.skipAutoSave;
+    console.log('----arpit:: autoSave', { isYampUpdate });
+
+    if (isYampUpdate) {
+      return;
+    }
+
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
@@ -352,7 +359,7 @@ const EditorComponent = (props) => {
     if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
 
     // Observe changes in the 'appDef' property of the 'ymap' object
-    props.ymap?.observe(() => {
+    props.ymap?.observeDeep(() => {
       const ymapUpdates = props.ymap?.get('appDef');
 
       // Check if there is a new session and if others are on the same version and page
@@ -365,10 +372,15 @@ const EditorComponent = (props) => {
       if (isEqual(appDefinition, ymapUpdates.newDefinition)) return;
 
       // Trigger real-time save with specific options
+
+      const shouldTransct = { editingVersion, ymapUpdates };
+      console.log('----arpit:: checking ymp', { shouldTransct });
+
       realtimeSave(props.ymap?.get('appDef').newDefinition, {
         skipAutoSave: true,
         skipYmapUpdate: true,
         currentSessionId: ymapUpdates.currentSessionId,
+        currentVersionId: ymapUpdates.editingVersionId,
       });
     });
   };
