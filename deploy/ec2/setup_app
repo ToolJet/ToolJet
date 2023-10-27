@@ -121,13 +121,10 @@ awk -v uri="$PGRST_DB_URI" '
 
 echo "Successfully updated PGRST database URI"
 
-exec "$@"
 
-
-
-if grep .env
+if [[ -z $PG_USER || -z $PG_PASS || -z $PG_HOST ]]
 then
-  echo "Please set the required values within the .env file"
+  echo "Please set the required PG_USER, PG_PASS, and PG_HOST values within the .env file"
   exit 1
 fi
 
