@@ -22,16 +22,12 @@ Suppose you have a query that retrieves updated data when a user clicks on a but
 
 ## Setting Up Event Handlers
 
-Setting up event handlers to manage such triggers and responses is a straightforward process in ToolJet. For instance, to set up an event that triggers a new query upon the completion of an existing query, you simply navigate to the query settings, click on **New Event Handler** button, and define the Event and the Action to be taken. The actions could range from running a query, showing an alert, or even executing JavaScript code. 
+Setting up event handlers to manage such triggers and responses is a straightforward process in ToolJet. For instance, to set up an event that triggers a new query upon the completion of an existing query, you simply navigate to the query settings, click on **New Event Handler** button, and define the Event and the Action to be taken. The actions could range from running a query, showing an alert, or even switching a page. 
 
 </div>
 
 
 </div>
-
-
-
-
 
 
 

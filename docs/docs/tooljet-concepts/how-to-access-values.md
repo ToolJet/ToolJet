@@ -29,17 +29,12 @@ You can see the list of all accessible values in the **Inspector** tab in the le
 
 You can write custom JavaScript code to set colors, enable or disable toggles and more by passing in JavaScript code inside double courly braces. 
 
-For example, to change Background Color of a button based on the the light or dark theme using **fx**, you can use the below code that returns a string value of hex code:
+For example, to change Background Color of a button based on the the light or dark theme using **fx**, you can use the following code that returns a string value of hex code: <br/>
+`{{globals.theme.name = "light" ? "#375FCF" : "#FFFFFF"}}`
 
-```js
-{{globals.theme.name = "light" ? "#375FCF" : "#FFFFFF"}}
-```
+Similary, to enable or disable a button based on user input using **fx**, you can write a JavaScript code that returns true or false. <br/>
 
-Similary, to enable or disable a button based on user input using **fx**, you can write a JavaScript code that returns true or false.
-
-```js
-{{components.form1.data.textinput1 = null ? true : false}}
-```
+For example, `{{components.form1.data.textinput1 = null ? true : false}}`.
 
 </div>
 
