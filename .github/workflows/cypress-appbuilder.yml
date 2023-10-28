@@ -14,7 +14,7 @@ jobs:
   Cypress-App-Builder:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-app-builder' }}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-app-builder' || github.event.label.name == 'run-cypress') }}
 
     steps:
       - name: Setup Node.js
@@ -144,7 +144,7 @@ jobs:
         run: docker buildx use mybuilder
 
       - name: Build docker image
-        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypress
+        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypressplaform
 
       - name: Set up environment variables
         run: |
@@ -190,6 +190,9 @@ jobs:
           until curl --silent --fail http://localhost:80/apps/tooljet/; do
             sleep 5
           done'
+
+      - name: Seeding
+        run: docker exec Tooljet-app npm run db:seed:prod
 
       - name: Create Cypress environment file
         id: create-json
