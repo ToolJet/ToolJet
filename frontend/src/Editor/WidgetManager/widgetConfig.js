@@ -1099,97 +1099,93 @@ export const widgets = [
       onBlur: { displayName: 'On blur' },
     },
     styles: {
-      field: {
-        textColor: {
-          type: 'color',
-          displayName: 'Text Color',
-          validation: { schema: { type: 'string' } },
-          accordian: 'field',
-        },
-        backgroundColor: {
-          type: 'color',
-          displayName: 'Background Color',
-          validation: { schema: { type: 'string' } },
-          accordian: 'field',
-        },
-
-        borderColor: {
-          type: 'color',
-          displayName: 'Border Color',
-          validation: { schema: { type: 'string' } },
-          accordian: 'field',
-        },
-        errTextColor: {
-          type: 'color',
-          displayName: 'Error Text Color',
-          validation: { schema: { type: 'string' } },
-          accordian: 'field',
-        },
-        borderRadius: {
-          type: 'code',
-          displayName: 'Border radius',
-          validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-          accordian: 'field',
-        },
-        visibility: {
-          type: 'toggle',
-          displayName: 'Visibility',
-          validation: { schema: { type: 'boolean' } },
-          accordian: 'field',
-        },
-        disabledState: {
-          type: 'toggle',
-          displayName: 'Disable',
-          validation: { schema: { type: 'boolean' } },
-          accordian: 'field',
-        },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
       },
-      label: {
-        alignment: {
-          type: 'switch',
-          displayName: 'Alignment',
-          validation: { schema: { type: 'string' } },
-          options: [
-            { displayName: 'Side', value: 'side' },
-            { displayName: 'Top', value: 'top' },
-          ],
-          accordian: 'label',
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+
+      borderColor: {
+        type: 'color',
+        displayName: 'Border Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error Text Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+        accordian: 'field',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: { schema: { type: 'boolean' } },
+        accordian: 'field',
+      },
+      alignment: {
+        type: 'switch',
+        displayName: 'Alignment',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Side', value: 'side' },
+          { displayName: 'Top', value: 'top' },
+        ],
+        accordian: 'label',
+      },
+      direction: {
+        type: 'switch',
+        displayName: 'Direction',
+        validation: { schema: { type: 'string' } },
+        showLabel: false,
+        isIcon: true,
+        options: [
+          { displayName: 'alignleftinspector', value: 'alignleftinspector' },
+          { displayName: 'alignrightinspector', value: 'alignrightinspector' },
+        ],
+        accordian: 'label',
+      },
+      width: {
+        type: 'slider',
+        displayName: 'Width',
+        validation: { schema: { type: 'string' } },
+        conditionallyRender: {
+          key: 'auto',
+          value: true,
         },
-        direction: {
-          type: 'switch',
-          displayName: 'Direction',
-          validation: { schema: { type: 'string' } },
-          showLabel: false,
-          isIcon: true,
-          options: [
-            { displayName: 'alignleftinspector', value: 'alignleftinspector' },
-            { displayName: 'alignrightinspector', value: 'alignrightinspector' },
-          ],
-          accordian: 'label',
-        },
-        width: {
-          type: 'slider',
-          displayName: 'Width',
-          validation: { schema: { type: 'string' } },
-          conditionallyRender: {
-            key: 'auto',
-            value: true,
-          },
-          accordian: 'label',
-        },
-        auto: {
-          type: 'checkbox',
-          displayName: 'auto',
-          showLabel: false,
-          validation: { schema: { type: 'boolean' } },
-          accordian: 'label',
-        },
-        color: {
-          type: 'color',
-          displayName: 'Color',
-          validation: { schema: { type: 'boolean' } },
-          accordian: 'label',
-        },
+        accordian: 'label',
+      },
+      auto: {
+        type: 'checkbox',
+        displayName: 'auto',
+        showLabel: false,
+        validation: { schema: { type: 'boolean' } },
+        accordian: 'label',
+      },
+      color: {
+        type: 'color',
+        displayName: 'Color',
+        validation: { schema: { type: 'boolean' } },
+        accordian: 'label',
       },
     },
     exposedVariables: {

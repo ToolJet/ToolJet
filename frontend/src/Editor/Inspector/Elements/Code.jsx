@@ -51,7 +51,7 @@ export const Code = ({
   };
 
   let initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
-  const paramMeta = componentMeta[paramType]?.[accordian]?.[param.name];
+  const paramMeta = accordian ? componentMeta[paramType]?.[param.name] : componentMeta[paramType][param.name];
   const displayName = paramMeta?.displayName || param?.name;
 
   /*
