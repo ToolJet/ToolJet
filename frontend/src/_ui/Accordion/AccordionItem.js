@@ -14,7 +14,7 @@ const AccordionItem = ({ open = true, index, title, children }) => {
           aria-expanded="false"
           data-cy={`widget-accordion-${title.toLowerCase()}`}
         >
-          {title}
+          <span className="text-capitalize">{title}</span>
         </button>
       </h2>
       <div

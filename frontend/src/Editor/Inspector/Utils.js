@@ -34,7 +34,7 @@ export function renderCustomStyles(
   const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
-  const meta = componentMeta[paramType][accordian][param];
+  const meta = componentMeta[paramType]?.[accordian]?.[param];
 
   if (
     componentConfig.component == 'DropDown' ||
