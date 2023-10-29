@@ -1187,6 +1187,16 @@ export const widgets = [
         validation: { schema: { type: 'boolean' } },
         accordian: 'label',
       },
+      padding: {
+        type: 'switch',
+        displayName: 'Padding',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Default', value: 'default' },
+          { displayName: 'Custom', value: 'custom' },
+        ],
+        accordian: 'container',
+      },
     },
     exposedVariables: {
       value: '',
@@ -1252,6 +1262,7 @@ export const widgets = [
         alignment: { value: 'side' },
         color: { value: '#11181C' },
         auto: { value: '{{false}}' },
+        padding: { value: 'default' },
       },
     },
   },

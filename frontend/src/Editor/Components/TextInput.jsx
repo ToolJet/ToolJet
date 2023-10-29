@@ -22,7 +22,6 @@ export const TextInput = function TextInput({
   const currentState = useCurrentState();
 
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
-
   const computedStyles = {
     height: height,
     borderRadius: `${styles.borderRadius}px`,
@@ -97,7 +96,9 @@ export const TextInput = function TextInput({
           color: darkMode && styles.color == '#11181C' ? '#fff' : styles.color,
           width: styles.auto ? 'auto' : `${styles.width}%`,
           maxWidth: styles.auto ? '70%' : '100%',
-          lineBreak: 'anywhere',
+          lineBreak: styles.auto == false && 'anywhere',
+          marginRight: styles.direction == 'alignleftinspector' && '9px',
+          marginLeft: styles.direction == 'alignrightinspector' && '9px',
         }}
       >
         {properties.label}
