@@ -43,7 +43,9 @@ export const authorizeWorkspace = () => {
         if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
           if (appId) {
             /* If the user is trying to load the app viewer and the app id / slug not found */
-            redirectToErrorPage(error?.data?.statusCode == 404 ? ERROR_TYPES.INVALID : ERROR_TYPES.UNKNOWN);
+            redirectToErrorPage(ERROR_TYPES.INVALID);
+          } else if (error?.data?.statusCode == 422) {
+            redirectToErrorPage(ERROR_TYPES.UNKNOWN);
           } else {
             const subpath = getSubpath();
             window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
