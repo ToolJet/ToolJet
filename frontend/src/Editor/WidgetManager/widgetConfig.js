@@ -3612,7 +3612,7 @@ export const widgets = [
       },
       hideTabs: {
         type: 'toggle',
-        displayName: 'Hide Tabs',
+        displayName: 'Hide tabs',
         validation: {
           schema: {
             type: 'boolean',
@@ -3633,7 +3633,7 @@ export const widgets = [
     styles: {
       highlightColor: {
         type: 'color',
-        displayName: 'Highlight Color',
+        displayName: 'Highlight color',
         validation: {
           schema: { type: 'string' },
         },
