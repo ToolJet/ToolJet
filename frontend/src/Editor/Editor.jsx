@@ -202,9 +202,8 @@ const EditorComponent = (props) => {
       }
     });
 
-    $componentDidMount();
-
     setCurrentSessionId(() => uuid());
+    $componentDidMount();
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
@@ -225,6 +224,12 @@ const EditorComponent = (props) => {
 
     if (didAppDefinitionChanged) {
       prevAppDefinition.current = appDefinition;
+    }
+
+    if (appDiffOptions?.skipYmapUpdate) {
+      return updateState({
+        isUpdatingEditorStateInProcess: false,
+      });
     }
 
     if (mounted && didAppDefinitionChanged && currentPageId) {
@@ -360,6 +365,12 @@ const EditorComponent = (props) => {
 
       // Check if others are on the same version and page
       if (!ymapUpdates.areOthersOnSameVersionAndPage) return;
+
+      const currentSession = authenticationService.currentSessionValue;
+      const currentUserId = currentSession?.current_user?.id;
+
+      // if (currentUserId === ymapUpdates.currentUserId) return;
+      // console.log('----arpit:::::', { currentUserId });
 
       // Check if the new application definition is different from the current one
       if (isEqual(appDefinition, ymapUpdates.newDefinition)) return;
@@ -868,6 +879,7 @@ const EditorComponent = (props) => {
         editingVersionId: editingVersion?.id,
         currentSessionId,
         areOthersOnSameVersionAndPage,
+        currentUserId: currentUser?.id,
       });
     }
   };
