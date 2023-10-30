@@ -2006,7 +2006,7 @@ export const widgets = [
     styles: {
       fontWeight: {
         type: 'select',
-        displayName: 'Font Weight',
+        displayName: 'Font weight',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'bold', value: 'bold' },
@@ -2016,7 +2016,7 @@ export const widgets = [
       },
       decoration: {
         type: 'select',
-        displayName: 'Text Decoration',
+        displayName: 'Text decoration',
         options: [
           { name: 'none', value: 'none' },
           { name: 'overline', value: 'overline' },
@@ -2027,7 +2027,7 @@ export const widgets = [
       },
       transformation: {
         type: 'select',
-        displayName: 'Text Transformation',
+        displayName: 'Text transformation',
         options: [
           { name: 'none', value: 'none' },
           { name: 'uppercase', value: 'uppercase' },
@@ -2037,20 +2037,20 @@ export const widgets = [
       },
       fontStyle: {
         type: 'select',
-        displayName: 'Font Style',
+        displayName: 'Font style',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'italic', value: 'italic' },
           { name: 'oblique', value: 'oblique' },
         ],
       },
-      lineHeight: { type: 'number', displayName: 'Line Height' },
-      textIndent: { type: 'number', displayName: 'Text Indent' },
-      letterSpacing: { type: 'number', displayName: 'Letter Spacing' },
-      wordSpacing: { type: 'number', displayName: 'Word Spacing' },
+      lineHeight: { type: 'number', displayName: 'Line height' },
+      textIndent: { type: 'number', displayName: 'Text indent' },
+      letterSpacing: { type: 'number', displayName: 'Letter spacing' },
+      wordSpacing: { type: 'number', displayName: 'Word spacing' },
       fontVariant: {
         type: 'select',
-        displayName: 'Font Variant',
+        displayName: 'Font variant',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'small-caps', value: 'small-caps' },
@@ -2060,28 +2060,28 @@ export const widgets = [
       },
       textSize: {
         type: 'number',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'number' },
         },
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textAlign: {
         type: 'alignButtons',
-        displayName: 'Align Text',
+        displayName: 'Align text',
         validation: {
           schema: { type: 'string' },
         },
