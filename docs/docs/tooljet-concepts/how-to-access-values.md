@@ -11,9 +11,13 @@ In ToolJet, double curly braces `{{}}` can be used to retreive data returned by 
 
 ### Accessing Values 
 
-The **queries** keyword can be used to access data returned by queries. For example:`{{queries.getSalesData.data}}`
+The **queries** keyword can be used to access data returned by queries. <br/>
 
-Similarly, the **components** keyword can be used to access data in the components and other component-related variables. For example: `{{components.table1.selectedRow.id}}`.
+For example:`{{queries.getSalesData.data}}`
+
+Similarly, the **components** keyword can be used to access data in the components and other component-related variables. <br/>
+
+For example: `{{components.table1.selectedRow.id}}`.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/writing-custom-code/inspector.png" alt="Check Available Values Using Inspector" />
@@ -29,8 +33,9 @@ You can see the list of all accessible values in the **Inspector** tab in the le
 
 You can write custom JavaScript code to set colors, enable or disable toggles and more by passing in JavaScript code inside double courly braces. 
 
-For example, to change Background Color of a button based on the the light or dark theme using **fx** (next to properties in configuration panel), you can use the following code that returns a string value of hex code: <br/>
-`{{globals.theme.name = "light" ? "#375FCF" : "#FFFFFF"}}`
+To change Background Color of a button based on the the light or dark theme using **fx** (next to properties in configuration panel), you can use the a code that returns a string value of hex code. <br/>
+
+For example, `{{globals.theme.name = "light" ? "#375FCF" : "#FFFFFF"}}`
 
 Similary, to enable or disable a button based on user input using **fx**, you can write a JavaScript code that returns true or false. <br/>
 
