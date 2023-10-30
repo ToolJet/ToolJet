@@ -47,7 +47,7 @@ jobs:
                 "value": "8.19.2"
               },
               {
-                "key": "GA_MID",
+                "key": "GTM",
                 "value": "dummy"
               }
             ],
