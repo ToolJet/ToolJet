@@ -1084,13 +1084,37 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      toolltip: {
+        type: 'code',
+        displayName: 'Tooltip',
+        validation: { schema: { type: 'string' } },
+        section: 'additionalActions',
+      },
     },
     validation: {
-      regex: { type: 'code', displayName: 'Regex' },
-      minLength: { type: 'code', displayName: 'Min length' },
-      maxLength: { type: 'code', displayName: 'Max length' },
-      customRule: { type: 'code', displayName: 'Custom validation' },
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
+      regex: { type: 'code', displayName: 'Regex' },
+      minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
+      maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
+      customRule: { type: 'code', displayName: 'Custom validation', placeholder: 'eg. {{ 1 < 2 }}' },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -1130,18 +1154,13 @@ export const widgets = [
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: { schema: { type: 'boolean' } },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: { schema: { type: 'boolean' } },
-        accordian: 'field',
-      },
+
       alignment: {
         type: 'switch',
         displayName: 'Alignment',
@@ -1168,11 +1187,11 @@ export const widgets = [
         type: 'slider',
         displayName: 'Width',
         validation: { schema: { type: 'string' } },
-        conditionallyRender: {
-          key: 'auto',
-          value: true,
-        },
         accordian: 'label',
+        conditionallyRender: {
+          key: 'alignment',
+          value: 'side',
+        },
       },
       auto: {
         type: 'checkbox',
@@ -1180,6 +1199,10 @@ export const widgets = [
         showLabel: false,
         validation: { schema: { type: 'boolean' } },
         accordian: 'label',
+        conditionallyRender: {
+          key: 'alignment',
+          value: 'side',
+        },
       },
       color: {
         type: 'color',
@@ -1193,7 +1216,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         options: [
           { displayName: 'Default', value: 'default' },
-          { displayName: 'Custom', value: 'custom' },
+          { displayName: 'None', value: 'none' },
         ],
         accordian: 'container',
       },
@@ -1232,11 +1255,11 @@ export const widgets = [
     ],
     definition: {
       validation: {
+        mandatory: { value: false },
         regex: { value: '' },
         minLength: { value: null },
         maxLength: { value: null },
         customRule: { value: null },
-        mandatory: { value: false },
       },
 
       others: {
@@ -1247,15 +1270,16 @@ export const widgets = [
         value: { value: '' },
         label: { value: 'Label' },
         placeholder: { value: 'Enter your input' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        toolltip: { value: '' },
       },
       events: [],
       styles: {
         textColor: { value: '#000' },
-        borderColor: { value: '#dadcde' },
-        errTextColor: { value: '#ff0000' },
+        borderColor: { value: '#D7DBDF' },
+        errTextColor: { value: '#DB4324' },
         borderRadius: { value: '{{6}}' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         backgroundColor: { value: '#fff' },
         direction: { value: 'alignleftinspector' },
         width: { value: '33' },
@@ -1263,6 +1287,7 @@ export const widgets = [
         color: { value: '#11181C' },
         auto: { value: '{{false}}' },
         padding: { value: 'default' },
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
       },
     },
   },

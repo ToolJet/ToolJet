@@ -1455,8 +1455,8 @@ button {
     display: none;
   }
 
-  .accordion {
-    // margin-bottom: 45px !important;
+  .accordion:last-child {
+    margin-bottom: 45px !important;
   }
 
   .field-type-vertical-line {
@@ -2826,7 +2826,7 @@ input:focus-visible {
   bottom: 0;
   background: var(--indigo3);
   width: 18.75rem; // 300px
-  z-index: 1;
+  z-index: 999;
   padding: 12px 18px;
   display: flex;
   justify-content: space-between;
@@ -11608,4 +11608,19 @@ tbody {
   }
 }
 
-.tj-text-input-widget {}
+.tj-text-input-widget {
+  border: 1px solid var(--tj-text-input-widget-border-default);
+  background-color: var(--tj-text-input-widget-field-default);
+
+  &:hover {
+    background-color: var(--tj-text-input-widget-hover);
+  }
+
+  &:focus {
+    box-shadow: 0px 0px 0px 4px #DFE3E6;
+  }
+
+  &:active {
+    box-shadow: 0px 0px 0px 1px #DFE3E6;
+  }
+}

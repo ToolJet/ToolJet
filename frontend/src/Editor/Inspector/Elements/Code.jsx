@@ -19,6 +19,7 @@ export const Code = ({
   component,
   verticalLine,
   accordian,
+  placeholder,
 }) => {
   const currentState = useCurrentState();
 
@@ -101,6 +102,7 @@ export const Code = ({
         component={component}
         verticalLine={verticalLine}
         isIcon={paramMeta?.isIcon}
+        placeholder={placeholder}
       />
     </div>
   );

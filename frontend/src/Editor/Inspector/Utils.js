@@ -89,6 +89,7 @@ export function renderElement(
   currentState,
   components = {},
   darkMode = false,
+  placeholder = '',
   verticalLine = true
 ) {
   const componentConfig = component.component;
@@ -133,6 +134,7 @@ export function renderElement(
       }}
       component={component}
       verticalLine={verticalLine}
+      placeholder={placeholder}
     />
   );
 }

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import { ToolTip } from '@/_components/ToolTip';
+
 export const TextInput = function TextInput({
   height,
   validate,
@@ -13,10 +15,11 @@ export const TextInput = function TextInput({
   dataCy,
 }) {
   const textInputRef = useRef();
+  console.log('styles---', styles);
 
-  const [disable, setDisable] = useState(styles.disabledState);
+  const [disable, setDisable] = useState(properties.disabledState);
   const [value, setValue] = useState(properties.value);
-  const [visibility, setVisibility] = useState(styles.visibility);
+  const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(value);
   const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
@@ -29,18 +32,18 @@ export const TextInput = function TextInput({
     borderColor: styles.borderColor,
     backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
     boxShadow: styles.boxShadow,
-    paddingLeft: '9px',
   };
+  const { loadingState } = properties;
 
   useEffect(() => {
-    disable !== styles.disabledState && setDisable(styles.disabledState);
+    disable !== properties.disabledState && setDisable(properties.disabledState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [styles.disabledState]);
+  }, [properties.disabledState]);
 
   useEffect(() => {
-    visibility !== styles.visibility && setVisibility(styles.visibility);
+    visibility !== properties.visibility && setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [styles.visibility]);
+  }, [properties.visibility]);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -82,67 +85,80 @@ export const TextInput = function TextInput({
   }, [setValue]);
 
   return (
-    <div
-      data-disabled={disable}
-      className={`text-input d-flex ${styles.alignment == 'top' && 'flex-column'}  ${
-        styles.direction == 'alignrightinspector' && styles.alignment == 'side' && 'flex-row-reverse'
-      }
+    <>
+      {loadingState === true && (
+        <div className="d-flex align-items-center justify-content-center" style={{ width: '100%', height }}>
+          <center>
+            <div className="spinner-border" role="status"></div>
+          </center>
+        </div>
+      )}
+      {!loadingState && (
+        <ToolTip message={properties.toolltip && properties.toolltip}>
+          <div
+            data-disabled={disable}
+            className={`text-input d-flex ${styles.alignment == 'top' && 'flex-column'}  ${
+              styles.direction == 'alignrightinspector' && styles.alignment == 'side' && 'flex-row-reverse'
+            }
       ${styles.direction == 'alignrightinspector' && styles.alignment == 'top' && 'text-right'}
       ${visibility || 'invisible'}`}
-      style={{ height: height }}
-    >
-      <label
-        style={{
-          color: darkMode && styles.color == '#11181C' ? '#fff' : styles.color,
-          width: styles.auto ? 'auto' : `${styles.width}%`,
-          maxWidth: styles.auto ? '70%' : '100%',
-          lineBreak: styles.auto == false && 'anywhere',
-          marginRight: styles.direction == 'alignleftinspector' && '9px',
-          marginLeft: styles.direction == 'alignrightinspector' && '9px',
-        }}
-      >
-        {properties.label}
-        <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-      </label>
-      <input
-        ref={textInputRef}
-        onKeyUp={(e) => {
-          if (e.key == 'Enter') {
-            setValue(e.target.value);
-            setExposedVariable('value', e.target.value);
-            fireEvent('onEnterPressed');
-          }
-        }}
-        onChange={(e) => {
-          setValue(e.target.value);
-          setExposedVariable('value', e.target.value);
-          fireEvent('onChange');
-        }}
-        onBlur={(e) => {
-          setShowValidationError(true);
-          e.stopPropagation();
-          fireEvent('onBlur');
-        }}
-        onFocus={(e) => {
-          e.stopPropagation();
-          fireEvent('onFocus');
-        }}
-        type="text"
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-          darkMode && 'dark-theme-placeholder'
-        }`}
-        placeholder={properties.placeholder}
-        style={computedStyles}
-        value={value}
-        data-cy={dataCy}
-      />
-      <div
-        className="invalid-feedback"
-        data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-        style={{ color: styles.errTextColor }}
-      >
-        {showValidationError && validationError}
-      </div>
-    </div>
+            style={{ height: height }}
+          >
+            <label
+              style={{
+                color: darkMode && styles.color == '#11181C' ? '#fff' : styles.color,
+                width: styles.auto ? 'auto' : styles.alignment == 'side' ? `${styles.width}%` : '100%',
+                maxWidth: styles.auto && styles.alignment == 'side' ? '70%' : '100%',
+                lineBreak: styles.auto == false && 'anywhere',
+                marginRight: styles.direction == 'alignleftinspector' && styles.alignment == 'side' && '9px',
+                marginLeft: styles.direction == 'alignrightinspector' && styles.alignment == 'side' && '9px',
+              }}
+            >
+              {properties.label}
+              <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+            </label>
+            <input
+              ref={textInputRef}
+              onKeyUp={(e) => {
+                if (e.key == 'Enter') {
+                  setValue(e.target.value);
+                  setExposedVariable('value', e.target.value);
+                  fireEvent('onEnterPressed');
+                }
+              }}
+              onChange={(e) => {
+                setValue(e.target.value);
+                setExposedVariable('value', e.target.value);
+                fireEvent('onChange');
+              }}
+              onBlur={(e) => {
+                setShowValidationError(true);
+                e.stopPropagation();
+                fireEvent('onBlur');
+              }}
+              onFocus={(e) => {
+                e.stopPropagation();
+                fireEvent('onFocus');
+              }}
+              type="text"
+              className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+                darkMode && 'dark-theme-placeholder'
+              }`}
+              placeholder={properties.placeholder}
+              style={computedStyles}
+              value={value}
+              data-cy={dataCy}
+            />
+            <div
+              className="invalid-feedback"
+              data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+              style={{ color: styles.errTextColor }}
+            >
+              {showValidationError && validationError}
+            </div>
+          </div>
+        </ToolTip>
+      )}
+    </>
   );
 };
