@@ -119,7 +119,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 };
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
-  if (!['integrations', 'applications', 'switch-workspace'].find((path) => pathname.includes(path))) {
+  if (!['/integrations', '/applications/', '/switch-workspace'].find((path) => pathname.startsWith(path))) {
     pathname = getSubpath() ? pathname.replace(getSubpath(), '') : pathname;
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
@@ -134,7 +134,7 @@ export const getSubpath = () =>
 
 const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
-    return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
+    return !path.startsWith('/applications/') && !path.start('/integrations') ? `/${getWorkspaceId()}` : '';
   }
   return `/${getWorkspaceId()}`;
 };
