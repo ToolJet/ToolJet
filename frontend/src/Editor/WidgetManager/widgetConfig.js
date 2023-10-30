@@ -4111,7 +4111,7 @@ export const widgets = [
     },
   },
   {
-    name: 'CircularProgressbar',
+    name: 'CircularProgressBar',
     displayName: 'Circular Progressbar',
     description: 'Show circular progress',
     component: 'CircularProgressBar',
