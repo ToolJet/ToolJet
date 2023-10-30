@@ -6,8 +6,10 @@ import {
   getPathname,
   getRedirectToWithParams,
   redirectToDashboard,
+  redirectToErrorPage,
 } from './routes';
 import toast from 'react-hot-toast';
+import { ERROR_TYPES } from './constants';
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
@@ -40,15 +42,13 @@ export const authorizeWorkspace = () => {
       })
       .catch((error) => {
         if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
-          const subpath = getSubpath();
           if (appId) {
             /* If the user is trying to load the app viewer and the app id / slug not found */
-            toast.error("Couldn't find the app. \n Please verify the app URL again.");
-            setTimeout(() => {
-              window.location.href = subpath ? `${subpath}` : '/';
-            }, 3000);
-            return;
+            redirectToErrorPage(ERROR_TYPES.INVALID);
+          } else if (error?.data?.statusCode == 422) {
+            redirectToErrorPage(ERROR_TYPES.UNKNOWN);
           } else {
+            const subpath = getSubpath();
             window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
           }
         }
@@ -132,7 +132,7 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, appDa
             const { isBasicPlan } = data;
             if (isBasicPlan) {
               /* License expired for the users. now they can't access released apps */
-              redirectToDashboard();
+              redirectToErrorPage(ERROR_TYPES.RESTRICTED);
             }
           });
         }

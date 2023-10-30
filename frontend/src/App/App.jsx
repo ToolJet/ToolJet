@@ -42,8 +42,6 @@ import { ManageOrgConstants } from '@/ManageOrgConstants';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import LdapLoginPage from '../LdapLogin';
-import RestrictedAccessModal from '@/AppLoader/RestrictedAccessModal';
-import ErrorModal from '@/AppLoader/ErrorModal';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 
@@ -209,24 +207,6 @@ class AppComponent extends React.Component {
                 element={
                   <PrivateRoute>
                     <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                exact
-                path="/applications/:id/restricted"
-                element={
-                  <PrivateRoute>
-                    <RestrictedAccessModal show={true} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                exact
-                path="/applications/:id/error"
-                element={
-                  <PrivateRoute>
-                    <ErrorModal show={true} darkMode={darkMode} />
                   </PrivateRoute>
                 }
               />
