@@ -227,6 +227,12 @@ const EditorComponent = (props) => {
       prevAppDefinition.current = appDefinition;
     }
 
+    if (appDiffOptions?.skipYmapUpdate) {
+      return updateState({
+        isUpdatingEditorStateInProcess: false,
+      });
+    }
+
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
@@ -917,8 +923,6 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
-    if (appDiffOptions?.skipYmapUpdate) return;
-
     if (isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
