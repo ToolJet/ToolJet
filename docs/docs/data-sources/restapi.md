@@ -197,7 +197,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
   |:----------- |:----------- |
   | response_type | code ( `code` refers to the Authorization Code) |
   | client_id | **Client ID**  |
-  | redirect_uri | `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.  |
+  | redirect_url | `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.  |
     
 - Keep the default selection for **Client Authentication** and **Save** the data source.
 
@@ -208,7 +208,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
 Let’s create a query to make a `GET` request to the URL, it will pop a new window and ask the user to authenticate against the API.
 
 - Add a new query and select the REST API data source from the dropdown
-- In the **Method** dropdown select `GET` and enabe the  `Run query on application load?`
+- In the **Method** dropdown select `GET` and enable the  `Run query on application load?`
 - Run the query. 
 - A new window will pop for authentication and once auth is successful, you can run the query again to get the user data like Name and Profile Picture.
 
