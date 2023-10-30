@@ -134,7 +134,7 @@ export const getSubpath = () =>
 
 const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
-    return !path.startsWith('/applications/') && !path.start('/integrations') ? `/${getWorkspaceId()}` : '';
+    return !path.startsWith('/applications/') && !path.startsWith('/integrations') ? `/${getWorkspaceId()}` : '';
   }
   return `/${getWorkspaceId()}`;
 };
