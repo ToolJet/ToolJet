@@ -136,7 +136,7 @@ For general help using ToolJet, please refer to the official [documentation](htt
 
 - [Slack](https://tooljet.com/slack) - Discussions with the community and the team.
 - [GitHub](https://github.com/ToolJet/ToolJet/issues) - For bug reports and feature requests.
-- [Twitter](https://twitter.com/ToolJet) - Get the product updates quickly.
+- [𝕏(Twitter)](https://twitter.com/ToolJet) - Get the product updates quickly.
 
 ## Roadmap
 Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and learn about what's coming next.
