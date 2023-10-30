@@ -47,6 +47,7 @@ describe("App share functionality", () => {
       cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
+      cy.wait(2000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.forceClickOnCanvas()
       cy.dragAndDropWidget("Button", 50, 50);
@@ -78,15 +79,27 @@ describe("App share functionality", () => {
     });
 
     it("Verify app private and public app visibility for the same workspace user", () => {
-      addNewUserMW(data.firstName, data.email);
+      navigateToAppEditor(data.appName);
+      cy.wait(2000);
+      cy.get(commonWidgetSelector.shareAppButton).click();
+      cy.get("body").then(($el) => {
+        if (!$el.text().includes("Embedded app link", { timeout: 2000 })) {
+          cy.get(commonWidgetSelector.makePublicAppToggle).check();
+        }
+      });
+      cy.get(commonWidgetSelector.modalCloseButton).click();
+      cy.get(commonSelectors.editorPageLogo).click();
 
+      addNewUserMW(data.firstName, data.email);
       logout();
+
       cy.visit(`/applications/${slug}`);
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
 
       cy.appUILogin();
       navigateToAppEditor(data.appName);
-      cy.skipEditorPopover()
+      cy.wait(2000);
+      cy.skipEditorPopover();
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).uncheck();
       cy.get(commonWidgetSelector.modalCloseButton).click();
@@ -115,6 +128,10 @@ describe("App share functionality", () => {
       cy.clearAndType(commonSelectors.passwordInputField, "password");
       cy.get(commonSelectors.signInButton).click();
       cy.wait(1000);
+      cy.get(`[data-cy="workspace-sign-in-sub-header"]`).verifyVisibleElement(
+        "have.text",
+        "Sign in to your workspace - My workspace"
+      );
 
       cy.visit("/");
       cy.wait(2000);
@@ -122,6 +139,7 @@ describe("App share functionality", () => {
       cy.appUILogin();
 
       navigateToAppEditor(data.appName);
+      cy.wait(2000);
       cy.skipEditorPopover();
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
