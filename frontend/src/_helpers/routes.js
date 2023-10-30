@@ -132,7 +132,7 @@ export const excludeWorkspaceIdFromURL = (pathname) => {
 export const getSubpath = () =>
   window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
 
-const returnWorkspaceIdIfNeed = (path) => {
+export const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
     return !path.startsWith('/applications/') && !path.startsWith('/integrations') ? `/${getWorkspaceId()}` : '';
   }
