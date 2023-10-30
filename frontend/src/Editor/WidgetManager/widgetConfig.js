@@ -1056,7 +1056,7 @@ export const widgets = [
     component: 'TextInput',
     defaultSize: {
       width: 14,
-      height: 30,
+      height: 32,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -1287,7 +1287,7 @@ export const widgets = [
         color: { value: '#11181C' },
         auto: { value: '{{false}}' },
         padding: { value: 'default' },
-        boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        boxShadow: { value: '0px 0px 0px 0px #00000090' },
       },
     },
   },

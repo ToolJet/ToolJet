@@ -39,7 +39,8 @@ export function renderCustomStyles(
   if (
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'Form' ||
-    componentConfig.component == 'Listview'
+    componentConfig.component == 'Listview' ||
+    componentConfig.component == 'TextInput'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -49,7 +50,10 @@ export function renderCustomStyles(
       const { key, value } = conditionallyRender;
       if (paramTypeDefinition?.[key] ?? value) {
         const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
-        if (resolvedValue?.value !== value) return;
+
+        if (resolvedValue?.value !== value) {
+          return;
+        }
       }
     }
   }

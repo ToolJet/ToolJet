@@ -11611,16 +11611,18 @@ tbody {
 .tj-text-input-widget {
   border: 1px solid var(--tj-text-input-widget-border-default);
   background-color: var(--tj-text-input-widget-field-default);
+  width: 100%;
+
 
   &:hover {
-    background-color: var(--tj-text-input-widget-hover);
+    background-color: var(--tj-text-input-widget-hover) !important;
   }
 
   &:focus {
-    box-shadow: 0px 0px 0px 4px #DFE3E6;
+    box-shadow: 0px 0px 0px 4px #DFE3E6 !important;
   }
 
   &:active {
-    box-shadow: 0px 0px 0px 1px #DFE3E6;
+    box-shadow: 0px 0px 0px 1px #DFE3E6 !important;
   }
 }
