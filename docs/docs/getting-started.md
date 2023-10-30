@@ -13,7 +13,7 @@ slug: /
 
 ToolJet is an **open-source low-code framework** to build and deploy custom internal tools. 
 
-ToolJet ships with its built-in database called **[ToolJet DB](/docs/tooljet-database)** (built on top of PostgreSQL). You can also connect to the **external data sources** such as **databases** ( PostgreSQL, MongoDB, MS SQL Server, Snowflake, , BigQuery, etc ), **API/GraphQL endpoints**, **SaaS tools** ( Airtable, Stripe, Google Sheets, etc ) and **cloud object storage services** ( AWS S3, Google Cloud Storage and Minio ). 
+ToolJet ships with its built-in database called **[ToolJet DB](/docs/tooljet-database)** (built on top of PostgreSQL). You can also connect to the **external data sources** such as **databases** ( PostgreSQL, MongoDB, MS SQL Server, Snowflake, BigQuery, etc ), **API/GraphQL endpoints**, **SaaS tools** ( Airtable, Stripe, Google Sheets, etc ) and **cloud object storage services** ( AWS S3, Google Cloud Storage and Minio ). 
 
 Once the data sources are connected, ToolJet can run **queries** on these data sources to fetch and update data. The data fetched from data sources can be **visualised and modified** using the UI widgets such as tables, charts, forms, etc. You can also use **[Javascript](/docs/data-sources/run-js)** or **[Python](/docs/data-sources/run-py)** queries for writing business logic or interacting with the user interface of the application.
 
@@ -346,7 +346,7 @@ Later, we'll plug this query to the **Submit** button on *logTimeModal*.
 
 **Events** allow us to run queries and other application functions based on button clicks, query completion and an array of other triggers.
 
-The *addLog* query will add data to the the *timeTracker* table in the database when it runs. But we would want our **Table** component to be reloaded with the new data every time we add or delete the entries. Since the data in the **Table** component is coming from the *getTrackerSummary* query, we'll trigger the *getTrackerSummary* query after running the *addLog* query.
+The *addLog* query will add data to the *timeTracker* table in the database when it runs. But we would want our **Table** component to be reloaded with the new data every time we add or delete the entries. Since the data in the **Table** component is coming from the *getTrackerSummary* query, we'll trigger the *getTrackerSummary* query after running the *addLog* query.
 
 Click on the **+ New Event Handler** button in the *addLog* query - a new event will be added. Click on the event and select **Run Query** as Action and *getTrackerSummary* as Query. 
 
