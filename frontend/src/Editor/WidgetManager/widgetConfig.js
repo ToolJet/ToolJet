@@ -5280,7 +5280,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Choose colors from a palette',
     component: 'ColorPicker',
     properties: {
-      defaultColor: { type: 'color', displayName: 'Default Color' },
+      defaultColor: { type: 'color', displayName: 'Default color' },
     },
     defaultSize: {
       width: 9,
