@@ -4894,7 +4894,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
       showDownloadOption: {
         type: 'toggle',
-        displayName: 'Show the Download',
+        displayName: 'Show the download',
         validation: { schema: { type: 'boolean' } },
       },
     },
@@ -5804,7 +5804,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       imageUrl: {
         type: 'code',
-        displayName: 'Image Url',
+        displayName: 'Image URL',
         validation: {
           schema: { type: 'string' },
         },
