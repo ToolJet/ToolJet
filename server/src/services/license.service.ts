@@ -184,7 +184,9 @@ export class LicenseService {
       });
       if (isExisted) {
         if (isExisted.hostname === hostname && (!subpath || isExisted.subpath === subpath)) return isExisted.licenseKey;
-        throw new ConflictException('License with same email exists');
+        throw new ConflictException(
+          'The email address you provided is already associated with a license. Please use a different email address to create a new trial license'
+        );
       }
 
       const expiryDate = new Date();
