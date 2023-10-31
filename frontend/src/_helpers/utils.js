@@ -9,7 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
-import { getWorkspaceIdOrSlugFromURL, getSubpath } from './routes';
+import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
@@ -1019,15 +1019,6 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
       break;
     }
   }
-};
-
-export const returnWorkspaceIdIfNeed = (path, workspaceId = null) => {
-  if (path) {
-    return !['applications', 'integrations', 'instance-settings'].find((subpath) => path.includes(subpath))
-      ? `/${workspaceId ?? getWorkspaceId()}`
-      : '';
-  }
-  return `/${workspaceId ?? getWorkspaceId()}`;
 };
 
 export const deepEqual = (obj1, obj2, excludedKeys = []) => {
