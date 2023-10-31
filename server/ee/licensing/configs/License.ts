@@ -118,13 +118,11 @@ export default class License {
         ? parseInt(this._maxDurationForAuditLogs, 10)
         : this._maxDurationForAuditLogs;
 
-    if (this.licenseType === LICENSE_TYPE.ENTERPRISE) {
+    if (this.licenseType != LICENSE_TYPE.BUSINESS) {
       return maxDuration <= ENTERPRISE_PLAN_TERMS.auditLogs.maximumDays
         ? maxDuration
         : ENTERPRISE_PLAN_TERMS.auditLogs.maximumDays;
-    }
-
-    if (this.licenseType === LICENSE_TYPE.BUSINESS) {
+    } else {
       return maxDuration <= BUSINESS_PLAN_TERMS.auditLogs.maximumDays
         ? maxDuration
         : BUSINESS_PLAN_TERMS.auditLogs.maximumDays;

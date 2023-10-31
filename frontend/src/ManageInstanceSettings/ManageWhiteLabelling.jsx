@@ -66,6 +66,10 @@ class ManageWhiteLabellingComponent extends React.Component {
     });
   };
 
+  hasSettingsChanged = () => {
+    return !_.isEqual(this.state.settings, this.state.initialSettings);
+  };
+
   reset = () => {
     this.setState({ settings: this.state.initialSettings, hasChanges: false });
   };
@@ -94,13 +98,16 @@ class ManageWhiteLabellingComponent extends React.Component {
   returnBooleanValue = (value) => (value === 'true' ? true : false);
 
   optionsChanged = (key, newValue) => {
-    this.setState((prevState) => ({
-      settings: {
+    this.setState((prevState) => {
+      const updatedSettings = {
         ...prevState.settings,
         [key]: newValue,
-      },
-      hasChanges: true,
-    }));
+      };
+      return {
+        settings: updatedSettings,
+        hasChanges: !_.isEqual(updatedSettings, this.state.initialSettings),
+      };
+    });
   };
 
   transformKeysToCamelCase = (data) => {
@@ -283,7 +290,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                   </button>
                   <ButtonSolid
                     onClick={this.saveSettings}
-                    disabled={isSaving || disabled || !this.state.hasChanges}
+                    disabled={isSaving || disabled || !this.hasSettingsChanged()}
                     data-cy="save-button"
                     variant="primary"
                     className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}

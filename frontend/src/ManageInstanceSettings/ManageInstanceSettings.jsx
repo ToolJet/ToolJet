@@ -66,7 +66,7 @@ class ManageInstanceSettingsComponent extends React.Component {
   };
 
   reset = () => {
-    this.setState({ options: this.state.initialOptions, hasChanges: false });
+    this.setState({ options: this.state.initialOptions }, () => this.checkForChanges());
   };
 
   saveSettings = () => {
@@ -88,15 +88,22 @@ class ManageInstanceSettingsComponent extends React.Component {
 
   returnBooleanValue = (value) => (value === 'true' ? true : false);
 
+  checkForChanges = () => {
+    const hasChanges = !_.isEqual(this.state.options, this.state.initialOptions);
+    this.setState({ hasChanges });
+  };
+
   optionsChanged = (key) => {
     const index = this.state.options.findIndex((option) => option.key === key);
     const newOptions = _.cloneDeep(this.state.options);
     const newValue = !this.returnBooleanValue(newOptions[index]?.value);
     newOptions[index].value = newValue.toString();
-    this.setState({
-      options: [...newOptions],
-      hasChanges: true,
-    });
+    this.setState(
+      {
+        options: [...newOptions],
+      },
+      () => this.checkForChanges()
+    );
   };
 
   render() {

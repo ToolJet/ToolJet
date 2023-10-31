@@ -35,7 +35,7 @@ const LicenseTooltip = ({
         return `${
           customMessage ??
           `${feature} is not included in your
-          current plan. For more, Upgrade`
+          current plan`
         }`;
       case (!isLicenseValid || isExpired) &&
         (!isAvailable || limits?.[paidFeatures?.[feature]] === false) &&

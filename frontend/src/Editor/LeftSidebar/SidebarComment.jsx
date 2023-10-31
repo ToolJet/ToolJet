@@ -71,7 +71,6 @@ export const LeftSidebarComment = forwardRef(
       <LeftSidebarItem
         commentBadge={notifications?.length > 0}
         selectedSidebarItem={selectedSidebarItem}
-        title={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
         icon={'comments'}
         className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
           disabled: !appVersionsId || isVersionReleased || isEditorFreezed || !shouldEnableComments,

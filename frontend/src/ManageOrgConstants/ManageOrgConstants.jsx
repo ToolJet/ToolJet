@@ -485,7 +485,7 @@ const RenderEnvironmentsTab = ({
                 customMessage={
                   !licenseValid
                     ? 'Multi-environments are available only in paid plans'
-                    : 'Multi-environments are not included in your current plan. For more, Upgrade'
+                    : 'Multi-environments are not included in your current plan'
                 }
               >
                 {children}

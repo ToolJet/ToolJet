@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -6,7 +6,7 @@ import SolidIcon from '../_ui/Icon/SolidIcons';
 import { authenticationService } from '@/_services';
 
 const LegalReasonsErrorModal = ({
-  showModal,
+  showModal: propShowModal,
   message,
   feature,
   darkMode,
@@ -15,21 +15,19 @@ const LegalReasonsErrorModal = ({
   showFooter = true,
   toggleModal,
 }) => {
-  const [isModalOpen, setShowModal] = React.useState(showModal);
+  const [showModal, setShowModal] = useState(propShowModal);
   const currentUser = authenticationService.currentSessionValue;
 
-  React.useEffect(() => {
-    if (!isModalOpen) {
-      const element = document.getElementById('legal-reason-modal');
-      const parentNode = element?.parentNode;
-      parentNode && ReactDOM.unmountComponentAtNode(parentNode);
-      toggleModal && toggleModal();
-    }
-  }, [isModalOpen]);
+  useEffect(() => {
+    setShowModal(propShowModal);
+  }, [propShowModal]);
 
-  const handleClose = () => setShowModal(false);
+  const handleClose = () => {
+    setShowModal(false);
+    toggleModal && toggleModal();
+  };
 
-  return (
+  const modalContent = (
     <>
       <Modal
         id="legal-reason-modal"
@@ -79,6 +77,7 @@ const LegalReasonsErrorModal = ({
       </Modal>
     </>
   );
+  return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default LegalReasonsErrorModal;

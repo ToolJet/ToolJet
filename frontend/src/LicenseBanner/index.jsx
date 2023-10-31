@@ -232,8 +232,8 @@ export function LicenseBanner({
       <div className={`paid-feature-banner d-flex`}>
         {!warningText && currentUser.admin && <SolidIcon {...iconSize} fill={'None'} name="enterpriseGradient" />}
         <span
-          onClick={handleClick}
-          className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer `}
+          onClick={currentUser?.super_admin && handleClick}
+          className={`upgrade-link ${currentUser?.super_admin ? 'cursor-pointer' : ''}`}
           style={{ fontWeight: '500' }}
         >
           {buttonText}

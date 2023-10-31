@@ -272,7 +272,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       isAvailable={featureAccess?.auditLogs}
                       customMessage={
                         licenseValid
-                          ? 'Audit logs are not included in your current plan. For more, Upgrade'
+                          ? 'Audit logs are not included in your current plan'
                           : 'Audit logs are available only in paid plans'
                       }
                     >

@@ -40,23 +40,21 @@ const AuditLogs = (props) => {
   const defaultValueForMinDate = moment(dateRangePickerValue[1]).subtract(1, 'days').toDate();
 
   const maxDate = useMemo(() => {
-    if (licenseType === 'enterprise') {
-      return null;
+    if (licenseType === 'business') {
+      return typeof DateRangePicker?.setMaxDate === 'function'
+        ? DateRangePicker.setMaxDate(dateRangePickerValue[1], 0, 'days')
+        : defaultValueForMaxDate;
     }
-
-    return typeof DateRangePicker?.setMaxDate === 'function'
-      ? DateRangePicker.setMaxDate(dateRangePickerValue[1], 0, 'days')
-      : defaultValueForMaxDate;
+    return null;
   }, [dateRangePickerValue, defaultValueForMaxDate, licenseType]);
 
   const minDate = useMemo(() => {
-    if (licenseType === 'enterprise') {
-      return null;
+    if (licenseType === 'business') {
+      return typeof DateRangePicker?.setMinDate === 'function'
+        ? DateRangePicker.setMinDate(dateRangePickerValue[1], maxDuration, 'days')
+        : defaultValueForMinDate;
     }
-
-    return typeof DateRangePicker?.setMinDate === 'function'
-      ? DateRangePicker.setMinDate(dateRangePickerValue[1], maxDuration, 'days')
-      : defaultValueForMinDate;
+    return null;
   }, [dateRangePickerValue, defaultValueForMinDate, licenseType, maxDuration]);
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -434,7 +432,7 @@ const AuditLogs = (props) => {
 
     const durationInDays = endDate.diff(startDate, 'days');
 
-    if (durationInDays > maxDuration && licenseType === 'enterprise') {
+    if (durationInDays > maxDuration && licenseType != 'business') {
       toast.error(`You can only access logs for maximum ${maxDuration} days.`);
       // Adjust end date (maxDate) for enterprise license
       endDate = startDate.clone().add(maxDuration, 'days');
@@ -597,7 +595,7 @@ const AuditLogs = (props) => {
                                       lineHeight: '16px',
                                     }}
                                   >
-                                    {licenseType === 'enterprise' ? (
+                                    {licenseType != 'business' ? (
                                       `Audit logs are accessible for up to 30 days`
                                     ) : (
                                       <>
