@@ -1130,7 +1130,7 @@ export const widgets = [
       color: {
         type: 'color',
         displayName: 'Color',
-        validation: { schema: { type: 'boolean' } },
+        validation: { schema: { type: 'string' } },
         accordian: 'label',
       },
       alignment: {
@@ -1158,7 +1158,7 @@ export const widgets = [
       width: {
         type: 'slider',
         displayName: 'Width',
-        validation: { schema: { type: 'string' } },
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'label',
         conditionallyRender: {
           key: 'alignment',
@@ -1210,14 +1210,14 @@ export const widgets = [
       },
       boxShadow: {
         type: 'boxShadow',
-        displayName: 'Box shadow',
+        displayName: 'Box Shadow',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
       padding: {
         type: 'switch',
         displayName: 'Padding',
-        validation: { schema: { type: 'string' } },
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         options: [
           { displayName: 'Default', value: 'default' },
           { displayName: 'None', value: 'none' },
@@ -1280,7 +1280,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        textColor: { value: '#000' },
+        textColor: { value: '#11181C' },
         borderColor: { value: '#D7DBDF' },
         errTextColor: { value: '#DB4324' },
         borderRadius: { value: '{{6}}' },

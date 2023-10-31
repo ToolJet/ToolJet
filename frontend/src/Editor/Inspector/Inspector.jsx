@@ -79,6 +79,8 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
   const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
+  const shouldAddBoxShadow = ['TextInput'];
+
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -349,6 +351,7 @@ export const Inspector = ({
     </div>
   );
 
+  console.log('xyz---', component.component.component);
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
       <div className={component.component.component !== 'TextInput' && 'p-3'}>
@@ -361,7 +364,7 @@ export const Inspector = ({
           allComponents={allComponents}
         />
       </div>
-      {buildGeneralStyle()}
+      {!shouldAddBoxShadow.includes(component.component.component) && buildGeneralStyle()}
     </div>
   );
 

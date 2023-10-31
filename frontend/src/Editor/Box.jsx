@@ -273,6 +273,7 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
+    const shouldAddBoxShadow = ['TextInput'];
 
     return (
       <OverlayTrigger
@@ -315,7 +316,13 @@ export const Box = memo(
                 canvasWidth={canvasWidth}
                 properties={validatedProperties}
                 exposedVariables={exposedVariables}
-                styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
+                // styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
+                styles={{
+                  ...validatedStyles,
+                  ...(!shouldAddBoxShadow.includes(component.component.component)
+                    ? { boxShadow: validatedGeneralStyles?.boxShadow }
+                    : {}),
+                }}
                 setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
                 setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
                 fireEvent={fireEvent}

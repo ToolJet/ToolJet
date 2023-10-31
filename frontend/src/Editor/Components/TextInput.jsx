@@ -22,16 +22,16 @@ export const TextInput = function TextInput({
   const { isValid, validationError } = validate(value);
   const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
-
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const computedStyles = {
     height: styles.padding == 'default' ? `calc(${height}px - 5px)` : height,
     borderRadius: `${styles.borderRadius}px`,
-    color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
-    borderColor: styles.borderColor,
-    backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
+    color: darkMode && styles.textColor === '#11181C' ? '#ECEDEE' : styles.textColor,
+    borderColor: ['#D7DBDF'].includes(styles.borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : styles.borderColor,
+    backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? '#313538' : styles.backgroundColor,
     boxShadow: styles.boxShadow,
   };
+
   const { loadingState } = properties;
 
   useEffect(() => {
@@ -126,6 +126,10 @@ export const TextInput = function TextInput({
                 <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
               </label>
               <input
+                className={`tj-text-input-widget${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+                  darkMode && 'dark-theme-placeholder'
+                }`}
+                // className="tj-text-input-widget"
                 ref={textInputRef}
                 onKeyUp={(e) => {
                   if (e.key == 'Enter') {
@@ -149,9 +153,6 @@ export const TextInput = function TextInput({
                   fireEvent('onFocus');
                 }}
                 type="text"
-                className={`form-control  ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-                  darkMode && 'dark-theme-placeholder'
-                }`}
                 placeholder={properties.placeholder}
                 style={computedStyles}
                 value={value}

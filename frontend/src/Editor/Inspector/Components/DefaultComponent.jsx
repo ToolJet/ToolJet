@@ -75,7 +75,7 @@ export const baseComponentProperties = (
     Events: [],
     Validation: [],
     General: ['Modal', 'TextInput'],
-    'Additional Actions': [],
+    'Additional Actions': ['TextInput'],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
