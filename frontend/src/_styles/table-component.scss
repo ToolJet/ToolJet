@@ -667,6 +667,11 @@
       &:focus-within{
         border: 1px solid var(--indigo9) !important;
         background-color: var(--indigo1) !important; 
+        .table-select-search{
+          .react-select__indicators{
+            display: none !important;
+          }
+        }
       }
     }
   }
