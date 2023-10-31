@@ -640,3 +640,22 @@
 .th:has(.resizer:hover){
   border-right:4px solid var(--slate5, #ECEEF0) !important; 
 }
+
+.jet-data-table{
+  .table{
+    .td.has-dropdown{
+      .select-search-input{
+        border: none !important;
+        background: inherit !important;
+      }
+      &:hover{
+        border: 1px solid var(--slate8);
+        background-color: var(--slate4);
+      }
+      &:focus-within{
+        border: 1px solid var(--indigo9);
+        background-color: var(--indigo1); 
+      }
+    }
+  }
+}

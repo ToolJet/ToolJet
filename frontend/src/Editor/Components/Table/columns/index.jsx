@@ -327,6 +327,7 @@ export default function generateColumnsData({
                   placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!isEditable}
                   className="select-search"
+                  styles={{ background: 'inherit', border: 'none' }}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
