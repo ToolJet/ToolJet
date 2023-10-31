@@ -11,6 +11,13 @@ You should setup a PostgreSQL database manually to be used by the ToolJet server
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
 
+You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS EC2 instances. 
+
+To deploy all the services at once, simply employ the following template:
+```
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/EC2-cloudfomration.yml
+```
+
 Follow the steps below to deploy ToolJet on AWS EC2 instances.
 
 1. Setup a PostgreSQL database and make sure that the database is accessible from the EC2 instance.
