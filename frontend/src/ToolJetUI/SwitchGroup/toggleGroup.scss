@@ -53,6 +53,14 @@
     align-items: center;
     justify-content: center;
     font-size: 10px;
+
+    svg {
+      path {
+        fill: var(--indigo9) !important;
+
+      }
+
+    }
   }
 }
 

@@ -1055,23 +1055,14 @@ export const widgets = [
     description: 'Text field for forms',
     component: 'TextInput',
     defaultSize: {
-      width: 14,
-      height: 32,
+      width: 21,
+      height: 41,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
-      value: {
-        type: 'code',
-        displayName: 'Default value',
-        validation: {
-          schema: {
-            type: 'string',
-          },
-        },
-      },
       label: {
         type: 'code',
         displayName: 'Label',
@@ -1083,6 +1074,21 @@ export const widgets = [
         validation: {
           schema: { type: 'string' },
         },
+      },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
       },
       visibility: {
         type: 'toggle',
@@ -1096,13 +1102,7 @@ export const widgets = [
         validation: { schema: { type: 'boolean' } },
         section: 'additionalActions',
       },
-      loadingState: {
-        type: 'toggle',
-        displayName: 'Loading state',
-        validation: { schema: { type: 'boolean' } },
-        section: 'additionalActions',
-      },
-      toolltip: {
+      tooltip: {
         type: 'code',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
@@ -1114,7 +1114,11 @@ export const widgets = [
       regex: { type: 'code', displayName: 'Regex' },
       minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
       maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
-      customRule: { type: 'code', displayName: 'Custom validation', placeholder: 'eg. {{ 1 < 2 }}' },
+      customRule: {
+        type: 'code',
+        displayName: 'Custom validation',
+        placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
+      },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -1123,44 +1127,12 @@ export const widgets = [
       onBlur: { displayName: 'On blur' },
     },
     styles: {
-      textColor: {
+      color: {
         type: 'color',
-        displayName: 'Text Color',
-        validation: { schema: { type: 'string' } },
-        accordian: 'field',
+        displayName: 'Color',
+        validation: { schema: { type: 'boolean' } },
+        accordian: 'label',
       },
-      backgroundColor: {
-        type: 'color',
-        displayName: 'Background Color',
-        validation: { schema: { type: 'string' } },
-        accordian: 'field',
-      },
-
-      borderColor: {
-        type: 'color',
-        displayName: 'Border Color',
-        validation: { schema: { type: 'string' } },
-        accordian: 'field',
-      },
-      errTextColor: {
-        type: 'color',
-        displayName: 'Error Text Color',
-        validation: { schema: { type: 'string' } },
-        accordian: 'field',
-      },
-      borderRadius: {
-        type: 'code',
-        displayName: 'Border radius',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-        accordian: 'field',
-      },
-      boxShadow: {
-        type: 'boxShadow',
-        displayName: 'Box shadow',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-        accordian: 'field',
-      },
-
       alignment: {
         type: 'switch',
         displayName: 'Alignment',
@@ -1204,11 +1176,43 @@ export const widgets = [
           value: 'side',
         },
       },
-      color: {
+
+      backgroundColor: {
         type: 'color',
-        displayName: 'Color',
-        validation: { schema: { type: 'boolean' } },
-        accordian: 'label',
+        displayName: 'Background Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+
+      borderColor: {
+        type: 'color',
+        displayName: 'Border Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error Text Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      borderRadius: {
+        type: 'input',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
       },
       padding: {
         type: 'switch',

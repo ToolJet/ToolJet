@@ -93,7 +93,7 @@ export const TextInput = function TextInput({
         </div>
       )}
       {!loadingState && (
-        <ToolTip message={properties.toolltip && properties.toolltip}>
+        <ToolTip message={properties.tooltip}>
           <div>
             <div
               data-disabled={disable}
@@ -109,9 +109,17 @@ export const TextInput = function TextInput({
                   color: darkMode && styles.color == '#11181C' ? '#fff' : styles.color,
                   width: styles.auto ? 'auto' : styles.alignment == 'side' ? `${styles.width}%` : '100%',
                   maxWidth: styles.auto && styles.alignment == 'side' ? '70%' : '100%',
-                  lineBreak: 'anywhere',
-                  marginRight: styles.direction == 'alignleftinspector' && styles.alignment == 'side' && '9px',
-                  marginLeft: styles.direction == 'alignrightinspector' && styles.alignment == 'side' && '9px',
+                  overflowWrap: 'break-word',
+                  marginRight:
+                    properties.label.length > 0 &&
+                    styles.direction == 'alignleftinspector' &&
+                    styles.alignment == 'side' &&
+                    '9px',
+                  marginLeft:
+                    properties.label.length > 0 &&
+                    styles.direction == 'alignrightinspector' &&
+                    styles.alignment == 'side' &&
+                    '9px',
                 }}
               >
                 {properties.label}

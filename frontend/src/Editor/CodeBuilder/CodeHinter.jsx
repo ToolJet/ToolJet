@@ -38,6 +38,7 @@ import ClientServerSwitch from './Elements/ClientServerSwitch';
 import Switch from './Elements/Switch';
 import Checkbox from './Elements/Checkbox';
 import Slider from './Elements/Slider';
+import { Input } from './Elements/Input';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
@@ -52,6 +53,7 @@ const AllElements = {
   ClientServerSwitch,
   Slider,
   Switch,
+  Input,
   Checkbox,
 };
 
@@ -398,7 +400,7 @@ export function CodeHinter({
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">
-            <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
+            {/* <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div> */}
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
                 className={`${defaultClassName} ${className || 'codehinter-default-input'}`}

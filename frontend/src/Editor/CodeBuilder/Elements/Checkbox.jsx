@@ -4,7 +4,7 @@ function Checkbox({ value, onChange }) {
   const [isChecked, setIsChecked] = useState(value); // Initial state of the checkbox
 
   return (
-    <div className="d-flex">
+    <div className="d-flex" style={{ width: '142px' }}>
       {isChecked}
       <input
         type="checkbox"
