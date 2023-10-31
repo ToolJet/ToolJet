@@ -9,14 +9,11 @@ Git Sync feature allows users to synchronize the applications on their workspace
 
 ToolJet applications can be synchronized with a Git repository, offering the flexibility to tailor your application development and deployment processes across various environments while aligning with best practices for the application development lifecycle.
 
-A common strategy involves maintaining multiple ToolJet instances, each representing distinct environments such as development, staging, and production. The progression of code between these environments is managed through Git. This means that every change undergoes a thorough review as a pull request before it can be promoted to a higher environment.
-
-With this approach, developers can confidently build ToolJet applications within the development instance, conduct testing and quality assurance procedures within the staging instance, while end-users enjoy access to the applications in the production instance. This approach ensures a structured and controlled application development and deployment.
-
 ## Setting up Git Syncing with GitHub
 
-:::caution GIT-REPOSITORY MANAGERS
-ToolJet support git repo managers like GitHub, GitLab, Bitbucket, AWS CodeCommit, and Azure Repos.
+:::caution
+- ToolJet support git repo managers like GitHub, GitLab, Bitbucket, AWS CodeCommit, and Azure Repos.
+- Only Admins have the permission to configure the Git Sync feature on workspace level.
 :::
 
 ### Step 1: Create a new repository on GitHub
@@ -86,3 +83,131 @@ Go back to the **Configure Git** tab on ToolJet, and click on the **Finalize Set
 
 </div>
 
+## Enable/Disable Git Sync
+
+To enable or disable the Git Sync feature, go to the **Configure Git** tab on the **Workspace Settings** page, and toggle on/off the **Connect** switch. This is only available if the Git Sync feature is configured.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/connect.png" alt="Git Sync" />
+
+</div>
+
+## Delete Git Sync configuration
+
+To delete the Git Sync configuration, go to the **Configure Git** tab on the **Workspace Settings** page, and click on the **Delete configuration** button. This will delete the SSH key from the GitHub repository and the Git Sync feature will be disabled.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/deleteconfig.png" alt="Git Sync" />
+
+</div>
+
+## Git repo
+
+Once the initial commit is made, you can see the app files in the git repository. The repository will have the individual app folders and a **.meta** folder. The app folders will be named as the app name and will have the respective **JSON** file of the application. The **.meta** folder will have the `meta.json` file that contains the meta information of each application synced to git repo.
+
+The **meta.json** file holds information about apps such as the **App name**, **last commit message**, **last commit user**, **last commit date**, **version name**, and **version id**.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/gitcommit.png" alt="Git Sync" />
+
+</div>
+
+## Pushing changes to git repo
+
+Once the Git Sync feature is configured, you can start pushing changes to the git repository. 
+
+### App creation
+
+When you create a new app, you will see an option to select the `Commit changes`. If you select the `commit changes` option, the changes will be committed to the git repository.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/commitchanges.png" alt="Git Sync" />
+
+</div>
+<br/>
+
+Selecting the `Commit changes` option will create a new commit in the git repository. The commit message will be `App creation` and the author will be the user who created the app.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/firstcommit.png" alt="Git Sync" />
+
+</div>
+
+### App rename
+
+Whenever an app is renamed, the changes will be automatically committed to the git repository. The commit message will be `App is renamed` and the author will be the user who renamed the app.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/rename.png" alt="Git Sync" />
+
+</div>
+
+### App updates
+
+Whenever a user makes a change in an app, they can make a commit to the git repository by clicking on the **Git Sync** button on the topbar. On clicking the **Git Sync** button, a modal will open with the option to enter the commit message. The user can enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. Along with the commit message, the user can also see the connnected **Git repo URL** and the **last commit details**.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/modalgit.png" alt="Git Sync" />
+
+</div>
+<br/>
+
+Once the changes are committed, the user can see the commit message, author, and date in the git repository.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/commitgitsync.png" alt="Git Sync" />
+
+</div>
+
+### App version update
+
+Whenever a user creates a new app version and creates a commit to git repository, the **JSON** file in the app folder will be replaced with the new version of the app that was created. The **meta.json** file in the **.meta** folder will also be updated with the new version id and version name.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/replace.png" alt="Git Sync" />
+
+</div>
+
+## Pulling changes from git repo
+
+You can configure the git sync feature on another workspace to pull the changes from the git repository. To configure the git sync feature on another workspace, follow the steps mentioned in the [Setting up Git Syncing with GitHub](#setting-up-git-syncing-with-github) section.
+
+Once the git sync feature is configured, go to the ToolJet dashboard and click on the three dots on the right side of the **Create new app** button. Click on the **Import from git repository** option.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/importgit.png" alt="Git Sync" />
+
+</div>
+<br/>
+
+On clicking the **Import from git repository** option, a modal will open with the dropdown to select the app to be imported from the git repository. Once the app is selected, the app name and the last commit will be displayed. Click on the **Import app** button to import the app from the git repository. 
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/importmodal.png" alt="Git Sync" />
+
+</div>
+
+:::caution
+The apps imported from the git repository cannot be edited.
+:::
+
+### Checking for updates
+
+You can check for updates in the git repository by clicking on the **Git Sync** button on the topbar. On clicking the **Git Sync** button, a modal will open with the option to **Check for updates**. Click on the **Check for updates** button to check for updates in the git repository. If there are any updates, you will see the details of the updates such as commit message, author, and the date in the modal. Click on the **Pull changes** button to pull the changes from the git repository.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/updatecheck.png" alt="Git Sync" />
+
+</div>
