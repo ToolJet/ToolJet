@@ -4,7 +4,6 @@ import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 
 const Switch = ({ value, onChange, meta }) => {
   const options = meta?.options;
-  console.log(value, 'value');
   return (
     <div>
       <ToggleGroup onValueChange={onChange} defaultValue={value}>

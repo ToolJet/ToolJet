@@ -2120,7 +2120,7 @@ export const widgets = [
       },
       textAlign: {
         type: 'alignButtons',
-        displayName: 'Align Text',
+        displayName: 'Alignment',
         validation: {
           schema: { type: 'string' },
         },

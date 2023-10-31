@@ -30,7 +30,7 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
       properties.push(key);
     }
   }
-  console.log(additionalActions, 'additionalActions');
+
   const accordionItems = baseComponentProperties(
     properties,
     events,
@@ -83,7 +83,6 @@ export const baseComponentProperties = (
       properties = properties.filter((property) => property !== 'rowsPerPage');
     }
   }
-  console.log(properties, 'properties');
   let items = [];
   if (properties.length > 0) {
     items.push({
