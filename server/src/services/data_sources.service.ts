@@ -378,10 +378,10 @@ export class DataSourcesService {
     environmentId?: string
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
+      const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId);
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
       const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
-      const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
+      const oldOptions = dataSource.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
 
       await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);

@@ -8,8 +8,7 @@ import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
-import { returnWorkspaceIdIfNeed } from '@/_helpers/utils';
-import { getRedirectTo, getSubpath } from '@/_helpers/routes';
+import { getRedirectTo, getSubpath, returnWorkspaceIdIfNeed } from '@/_helpers/routes';
 
 const LdapLoginPageComponent = ({ darkMode, ...props }) => {
   const [username, setUserName] = useState('');
