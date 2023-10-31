@@ -3,7 +3,7 @@ id: what-are-datasources
 title: What Are Data Sources?
 ---
 
-<div style={{marginLeft:"10%", marginRight:"10%"}}>
+<div style={{marginLeft:"7%", marginRight:"7%"}}>
 
 
 Data sources are pivotal as they enable us to fetch and send data to and from different sources including databases, external APIs, or services. Once a data source is configured, it can be shared across any app within a workspace. 

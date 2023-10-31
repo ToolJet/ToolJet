@@ -3,14 +3,14 @@ id: what-are-events
 title: What Are Events?
 ---
 
-<div style={{marginLeft:"10%", marginRight:"10%"}}>
+<div style={{marginLeft:"7%", marginRight:"7%"}}>
 
 Events are used to run queries, show alerts and other functionalities based on triggers such as button clicks or query completion. Events can be chained together to run a series of logic. For example, the completion of one query could trigger another event that runs a second query, and so on. This way, a single user interaction, like clicking a button, could set off a chain of events.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Triggering Events
-Suppose you have a query that retrieves updated data when a user clicks on a button, and you also want to display a pop-up alert upon successful data retrieval. In ToolJet, you can configure an event to trigger the query upon clicking the button followed by another event to display a pop-up alert confirming the successful data refresh after the query execution completes.
+Suppose you have a query that refreshes data when a user clicks on a button, and you also want to display a pop-up alert upon successful data refresh. In ToolJet, you can configure an event to trigger a query upon clicking the button followed by another event to display a pop-up alert confirming the successful data refresh after the query execution completes.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/tooljet-concepts/what-are-events/events-configuration.png" alt="Event Configuration" />
@@ -22,7 +22,7 @@ Suppose you have a query that retrieves updated data when a user clicks on a but
 
 ## Setting Up Event Handlers
 
-Setting up event handlers to manage such triggers and responses is a straightforward process in ToolJet. For instance, to set up an event that triggers a new query upon the completion of an existing query, you simply navigate to the query settings, click on **New Event Handler** button, and define the Event and the Action to be taken. The actions could range from running a query, showing an alert, or even switching a page. 
+Setting up event handlers to manage such triggers and responses is a straightforward process in ToolJet. For instance, to set up an event that triggers on click of a button, you simply navigate to the button configuration, click on **New Event Handler** button, and define the Event and the Action to be taken. The actions could range from running a query, showing an alert, or even switching a page. 
 
 </div>
 

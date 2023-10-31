@@ -3,7 +3,7 @@ id: what-are-queries
 title: What Are Queries?
 ---
 
-<div style={{marginLeft:"10%", marginRight:"10%"}}>
+<div style={{marginLeft:"7%", marginRight:"7%"}}>
 
 **Queries** in ToolJet acts as a bridge between the application and data sources. Queries help interact with data sources like databases or APIs. They fetch or update data based on events like button clicks, making apps dynamic.
 
