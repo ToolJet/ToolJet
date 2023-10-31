@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
 
-export class MoveStatesFromStylesToProperties1698663642824 implements MigrationInterface {
+export class MoveStatesFromStylesToProperties1698663642825 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const appVersions = await entityManager.find(AppVersion, {
