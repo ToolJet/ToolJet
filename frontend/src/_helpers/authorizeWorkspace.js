@@ -23,7 +23,7 @@ import toast from 'react-hot-toast';
 export const authorizeWorkspace = () => {
   if (!isThisExistedRoute()) {
     const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
-    const isApplicationsPath = getPathname(null, true).includes('/applications/');
+    const isApplicationsPath = getPathname(null, true).startsWith('/applications/');
     const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
     /* CASE-1 */
     authenticationService
