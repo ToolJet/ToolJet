@@ -36,6 +36,8 @@ import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
 import Switch from './Elements/Switch';
+import Checkbox from './Elements/Checkbox';
+import Slider from './Elements/Slider';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
 
@@ -48,7 +50,9 @@ const AllElements = {
   Number,
   BoxShadow,
   ClientServerSwitch,
+  Slider,
   Switch,
+  Checkbox,
 };
 
 export function CodeHinter({
@@ -80,6 +84,7 @@ export function CodeHinter({
   isCopilotEnabled = false,
   currentState: _currentState,
   verticalLine = true,
+  isIcon = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -381,6 +386,9 @@ export function CodeHinter({
                 }}
                 meta={fieldMeta}
                 cyLabel={cyLabel}
+                // {...(component.component == 'TextInput' && { component: component })}
+                isIcon={isIcon}
+                component={component}
               />
             )}
           </div>

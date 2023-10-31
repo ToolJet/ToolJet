@@ -491,6 +491,7 @@
             "properties": "Properties",
             "events": "Events",
             "layout": "Layout",
+            "devices":"Devices",
             "styles": "Styles",
             "general": "General",
             "additionalActions" : "Additional Actions",

@@ -3,7 +3,7 @@ import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
-import { renderElement } from './Utils';
+import { renderElement, renderCustomStyles } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
 import { ConfirmDialog } from '@/_components';
@@ -153,7 +153,6 @@ export const Inspector = ({
   };
 
   function paramUpdated(param, attr, value, paramType) {
-    console.log({ param, attr, value, paramType });
     let newDefinition = _.cloneDeep(component.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
@@ -280,8 +279,6 @@ export const Inspector = ({
   }
 
   function eventOptionUpdated(event, option, value) {
-    console.log('eventOptionUpdated', event, option, value);
-
     let newDefinition = { ...component.component.definition };
     let eventDefinition = newDefinition.events[event.name] || { options: {} };
 
@@ -354,7 +351,7 @@ export const Inspector = ({
 
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
-      <div className="p-3">
+      <div className={component.component.component !== 'TextInput' && 'p-3'}>
         <Inspector.RenderStyleOptions
           componentMeta={componentMeta}
           component={component}
@@ -500,38 +497,83 @@ const widgetsWithStyleConditions = {
 };
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
-  return Object.keys(componentMeta.styles).map((style) => {
-    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
-    const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
+  // Initialize an object to group properties by "accordian"
+  const groupedProperties = {};
+  if (component.component.component === 'TextInput') {
+    // Iterate over the properties in componentMeta.styles
+    for (const key in componentMeta.styles) {
+      const property = componentMeta.styles[key];
+      const accordian = property.accordian;
 
-    if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
-      const propertyConditon = condition?.property;
-      const widgetPropertyDefinition = condition?.definition;
+      // Check if the "accordian" key exists in groupedProperties
+      if (!groupedProperties[accordian]) {
+        groupedProperties[accordian] = {}; // Create an empty object for the "accordian" key if it doesn't exist
+      }
 
-      return handleRenderingConditionalStyles(
-        component,
-        componentMeta,
-        dataQueries,
-        paramUpdated,
-        currentState,
-        allComponents,
-        style,
-        propertyConditon,
-        component.component?.definition[widgetPropertyDefinition]
-      );
+      // Add the property to the corresponding "accordian" object
+      groupedProperties[accordian][key] = property;
     }
+  }
 
-    return renderElement(
-      component,
-      componentMeta,
-      paramUpdated,
-      dataQueries,
-      style,
-      'styles',
-      currentState,
-      allComponents
-    );
-  });
+  return Object.keys(component.component.component === 'TextInput' ? groupedProperties : componentMeta.styles).map(
+    (style) => {
+      const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
+      const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
+
+      if (
+        conditionWidget &&
+        conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))
+      ) {
+        const propertyConditon = condition?.property;
+        const widgetPropertyDefinition = condition?.definition;
+
+        return handleRenderingConditionalStyles(
+          component,
+          componentMeta,
+          dataQueries,
+          paramUpdated,
+          currentState,
+          allComponents,
+          style,
+          propertyConditon,
+          component.component?.definition[widgetPropertyDefinition]
+        );
+      }
+
+      const items = [];
+
+      if (component.component.component === 'TextInput') {
+        items.push({
+          title: `${style}`,
+          children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
+            ...renderCustomStyles(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              key,
+              'styles',
+              currentState,
+              allComponents,
+              value.accordian
+            ),
+          })),
+        });
+        return <Accordion key={style} items={items} />;
+      } else {
+        return renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          style,
+          'styles',
+          currentState,
+          allComponents
+        );
+      }
+    }
+  );
 };
 
 const resolveConditionalStyle = (definition, condition, currentState) => {

@@ -75,7 +75,7 @@ export const baseComponentProperties = (
     Events: [],
     Validation: [],
     'Additional Actions': [],
-    General: ['Modal', 'Text'],
+    General: ['Modal', 'Text', 'TextInput'],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
@@ -122,7 +122,6 @@ export const baseComponentProperties = (
       ),
     });
   }
-
   if (validations.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.validation', 'Validation')}`,
@@ -136,7 +135,8 @@ export const baseComponentProperties = (
           'validation',
           currentState,
           allComponents,
-          darkMode
+          darkMode,
+          componentMeta.validation?.[property]?.placeholder
         )
       ),
     });
@@ -181,7 +181,7 @@ export const baseComponentProperties = (
   });
 
   items.push({
-    title: `${i18next.t('widget.common.layout', 'Layout')}`,
+    title: `${i18next.t('widget.common.devices', 'Devices')}`,
     isOpen: true,
     children: (
       <>
