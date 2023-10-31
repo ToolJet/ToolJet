@@ -3003,14 +3003,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Star Color',
+        displayName: 'Star color',
         validation: {
           schema: { type: 'string' },
         },
       },
       labelColor: {
         type: 'color',
-        displayName: 'Label Color',
+        displayName: 'Label color',
         validation: {
           schema: { type: 'string' },
         },
