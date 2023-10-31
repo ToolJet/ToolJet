@@ -35,8 +35,9 @@ import cx from 'classnames';
 import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
+import Switch from './Elements/Switch';
 
-const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
 
 const AllElements = {
   Color,
@@ -47,6 +48,7 @@ const AllElements = {
   Number,
   BoxShadow,
   ClientServerSwitch,
+  Switch,
 };
 
 export function CodeHinter({
@@ -343,23 +345,25 @@ export function CodeHinter({
             style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
             className="d-flex align-items-center"
           >
-            <div className="col-auto pt-0 fx-common">
-              {paramLabel !== 'Type' && (
-                <FxButton
-                  active={codeShow}
-                  onPress={() => {
-                    if (codeShow) {
-                      setForceCodeBox(false);
-                      onFxPress(false);
-                    } else {
-                      setForceCodeBox(true);
-                      onFxPress(true);
-                    }
-                  }}
-                  dataCy={cyLabel}
-                />
-              )}
-            </div>
+            {!fieldMeta?.isFxNotRequired && (
+              <div className="col-auto pt-0 fx-common">
+                {paramLabel !== 'Type' && (
+                  <FxButton
+                    active={codeShow}
+                    onPress={() => {
+                      if (codeShow) {
+                        setForceCodeBox(false);
+                        onFxPress(false);
+                      } else {
+                        setForceCodeBox(true);
+                        onFxPress(true);
+                      }
+                    }}
+                    dataCy={cyLabel}
+                  />
+                )}
+              </div>
+            )}
             {!codeShow && (
               <ElementToRender
                 value={resolveReferences(initialValue, realState)}
@@ -452,10 +456,6 @@ export function CodeHinter({
       </div>
     </div>
   );
-}
-
-function CodeHinterInputField() {
-  return <></>;
 }
 
 const PopupIcon = ({ callback, icon, tip, transformation = false }) => {

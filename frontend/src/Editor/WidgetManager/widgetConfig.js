@@ -1983,6 +1983,17 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      textFormat: {
+        type: 'switch',
+        displayName: 'Text Format',
+        options: [
+          { displayName: 'Plain text', value: 'plainText' },
+          { displayName: 'Markdown', value: 'markdown' },
+          { displayName: 'HTML', value: 'html' },
+        ],
+        isFxNotRequired: true,
+        defaultValue: { value: 'plainText' },
+      },
       text: {
         type: 'code',
         displayName: 'Text',
@@ -1992,17 +2003,45 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Show loading state',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
+        section: 'additionalActions',
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+        section: 'additionalActions',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+        section: 'additionalActions',
+      },
+      tooltip: {
+        type: 'code',
+        displayName: 'Tooltip',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+        section: 'additionalActions',
       },
     },
     defaultSize: {
       width: 6,
       height: 30,
     },
-    events: [],
+    events: {
+      onClick: { displayName: 'On click' },
+      onHover: { displayName: 'On hover' },
+    },
     styles: {
       fontWeight: {
         type: 'select',
@@ -2086,20 +2125,6 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
     },
     exposedVariables: {
       text: 'Hello, there!',
@@ -2122,8 +2147,11 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        // textFormat: { value: '{{}}' },
         text: { value: 'Hello, there!' },
         loadingState: { value: `{{false}}` },
+        disabledState: { value: '{{false}}' },
+        visibility: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -2140,8 +2168,6 @@ export const widgets = [
         letterSpacing: { value: 0 },
         wordSpacing: { value: 0 },
         fontVariant: { value: 'normal' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
       },
     },
   },

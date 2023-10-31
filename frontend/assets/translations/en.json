@@ -493,6 +493,7 @@
             "layout": "Layout",
             "styles": "Styles",
             "general": "General",
+            "additionalActions" : "Additional Actions",
             "validation": "Validation",
             "documentation": "Read documentation for {{componentMeta}}",
             "widgetNameEmptyError": "Widget name cannot be empty",

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
+import Markdown from 'react-markdown';
 
-export const Text = function Text({ height, properties, styles, darkMode, setExposedVariable, dataCy }) {
+export const Text = function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
   let {
     textSize,
     textColor,
@@ -19,9 +20,11 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
     disabledState,
     boxShadow,
   } = styles;
-  const { loadingState } = properties;
+  const { loadingState, textFormat } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(styles.visibility);
+  const [isLoading, setLoading] = useState(loadingState);
+  const [isDisabled, setIsDisabled] = useState(styles.isDisabled);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
 
   useEffect(() => {
@@ -39,17 +42,43 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
       setText(text);
       setExposedVariable('text', text);
     });
+    setExposedVariable('clear', async function (text) {
+      setText('');
+      setExposedVariable('text', '');
+    });
+    setExposedVariable('isVisible', async function (value) {
+      setVisibility(value);
+    });
+    setExposedVariable('isLoading', async function (value) {
+      setVisibility(value);
+    });
+    setExposedVariable('isDisabled', async function (value) {
+      setVisibility(value);
+    });
 
-    setExposedVariable('visibility', async function (value) {
+    setExposedVariable('setVisibility', async function (value) {
+      setVisibility(value);
+    });
+
+    setExposedVariable('setLoading', async function (value) {
+      setVisibility(value);
+    });
+
+    setExposedVariable('setIsDisabled', async function (value) {
       setVisibility(value);
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text, setText, setVisibility]);
-
+  console.log('text', textFormat);
   function computeText() {
     return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
   }
+
+  const handleClick = () => {
+    console.log('onClick');
+    fireEvent('onClick');
+  };
 
   const computedStyles = {
     backgroundColor,
@@ -71,8 +100,19 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
   };
 
   return (
-    <div data-disabled={disabledState} className="text-widget" style={computedStyles} data-cy={dataCy}>
-      {!loadingState && (
+    <div
+      data-disabled={disabledState}
+      className="text-widget"
+      style={computedStyles}
+      data-cy={dataCy}
+      onMouseOver={() => {
+        fireEvent('onHover');
+      }}
+      onClick={handleClick}
+    >
+      {!loadingState && textFormat === 'markdown' ? (
+        <Markdown>{text}</Markdown>
+      ) : (
         <div
           style={{ width: '100%', fontSize: textSize }}
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}

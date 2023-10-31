@@ -19,10 +19,18 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     pages,
   } = restProps;
 
-  const properties = Object.keys(componentMeta.properties);
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
-
+  let properties = [];
+  let additionalActions = [];
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
+  console.log(additionalActions, 'additionalActions');
   const accordionItems = baseComponentProperties(
     properties,
     events,
@@ -37,7 +45,8 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     components,
     validations,
     darkMode,
-    pages
+    pages,
+    additionalActions
   );
 
   return <Accordion items={accordionItems} />;
@@ -57,14 +66,16 @@ export const baseComponentProperties = (
   allComponents,
   validations,
   darkMode,
-  pages
+  pages,
+  additionalActions
 ) => {
   // Add widget title to section key to filter that property section from specified widgets' settings
   const accordionFilters = {
     Properties: [],
     Events: [],
     Validation: [],
-    General: ['Modal'],
+    'Additional Actions': [],
+    General: ['Modal', 'Text'],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
@@ -72,6 +83,7 @@ export const baseComponentProperties = (
       properties = properties.filter((property) => property !== 'rowsPerPage');
     }
   }
+  console.log(properties, 'properties');
   let items = [];
   if (properties.length > 0) {
     items.push({
@@ -148,6 +160,25 @@ export const baseComponentProperties = (
         )}
       </>
     ),
+  });
+
+  items.push({
+    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    isOpen: true,
+    children: additionalActions.map((property) => {
+      const paramType = property === 'Tooltip' ? 'general' : 'properties';
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        paramType,
+        currentState,
+        allComponents,
+        darkMode
+      );
+    }),
   });
 
   items.push({
