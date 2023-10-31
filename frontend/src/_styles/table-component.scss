@@ -644,17 +644,29 @@
 .jet-data-table{
   .table{
     .td.has-dropdown{
-      .select-search-input{
+      .react-select__control{
         border: none !important;
         background: inherit !important;
       }
+      .table-select-search{
+        .react-select__dropdown-indicator{
+          svg{
+            background-color: var(--slate7) !important;
+            padding: 2px !important;
+            border-radius: 4px !important;
+            path{
+              fill: var(--slate11) !important
+            }
+          }
+        }
+      }
       &:hover{
-        border: 1px solid var(--slate8);
-        background-color: var(--slate4);
+        border: 1px solid var(--slate8) !important;
+        background-color: var(--slate4) !important;
       }
       &:focus-within{
-        border: 1px solid var(--indigo9);
-        background-color: var(--indigo1); 
+        border: 1px solid var(--indigo9) !important;
+        background-color: var(--indigo1) !important; 
       }
     }
   }
