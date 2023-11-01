@@ -1,4 +1,5 @@
-import { create, zustandDevTools } from './utils';
+import { create } from './utils';
+import { v4 as uuid } from 'uuid';
 
 const STORE_NAME = 'Editor';
 
@@ -39,6 +40,7 @@ const initialState = {
   showLeftSidebar: true,
   queryConfirmationList: [],
   currentPageId: null,
+  currentSessionId: uuid(),
 };
 
 export const useEditorStore = create(

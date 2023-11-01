@@ -60,7 +60,7 @@ export const Container = ({
     shallow
   );
 
-  const { appId } = useAppInfo();
+  const { appId, areOthersOnSameVersionAndPage } = useAppInfo();
 
   const currentState = useCurrentState();
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
@@ -206,7 +206,8 @@ export const Container = ({
 
     const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
     if (shouldUpdate) {
-      appDefinitionChanged(newDefinition, opts);
+      console.log('[arpit]:: updating ==>');
+      appDefinitionChanged(newDefinition, { ...opts, areOthersOnSameVersionAndPage });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -299,6 +300,8 @@ export const Container = ({
             withDefaultChildren: newComponent.withDefaultChildren,
           },
         };
+
+        console.log('[arpit]:: adding new component');
 
         setBoxes(newBoxes);
 
