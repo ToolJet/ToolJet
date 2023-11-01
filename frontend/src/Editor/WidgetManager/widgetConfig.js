@@ -2485,7 +2485,7 @@ export const widgets = [
       },
       selectedTextColor: {
         type: 'color',
-        displayName: 'Selected Text Color',
+        displayName: 'Selected text color',
         validation: {
           schema: {
             type: 'string',
@@ -5721,7 +5721,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
