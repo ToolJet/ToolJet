@@ -1178,8 +1178,8 @@ export const widgets = [
         showLabel: false,
         isIcon: true,
         options: [
-          { displayName: 'alignleftinspector', value: 'alignleftinspector' },
-          { displayName: 'alignrightinspector', value: 'alignrightinspector' },
+          { displayName: 'alignleftinspector', value: 'alignleftinspector', iconName: 'alignleftinspector' },
+          { displayName: 'alignrightinspector', value: 'alignrightinspector', iconName: 'alignrightinspector' },
         ],
         accordian: 'label',
       },
@@ -2104,6 +2104,7 @@ export const widgets = [
         ],
         isFxNotRequired: true,
         defaultValue: { value: 'plainText' },
+        fullWidth: true,
       },
       text: {
         type: 'code',
@@ -2154,50 +2155,95 @@ export const widgets = [
       onHover: { displayName: 'On hover' },
     },
     styles: {
+      textSize: {
+        type: 'number',
+        displayName: 'Size',
+        validation: {
+          schema: { type: 'number' },
+        },
+        accordian: 'Text',
+      },
       fontWeight: {
         type: 'select',
-        displayName: 'Font Weight',
+        displayName: 'Weight',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'bold', value: 'bold' },
           { name: 'lighter', value: 'lighter' },
           { name: 'bolder', value: 'bolder' },
         ],
-      },
-      decoration: {
-        type: 'select',
-        displayName: 'Text Decoration',
-        options: [
-          { name: 'none', value: 'none' },
-          { name: 'overline', value: 'overline' },
-          { name: 'line-through', value: 'line-through' },
-          { name: 'underline', value: 'underline' },
-          { name: 'overline underline', value: 'overline underline' },
-        ],
-      },
-      transformation: {
-        type: 'select',
-        displayName: 'Text Transformation',
-        options: [
-          { name: 'none', value: 'none' },
-          { name: 'uppercase', value: 'uppercase' },
-          { name: 'lowercase', value: 'lowercase' },
-          { name: 'capitalize', value: 'capitalize' },
-        ],
+        accordian: 'Text',
       },
       fontStyle: {
-        type: 'select',
-        displayName: 'Font Style',
+        type: 'switch',
+        displayName: 'Style',
         options: [
-          { name: 'normal', value: 'normal' },
-          { name: 'italic', value: 'italic' },
-          { name: 'oblique', value: 'oblique' },
+          { displayName: 'Normal', value: 'normal', iconName: 'minus' },
+          { displayName: 'Oblique', value: 'oblique', iconName: 'oblique' },
+          { displayName: 'Italic', value: 'italic', iconName: 'italic' },
         ],
+        isIcon: true,
+        accordian: 'Text',
       },
-      lineHeight: { type: 'number', displayName: 'Line Height' },
-      textIndent: { type: 'number', displayName: 'Text Indent' },
-      letterSpacing: { type: 'number', displayName: 'Letter Spacing' },
-      wordSpacing: { type: 'number', displayName: 'Word Spacing' },
+      textColor: {
+        type: 'color',
+        displayName: 'Color',
+        validation: {
+          schema: { type: 'string' },
+        },
+        accordian: 'Text',
+      },
+      lineHeight: { type: 'number', displayName: 'Line Height', accordian: 'Text' },
+      textIndent: { type: 'number', displayName: 'Text Indent', accordian: 'Text' },
+      textAlign: {
+        type: 'alignButtons',
+        displayName: 'Alignment',
+        validation: {
+          schema: { type: 'string' },
+        },
+        accordian: 'Text',
+      },
+      verticalAlignment: {
+        type: 'switch',
+        displayName: '',
+        validation: { schema: { type: 'string' } },
+        showLabel: false,
+        isIcon: true,
+        options: [
+          { displayName: 'alignverticallytop', value: 'top', iconName: 'alignverticallytop' },
+          { displayName: 'alignverticallycenter', value: 'center', iconName: 'alignverticallycenter' },
+          { displayName: 'alignverticallybottom', value: 'bottom', iconName: 'alignverticallybottom' },
+        ],
+        accordian: 'Text',
+      },
+      decoration: {
+        type: 'switch',
+        displayName: 'Decoration',
+        isIcon: true,
+        options: [
+          { displayName: 'none', value: 'none', iconName: 'minus' },
+          { displayName: 'underline', value: 'underline', iconName: 'underline' },
+          { displayName: 'overline', value: 'overline', iconName: 'overline' },
+          { displayName: 'line-through', value: 'line-through', iconName: 'linethrough' },
+          // Change below icon
+          // { displayName: 'overline underline', value: 'overline underline', iconName: 'linethrough' },
+        ],
+        accordian: 'Text',
+      },
+      transformation: {
+        type: 'switch',
+        displayName: 'Transformation',
+        isIcon: true,
+        options: [
+          { displayName: 'none', value: 'none', iconName: 'minus' },
+          { displayName: 'uppercase', value: 'uppercase', iconName: 'uppercase' },
+          { displayName: 'lowercase', value: 'lowercase', iconName: 'lowercase' },
+          { displayName: 'capitalize', value: 'capitalize', iconName: 'capitalize' },
+        ],
+        accordian: 'Text',
+      },
+      letterSpacing: { type: 'number', displayName: 'Letter Spacing', accordian: 'Text' },
+      wordSpacing: { type: 'number', displayName: 'Word Spacing', accordian: 'Text' },
       fontVariant: {
         type: 'select',
         displayName: 'Font Variant',
@@ -2207,34 +2253,46 @@ export const widgets = [
           { name: 'initial', value: 'initial' },
           { name: 'inherit', value: 'inherit' },
         ],
+        accordian: 'Text',
       },
-      textSize: {
-        type: 'number',
-        displayName: 'Text Size',
-        validation: {
-          schema: { type: 'number' },
-        },
-      },
+
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background',
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'Container',
       },
-      textColor: {
+      borderColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Border',
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'Container',
       },
-      textAlign: {
-        type: 'alignButtons',
-        displayName: 'Alignment',
-        validation: {
-          schema: { type: 'string' },
-        },
+      borderRadius: {
+        type: 'number',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'number' } },
+        accordian: 'Container',
+      },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'Container',
+      },
+      margin: {
+        type: 'switch',
+        displayName: 'Margin',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'None', value: 'none' },
+          { displayName: 'Default', value: 'default' },
+        ],
+        accordian: 'Container',
       },
     },
     exposedVariables: {
@@ -2258,7 +2316,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        // textFormat: { value: '{{}}' },
+        textFormat: { value: 'plainText' },
         text: { value: 'Hello, there!' },
         loadingState: { value: `{{false}}` },
         disabledState: { value: '{{false}}' },
@@ -2279,6 +2337,11 @@ export const widgets = [
         letterSpacing: { value: 0 },
         wordSpacing: { value: 0 },
         fontVariant: { value: 'normal' },
+        verticalAlignment: { value: 'center' },
+        margin: { value: 'default' },
+        boxShadow: { value: '0px 0px 0px 0px #00000090' },
+        borderColor: { value: '#E6E8EB' },
+        borderRadius: { value: '' },
       },
     },
   },

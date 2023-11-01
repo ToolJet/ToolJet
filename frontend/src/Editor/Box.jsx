@@ -274,6 +274,17 @@ export const Box = memo(
         customResolveObjects: customResolvables,
       });
 
+    const componentStyles = useMemo(() => {
+      if (component.component === 'Text') {
+        return validatedStyles;
+      } else {
+        return {
+          ...validatedStyles,
+          boxShadow: validatedGeneralStyles,
+        };
+      }
+    }, [validatedStyles, validatedGeneralStyles, component.component]);
+
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
@@ -315,7 +326,7 @@ export const Box = memo(
                 canvasWidth={canvasWidth}
                 properties={validatedProperties}
                 exposedVariables={exposedVariables}
-                styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
+                styles={componentStyles}
                 setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
                 setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
                 fireEvent={fireEvent}

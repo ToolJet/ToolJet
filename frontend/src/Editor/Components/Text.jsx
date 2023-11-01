@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
 
+const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
+  top: 'flex-start',
+  center: 'center',
+  bottom: 'flex-end',
+};
+
 export const Text = function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
   let {
     textSize,
@@ -18,6 +24,10 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     wordSpacing,
     fontVariant,
     boxShadow,
+    verticalAlignment,
+    padding,
+    borderColor,
+    borderRadius,
   } = styles;
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
@@ -89,11 +99,11 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   };
 
   const computedStyles = {
+    height: padding === 'default' ? `calc(${height}px - 5px)` : height,
     backgroundColor,
     color,
-    height,
     display: visibility ? 'flex' : 'none',
-    alignItems: 'center',
+    alignItems: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
     textAlign,
     fontWeight: fontWeight ? fontWeight : fontWeight === '0' ? 0 : 'normal',
     lineHeight: lineHeight ?? 1.5,
@@ -105,6 +115,9 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     letterSpacing: `${letterSpacing}px` ?? '0px',
     wordSpacing: `${wordSpacing}px` ?? '0px',
     boxShadow,
+    border: '1px solid',
+    borderColor: borderColor,
+    borderRadius: borderRadius ? `${borderRadius}px` : '0px',
   };
 
   return (

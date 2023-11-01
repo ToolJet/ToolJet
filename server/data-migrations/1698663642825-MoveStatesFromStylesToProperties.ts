@@ -1,6 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
 
+//This will need to be updated after App definition changes are merged
 export class MoveStatesFromStylesToProperties1698663642825 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;

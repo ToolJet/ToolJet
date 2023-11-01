@@ -332,7 +332,7 @@ export function CodeHinter({
 
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
-      <div className={cx('d-flex align-items-center justify-content-between')}>
+      <div className={cx('d-flex align-items-center justify-content-between', { 'w-full': fieldMeta?.fullWidth })}>
         {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
@@ -345,10 +345,10 @@ export function CodeHinter({
             />
           </div>
         )}
-        <div className={`${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
+        <div className={cx(`${(type ?? 'code') === 'code' ? 'd-none' : ''}`, { 'w-full': fieldMeta?.fullWidth })}>
           <div
             style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
-            className="d-flex align-items-center"
+            className={cx('d-flex align-items-center', { 'w-full': fieldMeta?.fullWidth })}
           >
             {!fieldMeta?.isFxNotRequired && (
               <div className="col-auto pt-0 fx-common">
