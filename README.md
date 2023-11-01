@@ -14,34 +14,12 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 [![Twitter Follow](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
+    <img src="https://user-images.githubusercontent.com/7828962/211444352-4d6d2e4a-13c9-4980-9e16-4aed4af9811b.png"/>
+</p>
+
+<p align="center">
     <img src="https://github.com/ToolJet/ToolJet/assets/25361949/0e711f3a-edb7-496b-8833-107de3826933"/>
 </p>
-
-<p align="center">
-  <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/202402863-2851a072-9dca-4b8b-9473-0d044373928b.png"/>
-
-  </kbd>
-</p>
-
-<p align="center">
-  <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/211364385-10714e24-f1ac-4e72-a2a1-ec7dc2d412ab.png"/>
-  </kbd>
-</p>
-
-<p align="center">
-  <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/202402422-8f1df2a4-5c07-4125-9c2e-5450b90f464c.png"/>
-  </kbd>
-</p>
-
-<p align="center">
-  <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/202402574-7cd7c606-d751-4de1-ba56-abbedba54b13.png"/>
-  </kbd>
-</p>
-
 
 ## All features
 
