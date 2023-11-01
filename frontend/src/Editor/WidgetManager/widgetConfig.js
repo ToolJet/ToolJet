@@ -2155,7 +2155,7 @@ export const widgets = [
     events: [],
     styles: {
       textSize: {
-        type: 'number',
+        type: 'input',
         displayName: 'Size',
         validation: {
           schema: { type: 'number' },
@@ -2192,8 +2192,8 @@ export const widgets = [
         },
         accordian: 'Text',
       },
-      lineHeight: { type: 'number', displayName: 'Line Height', accordian: 'Text' },
-      textIndent: { type: 'number', displayName: 'Text Indent', accordian: 'Text' },
+      lineHeight: { type: 'input', displayName: 'Line Height', accordian: 'Text' },
+      textIndent: { type: 'input', displayName: 'Text Indent', accordian: 'Text' },
       textAlign: {
         type: 'alignButtons',
         displayName: 'Alignment',
@@ -2241,8 +2241,8 @@ export const widgets = [
         ],
         accordian: 'Text',
       },
-      letterSpacing: { type: 'number', displayName: 'Letter Spacing', accordian: 'Text' },
-      wordSpacing: { type: 'number', displayName: 'Word Spacing', accordian: 'Text' },
+      letterSpacing: { type: 'input', displayName: 'Letter Spacing', accordian: 'Text' },
+      wordSpacing: { type: 'input', displayName: 'Word Spacing', accordian: 'Text' },
       fontVariant: {
         type: 'select',
         displayName: 'Font Variant',
@@ -2272,7 +2272,7 @@ export const widgets = [
         accordian: 'Container',
       },
       borderRadius: {
-        type: 'number',
+        type: 'input',
         displayName: 'Border radius',
         validation: { schema: { type: 'number' } },
         accordian: 'Container',
@@ -2340,7 +2340,7 @@ export const widgets = [
         margin: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
         borderColor: { value: '#E6E8EB' },
-        borderRadius: { value: '' },
+        borderRadius: { value: 0 },
       },
     },
   },

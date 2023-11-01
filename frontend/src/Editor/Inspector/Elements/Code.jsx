@@ -110,6 +110,7 @@ export const Code = ({
         verticalLine={verticalLine}
         isIcon={paramMeta?.isIcon}
         placeholder={placeholder}
+        inspectorTab={paramType}
       />
     </div>
   );

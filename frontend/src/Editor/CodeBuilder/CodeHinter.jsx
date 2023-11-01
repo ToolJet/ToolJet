@@ -40,7 +40,7 @@ import Checkbox from './Elements/Checkbox';
 import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
 
-const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Text'];
 
 const AllElements = {
   Color,
@@ -87,6 +87,7 @@ export function CodeHinter({
   currentState: _currentState,
   verticalLine = true,
   isIcon = false,
+  inspectorTab,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -111,6 +112,7 @@ export function CodeHinter({
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
+  const [isPropertyHovered, setPropertyHovered] = useState(false);
   const wrapperRef = useRef(null);
 
   // Todo: Remove this when workspace variables are deprecated
@@ -332,8 +334,41 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
+  const fxBtn = (
+    <div className="col-auto pt-0 fx-common">
+      {paramLabel !== 'Type' && (
+        <FxButton
+          active={codeShow}
+          onPress={() => {
+            if (codeShow) {
+              setForceCodeBox(false);
+              onFxPress(false);
+            } else {
+              setForceCodeBox(true);
+              onFxPress(true);
+            }
+          }}
+          dataCy={cyLabel}
+        />
+      )}
+    </div>
+  );
+
+  const _renderFxBtn = () => {
+    if (inspectorTab === 'styles') {
+      return isPropertyHovered || codeShow ? fxBtn : null;
+    } else {
+      return fxBtn;
+    }
+  };
+
   return (
-    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
+    <div
+      ref={wrapperRef}
+      className={cx({ 'codeShow-active': codeShow })}
+      onMouseEnter={() => setPropertyHovered(true)}
+      onMouseLeave={() => setPropertyHovered(false)}
+    >
       <div className={cx('d-flex align-items-center justify-content-between', { 'w-full': fieldMeta?.fullWidth })}>
         {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
         {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
@@ -352,25 +387,7 @@ export function CodeHinter({
             style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
             className={cx('d-flex align-items-center', { 'w-full': fieldMeta?.fullWidth })}
           >
-            {!fieldMeta?.isFxNotRequired && (
-              <div className="col-auto pt-0 fx-common">
-                {paramLabel !== 'Type' && (
-                  <FxButton
-                    active={codeShow}
-                    onPress={() => {
-                      if (codeShow) {
-                        setForceCodeBox(false);
-                        onFxPress(false);
-                      } else {
-                        setForceCodeBox(true);
-                        onFxPress(true);
-                      }
-                    }}
-                    dataCy={cyLabel}
-                  />
-                )}
-              </div>
-            )}
+            {!fieldMeta?.isFxNotRequired && _renderFxBtn()}
             {!codeShow && (
               <ElementToRender
                 value={resolveReferences(initialValue, realState)}
