@@ -33,6 +33,13 @@ export const Code = ({
       if (isPaginationEnabled) return '{{true}}';
       return '{{false}}';
     }
+    // Following condition is needed to support older Text component not having textFormat switch
+    if (component?.component?.component === 'Text' && param === 'textFormat') {
+      const doTextFormatAlreadyExist = component?.component?.definition?.properties?.textFormat;
+      if (!doTextFormatAlreadyExist) {
+        return 'html';
+      }
+    }
     if (['showAddNewRowButton', 'allowSelection', 'defaultSelectedRow'].includes(param)) {
       if (param === 'allowSelection') {
         const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
