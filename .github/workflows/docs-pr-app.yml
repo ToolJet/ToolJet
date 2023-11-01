@@ -1,4 +1,4 @@
-name: Render PR deploy
+name: Render PR deploy Docs
 on:
   pull_request_target:
     types: [labeled, unlabeled, closed]
