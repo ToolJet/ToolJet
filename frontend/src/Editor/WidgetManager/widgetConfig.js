@@ -2123,6 +2123,29 @@ export const widgets = [
         validation: {
           schema: { type: 'boolean' },
         },
+        section: 'additionalActions',
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+        section: 'additionalActions',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+        section: 'additionalActions',
+      },
+      toolltip: {
+        type: 'code',
+        displayName: 'Tooltip',
+        validation: { schema: { type: 'string' } },
+        section: 'additionalActions',
       },
     },
     defaultSize: {
@@ -2270,20 +2293,6 @@ export const widgets = [
         ],
         accordian: 'Container',
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
     },
     exposedVariables: {
       text: 'Hello, there!',
@@ -2309,6 +2318,8 @@ export const widgets = [
         textFormat: { value: 'plainText' },
         text: { value: 'Hello, there!' },
         loadingState: { value: `{{false}}` },
+        disabledState: { value: '{{false}}' },
+        visibility: { value: '{{true}}' },
       },
       events: [],
       styles: {

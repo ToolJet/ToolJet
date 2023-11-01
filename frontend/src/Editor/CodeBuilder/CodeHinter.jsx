@@ -40,7 +40,7 @@ import Checkbox from './Elements/Checkbox';
 import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
 
-const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
 
 const AllElements = {
   Color,
@@ -352,23 +352,25 @@ export function CodeHinter({
             style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
             className={cx('d-flex align-items-center', { 'w-full': fieldMeta?.fullWidth })}
           >
-            <div className="col-auto pt-0 fx-common">
-              {paramLabel !== 'Type' && (
-                <FxButton
-                  active={codeShow}
-                  onPress={() => {
-                    if (codeShow) {
-                      setForceCodeBox(false);
-                      onFxPress(false);
-                    } else {
-                      setForceCodeBox(true);
-                      onFxPress(true);
-                    }
-                  }}
-                  dataCy={cyLabel}
-                />
-              )}
-            </div>
+            {!fieldMeta?.isFxNotRequired && (
+              <div className="col-auto pt-0 fx-common">
+                {paramLabel !== 'Type' && (
+                  <FxButton
+                    active={codeShow}
+                    onPress={() => {
+                      if (codeShow) {
+                        setForceCodeBox(false);
+                        onFxPress(false);
+                      } else {
+                        setForceCodeBox(true);
+                        onFxPress(true);
+                      }
+                    }}
+                    dataCy={cyLabel}
+                  />
+                )}
+              </div>
+            )}
             {!codeShow && (
               <ElementToRender
                 value={resolveReferences(initialValue, realState)}
