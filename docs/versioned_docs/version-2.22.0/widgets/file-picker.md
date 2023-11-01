@@ -76,7 +76,7 @@ The maximum accepted number of files The default value is `2`.
 
 ### Accept file types
 
-By providing types, you can make the dropzone accept specific file types and reject the others.
+By providing types, you can make the dropzone accept specific file types and reject the others. Example: `{{"image/*,,application/pdf,application/msword"}}`
 
 ### Max size limit
 
