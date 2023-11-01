@@ -35,6 +35,10 @@ import cx from 'classnames';
 import { Alert } from '@/_ui/Alert/Alert';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
+import Switch from './Elements/Switch';
+import Checkbox from './Elements/Checkbox';
+import Slider from './Elements/Slider';
+import { Input } from './Elements/Input';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
@@ -47,6 +51,10 @@ const AllElements = {
   Number,
   BoxShadow,
   ClientServerSwitch,
+  Slider,
+  Switch,
+  Input,
+  Checkbox,
 };
 
 export function CodeHinter({
@@ -78,6 +86,7 @@ export function CodeHinter({
   isCopilotEnabled = false,
   currentState: _currentState,
   verticalLine = true,
+  isIcon = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -377,6 +386,9 @@ export function CodeHinter({
                 }}
                 meta={fieldMeta}
                 cyLabel={cyLabel}
+                // {...(component.component == 'TextInput' && { component: component })}
+                isIcon={isIcon}
+                component={component}
               />
             )}
           </div>
@@ -388,7 +400,7 @@ export function CodeHinter({
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">
-            <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
+            {/* <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div> */}
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
                 className={`${defaultClassName} ${className || 'codehinter-default-input'}`}

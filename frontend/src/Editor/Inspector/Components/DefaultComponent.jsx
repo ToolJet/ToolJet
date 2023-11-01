@@ -45,7 +45,8 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     components,
     validations,
     darkMode,
-    pages
+    pages,
+    additionalActions
   );
 
   return <Accordion items={accordionItems} />;
@@ -65,14 +66,16 @@ export const baseComponentProperties = (
   allComponents,
   validations,
   darkMode,
-  pages
+  pages,
+  additionalActions
 ) => {
   // Add widget title to section key to filter that property section from specified widgets' settings
   const accordionFilters = {
     Properties: [],
     Events: [],
     Validation: [],
-    General: ['Modal'],
+    General: ['Modal', 'TextInput'],
+    'Additional Actions': [],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
@@ -119,7 +122,6 @@ export const baseComponentProperties = (
       ),
     });
   }
-
   if (validations.length > 0) {
     items.push({
       title: `${i18next.t('widget.common.validation', 'Validation')}`,
@@ -133,7 +135,8 @@ export const baseComponentProperties = (
           'validation',
           currentState,
           allComponents,
-          darkMode
+          darkMode,
+          componentMeta.validation?.[property]?.placeholder
         )
       ),
     });
@@ -159,7 +162,26 @@ export const baseComponentProperties = (
   });
 
   items.push({
-    title: `${i18next.t('widget.common.layout', 'Layout')}`,
+    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    isOpen: true,
+    children: additionalActions.map((property) => {
+      const paramType = property === 'Tooltip' ? 'general' : 'properties';
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        paramType,
+        currentState,
+        allComponents,
+        darkMode
+      );
+    }),
+  });
+
+  items.push({
+    title: `${i18next.t('widget.common.devices', 'Devices')}`,
     isOpen: true,
     children: (
       <>
