@@ -45,7 +45,7 @@ Once you have released a version of your app, you can share the app with others 
 
 </div>
 
-- You can also `Embedd` your application using the embeddable link
+- You can also `Embed` your application using the embeddable link
 
 <div style={{textAlign: 'center'}}>
 
