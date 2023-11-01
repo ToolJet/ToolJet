@@ -14,7 +14,7 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-platform' }}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-platform' || github.event.label.name == 'run-cypress') }}
 
     steps:
       - name: Setup Node.js

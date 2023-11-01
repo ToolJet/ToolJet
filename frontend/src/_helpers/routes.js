@@ -127,7 +127,9 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
   if (
-    !['instance-settings', 'integrations', 'applications', 'switch-workspace'].find((path) => pathname.includes(path))
+    !['/instance-settings', '/integrations', '/applications/', '/switch-workspace'].find((path) =>
+      pathname.startsWith(path)
+    )
   ) {
     pathname = getSubpath() ? pathname.replace(getSubpath(), '') : pathname;
     const paths = pathname?.split('/').filter((path) => path !== '');
@@ -141,9 +143,9 @@ export const excludeWorkspaceIdFromURL = (pathname) => {
 export const getSubpath = () =>
   window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
 
-const returnWorkspaceIdIfNeed = (path) => {
+export const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
-    return !['applications', 'integrations', 'instance-settings'].find((subpath) => path.includes(subpath))
+    return !['/applications/', '/integrations', '/instance-settings'].find((subpath) => path.includes(subpath))
       ? `/${getWorkspaceId()}`
       : '';
   }
