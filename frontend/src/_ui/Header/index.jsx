@@ -12,7 +12,7 @@ function Header() {
     if (pathParts.length > 1) {
       const parentPath = pathParts[pathParts.length - 2];
       if (['workspace-settings', 'instance-settings'].includes(parentPath)) {
-        return parentPath === 'workspace-settings' ? 'Workspace settings' : 'Instance settings';
+        return parentPath === 'workspace-settings' ? 'Workspace settings' : 'Settings';
       }
     }
     switch (pathEnd) {
@@ -29,7 +29,7 @@ function Header() {
       case 'integrations':
         return 'Integrations';
       case 'instance-settings':
-        return 'Instance settings';
+        return 'Settings';
       case 'audit-logs':
         return 'Audit logs';
       case 'workflows':

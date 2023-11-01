@@ -46,7 +46,7 @@ export const eeGroupsText = {
 };
 
 export const instanceSettingsText = {
-  pageTitle: "Instance settings",
+  pageTitle: "Settings",
   allUsersTab: "All users",
   manageInstanceSettings: "Manage instance settings",
   typeColumnHeader: "Type",

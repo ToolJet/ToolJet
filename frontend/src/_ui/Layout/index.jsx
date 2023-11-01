@@ -247,7 +247,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 </li>
                 {super_admin && (
                   <li className="text-center cursor-pointer">
-                    <ToolTip message="Instance settings" placement="right">
+                    <ToolTip message="Settings" placement="right">
                       <Link
                         to="/instance-settings"
                         onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
