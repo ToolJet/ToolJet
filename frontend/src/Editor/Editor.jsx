@@ -110,7 +110,6 @@ const EditorComponent = (props) => {
     showLeftSidebar,
     queryConfirmationList,
     currentPageId,
-    currentSessionId,
   } = useEditorState();
 
   const dataQueries = useDataQueries();
@@ -143,7 +142,7 @@ const EditorComponent = (props) => {
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
 
-  // const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -205,7 +204,7 @@ const EditorComponent = (props) => {
 
     $componentDidMount();
 
-    // setCurrentSessionId(() => uuid());
+    setCurrentSessionId(() => uuid());
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
@@ -239,17 +238,6 @@ const EditorComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
-
-  // useEffect(() => {
-  //   if (config.ENABLE_MULTIPLAYER_EDITING) {
-  //     props.ymap?.set('eventsUpdated', {
-  //       allEvents: events,
-  //       editingVersionId: editingVersion?.id,
-  //       currentSessionId,
-  //       areOthersOnSameVersionAndPage,
-  //     });
-  //   }
-  // }, [JSON.stringify({ events })]);
 
   useEffect(
     () => {
@@ -381,8 +369,6 @@ const EditorComponent = (props) => {
         skipAutoSave: true,
         skipYmapUpdate: true,
         currentSessionId: ymapUpdates.currentSessionId,
-        componentAdded: ymapUpdates.componentAdded,
-        componentDeleted: ymapUpdates.componentDeleted,
       });
     });
   };
@@ -802,40 +788,10 @@ const EditorComponent = (props) => {
       });
     }
     let updatedAppDefinition;
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
-      updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
-        const _currentPageId = useEditorStore.getState().currentPageId;
-
-        if (opts?.componentDeleted) {
-          const currentPageComponentIds = Object.keys(copyOfAppDefinition.pages[_currentPageId]?.components);
-          const newComponentIds = Object.keys(newDefinition.pages[_currentPageId]?.components);
-
-          const finalComponents = _.omit(
-            draft?.pages[_currentPageId]?.components,
-            _.difference(currentPageComponentIds, newComponentIds)
-          );
-
-          console.log('---arpit appDefinitionChanged--- ymap only', {
-            finalComponents,
-          });
-
-          draft.pages[_currentPageId].components = finalComponents;
-        } else if (opts?.componentAdded) {
-          const currentPageComponentIds = Object.keys(copyOfAppDefinition.pages[_currentPageId]?.components);
-          const newComponentIds = Object.keys(newDefinition.pages[_currentPageId]?.components);
-
-          const finalComponents = _.pick(
-            newDefinition?.pages[_currentPageId]?.components,
-            _.difference(newComponentIds, currentPageComponentIds)
-          );
-
-          draft.pages[_currentPageId].components = finalComponents;
-        } else {
-          Object.assign(draft, newDefinition);
-        }
-      });
+      updatedAppDefinition = newDefinition;
     } else {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
         if (_.isEmpty(draft)) return;
@@ -860,14 +816,9 @@ const EditorComponent = (props) => {
       });
     }
 
-    const diffPatches = diff(copyOfAppDefinition, updatedAppDefinition);
-    // console.log('---arpit diffPatches--- ymap only', {
-    //   copyOfAppDefinition,
-    //   appDefinition,
-    //   updatedAppDefinition,
-    // });
+    const diffPatches = diff(appDefinition, updatedAppDefinition);
 
-    const inversePatches = diff(updatedAppDefinition, copyOfAppDefinition);
+    const inversePatches = diff(updatedAppDefinition, appDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 
     if (shouldUpdate) {
@@ -917,8 +868,6 @@ const EditorComponent = (props) => {
         editingVersionId: editingVersion?.id,
         currentSessionId,
         areOthersOnSameVersionAndPage,
-        componentAdded: opts?.componentAdded,
-        componentDeleted: opts?.componentDeleted,
       });
     }
   };
@@ -1044,7 +993,7 @@ const EditorComponent = (props) => {
     });
   };
 
-  const realtimeSave = debounce(appDefinitionChanged, 900);
+  const realtimeSave = debounce(appDefinitionChanged, 500);
   const autoSave = debounce(saveEditingVersion, 200);
 
   function handlePaths(prevPatch, path = [], appJSON) {
