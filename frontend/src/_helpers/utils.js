@@ -9,7 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
-import { getWorkspaceIdOrSlugFromURL, getSubpath } from './routes';
+import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
@@ -1026,13 +1026,6 @@ export function eraseRedirectUrl() {
   redirectPath && eraseCookie('redirectPath');
   return redirectPath;
 }
-
-export const returnWorkspaceIdIfNeed = (path) => {
-  if (path) {
-    return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
-  }
-  return `/${getWorkspaceId()}`;
-};
 
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
