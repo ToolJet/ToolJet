@@ -277,14 +277,13 @@ const EditorComponent = (props) => {
   }, [currentLayout, mounted]);
 
   useEffect(() => {
-    console.log('---arpit:::: event changed [useEffect]');
     props.ymap?.set('eventHandlersUpdated', {
       updated: true,
       currentVersionId: currentVersionId,
       currentSessionId: currentSessionId,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(events)]);
+  }, [JSON.stringify({ events })]);
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -395,6 +394,8 @@ const EditorComponent = (props) => {
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
         )
           return;
+
+        if (!ymapEventHandlersUpdated.currentVersionId) return;
 
         autoUpdateEventStore(ymapEventHandlersUpdated.currentVersionId);
       }
@@ -930,13 +931,15 @@ const EditorComponent = (props) => {
       opts?.currentSessionId !== currentSessionId
     ) {
       console.log('--arpit [areOthersOnSameVersionAndPage] 1', { areOthersOnSameVersionAndPage, mounted });
-      props.ymap?.set('appDef', {
-        newDefinition: updatedAppDefinition,
-        editingVersionId: editingVersion?.id,
-        currentSessionId,
-        areOthersOnSameVersionAndPage,
-        opts,
-      });
+      setTimeout(() => {
+        props.ymap?.set('appDef', {
+          newDefinition: updatedAppDefinition,
+          editingVersionId: editingVersion?.id,
+          currentSessionId,
+          areOthersOnSameVersionAndPage,
+          opts,
+        });
+      }, 1000);
     }
   };
 
@@ -1061,8 +1064,8 @@ const EditorComponent = (props) => {
     });
   };
 
-  const realtimeSave = debounce(appDefinitionChanged, 500);
-  const autoSave = debounce(saveEditingVersion, 200);
+  const realtimeSave = debounce(appDefinitionChanged, 1500);
+  const autoSave = debounce(saveEditingVersion, 150);
 
   function handlePaths(prevPatch, path = [], appJSON) {
     const paths = [...path];
