@@ -834,13 +834,17 @@ const EditorComponent = (props) => {
 
           draft.pages[_currentPageId].components = finalComponents;
         } else if (opts?.componentAdding) {
-          const currentPageComponentIds = Object.keys(copyOfAppDefinition.pages[_currentPageId]?.components);
-          const newComponentIds = Object.keys(newDefinition.pages[_currentPageId]?.components);
+          // const currentPageComponentIds = Object.keys(copyOfAppDefinition.pages[_currentPageId]?.components);
+          // const newComponentIds = Object.keys(newDefinition.pages[_currentPageId]?.components);
 
-          const finalComponents = _.pick(
-            newDefinition?.pages[_currentPageId]?.components,
-            _.difference(newComponentIds, currentPageComponentIds)
-          );
+          // const finalComponents = _.pick(
+          //   newDefinition?.pages[_currentPageId]?.components,
+          //   _.difference(newComponentIds, currentPageComponentIds)
+          // );
+
+          const currentPageComponents = newDefinition.pages[_currentPageId]?.components;
+
+          const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
 
           draft.pages[_currentPageId].components = finalComponents;
         } else {
