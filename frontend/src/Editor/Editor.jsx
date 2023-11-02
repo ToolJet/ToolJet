@@ -926,7 +926,7 @@ const EditorComponent = (props) => {
     if (
       config.ENABLE_MULTIPLAYER_EDITING &&
       !opts?.skipYmapUpdate &&
-      opts?.currentSessionId &&
+      currentSessionId &&
       opts?.currentSessionId !== currentSessionId
     ) {
       console.log('--arpit [areOthersOnSameVersionAndPage] 1', { areOthersOnSameVersionAndPage, mounted });
