@@ -2,8 +2,7 @@ import { BadRequestException, HttpException, Injectable, NotFoundException, Opti
 import { EntityManager, In, ObjectLiteral, QueryFailedError, SelectQueryBuilder, TypeORMError } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { isString, isEmpty } from 'lodash';
-import { camelCase } from 'lodash';
+import { isString, isEmpty, camelCase } from 'lodash';
 
 export type TableColumnSchema = {
   column_name: string;
