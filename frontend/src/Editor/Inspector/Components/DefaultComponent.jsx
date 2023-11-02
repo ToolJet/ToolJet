@@ -5,6 +5,13 @@ import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
+import { AllComponents } from '@/Editor/Box';
+
+const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput'];
+const PROPERTIES_VS_ACCORDION_TITLE = {
+  Text: 'Text',
+  TextInput: 'TextInput',
+};
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -74,7 +81,9 @@ export const baseComponentProperties = (
     Properties: [],
     Events: [],
     Validation: [],
-    'Additional Actions': [],
+    'Additional Actions': Object.keys(AllComponents).filter(
+      (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
+    ),
     General: ['Modal', 'Text', 'TextInput'],
     Layout: [],
   };
@@ -86,7 +95,9 @@ export const baseComponentProperties = (
   let items = [];
   if (properties.length > 0) {
     items.push({
-      title: `${i18next.t('widget.common.properties', 'Properties')}`,
+      title:
+        PROPERTIES_VS_ACCORDION_TITLE[component?.component?.component] ??
+        `${i18next.t('widget.common.properties', 'Properties')}`,
       children: properties.map((property) =>
         renderElement(
           component,

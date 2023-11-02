@@ -69,7 +69,7 @@ import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 
-const AllComponents = {
+export const AllComponents = {
   Button,
   Image,
   Text,
