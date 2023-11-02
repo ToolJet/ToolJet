@@ -820,7 +820,9 @@ const EditorComponent = (props) => {
       });
     }
     let updatedAppDefinition;
-    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
+
+    console.log('-- arpit step 2 ', { appDefinition, copyOfAppDefinition, newDefinition, opts });
 
     if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
