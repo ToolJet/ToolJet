@@ -87,6 +87,7 @@ const EditorComponent = (props) => {
     setIsSaving,
     createAppVersionEventHandlers,
     setAppPreviewLink,
+    autoUpdateEventStore,
   } = useAppDataActions();
   const { updateEditorState, updateQueryConfirmationList, setSelectedComponents, setCurrentPageId } =
     useEditorActions();
@@ -275,6 +276,15 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
+  useEffect(() => {
+    console.log('---arpit:::: event changed');
+    props.ymap?.set('eventHandlersUpdated', {
+      updated: true,
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+    });
+  }, [JSON.stringify({ events })]);
+
   const handleMessage = (event) => {
     const { data } = event;
 
@@ -355,24 +365,37 @@ const EditorComponent = (props) => {
     // Observe changes in the 'appDef' property of the 'ymap' object
     props.ymap?.observeDeep(() => {
       const ymapUpdates = props.ymap?.get('appDef');
+      const ymapEventHandlersUpdated = props.ymap?.get('eventHandlersUpdated');
 
-      // Check if there is a new session and if others are on the same version and page
-      if (!ymapUpdates.currentSessionId || ymapUpdates.currentSessionId === currentSessionId) return;
+      if (ymapUpdates) {
+        // Check if there is a new session and if others are on the same version and page
+        if (!ymapUpdates.currentSessionId || ymapUpdates.currentSessionId === currentSessionId) return;
 
-      // Check if others are on the same version and page
-      if (!ymapUpdates.areOthersOnSameVersionAndPage) return;
+        // Check if others are on the same version and page
+        if (!ymapUpdates.areOthersOnSameVersionAndPage) return;
 
-      // Check if the new application definition is different from the current one
-      if (isEqual(appDefinition, ymapUpdates.newDefinition)) return;
+        // Check if the new application definition is different from the current one
+        if (isEqual(appDefinition, ymapUpdates.newDefinition)) return;
 
-      // Trigger real-time save with specific options
-      realtimeSave(props.ymap?.get('appDef').newDefinition, {
-        skipAutoSave: true,
-        skipYmapUpdate: true,
-        currentSessionId: ymapUpdates.currentSessionId,
-        componentAdding: ymapUpdates.componentAdding,
-        componentDeleting: ymapUpdates.componentDeleting,
-      });
+        // Trigger real-time save with specific options
+        realtimeSave(props.ymap?.get('appDef').newDefinition, {
+          skipAutoSave: true,
+          skipYmapUpdate: true,
+          currentSessionId: ymapUpdates.currentSessionId,
+          componentAdding: ymapUpdates.componentAdding,
+          componentDeleting: ymapUpdates.componentDeleting,
+        });
+      }
+
+      if (ymapEventHandlersUpdated) {
+        if (
+          !ymapEventHandlersUpdated.currentSessionId ||
+          ymapEventHandlersUpdated.currentSessionId === currentSessionId
+        )
+          return;
+
+        autoUpdateEventStore(ymapEventHandlersUpdated.currentVersionId);
+      }
     });
   };
 

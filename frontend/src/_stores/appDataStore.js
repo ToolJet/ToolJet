@@ -112,7 +112,12 @@ export const useAppDataStore = create(
             set(() => ({ events: updatedEvents }));
           }
         },
+        autoUpdateEventStore: async (versionId) => {
+          const appId = get().appId;
+          const response = await appVersionService.findAllEventsWithSourceId(appId, versionId);
 
+          set(() => ({ events: response }));
+        },
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
