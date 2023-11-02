@@ -1,5 +1,5 @@
 export const ssoText = {
-  pagetitle: " SSO",
+  pagetitle: "SSO",
   generalSettingsElements: {
     generalSettings: "General Settings",
     enableSignupLabel: "Enable Signup",

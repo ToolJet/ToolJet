@@ -25,16 +25,16 @@ data.dsEdit = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 describe("User permissions", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.visit("/");
+    cy.visit("/my-workspace");
     resetDsPermissions();
     deleteAssignedDatasources();
     cy.viewport(1200, 1300);
   });
   before(() => {
     cy.apiLogin();
-    cy.visit("/");
+    cy.visit("/my-workspace");
     addNewUserMW(data.firstName, data.email);
-    common.logout();
+    cy.logoutApi();
   });
 
   it("Should verify the DS View and Edit permission", () => {
@@ -53,11 +53,15 @@ describe("User permissions", () => {
       ]
     );
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
 
-    adminLogin();
+    cy.logoutApi();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(eeGroupsSelector.datasourceLink).click();
     cy.wait(500);
     cy.get(
@@ -66,8 +70,9 @@ describe("User permissions", () => {
     cy.contains(`cypress-${data.lastName}-bigquery`).realClick();
     cy.get(eeGroupsSelector.AddDsButton).click();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.globalDataSourceIcon).should("exist").click();
 
     cy.get(dataSourceSelector.addedDsSearchIcon).click();
@@ -89,8 +94,10 @@ describe("User permissions", () => {
       "You do not have permissions to perform this action"
     );
 
-
-    adminLogin();
+    cy.logoutApi();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(eeGroupsSelector.datasourceLink).click();
     cy.get(
       `[data-cy="cypress-${data.lastName}-bigquery-datasource-view-edit-wrap"]`
@@ -104,8 +111,9 @@ describe("User permissions", () => {
       "Datasource permissions updated"
     );
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(dataSourceSelector.addedDsSearchIcon).click();
     cy.clearAndType(dataSourceSelector.AddedDsSearchBar, data.lastName);
@@ -120,7 +128,10 @@ describe("User permissions", () => {
     cy.get(dataSourceSelector.buttonSave).should("be.enabled").click()
     cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Saved");
 
-    adminLogin();
+    cy.logoutApi();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(eeGroupsSelector.datasourceLink).click();
     cy.get(`[data-cy="${data.dsEdit}-datasource"]`)
       .parent()
@@ -128,23 +139,28 @@ describe("User permissions", () => {
         cy.get('[data-cy="remove-button"]').click();
       });
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
   });
   it("Should verify the Create and Delete DS permission", () => {
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
 
-    adminLogin();
+    cy.logoutApi();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.wait(1000);
     cy.get(eeGroupsSelector.dsCreateCheck).check();
     cy.get(groupsSelector.appsCreateCheck).check();
-    common.logout();
+    cy.logoutApi();
 
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
     cy.apiCreateGDS(
       "http://localhost:3000/api/v2/data_sources",
       `cypress-${data.lastName}-bigquery`,
@@ -159,36 +175,45 @@ describe("User permissions", () => {
         { key: "ssl_certificate", value: "none", encrypted: false },
       ]
     );
-    cy.visit("/");
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.globalDataSourceIcon).should("exist");
     cy.get(dataSourceSelector.deleteDSButton(data.lastName)).should(
       "not.exist"
     );
 
-    cy.get(commonSelectors.dashboardIcon).click();
-    cy.createApp(data.appName);
+    // cy.get(commonSelectors.dashboardIcon).click();
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
     cy.dragAndDropWidget("Table", 250, 250);
     cy.get('[data-cy="landing-page-add-new-ds-button"]')
       .should("be.visible")
       .click();
 
-    adminLogin();
+    cy.logoutApi();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(eeGroupsSelector.dsDeleteCheck).check();
-    common.logout();
+    cy.logoutApi();
 
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     deleteDatasource(`cypress-${data.lastName}-bigquery`);
     cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Deleted");
 
-    adminLogin();
+    cy.logoutApi();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(eeGroupsSelector.dsCreateCheck).uncheck();
-    common.logout();
+    cy.logoutApi();
 
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.globalDataSourceIcon).should("exist");
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
@@ -209,14 +234,18 @@ describe("User permissions", () => {
       commonSelectors.toastMessage,
       "You do not have permissions to perform this action"
     );
-    adminLogin();
+    cy.logoutApi();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(eeGroupsSelector.dsDeleteCheck).uncheck();
-    common.logout();
+    cy.logoutApi();
 
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
-    common.logout();
+    cy.logoutApi();
   });
 
 });

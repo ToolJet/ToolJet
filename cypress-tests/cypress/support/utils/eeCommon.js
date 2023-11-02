@@ -167,9 +167,9 @@ export const userSignUp = (fullName, email, workspaceName) => {
 export const resetAllowPersonalWorkspace = () => {
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
+  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).then(($el) => {
     if (!$el.is(":checked")) {
-      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).check();
+      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).check();
       cy.get(commonEeSelectors.saveButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
@@ -217,9 +217,9 @@ export const defaultWorkspace = () => {
 export const trunOffAllowPersonalWorkspace = () => {
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
+  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).then(($el) => {
     if ($el.is(":checked")) {
-      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).uncheck();
+      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).uncheck();
       cy.get(commonEeSelectors.saveButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
