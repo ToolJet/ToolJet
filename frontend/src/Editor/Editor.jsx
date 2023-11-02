@@ -277,13 +277,14 @@ const EditorComponent = (props) => {
   }, [currentLayout, mounted]);
 
   useEffect(() => {
-    console.log('---arpit:::: event changed');
+    console.log('---arpit:::: event changed [useEffect]');
     props.ymap?.set('eventHandlersUpdated', {
       updated: true,
       currentVersionId: currentVersionId,
       currentSessionId: currentSessionId,
     });
-  }, [JSON.stringify({ events })]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(events)]);
 
   const handleMessage = (event) => {
     const { data } = event;
@@ -388,6 +389,7 @@ const EditorComponent = (props) => {
       }
 
       if (ymapEventHandlersUpdated) {
+        console.log('----arpit:::::: ymap event updates');
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -743,6 +745,10 @@ const EditorComponent = (props) => {
       page: currentpageData,
     });
 
+    updateState({
+      appDiffOptions: { versionChanged: true },
+    });
+
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
@@ -802,7 +808,7 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
-    if (opts?.versionChanged) {
+    if (appDiffOptions?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
 
       return new Promise((resolve) => {
@@ -921,7 +927,13 @@ const EditorComponent = (props) => {
       });
     }
 
-    if (config.ENABLE_MULTIPLAYER_EDITING && !opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
+    if (
+      config.ENABLE_MULTIPLAYER_EDITING &&
+      !opts?.skipYmapUpdate &&
+      opts?.currentSessionId &&
+      opts?.currentSessionId !== currentSessionId
+    ) {
+      console.log('--arpit [areOthersOnSameVersionAndPage] 1', { areOthersOnSameVersionAndPage, mounted });
       props.ymap?.set('appDef', {
         newDefinition: updatedAppDefinition,
         editingVersionId: editingVersion?.id,
