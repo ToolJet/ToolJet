@@ -2152,7 +2152,10 @@ export const widgets = [
       width: 6,
       height: 30,
     },
-    events: [],
+    events: {
+      onClick: { displayName: 'On click' },
+      onHover: { displayName: 'On hover' },
+    },
     styles: {
       textSize: {
         type: 'input',

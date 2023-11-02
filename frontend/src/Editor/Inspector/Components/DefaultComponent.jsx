@@ -10,7 +10,7 @@ import { AllComponents } from '@/Editor/Box';
 const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput'];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Text',
-  TextInput: 'TextInput',
+  TextInput: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
