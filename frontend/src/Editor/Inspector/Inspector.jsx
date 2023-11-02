@@ -388,19 +388,19 @@ export const Inspector = ({
     setWidgetDeleteConfirmation(false);
   }, [switchSidebarTab, removeComponent, component, setWidgetDeleteConfirmation]);
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     const handleKeyPress = (event) => {
-        if (showWidgetDeleteConfirmation && event.key === 'Enter') {
-            handleDeleteConfirm();
-        }
+      if (showWidgetDeleteConfirmation && event.key === 'Enter') {
+        handleDeleteConfirm();
+      }
     };
 
     document.addEventListener('keydown', handleKeyPress);
     return () => {
-        document.removeEventListener('keydown', handleKeyPress);
+      document.removeEventListener('keydown', handleKeyPress);
     };
   }, [showWidgetDeleteConfirmation, handleDeleteConfirm]);
-  
+
   return (
     <div className="inspector">
       <ConfirmDialog
