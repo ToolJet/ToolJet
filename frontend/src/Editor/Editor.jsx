@@ -382,12 +382,17 @@ const EditorComponent = (props) => {
         if (isEqual(appDefinition, ymapUpdates.newDefinition)) return;
 
         // Trigger real-time save with specific options
+
+        const ymapOpts = ymapUpdates?.opts;
+
+        console.log('-- arpit step yjs opts ', { ymapOpts });
+
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
           currentSessionId: ymapUpdates.currentSessionId,
-          componentAdding: ymapUpdates.componentAdding,
-          componentDeleting: ymapUpdates.componentDeleting,
+          componentAdding: ymapUpdates?.opts?.componentAdded,
+          componentDeleting: ymapUpdates?.opts?.componentDeleted,
         });
       }
 
@@ -821,9 +826,7 @@ const EditorComponent = (props) => {
     }
     let updatedAppDefinition;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
-
     console.log('-- arpit step 2 ', { appDefinition, copyOfAppDefinition, newDefinition, opts });
-
     if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
         const _currentPageId = useEditorStore.getState().currentPageId;
@@ -996,6 +999,7 @@ const EditorComponent = (props) => {
               editingVersionId: editingVersion?.id,
               currentSessionId,
               areOthersOnSameVersionAndPage,
+              opts: appDiffOptions,
             });
           }
 
