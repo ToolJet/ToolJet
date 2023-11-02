@@ -55,6 +55,7 @@ const handleError = (componentType, error, redirectPath) => {
             switchOrganization(componentType, errorObj?.organizationId, redirectPath);
             return;
           }
+          redirectToErrorPage(ERROR_TYPES.RESTRICTED);
           break;
         }
         case 401: {
@@ -68,16 +69,15 @@ const handleError = (componentType, error, redirectPath) => {
         }
         default: {
           if (statusCode === 404 || statusCode === 422) {
-            toast.error(error?.error ?? 'App not found');
-            return;
+            redirectToErrorPage(statusCode === 404 ? ERROR_TYPES.INVALID : ERROR_TYPES.UNKNOWN);
           }
           break;
         }
       }
-      redirectToDashboard();
+      redirectToErrorPage(ERROR_TYPES.UNKNOWN);
     }
   } catch (err) {
-    redirectToDashboard();
+    redirectToErrorPage(ERROR_TYPES.UNKNOWN);
   }
 };
 

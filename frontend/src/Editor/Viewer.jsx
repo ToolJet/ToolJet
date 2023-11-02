@@ -253,12 +253,13 @@ class ViewerComponent extends React.Component {
         this.setState({
           isLoading: false,
         });
-        if (authentication_failed && error?.statusCode === 404) {
+        if (error?.statusCode === 404) {
           /* User is not authenticated. but the app url is wrong */
-          toast.error("Couldn't find the app. \n Please verify the app URL again.");
-          setTimeout(() => {
-            redirectToDashboard();
-          }, 3000);
+          redirectToErrorPage(ERROR_TYPES.INVALID);
+        } else if (error?.statusCode === 403) {
+          redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+        } else {
+          redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }
       });
   };
