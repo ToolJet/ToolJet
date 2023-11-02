@@ -1264,11 +1264,11 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border Color',
+        displayName: 'Border color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3003,14 +3003,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Star Color',
+        displayName: 'Star color',
         validation: {
           schema: { type: 'string' },
         },
       },
       labelColor: {
         type: 'color',
-        displayName: 'Label Color',
+        displayName: 'Label color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3073,7 +3073,7 @@ export const widgets = [
     styles: {
       dividerColor: {
         type: 'color',
-        displayName: 'Divider Color',
+        displayName: 'Divider color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3124,21 +3124,21 @@ export const widgets = [
     properties: {
       instructionText: {
         type: 'code',
-        displayName: 'Instruction Text',
+        displayName: 'Instruction text',
         validation: {
           schema: { type: 'string' },
         },
       },
       enableDropzone: {
         type: 'code',
-        displayName: 'Use Drop zone',
+        displayName: 'Use drop zone',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       enablePicker: {
         type: 'code',
-        displayName: 'Use File Picker',
+        displayName: 'Use file picker',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -4894,7 +4894,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
       showDownloadOption: {
         type: 'toggle',
-        displayName: 'Show the Download',
+        displayName: 'Show the download',
         validation: { schema: { type: 'boolean' } },
       },
     },
@@ -5804,7 +5804,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       imageUrl: {
         type: 'code',
-        displayName: 'Image Url',
+        displayName: 'Image URL',
         validation: {
           schema: { type: 'string' },
         },
