@@ -34,7 +34,7 @@ describe('session & new apis', () => {
     it("should return 401 if the organization-id isn't available in the auth token", async () => {
       const response = await request(app.getHttpServer())
         .post('/api/organizations')
-        .send({ name: 'My workspace' })
+        .send({ name: 'My workspace', slug: 'slug' })
         .set('Cookie', tokenCookie)
         .set('tj-workspace-id', orgId);
 

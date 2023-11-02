@@ -642,7 +642,7 @@ export function Table({
     }
     if (mounted) setExposedVariable('sortApplied', sortOptions);
     fireEvent('onSort');
-  }, [sortOptions]);
+  }, [JSON.stringify(sortOptions)]);
 
   useEffect(() => {
     setExposedVariable('setPage', async function (targetPageIndex) {
@@ -752,6 +752,8 @@ export function Table({
       if (!serverSidePagination && clientSidePagination) {
         setPageSize(rowsPerPage || 10);
       }
+    } else {
+      setPageSize(rows?.length || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
   useEffect(() => {
