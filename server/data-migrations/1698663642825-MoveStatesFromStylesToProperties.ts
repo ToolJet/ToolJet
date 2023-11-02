@@ -26,8 +26,13 @@ export class MoveStatesFromStylesToProperties1698663642825 implements MigrationI
                 _component.component.definition.properties.disabledState =
                   _component.component?.definition.styles.disabledState;
               }
+              if (_component?.component?.definition?.generalStyles?.boxShadow) {
+                _component.component.definition.styles.boxShadow =
+                  _component.component?.definition?.generalStyles?.boxShadow;
+              }
               delete _component.component.definition.styles.visibility;
               delete _component.component.definition.styles.disabledState;
+              delete _component?.component?.definition?.generalStyles?.boxShadow;
               components = {
                 ...components,
                 [componentId]: { ..._component },
