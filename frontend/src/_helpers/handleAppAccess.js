@@ -1,9 +1,10 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
 import { safelyParseJSON, getWorkspaceId } from '@/_helpers/utils';
-import { redirectToDashboard, getSubpath, getQueryParams } from '@/_helpers/routes';
+import { redirectToDashboard, getSubpath, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import queryString from 'query-string';
+import { ERROR_TYPES } from './constants';
 
 export const handleAppAccess = (componentType, slug) => {
   const previewQueryParams = getPreviewQueryParams();
@@ -42,23 +43,36 @@ const handleError = (componentType, error, redirectPath) => {
   try {
     if (error?.data) {
       const statusCode = error.data?.statusCode;
-      if (statusCode === 403) {
-        const errorObj = safelyParseJSON(error.data?.message);
-        const currentSessionValue = authenticationService.currentSessionValue;
-        if (
-          errorObj?.organizationId &&
-          currentSessionValue.current_user &&
-          currentSessionValue.current_organization_id !== errorObj?.organizationId
-        ) {
-          switchOrganization(componentType, errorObj?.organizationId, redirectPath);
+      switch (statusCode) {
+        case 403: {
+          const errorObj = safelyParseJSON(error.data?.message);
+          const currentSessionValue = authenticationService.currentSessionValue;
+          if (
+            errorObj?.organizationId &&
+            currentSessionValue.current_user &&
+            currentSessionValue.current_organization_id !== errorObj?.organizationId
+          ) {
+            switchOrganization(componentType, errorObj?.organizationId, redirectPath);
+            return;
+          }
+          break;
+        }
+        case 401: {
+          window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${redirectPath}`;
           return;
         }
-        redirectToDashboard();
-      } else if (statusCode === 401) {
-        window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${redirectPath}`;
-        return;
-      } else if (statusCode === 404 || statusCode === 422) {
-        toast.error(error?.error ?? 'App not found');
+        case 501: {
+          /* Restrict the users from accessing the sharable app url if the app is not released */
+          redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
+          return;
+        }
+        default: {
+          if (statusCode === 404 || statusCode === 422) {
+            toast.error(error?.error ?? 'App not found');
+            return;
+          }
+          break;
+        }
       }
       redirectToDashboard();
     }

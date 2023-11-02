@@ -29,6 +29,7 @@ import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
+import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 
 const AppWrapper = (props) => {
   return (
@@ -95,6 +96,7 @@ class AppComponent extends React.Component {
 
   render() {
     const { updateAvailable, darkMode } = this.state;
+
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
@@ -245,6 +247,11 @@ class AppComponent extends React.Component {
                 />
               )}
               <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
+              <Route
+                exact
+                path="/error/:errorType"
+                element={<ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+              />
               <Route
                 exact
                 path="/switch-workspace"
