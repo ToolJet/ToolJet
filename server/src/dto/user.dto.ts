@@ -101,8 +101,8 @@ export class TelemetryDataDto {
   @MaxLength(500)
   role: string;
 
-  @IsBoolean()
   @IsOptional()
+  @IsBoolean()
   requestedTrial: boolean;
 }
 export class CreateAdminDto extends TelemetryDataDto {
@@ -119,3 +119,5 @@ export class CreateAdminDto extends TelemetryDataDto {
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
+
+export class TrialUserDto extends TelemetryDataDto {}

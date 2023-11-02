@@ -24,6 +24,7 @@ import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { withRouter } from '@/_hoc/withRouter';
 import { LicenseBanner } from '@/LicenseBanner';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import Skeleton from 'react-loading-skeleton';
 
 const { iconList, defaultIcon } = configs;
 
@@ -66,6 +67,7 @@ class HomePageComponent extends React.Component {
       app: {},
       appsLimit: {},
       featureAccess: {},
+      featuresLoaded: false,
       showCreateAppModal: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
@@ -78,11 +80,13 @@ class HomePageComponent extends React.Component {
     };
   }
 
-  componentDidMount() {
-    this.fetchApps(1, this.state.currentFolder.id);
-    this.fetchFolders();
-    this.fetchFeatureAccesss();
-    this.fetchAppsLimit();
+  async componentDidMount() {
+    await Promise.all([
+      this.fetchApps(1, this.state.currentFolder.id),
+      this.fetchFolders(),
+      this.fetchFeatureAccesss(),
+      this.fetchAppsLimit(),
+    ]);
     document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
@@ -101,7 +105,10 @@ class HomePageComponent extends React.Component {
 
   fetchFeatureAccesss = () => {
     licenseService.getFeatureAccess().then((data) => {
-      this.setState({ featureAccess: data });
+      this.setState({
+        featureAccess: data,
+        featuresLoaded: true,
+      });
     });
   };
 
@@ -602,6 +609,7 @@ class HomePageComponent extends React.Component {
       app,
       appsLimit,
       featureAccess,
+      featuresLoaded,
       showCreateAppModal,
       showImportAppModal,
       fileContent,
@@ -609,7 +617,6 @@ class HomePageComponent extends React.Component {
       showRenameAppModal,
       showCreateAppFromTemplateModal,
     } = this.state;
-
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -884,16 +891,34 @@ class HomePageComponent extends React.Component {
               data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container home-page-content-container">
-                <LicenseBanner classes="mt-3" limits={featureAccess} type={featureAccess?.licenseStatus?.licenseType} />
+                {featuresLoaded && !isLoading ? (
+                  <LicenseBanner
+                    classes="mt-3"
+                    limits={featureAccess}
+                    type={featureAccess?.licenseStatus?.licenseType}
+                  />
+                ) : (
+                  <Skeleton
+                    count={1}
+                    height={20}
+                    width={880}
+                    baseColor="#ECEEF0"
+                    className="mb-3"
+                    style={{ marginTop: '2rem' }}
+                  />
+                )}
+
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
                     <div className="liner"></div>
                   </>
                 )}
-                {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
+                {!isLoading && featuresLoaded && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
                   <BlankPage
                     canCreateApp={this.canCreateApp}
+                    isLoading={true}
+                    createApp={this.createApp}
                     readAndImport={this.readAndImport}
                     isImportingApp={isImportingApp}
                     fileInput={this.fileInput}
@@ -914,27 +939,25 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {isLoading ||
-                  (meta.total_count > 0 && (
-                    <AppList
-                      apps={apps}
-                      canCreateApp={this.canCreateApp}
-                      canDeleteApp={this.canDeleteApp}
-                      canUpdateApp={this.canUpdateApp}
-                      deleteApp={this.deleteApp}
-                      exportApp={this.exportApp}
-                      meta={meta}
-                      currentFolder={currentFolder}
-                      isLoading={isLoading}
-                      darkMode={this.props.darkMode}
-                      appActionModal={this.appActionModal}
-                      removeAppFromFolder={this.removeAppFromFolder}
-                      appType={this.props.appType}
-                      basicPlan={
-                        featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid
-                      }
-                    />
-                  ))}
+                {
+                  <AppList
+                    apps={apps}
+                    canCreateApp={this.canCreateApp}
+                    canDeleteApp={this.canDeleteApp}
+                    canUpdateApp={this.canUpdateApp}
+                    deleteApp={this.deleteApp}
+                    cloneApp={this.cloneApp}
+                    exportApp={this.exportApp}
+                    meta={meta}
+                    currentFolder={currentFolder}
+                    isLoading={isLoading || !featuresLoaded}
+                    darkMode={this.props.darkMode}
+                    appActionModal={this.appActionModal}
+                    removeAppFromFolder={this.removeAppFromFolder}
+                    appType={this.props.appType}
+                    basicPlan={featureAccess?.licenseStatus?.isExpired || !featureAccess?.licenseStatus?.isLicenseValid}
+                  />
+                }
               </div>
               {this.pageCount() > MAX_APPS_PER_PAGE && (
                 <Footer

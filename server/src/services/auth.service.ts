@@ -22,7 +22,7 @@ import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { CreateAdminDto, CreateUserDto, TelemetryDataDto } from '@dto/user.dto';
+import { CreateAdminDto, CreateUserDto, TelemetryDataDto, TrialUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import {
   getUserErrorMessages,
@@ -417,7 +417,7 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
-      if (requestedTrial) await this.activateTrial(new TelemetryDataDto(userCreateDto));
+      if (requestedTrial) await this.activateTrial(new TrialUserDto(userCreateDto));
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
@@ -425,7 +425,7 @@ export class AuthService {
     return result;
   }
 
-  async activateTrial(userCreateDto: TelemetryDataDto) {
+  async activateTrial(userCreateDto: TrialUserDto) {
     const { companyName, companySize, name, role, email, phoneNumber } = userCreateDto;
     /* generate trial license if needed */
     const hostname = this.configService.get<string>('TOOLJET_HOST');
@@ -454,7 +454,8 @@ export class AuthService {
       const { license_key } = JSON.parse(licenseResponse.body);
       await this.licenseService.updateLicense({ key: license_key });
     } catch (error) {
-      throw new HttpException(error?.error || 'Trial could not be activated. Please try again!', error?.status || 500);
+      const response = JSON.parse(error?.response?.body || '{}');
+      throw new HttpException(response?.message || 'Trial could not be activated. Please try again!', 500);
     }
   }
 

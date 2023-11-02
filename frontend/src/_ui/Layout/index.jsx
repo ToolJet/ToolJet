@@ -18,6 +18,7 @@ import './styles.scss';
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
   const [featureAccess, setFeatureAccess] = useState({});
+  let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
 
   const canAnyGroupPerformAction = (action, permissions) => {
     if (!permissions) {
@@ -31,6 +32,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess({ ...data });
     });
+    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   };
 
   const canCreateDataSource = () => {
@@ -72,7 +74,6 @@ function Layout({ children, switchDarkMode, darkMode }) {
     canDeleteDataSource() ||
     admin ||
     super_admin;
-  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const isAuthorizedForGDS = (hasCommonPermissions && licenseValid) || (!licenseValid && (admin || super_admin));
 
   const {
@@ -228,13 +229,17 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       to={getPrivateRoute('workspace_settings')}
                       onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_settings'), event)}
                       className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === getPrivateRoute('workspace_settings') && `current-seleted-route`
+                        router.pathname.startsWith(getPrivateRoute('workspace_settings')) && `current-seleted-route`
                       }`}
                       data-cy="icon-workspace-settings"
                     >
                       <SolidIcon
                         name="settings"
-                        fill={router.pathname === getPrivateRoute('workspace_settings') ? '#3E63DD' : 'var(--slate8)'}
+                        fill={
+                          router.pathname.startsWith(getPrivateRoute('workspace_settings'))
+                            ? '#3E63DD'
+                            : 'var(--slate8)'
+                        }
                         width={28}
                       />
                     </Link>
@@ -242,18 +247,18 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 </li>
                 {super_admin && (
                   <li className="text-center cursor-pointer">
-                    <ToolTip message="Instance settings" placement="right">
+                    <ToolTip message="Settings" placement="right">
                       <Link
                         to="/instance-settings"
+                        onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
                         className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === '/instance-settings' && `current-seleted-route`
+                          router.pathname.startsWith('/instance-settings') && `current-seleted-route`
                         }`}
                         data-cy="icon-instance-settings"
-                        onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
                       >
                         <SolidIcon
                           name="instancesettings"
-                          fill={router.pathname === '/instance-settings' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                          fill={router.pathname.startsWith('/instance-settings') ? '#3E63DD' : 'var(--slate8)'}
                         />
                       </Link>
                     </ToolTip>
@@ -263,9 +268,13 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   {admin && (
                     <LicenseTooltip
                       limits={featureAccess}
-                      feature={'Audit Logs'}
+                      feature={'Audit logs'}
                       isAvailable={featureAccess?.auditLogs}
-                      customMessage={'Audit logs are available only in paid plans'}
+                      customMessage={
+                        licenseValid
+                          ? 'Audit logs are not included in your current plan'
+                          : 'Audit logs are available only in paid plans'
+                      }
                     >
                       <Link
                         to={featureAccess?.auditLogs && getPrivateRoute('audit_logs')}

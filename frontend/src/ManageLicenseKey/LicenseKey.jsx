@@ -42,11 +42,10 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
     licenseService
       .update({ key: licenseKey })
       .then(() => {
-        fetchFeatureAccess();
         setLoading(false);
         window.location = `${window.public_config?.TOOLJET_HOST}${
           window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-        }instance-settings?save_license=success`;
+        }instance-settings/license`;
       })
       .catch(({ error }) => {
         setLoading(false);

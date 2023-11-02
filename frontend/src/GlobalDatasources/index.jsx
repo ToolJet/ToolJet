@@ -14,6 +14,7 @@ export const GlobalDataSourcesContext = createContext({
   selectedDataSource: null,
   setSelectedDataSource: () => {},
   environments: [],
+  featureAccess: {},
 });
 
 export const GlobalDatasources = (props) => {
@@ -184,6 +185,7 @@ export const GlobalDatasources = (props) => {
       setEditing,
       fetchEnvironments,
       environments,
+      featureAccess,
       currentEnvironment,
       setCurrentEnvironment,
       setDataSources,
@@ -204,6 +206,7 @@ export const GlobalDatasources = (props) => {
       showDataSourceManagerModal,
       isEditing,
       environments,
+      featureAccess,
       currentEnvironment,
       isLoading,
       activeDatasourceList,

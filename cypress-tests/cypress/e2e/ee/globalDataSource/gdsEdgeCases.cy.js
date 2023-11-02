@@ -50,7 +50,7 @@ data.text4 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 describe("Global Datasource Manager", () => {
     beforeEach(() => {
         cy.apiLogin();
-        cy.visit('/')
+        cy.visit('/my-workspace')
     });
 
     before(() => {
@@ -59,7 +59,7 @@ describe("Global Datasource Manager", () => {
         cy.visit('/my-workspace')
         cy.wait(1000);
         addNewUserMW(data.userName1, data.userEmail1);
-        logout();
+        cy.logoutApi();
         cy.apiLogin();
         cy.visit('/my-workspace')
         navigateToManageGroups();
@@ -68,7 +68,7 @@ describe("Global Datasource Manager", () => {
         addUserToGroup(data.userName1, data.userEmail1);
         addAppToGroup(data.appName);
         addNewUserMW(data.userName2, data.userEmail2);
-        logout();
+        cy.logoutApi();
         cy.apiLogin();
         cy.visit('/my-workspace')
         navigateToManageGroups();
@@ -76,7 +76,7 @@ describe("Global Datasource Manager", () => {
         cy.wait(1000);
         addAppToGroup(data.appName);
         addUserToGroup(data.userName2, data.userEmail2);
-        logout();
+        cy.logoutApi();
     });
 
     it("Connect Data source and assign to user groups", () => {
@@ -181,8 +181,9 @@ describe("Global Datasource Manager", () => {
         AddDataSourceToGroup(data.userName2, `cypress-${data.ds2}-rest-api`);
     });
     it("verify the first user permissions on assigned and unassigned datasource", () => {
-        logout();
-        cy.login(data.userEmail1, "password");
+        cy.logoutApi();
+        cy.apiLogin(data.userEmail1, "password");
+        cy.visit('/my-workspace')
 
         navigateToAppEditor(data.appName);
         cy.wait(2000);
@@ -257,8 +258,9 @@ describe("Global Datasource Manager", () => {
         );
     });
     it("verify the second user permissions on assigned ansd unassigned datasource", () => {
-        logout();
-        cy.login(data.userEmail2, "password");
+        cy.logoutApi();
+        cy.apiLogin(data.userEmail2, "password");
+        cy.visit('/my-workspace')
 
         navigateToAppEditor(data.appName);
         cy.wait(2000);

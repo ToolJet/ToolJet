@@ -708,7 +708,11 @@ class DataSourceManagerComponent extends React.Component {
                   feature={'multi-environments'}
                   isAvailable={env?.enabled}
                   noTooltipIfValid={true}
-                  customMessage={'Multi-environments are available only in paid plans'}
+                  customMessage={
+                    !this.props?.featureAccess?.isLicenseValid || this.props?.featureAccess?.isExpired
+                      ? 'Multi-environments are available only in paid plans'
+                      : 'Multi-environments are not included in your current plan'
+                  }
                 >
                   {children}
                 </LicenseTooltip>

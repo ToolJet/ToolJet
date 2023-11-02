@@ -1,6 +1,6 @@
 import { decrypt, LICENSE_LIMIT, LICENSE_TYPE } from 'src/helpers/license.helper';
 import { Terms } from '../types';
-import { BASIC_PLAN_TERMS } from './PlanTerms';
+import { BASIC_PLAN_TERMS, BUSINESS_PLAN_TERMS, ENTERPRISE_PLAN_TERMS } from './PlanTerms';
 
 export default class License {
   private static _instance: License;
@@ -8,6 +8,7 @@ export default class License {
   private _tablesCount: number | string;
   private _usersCount: number | string;
   private _isAuditLogs: boolean;
+  private _maxDurationForAuditLogs: number | string;
   private _isOidc: boolean;
   private _isLdap: boolean;
   private _isSAML: boolean;
@@ -15,6 +16,7 @@ export default class License {
   private _isWhiteLabelling: boolean;
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
+  private _isComments: boolean;
   private _expiryDate: Date;
   private _updatedDate: Date;
   private _editorUsersCount: number | string;
@@ -48,6 +50,8 @@ export default class License {
         this._viewerUsersCount = licenseData?.users?.viewer;
         this._superadminUsersCount = licenseData?.users?.superadmin;
         this._isAuditLogs = licenseData?.features?.auditLogs === false ? false : true;
+        this._maxDurationForAuditLogs =
+          licenseData?.features?.auditLogs !== false ? licenseData?.auditLogs?.maximumDays : 0;
         this._isOidc = licenseData?.features?.oidc === false ? false : true;
         this._isLdap = licenseData?.features?.ldap === false ? false : true;
         this._isSAML = licenseData?.features?.saml === false ? false : true;
@@ -55,6 +59,7 @@ export default class License {
         this._isWhiteLabelling = licenseData?.features?.whiteLabelling === false ? false : true;
         this._isMultiEnvironment = licenseData?.features?.multiEnvironment === false ? false : true;
         this._isMultiPlayerEdit = licenseData?.features?.multiPlayerEdit === false ? false : true;
+        this._isComments = licenseData?.features?.comments === false ? false : true;
         this._expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
         this._updatedDate = updatedDate;
         this._isLicenseValid = true;
@@ -102,6 +107,26 @@ export default class License {
       return BASIC_PLAN_TERMS.database?.table || this._tablesCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._tablesCount || LICENSE_LIMIT.UNLIMITED;
+  }
+
+  public get maxDurationForAuditLogs(): number | string {
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.auditLogs?.maximumDays || 0;
+    }
+    const maxDuration =
+      typeof this._maxDurationForAuditLogs === 'string'
+        ? parseInt(this._maxDurationForAuditLogs, 10)
+        : this._maxDurationForAuditLogs;
+
+    if (this.licenseType != LICENSE_TYPE.BUSINESS) {
+      return maxDuration <= ENTERPRISE_PLAN_TERMS.auditLogs.maximumDays
+        ? maxDuration
+        : ENTERPRISE_PLAN_TERMS.auditLogs.maximumDays;
+    } else {
+      return maxDuration <= BUSINESS_PLAN_TERMS.auditLogs.maximumDays
+        ? maxDuration
+        : BUSINESS_PLAN_TERMS.auditLogs.maximumDays;
+    }
   }
 
   public get users(): number | string {
@@ -202,6 +227,13 @@ export default class License {
     return this._isMultiPlayerEdit;
   }
 
+  public get comments(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.comments;
+    }
+    return this._isComments;
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -220,6 +252,7 @@ export default class License {
       whiteLabelling: this.whiteLabelling,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
+      comments: this.comments,
     };
   }
 
@@ -237,12 +270,14 @@ export default class License {
       tablesCount: this.tables,
       usersCount: this.users,
       auditLogsEnabled: this.auditLogs,
+      maxDurationForAuditLogs: this.maxDurationForAuditLogs,
       oidcEnabled: this.oidc,
       ldapEnabled: this.ldap,
       samlEnabled: this.saml,
       customStylingEnabled: this.customStyling,
       multiEnvironmentEnabled: this.multiEnvironment,
       multiPlayerEditEnabled: this.multiPlayerEdit,
+      commentsEnabled: this.comments,
       expiryDate: this._expiryDate,
       isExpired: this.isExpired,
       isLicenseValid: this._isLicenseValid,
