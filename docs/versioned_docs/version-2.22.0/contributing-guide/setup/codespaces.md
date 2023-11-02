@@ -53,11 +53,7 @@ sudo -u postgres psql
 
 Create a `.env` file by running the command `touch .env`. More information on the variables that can be set is given in the [environment variables reference](https://docs.tooljet.com/docs/setup/env-vars)
 
-For basic set-up you add the below env variables:
-
-`SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure random key)
-
-`LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
+**For basic set-up you add the below env variables:**
 
 ```
 TOOLJET_HOST=http://localhost:3000
@@ -81,6 +77,9 @@ NODE_ENV=production
 SERVE_CLIENT=true
 ```
 
+> `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure random key)
+>
+> `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
 
 ### 3.  Install and build dependencies
 
