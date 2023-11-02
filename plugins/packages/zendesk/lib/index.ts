@@ -50,8 +50,10 @@ export default class Zendesk implements QueryService {
     const { clientId, clientSecret, subdomain, scope } = this.sanitizeOptions(options);
 
     const accessTokenUrl = `https://${subdomain}.zendesk.com/oauth/tokens`;
-    const tooljetHost = process.env.TOOLJET_HOST;
-    const redirectUri = `${tooljetHost}/oauth2/authorize`;
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+    const redirectUri = `${fullUrl}oauth2/authorize`;
     const grantType = 'authorization_code';
 
     const data = {
