@@ -424,6 +424,10 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
+    if (!sourceId) {
+      return this.eventService.findEventsForVersion(versionId);
+    }
+
     return this.eventService.findAllEventsWithSourceId(sourceId);
   }
 
