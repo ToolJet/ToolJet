@@ -3,8 +3,6 @@ id: permissions
 title: Securing Applications Through Permissions
 ---
 
-<div style={{marginLeft:"7%", marginRight:"7%"}}>
-
 ToolJet employs a Role-Based Access Control (RBAC) system to manage security and access to its resources, which include apps, folders, and workspace variables. 
 
 In this system, Admins have the authority to invite Users to their workspaces and assign them to specific Groups. Each Group is associated with a set of Permissions that dictate what level of access its members have to various resources. 
@@ -39,4 +37,3 @@ By thoughtfully configuring these settings, you can create a secure environment 
 
 </div>
 
-</div>

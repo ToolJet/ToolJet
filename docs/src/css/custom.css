@@ -67,6 +67,11 @@
   padding-right: 10%;
 } */
 
+article {
+  padding-left: 7%;
+  padding-right: 7%;
+}
+
 .menu__caret {
   size: small;
 }
