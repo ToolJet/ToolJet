@@ -160,6 +160,7 @@ const EditorComponent = (props) => {
   const selectionRef = useRef(null);
 
   const prevAppDefinition = useRef(appDefinition);
+  const prevEventsStoreRef = useRef(events);
 
   useLayoutEffect(() => {
     resetAllStores();
@@ -277,11 +278,14 @@ const EditorComponent = (props) => {
   }, [currentLayout, mounted]);
 
   useEffect(() => {
-    props.ymap?.set('eventHandlersUpdated', {
-      updated: true,
-      currentVersionId: currentVersionId,
-      currentSessionId: currentSessionId,
-    });
+    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
+      props.ymap?.set('eventHandlersUpdated', {
+        updated: true,
+        currentVersionId: currentVersionId,
+        currentSessionId: currentSessionId,
+      });
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ events })]);
 
@@ -388,7 +392,6 @@ const EditorComponent = (props) => {
       }
 
       if (ymapEventHandlersUpdated) {
-        console.log('----arpit:::::: ymap event updates');
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -831,20 +834,8 @@ const EditorComponent = (props) => {
             _.difference(currentPageComponentIds, newComponentIds)
           );
 
-          console.log('---arpit appDefinitionChanged--- ymap only', {
-            finalComponents,
-          });
-
           draft.pages[_currentPageId].components = finalComponents;
         } else if (opts?.componentAdding) {
-          // const currentPageComponentIds = Object.keys(copyOfAppDefinition.pages[_currentPageId]?.components);
-          // const newComponentIds = Object.keys(newDefinition.pages[_currentPageId]?.components);
-
-          // const finalComponents = _.pick(
-          //   newDefinition?.pages[_currentPageId]?.components,
-          //   _.difference(newComponentIds, currentPageComponentIds)
-          // );
-
           const currentPageComponents = newDefinition.pages[_currentPageId]?.components;
 
           const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
@@ -923,24 +914,6 @@ const EditorComponent = (props) => {
         appDefinition: updatedAppDefinition,
       });
     }
-
-    if (
-      config.ENABLE_MULTIPLAYER_EDITING &&
-      !opts?.skipYmapUpdate &&
-      currentSessionId &&
-      opts?.currentSessionId !== currentSessionId
-    ) {
-      console.log('--arpit [areOthersOnSameVersionAndPage] 1', { areOthersOnSameVersionAndPage, mounted });
-      setTimeout(() => {
-        props.ymap?.set('appDef', {
-          newDefinition: updatedAppDefinition,
-          editingVersionId: editingVersion?.id,
-          currentSessionId,
-          areOthersOnSameVersionAndPage,
-          opts,
-        });
-      }, 1000);
-    }
   };
 
   const cloneEventsForClonedComponents = (componentUpdateDiff, operation, componentMap) => {
@@ -1014,6 +987,16 @@ const EditorComponent = (props) => {
           };
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
 
+          if (config.ENABLE_MULTIPLAYER_EDITING) {
+            console.log('-- arpit [ENABLE_MULTIPLAYER_EDITIN] ', { areOthersOnSameVersionAndPage, mounted });
+            props.ymap?.set('appDef', {
+              newDefinition: appDefinition,
+              editingVersionId: editingVersion?.id,
+              currentSessionId,
+              areOthersOnSameVersionAndPage,
+            });
+          }
+
           if (
             updateDiff?.type === 'components' &&
             updateDiff?.operation === 'delete' &&
@@ -1064,7 +1047,7 @@ const EditorComponent = (props) => {
     });
   };
 
-  const realtimeSave = debounce(appDefinitionChanged, 1500);
+  const realtimeSave = debounce(appDefinitionChanged, 100);
   const autoSave = debounce(saveEditingVersion, 150);
 
   function handlePaths(prevPatch, path = [], appJSON) {
@@ -1666,9 +1649,9 @@ const EditorComponent = (props) => {
   const showHideViewerNavigation = () => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
-    console.log(newAppDefinition.showViewerNavigation, 'Bedore');
+
     newAppDefinition.showViewerNavigation = !newAppDefinition.showViewerNavigation;
-    console.log(newAppDefinition.showViewerNavigation, 'newAppDefinition.showViewerNavigation');
+
     appDefinitionChanged(newAppDefinition, {
       generalAppDefinitionChanged: true,
     });
