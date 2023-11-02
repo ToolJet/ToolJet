@@ -708,7 +708,7 @@ const EditorComponent = (props) => {
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
     setAppVersions(appVersions.appVersions);
     const currentOrgId = data?.organization_id || data?.organizationId;
-
+    console.log('----arpit appDefinitionChanged---', { data });
     updateState({
       slug: data.slug,
       isMaintenanceOn: data?.is_maintenance_on,
@@ -750,7 +750,7 @@ const EditorComponent = (props) => {
     });
 
     if (versionSwitched) {
-      props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${appJson.pages[homePageId]?.handle}`, {
+      props?.navigate(`/${getWorkspaceId()}/apps/${data.slug ?? appId}/${appJson.pages[homePageId]?.handle}`, {
         state: {
           isSwitchingPage: true,
         },
@@ -1379,7 +1379,7 @@ const EditorComponent = (props) => {
       switchPage: true,
       pageId: newPageId,
     });
-    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${newHandle}`, {
+    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${newHandle}`, {
       state: {
         isSwitchingPage: true,
       },
@@ -1416,7 +1416,7 @@ const EditorComponent = (props) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${handle}?${queryParamsString}`, {
+    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
       state: {
         isSwitchingPage: true,
       },
