@@ -27,3 +27,21 @@ export const ON_BOARDING_ROLES = [
   'Product manager',
   'Other',
 ];
+
+export const ERROR_TYPES = {
+  URL_UNAVAILABLE: 'url-unavailable',
+};
+
+export const ERROR_MESSAGES = {
+  'url-unavailable': {
+    title: 'URL unavailable',
+    message:
+      'This URL is not accessible because it has not been released yet. Please either release it or contact admin for access.',
+    cta: 'Back to home page',
+    queryParams: [],
+  },
+};
+
+export const TOOLTIP_MESSAGES = {
+  SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
+};
