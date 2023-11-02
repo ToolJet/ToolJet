@@ -46,7 +46,7 @@ function buildPostgrestQuery(filters) {
         postgrestQueryBuilder.order(column, order);
       }
 
-      if (!isEmpty(column) && !isEmpty(operator) && value && value !== '') {
+      if (!isEmpty(column) && !isEmpty(operator)) {
         postgrestQueryBuilder[operator](column, value.toString());
       }
     }
