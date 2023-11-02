@@ -221,7 +221,7 @@ const EditorComponent = (props) => {
   }, []);
 
   const lastKeyPressTimestamp = useDebouncedArrowKeyPress(500); // 500 milliseconds delay
-  // Handle appDefinition updates
+
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
 
@@ -710,7 +710,7 @@ const EditorComponent = (props) => {
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
     setAppVersions(appVersions.appVersions);
     const currentOrgId = data?.organization_id || data?.organizationId;
-    console.log('----arpit appDefinitionChanged---', { data });
+
     updateState({
       slug: data.slug,
       isMaintenanceOn: data?.is_maintenance_on,
@@ -743,10 +743,6 @@ const EditorComponent = (props) => {
 
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
-    });
-
-    updateState({
-      appDiffOptions: { versionChanged: true },
     });
 
     updateEditorState({
@@ -808,7 +804,7 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
-    if (appDiffOptions?.versionChanged) {
+    if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
 
       return new Promise((resolve) => {
