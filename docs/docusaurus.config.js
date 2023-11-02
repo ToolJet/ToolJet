@@ -137,5 +137,6 @@ module.exports = {
   ],
   plugins: [
     devServerPlugin,
+    'plugin-image-zoom'
   ],
 };
