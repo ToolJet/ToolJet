@@ -51,7 +51,7 @@ describe("App share functionality", () => {
       cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
-      cy.wait(1000);
+      cy.wait(2000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.forceClickOnCanvas()
       cy.get(commonSelectors.editorPageLogo).click();
