@@ -42,6 +42,7 @@ describe("Global Datasource Manager", () => {
         cy.apiLogin();
         cy.visit('/my-workspace')
         cy.viewport(1200, 1300);
+        cy.wait(1000)
     });
 
     before(() => {
