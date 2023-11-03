@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { ToolTip } from '@/_components/ToolTip';
+import * as Icons from '@tabler/icons-react';
 
 export const TextInput = function TextInput({
   height,
@@ -13,6 +14,7 @@ export const TextInput = function TextInput({
   component,
   darkMode,
   dataCy,
+  isResizing,
 }) {
   const textInputRef = useRef();
 
@@ -32,8 +34,16 @@ export const TextInput = function TextInput({
     boxShadow: styles.boxShadow,
   };
 
-  const { loadingState } = properties;
+  const [elementWidth, setElementWidth] = useState(0);
 
+  useEffect(() => {
+    if (textInputRef.current) {
+      const width = textInputRef.current.getBoundingClientRect().width;
+      setElementWidth(width);
+    }
+  }, [isResizing, styles.width]);
+
+  const { loadingState, tooltip, disabledState, label, placeholder } = properties;
   useEffect(() => {
     disable !== properties.disabledState && setDisable(properties.disabledState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,6 +92,9 @@ export const TextInput = function TextInput({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setValue]);
+  const iconName = styles.icon; // Replace with the name of the icon you want
+  // eslint-disable-next-line import/namespace
+  const IconElement = Icons[iconName];
 
   return (
     <>
@@ -93,83 +106,178 @@ export const TextInput = function TextInput({
         </div>
       )}
       {!loadingState && (
-        <ToolTip message={properties.tooltip}>
-          <div>
-            <div
-              data-disabled={disable}
-              className={`text-input d-flex ${styles.alignment == 'top' && 'flex-column'}  ${
-                styles.direction == 'alignrightinspector' && styles.alignment == 'side' && 'flex-row-reverse'
-              }
+        <>
+          {properties?.tooltip?.length > 0 ? (
+            <ToolTip message={properties.tooltip}>
+              <div>
+                <div
+                  data-disabled={disable}
+                  className={`text-input d-flex ${styles.alignment == 'top' && 'flex-column'}  ${
+                    styles.direction == 'alignrightinspector' && styles.alignment == 'side' && 'flex-row-reverse'
+                  }
       ${styles.direction == 'alignrightinspector' && styles.alignment == 'top' && 'text-right'}
       ${visibility || 'invisible'}`}
-              style={{ height: height, padding: styles.padding == 'default' && '3px 2px' }}
-            >
-              <label
-                style={{
-                  color: darkMode && styles.color == '#11181C' ? '#fff' : styles.color,
-                  width: styles.auto ? 'auto' : styles.alignment == 'side' ? `${styles.width}%` : '100%',
-                  maxWidth: styles.auto && styles.alignment == 'side' ? '70%' : '100%',
-                  overflowWrap: 'break-word',
-                  marginRight:
-                    properties.label.length > 0 &&
-                    styles.direction == 'alignleftinspector' &&
-                    styles.alignment == 'side' &&
-                    '9px',
-                  marginLeft:
-                    properties.label.length > 0 &&
-                    styles.direction == 'alignrightinspector' &&
-                    styles.alignment == 'side' &&
-                    '9px',
-                }}
+                  style={{ height: height, padding: styles.padding == 'default' && '3px 2px' }}
+                >
+                  <label
+                    style={{
+                      color: darkMode && styles.color == '#11181C' ? '#fff' : styles.color,
+                      width: styles.auto ? 'auto' : styles.alignment == 'side' ? `${styles.width}%` : '100%',
+                      maxWidth: styles.auto && styles.alignment == 'side' ? '70%' : '100%',
+                      overflowWrap: 'break-word',
+                      marginRight:
+                        properties.label.length > 0 &&
+                        styles.direction == 'alignleftinspector' &&
+                        styles.alignment == 'side' &&
+                        '9px',
+                      marginLeft:
+                        properties.label.length > 0 &&
+                        styles.direction == 'alignrightinspector' &&
+                        styles.alignment == 'side' &&
+                        '9px',
+                    }}
+                  >
+                    {properties.label}
+                    <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+                  </label>
+                  <input
+                    className={`tj-text-input-widget${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+                      darkMode && 'dark-theme-placeholder'
+                    }`}
+                    // className="tj-text-input-widget"
+                    ref={textInputRef}
+                    onKeyUp={(e) => {
+                      if (e.key == 'Enter') {
+                        setValue(e.target.value);
+                        setExposedVariable('value', e.target.value);
+                        fireEvent('onEnterPressed');
+                      }
+                    }}
+                    onChange={(e) => {
+                      setValue(e.target.value);
+                      setExposedVariable('value', e.target.value);
+                      fireEvent('onChange');
+                    }}
+                    onBlur={(e) => {
+                      setShowValidationError(true);
+                      e.stopPropagation();
+                      fireEvent('onBlur');
+                    }}
+                    onFocus={(e) => {
+                      e.stopPropagation();
+                      fireEvent('onFocus');
+                    }}
+                    type="text"
+                    placeholder={properties.placeholder}
+                    style={computedStyles}
+                    value={value}
+                    data-cy={dataCy}
+                  />
+                </div>
+                {showValidationError && (
+                  <div
+                    className="tj-text-sm"
+                    data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+                    style={{ color: styles.errTextColor }}
+                  >
+                    {showValidationError && validationError}
+                  </div>
+                )}
+              </div>
+            </ToolTip>
+          ) : (
+            <div>
+              <div
+                data-disabled={disable}
+                className={`text-input d-flex ${styles.alignment == 'top' && 'flex-column'}  ${
+                  styles.direction == 'alignrightinspector' && styles.alignment == 'side' && 'flex-row-reverse'
+                }
+      ${styles.direction == 'alignrightinspector' && styles.alignment == 'top' && 'text-right'}
+      ${visibility || 'invisible'}`}
+                style={{ height: height, padding: styles.padding == 'default' && '3px 2px', position: 'relative' }}
               >
-                {properties.label}
-                <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-              </label>
-              <input
-                className={`tj-text-input-widget${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-                  darkMode && 'dark-theme-placeholder'
-                }`}
-                // className="tj-text-input-widget"
-                ref={textInputRef}
-                onKeyUp={(e) => {
-                  if (e.key == 'Enter') {
+                <label
+                  style={{
+                    color: darkMode && styles.color == '#11181C' ? '#fff' : styles.color,
+                    width: styles.auto ? 'auto' : styles.alignment == 'side' ? `${styles.width}%` : '100%',
+                    maxWidth: styles.auto && styles.alignment == 'side' ? '70%' : '100%',
+                    overflowWrap: 'break-word',
+                    marginRight:
+                      properties.label.length > 0 &&
+                      styles.direction == 'alignleftinspector' &&
+                      styles.alignment == 'side' &&
+                      '9px',
+                    marginLeft:
+                      properties.label.length > 0 &&
+                      styles.direction == 'alignrightinspector' &&
+                      styles.alignment == 'side' &&
+                      '9px',
+                  }}
+                >
+                  {properties.label}
+                  <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+                </label>
+                <IconElement
+                  style={{
+                    width: '16',
+                    height: '16',
+                    right:
+                      styles.direction == 'alignleftinspector' &&
+                      styles.alignment == 'side' &&
+                      `${elementWidth - 21}px`,
+                    left: styles.direction == 'alignrightinspector' && styles.alignment == 'side' && `6px`,
+                    position: 'absolute',
+                    top: styles.alignment == 'side' ? '50%' : '32px',
+                    transform: ' translateY(-50%)',
+                  }}
+                  stroke={1.5}
+                />
+
+                <input
+                  className={`tj-text-input-widget ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+                    darkMode && 'dark-theme-placeholder'
+                  }`}
+                  ref={textInputRef}
+                  onKeyUp={(e) => {
+                    if (e.key == 'Enter') {
+                      setValue(e.target.value);
+                      setExposedVariable('value', e.target.value);
+                      fireEvent('onEnterPressed');
+                    }
+                  }}
+                  onChange={(e) => {
                     setValue(e.target.value);
                     setExposedVariable('value', e.target.value);
-                    fireEvent('onEnterPressed');
-                  }
-                }}
-                onChange={(e) => {
-                  setValue(e.target.value);
-                  setExposedVariable('value', e.target.value);
-                  fireEvent('onChange');
-                }}
-                onBlur={(e) => {
-                  setShowValidationError(true);
-                  e.stopPropagation();
-                  fireEvent('onBlur');
-                }}
-                onFocus={(e) => {
-                  e.stopPropagation();
-                  fireEvent('onFocus');
-                }}
-                type="text"
-                placeholder={properties.placeholder}
-                style={computedStyles}
-                value={value}
-                data-cy={dataCy}
-              />
-            </div>
-            {showValidationError && (
-              <div
-                className="tj-text-sm"
-                data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-                style={{ color: styles.errTextColor }}
-              >
-                {showValidationError && validationError}
+                    fireEvent('onChange');
+                  }}
+                  onBlur={(e) => {
+                    setShowValidationError(true);
+                    e.stopPropagation();
+                    fireEvent('onBlur');
+                  }}
+                  onFocus={(e) => {
+                    e.stopPropagation();
+                    fireEvent('onFocus');
+                  }}
+                  type="text"
+                  placeholder={properties.placeholder}
+                  style={computedStyles}
+                  value={value}
+                  data-cy={dataCy}
+                />
               </div>
-            )}
-          </div>
-        </ToolTip>
+              {showValidationError && (
+                <div
+                  className="tj-text-sm"
+                  data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+                  style={{ color: styles.errTextColor }}
+                >
+                  {showValidationError && validationError}
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </>
   );
