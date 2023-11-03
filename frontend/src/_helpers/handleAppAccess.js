@@ -62,7 +62,7 @@ const handleError = (componentType, error, redirectPath) => {
             return;
           }
           redirectToErrorPage(ERROR_TYPES.RESTRICTED);
-          break;
+          return;
         }
         case 401: {
           window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${redirectPath}`;
@@ -73,14 +73,19 @@ const handleError = (componentType, error, redirectPath) => {
           redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
           return;
         }
+        case 404: {
+          redirectToErrorPage(ERROR_TYPES.INVALID, {});
+          return;
+        }
+        case 422: {
+          redirectToErrorPage(ERROR_TYPES.UNKNOWN, {});
+          return;
+        }
         default: {
-          if (statusCode === 404 || statusCode === 422) {
-            redirectToErrorPage(statusCode === 404 ? ERROR_TYPES.INVALID : ERROR_TYPES.UNKNOWN);
-          }
-          break;
+          redirectToErrorPage(ERROR_TYPES.UNKNOWN, {});
+          return;
         }
       }
-      redirectToErrorPage(ERROR_TYPES.UNKNOWN);
     }
   } catch (err) {
     redirectToErrorPage(ERROR_TYPES.UNKNOWN);
