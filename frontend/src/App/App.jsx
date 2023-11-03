@@ -143,7 +143,7 @@ class AppComponent extends React.Component {
     this.setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
-    setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+    // setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
     this.counter = 0;
     this.interval = setInterval(() => {
       ++this.counter;
