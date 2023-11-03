@@ -47,7 +47,7 @@ function buildPostgrestQuery(filters) {
       }
 
       if (!isEmpty(column) && !isEmpty(operator) && value && value !== '') {
-        postgrestQueryBuilder[operator](column, value.toString());
+        postgrestQueryBuilder[operator](column, value);
       }
     }
   });
