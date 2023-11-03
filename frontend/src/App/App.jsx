@@ -144,7 +144,23 @@ class AppComponent extends React.Component {
     authorizeWorkspace();
     this.fetchMetadata();
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
+    this.counter = 0;
+    this.interval = setInterval(() => {
+      ++this.counter;
+      const current_user = authenticationService.currentSessionValue?.current_user;
+      if (current_user?.id) {
+        this.initTelemetryAndSupport(current_user);
+        clearInterval(this.interval);
+      } else if (this.counter > 10) {
+        clearInterval(this.interval);
+      }
+    }, 1000);
   }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+
   // check if its getting routed from editor
   checkPreviousRoute = (route) => {
     if (route.includes('/apps')) {
