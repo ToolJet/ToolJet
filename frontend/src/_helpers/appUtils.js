@@ -1512,7 +1512,7 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
   let prevComponent;
   components.forEach((component, index) => {
     Object.keys(component.layouts).map((layout) => {
-      if (parentId !== undefined) {
+      if (parentId !== undefined && !component?.component?.parent) {
         if (index > 0) {
           component.layouts[layout].top = prevComponent.layouts[layout].top + prevComponent.layouts[layout].height;
           component.layouts[layout].left = 0;

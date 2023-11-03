@@ -385,8 +385,6 @@ const EditorComponent = (props) => {
 
         const ymapOpts = ymapUpdates?.opts;
 
-        console.log('-- arpit step yjs opts ', { ymapOpts });
-
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
@@ -826,7 +824,7 @@ const EditorComponent = (props) => {
     }
     let updatedAppDefinition;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(useEditorStore.getState().appDefinition));
-    console.log('-- arpit step 2 ', { appDefinition, copyOfAppDefinition, newDefinition, opts });
+
     if (opts?.skipYmapUpdate && opts?.currentSessionId !== currentSessionId) {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
         const _currentPageId = useEditorStore.getState().currentPageId;
@@ -1000,7 +998,6 @@ const EditorComponent = (props) => {
           useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
 
           if (config.ENABLE_MULTIPLAYER_EDITING) {
-            console.log('-- arpit [ENABLE_MULTIPLAYER_EDITIN] ', { areOthersOnSameVersionAndPage, mounted });
             props.ymap?.set('appDef', {
               newDefinition: appDefinition,
               editingVersionId: editingVersion?.id,
