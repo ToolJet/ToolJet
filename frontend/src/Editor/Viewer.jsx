@@ -36,7 +36,8 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams, getQueryParams, redirectToDashboard } from '@/_helpers/routes';
+import { getPreviewQueryParams, getQueryParams, redirectToErrorPage, redirectToDashboard } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 import toast from 'react-hot-toast';
 
 class ViewerComponent extends React.Component {
@@ -257,7 +258,7 @@ class ViewerComponent extends React.Component {
     try {
       let data;
       if (!isPublic) {
-        data = await customStylesService.get(false);
+        data = await customStylesService.getForAppViewerEditor(false);
       } else {
         data = await customStylesService.getForPublicApp(slug);
       }
@@ -269,7 +270,7 @@ class ViewerComponent extends React.Component {
     }
   };
 
-  loadApplicationBySlug = (slug, authentication_failed = false) => {
+  loadApplicationBySlug = (slug) => {
     appsService
       .getAppBySlug(slug)
       .then((data) => {
@@ -282,12 +283,13 @@ class ViewerComponent extends React.Component {
         this.setState({
           isLoading: false,
         });
-        if (authentication_failed && error?.statusCode === 404) {
+        if (error?.statusCode === 404) {
           /* User is not authenticated. but the app url is wrong */
-          toast.error("Couldn't find the app. \n Please verify the app URL again.");
-          setTimeout(() => {
-            redirectToDashboard();
-          }, 3000);
+          redirectToErrorPage(ERROR_TYPES.INVALID);
+        } else if (error?.statusCode === 403) {
+          redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+        } else {
+          redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }
       });
   };
@@ -338,7 +340,7 @@ class ViewerComponent extends React.Component {
           });
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
-          this.loadApplicationBySlug(slug, true);
+          this.loadApplicationBySlug(slug);
         }
       }
       this.setState({ isLoading: false });

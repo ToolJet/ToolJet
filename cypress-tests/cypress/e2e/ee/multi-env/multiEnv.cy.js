@@ -1,39 +1,21 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
-import { commonEeSelectors } from "Selectors/eeCommon";
+import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
 import { verifyPromoteModalUI } from "Support/utils/eeCommon";
 import { dataSourceSelector } from "Selectors/dataSource";
-import { multiEnvSelector } from "Selectors/eeCommon";
 import {
-  logout,
   navigateToAppEditor,
-  navigateToManageGroups,
   pinInspector,
   verifyTooltip,
-  createGroup,
 } from "Support/utils/common";
-import {
-  closeDSModal,
-  deleteDatasource,
-  addQuery,
-  addQueryN,
-  verifyValueOnInspector,
-  selectDatasource,
-} from "Support/utils/dataSource";
+import { addQuery, selectDatasource } from "Support/utils/dataSource";
 
-import { buttonText } from "Texts/button";
 import {
   verifyAndModifyParameter,
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
-import { verifypreview } from "Support/utils/dataSource";
 
-import {
-  selectQueryFromLandingPage,
-  query,
-  addInputOnQueryField,
-} from "Support/utils/queries";
 
 describe("Multi env", () => {
   const data = {};
@@ -80,7 +62,7 @@ describe("Multi env", () => {
       ]
     );
     cy.apiCreateApp(data.appName);
-    cy.visit('/my-workspace')
+    cy.visit("/my-workspace");
     cy.get(commonSelectors.globalDataSourceIcon).click();
     selectDatasource(data.ds);
     cy.get('[data-cy="development-label"]').click();
@@ -187,8 +169,6 @@ describe("Multi env", () => {
       commonWidgetSelector.draggableWidget(data.constName)
     ).verifyVisibleElement("have.text", "michael.lawson@reqres.in");
 
-    // cy.get('[data-cy="viewer-page-logo"]').click();
-    // navigateToAppEditor(data.appName);
     cy.go("back");
     cy.waitForAppLoad();
     cy.wait(3000);
@@ -255,8 +235,7 @@ describe("Multi env", () => {
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
     cy.wait(2000);
-    cy.get(commonWidgetSelector.modalCloseButton).click()
-
+    cy.get(commonWidgetSelector.modalCloseButton).click();
 
     cy.visit(`/applications/${slug}`);
     cy.get(

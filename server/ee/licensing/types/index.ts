@@ -23,8 +23,12 @@ export interface Terms {
     whiteLabelling?: boolean;
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
+    comments?: boolean;
   };
   type?: LICENSE_TYPE;
+  auditLogs?: {
+    maximumDays?: number | string;
+  };
   meta?: {
     customerName?: string;
     generatedFrom?: 'API';

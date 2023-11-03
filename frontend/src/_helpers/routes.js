@@ -80,7 +80,7 @@ export const appendWorkspaceId = (slug, path, replaceId = false) => {
   path = getPathname(path);
 
   let newPath = path;
-  if (path === '/:workspaceId' || path.split('/').length === 2) {
+  if (path === '/:workspaceId' || path.split('/').length === 2 || path.includes('instance-settings')) {
     newPath = `/${slug}`;
   } else {
     const paths = path.split('/').filter((path) => path !== '');
@@ -114,6 +114,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     'integrations',
     'instance-settings',
     'licence',
+    'error',
   ];
 
   const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
@@ -184,4 +185,9 @@ export const getRedirectToWithParams = () => {
   const queryParams = pathname.includes('/applications/') ? getPreviewQueryParams() : {};
   const query = !_.isEmpty(queryParams) ? queryString.stringify(queryParams) : '';
   return `${pathname}${!_.isEmpty(query) ? `?${query}` : ''}`;
+};
+
+export const redirectToErrorPage = (errType, queryParams) => {
+  const query = !_.isEmpty(queryParams) ? queryString.stringify(queryParams) : '';
+  window.location = `${getHostURL()}/error/${errType}${!_.isEmpty(query) ? `?${query}` : ''}`;
 };

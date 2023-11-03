@@ -39,18 +39,17 @@ data.appName = `${fake.companyName}-App`;
 
 describe("Global Datasource Manager", () => {
     beforeEach(() => {
-        cy.appUILogin();
+        cy.apiLogin();
+        cy.visit('/my-workspace')
         cy.viewport(1200, 1300);
     });
 
     before(() => {
-        cy.appUILogin();
-        cy.createApp(data.appName);
-        cy.dragAndDropWidget("Button", 50, 50);
-        cy.get(commonSelectors.editorPageLogo).click();
-        cy.reloadAppForTheElement(data.appName);
+        cy.apiLogin();
+        cy.apiCreateApp(data.appName);
+        cy.visit('/my-workspace')
         addNewUserMW(data.userName1, data.userEmail1);
-        logout();
+        cy.logoutApi();
     });
 
     it("Should verify the global data source manager UI", () => {
@@ -73,7 +72,7 @@ describe("Global Datasource Manager", () => {
         );
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            " Databases"
+            "Databases"
         );
         cy.get(dataSourceSelector.querySearchBar)
             .invoke("attr", "placeholder")
@@ -84,7 +83,7 @@ describe("Global Datasource Manager", () => {
             .click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            " APIs"
+            "APIs"
         );
         cy.get(dataSourceSelector.querySearchBar)
             .invoke("attr", "placeholder")
@@ -95,7 +94,7 @@ describe("Global Datasource Manager", () => {
             .click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            " Cloud Storage"
+            "Cloud Storage"
         );
         cy.get(dataSourceSelector.querySearchBar)
             .invoke("attr", "placeholder")
@@ -106,7 +105,7 @@ describe("Global Datasource Manager", () => {
             .click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            " Plugins"
+            "Plugins"
         );
         cy.get(dataSourceSelector.querySearchBar)
             .invoke("attr", "placeholder")
@@ -149,7 +148,7 @@ describe("Global Datasource Manager", () => {
         cy.get(commonSelectors.yesButton).click();
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            " Databases"
+            "Databases"
         );
         cy.wait(200)
         cy.get(`[data-cy="cypress-${data.ds1}-postgresql-button"]`).realClick();
@@ -260,8 +259,9 @@ describe("Global Datasource Manager", () => {
         AddDataSourceToGroup("All users", `cypress-${data.ds1}-postgresql`);
         AddDataSourceToGroup("All users", `cypress-${data.ds2}-postgresql`);
 
-        logout();
-        cy.login(data.userEmail1, "password");
+        cy.logoutApi();
+        cy.apiLogin(data.userEmail1, "password");
+        cy.visit('/my-workspace')
 
         navigateToAppEditor(data.appName);
         cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
@@ -320,11 +320,10 @@ describe("Global Datasource Manager", () => {
         });
         AddDataSourceToGroup("All users", `cypress-${data.ds3}-postgresql`);
 
-        logout();
-        cy.login(data.userEmail1, "password");
-
-        cy.createApp(data.appName);
-        cy.dragAndDropWidget("Button", 50, 50);
+        cy.logoutApi();
+        cy.apiLogin(data.userEmail1, "password");
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
 
         resizeQueryPanel("80");
         cy.wait(2000);

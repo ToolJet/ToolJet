@@ -21,6 +21,8 @@ import CheveronRight from './CheveronRight.jsx';
 import CheveronUp from './CheveronUp.jsx';
 import ClearRectangle from './ClearRectangle.jsx';
 import Clock from './Clock.jsx';
+import LockGradient from './LockGradient.jsx';
+import DatasourceGradient from './DatasourceGradient.jsx';
 import Column from './Column.jsx';
 import Columns from './Columns.jsx';
 import Compass from './Compass.jsx';
@@ -234,6 +236,10 @@ const Icon = (props) => {
       return <Enterprise {...props} />;
     case 'enterpriseGradient':
       return <EnterpriseGradient {...props} />;
+    case 'lockGradient':
+      return <LockGradient {...props} />;
+    case 'datasourceGradient':
+      return <DatasourceGradient {...props} />;
     case 'eye':
       return <Eye {...props} />;
     case 'eye1':

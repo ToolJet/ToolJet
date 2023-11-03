@@ -17,6 +17,7 @@ export enum LICENSE_FIELD {
   CUSTOM_STYLE = 'customStylingEnabled',
   WHITE_LABEL = 'whitelabellingEnabled',
   AUDIT_LOGS = 'auditLogsEnabled',
+  MAX_DURATION_FOR_AUDIT_LOGS = 'maxDaysForAuditLogs',
   MULTI_ENVIRONMENT = 'multiEnvironmentEnabled',
   UPDATED_AT = 'updatedAt',
   ALL = 'all',

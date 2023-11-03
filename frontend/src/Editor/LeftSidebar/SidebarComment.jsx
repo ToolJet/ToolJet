@@ -32,8 +32,8 @@ export const LeftSidebarComment = forwardRef(
     );
     const [isActive, toggleActive] = React.useState(false);
     const [notifications, setNotifications] = React.useState([]);
-    const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
-    const [isMultiPlayerEnabled, setIsMultiPlayerEnabled] = useState(true);
+    const shouldEnableComments = window.public_config?.ENABLE_COMMENTS === 'true';
+    const [basicPlan, setBasicPlan] = useState(false);
 
     React.useEffect(() => {
       if (appVersionsId && appId) {
@@ -44,7 +44,7 @@ export const LeftSidebarComment = forwardRef(
       async function fetchData() {
         try {
           const data = await licenseService.getFeatureAccess();
-          setIsMultiPlayerEnabled(!!data?.multiPlayerEdit);
+          setBasicPlan(data?.licenseStatus?.isExpired || !data?.licenseStatus?.isLicenseValid);
         } catch (error) {
           console.error('Error:', error);
         }
@@ -55,30 +55,25 @@ export const LeftSidebarComment = forwardRef(
     const tooltipContent = 'Comments are available only in paid plans'; // Tooltip content
 
     const tooltip = <Tooltip id="tooltip-disabled">{tooltipContent}</Tooltip>;
-    return !shouldEnableMultiplayer && !isMultiPlayerEnabled ? (
-      <OverlayTrigger placement="bottom" overlay={tooltip} trigger="hover">
-        <LeftSidebarItem
-          commentBadge={notifications?.length > 0}
-          selectedSidebarItem={selectedSidebarItem}
-          title={'toggle comments'}
-          icon={'comments'}
-          className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
-            disabled: false,
-            active: isActive,
-          })}
-          ref={ref}
-        />
+    return basicPlan ? (
+      <OverlayTrigger placement="right" overlay={tooltip} trigger="hover">
+        <div style={{ pointerEvents: 'auto' }}>
+          <LeftSidebarItem
+            commentBadge={false}
+            selectedSidebarItem={selectedSidebarItem}
+            icon={'comments'}
+            iconFill={'var(--slate5)'}
+            style={{ pointerEvents: 'none' }}
+          />
+        </div>
       </OverlayTrigger>
     ) : (
       <LeftSidebarItem
         commentBadge={notifications?.length > 0}
         selectedSidebarItem={selectedSidebarItem}
-        title={appVersionsId ? 'toggle comments' : 'Comments section will be available once you save this application'}
         icon={'comments'}
         className={cx(`left-sidebar-item left-sidebar-layout sidebar-comments`, {
-          disabled:
-            !appVersionsId || !shouldEnableMultiplayer || !isMultiPlayerEnabled || isVersionReleased || isEditorFreezed,
-          active: isActive,
+          disabled: !appVersionsId || isVersionReleased || isEditorFreezed || !shouldEnableComments,
         })}
         onClick={() => {
           toggleActive(!isActive);

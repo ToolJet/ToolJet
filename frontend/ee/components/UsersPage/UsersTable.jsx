@@ -53,7 +53,7 @@ const UsersTable = ({
                 )}
                 {isLoadingAllUsers && (
                   <th data-cy="users-table-workspaces-column-header">
-                    {translator('header.organization.menus.manageUsers.worksapces', 'Worksapces')}
+                    {translator('header.organization.menus.manageUsers.workspaces', 'Workspaces')}
                   </th>
                 )}
                 <th className="w-1"></th>

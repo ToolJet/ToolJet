@@ -20,9 +20,6 @@ export const launchApp = () => {
         const parts = url.split('/');
         const value = parts[parts.length - 1];
         cy.log(`Extracted value: ${value}`);
-        // cy.get(commonSelectors.editorPageLogo).click();
-        // cy.wait(1000)
-
         cy.visit(`/applications/${value}`)
         cy.wait(3000);
     });
