@@ -351,7 +351,6 @@ export const Inspector = ({
     </div>
   );
 
-  console.log('xyz---', component.component.component);
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
       <div className={component.component.component !== 'TextInput' && 'p-3'}>

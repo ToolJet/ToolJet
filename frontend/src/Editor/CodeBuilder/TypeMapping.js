@@ -14,4 +14,5 @@ export const TypeMapping = {
   slider: 'Slider',
   switch: 'Switch',
   input: 'Input',
+  icon: 'Icon',
 };

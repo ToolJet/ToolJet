@@ -39,6 +39,7 @@ import Switch from './Elements/Switch';
 import Checkbox from './Elements/Checkbox';
 import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
+import { Icon } from './Elements/Icon';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
@@ -55,6 +56,7 @@ const AllElements = {
   Switch,
   Input,
   Checkbox,
+  Icon,
 };
 
 export function CodeHinter({
@@ -87,6 +89,7 @@ export function CodeHinter({
   currentState: _currentState,
   verticalLine = true,
   isIcon = false,
+  paramUpdated,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {

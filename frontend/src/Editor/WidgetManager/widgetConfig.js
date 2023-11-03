@@ -1145,7 +1145,7 @@ export const widgets = [
       },
       direction: {
         type: 'switch',
-        displayName: 'Direction',
+        displayName: '',
         validation: { schema: { type: 'string' } },
         showLabel: false,
         isIcon: true,
@@ -1202,6 +1202,25 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
+      icon: {
+        type: 'icon',
+        displayName: 'Icon',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+        visibility: false,
+      },
+      // iconAlignment: {
+      //   type: 'switch',
+      //   displayName: '',
+      //   validation: { schema: { type: 'string' } },
+      //   showLabel: false,
+      //   isIcon: true,
+      //   options: [
+      //     { displayName: 'alignleftinspector', value: 'alignleftinspector' },
+      //     { displayName: 'alignrightinspector', value: 'alignrightinspector' },
+      //   ],
+      //   accordian: 'field',
+      // },
       borderRadius: {
         type: 'input',
         displayName: 'Border radius',
@@ -1292,6 +1311,8 @@ export const widgets = [
         auto: { value: '{{false}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
+        icon: { value: 'IconHome2' },
+        iconVisibility: { value: false },
       },
     },
   },

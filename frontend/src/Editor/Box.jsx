@@ -148,11 +148,11 @@ export const Box = memo(
     sideBarDebugger,
     readOnly,
     childComponents,
+    isResizing,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
-
     let styles = {
       height: '100%',
       padding: '1px',
@@ -316,7 +316,6 @@ export const Box = memo(
                 canvasWidth={canvasWidth}
                 properties={validatedProperties}
                 exposedVariables={exposedVariables}
-                // styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
                 styles={{
                   ...validatedStyles,
                   ...(!shouldAddBoxShadow.includes(component.component.component)
@@ -338,6 +337,7 @@ export const Box = memo(
                 resetComponent={() => setResetStatus(true)}
                 childComponents={childComponents}
                 dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
+                isResizing={isResizing}
               ></ComponentToRender>
             ) : (
               <></>

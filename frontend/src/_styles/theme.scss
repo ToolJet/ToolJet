@@ -11551,10 +11551,10 @@ tbody {
 }
 
 .color-picker-input {
-  border: solid 1px #333c48;
   height: 36px;
   background-color: var(--slate1);
   border: 1px solid var(--slate7);
+  border-radius: 6px;
 
   &:hover {
     background-color: var(--slate4);
@@ -11614,6 +11614,10 @@ tbody {
   width: 100%;
   padding: 3px 5px;
 
+  &::placeholder {
+    padding-left: 18px !important;
+  }
+
 
   &:hover {
     background-color: var(--tj-text-input-widget-hover) !important;
@@ -11631,4 +11635,13 @@ tbody {
     border: 1px solid var(--tj-text-input-widget-border-clicked) !important;
     outline: none !important;
   }
+}
+
+.icon-style-container {
+  width: 142px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  padding: 2px;
 }
