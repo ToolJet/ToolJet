@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef, memo } from 'react';
+import React, { useEffect, useState, useMemo, useContext, useRef, memo, useCallback } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -153,17 +153,6 @@ export const Box = memo(
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
 
-    let styles = {
-      height: '100%',
-      padding: '1px',
-    };
-
-    if (inCanvas) {
-      styles = {
-        ...styles,
-      };
-    }
-
     const componentMeta = useMemo(() => {
       return componentTypes.find((comp) => component.component === comp.component);
     }, [component]);
@@ -180,11 +169,11 @@ export const Box = memo(
         : [resolvedProperties, []];
 
     const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+
     const [validatedStyles, styleErrors] =
       mode === 'edit' && component.validate
         ? validateProperties(resolvedStyles, componentMeta.styles)
         : [resolvedStyles, []];
-    validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
 
     const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
     const [validatedGeneralProperties, generalPropertiesErrors] =
@@ -202,6 +191,16 @@ export const Box = memo(
     const darkMode = localStorage.getItem('darkMode') === 'true';
     const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
+    let styles = {
+      height: '100%',
+      padding: validatedStyles?.padding === 'none' ? '0px' : '1px',
+    };
+
+    if (inCanvas) {
+      styles = {
+        ...styles,
+      };
+    }
     useEffect(() => {
       if (!component?.parent) {
         onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
@@ -275,6 +274,14 @@ export const Box = memo(
       });
     const shouldAddBoxShadow = ['TextInput', 'Text'];
 
+    const calculateHeight = useCallback(() => {
+      // 2px needs to be added since we are removing 1px each from top bottom padding when padding selected to none
+      if (validatedStyles?.padding === 'none') {
+        return height + 2;
+      }
+      return height;
+    }, [validatedStyles?.padding, height]);
+
     return (
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
@@ -308,7 +315,7 @@ export const Box = memo(
                 width={width}
                 changeCanDrag={changeCanDrag}
                 onComponentOptionsChanged={onComponentOptionsChanged}
-                height={height}
+                height={calculateHeight()}
                 component={component}
                 containerProps={containerProps}
                 darkMode={darkMode}
@@ -318,7 +325,7 @@ export const Box = memo(
                 exposedVariables={exposedVariables}
                 styles={{
                   ...validatedStyles,
-                  ...(!shouldAddBoxShadow.includes(component.component.component)
+                  ...(!shouldAddBoxShadow.includes(component.component)
                     ? { boxShadow: validatedGeneralStyles?.boxShadow }
                     : {}),
                 }}

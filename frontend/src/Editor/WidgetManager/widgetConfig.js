@@ -2286,9 +2286,9 @@ export const widgets = [
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'Container',
       },
-      margin: {
+      padding: {
         type: 'switch',
-        displayName: 'Margin',
+        displayName: 'Padding',
         validation: { schema: { type: 'string' } },
         options: [
           { displayName: 'None', value: 'none' },
@@ -2326,7 +2326,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#fff00000' },
+        backgroundColor: { value: '#F2F2F5' },
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
@@ -2340,9 +2340,9 @@ export const widgets = [
         wordSpacing: { value: 0 },
         fontVariant: { value: 'normal' },
         verticalAlignment: { value: 'center' },
-        margin: { value: 'default' },
+        padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
-        borderColor: { value: '#E6E8EB' },
+        borderColor: { value: '#F2F2F5' },
         borderRadius: { value: 0 },
       },
     },

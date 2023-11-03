@@ -25,10 +25,10 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     fontVariant,
     boxShadow,
     verticalAlignment,
-    padding,
     borderColor,
     borderRadius,
   } = styles;
+  console.log(backgroundColor, 'styles');
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -99,7 +99,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   };
 
   const computedStyles = {
-    height: padding === 'default' ? `calc(${height}px - 5px)` : height,
+    height: `${height}px`,
     backgroundColor,
     color,
     display: visibility ? 'flex' : 'none',
