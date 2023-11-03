@@ -48,7 +48,7 @@ export function getQueryParams(query) {
 
   for (const param of paramsArray) {
     const [key, value] = param.split('=');
-    queryParams[key] = decodeURIComponent(value);
+    if (key) queryParams[key] = decodeURIComponent(value);
   }
 
   return query ? queryParams[query] : queryParams;
