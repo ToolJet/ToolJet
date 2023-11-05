@@ -62,6 +62,17 @@ ToolJet supports the REST HTTP methods **GET**, **POST**, **PUT**, **PATCH**, an
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/restquery.png" alt="ToolJet - Data source - REST API" />
 
 </div>
+<br/>
+
+## Additional header
+
+Whenever a request is made to the REST API, a **tj-x-forwarded-for** header is added to the request, the value of the header will be the IP address of the user who is logged in to the ToolJet application. This header can be used to identify the user who is making the request to the REST API.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/header.png" alt="ToolJet - Data source - REST API" width='500'/>
+
+</div>
 
 ## Response types
 

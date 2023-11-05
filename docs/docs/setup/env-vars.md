@@ -305,6 +305,14 @@ If this parameter is not specified then PostgREST refuses authentication request
 Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
 :::
 
+## Log file path ( Optional )
+
+If a log file path is specified in environment variables, a log file containing all the data from audit logs will be created at the specified path. The file will be updated every time a new audit log is created.
+
+| Variable | Description                                                                 |
+| -------- | --------------------------------------------------------------------------- |
+| LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
+
 ## ToolJet Apps
 
 ### Enabling embedding of private apps

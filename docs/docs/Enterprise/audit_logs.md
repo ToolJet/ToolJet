@@ -91,3 +91,39 @@ The dropdown will display all the apps associated with your account. Select an a
 | resource_name | Shows the name of the [resources](#select-resources) that were involved in the logged event. For example, if an app was created or deleted, it will display the name of that app. |
 | resource_type | Indicates the type of the [resources](#select-resources) involved in the logged event. |
 | user_id | Each user account in ToolJet has a unique ID associated with it, which is recorded when an event occurs. |
+
+### Log file
+
+The log file can be created by specifying the path in the [environment variables](/docs/setup/env-vars) . The file will contain all the data from audit logs. The file will be updated every time a new audit log is created.
+
+| Variable | Description                                                                 |
+| -------- | --------------------------------------------------------------------------- |
+| LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
+
+<details>
+<summary>Example Log file data</summary>
+
+```bash
+{
+  level: 'info',
+  message: 'PERFORM APP_CREATE OF awdasdawdwd APP',
+  timestamp: '2023-11-02 17:12:40',
+  auditLog: {
+    userId: '0ad48e21-e7a2-4597-9568-c4535aedf687',
+    organizationId: 'cf8e132f-a68a-4c81-a0d4-3617b79e7b17',
+    resourceId: 'eac02f79-b8e2-495a-bffe-82633416c829',
+    resourceType: 'APP',
+    actionType: 'APP_CREATE',
+    resourceName: 'awdasdawdwd',
+    ipAddress: '::1',
+    metadata: {
+      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+      tooljetVersion: '2.22.2-ee2.8.3'
+    }
+  },
+  label: 'APP'
+}
+```
+
+</details>
+
