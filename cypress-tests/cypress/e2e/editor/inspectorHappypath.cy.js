@@ -77,7 +77,7 @@ describe("Editor- Inspector", () => {
     cy.get(multipageSelector.sidebarPageButton).click();
     addNewPage("test_page");
 
-    cy.dragAndDropWidget("Button", 100, 200);
+    cy.dragAndDropWidget("Button", 500, 500);
     selectEvent("On click", "Switch page");
     cy.get('[data-cy="switch-page-label-and-input"] > .select-search')
       .click()
@@ -88,9 +88,12 @@ describe("Editor- Inspector", () => {
 
     addSupportCSAData("query-param-key", "key");
     addSupportCSAData("query-param-value", "value");
+    cy.get('[data-cy="switch-page-label-and-input"] > .select-search')
+      .click()
+      .type("home{enter}");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 100, 300);
+    cy.dragAndDropWidget("Button", 500, 300);
     selectEvent("On click", "Set variable");
     addSupportCSAData("key", "globalVar");
     addSupportCSAData("variable", "globalVar");
@@ -99,7 +102,7 @@ describe("Editor- Inspector", () => {
     cy.get(commonWidgetSelector.draggableWidget("button2")).click();
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 100, 400);
+    cy.dragAndDropWidget("Button", 500, 400);
     selectEvent("On click", "Set page variable");
     addSupportCSAData("key", "pageVar");
     addSupportCSAData("variable", "pageVar");
@@ -154,7 +157,7 @@ describe("Editor- Inspector", () => {
       });
     });
 
-    cy.dragAndDropWidget("Button", 100, 300);
+    cy.dragAndDropWidget("Button", 500, 300);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     openNode("components");
     cy.get(`[data-cy="inspector-node-button1"] > .mx-1`).realHover();
