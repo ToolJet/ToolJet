@@ -152,7 +152,7 @@ export async function getServiceAndRpcNames(protoDefinition) {
 
 export class MigrationProgress {
   private progress = 0;
-  constructor(private fileName: string, private totalCount: number) { }
+  constructor(private fileName: string, private totalCount: number) {}
 
   show() {
     this.progress++;
@@ -205,15 +205,17 @@ export const generateInviteURL = (
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
 
-  return `${host}${subpath ? subpath : '/'}invitations/${invitationToken}${organizationToken ? `/workspaces/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''}` : ''
-    }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
+  return `${host}${subpath ? subpath : '/'}invitations/${invitationToken}${
+    organizationToken ? `/workspaces/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''}` : ''
+  }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
 };
 
 export const generateOrgInviteURL = (organizationToken: string, organizationId?: string) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''
-    }`;
+  return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
+    organizationId ? `?oid=${organizationId}` : ''
+  }`;
 };
 
 export function extractMajorVersion(version) {
