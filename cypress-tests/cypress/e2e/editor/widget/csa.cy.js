@@ -13,7 +13,6 @@ import {
 } from "Support/utils/commonWidget";
 import { verifyComponent } from "Support/utils/basicComponents";
 import { commonWidgetText } from "Texts/common";
-import { fake } from "Fixtures/fake";
 
 describe("Editor- CSA", () => {
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
@@ -219,7 +218,7 @@ describe("Editor- CSA", () => {
     cy.get('[data-cy="draggable-widget-icon1"]').should("not.be.visible");
   });
 
-  it("Should verify Kanban CSA", () => {
+  it.only("Should verify Kanban CSA", () => {
     cy.viewport(1400, 1900);
 
     cy.dragAndDropWidget("Kanban", 50, 400);
