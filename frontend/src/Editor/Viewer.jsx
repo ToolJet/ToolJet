@@ -34,8 +34,9 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams, redirectToDashboard } from '@/_helpers/routes';
+import { getPreviewQueryParams, redirectToDashboard, redirectToErrorPage } from '@/_helpers/routes';
 import toast from 'react-hot-toast';
+import { ERROR_TYPES } from '@/_helpers/constants';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -241,6 +242,9 @@ class ViewerComponent extends React.Component {
     appsService
       .getAppBySlug(slug)
       .then((data) => {
+        if (authentication_failed && !data.current_version_id) {
+          redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
+        }
         this.setStateForApp(data);
         this.setStateForContainer(data);
         this.setWindowTitle(data.name);
@@ -249,12 +253,13 @@ class ViewerComponent extends React.Component {
         this.setState({
           isLoading: false,
         });
-        if (authentication_failed && error?.statusCode === 404) {
+        if (error?.statusCode === 404) {
           /* User is not authenticated. but the app url is wrong */
-          toast.error("Couldn't find the app. \n Please verify the app URL again.");
-          setTimeout(() => {
-            redirectToDashboard();
-          }, 3000);
+          redirectToErrorPage(ERROR_TYPES.INVALID);
+        } else if (error?.statusCode === 403) {
+          redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+        } else {
+          redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }
       });
   };

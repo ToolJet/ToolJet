@@ -225,6 +225,7 @@ export const commonSelectors = {
   workspaceConstantsOption: '[data-cy="workspace-constants-list-item"]',
   nameErrorText: '[data-cy="name-error-text"]',
   valueErrorText: '[data-cy="value-error-text"]',
+  releaseButton: '[data-cy="button-release"]',
 };
 
 export const commonWidgetSelector = {
