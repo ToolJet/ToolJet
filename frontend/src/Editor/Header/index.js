@@ -155,6 +155,7 @@ export default function EditorHeader({
                       appId={appId}
                       slug={slug}
                       darkMode={darkMode}
+                      isVersionReleased={isVersionReleased}
                       pageHandle={currentState?.page?.handle}
                       M={M}
                       isPublic={isPublic ?? false}
