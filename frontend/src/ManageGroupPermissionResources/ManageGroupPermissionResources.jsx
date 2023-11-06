@@ -897,8 +897,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       {groupPermission.group == 'all_users' && (
                         <div className="manage-group-users-info" data-cy="helper-text-all-user-included">
                           <p className="tj-text-xsm">
-                            <SolidIcon name="information" fill="#3E63DD" /> All users include every users in the app.
-                            This list is not editable
+                            <SolidIcon name="information" fill="#3E63DD" /> All users within the workspace are included
+                            in this list. This list cannot be edited.
                           </p>
                         </div>
                       )}

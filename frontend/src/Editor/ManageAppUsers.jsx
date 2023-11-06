@@ -12,6 +12,7 @@ import { getPrivateRoute, replaceEditorURL, getHostURL } from '@/_helpers/routes
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
+import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -197,22 +198,36 @@ class ManageAppUsersComponent extends React.Component {
       this.props.slug
     }" title="${retrieveWhiteLabelText()} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
+    const shouldShowShareModal = this.props.isVersionReleased
+      ? this.props.multiEnvironmentEnabled
+        ? this.props.currentEnvironment?.is_default
+          ? false
+          : true
+        : false
+      : false;
+
     return (
       <ToolTip
-        message="You can only share apps in production"
+        message={
+          !this.props.isVersionReleased
+            ? TOOLTIP_MESSAGES.SHARE_URL_UNAVAILABLE
+            : 'You can only share apps in production'
+        }
         placement="left"
-        show={this.props.multiEnvironmentEnabled ? (this.props.currentEnvironment?.is_default ? false : true) : false}
+        show={shouldShowShareModal}
       >
-        <div title="Share" className="manage-app-users editor-header-icon tj-secondary-btn" data-cy="share-button-link">
+        <div
+          title={shouldShowShareModal ? 'Share' : ''}
+          className="manage-app-users editor-header-icon tj-secondary-btn"
+          data-cy="share-button-link"
+        >
           <span
             className={cx('d-flex', {
-              'share-disabled': !this.props?.currentEnvironment?.is_default,
+              'share-disabled': !shouldShowShareModal,
             })}
             onClick={() => {
               this.validateThePreExistingSlugs();
-              this.props?.currentEnvironment?.is_default &&
-                this.props.multiEnvironmentEnabled &&
-                this.setState({ showModal: true });
+              shouldShowShareModal && this.setState({ showModal: true });
             }}
           >
             <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
@@ -365,7 +380,7 @@ class ManageAppUsersComponent extends React.Component {
                         <span className="copy-container">
                           <CopyToClipboard
                             text={embeddableLink}
-                            onCopy={() => toast.success('Embeddable link copied to clipboard')}
+                            onCopy={() => toast.success('Link copied to clipboard')}
                           >
                             <svg
                               className="cursor-pointer"

@@ -211,6 +211,7 @@ export default function EditorHeader({
                         handleSlugChange={handleSlugChange}
                         pageHandle={currentState?.page?.handle}
                         darkMode={darkMode}
+                        isVersionReleased={isVersionReleased}
                       />
                     )}
                   </LicenseTooltip>

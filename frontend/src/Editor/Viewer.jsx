@@ -36,9 +36,8 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams, getQueryParams, redirectToErrorPage, redirectToDashboard } from '@/_helpers/routes';
+import { getPreviewQueryParams, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
-import toast from 'react-hot-toast';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -270,10 +269,13 @@ class ViewerComponent extends React.Component {
     }
   };
 
-  loadApplicationBySlug = (slug) => {
+  loadApplicationBySlug = (slug, authentication_failed) => {
     appsService
       .getAppBySlug(slug)
       .then((data) => {
+        if (authentication_failed && !data.current_version_id) {
+          redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
+        }
         this.setStateForApp(data);
         this.setState({ appId: data.id });
         this.setStateForContainer(data);
@@ -340,7 +342,7 @@ class ViewerComponent extends React.Component {
           });
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
-          this.loadApplicationBySlug(slug);
+          this.loadApplicationBySlug(slug, true);
         }
       }
       this.setState({ isLoading: false });

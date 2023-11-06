@@ -262,3 +262,10 @@ export const navigateToworkspaceConstants = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.workspaceConstantsOption).click();
 };
+
+export const releaseApp = () => {
+  cy.get(commonSelectors.releaseButton).click();
+  cy.get(commonSelectors.yesButton).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
+  cy.wait(1000);
+};

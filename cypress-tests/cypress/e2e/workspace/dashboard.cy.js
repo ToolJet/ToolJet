@@ -159,7 +159,7 @@ describe("dashboard", () => {
     cy.reload();
     verifyTooltip(commonSelectors.dashboardIcon, "Dashboard");
     verifyTooltip(commonSelectors.databaseIcon, "Database");
-    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data Sources");
+    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
     verifyTooltip(commonSelectors.workspaceSettingsIcon, "Workspace settings");
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
