@@ -701,7 +701,7 @@ export class AppImportExportService {
 
           let parentId = component.parent ? component.parent : null;
 
-          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId); //from here
+          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
 
           if (isParentTabOrCalendar) {
             const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
@@ -1617,7 +1617,7 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
     if (parentComponent) {
-      return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+      return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
     }
   }
 
