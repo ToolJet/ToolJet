@@ -48,7 +48,7 @@ export function getQueryParams(query) {
 
   for (const param of paramsArray) {
     const [key, value] = param.split('=');
-    queryParams[key] = decodeURIComponent(value);
+    if (key) queryParams[key] = decodeURIComponent(value);
   }
 
   return query ? queryParams[query] : queryParams;
@@ -108,6 +108,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     'oauth2',
     'applications',
     'integrations',
+    'error',
   ];
 
   const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
@@ -171,4 +172,9 @@ export const getRedirectToWithParams = () => {
   const queryParams = pathname.includes('/applications/') ? getPreviewQueryParams() : {};
   const query = !_.isEmpty(queryParams) ? queryString.stringify(queryParams) : '';
   return `${pathname}${!_.isEmpty(query) ? `?${query}` : ''}`;
+};
+
+export const redirectToErrorPage = (errType, queryParams) => {
+  const query = !_.isEmpty(queryParams) ? queryString.stringify(queryParams) : '';
+  window.location = `${getHostURL()}/error/${errType}${!_.isEmpty(query) ? `?${query}` : ''}`;
 };

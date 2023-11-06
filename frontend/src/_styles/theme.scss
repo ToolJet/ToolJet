@@ -4255,11 +4255,24 @@ input[type="text"] {
 }
 
 .app-name {
-  width: 190px;
+  width: 200px;
   margin-left: 12px;
 
   .form-control-plaintext {
-    background-color: var(--base)
+    background-color: var(--base);
+    border: none !important;
+  }
+
+  .form-control-plaintext:hover {
+    outline: none;
+    border: 1px solid var(--slate6) !important;
+    background: var(--slate2);
+  }
+
+  .form-control-plaintext:focus {
+    outline: none;
+    border: 1px solid var(--indigo9) !important;
+    background: var(--slate2);
   }
 
 }
@@ -11513,6 +11526,10 @@ tbody {
     padding: 18px;
   }
 
+}
+
+.share-disabled {
+  opacity: 0.4;
 }
 
 // Editor revamp styles
