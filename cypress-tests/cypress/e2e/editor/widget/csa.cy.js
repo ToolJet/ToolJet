@@ -1,5 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { openEditorSidebar } from "Support/utils/commonWidget";
+import { fake } from "Fixtures/fake";
 import {
   selectCSA,
   selectEvent,
@@ -17,8 +18,9 @@ import { fake } from "Fixtures/fake";
 describe("Editor- CSA", () => {
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
+    const appName1 = `${fake.companyName}-${fake.companyName}-App`;
     cy.apiLogin();
-    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.apiCreateApp(appName1);
     cy.openApp();
     cy.get('[data-tooltip-content="Hide query panel"]').click();
   });
@@ -118,7 +120,7 @@ describe("Editor- CSA", () => {
   });
 
   it("Should verify Textarea CSA", () => {
-    cy.dragAndDropWidget("Textarea", 200, 100);
+    cy.dragAndDropWidget("Text area", 200, 100);
     verifyComponent("textarea1");
     cy.get(commonWidgetSelector.draggableWidget("textarea1"))
       .should("be.visible")

@@ -16,7 +16,7 @@ function Header() {
       case 'workspace-settings':
         return 'Workspace settings';
       case 'data-sources':
-        return 'Data Sources';
+        return 'Data sources';
       case 'settings':
         return 'Profile settings';
       case 'integrations':
