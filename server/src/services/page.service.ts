@@ -108,6 +108,10 @@ export class PageService {
             eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
           }
 
+          if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
+            eventDefinition.modal = componentsIdMap[eventDefinition.modal];
+          }
+
           event.event = eventDefinition;
 
           const clonedEvent = new EventHandler();
@@ -144,6 +148,11 @@ export class PageService {
             if (eventDefinition?.actionId === 'control-component') {
               eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
             }
+
+            if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
+              eventDefinition.modal = componentsIdMap[eventDefinition.modal];
+            }
+
             event.event = eventDefinition;
 
             const clonedEvent = new EventHandler();

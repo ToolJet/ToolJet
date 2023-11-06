@@ -261,6 +261,10 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
       }
 
+      if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
+        eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
+      }
+
       event.event = eventDefinition;
 
       await manager.save(event);
