@@ -201,20 +201,20 @@ class ManageAppUsersComponent extends React.Component {
     const shouldShowShareModal = this.props.isVersionReleased
       ? this.props.multiEnvironmentEnabled
         ? this.props.currentEnvironment?.is_default
-          ? false
-          : true
+          ? true
+          : false
         : false
       : false;
 
     return (
       <ToolTip
         message={
-          !this.props.isVersionReleased
+          !this.props.isVersionReleased && this.props.currentEnvironment?.is_default
             ? TOOLTIP_MESSAGES.SHARE_URL_UNAVAILABLE
             : 'You can only share apps in production'
         }
         placement="left"
-        show={shouldShowShareModal}
+        show={!shouldShowShareModal}
       >
         <div
           title={shouldShowShareModal ? 'Share' : ''}
