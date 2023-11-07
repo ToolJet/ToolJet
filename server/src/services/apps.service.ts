@@ -696,7 +696,7 @@ export class AppsService {
           organizationId,
         },
       });
-      if (environments > 1 && currentEnvironment.priority !== 1) {
+      if (environments > 1 && currentEnvironment.priority !== 1 && !body?.is_user_switched_version) {
         throw new BadRequestException('You cannot update a promoted version');
       }
       editableParams['definition'] = definition;

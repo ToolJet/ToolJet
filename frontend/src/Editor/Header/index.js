@@ -172,7 +172,6 @@ export default function EditorHeader({
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       onVersionDelete={onVersionDelete}
                       environments={environments}
