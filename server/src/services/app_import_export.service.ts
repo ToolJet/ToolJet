@@ -1529,7 +1529,7 @@ export class AppImportExportService {
         eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
       }
 
-      if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
+      if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'close-modal') {
         eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
       }
 
