@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { appService } from '@/_services';
 import { App } from './App';
+import * as serviceWorkerRegistration from './ServiceWorker/register';
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -63,4 +64,5 @@ appService
     }
   })
   .then(() => render(<AppWithProfiler />, document.getElementById('app')));
+serviceWorkerRegistration.register();
 // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));

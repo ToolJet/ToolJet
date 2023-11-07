@@ -9,6 +9,7 @@ const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
+const { InjectManifest } = require("workbox-webpack-plugin");
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -155,6 +156,12 @@ module.exports = {
       'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
       'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
     }),
+    new InjectManifest({
+        swSrc: "./src/ServiceWorker/index.jsx",
+        swDest: "./service-worker.js",
+        exclude: [/\.(map)$/, /asset-manifest\.json$/],
+        include: [/\.html$/, /\.js$/, /\.css$/, /\.png$/, /\.jpg$/, /\.jpeg$/, /\.gif$/, /\.svg$/, /\.woff$/, /\.woff2$/, /\.ttf$/, /\.eot$/]
+      }),
     // Add Sentry plugin for error and performance monitoring
     sentryWebpackPlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
