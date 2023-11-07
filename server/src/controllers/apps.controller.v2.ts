@@ -92,13 +92,6 @@ export class AppsControllerV2 {
     response['pages'] = pagesForVersion;
     response['events'] = eventsForVersion;
 
-    //! if editing version exists, camelize the definition
-    if (app.editingVersion && app.editingVersion.definition) {
-      response['editing_version'] = {
-        ...response['editing_version'],
-        definition: camelizeKeys(app.editingVersion.definition),
-      };
-    }
     return response;
   }
 

@@ -722,7 +722,7 @@ const EditorComponent = (props) => {
       slug: data.slug,
       isMaintenanceOn: data?.is_maintenance_on,
       organizationId: currentOrgId,
-      isPublic: data?.is_public,
+      isPublic: data?.is_public || data?.isPublic,
       appName: data?.name,
       userId: data?.user_id,
       appId: data?.id,
