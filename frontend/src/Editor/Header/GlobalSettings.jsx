@@ -59,6 +59,7 @@ export const GlobalSettings = ({
     special chars or spaces in their app slugs 
   */
     const existedSlugErrors = validateName(oldSlug, 'App slug', true, false, false, false);
+
     setSlug({ value: oldSlug, error: existedSlugErrors.errorMsg });
   }, [oldSlug]);
 
@@ -166,6 +167,7 @@ export const GlobalSettings = ({
                       delayedSlugChange(e.target.value, 'slug');
                     }}
                     data-cy="app-slug-input-field"
+                    value={oldSlug}
                     defaultValue={oldSlug}
                   />
                   {isSlugUpdated && (

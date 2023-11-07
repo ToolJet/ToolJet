@@ -279,8 +279,9 @@ class ViewerComponent extends React.Component {
     appService
       .fetchAppBySlug(slug)
       .then((data) => {
-        if (authentication_failed && !data.current_version_id) {
-          redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
+        const isAppPublic = data?.is_public;
+        if (authentication_failed && !isAppPublic) {
+          return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
@@ -393,9 +394,13 @@ class ViewerComponent extends React.Component {
 
   handlePageSwitchingBasedOnURLparam() {
     const handleOnURL = this.props.params.pageHandle;
-    const pageIdCorrespondingToHandleOnURL = handleOnURL
-      ? this.findPageIdFromHandle(handleOnURL)
-      : this.state.appDefinition.homePageId;
+
+    const shouldShowPage = handleOnURL ? this.validatePageHandle(handleOnURL) : true;
+
+    if (!shouldShowPage) return this.switchPage(this.state.appDefinition.homePageId);
+
+    const pageIdCorrespondingToHandleOnURL =
+      handleOnURL && shouldShowPage ? this.findPageIdFromHandle(handleOnURL) : this.state.appDefinition.homePageId;
     const currentPageId = this.state.currentPageId;
 
     if (pageIdCorrespondingToHandleOnURL != this.state.currentPageId) {
@@ -439,6 +444,11 @@ class ViewerComponent extends React.Component {
         }
       );
     }
+  }
+
+  validatePageHandle(handle) {
+    const allPages = this.state.appDefinition.pages;
+    return Object.values(allPages).some((page) => page.handle === handle && !page.disabled);
   }
 
   findPageIdFromHandle(handle) {
