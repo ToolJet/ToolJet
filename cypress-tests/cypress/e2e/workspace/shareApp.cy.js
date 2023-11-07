@@ -57,7 +57,9 @@ describe("App share functionality", () => {
       cy.get(commonSelectors.editorPageLogo).click();
 
       logout();
+      cy.wait(2500);
       cy.visit(`/applications/${slug}`);
+      cy.wait(2500);
 
       cy.get(commonSelectors.loginButton).should("be.visible");
 
@@ -76,8 +78,9 @@ describe("App share functionality", () => {
       cy.get(commonSelectors.editorPageLogo).click();
 
       logout();
+      cy.wait(2500);
       cy.visit(`/applications/${slug}`);
-      cy.wait(500);
+      cy.wait(2500);
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
     });
 
