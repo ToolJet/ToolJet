@@ -43,7 +43,7 @@ describe("User permissions", () => {
         cy.contains(dashboardText.createAppButton).should("not.exist");
       }
     });
-    common.logout();
+    cy.logoutApi();
   });
 
   it("Should verify the View and Edit permission", () => {
