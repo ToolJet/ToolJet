@@ -517,20 +517,6 @@ export class AppsService {
 
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
 
-        let parentId = component.parent ? component.parent : null;
-
-        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
-
-        if (isParentTabOrCalendar) {
-          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
-          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
-
-          parentId = `${mappedParentId}-${childTabId}`;
-        } else {
-          parentId = oldComponentToNewComponentMapping[parentId];
-        }
-
         newComponent.name = component.name;
         newComponent.type = component.type;
         newComponent.pageId = savedPage.id;
@@ -540,7 +526,7 @@ export class AppsService {
         newComponent.general = component.general;
         newComponent.generalStyles = component.generalStyles;
         newComponent.displayPreferences = component.displayPreferences;
-        newComponent.parent = component.parent ? parentId : null;
+        newComponent.parent = component.parent;
         newComponent.page = savedPage;
 
         newComponents.push(newComponent);
@@ -573,6 +559,26 @@ export class AppsService {
 
           await manager.save(newEvent);
         });
+      });
+
+      newComponents.forEach((component) => {
+        let parentId = component.parent ? component.parent : null;
+
+        if (!parentId) return;
+
+        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
+
+        if (isParentTabOrCalendar) {
+          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
+
+          parentId = `${mappedParentId}-${childTabId}`;
+        } else {
+          parentId = oldComponentToNewComponentMapping[parentId];
+        }
+
+        component.parent = parentId;
       });
 
       await manager.save(newComponents);
