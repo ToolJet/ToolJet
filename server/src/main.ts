@@ -124,7 +124,7 @@ async function bootstrap() {
     defaultVersion: VERSION_NEUTRAL,
   });
 
-  const listen_addr = process.env.LISTEN_ADDR || '::';
+  const listen_addr = process.env.LISTEN_ADDR || '0.0.0.0';
   const port = parseInt(process.env.PORT) || 3000;
 
   if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
