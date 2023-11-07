@@ -1206,7 +1206,7 @@
     "@docsearch/css" "3.5.2"
     "algoliasearch" "^4.19.1"
 
-"@docusaurus/core@^2.4.0", "@docusaurus/core@2.4.3":
+"@docusaurus/core@^2.4.3", "@docusaurus/core@2.4.3":
   "integrity" "sha512-dWH5P7cgeNSIg9ufReX6gaCl/TmrGKD38Orbwuz05WPhAQtFXHd5B8Qym1TiXfvUNvwoYKkAJOJuGe8ou0Z7PA=="
   "resolved" "https://registry.npmjs.org/@docusaurus/core/-/core-2.4.3.tgz"
   "version" "2.4.3"
@@ -1418,7 +1418,7 @@
     "@docusaurus/utils-validation" "2.4.3"
     "tslib" "^2.4.0"
 
-"@docusaurus/plugin-google-gtag@^2.4.0", "@docusaurus/plugin-google-gtag@2.4.3":
+"@docusaurus/plugin-google-gtag@^2.4.3", "@docusaurus/plugin-google-gtag@2.4.3":
   "integrity" "sha512-5FMg0rT7sDy4i9AGsvJC71MQrqQZwgLNdDetLEGDHLfSHLvJhQbTCUGbGXknUgWXQJckcV/AILYeJy+HhxeIFA=="
   "resolved" "https://registry.npmjs.org/@docusaurus/plugin-google-gtag/-/plugin-google-gtag-2.4.3.tgz"
   "version" "2.4.3"
@@ -1438,7 +1438,7 @@
     "@docusaurus/utils-validation" "2.4.3"
     "tslib" "^2.4.0"
 
-"@docusaurus/plugin-sitemap@^2.4.0", "@docusaurus/plugin-sitemap@2.4.3":
+"@docusaurus/plugin-sitemap@^2.4.3", "@docusaurus/plugin-sitemap@2.4.3":
   "integrity" "sha512-LRQYrK1oH1rNfr4YvWBmRzTL0LN9UAPxBbghgeFRBm5yloF6P+zv1tm2pe2hQTX/QP5bSKdnajCvfnScgKXMZQ=="
   "resolved" "https://registry.npmjs.org/@docusaurus/plugin-sitemap/-/plugin-sitemap-2.4.3.tgz"
   "version" "2.4.3"
@@ -1453,7 +1453,7 @@
     "sitemap" "^7.1.1"
     "tslib" "^2.4.0"
 
-"@docusaurus/preset-classic@^2.4.0":
+"@docusaurus/preset-classic@^2.4.3":
   "integrity" "sha512-tRyMliepY11Ym6hB1rAFSNGwQDpmszvWYJvlK1E+md4SW8i6ylNHtpZjaYFff9Mdk3i/Pg8ItQq9P0daOJAvQw=="
   "resolved" "https://registry.npmjs.org/@docusaurus/preset-classic/-/preset-classic-2.4.3.tgz"
   "version" "2.4.3"

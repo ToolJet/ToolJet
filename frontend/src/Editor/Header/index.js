@@ -153,6 +153,7 @@ export default function EditorHeader({
                       slug={slug}
                       darkMode={darkMode}
                       handleSlugChange={handleSlugChange}
+                      isVersionReleased={isVersionReleased}
                       pageHandle={currentState?.page?.handle}
                       M={M}
                     />
