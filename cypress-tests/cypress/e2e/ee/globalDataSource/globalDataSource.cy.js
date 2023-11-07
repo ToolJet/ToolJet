@@ -113,12 +113,12 @@ describe("Global Datasource Manager", () => {
             .should("eq", "Search Plugins");
 
         cy.get('[data-cy="added-ds-label"]').should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Data Sources Added");
+            expect($el.contents().first().text().trim()).to.eq("Data sources added");
         });
         cy.get(dataSourceSelector.addedDsSearchIcon).should("be.visible").click();
         cy.get(dataSourceSelector.AddedDsSearchBar)
             .invoke("attr", "placeholder")
-            .should("eq", "Search for Data Sources");
+            .should("eq", "Search for Data sources");
 
         selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds1);
         cy.clearAndType(
@@ -227,7 +227,7 @@ describe("Global Datasource Manager", () => {
         cy.get('[data-cy="show-ds-popover-button"]').click();
         cy.get(".p-2 > .tj-base-btn")
             .should("be.visible")
-            .and("have.text", "+ Add new data source");
+            .and("have.text", "+ Add new Data source");
         cy.get(".p-2 > .tj-base-btn").click();
 
         selectAndAddDataSource("databases", dataSourceText.postgreSQL, data.ds2);
