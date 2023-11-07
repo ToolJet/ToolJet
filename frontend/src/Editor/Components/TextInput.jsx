@@ -217,22 +217,23 @@ export const TextInput = function TextInput({
                   {properties.label}
                   <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
                 </label>
-                <IconElement
-                  style={{
-                    width: '16',
-                    height: '16',
-                    right:
-                      styles.direction == 'alignleftinspector' &&
-                      styles.alignment == 'side' &&
-                      `${elementWidth - 21}px`,
-                    left: styles.direction == 'alignrightinspector' && styles.alignment == 'side' && `6px`,
-                    position: 'absolute',
-                    top: styles.alignment == 'side' ? '50%' : '32px',
-                    transform: ' translateY(-50%)',
-                  }}
-                  stroke={1.5}
-                />
-
+                {component.definition.styles.iconVisibility.value && (
+                  <IconElement
+                    style={{
+                      width: '16',
+                      height: '16',
+                      right:
+                        styles.direction == 'alignleftinspector' &&
+                        styles.alignment == 'side' &&
+                        `${elementWidth - 21}px`,
+                      left: styles.direction == 'alignrightinspector' && styles.alignment == 'side' && `6px`,
+                      position: 'absolute',
+                      top: styles.alignment == 'side' ? '50%' : '32px',
+                      transform: ' translateY(-50%)',
+                    }}
+                    stroke={1.5}
+                  />
+                )}
                 <input
                   className={`tj-text-input-widget ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
                     darkMode && 'dark-theme-placeholder'

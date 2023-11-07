@@ -5,6 +5,7 @@ import { SearchBox } from '@/_components/SearchBox';
 // eslint-disable-next-line import/no-unresolved
 import * as Icons from '@tabler/icons-react';
 import { VirtuosoGrid } from 'react-virtuoso';
+import { Visibility } from './Visibility';
 
 export const Icon = ({ value, onChange, component }) => {
   const [searchText, setSearchText] = useState('');
@@ -12,7 +13,6 @@ export const Icon = ({ value, onChange, component }) => {
   const iconList = useRef(Object.keys(Icons));
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  console.log('value--', component.component.styles.icon.visibility);
   const searchIcon = (text) => {
     if (searchText === text) return;
     setSearchText(text);
@@ -24,7 +24,7 @@ export const Icon = ({ value, onChange, component }) => {
       : iconList.current.filter((icon) => icon?.toLowerCase().includes(searchText ? searchText.toLowerCase() : ''));
 
   const onIconSelect = (icon) => {
-    if (component.component.styles.icon.visibility) onChange(icon);
+    onChange(icon);
   };
 
   const eventPopover = () => {
@@ -104,6 +104,7 @@ export const Icon = ({ value, onChange, component }) => {
                   <div className="text-truncate tj-text-xsm" style={{ width: '112px' }}>
                     {value}
                   </div>
+                  <Visibility value={value} onChange={onChange} component={component} />
                 </div>
               </OverlayTrigger>
             </div>

@@ -40,6 +40,7 @@ import Checkbox from './Elements/Checkbox';
 import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
 import { Icon } from './Elements/Icon';
+import { Visibility } from './Elements/Visibility';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
@@ -57,6 +58,7 @@ const AllElements = {
   Input,
   Checkbox,
   Icon,
+  Visibility,
 };
 
 export function CodeHinter({

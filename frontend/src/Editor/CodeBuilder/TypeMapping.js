@@ -15,4 +15,5 @@ export const TypeMapping = {
   switch: 'Switch',
   input: 'Input',
   icon: 'Icon',
+  visibility: 'Visibility',
 };
