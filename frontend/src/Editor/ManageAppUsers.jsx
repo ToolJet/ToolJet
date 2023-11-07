@@ -117,10 +117,6 @@ class ManageAppUsersComponent extends React.Component {
       .then(() => {
         this.setState({
           ischangingVisibility: false,
-          app: {
-            ...this.state.app,
-            is_public: newState,
-          },
         });
 
         if (newState) {
@@ -137,10 +133,6 @@ class ManageAppUsersComponent extends React.Component {
       });
   };
 
-  //here
-  handleSlugChange = (newSlug) => {
-    useAppDataStore.actions.updateState({ slug: newSlug });
-  };
   delayedSlugChange = debounce((e) => {
     this.handleInputChange(e.target.value, 'slug');
   }, 500);
@@ -171,8 +163,9 @@ class ManageAppUsersComponent extends React.Component {
             isSlugVerificationInProgress: false,
             isSlugUpdated: true,
           });
-          this.handleSlugChange(value);
+
           replaceEditorURL(value, this.props.pageHandle);
+          useAppDataStore.getState().actions.updateState({ slug: value });
         })
         .catch(({ error }) => {
           this.setState({
