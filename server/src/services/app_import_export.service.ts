@@ -695,6 +695,12 @@ export class AppImportExportService {
 
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
 
+        const newComponentIdsMap = {};
+
+        for (const component of pageComponents) {
+          newComponentIdsMap[component.id] = uuid();
+        }
+
         for (const component of pageComponents) {
           let skipComponent = false;
           const newComponent = new Component();
@@ -706,18 +712,19 @@ export class AppImportExportService {
           if (isParentTabOrCalendar) {
             const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
             const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
-            const mappedParentId = appResourceMappings.componentsMapping[_parentId];
+            const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-${childTabId}`;
           } else {
-            if (component.parent && !appResourceMappings.componentsMapping[parentId]) {
+            if (component.parent && !newComponentIdsMap[parentId]) {
               skipComponent = true;
             }
 
-            parentId = appResourceMappings.componentsMapping[parentId];
+            parentId = newComponentIdsMap[parentId];
           }
 
           if (!skipComponent) {
+            newComponent.id = newComponentIdsMap[component.id];
             newComponent.name = component.name;
             newComponent.type = component.type;
             newComponent.properties = component.properties;
@@ -1610,6 +1617,10 @@ function transformComponentData(
       componentsMapping[componentId] = transformedComponent.id;
     }
   }
+
+  // if (skippedComponents.length) {
+
+  // }
 
   return transformedComponents;
 }
