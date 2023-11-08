@@ -2,7 +2,7 @@
 import React from 'react';
 import './Loader.scss'; // Import a CSS file for styling
 
-function Loader({ width }) {
+const Loader = ({ width }) => {
   return (
     <div class="tj-widget-loader">
       <svg
@@ -42,6 +42,6 @@ function Loader({ width }) {
       </svg>
     </div>
   );
-}
+};
 
 export default Loader;

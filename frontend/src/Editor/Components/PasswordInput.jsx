@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Loader from './Loader';
+import Loader from '@/ToolJetUI/Loader/Loader';
 import { ToolTip } from '@/_components/ToolTip';
 
 const PasswordInputField = ({
@@ -69,7 +69,7 @@ export const PasswordInput = ({
   return (
     <div>
       {properties?.tooltip?.length > 0 ? (
-        <ToolTip message={'xsxxsx'}>
+        <ToolTip message={properties?.tooltip}>
           <>
             <PasswordInputField
               disabledState={disabledState}
