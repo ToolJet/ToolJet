@@ -170,7 +170,7 @@ function clonePage(appId, versionId, pageId) {
   );
 }
 
-function findAllEventsWithSourceId(appId, versionId, sourceId) {
+function findAllEventsWithSourceId(appId, versionId, sourceId = undefined) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),

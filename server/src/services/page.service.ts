@@ -108,6 +108,10 @@ export class PageService {
             eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
           }
 
+          if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
+            eventDefinition.modal = componentsIdMap[eventDefinition.modal];
+          }
+
           event.event = eventDefinition;
 
           const clonedEvent = new EventHandler();
@@ -126,7 +130,7 @@ export class PageService {
       const clonedComponents = await Promise.all(
         pageComponents.map(async (component) => {
           const clonedComponent = { ...component, id: undefined, pageId: clonePageId };
-          const newComponent = await manager.save(Component, clonedComponent);
+          const newComponent = await manager.save(manager.create(Component, clonedComponent));
 
           componentsIdMap[component.id] = newComponent.id;
           const componentLayouts = await manager.find(Layout, { componentId: component.id });
@@ -144,6 +148,11 @@ export class PageService {
             if (eventDefinition?.actionId === 'control-component') {
               eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
             }
+
+            if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
+              eventDefinition.modal = componentsIdMap[eventDefinition.modal];
+            }
+
             event.event = eventDefinition;
 
             const clonedEvent = new EventHandler();
@@ -164,10 +173,37 @@ export class PageService {
         })
       );
 
+      const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+        if (componentParentId) {
+          const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+          const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+          if (parentComponent) {
+            return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+          }
+        }
+
+        return false;
+      };
+
       for (const component of clonedComponents) {
-        const componentId = componentsIdMap[component.parent];
-        if (componentId) {
-          await manager.update(Component, component.id, { parent: componentId });
+        let parentId = component.parent ? component.parent : null;
+
+        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
+
+        if (isParentTabOrCalendar) {
+          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = componentsIdMap[_parentId];
+
+          parentId = `${mappedParentId}-${childTabId}`;
+        } else {
+          parentId = componentsIdMap[parentId];
+        }
+
+        if (parentId) {
+          await manager.update(Component, component.id, { parent: parentId });
         }
       }
     });

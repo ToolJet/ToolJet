@@ -7,6 +7,7 @@ import { Page } from 'src/entities/page.entity';
 import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/utils.helper';
 
 import { EventsService } from './events_handler.service';
+import { LayoutData } from '@dto/component.dto';
 
 @Injectable()
 export class ComponentsService {
@@ -131,7 +132,7 @@ export class ComponentsService {
     }, appVersionId);
   }
 
-  async componentLayoutChange(componenstLayoutDiff: object, appVersionId: string) {
+  async componentLayoutChange(componenstLayoutDiff: Record<string, { layouts: LayoutData }>, appVersionId: string) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
         const doesComponentExist = await manager.findAndCount(Component, { id: componentId });

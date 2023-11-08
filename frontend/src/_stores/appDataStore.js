@@ -36,7 +36,7 @@ export const useAppDataStore = create(
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
         updateAppVersion: (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
-          return new Promise((resolve) => {
+          return new Promise((resolve, reject) => {
             useAppDataStore.getState().actions.setIsSaving(true);
             const isComponentCutProcess = get().appDiffOptions?.componentCut === true;
 
@@ -53,6 +53,10 @@ export const useAppDataStore = create(
               )
               .then(() => {
                 useAppDataStore.getState().actions.setIsSaving(false);
+              })
+              .catch((error) => {
+                useAppDataStore.getState().actions.setIsSaving(false);
+                reject(error);
               })
               .finally(() => resolve());
           });
@@ -108,7 +112,12 @@ export const useAppDataStore = create(
             set(() => ({ events: updatedEvents }));
           }
         },
+        autoUpdateEventStore: async (versionId) => {
+          const appId = get().appId;
+          const response = await appVersionService.findAllEventsWithSourceId(appId, versionId);
 
+          set(() => ({ events: response }));
+        },
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),

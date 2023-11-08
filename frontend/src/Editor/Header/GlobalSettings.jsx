@@ -59,6 +59,7 @@ export const GlobalSettings = ({
     special chars or spaces in their app slugs 
   */
     const existedSlugErrors = validateName(oldSlug, 'App slug', true, false, false, false);
+
     setSlug({ value: oldSlug, error: existedSlugErrors.errorMsg });
   }, [oldSlug]);
 

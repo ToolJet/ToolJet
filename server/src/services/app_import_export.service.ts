@@ -158,14 +158,17 @@ export class AppImportExportService {
         .orderBy('pages.created_at', 'ASC')
         .getMany();
 
-      const components = await manager
-        .createQueryBuilder(Component, 'components')
-        .leftJoinAndSelect('components.layouts', 'layouts')
-        .where('components.pageId IN(:...pageId)', {
-          pageId: pages.map((v) => v.id),
-        })
-        .orderBy('components.created_at', 'ASC')
-        .getMany();
+      const components =
+        pages.length > 0
+          ? await manager
+              .createQueryBuilder(Component, 'components')
+              .leftJoinAndSelect('components.layouts', 'layouts')
+              .where('components.pageId IN(:...pageId)', {
+                pageId: pages.map((v) => v.id),
+              })
+              .orderBy('components.created_at', 'ASC')
+              .getMany()
+          : [];
 
       const events = await manager
         .createQueryBuilder(EventHandler, 'event_handlers')
@@ -220,12 +223,13 @@ export class AppImportExportService {
       : convertSinglePageSchemaToMultiPageSchema(appParams);
     schemaUnifiedAppParams.name = appName;
 
-    const importedAppTooljetVersion = extractMajorVersion(tooljetVersion);
+    const importedAppTooljetVersion = !cloning && extractMajorVersion(tooljetVersion);
     const isNormalizedAppDefinitionSchema = cloning
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
+
     await this.setupImportedAppAssociations(
       this.entityManager,
       importedApp,
@@ -257,6 +261,7 @@ export class AppImportExportService {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+
       await manager.save(importedApp);
       return importedApp;
     }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
@@ -696,7 +701,7 @@ export class AppImportExportService {
 
           let parentId = component.parent ? component.parent : null;
 
-          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId); //from here
+          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
 
           if (isParentTabOrCalendar) {
             const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
@@ -784,6 +789,8 @@ export class AppImportExportService {
           (dq) => dq.id === appResourceMappings.dataQueryMapping[importedDataQuery.id]
         );
 
+        if (!mappedNewDataQuery) continue;
+
         const importingQueryEvents = importingEvents.filter(
           (event) => event.target === Target.dataQuery && event.sourceId === importedDataQuery.id
         );
@@ -803,25 +810,27 @@ export class AppImportExportService {
           });
         } else {
           this.replaceDataQueryOptionsWithNewDataQueryIds(
-            mappedNewDataQuery.options,
+            mappedNewDataQuery?.options,
             appResourceMappings.dataQueryMapping
           );
-          const queryEvents = mappedNewDataQuery.options?.events || [];
+          const queryEvents = mappedNewDataQuery?.options?.events || [];
 
           delete mappedNewDataQuery?.options?.events;
 
-          queryEvents.forEach(async (event, index) => {
-            const newEvent = {
-              name: event.eventId,
-              sourceId: mappedNewDataQuery.id,
-              target: Target.dataQuery,
-              event: event,
-              index: queryEvents.index || index,
-              appVersionId: mappedNewDataQuery.appVersionId,
-            };
+          if (queryEvents.length > 0) {
+            queryEvents.forEach(async (event, index) => {
+              const newEvent = {
+                name: event.eventId,
+                sourceId: mappedNewDataQuery.id,
+                target: Target.dataQuery,
+                event: event,
+                index: queryEvents.index || index,
+                appVersionId: mappedNewDataQuery.appVersionId,
+              };
 
-            await manager.save(EventHandler, newEvent);
-          });
+              await manager.save(EventHandler, newEvent);
+            });
+          }
         }
 
         await manager.save(mappedNewDataQuery);
@@ -1162,7 +1171,20 @@ export class AppImportExportService {
       } else {
         version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
-        version.globalSettings = appVersion.definition?.globalSettings;
+
+        if (!appVersion.definition?.globalSettings) {
+          version.globalSettings = {
+            hideHeader: false,
+            appInMaintenance: false,
+            canvasMaxWidth: 100,
+            canvasMaxWidthType: '%',
+            canvasMaxHeight: 2400,
+            canvasBackgroundColor: '#edeff5',
+            backgroundFxQuery: '',
+          };
+        } else {
+          version.globalSettings = appVersion.definition?.globalSettings;
+        }
       }
 
       await manager.save(version);
@@ -1507,6 +1529,10 @@ export class AppImportExportService {
         eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
       }
 
+      if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'close-modal') {
+        eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
+      }
+
       event.event = eventDefinition;
 
       await manager.save(event);
@@ -1595,7 +1621,7 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
     if (parentComponent) {
-      return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+      return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
     }
   }
 
