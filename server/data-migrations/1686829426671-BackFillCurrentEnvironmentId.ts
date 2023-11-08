@@ -1,4 +1,3 @@
-import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { MigrationProgress } from 'src/helpers/utils.helper';
@@ -23,20 +22,17 @@ export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInter
       const developmentEnvironment = organization.appEnvironments.find(
         (appEnvironment) => appEnvironment.priority === 1
       );
-      const apps = await manager.find(App, {
-        select: ['id', 'appVersions', 'currentVersionId'],
-        where: {
-          organizationId: organization.id,
-        },
-        relations: ['appVersions'],
-      });
+      const apps = await manager.query('select id, current_version_id from apps where organization_id = $1', [
+        organization.id,
+      ]);
 
-      for (const { appVersions, currentVersionId } of apps) {
+      for (const { current_version_id, id } of apps) {
+        const appVersions = await manager.query('select id from app_versions where app_id = $1', [id]);
         for (const appVersion of appVersions) {
           console.log('Updating app version =>', appVersion.id);
           let envToUpdate = developmentEnvironment.id;
 
-          if (currentVersionId && currentVersionId === appVersion.id) {
+          if (current_version_id && current_version_id === appVersion.id) {
             envToUpdate = productionEnvironment.id;
           }
           await manager.update(
@@ -52,5 +48,5 @@ export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInter
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }
