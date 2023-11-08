@@ -21,32 +21,6 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
     <img src="https://github.com/ToolJet/ToolJet/assets/25361949/0e711f3a-edb7-496b-8833-107de3826933"/>
 </p>
 
-<p align="center">
-  <kbd>
-    <img src="https://user-images.githubusercontent.com/7828962/202402863-2851a072-9dca-4b8b-9473-0d044373928b.png" alt="Tooljet visual front end builder"/>
-
-  </kbd>
-</p>
-
-<p align="center">
-  <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/211364385-10714e24-f1ac-4e72-a2a1-ec7dc2d412ab.png" alt="Tooljet database showing over 40 integrations"/>
-  </kbd>
-</p>
-
-<p align="center">
-  <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/202402422-8f1df2a4-5c07-4125-9c2e-5450b90f464c.png" alt="Tooljet showing ability to run in Python, import your React component, and build your own plugins using the dev kit"/>
-  </kbd>
-</p>
-
-<p align="center">
-  <kbd>
-<img src="https://user-images.githubusercontent.com/7828962/202402574-7cd7c606-d751-4de1-ba56-abbedba54b13.png" alt="Deploy from anywhere, showing various cloud services"/>
-  </kbd>
-</p>
-
-
 ## All features
 
 - **Visual App Builder:** 40+ built-in responsive components, including Tables, Charts, Lists, Forms, and Progress Bars.
