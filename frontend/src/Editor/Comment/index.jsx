@@ -11,8 +11,20 @@ import { commentsService, organizationService, authenticationService } from '@/_
 import useRouter from '@/_hooks/use-router';
 import DOMPurify from 'dompurify';
 import { capitalize } from 'lodash';
+import { getPathname } from '@/_helpers/routes';
 
-const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, appVersionsId, canvasWidth }) => {
+const Comment = ({
+  socket,
+  x,
+  y,
+  threadId,
+  user = {},
+  isResolved,
+  fetchThreads,
+  appVersionsId,
+  canvasWidth,
+  appId,
+}) => {
   const [loading, setLoading] = React.useState(true);
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
@@ -60,7 +72,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     } else {
       // resetting the query param
       // react router updates the url with the set basename resulting invalid url unless replaced
-      router.history(window.location.pathname.replace(window.public_config?.SUB_PATH, '/'));
+      router.history(getPathname());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -82,13 +94,13 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: threadId, appId: router.query.id },
+        data: { message: threadId, appId },
       })
     );
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'notifications', appId: router.query.id },
+        data: { message: 'notifications', appId },
       })
     );
     fetchData();
@@ -100,7 +112,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'notifications', appId: router.query.id },
+        data: { message: 'notifications', appId },
       })
     );
   };
@@ -168,6 +180,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
             fetchThreads={fetchThreads}
             isThreadOwner={currentUser?.id === user.id}
             isResolved={isResolved}
+            appId={appId}
           />
           <CommentBody
             socket={socket}

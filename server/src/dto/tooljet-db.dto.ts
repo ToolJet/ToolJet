@@ -49,7 +49,7 @@ export class MatchTypeConstraint implements ValidatorConstraintInterface {
       return typeof value === 'string';
     }
 
-    if (relatedType === 'integer' || relatedType === 'double precision') {
+    if (relatedType === 'integer' || relatedType === 'bigint' || relatedType === 'double precision') {
       const isInt = Number.isInteger(value);
       const isFloat = !Number.isInteger(value) && !isNaN(value);
       return isInt || isFloat;
