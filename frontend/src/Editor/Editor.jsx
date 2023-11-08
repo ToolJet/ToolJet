@@ -931,9 +931,7 @@ class EditorComponent extends React.Component {
   handleQueryPaneExpanding = (isQueryPaneExpanded) => this.setState({ isQueryPaneExpanded });
 
   saveEditingVersion = (isUserSwitchedVersion = false) => {
-    if (this.props.isVersionReleased && !isUserSwitchedVersion) {
-      useAppDataStore.getState().actions.setIsSaving(false);
-    } else if (!isEmpty(this.props?.editingVersion) && !this.state.isCurrentVersionPromoted) {
+    const callback = () => {
       appVersionService
         .save(
           this.state.appId,
@@ -962,8 +960,14 @@ class EditorComponent extends React.Component {
             toast.error('App could not save.');
           });
         });
+    };
+    if (this.props.isVersionReleased && !isUserSwitchedVersion) {
+      useAppDataStore.getState().actions.setIsSaving(false);
+    } else if (!isEmpty(this.props?.editingVersion) && !this.state.isCurrentVersionPromoted) {
+      callback();
     } else if (!isEmpty(this.props?.editingVersion)) {
       useAppDataStore.getState().actions.setIsSaving(false);
+      if (isUserSwitchedVersion) callback();
     }
   };
 

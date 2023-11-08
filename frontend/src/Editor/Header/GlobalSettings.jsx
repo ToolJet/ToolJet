@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
@@ -44,6 +44,7 @@ export const GlobalSettings = ({
     }),
     shallow
   );
+  const inputRef = useRef();
 
   const coverStyles = {
     position: 'fixed',
@@ -58,8 +59,11 @@ export const GlobalSettings = ({
     Only will fail for existed apps before the app/workspace url revamp which has 
     special chars or spaces in their app slugs 
   */
-    const existedSlugErrors = validateName(oldSlug, 'App slug', true, false, false, false);
-    setSlug({ value: oldSlug, error: existedSlugErrors.errorMsg });
+    if (oldSlug) {
+      const existedSlugErrors = validateName(oldSlug, 'App slug', true, false, false, false);
+      setSlug({ value: oldSlug, error: existedSlugErrors.errorMsg });
+      if (inputRef.current) inputRef.current.value = oldSlug;
+    }
   }, [oldSlug]);
 
   const handleInputChange = (value, field) => {
@@ -164,6 +168,7 @@ export const GlobalSettings = ({
                     }}
                     data-cy="app-slug-input-field"
                     defaultValue={oldSlug}
+                    ref={inputRef}
                   />
                   {isSlugUpdated && (
                     <div className="icon-container">

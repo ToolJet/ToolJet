@@ -51,6 +51,7 @@ describe("Global Datasource Manager", () => {
     beforeEach(() => {
         cy.apiLogin();
         cy.visit('/my-workspace')
+        cy.wait(1000)
     });
 
     before(() => {

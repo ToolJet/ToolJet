@@ -16,6 +16,7 @@ export class AddEnableMultiplayerSettingsInInstanceSettings1693368672418 impleme
       type: INSTANCE_SETTINGS_TYPE.USER,
       helperText: 'Work collaboratively and edit applications in real-time with multi-player editing',
       helperTextKey: 'header.organization.menus.manageSSO.generalSettings.enableMultiplayerEditing',
+      createdAt: new Date(),
     });
   }
 
