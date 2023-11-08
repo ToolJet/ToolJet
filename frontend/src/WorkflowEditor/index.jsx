@@ -133,8 +133,8 @@ function WorkflowEditor(props) {
   }, [
     // eslint-disable-next-line react-hooks/exhaustive-deps
     JSON.stringify({
-      nodeData: editorSession.app.flow.nodes.map((node) => [node.data, node.position]),
-      edgeData: editorSession.app.flow.edges.map((edge) => [edge.source, edge.target]),
+      nodeData: editorSession.app?.flow.nodes.map((node) => [node.data, node.position]),
+      edgeData: editorSession.app?.flow.edges.map((edge) => [edge.source, edge.target]),
       queries: editorSession.queries,
     }),
   ]);
@@ -190,7 +190,7 @@ function WorkflowEditor(props) {
   const addQuery = (kind = 'runjs', options = {}, dataSourceId = undefined, pluginId = undefined) => {
     const idOnDefinition = uuidv4();
     const name = generateQueryName(kind, editorSession.queries);
-    editorSessionActions.addQuery({ idOnDefinition, kind, options, dataSourceId, pluginId });
+    editorSessionActions.addQuery({ idOnDefinition, kind, options, dataSourceId, pluginId }, editorSession);
 
     dataqueryService
       .create(editorSession.app.id, editorSession.app.versionId, name, kind, options, dataSourceId, pluginId)
@@ -236,13 +236,15 @@ function WorkflowEditor(props) {
                     dispatch({ type: 'SET_FLOW_BUILDER_EDITING_ACTIVITY', payload: { editingActivity } })
                   }
                   editingActivity={editorSession.editingActivity}
+                  executeWorkflow={executeWorkflow}
+                  debouncedSave={debouncedSave}
                 />
               </WorkflowEditorContext.Provider>
             </ReactFlowProvider>
           </div>
         </EditorContextWrapper>
       </div>
-      <LogsPanel editorSession={editorSession} editorSessionActions={editorSessionActions} />
+      {/* <LogsPanel editorSession={editorSession} editorSessionActions={editorSessionActions} /> */}
     </div>
   );
 }

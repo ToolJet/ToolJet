@@ -16,9 +16,9 @@ export default function generateActions(dispatch) {
     setEditingActivity: (editingActivity) =>
       dispatch({ type: 'SET_FLOW_BUILDER_EDITING_ACTIVITY', payload: { editingActivity } }),
     setAppSavingStatus: (status) => dispatch({ type: 'SET_APP_SAVING_STATUS', payload: { status } }),
-    addQuery: (query) => dispatch({ type: 'ADD_NEW_QUERY', payload: { query } }),
+    addQuery: (query, edit) => dispatch({ type: 'ADD_NEW_QUERY', payload: { query, edit } }),
     updateQuery: (id, query) => dispatch({ type: 'UPDATE_QUERY', payload: { id, query } }),
-    setQueries: (queries) => dispatch({ type: 'SET_QUERIES', payload: { queries } }),
+    setQueries: (queries, edit) => dispatch({ type: 'SET_QUERIES', payload: { queries, edit } }),
     setBootupComplete: (status) => dispatch({ type: 'SET_BOOTUP_COMPLETE', payload: { status } }),
     setExecutionId: (id) => dispatch({ type: 'SET_EXECUTION_ID', payload: { id } }),
     updateExecutionStatus: (nodes) => dispatch({ type: 'UPDATE_EXECUTION_STATUS', payload: { nodes } }),
@@ -34,5 +34,7 @@ export default function generateActions(dispatch) {
     displayLogsConsole: (display) => dispatch({ type: 'DISPLAY_LOGS_CONSOLE', payload: { display } }),
     showHistoricalLogs: (executionId) => dispatch({ type: 'SHOW_HISTORICAL_LOGS', payload: { executionId } }),
     clearLogsConsole: () => dispatch({ type: 'CLEAR_LOGS_CONSOLE' }),
+    setUndo: (previousState) => dispatch({ type: 'SET_UNDO', payload: { previousState } }),
+    setRedo: (nextState) => dispatch({ type: 'SET_REDO', payload: { nextState } }),
   };
 }

@@ -1,0 +1,105 @@
+.toolbar-box{
+
+    .log-workflow{
+        padding: 4px 16px;
+    }
+
+    .logs-show-btn{
+        margin-left: 12px;
+        .workflows-log-main-btn{
+            color: var(--slate12);
+            border: 1px solid var(--slate7) !important;
+            background: var(--slate1) !important;
+            max-height: 28px;
+            width: 76px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            padding: 4px 16px;
+            gap: 6px;
+            font-weight: 500;
+
+            &:hover {
+                color: var(--slate11) !important;
+                border: 1px solid var(--slate7, #D7DBDF) !important;
+                background: var(--slate4, #ECEEF0) !important;
+            }
+            
+              &:active {
+                background: var(--slate1);
+                box-shadow: none;
+                color: var(--slate12) !important;
+            }
+
+        }
+    }
+
+    .rf-controls-btns{
+        .react-flow__panel{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            //margin: 12px;
+            //border-right: 0.5px solid var(--slate7);
+            position: absolute;
+            left: 174px;
+            box-shadow: none;
+            width: 120px;
+
+            .react-flow__controls-button{
+                border-bottom: none;
+            }
+
+          }
+    }
+
+    .workflow-undo-redo{
+        .undo-redo-container {
+            position: absolute;
+            top: 14px;
+            display: flex;
+            right: 13px;
+            justify-content: center;
+            align-items: center;
+            height: 28px;
+            gap: 2px;
+            padding-left: 6px;
+            border-left: 0.4px solid var(--slate7);
+          
+            button {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 30px;
+              width: 30px;
+              border-radius: 6px;
+              border: 1px solid white;
+            }
+
+            .disabled-icon {
+                /* Define your styles for the disabled icon here */
+                opacity: 0.5 !important; /* Example: Reducing opacity to make it appear disabled */
+                pointer-events: none !important; /* Example: Disabling pointer events to prevent interaction */
+                /* Add any other styles to make the icon visually disabled */
+              }
+
+          }
+    }
+
+}
+
+.logs-console {
+    height: 250px;
+    background-color: #222323;
+    color: white;
+    padding-left: 10px;
+    padding-top: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    overflow-y: auto;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    z-index: 10;
+  }

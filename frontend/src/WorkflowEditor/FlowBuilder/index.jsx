@@ -22,10 +22,14 @@ import CommonCustomNode from './Nodes/CommonCustomNode';
 import ModalContent from './ModalContent';
 import StartNode from './Nodes/StartNode';
 import ResultNode from './Nodes/ResultNode';
+import ToolBar from '../BottomToolBar';
+import zoomIn from '../BottomToolBar/icons/zoomin.svg'
+import zoomOut from '../BottomToolBar/icons/zoomout.svg'
 
 const nodeTypes = { 'if-condition': ifConditionNode, query: CommonCustomNode, input: StartNode, output: ResultNode };
 
-function FlowBuilder(_props) {
+function FlowBuilder(props) {
+  const {executeWorkflow,debouncedSave} = props
   const { project } = useReactFlow();
   const { editorSession, editorSessionActions, addQuery } = useContext(WorkflowEditorContext);
   const [showBlockOptions, setShowBlockOptions] = useState(false);
@@ -202,7 +206,7 @@ function FlowBuilder(_props) {
         }}
       >
         <Background />
-        <Controls />
+        <ToolBar node={selectedNode} controls={<Controls />} executeWorkflow={executeWorkflow} debouncedSave={debouncedSave}/>
       </ReactFlow>
       {showBlockOptions && (
         <BlockOptions
