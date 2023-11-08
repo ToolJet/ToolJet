@@ -1,9 +1,10 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
 import { safelyParseJSON, getWorkspaceId } from '@/_helpers/utils';
-import { redirectToDashboard, getSubpath, getQueryParams } from '@/_helpers/routes';
+import { getSubpath, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import queryString from 'query-string';
+import { ERROR_TYPES } from './constants';
 
 export const handleAppAccess = (componentType, slug) => {
   const previewQueryParams = getPreviewQueryParams();
@@ -53,17 +54,18 @@ const handleError = (componentType, error, redirectPath) => {
           switchOrganization(componentType, errorObj?.organizationId, redirectPath);
           return;
         }
-        redirectToDashboard();
+        redirectToErrorPage(ERROR_TYPES.RESTRICTED);
       } else if (statusCode === 401) {
         window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${redirectPath}`;
         return;
-      } else if (statusCode === 404 || statusCode === 422) {
-        toast.error(error?.error ?? 'App not found');
+      } else if (statusCode === 404) {
+        redirectToErrorPage(ERROR_TYPES.INVALID);
+      } else {
+        redirectToErrorPage(ERROR_TYPES.UNKNOWN);
       }
-      redirectToDashboard();
     }
   } catch (err) {
-    redirectToDashboard();
+    redirectToErrorPage(ERROR_TYPES.UNKNOWN);
   }
 };
 

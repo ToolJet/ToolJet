@@ -40,7 +40,7 @@ export const dashboardText = {
   appClonedToast: "App cloned successfully!",
   darkModeText: "Dark Mode",
   lightModeText: "Light Mode",
-  dashboardAppsHeaderLabel: " All apps",
+  dashboardAppsHeaderLabel: "All apps",
 
   moveAppText: (appName) => {
     return `Move "${appName}" to`;

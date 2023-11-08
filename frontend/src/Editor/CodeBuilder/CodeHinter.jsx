@@ -78,6 +78,7 @@ export function CodeHinter({
   isCopilotEnabled = false,
   currentState: _currentState,
   verticalLine = true,
+  disabled = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -87,7 +88,9 @@ export function CodeHinter({
     mode: mode || 'handlebars',
     tabSize: 2,
     theme: theme ? theme : darkMode ? 'monokai' : 'default',
-    readOnly: false,
+    readOnly: disabled,
+    disableInput: disabled,
+    cursorBlinkRate: disabled ? -1 : 530,
     highlightSelectionMatches: true,
     placeholder,
   };

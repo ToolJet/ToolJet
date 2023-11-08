@@ -54,6 +54,7 @@ export const authenticationService = {
   authorize,
   validateSession,
   getUserDetails,
+  activateTrial,
   getLoginOrganizationSlug,
   saveLoginOrganizationSlug,
   deleteLoginOrganizationSlug,
@@ -196,6 +197,19 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
     }),
   };
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
+}
+
+function activateTrial() {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/activate-trial`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       return response;

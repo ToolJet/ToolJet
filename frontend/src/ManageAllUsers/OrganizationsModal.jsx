@@ -1,6 +1,7 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import cx from 'classnames';
+import { LicenseBanner } from '@/LicenseBanner';
 
 const OrganizationsModal = ({
   showModal,
@@ -14,9 +15,9 @@ const OrganizationsModal = ({
   unarchiveOrgUser,
   archiveAll,
   archivingFromAllOrgs,
+  disabled = false,
 }) => {
   const organization_users = selectedUser?.organization_users;
-
   return (
     <>
       <Modal
@@ -71,6 +72,7 @@ const OrganizationsModal = ({
                       })}
                       onClick={archiveAll}
                       style={{ minWidth: '100px' }}
+                      disabled={disabled}
                       data-cy="archive-all-button"
                     >
                       Archive All
@@ -116,7 +118,9 @@ const OrganizationsModal = ({
                           'btn-loading':
                             unarchivingUser === organization_user.id || archivingUser === organization_user.id,
                         })}
-                        disabled={unarchivingUser === organization_user.id || archivingUser === organization_user.id}
+                        disabled={
+                          unarchivingUser === organization_user.id || archivingUser === organization_user.id || disabled
+                        }
                         onClick={() => {
                           organization_user.status === 'archived'
                             ? unarchiveOrgUser(organization_user.id, organization_user.organization_id)
@@ -133,6 +137,13 @@ const OrganizationsModal = ({
                 ))}
               </tbody>
             </table>
+            {disabled && (
+              <LicenseBanner
+                classes="mt-3"
+                customMessage="You can only access this setting in our paid plans. For more,"
+                size="xsmall"
+              ></LicenseBanner>
+            )}
           </div>
         </Modal.Body>
       </Modal>

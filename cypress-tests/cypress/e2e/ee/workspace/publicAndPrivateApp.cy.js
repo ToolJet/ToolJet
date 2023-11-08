@@ -1,10 +1,20 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { logout, navigateToAppEditor } from "Support/utils/common";
+import {
+    logout,
+    navigateToAppEditor,
+    navigateToManageUsers,
+} from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { addNewUserMW } from "Support/utils/userPermissions";
 import { userSignUp } from "Support/utils/onboarding";
 import { commonEeSelectors } from "Selectors/eeCommon";
+import {
+    resetAllowPersonalWorkspace,
+    inviteUser,
+    WorkspaceInvitationLink,
+} from "Support/utils/eeCommon";
+import { promoteApp, releaseApp } from "Support/utils/multiEnv";
 
 describe("App share functionality", () => {
     const data = {};
@@ -18,26 +28,26 @@ describe("App share functionality", () => {
     beforeEach(() => {
         cy.appUILogin();
     });
+    before(() => {
+        cy.apiLogin();
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
+        cy.dragAndDropWidget("Table", 250, 250);
+        promoteApp();
+        promoteApp();
+        releaseApp();
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
+        cy.wait(500);
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.get(commonSelectors.editorPageLogo).click();
+        logout();
+    });
 
     it("Verify private and public app share funtionality", () => {
-        cy.apiLogin();
-        cy.apiCreateApp();
-        cy.openApp();
-        cy.renameApp(data.appName);
-        cy.dragAndDropWidget("Table", 250, 250);
-
-        cy.get(commonEeSelectors.promoteButton).click();
-        cy.get(commonEeSelectors.promoteButton).eq(1).click();
-        cy.waitForAppLoad();
-        cy.wait(1500);
-
-        cy.get(commonEeSelectors.promoteButton).click();
-        cy.get(commonEeSelectors.promoteButton).eq(1).click();
-        cy.waitForAppLoad();
-        cy.wait(4000);
-
+        navigateToAppEditor(data.appName);
+        cy.wait(1000);
         cy.get(commonWidgetSelector.shareAppButton).click();
-
         for (const elements in commonWidgetSelector.shareModalElements) {
             cy.get(
                 commonWidgetSelector.shareModalElements[elements]
@@ -53,7 +63,6 @@ describe("App share functionality", () => {
         cy.get(commonWidgetSelector.appNameSlugInput).should("be.visible");
         cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
-        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
         cy.get(commonWidgetSelector.modalCloseButton).click();
         cy.wait(3000);
         cy.get(commonSelectors.editorPageLogo).click();
@@ -75,7 +84,6 @@ describe("App share functionality", () => {
         cy.wait(2000);
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.get(commonWidgetSelector.makePublicAppToggle).check();
-        cy.get(commonWidgetSelector.makePublicAppToggle).check();
 
         cy.get(commonWidgetSelector.iframeLink).should("be.visible");
         cy.get(commonWidgetSelector.iframeLinkLabel).verifyVisibleElement(
@@ -94,7 +102,28 @@ describe("App share functionality", () => {
     });
 
     it("Verify app private and public app visibility for the same workspace user", () => {
-        addNewUserMW(data.firstName, data.email);
+        navigateToAppEditor(data.appName);
+        cy.wait(2000);
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.get("body").then(($el) => {
+            if (!$el.text().includes("Embedded app link", { timeout: 2000 })) {
+                cy.get(commonWidgetSelector.makePublicAppToggle).check();
+            }
+        });
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.get(commonSelectors.editorPageLogo).click();
+        navigateToManageUsers();
+        cy.wait(1000);
+        cy.get("body").then(($el) => {
+            if (!$el.text().includes(data.email, { timeout: 2000 })) {
+                inviteUser(data.firstName, data.email);
+            } else {
+                WorkspaceInvitationLink(data.email);
+            }
+        });
+        cy.wait(1000);
+        cy.clearAndType(commonSelectors.passwordInputField, "password");
+        cy.get(commonSelectors.acceptInviteButton).click();
 
         logout();
         cy.visit(`/applications/${slug}`);
@@ -120,6 +149,7 @@ describe("App share functionality", () => {
     });
 
     it("Verify app private and public app visibility for the same instance user", () => {
+        resetAllowPersonalWorkspace();
         data.firstName = fake.firstName;
         data.email = fake.email.toLowerCase();
 
@@ -132,6 +162,10 @@ describe("App share functionality", () => {
         cy.clearAndType(commonSelectors.passwordInputField, "password");
         cy.get(commonSelectors.signInButton).click();
         cy.wait(1000);
+        cy.get(`[data-cy="workspace-sign-in-sub-header"]`).verifyVisibleElement(
+            "have.text",
+            "Sign in to your workspace - My workspace"
+        );
 
         cy.visit("/");
         cy.wait(2000);

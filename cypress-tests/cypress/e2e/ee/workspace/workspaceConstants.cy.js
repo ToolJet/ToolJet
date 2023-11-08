@@ -35,8 +35,11 @@ data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 describe("Workspace constants", () => {
     const envVar = Cypress.env("environment");
     beforeEach(() => {
-        cy.appUILogin();
+        cy.apiLogin();
+        cy.visit('/my-workspace');
         cy.intercept("GET", "/api/library_apps").as("homePage");
+        cy.wait(2000)
+
     });
 
     it("Verify workspace constants UI and CRUD operations on development", () => {
@@ -47,14 +50,14 @@ describe("Workspace constants", () => {
                     "Workspace constants"
                 );
             })
-            .click();
+        cy.get(commonSelectors.workspaceConstantsOption).click();
 
         cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq("Workspace settings");
         });
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            " Workspace constants"
+            "Workspace constants"
         );
 
         cy.get(
@@ -278,7 +281,7 @@ describe("Workspace constants", () => {
                     "Workspace constants"
                 );
             })
-            .click();
+        cy.get(commonSelectors.workspaceConstantsOption).click();
         cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click()
 
         cy.get(
@@ -502,7 +505,7 @@ describe("Workspace constants", () => {
                     "Workspace constants"
                 );
             })
-            .click();
+        cy.get(commonSelectors.workspaceConstantsOption).click();
         cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click()
 
         cy.get(
@@ -729,7 +732,8 @@ describe("Workspace constants", () => {
 
         cy.get(commonSelectors.homePageLogo).click();
         cy.wait("@homePage");
-        cy.createApp(data.appName);
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
 
         selectQueryFromLandingPage("runjs", "JavaScript");
         addInputOnQueryField("runjs", `return constants.${data.constantsName}`);
@@ -772,7 +776,7 @@ describe("Workspace constants", () => {
 
         cy.go('back')
         cy.waitForAppLoad();
-        cy.wait(1500);
+        cy.wait(3000);
 
         promoteApp();
 
@@ -807,7 +811,7 @@ describe("Workspace constants", () => {
 
         cy.go('back')
         cy.waitForAppLoad();
-        cy.wait(1500);
+        cy.wait(3000);
 
         promoteApp();
 
@@ -842,7 +846,7 @@ describe("Workspace constants", () => {
 
         cy.go('back')
         cy.waitForAppLoad();
-        cy.wait(2000);
+        cy.wait(3000);
 
         releaseApp();
         launchApp();

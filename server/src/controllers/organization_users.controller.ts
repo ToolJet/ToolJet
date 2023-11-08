@@ -23,6 +23,7 @@ import { InviteNewUserDto } from '../dto/invite-new-user.dto';
 import { OrganizationsService } from '@services/organizations.service';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ValidateLicenseGuard } from '@ee/licensing/guards/validLicense.guard';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 1; // 1MB
 @Controller('organization_users')
@@ -62,7 +63,7 @@ export class OrganizationUsersController {
     return;
   }
 
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard, ValidateLicenseGuard)
   @Post(':userId/archive-all')
   async archiveAll(@User() user: UserEntity, @Param('userId') userId: string) {
     if (user.id === userId) {

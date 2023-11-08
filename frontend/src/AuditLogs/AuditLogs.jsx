@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useMemo } from 'react';
 import Layout from '@/_ui/Layout';
 import { withRouter } from '@/_hoc/withRouter';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -15,6 +15,8 @@ import { BreadCrumbContext } from '@/App/App';
 import { LicenseBanner } from '@/LicenseBanner';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { toast } from 'react-hot-toast';
+import Skeleton from 'react-loading-skeleton';
 import { getWorkspaceId } from '@/_helpers/utils';
 
 const AuditLogs = (props) => {
@@ -28,15 +30,36 @@ const AuditLogs = (props) => {
   const [isLoadingApps, setIsLoadingApps] = useState(true);
   const [selectedSearchOptions, setSelectedSearchOptions] = useState({});
 
-  const [dateRangePicketValue, set] = useState(() => [moment().subtract(1, 'days'), moment()]);
+  const [dateRangePickerValue, setDateRangePickerValue] = useState(() => [moment().subtract(1, 'days'), moment()]);
   const [showLatestLogs, setShowLatestLogs] = useState(false);
   const [featureAccess, setFeatureAccess] = useState({});
+  const [isLoadingLicenseFeatures, setIsLoadingLicenseFeatures] = useState(true);
+  const [licenseType, setLicenseType] = useState(null);
+  const [maxDuration, setMaxDuration] = useState(1);
+  const defaultValueForMaxDate = moment(dateRangePickerValue[1]).add(0, 'days').toDate();
+  const defaultValueForMinDate = moment(dateRangePickerValue[1]).subtract(1, 'days').toDate();
 
-  const maxDate = DateRangePicker.setMaxDate(dateRangePicketValue[0], 30, 'days');
-  const minDate = DateRangePicker.setMinDate(dateRangePicketValue[0], 30, 'days');
+  const maxDate = useMemo(() => {
+    if (licenseType === 'business') {
+      return typeof DateRangePicker?.setMaxDate === 'function'
+        ? DateRangePicker.setMaxDate(dateRangePickerValue[1], 0, 'days')
+        : defaultValueForMaxDate;
+    }
+    return null;
+  }, [dateRangePickerValue, defaultValueForMaxDate, licenseType]);
+
+  const minDate = useMemo(() => {
+    if (licenseType === 'business') {
+      return typeof DateRangePicker?.setMinDate === 'function'
+        ? DateRangePicker.setMinDate(dateRangePickerValue[1], maxDuration, 'days')
+        : defaultValueForMinDate;
+    }
+    return null;
+  }, [dateRangePickerValue, defaultValueForMinDate, licenseType, maxDuration]);
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  const { super_admin, admin, current_organization_id } = authenticationService.currentSessionValue;
+  const { super_admin, admin, current_organization_id, instance_id } = authenticationService.currentSessionValue;
+  const DEMO_LINK = `https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=onpremise&instance_id=${instance_id}`;
 
   const perPage = 7;
 
@@ -80,8 +103,11 @@ const AuditLogs = (props) => {
   };
 
   const fetchFeatureAccess = () => {
+    setIsLoadingLicenseFeatures(true);
     licenseService.getFeatureAccess().then((data) => {
       setFeatureAccess({ ...data });
+      setLicenseType(data?.licenseStatus?.licenseType);
+      setIsLoadingLicenseFeatures(false);
     });
   };
 
@@ -309,7 +335,13 @@ const AuditLogs = (props) => {
     return;
   }
 
+  async function fetchMaxDuration() {
+    const duration = await auditLogsService.getMaxDurationForAuditLogs();
+    setMaxDuration(duration);
+  }
+
   useEffect(() => {
+    fetchMaxDuration();
     handleAuditLogClick();
 
     updateSidebarNAV('');
@@ -367,7 +399,7 @@ const AuditLogs = (props) => {
       timeTo,
     });
 
-    set([moment(timeFrom[0]?.value), moment(timeTo[0]?.value)]);
+    setDateRangePickerValue([moment(timeFrom[0]?.value), moment(timeTo[0]?.value)]);
 
     const urlParams = {
       page,
@@ -395,7 +427,18 @@ const AuditLogs = (props) => {
   };
 
   const handleDateChange = (value, shouldDisableLatestLogs = true) => {
-    set(value);
+    let startDate = moment(value[0]);
+    let endDate = moment(value[1]);
+
+    const durationInDays = endDate.diff(startDate, 'days');
+
+    if (durationInDays > maxDuration && licenseType != 'business') {
+      toast.error(`You can only access logs for maximum ${maxDuration} days.`);
+      // Adjust end date (maxDate) for enterprise license
+      endDate = startDate.clone().add(maxDuration, 'days');
+      value = [startDate.toDate(), endDate.toDate()];
+    }
+    setDateRangePickerValue(value);
     const timeFrom = {
       value: value[0].toISOString(),
       name: humanizeDate(value[0]),
@@ -415,9 +458,9 @@ const AuditLogs = (props) => {
     const urlParams = {
       page: 1,
       perPage,
+      ...removeEmptyKeysFromObject(selectedSearchOptions),
       timeTo: timeTo.value,
       timeFrom: timeFrom.value,
-      ...removeEmptyKeysFromObject(selectedSearchOptions),
     };
 
     fetchAuditLogs(urlParams);
@@ -527,18 +570,62 @@ const AuditLogs = (props) => {
                             <div className="row">
                               <div className="col">
                                 <DateRangePicker
-                                  dateRange={dateRangePicketValue}
+                                  dateRange={dateRangePickerValue}
                                   showCalenderIcon={true}
                                   autoFocus={false}
                                   classNames="tooljet-range-picker"
                                   onChange={handleDateChange}
-                                  maxRange={15}
+                                  maxRange={maxDuration}
                                   maxDate={maxDate}
                                   minDate={minDate}
                                   type="datetime"
                                   customLabel={<RangePickerLabel />}
                                   format="dd-MM-yyyy hh:mm a"
                                 />
+                                {isLoadingLicenseFeatures ? (
+                                  <Skeleton count={1} height={10} width={250} baseColor="#ECEEF0" className="mb-3" />
+                                ) : (
+                                  <p
+                                    style={{
+                                      color: 'var(--slate-10, #7E868C)',
+                                      fontFamily: 'IBM Plex Sans',
+                                      fontSize: '10px',
+                                      fontStyle: 'normal',
+                                      fontWeight: '400',
+                                      lineHeight: '16px',
+                                    }}
+                                  >
+                                    {licenseType != 'business' ? (
+                                      `Audit logs are accessible for up to 30 days`
+                                    ) : (
+                                      <>
+                                        {`You can only access logs from the last ${maxDuration} days.`}
+                                        {super_admin ? (
+                                          <>
+                                            {' For more, '}
+                                            <span
+                                              style={{
+                                                background:
+                                                  'var(--EE-Gradient, linear-gradient(96deg, #FF5F6D -15.44%, #FFC371 99.37%))',
+                                                backgroundClip: 'text',
+                                                WebkitBackgroundClip: 'text',
+                                                WebkitTextFillColor: 'transparent',
+                                                cursor: 'pointer',
+                                              }}
+                                              onClick={() => {
+                                                window.open(DEMO_LINK, '_blank');
+                                              }}
+                                            >
+                                              Upgrade.
+                                            </span>
+                                          </>
+                                        ) : (
+                                          ' Contact admin for more.'
+                                        )}
+                                      </>
+                                    )}
+                                  </p>
+                                )}
                               </div>
                               <div className="mb-0 d-flex col-auto">
                                 <CustomToggleSwitch

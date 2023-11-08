@@ -7,6 +7,7 @@ const FeatureLabels = {
   auditLogs: 'Audit Logs',
   openid: 'Open ID Connect',
   ldap: 'LDAP',
+  saml: 'SAML',
   customStyling: 'Custom styles',
   multiEnvironment: 'Multi-Environment',
 };

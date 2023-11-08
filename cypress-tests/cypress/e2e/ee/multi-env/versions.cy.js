@@ -128,7 +128,7 @@ describe("App Version Functionality", () => {
 
         verifyComponent("button1");
         cy.go("back");
-        cy.wait(1000)
+        cy.wait(3000)
         navigateToAppEditor(data.appName);
         cy.get('[data-cy="list-current-env-name"]').click();
         cy.get(multiEnvSelector.envNameList).eq(0).click()
