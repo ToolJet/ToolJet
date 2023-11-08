@@ -58,7 +58,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
           <div>
             {index === 0 && (
               <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
-                Data Sources
+                Data sources
               </div>
             )}
             <DataSourceIcon source={sources?.[0]} height={16} />
@@ -250,7 +250,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       {canCreateDataSource() && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
-            + Add new data source
+            + Add new Data source
           </ButtonSolid>
         </div>
       )}

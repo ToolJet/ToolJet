@@ -5,7 +5,6 @@ import {
   getWorkspaceIdOrSlugFromURL,
   getPathname,
   getRedirectToWithParams,
-  redirectToDashboard,
   redirectToErrorPage,
 } from './routes';
 import toast from 'react-hot-toast';

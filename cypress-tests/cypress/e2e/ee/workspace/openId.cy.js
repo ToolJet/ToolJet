@@ -26,6 +26,7 @@ describe("Verify OIDC user onboarding", () => {
     cy.apiLogin();
     cy.visit('/my-workspace')
     cy.intercept('GET', 'api/library_apps').as('apps')
+    cy.wait(2000)
   });
 
   it("Verify user onboarding using workspace OIDC", () => {

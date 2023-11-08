@@ -183,18 +183,32 @@ describe("dashboard", () => {
       "Manage instance settings"
     );
 
-    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).should("be.visible");
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(2).should("be.visible");
     cy.get(
       instanceSettingsSelector.allowWorkspaceToggleLabel
-    ).eq(1).verifyVisibleElement(
+    ).eq(2).verifyVisibleElement(
       "have.text",
       "Comments"
     );
     cy.get(
       instanceSettingsSelector.allowWorkspaceHelperText
-    ).eq(1).verifyVisibleElement(
+    ).eq(2).verifyVisibleElement(
       "have.text",
       "Collaborate with others by adding comments anywhere on the canvas"
+    );
+
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).should("be.visible");
+    cy.get(
+      instanceSettingsSelector.allowWorkspaceToggleLabel
+    ).eq(1).verifyVisibleElement(
+      "have.text",
+      "Multiplayer editing"
+    );
+    cy.get(
+      instanceSettingsSelector.allowWorkspaceHelperText
+    ).eq(1).verifyVisibleElement(
+      "have.text",
+      "Work collaboratively and edit applications in real-time with multi-player editing"
     );
 
     cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).should("be.visible");
@@ -202,25 +216,11 @@ describe("dashboard", () => {
       instanceSettingsSelector.allowWorkspaceToggleLabel
     ).eq(0).verifyVisibleElement(
       "have.text",
-      "Multiplayer editing"
-    );
-    cy.get(
-      instanceSettingsSelector.allowWorkspaceHelperText
-    ).eq(0).verifyVisibleElement(
-      "have.text",
-      "Work collaboratively and edit applications in real-time with multi-player editing"
-    );
-
-    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(2).should("be.visible");
-    cy.get(
-      instanceSettingsSelector.allowWorkspaceToggleLabel
-    ).eq(2).verifyVisibleElement(
-      "have.text",
       instanceSettingsText.allowWorkspaceToggleLabel
     );
     cy.get(
       instanceSettingsSelector.allowWorkspaceHelperText
-    ).eq(2).verifyVisibleElement(
+    ).eq(0).verifyVisibleElement(
       "have.text",
       instanceSettingsText.allowWorkspaceHelperText
     );
