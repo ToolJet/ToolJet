@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
-import { getWorkspaceIdFromURL, appendWorkspaceId, getAvatar } from '../../_helpers/utils';
+import { getAvatar } from '@/_helpers/utils';
+import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import { ToolTip } from '@/_components';
 
 export const OrganizationList = function () {
@@ -20,9 +21,10 @@ export const OrganizationList = function () {
     () => sessionObservable.unsubscribe();
   }, []);
 
-  const switchOrganization = (orgId) => {
-    if (getWorkspaceIdFromURL() !== orgId) {
-      const newPath = appendWorkspaceId(orgId, location.pathname, true);
+  const switchOrganization = (id) => {
+    const organization = organizationList.find((org) => org.id === id);
+    if (![id, organization.slug].includes(getWorkspaceIdOrSlugFromURL())) {
+      const newPath = appendWorkspaceId(organization.slug || id, location.pathname, true);
       window.history.replaceState(null, null, newPath);
       window.location.reload();
     }
@@ -31,6 +33,7 @@ export const OrganizationList = function () {
   const options = organizationList.map((org) => ({
     value: org.id,
     name: org.name,
+    slug: org.slug,
     label: (
       <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
         <div

@@ -31,6 +31,7 @@ export class SeedsService {
           },
         ],
         name: 'My workspace',
+        slug: 'my-workspace',
       });
 
       await manager.save(organization);
