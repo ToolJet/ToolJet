@@ -391,7 +391,6 @@ export function CodeHinter({
                 }}
                 meta={fieldMeta}
                 cyLabel={cyLabel}
-                // {...(component.component == 'TextInput' && { component: component })}
                 isIcon={isIcon}
                 component={component}
               />

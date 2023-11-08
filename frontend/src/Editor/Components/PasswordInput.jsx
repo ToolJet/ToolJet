@@ -1,4 +1,35 @@
 import React, { useState } from 'react';
+import Loader from './Loader';
+import { ToolTip } from '@/_components/ToolTip';
+
+const PasswordInputField = ({
+  disabledState,
+  onChange,
+  placeholder,
+  value,
+  computedStyles,
+  dataCy,
+  darkMode,
+  showValidationError,
+  isValid,
+  setShowValidationError,
+}) => (
+  <input
+    disabled={disabledState}
+    onChange={(e) => {
+      onChange(e.target.value);
+      setShowValidationError(true);
+    }}
+    type={'password'}
+    className={`tj-text-input-widget  ${!isValid && showValidationError ? 'is-invalid' : ''} validation-without-icon ${
+      darkMode && 'dark-theme-placeholder'
+    }`}
+    placeholder={placeholder}
+    value={value}
+    style={computedStyles}
+    data-cy={dataCy}
+  />
+);
 
 export const PasswordInput = ({
   height,
@@ -11,7 +42,8 @@ export const PasswordInput = ({
   fireEvent,
   dataCy,
 }) => {
-  const { visibility, disabledState, borderRadius, backgroundColor, boxShadow } = styles;
+  const { borderRadius, backgroundColor, boxShadow } = styles;
+  const { visibility, disabledState, tooltip, loadingState } = properties;
 
   const placeholder = properties.placeholder;
 
@@ -23,8 +55,8 @@ export const PasswordInput = ({
     height,
     display: visibility ? '' : 'none',
     borderRadius: `${borderRadius}px`,
-    color: darkMode && '#fff',
-    borderColor: darkMode && '#DADCDE',
+    color: darkMode ? '#fff' : '#11181C',
+    borderColor: 'var(--tj-text-input-widget-border-default)',
     backgroundColor: darkMode && ['#ffffff'].includes(backgroundColor) ? '#232e3c' : backgroundColor,
     boxShadow: boxShadow,
   };
@@ -36,23 +68,47 @@ export const PasswordInput = ({
 
   return (
     <div>
-      <input
-        disabled={disabledState}
-        onChange={(e) => {
-          setPasswordValue(e.target.value);
-          setExposedVariable('value', e.target.value);
-          fireEvent('onChange');
-          setShowValidationError(true);
-        }}
-        type={'password'}
-        className={`form-control ${!isValid && showValidationError ? 'is-invalid' : ''} validation-without-icon ${
-          darkMode && 'dark-theme-placeholder'
-        }`}
-        placeholder={placeholder}
-        value={passwordValue}
-        style={computedStyles}
-        data-cy={dataCy}
-      />
+      {properties?.tooltip?.length > 0 ? (
+        <ToolTip message={'xsxxsx'}>
+          <>
+            <PasswordInputField
+              disabledState={disabledState}
+              onChange={(value) => {
+                setPasswordValue(value);
+                setExposedVariable('value', value);
+                fireEvent('onChange');
+              }}
+              placeholder={placeholder}
+              value={passwordValue}
+              computedStyles={computedStyles}
+              dataCy={dataCy}
+              darkMode={darkMode}
+              showValidationError={showValidationError}
+              isValid={isValid}
+              setShowValidationError={setShowValidationError}
+            />
+          </>
+        </ToolTip>
+      ) : (
+        <PasswordInputField
+          disabledState={disabledState}
+          onChange={(value) => {
+            setPasswordValue(value);
+            setExposedVariable('value', value);
+            fireEvent('onChange');
+          }}
+          placeholder={placeholder}
+          value={passwordValue}
+          computedStyles={computedStyles}
+          dataCy={dataCy}
+          darkMode={darkMode}
+          showValidationError={showValidationError}
+          isValid={isValid}
+          setShowValidationError={setShowValidationError}
+        />
+      )}
+
+      {loadingState && <Loader width="16" />}
       <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
         {showValidationError && validationError}
       </div>

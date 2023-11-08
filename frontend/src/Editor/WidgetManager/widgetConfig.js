@@ -1301,7 +1301,7 @@ export const widgets = [
         placeholder: { value: 'Enter your input' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        toolltip: { value: '' },
+        tooltip: { value: '' },
       },
       events: [],
       styles: {
@@ -1316,7 +1316,7 @@ export const widgets = [
         color: { value: '#11181C' },
         auto: { value: '{{false}}' },
         padding: { value: 'default' },
-        boxShadow: { value: '0px 0px 0px 0px #00000090' },
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconHome2' },
         iconVisibility: { value: false },
       },
@@ -1454,8 +1454,8 @@ export const widgets = [
     description: 'Password input field for forms',
     component: 'PasswordInput',
     defaultSize: {
-      width: 4,
-      height: 30,
+      width: 12,
+      height: 41,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -1469,6 +1469,30 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      tooltip: {
+        type: 'code',
+        displayName: 'Tooltip',
+        validation: { schema: { type: 'string' } },
+        section: 'additionalActions',
+      },
     },
     validation: {
       regex: { type: 'code', displayName: 'Regex' },
@@ -1480,26 +1504,13 @@ export const widgets = [
       onChange: { displayName: 'On change' },
     },
     styles: {
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
       borderRadius: {
-        type: 'code',
+        type: 'input',
         displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
+        accordian: 'field',
       },
       backgroundColor: {
         type: 'color',
@@ -1507,6 +1518,13 @@ export const widgets = [
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'field',
+      },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box Shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
       },
     },
     exposedVariables: {
@@ -1519,6 +1537,9 @@ export const widgets = [
       },
       properties: {
         placeholder: { value: 'password' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        toolltip: { value: '' },
       },
       validation: {
         regex: { value: '' },
@@ -1528,10 +1549,11 @@ export const widgets = [
       },
       events: [],
       styles: {
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
+        // visibility: { value: '{{true}}' },
+        // disabledState: { value: '{{false}}' },
+        borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#ffffff' },
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
       },
     },
   },
