@@ -155,8 +155,8 @@ export const getRedirectURL = (path) => {
   return redirectLoc;
 };
 
-export const getRedirectTo = () => {
-  const params = new URL(window.location.href).searchParams;
+export const getRedirectTo = (paramObj) => {
+  const params = paramObj || new URL(window.location.href).searchParams;
   let combined = Array.from(params.entries())
     .map((param) => param.join('='))
     .join('&');
