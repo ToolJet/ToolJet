@@ -13,6 +13,7 @@ export class BackfillLicenseKeyFromEnv1683148731897 implements MigrationInterfac
       value: licenseKey,
       key: 'LICENSE_KEY',
       type: 'system',
+      createdAt: new Date(),
     });
   }
 

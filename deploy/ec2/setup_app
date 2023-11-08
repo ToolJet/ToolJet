@@ -173,3 +173,5 @@ else
   echo "Failed to start the server!"
   exit 1
 fi
+
+sudo systemctl restart nest

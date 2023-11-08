@@ -263,7 +263,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
           <div className="d-flex flex-column w-100">
             {dataSources.length ? (
               <>
-                <div className="tj-text-sm my-2 datasources-category">Local Data Sources</div>
+                <div className="tj-text-sm my-2 datasources-category">Local Data sources</div>
                 <div className="mt-2 w-100 color-slate12" data-cy="datasource-Label">
                   {dataSources?.map((source, idx) => (
                     <RenderDataSource

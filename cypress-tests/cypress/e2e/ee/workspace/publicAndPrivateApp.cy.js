@@ -38,7 +38,7 @@ describe("App share functionality", () => {
         releaseApp();
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
-        cy.wait(500);
+        cy.wait(2000);
         cy.get(commonWidgetSelector.modalCloseButton).click();
         cy.get(commonSelectors.editorPageLogo).click();
         logout();
@@ -68,7 +68,9 @@ describe("App share functionality", () => {
         cy.get(commonSelectors.editorPageLogo).click();
 
         logout();
+        cy.wait(1000);
         cy.visit(`/applications/${slug}`);
+        cy.wait(1500);
 
         cy.get(commonSelectors.loginButton).should("be.visible");
 

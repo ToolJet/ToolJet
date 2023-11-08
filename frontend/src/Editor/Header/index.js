@@ -172,7 +172,6 @@ export default function EditorHeader({
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       onVersionDelete={onVersionDelete}
                       environments={environments}
@@ -211,6 +210,7 @@ export default function EditorHeader({
                         handleSlugChange={handleSlugChange}
                         pageHandle={currentState?.page?.handle}
                         darkMode={darkMode}
+                        isVersionReleased={isVersionReleased}
                       />
                     )}
                   </LicenseTooltip>
