@@ -8,7 +8,7 @@ export const SettingsModal = ({
   show,
   handleClose,
   darkMode,
-  updateOnPageLoadEvents,
+
   apps,
   pages,
   components,
@@ -55,6 +55,7 @@ export const SettingsModal = ({
         <Modal.Body onClick={() => pinPagesPopover(true)}>
           <b data-cy={'page-events-labe'}>Events</b>
           <EventManager
+            //!page
             component={{
               component: {
                 definition: {
@@ -62,11 +63,12 @@ export const SettingsModal = ({
                 },
               },
             }}
-            componentMeta={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
+            sourceId={page?.id}
+            eventSourceType="page"
+            eventMetaDefinition={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
             components={components}
             apps={apps}
             pages={allpages}
-            eventsChanged={(events) => updateOnPageLoadEvents(page.id, events)}
             popOverCallback={(showing) => showing}
           />
         </Modal.Body>
