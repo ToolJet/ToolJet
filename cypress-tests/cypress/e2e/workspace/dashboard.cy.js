@@ -274,7 +274,7 @@ describe("dashboard", () => {
 
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
-    cy.get('[data-cy="Clone app"]').click();
+    cy.get('[data-cy="clone-app"]').click();
     cy.get('.go3958317564').should('be.visible').and('have.text', dashboardText.appClonedToast)
     cy.wait(3000);
     cy.renameApp(data.cloneAppName);
