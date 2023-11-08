@@ -57,7 +57,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   };
 
   const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
-    const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}`;
+    const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}&order=id.desc`;
     let params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
 
@@ -109,6 +109,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     switch (type) {
       case 'integer':
         return 'int';
+      case 'bigint':
+        return 'bigint';
       case 'character varying':
         return 'varchar';
       case 'boolean':

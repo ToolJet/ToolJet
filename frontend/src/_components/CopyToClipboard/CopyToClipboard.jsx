@@ -31,7 +31,14 @@ export const CopyToClipboardComponent = ({ data, callback }) => {
         }}
       >
         <span style={{ height: '13px', width: '13px', marginBottom: '2px' }} className="mx-1 copy-to-clipboard">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            data-cy="copy-path-to-clipboard"
+          >
             <path
               fill-rule="evenodd"
               clip-rule="evenodd"
