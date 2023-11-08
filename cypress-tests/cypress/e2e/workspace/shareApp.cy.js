@@ -1,6 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { logout, navigateToAppEditor } from "Support/utils/common";
+import { logout, navigateToAppEditor, verifyTooltip, releaseApp } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { addNewUserMW } from "Support/utils/userPermissions";
 import { userSignUp } from "Support/utils/onboarding";
@@ -29,7 +29,11 @@ describe("App share functionality", () => {
       cy.openApp(data.appName);
       cy.dragAndDropWidget("Table", 250, 250);
 
+      verifyTooltip(commonWidgetSelector.shareAppButton, "Share URL is unavailable until current version is released")
+      cy.get('[data-cy="share-button-link"]>span').should("have.class", "share-disabled");
+      releaseApp();
       cy.get(commonWidgetSelector.shareAppButton).click();
+
 
       for (const elements in commonWidgetSelector.shareModalElements) {
         cy.get(
@@ -47,13 +51,15 @@ describe("App share functionality", () => {
       cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
+      cy.wait(2000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.forceClickOnCanvas()
-      cy.dragAndDropWidget("Button", 50, 50);
       cy.get(commonSelectors.editorPageLogo).click();
 
       logout();
+      cy.wait(2500);
       cy.visit(`/applications/${slug}`);
+      cy.wait(2500);
 
       cy.get(commonSelectors.loginButton).should("be.visible");
 
@@ -72,21 +78,34 @@ describe("App share functionality", () => {
       cy.get(commonSelectors.editorPageLogo).click();
 
       logout();
+      cy.wait(2500);
       cy.visit(`/applications/${slug}`);
-      cy.wait(500);
+      cy.wait(2500);
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
     });
 
     it("Verify app private and public app visibility for the same workspace user", () => {
-      addNewUserMW(data.firstName, data.email);
+      navigateToAppEditor(data.appName);
+      cy.wait(2000);
+      cy.get(commonWidgetSelector.shareAppButton).click();
+      cy.get("body").then(($el) => {
+        if (!$el.text().includes("Embedded app link", { timeout: 2000 })) {
+          cy.get(commonWidgetSelector.makePublicAppToggle).check();
+        }
+      });
+      cy.get(commonWidgetSelector.modalCloseButton).click();
+      cy.get(commonSelectors.editorPageLogo).click();
 
+      addNewUserMW(data.firstName, data.email);
       logout();
+
       cy.visit(`/applications/${slug}`);
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
 
       cy.appUILogin();
       navigateToAppEditor(data.appName);
-      cy.skipEditorPopover()
+      cy.wait(2000);
+      cy.skipEditorPopover();
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).uncheck();
       cy.get(commonWidgetSelector.modalCloseButton).click();
@@ -115,6 +134,10 @@ describe("App share functionality", () => {
       cy.clearAndType(commonSelectors.passwordInputField, "password");
       cy.get(commonSelectors.signInButton).click();
       cy.wait(1000);
+      cy.get(`[data-cy="workspace-sign-in-sub-header"]`).verifyVisibleElement(
+        "have.text",
+        "Sign in to your workspace - My workspace"
+      );
 
       cy.visit("/");
       cy.wait(2000);
@@ -122,6 +145,7 @@ describe("App share functionality", () => {
       cy.appUILogin();
 
       navigateToAppEditor(data.appName);
+      cy.wait(2000);
       cy.skipEditorPopover();
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();

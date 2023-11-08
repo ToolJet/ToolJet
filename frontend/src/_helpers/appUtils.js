@@ -1487,6 +1487,10 @@ const getAllChildComponents = (allComponents, parentId) => {
       if (componentParentId === `${parentId}-${childTabId}`) {
         childComponent.componentId = componentId;
         childComponents.push(childComponent);
+
+        // Recursively find children of the current child component
+        const childrenOfChild = getAllChildComponents(allComponents, componentId);
+        childComponents.push(...childrenOfChild);
       }
     }
 
@@ -1494,6 +1498,10 @@ const getAllChildComponents = (allComponents, parentId) => {
       const childComponent = allComponents[componentId];
       childComponent.componentId = componentId;
       childComponents.push(childComponent);
+
+      // Recursively find children of the current child component
+      const childrenOfChild = getAllChildComponents(allComponents, componentId);
+      childComponents.push(...childrenOfChild);
     }
   });
 
@@ -1504,7 +1512,7 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
   let prevComponent;
   components.forEach((component, index) => {
     Object.keys(component.layouts).map((layout) => {
-      if (parentId !== undefined) {
+      if (parentId !== undefined && !component?.component?.parent) {
         if (index > 0) {
           component.layouts[layout].top = prevComponent.layouts[layout].top + prevComponent.layouts[layout].height;
           component.layouts[layout].left = 0;
@@ -1598,6 +1606,8 @@ export const addComponents = (
     };
 
     finalComponents[newComponentId] = newComponent;
+
+    // const doesComponentHaveChildren = getAllChildComponents
   });
 
   if (currentPageId === pageId) {

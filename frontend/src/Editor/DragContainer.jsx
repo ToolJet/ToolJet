@@ -5,7 +5,22 @@ import { shallow } from 'zustand/shallow';
 import './DragContainer.css';
 import DragContainerNested from './DragContainerNested';
 import { isEmpty } from 'lodash';
+import { flushSync } from 'react-dom';
 const NO_OF_GRIDS = 24;
+
+const MouseCustomAble = {
+  name: 'mouseTest',
+  props: {},
+  events: {},
+  mouseEnter(e) {
+    console.log('MouseCustomAble ENTER', e, e?.controlBox);
+    e.controlBox.classList.add('moveable-control-box-d-block');
+  },
+  mouseLeave(e) {
+    console.log('MouseCustomAble LEAVE', e);
+    e.controlBox.classList.remove('moveable-control-box-d-block');
+  },
+};
 
 export default function DragContainer({
   boxes,
@@ -21,6 +36,8 @@ export default function DragContainer({
   const [dragTarget, setDragTarget] = useState();
   const [draggedTarget, setDraggedTarget] = useState();
   const moveableRef = useRef();
+  const [movableTargets, setMovableTargets] = useState([]);
+  const [isChildDragged, setIsChildDragged] = useState(false);
   const boxList = boxes.map((box) => ({
     id: box.id,
     height: box?.layouts?.[currentLayout]?.height,
@@ -31,27 +48,58 @@ export default function DragContainer({
   }));
   const [list, setList] = useState(boxList);
 
+  console.log('isChildDragged => ', isChildDragged);
+
   const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     moveableRef.current.updateRect();
-    setTimeout(() => moveableRef.current.updateRect(), 100);
-  }, [selectedComponents.length, JSON.stringify(boxes)]);
+    moveableRef.current.updateTarget();
+    moveableRef.current.updateSelectors();
+    setTimeout(reloadGrid, 100);
+  }, [JSON.stringify(selectedComponents), JSON.stringify(boxes)]);
 
   useEffect(() => {
     setList(boxList);
-    setTimeout(() => {
+    setTimeout(reloadGrid, 100);
+  }, [currentLayout]);
+
+  const reloadGrid = async () => {
+    setCount((c) => c + 1);
+    if (moveableRef.current) {
       moveableRef.current.updateRect();
       moveableRef.current.updateTarget();
       moveableRef.current.updateSelectors();
-    }, 100);
-  }, [currentLayout]);
+    }
+  };
+
+  window.reloadGrid = reloadGrid;
 
   useEffect(() => {
     setList(boxList);
   }, [JSON.stringify(boxes)]);
 
-  const [isChildDragged, setIsChildDragged] = useState(false);
+  useEffect(() => {
+    const groupedTargets = [...selectedComponents.map((component) => '.ele-' + component.id)];
+    // const newMovableTargets = groupedTargets.length
+    //   ? [groupedTargets.length == 1 ? groupedTargets[0] : groupedTargets]
+    //   : [];
+    const newMovableTargets = groupedTargets.length ? [...groupedTargets] : [];
+    if (hoveredComponent && groupedTargets?.length <= 1 && !groupedTargets.includes('.ele-' + hoveredComponent)) {
+      newMovableTargets.push('.ele-' + hoveredComponent);
+    }
+
+    if (draggedTarget && !newMovableTargets.includes(`.ele-${draggedTarget}`)) {
+      newMovableTargets.push('.ele-' + draggedTarget);
+    }
+
+    setMovableTargets(isChildDragged ? [] : draggedTarget ? ['.ele-' + draggedTarget] : newMovableTargets);
+  }, [selectedComponents, hoveredComponent, draggedTarget, isChildDragged]);
+
+  useEffect(() => {
+    reloadGrid();
+  }, [movableTargets]);
 
   const getDimensions = (id) => {
     const box = boxes.find((b) => b.id === id);
@@ -70,20 +118,11 @@ export default function DragContainer({
   };
 
   const groupedTargets = [...selectedComponents.map((component) => '.ele-' + component.id)];
-  const movableTargets = [groupedTargets];
-  if (hoveredComponent && groupedTargets?.length <= 1) {
-    movableTargets.push('.ele-' + hoveredComponent);
-  }
-
-  if (draggedTarget && !movableTargets.includes(`.ele-${draggedTarget}`)) {
-    movableTargets.push('.ele-' + draggedTarget);
-  }
-
-  //   console.log("movableTargets", movableTargets, hoveredComponent);
 
   return (
     <div className="root">
       <div className="container p-0">
+        {/* <div className={movableTargets.length == 0 ? `move-target` : ''} style={{ width: '1px' }}></div> */}
         {list
           .filter((i) => isEmpty(i.parent))
           .map((i) => (
@@ -93,28 +132,28 @@ export default function DragContainer({
               key={i.id}
               id={i.id}
               widgetid={i.id}
-              widget-pos={JSON.stringify(boxes.find((b) => b.id === i.id)?.layouts?.[currentLayout])}
               style={{ transform: `translate(332px, -134px)`, ...getDimensions(i.id) }}
             >
               {/* Target {i.id} */}
-              {renderWidget(i.id, undefined, setIsChildDragged)}
+              {renderWidget(i.id, undefined, (dragged) => {
+                console.log('====> dragged <=====', dragged);
+                setIsChildDragged(dragged);
+              })}
             </div>
           ))}
-        {/* <div className="target target1">
-          <DragContainerNested setIsChildDragged={setIsChildDragged} />
-        </div> */}
-        {/* <div className="target target1">
-          Target12
-          <input type="text" />
-        </div> */}
-        {/* <div className="target target1">Target1</div>
-        <div className="target target2">Target2</div>
-        <div className="target target3">Target3</div> */}
+
         <Moveable
           ref={moveableRef}
-          // target={'.target'}
-          target={isChildDragged ? [] : movableTargets}
-          origin={selectedComponents.length > 1}
+          ables={[MouseCustomAble]}
+          props={{
+            mouseTest: true,
+          }}
+          flushSync={flushSync}
+          // target={movableTargets}
+          // target={'.move-target'}
+          target={groupedTargets.length ? [groupedTargets] : ['.widget-target']}
+          // hideDefaultLines
+          origin={false}
           // hideChildMoveableDefaultLines={false}
           // individualGroupable={true}
           individualGroupable={selectedComponents.length <= 1}
@@ -228,6 +267,9 @@ export default function DragContainer({
               console.error('ResizeEnd error ->', error);
             }
           }}
+          onResizeStart={(e) => {
+            console.log('onResizeStart =>', e);
+          }}
           onResizeGroup={({ events }) => {
             const newBoxs = [];
             events.forEach((ev) => {
@@ -245,56 +287,66 @@ export default function DragContainer({
             onResizeStop(newBoxs);
           }}
           checkInput
-          onDragStart={() => setIsDragging(true)}
+          onDragStart={(e) => {
+            console.log('On-drag start => ', e?.moveable?.getControlBoxElement());
+            setDraggedTarget(e.target.id);
+            setIsDragging(true);
+          }}
           onDragEnd={(e) => {
-            setIsDragging(false);
-            console.log('onDragEnd', e);
-            setDraggedTarget();
-            if (isChildDragged) {
-              return;
-            }
+            try {
+              console.log('On-drag end => ');
+              setIsDragging(false);
+              console.log('onDragEnd', e);
+              setDraggedTarget();
+              if (isChildDragged) {
+                return;
+              }
 
-            // onDrag(e.target.id, e.translate[0], e.translate[1]);
-            // console.log(e.target.style);
-            // if (!isChildDragged) {
-            //   e.target.style.transform = `translate(${Math.round(e.translate[0] / 10) * 10}px, ${
-            //     Math.round(e.translate[1] / 10) * 10
-            //   }px)`;
-            // }
-
-            let draggedOverElemId;
-            if (document.elementFromPoint(e.clientX, e.clientY)) {
-              const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-              // targetElems.forEach((e) => console.log('Element=>', { id: e.id, clist: e.classList, class: e.className }));
-              const draggedOverElem = targetElems.find(
-                (ele) => ele.id !== e.target.id && ele.classList.contains('target')
-              );
-              setDragTarget(draggedOverElem?.id);
-              console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
-              draggedOverElemId = draggedOverElem?.id;
+              let draggedOverElemId;
+              if (document.elementFromPoint(e.clientX, e.clientY)) {
+                const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+                console.log(
+                  'draggedOverElem - list',
+                  targetElems.find(
+                    (ele) =>
+                      ele.id !== e.target.id &&
+                      (ele.classList.contains('target') || ele.classList.contains('nested-target'))
+                  )
+                );
+                const draggedOverElem = targetElems.find(
+                  (ele) =>
+                    ele.id !== e.target.id &&
+                    (ele.classList.contains('target') || ele.classList.contains('nested-target'))
+                );
+                setDragTarget(draggedOverElem?.id);
+                draggedOverElemId = draggedOverElem?.id;
+              }
+              // console.log("draggedOverElemId", draggedOverElemId);
+              const parentElem = list.find(({ id }) => id === draggedOverElemId);
+              let left = e.lastEvent.translate[0];
+              let top = e.lastEvent.translate[1];
+              if (parentElem) {
+                left = left - parentElem.left * gridWidth;
+                top = top - parentElem.top;
+              } else {
+                e.target.style.transform = `translate(${Math.round(left / gridWidth) * gridWidth}px, ${
+                  Math.round(top / 10) * 10
+                }px)`;
+              }
+              onDrag([
+                {
+                  id: e.target.id,
+                  x: left,
+                  y: Math.round(top / 10) * 10,
+                  parent: draggedOverElemId,
+                },
+              ]);
+            } catch (error) {
+              console.log('error', error);
             }
-            // console.log("draggedOverElemId", draggedOverElemId);
-            const parentElem = list.find(({ id }) => id === draggedOverElemId);
-            let left = e.lastEvent.translate[0];
-            let top = e.lastEvent.translate[1];
-            if (parentElem) {
-              left = left - parentElem.left * gridWidth;
-              top = top - parentElem.top;
-            } else {
-              e.target.style.transform = `translate(${Math.round(left / gridWidth) * gridWidth}px, ${
-                Math.round(top / 10) * 10
-              }px)`;
-            }
-            onDrag([
-              {
-                id: e.target.id,
-                x: left,
-                y: Math.round(top / 10) * 10,
-                parent: draggedOverElemId,
-              },
-            ]);
           }}
           onDrag={(e) => {
+            console.log('On-drag ... => ');
             if (isChildDragged) {
               return;
             }
@@ -314,17 +366,27 @@ export default function DragContainer({
               );
             }
 
-            // let draggedOverElemId;
-            // if (document.elementFromPoint(e.clientX, e.clientY)) {
-            //   const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-            //   // targetElems.forEach((e) => console.log('Element=>', { id: e.id, clist: e.classList, class: e.className }));
-            //   const draggedOverElem = targetElems.find(
-            //     (ele) => ele.id !== e.target.id && ele.classList.contains('target')
-            //   );
-            //   setDragTarget(draggedOverElem?.id);
-            //   console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
-            //   draggedOverElemId = draggedOverElem?.id;
-            // }
+            let draggedOverElemId;
+            if (document.elementFromPoint(e.clientX, e.clientY)) {
+              const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+              // targetElems.forEach((e) => console.log('Element=>', { id: e.id, clist: e.classList, class: e.className }));
+              // console.log(
+              //   'draggedOverElem - list',
+              //   targetElems,
+              //   targetElems.filter(
+              //     (ele) =>
+              //       ele.id !== e.target.id &&
+              //       (ele.classList.contains('target') || ele.classList.contains('nested-target'))
+              //   )
+              // );
+              const draggedOverElem = targetElems.find(
+                (ele) => ele.id !== e.target.id && ele.classList.contains('target')
+              );
+              setDragTarget(draggedOverElem?.id);
+              console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
+              draggedOverElemId = draggedOverElem?.id;
+            }
+            console.log('draggedOverElemId parent', draggedOverElemId, parent);
             // onDrag([{ id: e.target.id, x: e.translate[0], y: e.translate[1], parent: draggedOverElemId }]);
           }}
           onDragGroup={({ events }) => {

@@ -117,6 +117,7 @@ export const Container = ({
     }
   }, [currentLayout]);
 
+  const paramUpdatesOptsRef = useRef({});
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
   useHotkeys('meta+z, control+z', () => handleUndo());
@@ -219,7 +220,9 @@ export const Container = ({
 
     const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
 
-    const opts = { containerChanges: true };
+    const opts = _.isEmpty(paramUpdatesOptsRef.current) ? { containerChanges: true } : paramUpdatesOptsRef.current;
+
+    paramUpdatesOptsRef.current = {};
 
     if (componendAdded) {
       opts.componentAdded = true;
@@ -417,6 +420,9 @@ export const Container = ({
             [currentLayout]: {
               ...boxes[id]['layouts'][currentLayout],
               // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
+              width: parent
+                ? Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / subContainerWidths[parent])
+                : boxes[id]['layouts'][currentLayout].width,
               top: y,
               left: Math.round(x / (parent ? subContainerWidths[parent] : gridWidth)),
             },
@@ -509,7 +515,7 @@ export const Container = ({
   );
 
   const paramUpdated = useCallback(
-    (id, param, value) => {
+    (id, param, value, opts = {}) => {
       if (Object.keys(value)?.length > 0) {
         setBoxes((boxes) =>
           update(boxes, {
@@ -529,6 +535,9 @@ export const Container = ({
             },
           })
         );
+        if (!_.isEmpty(opts)) {
+          paramUpdatesOptsRef.current = opts;
+        }
       }
     },
     [boxes, setBoxes]
@@ -767,6 +776,7 @@ export const Container = ({
             setIsChildDragged,
             setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
             parentGridWidth: gridWidth,
+            subContainerWidths,
           }}
           isVersionReleased={isVersionReleased}
         />

@@ -163,3 +163,21 @@ Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
     });
   });
 });
+
+Cypress.Commands.add("logoutApi", () => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "GET",
+        url: "http://localhost:3000/api/logout",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
+    });
+  });
+});

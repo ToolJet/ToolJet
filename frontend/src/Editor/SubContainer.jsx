@@ -59,6 +59,7 @@ export const SubContainer = ({
   setIsChildDragged,
   setSubContainerWidths,
   parentGridWidth,
+  subContainerWidths,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -111,7 +112,6 @@ export const SubContainer = ({
 
   const [boxes, setBoxes] = useState(allComponents);
   const [childWidgets, setChildWidgets] = useState([]);
-  console.log('childWidgets', childWidgets);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
@@ -527,6 +527,7 @@ export const SubContainer = ({
 
   function onDragStop2(id, x, y, parent) {
     // const parentGridWidth = parentGridWidth;
+    const subContainerGridWidth = parent ? subContainerWidths[parent] || gridWidth : parentGridWidth;
     let newBoxes = {
       ...boxes,
       [id]: {
@@ -536,13 +537,16 @@ export const SubContainer = ({
           [currentLayout]: {
             ...boxes[id]['layouts'][currentLayout],
             // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
+            width: parent
+              ? boxes[id]['layouts'][currentLayout].width
+              : Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / parentGridWidth),
             top: y,
-            left: Math.round(x / (parent ? gridWidth : parentGridWidth)),
+            left: Math.round(x / (parent ? subContainerGridWidth : parentGridWidth)),
           },
         },
         component: {
           ...boxes[id]['component'],
-          parent: !parent ? parent : boxes[id]['component']?.parent,
+          parent: parent ? parent : undefined,
         },
       },
     };
@@ -690,6 +694,7 @@ export const SubContainer = ({
             addDefaultChildren,
             currentPageId,
             childComponents,
+            setSubContainerWidths,
           }}
         />
       );
@@ -713,7 +718,8 @@ export const SubContainer = ({
         setIsChildDragged={setIsChildDragged}
         parent={parent}
         parentLayout={appDefinition.pages[currentPageId]?.components[parent]?.layouts?.[currentLayout]}
-        parentGridWidth={containerCanvasWidth}
+        parentGridWidth={parentGridWidth}
+        allComponents={allComponents}
       />
       {/* {checkParentVisibility() &&
         Object.keys(childWidgets).map((key) => {

@@ -51,6 +51,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -653,7 +655,7 @@ export function Table({
     }
     if (mounted) setExposedVariable('sortApplied', sortOptions);
     fireEvent('onSort');
-  }, [sortOptions]);
+  }, [JSON.stringify(sortOptions)]);
 
   useEffect(() => {
     setExposedVariable('setPage', async function (targetPageIndex) {
@@ -788,11 +790,19 @@ export function Table({
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
-    if (!state.columnResizing.isResizingColumn && !_.isEmpty(newColumnSizes)) {
+
+    const isColumnSizeChanged = !_.isEmpty(diff(columnSizes, newColumnSizes));
+
+    if (isColumnSizeChanged && !state.columnResizing.isResizingColumn && !_.isEmpty(newColumnSizes)) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', {
-        value: newColumnSizes,
-      });
+      paramUpdated(
+        id,
+        'columnSizes',
+        {
+          value: newColumnSizes,
+        },
+        { componentDefinitionChanged: true }
+      );
     } else {
       changeCanDrag(false);
     }

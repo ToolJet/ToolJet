@@ -36,8 +36,8 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams, redirectToDashboard } from '@/_helpers/routes';
-import toast from 'react-hot-toast';
+import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -279,6 +279,10 @@ class ViewerComponent extends React.Component {
     appService
       .fetchAppBySlug(slug)
       .then((data) => {
+        const isAppPublic = data?.is_public;
+        if (authentication_failed && !isAppPublic) {
+          return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
+        }
         this.setStateForApp(data, true);
         this.setStateForContainer(data);
         this.setWindowTitle(data.name);
@@ -287,12 +291,13 @@ class ViewerComponent extends React.Component {
         this.setState({
           isLoading: false,
         });
-        if (authentication_failed && error?.statusCode === 404) {
+        if (error?.statusCode === 404) {
           /* User is not authenticated. but the app url is wrong */
-          toast.error("Couldn't find the app. \n Please verify the app URL again.");
-          setTimeout(() => {
-            redirectToDashboard();
-          }, 3000);
+          redirectToErrorPage(ERROR_TYPES.INVALID);
+        } else if (error?.statusCode === 403) {
+          redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+        } else {
+          redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }
       });
   };
@@ -389,9 +394,13 @@ class ViewerComponent extends React.Component {
 
   handlePageSwitchingBasedOnURLparam() {
     const handleOnURL = this.props.params.pageHandle;
-    const pageIdCorrespondingToHandleOnURL = handleOnURL
-      ? this.findPageIdFromHandle(handleOnURL)
-      : this.state.appDefinition.homePageId;
+
+    const shouldShowPage = handleOnURL ? this.validatePageHandle(handleOnURL) : true;
+
+    if (!shouldShowPage) return this.switchPage(this.state.appDefinition.homePageId);
+
+    const pageIdCorrespondingToHandleOnURL =
+      handleOnURL && shouldShowPage ? this.findPageIdFromHandle(handleOnURL) : this.state.appDefinition.homePageId;
     const currentPageId = this.state.currentPageId;
 
     if (pageIdCorrespondingToHandleOnURL != this.state.currentPageId) {
@@ -435,6 +444,11 @@ class ViewerComponent extends React.Component {
         }
       );
     }
+  }
+
+  validatePageHandle(handle) {
+    const allPages = this.state.appDefinition.pages;
+    return Object.values(allPages).some((page) => page.handle === handle && !page.disabled);
   }
 
   findPageIdFromHandle(handle) {
@@ -502,7 +516,7 @@ class ViewerComponent extends React.Component {
   };
 
   handleEvent = (eventName, events, options) => {
-    onEvent(this.getViewerRef(), eventName, events, options, 'view');
+    return onEvent(this.getViewerRef(), eventName, events, options, 'view');
   };
 
   computeCanvasMaxWidth = () => {

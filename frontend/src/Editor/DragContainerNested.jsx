@@ -13,7 +13,7 @@ const MouseEnterLeaveAble = makeAble('enterLeave', {
   },
 });
 
-export default function DragContainer({
+export default function NestedDragContainer({
   boxes,
   renderWidget,
   canvasWidth,
@@ -24,6 +24,7 @@ export default function DragContainer({
   parent,
   parentLayout,
   parentGridWidth,
+  allComponents,
 }) {
   const [dragTarget, setDragTarget] = useState();
   const boxList = boxes.map((box) => ({
@@ -70,6 +71,7 @@ export default function DragContainer({
             key={i.id}
             id={i.id}
             style={{ transform: `translate(332px, -134px)`, ...getDimensions(i.id) }}
+            widget-id={i.id}
           >
             {/* Target {i.id} */}
             {renderWidget(i.id)}
@@ -114,6 +116,7 @@ export default function DragContainer({
             onResizeStop(e.target.id, e.height, e.width, e.drag.translate[0], e.drag.translate[1]);
           }}
           checkInput
+          onDragStart={() => setIsChildDragged(true)}
           onDrag={(e) => {
             setIsChildDragged(true);
             // if (!isChildDragged) {
@@ -133,7 +136,7 @@ export default function DragContainer({
               console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
               draggedOverElemId = draggedOverElem?.id;
             }
-            console.log('draggedOverElemId child', draggedOverElemId);
+            console.log('draggedOverElemId child', draggedOverElemId, parent);
 
             // onDrag(e.target.id, e.translate[0], e.translate[1], draggedOverElemId);
           }}
@@ -160,12 +163,24 @@ export default function DragContainer({
             }
             let left = e.lastEvent.translate[0];
             let top = e.lastEvent.translate[1];
-            console.log('draggedOverElemId child', draggedOverElemId);
-            if (!draggedOverElemId) {
-              left = left + parentLayout.left * (parentGridWidth / 24);
+            console.log('draggedOverElemId child', draggedOverElemId, parent);
+            // if (!draggedOverElemId) {
+            //   left = left + parentLayout.left * (parentGridWidth / 24);
+            //   top = top + parentLayout.top;
+            // }
+
+            if (draggedOverElemId !== parent) {
+              left = left + parentLayout.left * parentGridWidth;
               top = top + parentLayout.top;
+              if (draggedOverElemId) {
+                const newParentElem = allComponents[draggedOverElemId]?.layouts?.desktop;
+                let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
+                // left = left - newParentElem.left * parentGridWidth;
+                // top = top - newParentElem.top;
+                left = _left;
+                top = _top;
+              }
             }
-            // onDrag(e.target.id, e.translate[0], e.translate[1], draggedOverElemId);
 
             onDrag(e.target.id, left, top, draggedOverElemId);
           }}
@@ -178,6 +193,24 @@ export default function DragContainer({
       </div>
     </div>
   );
+}
+
+function getMouseDistanceFromParentDiv(event, id) {
+  // Get the parent div element.
+  const parentDiv = document.getElementById(id);
+
+  // Get the bounding rectangle of the parent div.
+  const parentDivRect = parentDiv.getBoundingClientRect();
+
+  // Get the mouse position relative to the parent div.
+  const mouseX = event.clientX - parentDivRect.left;
+  const mouseY = event.clientY - parentDivRect.top;
+
+  // Calculate the distance from the mouse pointer to the top and left edges of the parent div.
+  const top = mouseY;
+  const left = mouseX;
+
+  return { top, left };
 }
 
 // export default function DragContainer({ setIsChildDragged }) {
