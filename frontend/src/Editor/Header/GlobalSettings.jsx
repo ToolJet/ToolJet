@@ -167,7 +167,6 @@ export const GlobalSettings = ({
                       delayedSlugChange(e.target.value, 'slug');
                     }}
                     data-cy="app-slug-input-field"
-                    value={oldSlug}
                     defaultValue={oldSlug}
                   />
                   {isSlugUpdated && (
