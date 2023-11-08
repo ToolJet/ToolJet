@@ -50,15 +50,20 @@ describe("App Import Functionality", () => {
         );
       }
     });
-    cy.get(importSelectors.importOptionInput).selectFile(toolJetImage, {
+    cy.get(importSelectors.importOptionInput).eq(0).selectFile(toolJetImage, {
       force: true,
     });
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       importText.couldNotImportAppToastMessage
     );
-
-    cy.get(importSelectors.importOptionInput).selectFile(appFile, {
+    cy.reload();
+    cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+    cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
+      "have.text",
+      importText.importOption
+    );
+    cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
       force: true,
     });
     cy.get('[data-cy="import-app-title"]').should("be.visible");
@@ -72,6 +77,7 @@ describe("App Import Functionality", () => {
       "contain.value",
       appData.name.toLowerCase()
     );
+    cy.skipEditorPopover();
     cy.modifyCanvasSize(900, 600);
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");

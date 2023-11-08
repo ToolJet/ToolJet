@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
@@ -14,18 +14,16 @@ import ExportAppModal from '../../HomePage/ExportAppModal';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 
 export const GlobalSettings = ({
   globalSettings,
   globalSettingsChanged,
   darkMode,
   toggleAppMaintenance,
-  is_maintenance_on,
-  app,
+  isMaintenanceOn,
   backgroundFxQuery,
   realState,
-  handleSlugChange,
-  slug: oldSlug,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor } = globalSettings;
@@ -37,12 +35,15 @@ export const GlobalSettings = ({
   const [slug, setSlug] = useState({ value: null, error: '' });
   const [slugProgress, setSlugProgress] = useState(false);
   const [isSlugUpdated, setSlugUpdatedState] = useState(false);
+  const { updateState } = useAppDataActions();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
     }),
     shallow
   );
+
+  const { app, slug: oldSlug } = useAppInfo();
 
   const coverStyles = {
     position: 'fixed',
@@ -58,6 +59,7 @@ export const GlobalSettings = ({
     special chars or spaces in their app slugs 
   */
     const existedSlugErrors = validateName(oldSlug, 'App slug', true, false, false, false);
+
     setSlug({ value: oldSlug, error: existedSlugErrors.errorMsg });
   }, [oldSlug]);
 
@@ -79,9 +81,11 @@ export const GlobalSettings = ({
             error: '',
           });
           setSlugProgress(false);
-          handleSlugChange(value);
           setSlugUpdatedState(true);
           replaceEditorURL(value, realState?.page?.handle);
+          updateState({
+            slug: value,
+          });
         })
         .catch(({ error }) => {
           setSlug({
@@ -117,12 +121,13 @@ export const GlobalSettings = ({
     outline: showPicker && '1px solid var(--indigo9)',
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
+
   return (
     <>
       <Confirm
         show={showConfirmation}
         message={
-          is_maintenance_on
+          isMaintenanceOn
             ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
             : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
         }
@@ -219,7 +224,7 @@ export const GlobalSettings = ({
                     className="form-check-input"
                     type="checkbox"
                     checked={hideHeader}
-                    onChange={(e) => globalSettingsChanged('hideHeader', e.target.checked)}
+                    onChange={(e) => globalSettingsChanged({ hideHeader: e.target.checked })}
                   />
                 </div>
               </div>
@@ -232,7 +237,7 @@ export const GlobalSettings = ({
                     data-cy={`toggle-maintenance-mode`}
                     className="form-check-input"
                     type="checkbox"
-                    checked={is_maintenance_on}
+                    checked={isMaintenanceOn}
                     onChange={() => setConfirmationShow(true)}
                   />
                 </div>
@@ -251,7 +256,7 @@ export const GlobalSettings = ({
                       placeholder={'0'}
                       onChange={(e) => {
                         const width = e.target.value;
-                        if (!Number.isNaN(width) && width >= 0) globalSettingsChanged('canvasMaxWidth', width);
+                        if (!Number.isNaN(width) && width >= 0) globalSettingsChanged({ canvasMaxWidth: width });
                       }}
                       value={canvasMaxWidth}
                     />
@@ -261,12 +266,16 @@ export const GlobalSettings = ({
                       aria-label="Select canvas width type"
                       onChange={(event) => {
                         const newCanvasMaxWidthType = event.currentTarget.value;
-                        globalSettingsChanged('canvasMaxWidthType', newCanvasMaxWidthType);
+                        const options = {
+                          canvasMaxWidthType: newCanvasMaxWidthType,
+                        };
+
                         if (newCanvasMaxWidthType === '%') {
-                          globalSettingsChanged('canvasMaxWidth', 100);
+                          options.canvasMaxWidth = 100;
                         } else if (newCanvasMaxWidthType === 'px') {
-                          globalSettingsChanged('canvasMaxWidth', 1292);
+                          options.canvasMaxWidth = 1292;
                         }
+                        globalSettingsChanged(options);
                       }}
                     >
                       <option value="%" selected={canvasMaxWidthType === '%'}>
@@ -279,26 +288,7 @@ export const GlobalSettings = ({
                   </div>
                 </div>
               </div>
-              {/* <div className="d-flex mb-3">
-              <span className="w-full m-auto" data-cy={`label-max-canvas-height`}>
-                {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
-              </span>
-              <div className="global-popover-div-wrap global-popover-div-wrap-width">
-                <div className="input-with-icon">
-                  <input
-                    data-cy="maximum-canvas-height-input-field"
-                    type="text"
-                    className={`form-control form-control-sm maximum-canvas-height-input-field`}
-                    placeholder={'0'}
-                    onChange={(e) => {
-                      const height = e.target.value;
-                      if (!Number.isNaN(height) && height <= 2400) globalSettingsChanged('canvasMaxHeight', height);
-                    }}
-                    value={canvasMaxHeight}
-                  />
-                </div>
-              </div>
-            </div> */}
+
               <div className="d-flex justify-content-between mb-3">
                 <span className="pt-2" data-cy={`label-bg-canvas`}>
                   {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
@@ -313,8 +303,12 @@ export const GlobalSettings = ({
                         onFocus={() => setShowPicker(true)}
                         color={canvasBackgroundColor}
                         onChangeComplete={(color) => {
-                          globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb]);
-                          globalSettingsChanged('backgroundFxQuery', color.hex);
+                          const options = {
+                            canvasBackgroundColor: [color.hex, color.rgb],
+                            backgroundFxQuery: color.hex,
+                          };
+
+                          globalSettingsChanged(options);
                         }}
                       />
                     </div>
@@ -357,8 +351,11 @@ export const GlobalSettings = ({
                         className="canvas-hinter-wrap"
                         lineNumbers={false}
                         onChange={(color) => {
-                          globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, realState));
-                          globalSettingsChanged('backgroundFxQuery', color);
+                          const options = {
+                            canvasBackgroundColor: resolveReferences(color, realState),
+                            backgroundFxQuery: color,
+                          };
+                          globalSettingsChanged(options);
                         }}
                       />
                     )}

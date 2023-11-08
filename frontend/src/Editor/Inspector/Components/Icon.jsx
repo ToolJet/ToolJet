@@ -139,8 +139,9 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     isOpen: false,
     children: (
       <EventManager
-        component={component}
-        componentMeta={componentMeta}
+        sourceId={component?.id}
+        eventSourceType="component"
+        eventMetaDefinition={componentMeta}
         currentState={currentState}
         dataQueries={dataQueries}
         components={allComponents}
