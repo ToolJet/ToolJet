@@ -87,7 +87,10 @@ export class ComponentsService {
           const columnsUpdated = Object.keys(updatedDefinition);
 
           const newComponentsData = columnsUpdated.reduce((acc, column) => {
-            const newColumnData = _.merge(componentData[column], updatedDefinition[column]);
+            const newColumnData = _.merge(
+              componentData[column === 'others' ? 'displayPreferences' : column],
+              updatedDefinition[column]
+            );
 
             if (column === 'others') {
               acc['displayPreferences'] = newColumnData;
