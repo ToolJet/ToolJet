@@ -47,6 +47,7 @@ export const TextInput = function TextInput({
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
     boxShadow: boxShadow,
+    padding: styles.iconVisibility ? '3px 28px' : '3px 5px',
   };
 
   const [elementWidth, setElementWidth] = useState(0);
@@ -164,6 +165,7 @@ export const TextInput = function TextInput({
                   className={`tj-text-input-widget ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
                     darkMode && 'dark-theme-placeholder'
                   }`}
+                  style={{ ...computedStyles }}
                   ref={textInputRef}
                   onKeyUp={(e) => {
                     if (e.key == 'Enter') {
@@ -188,7 +190,6 @@ export const TextInput = function TextInput({
                   }}
                   type="text"
                   placeholder={placeholder}
-                  style={computedStyles}
                   value={value}
                   data-cy={dataCy}
                 />

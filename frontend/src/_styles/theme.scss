@@ -11883,12 +11883,6 @@ tbody {
   border: 1px solid var(--tj-text-input-widget-border-default);
   background-color: var(--tj-text-input-widget-field-default);
   width: 100%;
-  padding: 3px 5px;
-
-  &::placeholder {
-    padding-left: 18px !important;
-  }
-
 
   &:hover {
     background-color: var(--tj-text-input-widget-hover) !important;
