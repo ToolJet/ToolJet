@@ -753,13 +753,13 @@ export class AppsService {
 
   async validateVersionEnvironment(
     environmentName: string,
+    environmentId: string,
     currentEnvIdOfVersion: string,
     organizationId: string
-  ): Promise<string> {
-    const environment: AppEnvironment = await this.appEnvironmentService.getEnvironmentByName(
-      environmentName,
-      organizationId
-    );
+  ): Promise<AppEnvironment> {
+    const environment: AppEnvironment = environmentId
+      ? await this.appEnvironmentService.get(organizationId, environmentId)
+      : await this.appEnvironmentService.getEnvironmentByName(environmentName, organizationId);
     if (!environment) {
       throw new NotFoundException("Couldn't found environment in the organization");
     }
@@ -769,7 +769,7 @@ export class AppsService {
       currentEnvIdOfVersion
     );
     if (environment.priority <= currentEnvOfVersion.priority) {
-      return environment.id;
+      return environment;
     } else {
       throw new NotAcceptableException('Version is not promoted to the environment yet.');
     }

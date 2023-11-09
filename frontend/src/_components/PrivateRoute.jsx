@@ -30,14 +30,15 @@ export const PrivateRoute = ({ children }) => {
     );
     if (isEditorOrViewerGoingToRender && group_permissions && !isSwitchingPages) {
       const componentType = pathname.startsWith('/apps/') ? 'editor' : 'viewer';
-      const { slug, versionId, pageHandle } = params;
+      const { slug, versionId, environmentId, pageHandle } = params;
 
       /* Validate the app permissions */
-      let accessDetails = await handleAppAccess(componentType, slug, versionId);
-      const { versionName, ...restDetails } = accessDetails;
+      let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
+      const { versionName, environmentName, ...restDetails } = accessDetails;
       if (versionName) {
         const restQueryParams = getQueryParams();
         const search = queryString.stringify({
+          env: environmentName,
           version: versionName,
           ...restQueryParams,
         });
