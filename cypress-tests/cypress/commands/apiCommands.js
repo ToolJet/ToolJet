@@ -132,24 +132,59 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("apiDeleteDS", (name) => {
-  const dsId = Cypress.env(`${name}-id`);
-  cy.request(
-    {
-      method: "DELETE",
-      url: `http://localhost:3000/api/v2/data_sources/${dsId}`,
-      headers: {
-        "Tj-Workspace-Id": Cypress.env("workspaceId"),
-        Cookie: Cypress.env("authToken"),
+// cy.apiLogin();
+// cy.apiCreateApp();
+// cy.apiCreateGDS(
+//   "http://localhost:3000/api/v2/data_sources",
+//   "aaaaaadish",
+//   "postgresql",
+//   [
+//     { key: "host", value: "localhost" },
+//     { key: "port", value: 5432 },
+//     { key: "database", value: "" },
+//     { key: "username", value: "dev@tooljet.io" },
+//     { key: "password", value: "password", encrypted: true },
+//     { key: "ssl_enabled", value: true, encrypted: false },
+//     { key: "ssl_certificate", value: "none", encrypted: false },
+//   ]
+// );
+
+Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "POST",
+        url: "http://localhost:3000/api/organizations",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+        body: {
+          name: workspaceName,
+          slug: workspaceSlug,
+        },
       },
-    },
-    { log: false }
-  ).then((response) => {
-    expect(response.status).to.equal(200);
-    Cypress.log({
-      name: "DS Delete",
-      displayName: "DS DELETED",
-      message: `: ${dsId} (${name})`,
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(201);
+    });
+  });
+});
+
+Cypress.Commands.add("logoutApi", () => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "GET",
+        url: "http://localhost:3000/api/logout",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(200);
     });
   });
 });

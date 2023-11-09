@@ -17,6 +17,7 @@ export function ConfirmDialog({
   cancelButtonText = 'Cancel',
   backdropClassName,
   onCloseIconClick,
+  footerStyle,
 }) {
   darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
@@ -73,7 +74,7 @@ export function ConfirmDialog({
       <Modal.Body className="confirm-dialogue-body" data-cy="modal-message">
         {message}
       </Modal.Body>
-      <Modal.Footer className="mt-3">
+      <Modal.Footer className="mt-3" style={footerStyle}>
         <ButtonSolid variant={cancelButtonType} onClick={handleClose} data-cy="cancel-button">
           {cancelButtonText ?? t('globals.cancel', 'Cancel')}
         </ButtonSolid>

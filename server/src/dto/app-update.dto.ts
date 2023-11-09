@@ -21,7 +21,7 @@ export class AppUpdateDto {
     const newValue = sanitizeInput(value);
     return newValue.trim();
   })
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'App name should not be empty' })
   @MaxLength(50, { message: 'Maximum length has been reached.' })
   name: string;
 

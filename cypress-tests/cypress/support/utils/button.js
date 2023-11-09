@@ -22,7 +22,12 @@ export const verifyControlComponentAction = (widgetName, value) => {
   cy.get(commonWidgetSelector.componentTextInput)
     .find('[data-cy*="-input-field"]')
     .clearAndTypeOnCodeMirror(value);
+  cy.forceClickOnCanvas();
+  cy.waitForAutoSave();
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).click();
 
-  cy.get(commonWidgetSelector.draggableWidget('textinput1')).should("have.value", value);
+  cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
+    "have.value",
+    value
+  );
 };
