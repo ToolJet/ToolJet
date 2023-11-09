@@ -11810,6 +11810,7 @@ tbody {
 }
 
 .color-picker-input {
+  position: relative;
   height: 36px;
   background-color: var(--slate1);
   border: 1px solid var(--slate7);
@@ -11914,4 +11915,11 @@ tbody {
   align-items: center;
   border-radius: 6px;
   padding: 2px;
+}
+
+.visibility-eye {
+  position: absolute;
+  top: 50%;
+  right: -5px;
+  transform: translate(-50%, -50%);
 }

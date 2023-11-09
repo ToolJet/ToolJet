@@ -64,6 +64,7 @@ const AllElements = {
 export function CodeHinter({
   initialValue,
   onChange,
+  onVisibilityChange,
   mode,
   theme,
   lineNumbers,
@@ -389,6 +390,12 @@ export function CodeHinter({
                     setCurrentValue(value);
                   }
                 }}
+                onVisibilityChange={(value) => {
+                  if (value !== currentValue) {
+                    onVisibilityChange(value);
+                    setCurrentValue(value);
+                  }
+                }}
                 paramName={paramName}
                 paramLabel={paramLabel}
                 forceCodeBox={() => {
@@ -397,7 +404,6 @@ export function CodeHinter({
                 }}
                 meta={fieldMeta}
                 cyLabel={cyLabel}
-                // {...(component.component == 'TextInput' && { component: component })}
                 isIcon={isIcon}
                 component={component}
               />

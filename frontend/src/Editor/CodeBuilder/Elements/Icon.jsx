@@ -7,7 +7,7 @@ import * as Icons from '@tabler/icons-react';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { Visibility } from './Visibility';
 
-export const Icon = ({ value, onChange, component }) => {
+export const Icon = ({ value, onChange, onVisibilityChange, component }) => {
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
   const iconList = useRef(Object.keys(Icons));
@@ -77,7 +77,7 @@ export const Icon = ({ value, onChange, component }) => {
 
   function RenderIconPicker() {
     // eslint-disable-next-line import/namespace
-    const IconElement = Icons?.[value];
+    const IconElement = Icons?.[value] ?? Icons?.['IconHome2'];
 
     return (
       <>
@@ -104,7 +104,12 @@ export const Icon = ({ value, onChange, component }) => {
                   <div className="text-truncate tj-text-xsm" style={{ width: '112px' }}>
                     {value}
                   </div>
-                  <Visibility value={value} onChange={onChange} component={component} />
+                  <Visibility
+                    value={value}
+                    onChange={onChange}
+                    onVisibilityChange={onVisibilityChange}
+                    component={component}
+                  />
                 </div>
               </OverlayTrigger>
             </div>
