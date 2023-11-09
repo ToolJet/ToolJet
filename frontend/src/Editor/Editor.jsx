@@ -313,9 +313,7 @@ const EditorComponent = (props) => {
   const fetchApps = async (page) => {
     const { apps } = await appService.getAll(page);
 
-    updateState({
-      apps: apps.map((app) => ({ id: app.id, name: app.name, slug: app.slug })),
-    });
+    updateState({ apps: apps.map((app) => ({ id: app.id, name: app.name, slug: app.slug })) });
   };
 
   const fetchOrgEnvironmentVariables = () => {
@@ -681,10 +679,7 @@ const EditorComponent = (props) => {
 
   const getPagesWithIds = () => {
     //! Needs attention
-    return Object.entries(appDefinition?.pages).map(([id, page]) => ({
-      ...page,
-      id,
-    }));
+    return Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id }));
   };
 
   const handleEditorMarginLeftChange = (value) => {
@@ -1195,11 +1190,7 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        appDefinitionChanged(updatedAppDefinition, {
-          skipAutoSave: true,
-          componentDefinitionChanged: true,
-          ...props,
-        });
+        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
       }
     }
   };
@@ -1275,10 +1266,7 @@ const EditorComponent = (props) => {
 
     _appDefinition.pages[currentPageId].components = newComponents;
 
-    appDefinitionChanged(_appDefinition, {
-      containerChanges: true,
-      widgetMovedWithKeyboard: true,
-    });
+    appDefinitionChanged(_appDefinition, { containerChanges: true, widgetMovedWithKeyboard: true });
   };
 
   const copyComponents = () =>
@@ -1680,9 +1668,7 @@ const EditorComponent = (props) => {
   };
 
   useEffect(() => {
-    const previewQuery = queryString.stringify({
-      version: editingVersion?.name,
-    });
+    const previewQuery = queryString.stringify({ version: editingVersion?.name });
     const appVersionPreviewLink = editingVersion
       ? `/applications/${slug || appId}/${currentState.page.handle}${
           !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
@@ -1857,7 +1843,7 @@ const EditorComponent = (props) => {
                   background: !props.darkMode ? '#EBEBEF' : '#2E3035',
                 }}
                 onMouseUp={(e) => {
-                  if (['real-canvas', 'modal'].includes(e.target.className)) {
+                  if (e.target.classList.contains('real-canvas') || e.target.classList.contains('modal')) {
                     updateEditorState({
                       currentSidebarTab: 2,
                       selectedComponents: [],
