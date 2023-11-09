@@ -266,14 +266,16 @@ export const fillUserInviteForm = (firstName, email) => {
 };
 
 export const selectUserGroup = (groupName) => {
-  cy.wait(500)
+  cy.wait(1500)
   cy.get("body").then(($body) => {
     if (!$body.find(".search > input").length > 0) {
       cy.get(".dropdown-heading-value > .gray").click();
       cy.clearAndType(".search > input", groupName);
+      cy.wait(500);
       cy.get("li > .select-item > .item-renderer").last().click();
     } else {
       cy.clearAndType(".search > input", groupName);
+      cy.wait(500);
       cy.get("li > .select-item > .item-renderer").last().click();
     }
   });
