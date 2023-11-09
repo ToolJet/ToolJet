@@ -5,27 +5,24 @@ import Logs from './icons/logs.svg'
 import SolidIcon from '@/_ui/Icon/SolidIcons'
 import WorkflowEditorContext from '../context'
 import { Modes } from '../reducer/reducer'
-import { v4 as uuidv4 } from 'uuid';
-import { generateQueryName } from '../utils';
-import { capitalize, isUndefined, find } from 'lodash';
-import {
-  dataqueryService,
-} from '@/_services';
+import CustomButtons from './ReactFlow/CustomButtons'
 
-function ToolBar({controls, executeWorkflow, debouncedSave}) {
-    const { editorSession, editorSessionActions, addQuery } = useContext(WorkflowEditorContext);
-    const source = editorSession?.queries[editorSession?.queries.length-1]
+function ToolBar({controls, executeWorkflow}) {
+    const { editorSession, editorSessionActions } = useContext(WorkflowEditorContext);
+    //const source = editorSession?.queries[editorSession?.queries.length-1]
     //const queryData = find(editorSession.queries, { idOnDefinition: source.idOnDefinition });
     const isRunnable = editorSession.queries && editorSession.queries.length > 0;
     const logs = editorSession.logsConsole.logs;
 
     const defaultToolboxStyle = {
-        width: '400px',
+        width: '315px',
         padding: '14px',
         backgroundColor: 'white',
         position: 'absolute',
-        bottom: '50px',
-        left: '36%',
+        bottom: '30px',
+        left: '50%',
+        marginLeft : '-150px',
+        transform: 'translateY(-50%)',
         boxShadow: '0px 32px 64px -12px rgba(0, 0, 0, 0.20)',
         zIndex: 5,
         border: '1px solid var(--slate7)',
@@ -33,12 +30,14 @@ function ToolBar({controls, executeWorkflow, debouncedSave}) {
       };
 
       const withDisplayToolboxStyle = {
-        width: '400px',
+        width: '315px',
         padding: '14px',
         backgroundColor: 'white',
         position: 'absolute',
-        bottom: '300px',
-        left: '36%',
+        bottom: '280px',
+        left: '50%',
+        marginLeft : '-150px',
+        transform: 'translateY(-50%)',
         boxShadow: '0px 32px 64px -12px rgba(0, 0, 0, 0.20)',
         zIndex: 5,
         border: '1px solid var(--slate7)',
@@ -47,50 +46,21 @@ function ToolBar({controls, executeWorkflow, debouncedSave}) {
 
     const toolboxStyle = editorSession.logsConsole.display === true ? withDisplayToolboxStyle : defaultToolboxStyle
 
-        // const source = editorSession?.queries[editorSession?.queries.length-1]
-        // const commonObject = editorSession.dataSources.find(obj1 => obj1?.kind === source?.data_source?.kind);
+    // const source = editorSession?.queries[editorSession?.queries.length-1]
+    // const commonObject = editorSession.dataSources.find(obj1 => obj1?.kind === source?.data_source?.kind);
 
-        //console.log('source', queryData)
-        //  const addQuery = (kind, options = {}, dataSourceId = undefined, pluginId = undefined, idOnDefinition) => {
-        //   //const idOnDefinition = uuidv4();
-        //   const name = generateQueryName(kind, editorSession?.queries);
-        //   //editorSessionActions.addQuery({ idOnDefinition, kind, options, dataSourceId, pluginId }, editorSession);
-      
-        //   dataqueryService
-        //     .create(editorSession.app.id, editorSession.app.versionId, name, kind, options, dataSourceId, pluginId)
-        //     .then((query) => {
-        //       console.log('updating query', query);
-        //       editorSessionActions.updateQuery(idOnDefinition, query);
-        //     });
-      
-        //   return idOnDefinition;
-        // };
+    // const handleUndo = () => {
+    //   const undoElments = [...editorSession.stateHistory]
+    //   editorSessionActions.setUndo(undoElments[undoElments.length-1])
+    // }
 
-    const handleUndo = () => {
-      const undoElments = [...editorSession.stateHistory]
-      editorSessionActions.setUndo(undoElments[undoElments.length-1])
-      //addQuery(source?.kind, source?.id, source?.plugin_id)
-    }
+    // const handleRedo = () => {
+    //   const undoElments = [...editorSession.stateFuture]
+    //   editorSessionActions.setRedo(undoElments[0])
+    // }
 
-    // useEffect(() => {
-    //   editorSession.bootupComplete && debouncedSave(editorSession, editorSessionActions);
-    //   // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [
-    //   // eslint-disable-next-line react-hooks/exhaustive-deps
-    //   JSON.stringify({
-    //     nodeData: editorSession.app?.flow.nodes.map((node) => [node.data, node.position]),
-    //     edgeData: editorSession.app?.flow.edges.map((edge) => [edge.source, edge.target]),
-    //     queries: editorSession.queries,
-    //   }),
-    // ]);
-
-    const handleRedo = () => {
-      const undoElments = [...editorSession.stateFuture]
-      editorSessionActions.setRedo(undoElments[0])
-    }
-
-    const isDisabledHistory = editorSession.stateHistory.length > 0 ? false : true
-    const isDisabledFuture = editorSession.stateFuture.length > 0 ? false : true
+    // const isDisabledHistory = editorSession.stateHistory.length > 0 ? false : true
+    // const isDisabledFuture = editorSession.stateFuture.length > 0 ? false : true
 
   return (
     <div style={{width:'100%'}}>
@@ -122,10 +92,11 @@ function ToolBar({controls, executeWorkflow, debouncedSave}) {
      </div>
 
      <div className='rf-controls-btns'>
-     {controls}
+     <CustomButtons/>
+     {/* {controls} */}
      </div>
 
-     <div className='workflow-undo-redo'>
+     {/* <div className='workflow-undo-redo'>
      <div className="undo-redo-container">
         <button
           className={isDisabledHistory ? 'disabled-icon tj-ghost-black-btn' : 'tj-ghost-black-btn'}
@@ -152,7 +123,7 @@ function ToolBar({controls, executeWorkflow, debouncedSave}) {
           />
         </button>
       </div>
-      </div>
+      </div> */}
 
     </div>
 

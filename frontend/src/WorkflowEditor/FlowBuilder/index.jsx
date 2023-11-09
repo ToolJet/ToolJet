@@ -23,8 +23,6 @@ import ModalContent from './ModalContent';
 import StartNode from './Nodes/StartNode';
 import ResultNode from './Nodes/ResultNode';
 import ToolBar from '../BottomToolBar';
-import zoomIn from '../BottomToolBar/icons/zoomin.svg'
-import zoomOut from '../BottomToolBar/icons/zoomout.svg'
 
 const nodeTypes = { 'if-condition': ifConditionNode, query: CommonCustomNode, input: StartNode, output: ResultNode };
 
@@ -206,7 +204,7 @@ function FlowBuilder(props) {
         }}
       >
         <Background />
-        <ToolBar node={selectedNode} controls={<Controls />} executeWorkflow={executeWorkflow} debouncedSave={debouncedSave}/>
+        <ToolBar node={selectedNode} controls={<Controls />} executeWorkflow={executeWorkflow}/>
       </ReactFlow>
       {showBlockOptions && (
         <BlockOptions
