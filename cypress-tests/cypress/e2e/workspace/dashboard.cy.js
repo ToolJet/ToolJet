@@ -48,12 +48,12 @@ describe("dashboard", () => {
       installed_version: "2.9.2",
       version_ignored: false,
     }).as("version");
-    login();
+    cy.defaultWorkspaceLogin();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
     cy.wait("@version");
     // deleteDownloadsFolder();
-    cy.visitTheWorkspace('My workspace')
+    cy.visit('/my-workspace')
 
   });
 
@@ -331,7 +331,7 @@ describe("dashboard", () => {
 
   it("Should verify the app CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
     cy.dragAndDropWidget("Button", 450, 450);
 
@@ -357,7 +357,7 @@ describe("dashboard", () => {
 
   it("Should verify the folder CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
     cy.dragAndDropWidget("Button", 100, 100);
 

@@ -20,13 +20,12 @@ describe("App share functionality", () => {
   const firstUserEmail = data.email;
   const envVar = Cypress.env("environment");
   beforeEach(() => {
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
   });
   before(() => {
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
-    cy.visit("/");
-    logout();
+    cy.logoutApi();
   });
 
   it("Verify private and public app share funtionality", () => {
@@ -82,7 +81,7 @@ describe("App share functionality", () => {
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
     cy.get(commonSelectors.viewerPageLogo).click();
 
-    navigateToAppEditor(data.appName);
+    cy.openApp(Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.makePublicAppToggle).check();
     cy.get(commonWidgetSelector.modalCloseButton).click();
@@ -96,7 +95,7 @@ describe("App share functionality", () => {
   });
 
   it("Verify app private and public app visibility for the same workspace user", () => {
-    navigateToAppEditor(data.appName);
+    cy.openApp(Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
     cy.wait(2000);
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get("body").then(($el) => {
@@ -113,10 +112,9 @@ describe("App share functionality", () => {
     cy.visit(`/applications/${slug}`);
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
 
-    cy.appUILogin();
-    navigateToAppEditor(data.appName);
+    cy.defaultWorkspaceLogin();
+    cy.openApp(Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
     cy.wait(2000);
-    cy.skipEditorPopover();
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.makePublicAppToggle).uncheck();
     cy.get(commonWidgetSelector.modalCloseButton).click();
@@ -136,7 +134,7 @@ describe("App share functionality", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
 
-    logout();
+    cy.logoutApi();
     userSignUp(data.firstName, data.email, "Test");
     cy.visit(`/applications/${slug}`);
     cy.wait(1000);
@@ -153,11 +151,10 @@ describe("App share functionality", () => {
     cy.visit("/");
     cy.wait(2000);
     logout();
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
 
-    navigateToAppEditor(data.appName);
+    cy.openApp(Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
     cy.wait(2000);
-    cy.skipEditorPopover();
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.makePublicAppToggle).check();
     cy.get(commonWidgetSelector.modalCloseButton).click();

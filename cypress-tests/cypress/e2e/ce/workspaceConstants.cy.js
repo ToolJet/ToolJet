@@ -32,7 +32,7 @@ data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 describe("Workspace constants", () => {
     const envVar = Cypress.env("environment");
     beforeEach(() => {
-        cy.appUILogin();
+        cy.defaultWorkspaceLogin();
         cy.intercept("GET", "/api/library_apps").as("homePage");
     });
     it("Verify workspace constants UI and CRUD operations", () => {

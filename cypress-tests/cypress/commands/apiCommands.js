@@ -115,7 +115,7 @@ Cypress.Commands.add(
   "openApp",
   (
     appId = Cypress.env("appId"),
-    componentSelector = "[data-cy='empty-editor-text']"
+    componentSelector = '[data-cy="app-name-input"]'
   ) => {
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");

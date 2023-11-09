@@ -298,3 +298,10 @@ Cypress.Commands.add("hideTooltip", () => {
     }
   });
 });
+
+
+Cypress.Commands.add("defaultWorkspaceLogin", () => {
+  cy.apiLogin();
+  cy.visit('/my-workspace');
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 })
+})

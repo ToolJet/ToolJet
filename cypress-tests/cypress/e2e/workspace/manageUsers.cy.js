@@ -17,7 +17,7 @@ data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 
 describe("Manage Users", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
   });
   let invitationToken,
     organizationToken,
@@ -89,7 +89,7 @@ describe("Manage Users", () => {
     updateWorkspaceName(data.email);
 
     common.logout();
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
     cy.contains("td", data.email)
@@ -120,7 +120,7 @@ describe("Manage Users", () => {
       });
 
     common.logout();
-    cy.visit('/');
+    cy.visit("/");
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
     cy.get(commonSelectors.loginButton).click();
@@ -130,7 +130,7 @@ describe("Manage Users", () => {
     cy.contains("My workspace").should("not.exist");
     common.logout();
 
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
     cy.contains("td", data.email)
@@ -186,7 +186,7 @@ describe("Manage Users", () => {
     cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
     cy.url().should("include", path.loginPath);
 
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
     cy.contains("td", data.email)
@@ -239,7 +239,8 @@ describe("Manage Users", () => {
     cy.get(groupsSelector.createGroupButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      groupsText.groupCreatedToast)
+      groupsText.groupCreatedToast
+    );
 
     common.navigateToManageUsers();
     users.inviteUserWithUserGroup(
@@ -248,9 +249,9 @@ describe("Manage Users", () => {
       "All users",
       data.groupName
     );
-    common.logout()
+    common.logout();
 
-    cy.appUILogin()
+    cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
     cy.get(groupsSelector.groupLink(data.groupName)).click();
     cy.get(groupsSelector.usersLink).click();

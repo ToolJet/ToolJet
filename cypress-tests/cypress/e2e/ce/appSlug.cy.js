@@ -12,8 +12,7 @@ describe("App slug", () => {
 
 
     beforeEach(() => {
-        cy.apiLogin();
-        cy.visit('/')
+        cy.defaultWorkspaceLogin();
     })
     before(() => {
         cy.apiLogin();
