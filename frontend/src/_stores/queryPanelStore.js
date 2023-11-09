@@ -9,7 +9,7 @@ const initialState = {
   selectedDataSource: null,
   queryToBeRun: null,
   previewLoading: false,
-  queryPreviewData: null,
+  queryPreviewData: '',
   showCreateQuery: false,
   nameInputFocussed: false,
 };
