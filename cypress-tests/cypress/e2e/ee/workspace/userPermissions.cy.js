@@ -26,6 +26,7 @@ describe("User permissions", () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.visit("/my-workspace");
+    cy.wait(1000);
     resetDsPermissions();
     deleteAssignedDatasources();
     cy.viewport(1200, 1300);

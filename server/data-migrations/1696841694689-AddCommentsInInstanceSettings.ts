@@ -16,6 +16,7 @@ export class AddCommentsInInstanceSettings1696841694689 implements MigrationInte
       type: INSTANCE_SETTINGS_TYPE.USER,
       helperText: 'Collaborate with others by adding comments anywhere on the canvas',
       helperTextKey: 'header.organization.menus.manageSSO.generalSettings.comments',
+      createdAt: new Date(),
     });
   }
 

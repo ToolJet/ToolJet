@@ -126,12 +126,13 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 };
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
+  const tempPathname = getSubpath() ? pathname.replace(getSubpath(), '') : pathname;
   if (
     !['/instance-settings', '/integrations', '/applications/', '/switch-workspace'].find((path) =>
-      pathname.startsWith(path)
+      tempPathname.startsWith(path)
     )
   ) {
-    pathname = getSubpath() ? pathname.replace(getSubpath(), '') : pathname;
+    pathname = tempPathname;
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
     const newPath = paths.join('/');
