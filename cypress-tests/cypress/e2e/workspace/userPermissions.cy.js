@@ -29,8 +29,7 @@ describe("User permissions", () => {
     cy.logoutApi();
   });
   beforeEach(() => {
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin();
   });
 
   it("Should verify the create new app permission", () => {
@@ -78,8 +77,7 @@ describe("User permissions", () => {
       });
     common.logout();
 
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
     cy.contains("tr", data.appName)
       .parent()
@@ -149,8 +147,7 @@ describe("User permissions", () => {
     cy.contains("Delete app").should("exist");
 
     common.logout();
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsDeleteCheck).uncheck();
@@ -172,8 +169,7 @@ describe("User permissions", () => {
     cy.get(commonSelectors.buttonSelector("Yes")).click();
 
     common.logout
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsCreateCheck).uncheck();
@@ -211,8 +207,7 @@ describe("User permissions", () => {
     cy.get(commonSelectors.buttonSelector("Yes")).click();
     common.logout();
 
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.foldersCreateCheck).uncheck();
@@ -222,8 +217,7 @@ describe("User permissions", () => {
     cy.visit("/my-workspace");
     cy.wait(500)
 
-    cy.apiLogin();
-    cy.visit("/my-workspace");
+    cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
     cy.contains("td", data.appName)
       .parent()

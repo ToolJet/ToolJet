@@ -10,8 +10,7 @@ import { dashboardSelector } from "Selectors/dashboard";
 
 export const adminLogin = () => {
   common.logout();
-  cy.appUILogin();
-  cy.wait(2000);
+  cy.defaultWorkspaceLogin();
   common.navigateToManageGroups();
 };
 
