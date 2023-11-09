@@ -64,6 +64,7 @@ const AllElements = {
 export function CodeHinter({
   initialValue,
   onChange,
+  onVisibilityChange,
   mode,
   theme,
   lineNumbers,
@@ -386,6 +387,12 @@ export function CodeHinter({
                 onChange={(value) => {
                   if (value !== currentValue) {
                     onChange(value);
+                    setCurrentValue(value);
+                  }
+                }}
+                onVisibilityChange={(value) => {
+                  if (value !== currentValue) {
+                    onVisibilityChange(value);
                     setCurrentValue(value);
                   }
                 }}

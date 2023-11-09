@@ -1209,12 +1209,6 @@ export const widgets = [
         accordian: 'field',
         visibility: false,
       },
-      iconVisibility: {
-        type: 'visibility',
-        displayName: 'visibility',
-        validation: { schema: { type: 'boolean' } },
-        accordian: 'field',
-      },
       // iconAlignment: {
       //   type: 'switch',
       //   displayName: '',
