@@ -676,3 +676,27 @@
     }
   }
 }
+.table-select-column-type-search-box-wrapper{
+  border-bottom: 1px solid var(--slate4);
+  display: flex;
+  padding:12px 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap:5px;
+  align-self: stretch;
+  height: 40px;
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .table-select-column-type-search-box{
+    width: 100%;
+    box-sizing: 'border-box';
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: var(--slate12);
+    gap: 16px;
+  }
+}

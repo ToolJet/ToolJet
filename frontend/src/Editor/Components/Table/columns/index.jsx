@@ -10,6 +10,7 @@ import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
 import Select from '@/_ui/Select';
+import { SelectComponent } from '../SelectComponent';
 export default function generateColumnsData({
   columnProperties,
   columnSizes,
@@ -317,7 +318,7 @@ export default function generateColumnsData({
 
             return (
               <div className="h-100 d-flex align-items-center">
-                <Select
+                <SelectComponent
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   search={true}
@@ -329,6 +330,7 @@ export default function generateColumnsData({
                   disabled={!isEditable}
                   className="select-search table-select-search"
                   styles={{ background: 'inherit', border: 'none' }}
+                  darkMode={darkMode}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
