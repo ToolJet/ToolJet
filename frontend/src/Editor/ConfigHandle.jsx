@@ -44,7 +44,7 @@ export const ConfigHandle = function ConfigHandle({
           <div
             className="d-flex ml-2 delete-icon"
             style={{ cursor: 'pointer', marginLeft: '4px' }}
-            onClick={() => removeComponent({ id })}
+            onClick={() => removeComponent(id)}
             data-cy={`${component.name.toLowerCase()}-delete-button`}
           >
             <SolidIcon name="trash" width="14" />
