@@ -164,7 +164,8 @@ describe('AppImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       const adminUser = adminUserData.user;
-      await expect(service.import(adminUser, 'hello world')).rejects.toThrow('Invalid params for app import');
+      const appName = 'my app';
+      await expect(service.import(adminUser, 'hello world', appName)).rejects.toThrow('Invalid params for app import');
     });
 
     it('should import app with empty related associations', async () => {
@@ -180,8 +181,8 @@ describe('AppImportExportService', () => {
       });
 
       const { appV2: exportedApp } = await service.export(adminUser, app.id);
-
-      const result = await service.import(adminUser, exportedApp);
+      const appName = 'my app';
+      const result = await service.import(adminUser, exportedApp, appName);
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
@@ -190,8 +191,8 @@ describe('AppImportExportService', () => {
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
       expect(importedApp['dataQueries']).toEqual([]);
-      // there will be 3 data sources created automatically when a user creates a new app.
-      expect(importedApp['dataSources'].length).toEqual(4);
+      // there will be 5 data sources created automatically when a user creates a new app.
+      expect(importedApp['dataSources'].length).toEqual(5);
 
       // assert group permissions are valid
       const appGroupPermissions = await getManager().find(AppGroupPermission, {
@@ -217,7 +218,7 @@ describe('AppImportExportService', () => {
         isQueryNeeded: false,
       });
 
-      //create default 3 datasources
+      //create default 5 datasources
       const firstDs = await createDataSource(nestApp, {
         name: 'runpydefault',
         kind: 'runpy',
@@ -246,6 +247,13 @@ describe('AppImportExportService', () => {
         appVersion: applicationVersion,
       });
 
+      await createDataSource(nestApp, {
+        name: 'workflowsdefault',
+        kind: 'workflows',
+        type: 'static',
+        appVersion: applicationVersion,
+      });
+
       //create default dataQuery
       await createDataQuery(nestApp, {
         dataSource: firstDs,
@@ -254,7 +262,8 @@ describe('AppImportExportService', () => {
       });
 
       const { appV2: exportedApp } = await service.export(adminUser, application.id);
-      const result = await service.import(adminUser, exportedApp);
+      const appName = 'my app';
+      const result = await service.import(adminUser, exportedApp, appName);
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();

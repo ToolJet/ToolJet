@@ -35,7 +35,7 @@ import {
 describe("List view widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
     cy.viewport(1200, 1200);
     cy.dragAndDropWidget("List View", 50, 500);
@@ -164,6 +164,8 @@ describe("List view widget", () => {
       )
     );
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, data.marks[1]);
 

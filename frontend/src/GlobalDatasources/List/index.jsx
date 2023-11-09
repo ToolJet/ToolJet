@@ -117,7 +117,7 @@ export const List = ({ updateSelectedDatasource }) => {
                 {!showInput ? (
                   <>
                     <div className="datasources-info tj-text-xsm" data-cy="added-ds-label">
-                      Data Sources Added{' '}
+                      Data sources added{' '}
                       {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
                     </div>
                     <div
@@ -134,7 +134,7 @@ export const List = ({ updateSelectedDatasource }) => {
                   <SearchBox
                     width="248px"
                     callBack={handleSearch}
-                    placeholder={'Search for Data Sources'}
+                    placeholder={'Search for Data sources'}
                     customClass="tj-common-search-input"
                     onClearCallback={handleClose}
                     autoFocus={true}

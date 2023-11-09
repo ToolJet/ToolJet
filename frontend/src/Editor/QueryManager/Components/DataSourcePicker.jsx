@@ -50,10 +50,10 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
   return (
     <>
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
-        Connect to a data source
+        Connect to a Data source
       </h4>
-      <p className="mb-3" style={{ textAlign: 'center' }} data-cy="querymanager-description">
-        Select a data source to start creating a new query. To know more about queries in ToolJet, you can read our
+      <p className="mb-3" style={{ textAlign: 'center' }}>
+        Select a Data source to start creating a new query. To know more about queries in ToolJet, you can read our
         &nbsp;
         <a
           data-cy="querymanager-doc-link"
@@ -88,7 +88,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </div>
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
-            {`Available data sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
+            {`Available Data sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
           {admin && (
             <ButtonSolid
@@ -148,7 +148,7 @@ const EmptyDataSourceBanner = () => (
     <div className="me-2">
       <Information fill="var(--slate9)" />
     </div>
-    <div data-cy="label-no-ds-added">No global data sources have been added yet.</div>
+    <div>No Data sources have been added yet.</div>
   </div>
 );
 
