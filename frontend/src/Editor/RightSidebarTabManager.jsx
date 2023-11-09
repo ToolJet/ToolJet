@@ -2,7 +2,6 @@ import { useEditorStore } from '@/_stores/editorStore';
 import React from 'react';
 import { shallow } from 'zustand/shallow';
 import { isEmpty } from 'lodash';
-import { useTranslation } from 'react-i18next';
 
 const RightSidebarTabManager = ({ inspectorTab, widgetManagerTab, allComponents }) => {
   const { selectedComponents } = useEditorStore(
@@ -11,23 +10,16 @@ const RightSidebarTabManager = ({ inspectorTab, widgetManagerTab, allComponents 
     }),
     shallow
   );
-  const { t } = useTranslation();
 
   const currentTab = selectedComponents.length === 1 ? 1 : 2;
 
   const showInspectorTab =
-    selectedComponents.length === 1 && !isEmpty(allComponents) && !isEmpty(allComponents[selectedComponents[0]?.id]);
+    currentTab === 1 &&
+    selectedComponents.length === 1 &&
+    !isEmpty(allComponents) &&
+    !isEmpty(allComponents[selectedComponents[0]?.id]);
 
-  const _renderIfNoSelectedComponent = (
-    <center className="mt-5 p-2">{t('editor.inspectComponent', 'Please select a component to inspect')}</center>
-  );
-
-  return (
-    <>
-      {currentTab === 1 && (showInspectorTab ? inspectorTab : _renderIfNoSelectedComponent)}
-      {currentTab === 2 && widgetManagerTab}
-    </>
-  );
+  return <>{showInspectorTab ? inspectorTab : widgetManagerTab}</>;
 };
 
 export default RightSidebarTabManager;

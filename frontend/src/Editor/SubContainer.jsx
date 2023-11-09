@@ -16,6 +16,8 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
 import { useEditorStore } from '@/_stores/editorStore';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 const NO_OF_GRIDS = 43;
 
@@ -92,17 +94,19 @@ export const SubContainer = ({
     false;
 
   const getChildWidgets = (components) => {
-    let childWidgets = [];
+    let childWidgets = {};
     Object.keys(components).forEach((key) => {
-      if (components[key].parent === parent) {
+      const componentParent = components[key].component.parent;
+      if (componentParent === parent) {
         childWidgets[key] = { ...components[key], component: { ...components[key]['component'], parent } };
       }
     });
+
     return childWidgets;
   };
 
   const [boxes, setBoxes] = useState(allComponents);
-  const [childWidgets, setChildWidgets] = useState(() => getChildWidgets(allComponents));
+  const [childWidgets, setChildWidgets] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
@@ -111,6 +115,7 @@ export const SubContainer = ({
   useEffect(() => {
     setBoxes(allComponents);
     setChildWidgets(() => getChildWidgets(allComponents));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allComponents, parent]);
 
@@ -183,8 +188,11 @@ export const SubContainer = ({
           );
 
           _.set(childrenBoxes, newComponent.id, {
-            component: newComponent.component,
-            parent: parentComponent.component === 'Tabs' ? parentId + '-' + tab : parentId,
+            component: {
+              ...newComponent.component,
+              parent: parentComponent.component === 'Tabs' ? parentId + '-' + tab : parentId,
+            },
+
             layouts: {
               [currentLayout]: {
                 ...layout,
@@ -233,7 +241,23 @@ export const SubContainer = ({
           },
         },
       };
-      appDefinitionChanged(newDefinition);
+
+      const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
+      const newComponents = boxes;
+
+      const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
+
+      const opts = { containerChanges: true };
+
+      if (componendAdded) {
+        opts.componentAdded = true;
+      }
+
+      const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
+
+      if (shouldUpdate) {
+        appDefinitionChanged(newDefinition, opts);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
@@ -271,6 +295,7 @@ export const SubContainer = ({
     }
   });
 
+  //!Todo: need to check: this never gets called as draggingState is always false
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
@@ -306,8 +331,10 @@ export const SubContainer = ({
           setBoxes({
             ...boxes,
             [newComponent.id]: {
-              component: newComponent.component,
-              parent: parentRef.current.id,
+              component: {
+                ...newComponent.component,
+                parent: parentRef.current.id,
+              },
               layouts: {
                 ...newComponent.layout,
               },
@@ -357,6 +384,7 @@ export const SubContainer = ({
       enableReleasedVersionPopupState();
       return;
     }
+
     const canvasWidth = getContainerCanvasWidth();
     const nodeBounds = direction.node.getBoundingClientRect();
 
@@ -431,7 +459,12 @@ export const SubContainer = ({
     }
 
     //round the width to nearest multiple of gridwidth before converting to %
-    const currentWidth = (_containerCanvasWidth * width) / NO_OF_GRIDS;
+    let currentWidth = (_containerCanvasWidth * width) / NO_OF_GRIDS;
+
+    if (currentWidth > _containerCanvasWidth) {
+      currentWidth = _containerCanvasWidth;
+    }
+
     let newWidth = currentWidth + deltaWidth;
     newWidth = Math.round(newWidth / gridWidth) * gridWidth;
     width = (newWidth * NO_OF_GRIDS) / _containerCanvasWidth;
@@ -537,9 +570,11 @@ export const SubContainer = ({
         Object.keys(childWidgets).map((key) => {
           const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
           const box = childWidgets[key];
+
           const canShowInCurrentLayout =
             box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-          if (box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+
+          if (box.component.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
             return (
               <DraggableBox
                 onComponentClick={onComponentClick}
@@ -578,6 +613,7 @@ export const SubContainer = ({
                 onComponentHover={onComponentHover}
                 hoveredComponent={hoveredComponent}
                 parentId={parentComponent?.name}
+                parent={parent}
                 sideBarDebugger={sideBarDebugger}
                 exposedVariables={exposedVariables ?? {}}
                 childComponents={childComponents[key]}

@@ -74,6 +74,7 @@ export const LeftSidebarInspector = ({
     delete jsontreeData.server;
     delete jsontreeData.actions;
     delete jsontreeData.succededQuery;
+    delete jsontreeData.layout;
 
     //*Sorted components and queries alphabetically
     const sortedComponents = Object.keys(jsontreeData['components'])
@@ -129,7 +130,7 @@ export const LeftSidebarInspector = ({
   const iconsList = useMemo(() => [...queryIcons, ...componentIcons], [queryIcons, componentIcons]);
 
   const handleRemoveComponent = (component) => {
-    removeComponent(component);
+    removeComponent(component.id);
   };
 
   const handleSelectComponentOnEditor = (component) => {

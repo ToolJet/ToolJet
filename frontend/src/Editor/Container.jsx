@@ -7,7 +7,6 @@ import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import { componentTypes } from './WidgetManager/components';
 import { resolveReferences } from '@/_helpers/utils';
-import useRouter from '@/_hooks/use-router';
 import Comments from './Comments';
 import { commentsService } from '@/_services';
 import config from 'config';
@@ -18,7 +17,11 @@ import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
+import _ from 'lodash';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 const NO_OF_GRIDS = 43;
 
@@ -44,15 +47,20 @@ export const Container = ({
   sideBarDebugger,
   currentPageId,
 }) => {
-  const gridWidth = canvasWidth / NO_OF_GRIDS;
-  const styles = {
-    width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    maxWidth: `${canvasWidth}px`,
-    backgroundSize: `${gridWidth}px 10px`,
-  };
+  // Dont update first time to skip
+  // redundant save on app definition load
+  const firstUpdate = useRef(true);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const components = appDefinition.pages[currentPageId]?.components ?? {};
+  const { showComments, currentLayout } = useEditorStore(
+    (state) => ({
+      showComments: state?.showComments,
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
+
+  const { appId } = useAppInfo();
+
   const currentState = useCurrentState();
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -62,47 +70,65 @@ export const Container = ({
     }),
     shallow
   );
-  const { showComments, currentLayout } = useEditorStore(
-    (state) => ({
-      showComments: state?.showComments,
-      currentLayout: state?.currentLayout,
-    }),
-    shallow
+
+  const gridWidth = canvasWidth / NO_OF_GRIDS;
+  const styles = {
+    width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
+    maxWidth: `${canvasWidth}px`,
+    backgroundSize: `${gridWidth}px 10px`,
+  };
+
+  const components = useMemo(
+    () => appDefinition.pages[currentPageId]?.components ?? {},
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(appDefinition), currentPageId]
   );
-  const [boxes, setBoxes] = useState(components);
+
+  const [boxes, setBoxes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
   const [isContainerFocused, setContainerFocus] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(null);
-  const router = useRouter();
+
+  const paramUpdatesOptsRef = useRef({});
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
   useHotkeys('meta+z, control+z', () => handleUndo());
   useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
   useHotkeys(
     'meta+v, control+v',
-    () => {
+    async () => {
       if (isContainerFocused && !isVersionReleased) {
-        navigator.clipboard.readText().then((cliptext) => {
+        // Check if the clipboard API is available
+        if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
           try {
+            const cliptext = await navigator.clipboard.readText();
             addComponents(
               currentPageId,
               appDefinition,
               appDefinitionChanged,
               focusedParentIdRef.current,
-              JSON.parse(cliptext)
+              JSON.parse(cliptext),
+              true
             );
           } catch (err) {
             console.log(err);
           }
-        });
+        } else {
+          console.log('Clipboard API is not available in this browser.');
+        }
       }
       enableReleasedVersionPopupState();
     },
-    [isContainerFocused, appDefinition, focusedParentIdRef]
+    [isContainerFocused, appDefinition, focusedParentIdRef.current]
   );
+
+  useEffect(() => {
+    setBoxes(components);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(components)]);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -125,11 +151,6 @@ export const Container = ({
     return () => document.removeEventListener('click', handleClick);
   }, [isContainerFocused, canvasRef]);
 
-  useEffect(() => {
-    setBoxes(components);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(components)]);
-
   //listening to no of component change to handle addition/deletion of widgets
   const noOfBoxs = Object.values(boxes || []).length;
   useEffect(() => {
@@ -150,9 +171,6 @@ export const Container = ({
     [boxes]
   );
 
-  // Dont update first time to skip
-  // redundant save on app definition load
-  const firstUpdate = useRef(true);
   useEffect(() => {
     if (firstUpdate.current) {
       firstUpdate.current = false;
@@ -170,7 +188,26 @@ export const Container = ({
       },
     };
 
-    appDefinitionChanged(newDefinition);
+    //need to check if a new component is added or deleted
+
+    const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
+    const newComponents = boxes;
+
+    const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
+
+    const opts = _.isEmpty(paramUpdatesOptsRef.current) ? { containerChanges: true } : paramUpdatesOptsRef.current;
+
+    paramUpdatesOptsRef.current = {};
+
+    if (componendAdded) {
+      opts.componentAdded = true;
+    }
+
+    const shouldUpdate = !_.isEmpty(diff(appDefinition, newDefinition));
+    if (shouldUpdate) {
+      appDefinitionChanged(newDefinition, opts);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
@@ -377,18 +414,18 @@ export const Container = ({
   );
 
   const paramUpdated = useCallback(
-    (id, param, value) => {
-      if (Object.keys(value).length > 0) {
+    (id, param, value, opts = {}) => {
+      if (Object.keys(value)?.length > 0) {
         setBoxes((boxes) =>
           update(boxes, {
             [id]: {
               $merge: {
                 component: {
-                  ...boxes[id].component,
+                  ...boxes[id]?.component,
                   definition: {
-                    ...boxes[id].component.definition,
+                    ...boxes[id]?.component?.definition,
                     properties: {
-                      ...boxes[id].component.definition.properties,
+                      ...boxes?.[id]?.component?.definition?.properties,
                       [param]: value,
                     },
                   },
@@ -397,9 +434,12 @@ export const Container = ({
             },
           })
         );
+        if (!_.isEmpty(opts)) {
+          paramUpdatesOptsRef.current = opts;
+        }
       }
     },
-    [setBoxes]
+    [boxes, setBoxes]
   );
 
   const handleAddThread = async (e) => {
@@ -417,7 +457,7 @@ export const Container = ({
     ]);
 
     const { data } = await commentsService.createThread({
-      appId: router.query.id,
+      appId,
       x: x,
       y: e.nativeEvent.offsetY,
       appVersionsId,
@@ -433,7 +473,7 @@ export const Container = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'threads', appId: router.query.id },
+        data: { message: 'threads', appId },
       })
     );
 
@@ -462,7 +502,7 @@ export const Container = ({
       },
     ]);
     const { data } = await commentsService.createThread({
-      appId: router.query.id,
+      appId,
       x,
       y: y - 130,
       appVersionsId,
@@ -478,7 +518,7 @@ export const Container = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'threads', appId: router.query.id },
+        data: { message: 'threads', appId },
       })
     );
 
@@ -496,7 +536,7 @@ export const Container = ({
     const componentWithChildren = {};
     Object.keys(components).forEach((key) => {
       const component = components[key];
-      const { parent } = component;
+      const parent = component?.component?.parent;
       if (parent) {
         componentWithChildren[parent] = {
           ...componentWithChildren[parent],
@@ -610,7 +650,8 @@ export const Container = ({
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
         const addDefaultChildren = box.withDefaultChildren;
-        if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+
+        if (!box.component.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
           return (
             <DraggableBox
               className={showComments && 'pointer-events-none'}
@@ -651,7 +692,7 @@ export const Container = ({
               our&nbsp;
               <a
                 className="color-indigo9 "
-                href="https://docs.tooljet.com/docs#the-very-quick-quickstart"
+                href="https://docs.tooljet.com/docs/#quickstart-guide"
                 target="_blank"
                 rel="noreferrer"
               >

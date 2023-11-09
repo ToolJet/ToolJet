@@ -14,7 +14,8 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery, getSubpath } from '@/_helpers/utils';
+import { buildURLWithQuery } from '@/_helpers/utils';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -117,9 +118,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       .then((user) => {
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        window.location = getSubpath()
-          ? `${getSubpath()}/${user?.current_organization_id}`
-          : `/${user?.current_organization_id}`;
+        redirectToDashboard(user);
       })
       .catch((res) => {
         setIsLoading(false);

@@ -79,6 +79,7 @@ const EditorSelecto = memo(
       selectionDragRef.current = false;
       useEditorStore.getState().selectionInProgress && setSelectionInProgress(false);
     };
+
     return (
       <Selecto
         dragContainer={'.canvas-container'}

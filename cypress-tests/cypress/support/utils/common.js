@@ -207,6 +207,8 @@ export const createWorkspace = (workspaceName) => {
   cy.get(commonSelectors.workspaceName).click();
   cy.get(commonSelectors.addWorkspaceButton).click();
   cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
+  cy.clearAndType('[data-cy="workspace-slug-input-field"]', workspaceName);
+  cy.wait(1000)
   cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
   cy.get(commonSelectors.createWorkspaceButton).click();
   cy.wait("@homePage");
@@ -260,4 +262,11 @@ export const createGroup = (groupName) => {
 export const navigateToworkspaceConstants = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.workspaceConstantsOption).click();
+};
+
+export const releaseApp = () => {
+  cy.get(commonSelectors.releaseButton).click();
+  cy.get(commonSelectors.yesButton).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
+  cy.wait(1000);
 };

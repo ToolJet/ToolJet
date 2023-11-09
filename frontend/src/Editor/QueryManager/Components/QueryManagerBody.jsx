@@ -14,7 +14,7 @@ import { EventManager } from '@/Editor/Inspector/EventManager';
 import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
@@ -97,14 +97,6 @@ export const QueryManagerBody = ({
     validateNewOptions(newOptions);
   };
 
-  const eventsChanged = (events) => {
-    optionchanged('events', events);
-    //added this here since the subscriber added in QueryManager component does not detect this change
-    useDataQueriesStore
-      .getState()
-      .actions.saveData({ ...selectedQuery, options: { ...selectedQuery.options, events: events } });
-  };
-
   const toggleOption = (option) => {
     const currentValue = selectedQuery?.options?.[option] ?? false;
     optionchanged(option, !currentValue);
@@ -185,9 +177,9 @@ export const QueryManagerBody = ({
         <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
         <div className="query-manager-events pb-4 flex-grow-1">
           <EventManager
-            eventsChanged={eventsChanged}
-            component={queryComponent.component}
-            componentMeta={queryComponent.componentMeta}
+            sourceId={selectedQuery?.id}
+            eventSourceType="data_query" //check
+            eventMetaDefinition={queryComponent.componentMeta}
             currentState={currentState}
             components={allComponents}
             callerQueryId={selectedQueryId}
@@ -253,7 +245,7 @@ export const QueryManagerBody = ({
         <div
           className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
         >
-          Datasource
+          Data Source
         </div>
         <div className="d-flex flex-grow-1">
           <ChangeDataSource
