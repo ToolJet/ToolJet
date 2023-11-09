@@ -6,13 +6,13 @@ import queryString from 'query-string';
 import { ERROR_TYPES } from './constants';
 
 /*  appId, versionId are olny for old preview URLs */
-export const handleAppAccess = (componentType, slug, version_id) => {
+export const handleAppAccess = (componentType, slug, version_id, environment_id) => {
   const previewQueryParams = getPreviewQueryParams();
-  const isOldLocalPreview = version_id ? true : false;
+  const isOldLocalPreview = version_id && environment_id ? true : false;
   const isLocalPreview = !_.isEmpty(previewQueryParams);
   const queryParams = {
     ...previewQueryParams,
-    ...(isOldLocalPreview && { version_id }),
+    ...(isOldLocalPreview && { version_id, environment_id }),
     access_type: isLocalPreview ? 'view' : 'edit',
   };
   const query = queryString.stringify(previewQueryParams);
