@@ -18,6 +18,3 @@ export const Visibility = ({ value, onVisibilityChange, component }) => {
     </div>
   );
 };
-
-// {name: 'visibility'} value {{false}} styles
-// console.log('nnn', param, 'value', value, paramType);
