@@ -42,6 +42,7 @@ export class UsersService {
       if (!organizationId) {
         return manager.findOne(User, {
           where: { email },
+          relations: ['organization'],
         });
       } else {
         const statusList = status
