@@ -24,6 +24,7 @@ import _, { cloneDeep } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
+// eslint-disable-next-line import/no-unresolved
 
 // const noOfGrids = 24;
 
