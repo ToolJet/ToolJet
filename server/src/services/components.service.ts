@@ -9,6 +9,8 @@ import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 
 import { EventsService } from './events_handler.service';
 import { LayoutData } from '@dto/component.dto';
 
+const _ = require('lodash');
+
 @Injectable()
 export class ComponentsService {
   constructor(
@@ -85,10 +87,7 @@ export class ComponentsService {
           const columnsUpdated = Object.keys(updatedDefinition);
 
           const newComponentsData = columnsUpdated.reduce((acc, column) => {
-            const newColumnData = {
-              ...componentData[column],
-              ...updatedDefinition[column],
-            };
+            const newColumnData = _.merge(componentData[column], updatedDefinition[column]);
 
             if (column === 'others') {
               acc['displayPreferences'] = newColumnData;
