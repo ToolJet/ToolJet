@@ -362,6 +362,19 @@ export function CodeHinter({
     }
   };
 
+  const getExclusiveElementProps = () => {
+    if (component.component.component === 'TextInput') {
+      return {
+        disabled: component?.component?.definition?.styles?.auto?.value,
+      };
+    }
+    if (component.component.component === 'DropDown') {
+      return {
+        disabled: component?.component?.definition?.styles?.autoWidth?.value,
+      };
+    }
+  };
+
   return (
     <div
       ref={wrapperRef}
@@ -405,9 +418,9 @@ export function CodeHinter({
                 }}
                 meta={fieldMeta}
                 cyLabel={cyLabel}
-                // {...(component.component == 'TextInput' && { component: component })}
                 isIcon={isIcon}
                 component={component}
+                {...getExclusiveElementProps()}
               />
             )}
           </div>

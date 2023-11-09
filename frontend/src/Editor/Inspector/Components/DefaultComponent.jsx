@@ -7,10 +7,11 @@ import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/Editor/Box';
 
-const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput'];
+const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'DropDown'];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Text',
   TextInput: 'Data',
+  DropDown: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -84,7 +85,7 @@ export const baseComponentProperties = (
     'Additional Actions': Object.keys(AllComponents).filter(
       (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
     ),
-    General: ['Modal', 'Text', 'TextInput'],
+    General: ['Modal', 'Text', 'TextInput', 'DropDown'],
     Layout: [],
   };
   if (component.component.component === 'Listview') {
@@ -92,12 +93,85 @@ export const baseComponentProperties = (
       properties = properties.filter((property) => property !== 'rowsPerPage');
     }
   }
+
+  //  return Object.keys(isNewlyRevampedWidget ? groupedProperties : componentMeta.styles).map((style) => {
+  //    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
+  //    const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
+
+  //    const items = [];
+
+  //    if (isNewlyRevampedWidget) {
+  //      items.push({
+  //        title: `${style}`,
+  //        children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
+  //          ...renderCustomStyles(
+  //            component,
+  //            componentMeta,
+  //            paramUpdated,
+  //            dataQueries,
+  //            key,
+  //            'styles',
+  //            currentState,
+  //            allComponents,
+  //            value.accordian
+  //          ),
+  //        })),
+  //      });
+  //      return <Accordion key={style} items={items} />;
+  //    } else {
+  //      return renderElement(
+  //        component,
+  //        componentMeta,
+  //        paramUpdated,
+  //        dataQueries,
+  //        style,
+  //        'styles',
+  //        currentState,
+  //        allComponents
+  //      );
+  //    }
+  //  });
+  //  };
+
   let items = [];
   if (properties.length > 0) {
+    // Initialize an object to group properties by "accordian"
+    const groupedProperties = {};
+    // if (isNewlyRevampedWidget) {
+    // Iterate over the properties in componentMeta.styles
+    for (const key in componentMeta.properties) {
+      const property = componentMeta.properties[key];
+      const accordian = property.accordian;
+
+      // Check if the "accordian" key exists in groupedProperties
+      if (!groupedProperties[accordian]) {
+        groupedProperties[accordian] = {}; // Create an empty object for the "accordian" key if it doesn't exist
+      }
+
+      // Add the property to the corresponding "accordian" object
+      groupedProperties[accordian][key] = property;
+    }
+    // }
+
+    console.log(groupedProperties, 'groupedProperties', properties);
+
     items.push({
       title:
         PROPERTIES_VS_ACCORDION_TITLE[component?.component?.component] ??
         `${i18next.t('widget.common.properties', 'Properties')}`,
+      // children :  Object.entries(groupedProperties[style]).map(([key, value]) => ({
+      //   ...renderCustomStyles(
+      //     component,
+      //     componentMeta,
+      //     paramUpdated,
+      //     dataQueries,
+      //     key,
+      //     'styles',
+      //     currentState,
+      //     allComponents,
+      //     value.accordian
+      //   ),
+      // })),
       children: properties.map((property) =>
         renderElement(
           component,

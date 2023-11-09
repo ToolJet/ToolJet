@@ -33,6 +33,7 @@ import Edit from '@/_ui/Icon/bulkIcons/Edit';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
+import { Select } from './Components/Select';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -79,7 +80,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
   const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const shouldAddBoxShadow = ['TextInput', 'Text'];
+  const newRevampedWidgets = ['TextInput', 'Text', 'DropDown'];
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -293,6 +294,8 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent);
   }
 
+  const isNewlyRevampedWidget = newRevampedWidgets.includes(component.component.component);
+  console.log(component.component.component, 'component.component.component');
   const handleInspectorHeaderActions = (value) => {
     if (value === 'rename') {
       setTimeout(() => setInputFocus(), 0);
@@ -353,9 +356,7 @@ export const Inspector = ({
 
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
-      <div
-        className={component.component.component !== 'TextInput' && component.component.component !== 'Text' && 'p-3'}
-      >
+      <div className={!isNewlyRevampedWidget && 'p-3'}>
         <Inspector.RenderStyleOptions
           componentMeta={componentMeta}
           component={component}
@@ -363,9 +364,10 @@ export const Inspector = ({
           dataQueries={dataQueries}
           currentState={currentState}
           allComponents={allComponents}
+          isNewlyRevampedWidget={isNewlyRevampedWidget}
         />
       </div>
-      {!shouldAddBoxShadow.includes(component.component.component) && buildGeneralStyle()}
+      {!isNewlyRevampedWidget && buildGeneralStyle()}
     </div>
   );
 
@@ -500,30 +502,37 @@ const widgetsWithStyleConditions = {
   },
 };
 
-const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
+const RenderStyleOptions = ({
+  componentMeta,
+  component,
+  paramUpdated,
+  dataQueries,
+  currentState,
+  allComponents,
+  isNewlyRevampedWidget,
+}) => {
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
-  if (component.component.component === 'TextInput' || component.component.component === 'Text') {
-    // Iterate over the properties in componentMeta.styles
-    for (const key in componentMeta.styles) {
-      const property = componentMeta.styles[key];
-      const accordian = property.accordian;
+  // if (isNewlyRevampedWidget) {
+  // Iterate over the properties in componentMeta.styles
+  for (const key in componentMeta.styles) {
+    const property = componentMeta.styles[key];
+    const accordian = property.accordian;
 
-      // Check if the "accordian" key exists in groupedProperties
-      if (!groupedProperties[accordian]) {
-        groupedProperties[accordian] = {}; // Create an empty object for the "accordian" key if it doesn't exist
-      }
-
-      // Add the property to the corresponding "accordian" object
-      groupedProperties[accordian][key] = property;
+    // Check if the "accordian" key exists in groupedProperties
+    if (!groupedProperties[accordian]) {
+      groupedProperties[accordian] = {}; // Create an empty object for the "accordian" key if it doesn't exist
     }
-  }
 
-  return Object.keys(
-    component.component.component === 'TextInput' || component.component.component === 'Text'
-      ? groupedProperties
-      : componentMeta.styles
-  ).map((style) => {
+    // Add the property to the corresponding "accordian" object
+    groupedProperties[accordian][key] = property;
+  }
+  // }
+  console.log(Object.entries(groupedProperties), ' Object.entries(groupedProperties)');
+
+  console.log(groupedProperties, 'groupedStyles');
+
+  return Object.keys(isNewlyRevampedWidget ? groupedProperties : componentMeta.styles).map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 
@@ -546,7 +555,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
 
     const items = [];
 
-    if (component.component.component === 'TextInput' || component.component.component === 'Text') {
+    if (isNewlyRevampedWidget) {
       items.push({
         title: `${style}`,
         children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
@@ -625,6 +634,9 @@ const GetAccordion = React.memo(
 
       case 'Form':
         return <Form {...restProps} />;
+
+      case 'DropDown':
+        return <Select {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

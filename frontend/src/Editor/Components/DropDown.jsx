@@ -16,8 +16,20 @@ export const DropDown = function DropDown({
   exposedVariables,
   dataCy,
 }) {
-  let { label, value, advanced, schema, placeholder, display_values, values } = properties;
-  const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
+  let { label, value, advanced, schema, placeholder, display_values, values, dropdownLoadingState, visibility } =
+    properties;
+  const {
+    selectedTextColor,
+    borderRadius,
+    disabledState,
+    justifyContent,
+    boxShadow,
+    labelColor,
+    alignment,
+    direction,
+    fieldBorderColor,
+    fieldBackgroundColor,
+  } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
   const [showValidationError, setShowValidationError] = useState(false);
@@ -158,11 +170,12 @@ export const DropDown = function DropDown({
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
-      background: darkMode ? 'rgb(31,40,55)' : 'white',
       minHeight: height,
       height: height,
       boxShadow: state.isFocused ? boxShadow : boxShadow,
       borderRadius: Number.parseFloat(borderRadius),
+      borderColor: fieldBorderColor,
+      backgroundColor: fieldBackgroundColor,
     }),
 
     valueContainer: (provided, _state) => ({
@@ -224,18 +237,46 @@ export const DropDown = function DropDown({
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
   };
+
+  const labelStyles = {
+    marginRight: label !== '' ? '1rem' : '0.001rem',
+    color: labelColor,
+    alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+  };
+
+  // const calculateDisplayStyle = () => {
+  //   if (visibility) {
+  //     return 'none';
+  //   }
+  //   if (alignment === 'Top') {
+  //   }
+  // };
+
+  if (dropdownLoadingState) {
+    return (
+      <div className="d-flex align-items-center justify-content-center" style={{ width: '100%', height }}>
+        <center>
+          <div className="spinner-border" role="status"></div>
+        </center>
+      </div>
+    );
+  }
   return (
     <>
       <div
-        className="dropdown-widget row g-0"
-        style={{ height, display: visibility ? '' : 'none' }}
+        className="dropdown-widget g-0"
+        style={{
+          height,
+          display: visibility ? 'flex' : 'none',
+          flexDirection: alignment === 'top' ? 'column' : direction === 'alignRight' ? 'row-reverse' : 'row',
+        }}
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
         }}
         data-cy={dataCy}
       >
-        <div className="col-auto my-auto">
-          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-0 my-0">
+        <div className="col-auto my-auto" style={{ alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start' }}>
+          <label style={labelStyles} className="form-label py-0 my-0">
             {label}
           </label>
         </div>
