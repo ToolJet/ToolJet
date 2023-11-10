@@ -857,8 +857,8 @@ class DataSourceManagerComponent extends React.Component {
                   <a
                     className="color-primary tj-docs-link tj-text-sm"
                     href={
-                      selectedDataSource?.pluginId
-                        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
+                      selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+                        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.pluginId}/`
                         : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource.kind}`
                     }
                     target="_blank"
