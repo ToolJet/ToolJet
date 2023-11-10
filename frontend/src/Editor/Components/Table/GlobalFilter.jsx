@@ -11,12 +11,13 @@ export const GlobalFilter = ({
   onEvent,
   // eslint-disable-next-line no-unused-vars
   darkMode,
+  tableEvents,
 }) => {
   const [value, setValue] = React.useState(globalFilter);
   const onChange = (filterValue) => {
     setGlobalFilter(filterValue || undefined);
     onComponentOptionChanged(component, 'searchText', filterValue).then(() => {
-      onEvent('onSearch', { component, data: {} });
+      onEvent('onSearch', tableEvents, { component, data: {} });
     });
   };
   // eslint-disable-next-line react-hooks/exhaustive-deps

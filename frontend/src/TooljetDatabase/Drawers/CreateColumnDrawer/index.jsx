@@ -13,7 +13,7 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
     <>
       <button
         onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
-        className={`add-new-column-btn ghost-black-operation ${isCreateColumnDrawerOpen && 'open'}`}
+        className={`ghost-black-operation ${isCreateColumnDrawerOpen ? 'open' : ''}`}
         data-cy="add-new-column-button"
       >
         <SolidIcon name="column" width="14" fill={isCreateColumnDrawerOpen ? '#3E63DD' : '#889096'} />
@@ -43,16 +43,18 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                 );
               }
             });
-            tooljetDatabaseService.findOne(organizationId, selectedTable.id).then(({ data = [], error }) => {
-              if (error) {
-                toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
-                return;
-              }
+            tooljetDatabaseService
+              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .then(({ data = [], error }) => {
+                if (error) {
+                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+                  return;
+                }
 
-              if (Array.isArray(data) && data?.length > 0) {
-                setSelectedTableData(data);
-              }
-            });
+                if (Array.isArray(data) && data?.length > 0) {
+                  setSelectedTableData(data);
+                }
+              });
             setIsCreateColumnDrawerOpen(false);
           }}
           onClose={() => setIsCreateColumnDrawerOpen(false)}

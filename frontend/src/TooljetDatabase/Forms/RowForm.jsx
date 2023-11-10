@@ -51,6 +51,7 @@ const RowForm = ({ onCreate, onClose }) => {
     switch (dataType) {
       case 'character varying':
       case 'integer':
+      case 'bigint':
       case 'serial':
       case 'double precision':
         return (
