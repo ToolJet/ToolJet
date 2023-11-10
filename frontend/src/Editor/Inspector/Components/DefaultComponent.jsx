@@ -94,45 +94,6 @@ export const baseComponentProperties = (
     }
   }
 
-  //  return Object.keys(isNewlyRevampedWidget ? groupedProperties : componentMeta.styles).map((style) => {
-  //    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
-  //    const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
-
-  //    const items = [];
-
-  //    if (isNewlyRevampedWidget) {
-  //      items.push({
-  //        title: `${style}`,
-  //        children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
-  //          ...renderCustomStyles(
-  //            component,
-  //            componentMeta,
-  //            paramUpdated,
-  //            dataQueries,
-  //            key,
-  //            'styles',
-  //            currentState,
-  //            allComponents,
-  //            value.accordian
-  //          ),
-  //        })),
-  //      });
-  //      return <Accordion key={style} items={items} />;
-  //    } else {
-  //      return renderElement(
-  //        component,
-  //        componentMeta,
-  //        paramUpdated,
-  //        dataQueries,
-  //        style,
-  //        'styles',
-  //        currentState,
-  //        allComponents
-  //      );
-  //    }
-  //  });
-  //  };
-
   let items = [];
   if (properties.length > 0) {
     // Initialize an object to group properties by "accordian"
@@ -153,25 +114,10 @@ export const baseComponentProperties = (
     }
     // }
 
-    console.log(groupedProperties, 'groupedProperties', properties);
-
     items.push({
       title:
         PROPERTIES_VS_ACCORDION_TITLE[component?.component?.component] ??
         `${i18next.t('widget.common.properties', 'Properties')}`,
-      // children :  Object.entries(groupedProperties[style]).map(([key, value]) => ({
-      //   ...renderCustomStyles(
-      //     component,
-      //     componentMeta,
-      //     paramUpdated,
-      //     dataQueries,
-      //     key,
-      //     'styles',
-      //     currentState,
-      //     allComponents,
-      //     value.accordian
-      //   ),
-      // })),
       children: properties.map((property) =>
         renderElement(
           component,

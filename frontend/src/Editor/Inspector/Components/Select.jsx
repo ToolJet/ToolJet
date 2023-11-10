@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
@@ -7,21 +7,7 @@ import Popover from 'react-bootstrap/Popover';
 import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
-
-const OPTIONS = [
-  {
-    label: 'One',
-    value: '1',
-  },
-  {
-    label: 'Two',
-    value: '2',
-  },
-  {
-    label: 'Three',
-    value: '3',
-  },
-];
+import { resolveReferences } from '@/_helpers/utils';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -36,12 +22,35 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     pages,
   } = restProps;
 
-  const [options, setOptions] = useState(OPTIONS);
-
-  const onIconSelect = (icon) => {
-    paramUpdated({ name: 'icon' }, 'value', icon, 'properties');
+  const constructOptions = () => {
+    const labels = resolveReferences(component?.component?.definition?.properties?.display_values?.value, currentState);
+    const values = resolveReferences(component?.component?.definition?.properties?.values?.value, currentState);
+    const _options = labels?.map((label, index) => ({ label, value: values?.[index] }));
+    return _options;
   };
+  const _markedAsDefault = resolveReferences(component?.component?.definition?.properties?.value?.value, currentState);
+  const isDynamicOptionsEnabled = resolveReferences(
+    component?.component?.definition?.properties?.advanced?.value,
+    currentState
+  );
 
+  const [options, setOptions] = useState(constructOptions());
+  const [markedAsDefault, setMarkedAsDefault] = useState(_markedAsDefault);
+
+  const validations = Object.keys(componentMeta.validation || {});
+  let properties = [];
+  let additionalActions = [];
+  let optionsProperties = [];
+
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else if (componentMeta?.properties[key]?.accordian === 'Options') {
+      optionsProperties.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
     ...draggableStyle,
@@ -52,9 +61,53 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     setOptions(_items);
   };
 
+  const handleLabelChange = (label, index) => {
+    const _options = options.map((option, i) => {
+      if (i === index) {
+        return {
+          label,
+          value: option.value,
+        };
+      }
+      return option;
+    });
+    setOptions(_options);
+    paramUpdated(
+      { name: 'display_values' },
+      'value',
+      _options.map((option) => option.label),
+      'properties'
+    );
+  };
+
+  const handleValueChange = (value, index) => {
+    const _options = options.map((option, i) => {
+      if (i === index) {
+        return {
+          label: option.label,
+          value,
+        };
+      }
+      return option;
+    });
+    setOptions(_options);
+    paramUpdated(
+      { name: 'values' },
+      'value',
+      _options.map((option) => option.value),
+      'properties'
+    );
+  };
+
+  const handleMarkedAsDefaultChange = (value, index) => {
+    const _value = options[index]?.value;
+    setMarkedAsDefault(_value);
+    paramUpdated({ name: 'value' }, 'value', _value, 'properties');
+  };
+
   const _renderOverlay = (item, index) => {
     return (
-      <Popover id="popover-basic" className={`${darkMode && 'dark-theme'}`}>
+      <Popover id="popover-basic" className={`${darkMode && 'dark-theme'}`} style={{ minWidth: '248px' }}>
         <Popover.Body>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <label data-cy={`label-column-name`} className="form-label">
@@ -67,8 +120,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               mode="javascript"
               lineNumbers={false}
               //   placeholder={column.name}
-              //   onChange={(value) => this.onColumnItemChange(index, 'name', value)}
-              //   componentName={this.getPopoverFieldSource(column.columnType, 'name')}
+              onChange={(value) => handleLabelChange(value, index)}
               //   popOverCallback={(showing) => {
               //     this.setColumnPopoverRootCloseBlocker('name', showing);
               //   }}
@@ -84,31 +136,22 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
-              //   placeholder={column.name}
-              //   onChange={(value) => this.onColumnItemChange(index, 'name', value)}
-              //   componentName={this.getPopoverFieldSource(column.columnType, 'name')}
-              //   popOverCallback={(showing) => {
-              //     this.setColumnPopoverRootCloseBlocker('name', showing);
-              //   }}
+              //   placeholder={column.name}handleValueChange
+              onChange={(value) => handleValueChange(value, index)}
             />
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
-            <label data-cy={`label-column-name`} className="form-label">
-              {'Option value'}
-            </label>
             <CodeHinter
               currentState={currentState}
-              initialValue={item.value}
+              initialValue={markedAsDefault === item.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
               component={component}
+              type={'toggle'}
+              paramLabel={'Mark this as default option'}
               //   placeholder={column.name}
-              //   onChange={(value) => this.onColumnItemChange(index, 'name', value)}
-              //   componentName={this.getPopoverFieldSource(column.columnType, 'name')}
-              //   popOverCallback={(showing) => {
-              //     this.setColumnPopoverRootCloseBlocker('name', showing);
-              //   }}
+              onChange={(value) => handleMarkedAsDefaultChange(value, index)}
             />
           </div>
         </Popover.Body>
@@ -128,7 +171,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             {({ innerRef, droppableProps, placeholder }) => (
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {options.map((item, index) => {
-                  // const resolvedItemName = resolveReferences(item.name, this.state.currentState);
                   return (
                     <Draggable key={item.value} draggableId={item.value} index={index}>
                       {(provided, snapshot) => (
@@ -178,21 +220,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     );
   };
 
-  const events = Object.keys(componentMeta.events);
-  const validations = Object.keys(componentMeta.validation || {});
-  let properties = [];
-  let additionalActions = [];
-  let optionsProperties = [];
-  for (const [key] of Object.entries(componentMeta?.properties)) {
-    if (componentMeta?.properties[key]?.section === 'additionalActions') {
-      additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Options') {
-      optionsProperties.push(key);
-    } else {
-      properties.push(key);
-    }
-  }
-
   let items = [];
 
   items.push({
@@ -230,7 +257,18 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           currentState,
           allComponents
         )}
-        {_renderOptions()}
+        {isDynamicOptionsEnabled
+          ? renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              'schema',
+              'properties',
+              currentState,
+              allComponents
+            )
+          : _renderOptions()}
         {renderElement(
           component,
           componentMeta,

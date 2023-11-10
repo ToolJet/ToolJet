@@ -295,7 +295,7 @@ export const Inspector = ({
   }
 
   const isNewlyRevampedWidget = newRevampedWidgets.includes(component.component.component);
-  console.log(component.component.component, 'component.component.component');
+
   const handleInspectorHeaderActions = (value) => {
     if (value === 'rename') {
       setTimeout(() => setInputFocus(), 0);
@@ -528,9 +528,6 @@ const RenderStyleOptions = ({
     groupedProperties[accordian][key] = property;
   }
   // }
-  console.log(Object.entries(groupedProperties), ' Object.entries(groupedProperties)');
-
-  console.log(groupedProperties, 'groupedStyles');
 
   return Object.keys(isNewlyRevampedWidget ? groupedProperties : componentMeta.styles).map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;

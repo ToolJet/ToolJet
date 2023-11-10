@@ -29,6 +29,7 @@ export const DropDown = function DropDown({
     direction,
     fieldBorderColor,
     fieldBackgroundColor,
+    labelWidth,
   } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
@@ -275,7 +276,10 @@ export const DropDown = function DropDown({
         }}
         data-cy={dataCy}
       >
-        <div className="col-auto my-auto" style={{ alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start' }}>
+        <div
+          className="col-auto my-auto"
+          style={{ alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start', width: labelWidth }}
+        >
           <label style={labelStyles} className="form-label py-0 my-0">
             {label}
           </label>

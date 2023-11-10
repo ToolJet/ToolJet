@@ -2868,8 +2868,8 @@ export const widgets = [
         },
 
         label: { value: 'Select' },
-        value: { value: '{{2}}' },
-        values: { value: '{{[1,2,3]}}' },
+        value: { value: '{{"2"}}' },
+        values: { value: '{{["1","2","3"]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         loadingState: { value: '{{false}}' },
         placeholder: { value: 'Select an option' },
