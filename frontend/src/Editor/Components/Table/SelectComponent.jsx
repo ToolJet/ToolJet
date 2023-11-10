@@ -71,7 +71,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (
-    <div className="table-select-custom-menu-list ">
+    <div className="table-select-custom-menu-list" onClick={(e) => e.stopPropagation()}>
       <div className="table-select-column-type-search-box-wrapper ">
         {!inputValue && (
           <span className="">
