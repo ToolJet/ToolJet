@@ -1,25 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, validateName, getWorkspaceId } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
+import { appsService } from '@/_services';
+import { replaceEditorURL, getHostURL } from '@/_helpers/routes';
 import ExportAppModal from '../../HomePage/ExportAppModal';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 
 export const GlobalSettings = ({
   globalSettings,
   globalSettingsChanged,
   darkMode,
   toggleAppMaintenance,
-  is_maintenance_on,
-  app,
+  isMaintenanceOn,
   backgroundFxQuery,
   realState,
 }) => {
@@ -29,12 +31,19 @@ export const GlobalSettings = ({
   const [forceCodeBox, setForceCodeBox] = useState(true);
   const [showConfirmation, setConfirmationShow] = useState(false);
   const [isExportingApp, setIsExportingApp] = React.useState(false);
+  /* Unique app slug states */
+  const [slug, setSlug] = useState({ value: null, error: '' });
+  const [slugProgress, setSlugProgress] = useState(false);
+  const [isSlugUpdated, setSlugUpdatedState] = useState(false);
+  const { updateState } = useAppDataActions();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
     }),
     shallow
   );
+
+  const { app, slug: oldSlug } = useAppInfo();
 
   const coverStyles = {
     position: 'fixed',
@@ -43,6 +52,62 @@ export const GlobalSettings = ({
     bottom: '0px',
     left: '0px',
   };
+
+  useEffect(() => {
+    /* 
+    Only will fail for existed apps before the app/workspace url revamp which has 
+    special chars or spaces in their app slugs 
+  */
+    const existedSlugErrors = validateName(oldSlug, 'App slug', true, false, false, false);
+
+    setSlug({ value: oldSlug, error: existedSlugErrors.errorMsg });
+  }, [oldSlug]);
+
+  const handleInputChange = (value, field) => {
+    setSlug({
+      value: slug?.value,
+      error: null,
+    });
+
+    const error = validateName(value, `App ${field}`, true, false, !(field === 'slug'), !(field === 'slug'));
+
+    if (!_.isEmpty(value) && value !== oldSlug && _.isEmpty(error.errorMsg)) {
+      setSlugProgress(true);
+      appsService
+        .setSlug(app?.id, value)
+        .then(() => {
+          setSlug({
+            value,
+            error: '',
+          });
+          setSlugProgress(false);
+          setSlugUpdatedState(true);
+          replaceEditorURL(value, realState?.page?.handle);
+          updateState({
+            slug: value,
+          });
+        })
+        .catch(({ error }) => {
+          setSlug({
+            value,
+            error,
+          });
+          setSlugProgress(false);
+          setSlugUpdatedState(false);
+        });
+    } else {
+      setSlugProgress(false);
+      setSlugUpdatedState(false);
+      setSlug({
+        value,
+        error: error?.errorMsg,
+      });
+    }
+  };
+
+  const delayedSlugChange = _.debounce((value, field) => {
+    handleInputChange(value, field);
+  }, 500);
 
   const outerStyles = {
     width: '142px',
@@ -56,12 +121,13 @@ export const GlobalSettings = ({
     outline: showPicker && '1px solid var(--indigo9)',
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
+
   return (
     <>
       <Confirm
         show={showConfirmation}
         message={
-          is_maintenance_on
+          isMaintenanceOn
             ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
             : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
         }
@@ -81,12 +147,72 @@ export const GlobalSettings = ({
           darkMode={darkMode}
         />
       )}
-      <div id="" className={cx({ 'dark-theme': darkMode, disabled: isVersionReleased })}>
+      <div id="" className={cx({ 'dark-theme': darkMode })}>
         <div bsPrefix="global-settings-popover">
           <HeaderSection darkMode={darkMode}>
             <HeaderSection.PanelHeader title="Global settings" />
           </HeaderSection>
-          <div style={{ padding: '12px 16px' }}>
+          <div className="card-body">
+            <div className="app-slug-container">
+              <div className="row">
+                <div className="col tj-app-input input-with-icon">
+                  <label className="field-name">Unique app slug</label>
+                  <input
+                    type="text"
+                    className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'} slug-input`}
+                    placeholder={t('editor.appSlug', 'Unique app slug')}
+                    maxLength={50}
+                    onChange={(e) => {
+                      e.persist();
+                      delayedSlugChange(e.target.value, 'slug');
+                    }}
+                    data-cy="app-slug-input-field"
+                    defaultValue={oldSlug}
+                  />
+                  {isSlugUpdated && (
+                    <div className="icon-container">
+                      <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M14.256 0.244078C14.5814 0.569515 14.5814 1.09715 14.256 1.42259L5.92263 9.75592C5.59719 10.0814 5.06956 10.0814 4.74412 9.75592L0.577452 5.58926C0.252015 5.26382 0.252015 4.73618 0.577452 4.41074C0.902889 4.08531 1.43053 4.08531 1.75596 4.41074L5.33337 7.98816L13.0775 0.244078C13.4029 -0.0813592 13.9305 -0.0813592 14.256 0.244078Z"
+                          fill="#46A758"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                  {slug?.error ? (
+                    <label className="label tj-input-error">{slug?.error || ''}</label>
+                  ) : isSlugUpdated ? (
+                    <label className="label label-success">{`Slug accepted!`}</label>
+                  ) : (
+                    <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
+                  )}
+                </div>
+              </div>
+              <div className="row">
+                <div className="col modal-main tj-app-input">
+                  <label className="field-name">App link</label>
+                  <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
+                    {!slugProgress ? (
+                      `${getHostURL()}/${getWorkspaceId()}/apps/${slug?.value || oldSlug || ''}`
+                    ) : (
+                      <div className="d-flex gap-2">
+                        <div class="spinner-border text-secondary workspace-spinner" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                        {`Updating link`}
+                      </div>
+                    )}
+                  </div>
+                  <label className="label label-success label-updated">
+                    {isSlugUpdated ? `Link updated successfully!` : ''}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{ padding: '12px 16px' }} className={cx({ disabled: isVersionReleased })}>
             <div className="tj-text-xsm color-slate12 ">
               <div className="d-flex mb-3">
                 <span data-cy={`label-hide-header-for-launched-apps`}>
@@ -98,7 +224,7 @@ export const GlobalSettings = ({
                     className="form-check-input"
                     type="checkbox"
                     checked={hideHeader}
-                    onChange={(e) => globalSettingsChanged('hideHeader', e.target.checked)}
+                    onChange={(e) => globalSettingsChanged({ hideHeader: e.target.checked })}
                   />
                 </div>
               </div>
@@ -111,7 +237,7 @@ export const GlobalSettings = ({
                     data-cy={`toggle-maintenance-mode`}
                     className="form-check-input"
                     type="checkbox"
-                    checked={is_maintenance_on}
+                    checked={isMaintenanceOn}
                     onChange={() => setConfirmationShow(true)}
                   />
                 </div>
@@ -130,7 +256,7 @@ export const GlobalSettings = ({
                       placeholder={'0'}
                       onChange={(e) => {
                         const width = e.target.value;
-                        if (!Number.isNaN(width) && width >= 0) globalSettingsChanged('canvasMaxWidth', width);
+                        if (!Number.isNaN(width) && width >= 0) globalSettingsChanged({ canvasMaxWidth: width });
                       }}
                       value={canvasMaxWidth}
                     />
@@ -140,12 +266,16 @@ export const GlobalSettings = ({
                       aria-label="Select canvas width type"
                       onChange={(event) => {
                         const newCanvasMaxWidthType = event.currentTarget.value;
-                        globalSettingsChanged('canvasMaxWidthType', newCanvasMaxWidthType);
+                        const options = {
+                          canvasMaxWidthType: newCanvasMaxWidthType,
+                        };
+
                         if (newCanvasMaxWidthType === '%') {
-                          globalSettingsChanged('canvasMaxWidth', 100);
+                          options.canvasMaxWidth = 100;
                         } else if (newCanvasMaxWidthType === 'px') {
-                          globalSettingsChanged('canvasMaxWidth', 1292);
+                          options.canvasMaxWidth = 1292;
                         }
+                        globalSettingsChanged(options);
                       }}
                     >
                       <option value="%" selected={canvasMaxWidthType === '%'}>
@@ -158,26 +288,7 @@ export const GlobalSettings = ({
                   </div>
                 </div>
               </div>
-              {/* <div className="d-flex mb-3">
-              <span className="w-full m-auto" data-cy={`label-max-canvas-height`}>
-                {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
-              </span>
-              <div className="global-popover-div-wrap global-popover-div-wrap-width">
-                <div className="input-with-icon">
-                  <input
-                    data-cy="maximum-canvas-height-input-field"
-                    type="text"
-                    className={`form-control form-control-sm maximum-canvas-height-input-field`}
-                    placeholder={'0'}
-                    onChange={(e) => {
-                      const height = e.target.value;
-                      if (!Number.isNaN(height) && height <= 2400) globalSettingsChanged('canvasMaxHeight', height);
-                    }}
-                    value={canvasMaxHeight}
-                  />
-                </div>
-              </div>
-            </div> */}
+
               <div className="d-flex justify-content-between mb-3">
                 <span className="pt-2" data-cy={`label-bg-canvas`}>
                   {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas bavkground')}
@@ -192,8 +303,12 @@ export const GlobalSettings = ({
                         onFocus={() => setShowPicker(true)}
                         color={canvasBackgroundColor}
                         onChangeComplete={(color) => {
-                          globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb]);
-                          globalSettingsChanged('backgroundFxQuery', color.hex);
+                          const options = {
+                            canvasBackgroundColor: [color.hex, color.rgb],
+                            backgroundFxQuery: color.hex,
+                          };
+
+                          globalSettingsChanged(options);
                         }}
                       />
                     </div>
@@ -236,8 +351,11 @@ export const GlobalSettings = ({
                         className="canvas-hinter-wrap"
                         lineNumbers={false}
                         onChange={(color) => {
-                          globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, realState));
-                          globalSettingsChanged('backgroundFxQuery', color);
+                          const options = {
+                            canvasBackgroundColor: resolveReferences(color, realState),
+                            backgroundFxQuery: color,
+                          };
+                          globalSettingsChanged(options);
                         }}
                       />
                     )}

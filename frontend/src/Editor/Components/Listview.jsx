@@ -114,7 +114,7 @@ export const Listview = function Listview({
             key={index}
             data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClick={(event) => {
-              event.stopPropagation();
+              event.preventDefault();
               onRecordClicked(index);
               onRowClicked(index);
             }}
