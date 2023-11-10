@@ -57,7 +57,6 @@ export const Inspector = ({
   selectedComponentId,
   componentDefinitionChanged,
   allComponents,
-  apps,
   darkMode,
   switchSidebarTab,
   removeComponent,
@@ -67,18 +66,17 @@ export const Inspector = ({
   const dataQueries = useDataQueries();
   const component = {
     id: selectedComponentId,
-    component: allComponents[selectedComponentId].component,
+    component: JSON.parse(JSON.stringify(allComponents[selectedComponentId].component)),
     layouts: allComponents[selectedComponentId].layouts,
     parent: allComponents[selectedComponentId].parent,
   };
   const currentState = useCurrentState();
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const [tabHeight, setTabHeight] = React.useState(0);
+
   const componentNameRef = useRef(null);
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
-  const [selectedTab, setSelectedTab] = useState('properties');
+  // const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
   const newRevampedWidgets = ['TextInput', 'Text', 'DropDown'];
 
@@ -104,13 +102,6 @@ export const Inspector = ({
     componentNameRef.current = newComponentName;
   }, [newComponentName]);
 
-  useEffect(() => {
-    return () => {
-      handleComponentNameChange(componentNameRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const validateComponentName = (name) => {
     const isValid = !Object.values(allComponents)
       .map((component) => component.component.name)
@@ -134,9 +125,9 @@ export const Inspector = ({
       return setInputFocus();
     }
     if (validateQueryName(newName)) {
-      let newComponent = { ...component };
+      let newComponent = JSON.parse(JSON.stringify(component));
       newComponent.component.name = newName;
-      componentDefinitionChanged(newComponent);
+      componentDefinitionChanged(newComponent, { componentNameUpdated: true });
     } else {
       toast.error(
         t(
@@ -155,8 +146,9 @@ export const Inspector = ({
     return null;
   };
 
-  function paramUpdated(param, attr, value, paramType) {
-    let newDefinition = _.cloneDeep(component.component.definition);
+  function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false) {
+    let newComponent = JSON.parse(JSON.stringify(component));
+    let newDefinition = _.cloneDeep(newComponent.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
@@ -165,13 +157,19 @@ export const Inspector = ({
     if (attr) {
       allParams[param.name][attr] = value;
       const defaultValue = getDefaultValue(value);
-      // This is needed to have enable pagination as backward compatible
+      // This is needed to have enable pagination in Table as backward compatible
       // Whenever enable pagination is false, we turn client and server side pagination as false
-      if (param.name === 'enablePagination' && !resolveReferences(value, currentState)) {
+      if (
+        component.component.component === 'Table' &&
+        param.name === 'enablePagination' &&
+        !resolveReferences(value, currentState)
+      ) {
         if (allParams?.['clientSidePagination']?.[attr]) {
           allParams['clientSidePagination'][attr] = value;
         }
-        allParams['serverSidePagination'][attr] = value;
+        if (allParams['serverSidePagination']?.[attr]) {
+          allParams['serverSidePagination'][attr] = value;
+        }
       }
       // This case is required to handle for older apps when serverSidePagination is connected to Fx
       if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
@@ -196,12 +194,11 @@ export const Inspector = ({
       allParams[param.name] = value;
     }
     newDefinition[paramType] = allParams;
-    let newComponent = _.merge(component, {
-      component: {
-        definition: newDefinition,
-      },
+    newComponent.component.definition = newDefinition;
+    componentDefinitionChanged(newComponent, {
+      componentPropertyUpdated: true,
+      isParamFromTableColumn: isParamFromTableColumn,
     });
-    componentDefinitionChanged(newComponent);
   }
 
   function layoutPropertyChanged(param, attr, value, paramType) {
@@ -209,9 +206,7 @@ export const Inspector = ({
 
     // User wants to show the widget on mobile devices
     if (param.name === 'showOnMobile' && value === true) {
-      let newComponent = {
-        ...component,
-      };
+      let newComponent = JSON.parse(JSON.stringify(component));
 
       const { width, height } = newComponent.layouts['desktop'];
 
@@ -225,7 +220,7 @@ export const Inspector = ({
         },
       };
 
-      componentDefinitionChanged(newComponent);
+      componentDefinitionChanged(newComponent, { layoutPropertyChanged: true });
 
       //  Child components should also have a mobile layout
       const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
@@ -248,50 +243,9 @@ export const Inspector = ({
           },
         };
 
-        componentDefinitionChanged(newChild);
+        componentDefinitionChanged(newChild, { withChildLayout: true });
       });
     }
-  }
-
-  function eventUpdated(event, actionId) {
-    let newDefinition = { ...component.component.definition };
-    newDefinition.events[event.name] = { actionId };
-
-    let newComponent = {
-      ...component,
-    };
-
-    componentDefinitionChanged(newComponent);
-  }
-
-  function eventsChanged(newEvents, isReordered = false) {
-    let newDefinition;
-    if (isReordered) {
-      newDefinition = { ...component.component };
-      newDefinition.definition.events = newEvents;
-    } else {
-      newDefinition = { ...component.component.definition };
-      newDefinition.events = newEvents;
-    }
-
-    let newComponent = {
-      ...component,
-    };
-
-    componentDefinitionChanged(newComponent);
-  }
-
-  function eventOptionUpdated(event, option, value) {
-    let newDefinition = { ...component.component.definition };
-    let eventDefinition = newDefinition.events[event.name] || { options: {} };
-
-    newDefinition.events[event.name] = { ...eventDefinition, options: { ...eventDefinition.options, [option]: value } };
-
-    let newComponent = {
-      ...component,
-    };
-
-    componentDefinitionChanged(newComponent);
   }
 
   const isNewlyRevampedWidget = newRevampedWidgets.includes(component.component.component);
@@ -341,13 +295,13 @@ export const Inspector = ({
         paramUpdated={paramUpdated}
         dataQueries={dataQueries}
         componentMeta={componentMeta}
-        eventUpdated={eventUpdated}
-        eventOptionUpdated={eventOptionUpdated}
+        // eventUpdated={eventUpdated}
+        // eventOptionUpdated={eventOptionUpdated}
         components={allComponents}
         currentState={currentState}
         darkMode={darkMode}
-        eventsChanged={eventsChanged}
-        apps={apps}
+        // eventsChanged={eventsChanged}
+        // apps={apps} !check
         pages={pages}
         allComponents={allComponents}
       />
@@ -392,7 +346,7 @@ export const Inspector = ({
         message={'Widget will be deleted, do you want to continue?'}
         onConfirm={() => {
           switchSidebarTab(2);
-          removeComponent(component);
+          removeComponent(component.id);
         }}
         onCancel={() => setWidgetDeleteConfirmation(false)}
         darkMode={darkMode}
@@ -513,21 +467,21 @@ const RenderStyleOptions = ({
 }) => {
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
-  // if (isNewlyRevampedWidget) {
-  // Iterate over the properties in componentMeta.styles
-  for (const key in componentMeta.styles) {
-    const property = componentMeta.styles[key];
-    const accordian = property.accordian;
+  if (isNewlyRevampedWidget) {
+    // Iterate over the properties in componentMeta.styles
+    for (const key in componentMeta.styles) {
+      const property = componentMeta.styles[key];
+      const accordian = property.accordian;
 
-    // Check if the "accordian" key exists in groupedProperties
-    if (!groupedProperties[accordian]) {
-      groupedProperties[accordian] = {}; // Create an empty object for the "accordian" key if it doesn't exist
+      // Check if the "accordian" key exists in groupedProperties
+      if (!groupedProperties[accordian]) {
+        groupedProperties[accordian] = {}; // Create an empty object for the "accordian" key if it doesn't exist
+      }
+
+      // Add the property to the corresponding "accordian" object
+      groupedProperties[accordian][key] = property;
     }
-
-    // Add the property to the corresponding "accordian" object
-    groupedProperties[accordian][key] = property;
   }
-  // }
 
   return Object.keys(isNewlyRevampedWidget ? groupedProperties : componentMeta.styles).map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
