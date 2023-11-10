@@ -2983,7 +2983,6 @@ input:focus-visible {
   position: relative;
   display: flex;
   flex: 1;
-  margin-right: 10px;
 
   input {
     border-radius: 0px 6px 6px 0px !important;
@@ -4256,11 +4255,24 @@ input[type="text"] {
 }
 
 .app-name {
-  width: 190px;
+  width: 200px;
   margin-left: 12px;
 
   .form-control-plaintext {
-    background-color: var(--base)
+    background-color: var(--base);
+    border: none !important;
+  }
+
+  .form-control-plaintext:hover {
+    outline: none;
+    border: 1px solid var(--slate6) !important;
+    background: var(--slate2);
+  }
+
+  .form-control-plaintext:focus {
+    outline: none;
+    border: 1px solid var(--indigo9) !important;
+    background: var(--slate2);
   }
 
 }
@@ -4609,16 +4621,16 @@ input[type="text"] {
   color: $white  !important;
 
   .modal-title {
-    color: $white  !important;
+    color: $white !important;
   }
 
   .tj-version-wrap-sub-footer {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
     border-top: 1px solid #3A3F42 !important;
 
 
     p {
-      color: $white  !important;
+      color: $white !important;
     }
   }
 
@@ -4629,7 +4641,9 @@ input[type="text"] {
   }
 
   .modal-header {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
+    color: $white !important;
+    border-bottom: 2px solid #3A3F42 !important;
   }
 
   .btn-close {
@@ -6276,6 +6290,10 @@ input.hide-input-arrows {
       background-color: #232e3c;
       border-bottom: 1px solid #324156;
     }
+    .popover-body {
+      background-color: #232e3c;
+      border-radius: 6px;
+    }
   }
 
   .popover-header {
@@ -6583,9 +6601,9 @@ input.hide-input-arrows {
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
   border-radius: 4px;
   border: 1px solid var(--slate3) !important;
-  left: 109px !important;
-  top: 8px !important;
-  position: absolute !important;
+  // left: 109px !important;
+  // top: 8px !important;
+  // position: absolute !important;
 
 
   .card-body,
@@ -6603,9 +6621,9 @@ input.hide-input-arrows {
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
   border-radius: 4px;
   border: 1px solid var(--slate3) !important;
-  left: 193px !important;
-  top: 10px !important;
-  position: absolute !important;
+  // left: 193px !important;
+  // top: 10px !important;
+  // position: absolute !important;
 
 
   .card-body,
@@ -6908,14 +6926,6 @@ tbody {
 
   .delete-row-btn {
     max-width: 140px;
-  }
-
-  .table-list-item-popover {
-    display: none;
-  }
-
-  .table-list-item:hover .table-list-item-popover {
-    display: block;
   }
 }
 
@@ -8725,7 +8735,7 @@ tbody {
   }
 }
 
-.tj-db-operaions-header {
+.tj-db-operations-header {
   height: 48px;
   padding: 0 !important;
   display: flex;
@@ -8734,19 +8744,19 @@ tbody {
 
   .row {
     margin-left: 0px;
+    width: 98%;
   }
 
-  .col {
+  .col-8 {
     padding-left: 0px;
     display: flex;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
   }
 }
 
 .add-new-column-btn {
   margin-left: 16px;
-  width: 144px !important;
   height: 28px;
   border-radius: 6px;
   padding: 0 !important;
@@ -8759,7 +8769,7 @@ tbody {
 }
 
 .tj-db-filter-btn {
-  width: 81px;
+  width: 100%;
   height: 28px;
   border-radius: 6px;
   background: transparent;
@@ -8777,7 +8787,7 @@ tbody {
   justify-content: center !important;
   align-items: center !important;
   padding: 4px 16px !important;
-  width: 171px !important;
+  width: 100% !important;
   height: 28px !important;
   background: var(--grass2) !important;
   border-radius: 6px !important;
@@ -8785,19 +8795,22 @@ tbody {
 
 .tj-db-filter-btn-active,
 .tj-db-sort-btn-active {
-  width: 81px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 4px 16px !important;
+  width: 100% !important;
   height: 28px !important;
-  background: var(--indigo4) !important;
-  border: 1px solid var(--indigo9) !important;
   border-radius: 6px !important;
-  justify-content: center;
+  background: var(--indigo4) !important;
+  //border: 1px solid var(--indigo9) !important;
   color: var(--indigo9) !important;
 }
 
 .tj-db-header-add-new-row-btn {
-  width: 125px;
   height: 28px;
-  background: var(--indigo3);
+  background: transparent;
   border-radius: 6px !important;
   display: flex;
   flex-direction: row;
@@ -8806,13 +8819,13 @@ tbody {
   gap: 6px;
   border: none;
 
-  span {
-    color: var(--indigo9);
+  padding: span {
+    //color: var(--indigo9);
   }
 }
 
 .tj-db-sort-btn {
-  width: 75px;
+  width: 100%;
   height: 28px;
   background: transparent;
   color: var(--slate12);
@@ -8820,6 +8833,7 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0
 }
 
 .edit-row-btn {
@@ -8828,6 +8842,7 @@ tbody {
   border: none;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .workspace-variable-header {
@@ -9687,7 +9702,6 @@ tbody {
   padding: 60px 0px;
   gap: 36px;
   width: 486px;
-  height: 244px;
   border: 2px dashed var(--indigo9);
   border-radius: 6px;
   align-items: center;
@@ -10212,6 +10226,8 @@ tbody {
     border-radius: 6px !important;
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
+    transition:none;
+
 
     &:hover {
       background: var(--slate1) !important;
@@ -10226,6 +10242,23 @@ tbody {
       border: 1px solid var(--indigo9) !important;
       box-shadow: none !important;
     }
+    &.input-error-border {
+      border-color: #DB4324 !important;
+    }
+
+    &:-webkit-autofill {
+      box-shadow: 0 0 0 1000px var(--base) inset !important;
+      -webkit-text-fill-color: var(--slate12) !important;
+
+       &:hover {
+         box-shadow: 0 0 0 1000px var(--slate1) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}
+
+       &:focus-visible { 
+        box-shadow: 0 0 0 1000px var(--indigo2) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}
+    }
+
 
   }
 
@@ -10425,6 +10458,7 @@ tbody {
 
 .upload-user-form span.file-upload-error {
   color: var(--tomato10) !important;
+  margin-top: 12px 0px 0px 0px;
 }
 
 .tj-onboarding-phone-input {
@@ -10613,7 +10647,7 @@ tbody {
 }
 
 .export-table-button {
-  width: 135px;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10621,7 +10655,7 @@ tbody {
 
 
 #global-settings-popover.theme-dark {
-  background-color: $bg-dark-light  !important;
+  background-color: $bg-dark-light !important;
   border: 1px solid #2B2F31;
 
   .global-popover-text {
@@ -10629,7 +10663,7 @@ tbody {
   }
 
   .maximum-canvas-width-input-select {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
     border: 1px solid #324156;
     color: $white;
   }
@@ -10924,6 +10958,13 @@ tbody {
   border: 1px solid var(--slate3);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-radius: 6px;
+
+  .card-body-alignment {
+    min-height: 145px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 }
 
 .template-source-name {
@@ -10945,7 +10986,7 @@ tbody {
     .input-group-text {
       border-color: var(--slate7);
       color: var(--slate12);
-      background-color: var(--base);
+      background-color: var(--slate3);
     }
 
     .app-name-slug-input {
@@ -10957,7 +10998,6 @@ tbody {
 
   .input-group {
     display: flex;
-    align-items: center;
 
     .tj-app-input textarea {
       width: 600px;
@@ -11007,8 +11047,131 @@ tbody {
       color: var(--slate12) !important;
     }
   }
+
+  .shareable-link-container,
+  .app-slug-container {
+    .field-name {
+      color: var(--slate-12) !important;
+    }
+    input.slug-input {
+      background: #1f2936 !important;
+      color: #f4f6fa !important;
+      border-color: #324156 !important;
+    }  
+    .applink-text {
+      background-color: #2b394b !important;
+    }
+
+    .input-group-text {
+      background-color: #2b394b !important;
+    }
+
+    .tj-text-input {
+      border-color: #324156 !important;
+    }
+
+    .input-with-icon {
+      .form-control{
+        background-color: #1f2936 !important;
+        border-color: #3E4B5A !important;
+        color: #fff !important;
+      }
+    }
+  }
+
 }
 
+.dark-theme{
+  .manage-app-users-footer {
+    .default-secondary-button {
+      background-color: var(--indigo9);
+      color: var(--base-black);
+    }
+  }
+}
+
+.break-all {
+  word-break: break-all;
+}
+
+.workspace-folder-modal{
+  .tj-text-input.dark {
+    background:  #202425;
+    border-color: var(--slate7) !important;
+  }
+}
+
+.slug-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 150px; 
+}
+
+.app-slug-container,
+.shareable-link-container,
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .label {
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 16px 0px;
+  }
+
+  .tj-input-error {
+    color: var(--tomato10);
+  }
+
+  .tj-text-input {
+    width: auto !important;
+    background: var(--slate3);
+    color: var(--slate9);
+    height: auto !important;
+    margin-bottom: 5px;
+    border-color: var(--slate7);
+
+    &:hover {
+      box-shadow: none;
+    }
+    
+    &:active {
+      border: 1px solid #D7DBDF;
+      box-shadow: none;
+    }
+  }
+
+  .input-with-icon {
+    flex: none;
+    .icon-container {
+      right: 20px;
+      top: calc(50% - 13px);
+    }
+  }
+
+  .label-info {
+    color: #687076;
+  }
+
+  .label-success {
+    color: #3D9A50;
+  }
+
+  
+  .workspace-spinner {
+    color: #889096 !important;
+    width: 16px;
+    height: 16px;
+    align-self: center;
+  }
+
+  .cancel-btn {
+    color: var(--indigo9);
+  }
+}
 .confirm-dialogue-modal {
   background: var(--base);
 }
@@ -11063,18 +11226,27 @@ tbody {
   }
 }
 
+.app-slug-container,
 .workspace-folder-modal {
   .tj-app-input {
     padding-bottom: 0px !important;
+
+    .is-invalid {
+      border-color: var(--tomato10) !important;
+    }
+
+    .is-invalid:focus {
+      border-color: var(--tomato10) !important;
+    }
   }
 
   .tj-input-error {
     height: 32px;
-    color: #ED5F00;
+    color: var(--tomato10);
     font-weight: 400;
     font-size: 10px;
     height: 0px;
-    padding: 4px 0px 20px 0px;
+    padding: 4px 0px 16px 0px;
   }
 }
 
@@ -11276,10 +11448,88 @@ tbody {
     background-color: #F1F3F5;
     color: #C1C8CD;
   }
+}
+
+.modal-divider {
+  border-top: 1px solid #dee2e6;
+  padding: 10px;
+}
+
+.dark-theme-modal-divider {
+  border-top: 1px solid var(--slate5) !important;
+  padding: 10px;
 
   .nav-item {
     background-color: transparent !important;
   }
+}
+
+.app-slug-container {
+  .label {
+    font-size: 9px !important;
+  }
+}
+
+.shareable-link-container {
+  .copy-container {
+    width: 0px;
+    margin-right: -12px;
+  }
+
+  .form-check-label {
+    font-size: 12px;
+    margin-left: 8px;
+    color: var(--base-slate-12);
+  }
+
+  .label-success,
+  .label-updated,
+  .tj-input-error,
+  .label-info {
+    font-size: 10px;
+    padding-top: 10px;
+  }
+
+  .input-with-icon {
+    .form-control {
+      height: 100%;
+      border-radius: 0px !important;
+      padding-right: 40px;
+    }
+
+    .is-invalid:focus {
+      border-color: var(--tomato9) !important;
+    }
+
+    .icon-container {  
+      right: 12px;
+      top: calc(50% - 11px);  
+      
+      .spinner-border {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .input-group-text {
+    background: var(--slate3);
+    color: var(--slate9);
+  }
+}
+
+.manage-app-users-footer {
+  padding-bottom: 20px;
+  margin-top: 18px;
+  .default-secondary-button {
+    width: auto !important;
+    padding: 18px;
+  }
+
+}
+
+.share-disabled {
+  opacity: 0.4;
 }
 
 // Editor revamp styles
@@ -11575,6 +11825,14 @@ tbody {
 .color-slate-11{
   color: var(--slate11) !important;
 }
+
+// ToolJet Database buttons
+
+.ghost-black-operation {
+  border: 1px solid transparent !important;
+  padding: 4px 10px;
+}
+
 .custom-gap-2{
   gap:2px
 }

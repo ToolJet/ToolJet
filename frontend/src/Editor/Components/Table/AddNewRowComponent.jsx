@@ -18,6 +18,7 @@ export function AddNewRowComponent({
   columns,
   addNewRowsDetails,
   utilityForNestedNewRow,
+  tableEvents,
 }) {
   const getNewRowObject = () => {
     return allColumns.reduce((accumulator, column) => {
@@ -160,11 +161,10 @@ export function AddNewRowComponent({
         <ButtonSolid
           variant="primary"
           className={`tj-text-xsm`}
-          onClick={() => {
-            onEvent('onNewRowsAdded', { component }).then(() => {
-              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
-              setNewRowsState([]);
-            });
+          onClick={async () => {
+            await onEvent('onNewRowsAdded', tableEvents, { component });
+            mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+            setNewRowsState([]);
           }}
           size="sm"
           customStyles={{ padding: '10px 20px' }}

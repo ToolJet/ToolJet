@@ -12,30 +12,31 @@ import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
+import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 export default function EditorHeader({
   M,
-  app,
-  appVersionPreviewLink,
-  slug,
-  appId,
   canUndo,
   canRedo,
   handleUndo,
   handleRedo,
-  isSaving,
   saveError,
   onNameChanged,
   setAppDefinitionFromVersion,
-  handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
   onVersionDelete,
-  currentUser,
+  slug,
   darkMode,
 }) {
+  const currentUser = useCurrentUser();
+
+  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink } = useAppInfo();
+
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -43,8 +44,10 @@ export default function EditorHeader({
     }),
     shallow
   );
+  const currentState = useCurrentState();
 
   const updatePresence = useUpdatePresence();
+
   useEffect(() => {
     const initialPresence = {
       firstName: currentUser?.first_name ?? '',
@@ -59,14 +62,16 @@ export default function EditorHeader({
     updatePresence(initialPresence);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
-  const handleLogoClick = () => {
+
+  const handleLogoClick = (e) => {
+    e.preventDefault();
     // Force a reload for clearing interval triggers
-    window.location.href = '/';
+    redirectToDashboard();
   };
 
   return (
-    <div className="header">
-      <header className="navbar navbar-expand-md  d-print-none p-0">
+    <div className="header" style={{ width: '100%' }}>
+      <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container">
           <div className="d-flex w-100">
             <h1 className="navbar-brand d-none-navbar-horizontal p-0">
@@ -93,7 +98,7 @@ export default function EditorHeader({
                 }}
               >
                 <div className="global-settings-app-wrapper p-0 m-0 ">
-                  <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
+                  <EditAppName appId={appId} appName={appName} onNameChanged={onNameChanged} />
                 </div>
                 <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
                 <div className="d-flex align-items-center">
@@ -130,9 +135,9 @@ export default function EditorHeader({
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       onVersionDelete={onVersionDelete}
+                      isPublic={isPublic ?? false}
                     />
                   )}
                 </div>
@@ -144,13 +149,16 @@ export default function EditorHeader({
             >
               <div className="navbar-nav flex-row order-md-last release-buttons ">
                 <div className="nav-item">
-                  {app.id && (
+                  {appId && (
                     <ManageAppUsers
                       app={app}
+                      appId={appId}
                       slug={slug}
-                      M={M}
-                      handleSlugChange={handleSlugChange}
                       darkMode={darkMode}
+                      isVersionReleased={isVersionReleased}
+                      pageHandle={currentState?.page?.handle}
+                      M={M}
+                      isPublic={isPublic ?? false}
                     />
                   )}
                 </div>
@@ -167,14 +175,12 @@ export default function EditorHeader({
                   </Link>
                 </div>
                 <div className="nav-item dropdown">
-                  {app.id && (
-                    <ReleaseVersionButton
-                      appId={app.id}
-                      appName={app.name}
-                      onVersionRelease={onVersionRelease}
-                      saveEditingVersion={saveEditingVersion}
-                    />
-                  )}
+                  <ReleaseVersionButton
+                    appId={appId}
+                    appName={appName}
+                    onVersionRelease={onVersionRelease}
+                    saveEditingVersion={saveEditingVersion}
+                  />
                 </div>
               </div>
             </div>

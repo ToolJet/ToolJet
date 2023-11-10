@@ -1,4 +1,4 @@
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { isEmpty } from 'lodash';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { resolveReferences } from '@/_helpers/utils';
@@ -18,6 +18,8 @@ async function perform(dataQuery, currentState) {
       return updateRows(dataQuery, currentState);
     case 'delete_rows':
       return deleteRows(dataQuery, currentState);
+    case 'join_tables':
+      return joinTables(dataQuery, currentState);
 
     default:
       return {
@@ -172,4 +174,80 @@ async function deleteRows(dataQuery, currentState) {
 
   const headers = { 'data-query-id': dataQuery.id };
   return await tooljetDatabaseService.deleteRows(headers, tableId, query.join('&'));
+}
+
+// Function:- To valid Empty fields in JSON ( Works for Nested JSON too )
+// function validateInputJsonHasEmptyFields(input) {
+//   let isValid = true;
+
+//   if (isEmpty(input)) return false;
+//   if (Array.isArray(input)) {
+//     let isIncludesInvalidJson = input
+//       .map((eachValue) => {
+//         let isValidJson = validateInputJsonHasEmptyFields(eachValue);
+//         return isValidJson;
+//       })
+//       .includes(false);
+//     if (isIncludesInvalidJson) isValid = false;
+//   }
+
+//   if (typeof input === 'object') {
+//     let isIncludesInvalidJson = Object.entries(input)
+//       .map(([key, value]) => {
+//         let isValidJson = validateInputJsonHasEmptyFields(value);
+//         return isValidJson;
+//       })
+//       .includes(false);
+//     if (isIncludesInvalidJson) isValid = false;
+//   }
+
+//   return isValid;
+// }
+
+async function joinTables(dataQuery, currentState) {
+  const organizationId = authenticationService.currentSessionValue.current_organization_id;
+  const queryOptions = dataQuery.options;
+  const resolvedOptions = resolveReferences(queryOptions, currentState);
+  const { join_table = {} } = resolvedOptions;
+
+  // Empty Input is restricted
+  if (Object.keys(join_table).length === 0) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: `Input can't be empty`,
+      description: 'Empty inputs are not allowed',
+      data: {},
+    };
+  }
+
+  const sanitizedJoinTableJson = { ...join_table };
+  // If mandatory fields ( Select, JOin & From section ), are empty throw error
+  let mandatoryFieldsButEmpty = [];
+  if (!sanitizedJoinTableJson?.fields.length) mandatoryFieldsButEmpty.push('Select');
+  if (sanitizedJoinTableJson?.from && !Object.keys(sanitizedJoinTableJson?.from).length)
+    mandatoryFieldsButEmpty.push('From');
+  // if (join_table?.joins && !validateInputJsonHasEmptyFields(join_table?.joins)) mandatoryFieldsButEmpty.push('Joins');
+  if (mandatoryFieldsButEmpty.length) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: `Empty values are found in the following section - ${mandatoryFieldsButEmpty.join(', ')}.`,
+      description: 'Mandatory fields are not empty',
+      data: {},
+    };
+  }
+
+  // If non-mandatory fields ( Filter & Sort ) are empty - remove the particular field
+  if (
+    sanitizedJoinTableJson?.conditions &&
+    (!Object.keys(sanitizedJoinTableJson?.conditions)?.length ||
+      !sanitizedJoinTableJson?.conditions?.conditionsList?.length)
+  ) {
+    delete sanitizedJoinTableJson.conditions;
+  }
+  if (sanitizedJoinTableJson?.order_by && !sanitizedJoinTableJson?.order_by.length)
+    delete sanitizedJoinTableJson.order_by;
+
+  return await tooljetDatabaseService.joinTables(organizationId, sanitizedJoinTableJson);
 }

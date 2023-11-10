@@ -18,6 +18,7 @@ import { capitalize, has } from 'lodash';
 import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnPopover';
+import { useAppDataStore } from '@/_stores/appDataStore';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -74,13 +75,13 @@ class TableComponent extends React.Component {
   onActionButtonPropertyChanged = (index, property, value) => {
     const actions = this.props.component.component.definition.properties.actions;
     actions.value[index][property] = value;
-    this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', actions.value, 'properties', true);
   };
 
   actionButtonEventsChanged = (events, index) => {
     let actions = this.props.component.component.definition.properties.actions.value;
     actions[index]['events'] = events;
-    this.props.paramUpdated({ name: 'actions' }, 'value', actions, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', actions, 'properties', true);
   };
 
   actionButtonEventUpdated = (event, value, extraData) => {
@@ -92,7 +93,7 @@ class TableComponent extends React.Component {
       actionId: value,
     };
 
-    this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties', true);
   };
 
   actionButtonEventOptionUpdated = (event, option, value, extraData) => {
@@ -107,7 +108,7 @@ class TableComponent extends React.Component {
       [option]: value,
     };
 
-    this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', newValues, 'properties', true);
   };
 
   columnEventChanged = (columnForWhichEventsAreChanged, events) => {
@@ -160,6 +161,18 @@ class TableComponent extends React.Component {
     );
   };
 
+  deleteEvents = (ref, eventTarget) => {
+    const events = useAppDataStore.getState().events.filter((event) => event.target === eventTarget);
+
+    const toDelete = events?.filter((e) => e.event?.ref === ref.ref);
+
+    return new Promise.all(
+      toDelete?.forEach((e) => {
+        return useAppDataStore.getState().actions.deleteAppVersionEventHandler(e.id);
+      })
+    );
+  };
+
   actionPopOver = (action, index) => {
     const dummyComponentForActionButton = {
       component: {
@@ -168,6 +181,8 @@ class TableComponent extends React.Component {
         },
       },
     };
+
+    const actionRef = { ref: `${action?.name}` };
 
     return (
       <Popover id="popover-basic" className={`${this.props.darkMode && 'dark-theme'}`}>
@@ -236,8 +251,12 @@ class TableComponent extends React.Component {
             paramType="properties"
           />
           <EventManager
+            //!have to check
             component={dummyComponentForActionButton}
-            componentMeta={{ events: { onClick: { displayName: 'On click' } } }}
+            sourceId={this.props?.component?.id}
+            eventSourceType="table_action"
+            customEventRefs={actionRef}
+            eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
             currentState={this.state.currentState}
             dataQueries={this.props.dataQueries}
             components={this.props.components}
@@ -249,7 +268,10 @@ class TableComponent extends React.Component {
             }}
             pages={this.props.pages}
           />
-          <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
+          <button
+            className="btn btn-sm btn-outline-danger mt-2 col"
+            onClick={() => this.removeAction(index, actionRef)}
+          >
             {this.props.t('widget.Table.remove', 'Remove')}
           </button>
         </Popover.Body>
@@ -300,20 +322,21 @@ class TableComponent extends React.Component {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
     newValue.push({ name: this.generateNewColumnName(columns.value), id: uuidv4() });
-    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
+    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
   };
 
   addNewAction = () => {
     const actions = this.props.component.component.definition.properties.actions;
     const newValue = actions ? actions.value : [];
     newValue.push({ name: computeActionName(actions), buttonText: 'Button', events: [] });
-    this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties', true);
   };
 
-  removeAction = (index) => {
+  removeAction = (index, ref) => {
     const newValue = this.props.component.component.definition.properties.actions.value;
     newValue.splice(index, 1);
-    this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties');
+    this.props.paramUpdated({ name: 'actions' }, 'value', newValue, 'properties', true);
+    this.deleteEvents(ref, 'table_action');
   };
 
   onColumnItemChange = (index, item, value) => {
@@ -323,7 +346,8 @@ class TableComponent extends React.Component {
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
-    this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties');
+
+    this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
   };
 
   getItemStyle = (isDragging, draggableStyle) => ({
@@ -331,11 +355,11 @@ class TableComponent extends React.Component {
     ...draggableStyle,
   });
 
-  removeColumn = (index) => {
+  removeColumn = (index, ref) => {
     const columns = this.props.component.component.definition.properties.columns;
     const newValue = columns.value;
     const removedColumns = newValue.splice(index, 1);
-    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties');
+    this.props.paramUpdated({ name: 'columns' }, 'value', newValue, 'properties', true);
 
     const existingcolumnDeletionHistory =
       this.props.component.component.definition.properties.columnDeletionHistory?.value ?? [];
@@ -343,14 +367,16 @@ class TableComponent extends React.Component {
       ...existingcolumnDeletionHistory,
       ...removedColumns.map((column) => column.key || column.name),
     ];
-    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties');
+    this.props.paramUpdated({ name: 'columnDeletionHistory' }, 'value', newcolumnDeletionHistory, 'properties', true);
+
+    this.deleteEvents(ref, 'table_column');
   };
 
   reorderColumns = (startIndex, endIndex) => {
     const result = this.props.component.component.definition.properties.columns.value;
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    this.props.paramUpdated({ name: 'columns' }, 'value', result, 'properties');
+    this.props.paramUpdated({ name: 'columns' }, 'value', result, 'properties', true);
   };
 
   onDragEnd({ source, destination }) {
@@ -368,7 +394,6 @@ class TableComponent extends React.Component {
 
     const columns = component.component.definition.properties.columns;
     const actions = component.component.definition.properties.actions || { value: [] };
-
     if (!component.component.definition.properties.displaySearchBox)
       paramUpdated({ name: 'displaySearchBox' }, 'value', true, 'properties');
     const displaySearchBox = component.component.definition.properties.displaySearchBox.value;
@@ -465,7 +490,8 @@ class TableComponent extends React.Component {
                                       enableActionsMenu={false}
                                       isEditable={item.isEditable === '{{true}}'}
                                       onMenuOptionClick={(listItem, menuOptionLabel) => {
-                                        if (menuOptionLabel === 'Delete') this.removeColumn(index);
+                                        if (menuOptionLabel === 'Delete')
+                                          this.removeColumn(index, `${item.name}-${index}`);
                                       }}
                                       darkMode={darkMode}
                                       // menuActions={[
@@ -552,8 +578,11 @@ class TableComponent extends React.Component {
       isOpen: true,
       children: (
         <EventManager
+          //!have to check
           component={component}
-          componentMeta={componentMeta}
+          sourceId={this.props?.component?.id}
+          eventSourceType="component"
+          eventMetaDefinition={componentMeta}
           currentState={currentState}
           dataQueries={dataQueries}
           components={components}
