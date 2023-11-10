@@ -579,7 +579,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         // check if component id not found then try to find if its available as child widget else continue
         //  with normal flow finding action
         if (component == undefined) {
-          component = _ref.state.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId];
+          component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
           const parent = Object.values(getCurrentState()?.components ?? {}).find(
             (item) => item.id === component.parent
           );
