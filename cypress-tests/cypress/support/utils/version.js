@@ -151,5 +151,7 @@ export const verifyVersionAfterPreview = (currentVersion) => {
     .click();
   cy.url().should("include", "/home");
   verifyComponent("button1");
+  cy.go("back");
+  cy.waitForAppLoad()
   cy.contains(currentVersion);
 };

@@ -18,12 +18,21 @@ export const CreateVersion = ({
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
+
   const { t } = useTranslation();
   const { editingVersion } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
     }),
     shallow
+  );
+
+  const options = appVersions.map((version) => {
+    return { label: version.name, value: version };
+  });
+
+  const [selectedVersion, setSelectedVersion] = useState(
+    () => options.find((option) => option?.value?.id === editingVersion?.id)?.value
   );
 
   const createVersion = () => {
@@ -37,28 +46,32 @@ export const CreateVersion = ({
     }
 
     setIsCreatingVersion(true);
+
     appVersionService
-      .create(appId, versionName, editingVersion.id)
-      .then(() => {
+      .create(appId, versionName, selectedVersion.id)
+      .then((data) => {
         toast.success('Version Created');
         appVersionService.getAll(appId).then((data) => {
           setVersionName('');
           setIsCreatingVersion(false);
           setAppVersions(data.versions);
-          const latestVersion = data.versions.at(0);
-          setAppDefinitionFromVersion(latestVersion);
           setShowCreateAppVersion(false);
         });
+
+        appVersionService
+          .getAppVersionData(appId, data.id)
+          .then((data) => {
+            setAppDefinitionFromVersion(data);
+          })
+          .catch((error) => {
+            toast.error(error);
+          });
       })
       .catch((error) => {
         toast.error(error?.error);
         setIsCreatingVersion(false);
       });
   };
-
-  const options = appVersions.map((version) => {
-    return { label: version.name, value: version };
-  });
 
   return (
     <AlertDialog
@@ -102,9 +115,10 @@ export const CreateVersion = ({
           <div className="ts-control" data-cy="create-version-from-input-field">
             <Select
               options={options}
-              defaultValue={options.find((option) => option?.value?.id === editingVersion?.id)}
+              value={selectedVersion}
               onChange={(version) => {
-                onSelectVersion(version.id);
+                // onSelectVersion(version.id);
+                setSelectedVersion(version);
               }}
               useMenuPortal={false}
               width="100%"

@@ -9,13 +9,7 @@ import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const ReleaseVersionButton = function DeployVersionButton({
-  appId,
-  appName,
-  fetchApp,
-  onVersionRelease,
-  saveEditingVersion,
-}) {
+export const ReleaseVersionButton = function DeployVersionButton({ appId, appName, fetchApp, onVersionRelease }) {
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
@@ -31,7 +25,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
 
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
-    saveEditingVersion();
+
     appsService
       .saveApp(appId, {
         name: appName,

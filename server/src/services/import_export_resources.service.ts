@@ -70,7 +70,9 @@ export class ImportExportResourcesService {
           appImportDto.appName,
           {
             tooljet_database: tableNameMapping,
-          }
+          },
+          importResourcesDto.tooljet_version,
+          cloning
         );
         imports.app.push({ id: createdApp.id, name: createdApp.name });
 

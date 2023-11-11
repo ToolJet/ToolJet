@@ -13,6 +13,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -21,7 +22,7 @@ class ManageAppUsersComponent extends React.Component {
 
     this.state = {
       showModal: false,
-      app: { ...props.app },
+      appId: null,
       isLoading: true,
       isSlugVerificationInProgress: false,
       addingUser: false,
@@ -49,14 +50,14 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   componentDidMount() {
-    const appId = this.props.app.id;
-    this.fetchAppUsers();
+    const appId = this.props.appId;
+    this.fetchAppUsers(appId);
     this.setState({ appId });
   }
 
-  fetchAppUsers = () => {
+  fetchAppUsers = (appId) => {
     appsService
-      .getAppUsers(this.props.app.id)
+      .getAppUsers(appId)
       .then((data) =>
         this.setState({
           users: data.users,
@@ -65,7 +66,8 @@ class ManageAppUsersComponent extends React.Component {
       )
       .catch((error) => {
         this.setState({ isLoading: false });
-        toast.error(error);
+        const errorMessage = error?.message || 'Something went wrong';
+        toast.error(errorMessage);
       });
   };
 
@@ -89,11 +91,11 @@ class ManageAppUsersComponent extends React.Component {
     const { organizationUserId, role } = this.state.newUser;
 
     appService
-      .createAppUser(this.state.app.id, organizationUserId, role)
+      .createAppUser(this.state.appId, organizationUserId, role)
       .then(() => {
         this.setState({ addingUser: false, newUser: {} });
         toast.success('Added user successfully');
-        this.fetchAppUsers();
+        this.fetchAppUsers(this.state.appId);
       })
       .catch(({ error }) => {
         this.setState({ addingUser: false });
@@ -102,21 +104,19 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   toggleAppVisibility = () => {
-    const newState = !this.state.app.is_public;
+    const newState = !this.props.isPublic;
     this.setState({
       ischangingVisibility: true,
     });
 
+    useAppDataStore.getState().actions.updateState({ isPublic: newState });
+
     // eslint-disable-next-line no-unused-vars
     appsService
-      .setVisibility(this.state.app.id, newState)
+      .setVisibility(this.state.appId, newState)
       .then(() => {
         this.setState({
           ischangingVisibility: false,
-          app: {
-            ...this.state.app,
-            is_public: newState,
-          },
         });
 
         if (newState) {
@@ -153,7 +153,7 @@ class ManageAppUsersComponent extends React.Component {
         isSlugVerificationInProgress: true,
       });
       appsService
-        .setSlug(this.state.app.id, value)
+        .setSlug(this.state.appId, value)
         .then(() => {
           this.setState({
             newSlug: {
@@ -163,8 +163,9 @@ class ManageAppUsersComponent extends React.Component {
             isSlugVerificationInProgress: false,
             isSlugUpdated: true,
           });
-          this.props.handleSlugChange(value);
+
           replaceEditorURL(value, this.props.pageHandle);
+          useAppDataStore.getState().actions.updateState({ slug: value });
         })
         .catch(({ error }) => {
           this.setState({
@@ -189,8 +190,8 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, app, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
-    const appId = app.id;
+    const { isLoading, appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
+
     const appLink = `${getHostURL()}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
@@ -262,7 +263,7 @@ class ManageAppUsersComponent extends React.Component {
                         className="form-check-input"
                         type="checkbox"
                         onClick={this.toggleAppVisibility}
-                        checked={this.state.app.is_public}
+                        checked={this?.props?.isPublic}
                         disabled={this.state.ischangingVisibility}
                         data-cy="make-public-app-toggle"
                       />
@@ -370,7 +371,7 @@ class ManageAppUsersComponent extends React.Component {
                       <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
                     )}
                   </div>
-                  {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                  {(this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                     <div className="tj-app-input">
                       <label className="field-name" data-cy="iframe-link-label">
                         {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}

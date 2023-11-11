@@ -16,6 +16,7 @@ import cx from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
+import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import { licenseService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -24,27 +25,27 @@ import { redirectToDashboard } from '@/_helpers/utils';
 
 export default function EditorHeader({
   M,
-  app,
-  appVersionPreviewLink,
-  slug,
-  appId,
+
   canUndo,
   canRedo,
   handleUndo,
   handleRedo,
-  isSaving,
+
   saveError,
   onNameChanged,
   appEnvironmentChanged,
   setAppDefinitionFromVersion,
-  handleSlugChange,
+
   onVersionRelease,
   saveEditingVersion,
   onVersionDelete,
-  currentUser,
+  slug,
   darkMode,
   setCurrentAppVersionPromoted,
 }) {
+  const currentUser = useCurrentUser();
+  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink } = useAppInfo();
+
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [promoteModalData, setPromoteModalData] = useState(null);
@@ -62,8 +63,10 @@ export default function EditorHeader({
 
   useEffect(() => {
     fetchFeatureAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
-  const handleLogoClick = () => {
+  const handleLogoClick = (e) => {
+    e.preventDefault();
     // Force a reload for clearing interval triggers
     redirectToDashboard();
   };
@@ -115,7 +118,7 @@ export default function EditorHeader({
                 }}
               >
                 <div className="global-settings-app-wrapper p-0 m-0 ">
-                  <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
+                  <EditAppName appId={appId} appName={appName} onNameChanged={onNameChanged} />
                 </div>
                 <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
                 <div className="d-flex align-items-center">
@@ -177,6 +180,7 @@ export default function EditorHeader({
                       environments={environments}
                       currentEnvironment={currentEnvironment}
                       setCurrentEnvironment={setCurrentEnvironment}
+                      isPublic={isPublic ?? false}
                     />
                   )}
                 </div>
@@ -200,14 +204,13 @@ export default function EditorHeader({
                     isAvailable={featureAccess?.multiEnvironment}
                     noTooltipIfValid={true}
                   >
-                    {app.id && (
+                    {appId && (
                       <ManageAppUsers
                         currentEnvironment={currentEnvironment}
                         multiEnvironmentEnabled={featureAccess?.multiEnvironment}
                         app={app}
                         slug={slug}
                         M={M}
-                        handleSlugChange={handleSlugChange}
                         pageHandle={currentState?.page?.handle}
                         darkMode={darkMode}
                         isVersionReleased={isVersionReleased}
@@ -255,10 +258,10 @@ export default function EditorHeader({
                         </svg>
                       </ButtonSolid>
                     ) : (
-                      app.id && (
+                      appId && (
                         <ReleaseVersionButton
-                          appId={app.id}
-                          appName={app.name}
+                          appId={appId}
+                          appName={appName}
                           onVersionRelease={onVersionRelease}
                           saveEditingVersion={saveEditingVersion}
                         />
