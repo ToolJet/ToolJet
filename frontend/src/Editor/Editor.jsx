@@ -90,8 +90,13 @@ const EditorComponent = (props) => {
     setAppPreviewLink,
     autoUpdateEventStore,
   } = useAppDataActions();
-  const { updateEditorState, updateQueryConfirmationList, setSelectedComponents, setCurrentPageId } =
-    useEditorActions();
+  const {
+    updateEditorState,
+    updateQueryConfirmationList,
+    setSelectedComponents,
+    setCurrentPageId,
+    setCurrentAppEnvironmentId,
+  } = useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
   const { isVersionReleased, editingVersion, releasedVersionId, isEditorFreezed } = useAppVersionState();
@@ -147,7 +152,7 @@ const EditorComponent = (props) => {
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
 
-  // const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [isCurrentVersionPromoted, setIsCurrentVersionPromoted] = useState(false);
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -209,8 +214,6 @@ const EditorComponent = (props) => {
     });
 
     $componentDidMount();
-
-    // setCurrentSessionId(() => uuid());
 
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
@@ -292,6 +295,12 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ events })]);
 
+  /**
+   * ThandleMessage event listener in the login component for iframe communication.
+   * It now checks if the received message has a type of 'redirectTo' and extracts the redirectPath value from the payload.
+   * If the value is present, it sets a cookie named 'redirectPath' with the received value and a one-day expiration.
+   * This allows for redirection to a specific path after the login process is completed.
+   */
   const handleMessage = (event) => {
     const { data } = event;
 
@@ -447,7 +456,7 @@ const EditorComponent = (props) => {
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
-    await fetchOrgEnvironmentConstants();
+
     await fetchAndInjectCustomStyles();
     initComponentVersioning();
     initRealtimeSave();
@@ -738,6 +747,8 @@ const EditorComponent = (props) => {
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
     setAppVersions(appVersions.appVersions);
     const currentOrgId = data?.organization_id || data?.organizationId;
+    const currentEnvironmentId = data['editing_version']['current_environment_id'];
+    setCurrentAppEnvironmentId(currentEnvironmentId);
 
     updateState({
       slug: data.slug,
@@ -787,9 +798,12 @@ const EditorComponent = (props) => {
       });
     }
 
-    await useDataSourcesStore.getState().actions.fetchGlobalDataSources(data?.organization_id);
-    await fetchDataSources(data.editing_version?.id);
+    await useDataSourcesStore
+      .getState()
+      .actions.fetchGlobalDataSources(data?.organization_id, data.editing_version?.id, currentEnvironmentId);
+    await fetchDataSources(data.editing_version?.id, currentEnvironmentId);
     await fetchDataQueries(data.editing_version?.id, true, true);
+    await fetchOrgEnvironmentConstants(currentEnvironmentId);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
     await handleEvent('onPageLoad', currentPageEvents, {}, true);
@@ -832,6 +846,8 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
+    if (isCurrentVersionPromoted) return;
+
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
 
@@ -1796,13 +1812,14 @@ const EditorComponent = (props) => {
           appName={appName}
           appId={appId}
           slug={slug}
-          //!check
-          setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => this.setState({ isCurrentVersionPromoted })}
+          setCurrentAppVersionPromoted={(isCurrentVersionPromoted) =>
+            setIsCurrentVersionPromoted(isCurrentVersionPromoted)
+          }
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
             <LeftSidebar
-              currentAppEnvironmentId={this.state.currentAppEnvironmentId}
+              currentAppEnvironmentId={currentAppEnvironmentId}
               globalSettingsChanged={globalSettingsChanged}
               errorLogs={currentState.errors}
               components={currentState.components}

@@ -209,6 +209,7 @@ export default function EditorHeader({
                         currentEnvironment={currentEnvironment}
                         multiEnvironmentEnabled={featureAccess?.multiEnvironment}
                         app={app}
+                        appId={appId}
                         slug={slug}
                         M={M}
                         pageHandle={currentState?.page?.handle}
