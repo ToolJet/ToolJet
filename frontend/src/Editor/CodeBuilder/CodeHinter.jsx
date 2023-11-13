@@ -165,7 +165,7 @@ export function CodeHinter({
       const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
       setPrevCurrentValue(currentValue);
 
-      if (error) {
+      if (error || typeof preview === 'function') {
         setResolvingError(error);
         setResolvedValue(null);
       } else {
@@ -228,7 +228,6 @@ export function CodeHinter({
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
     const preview = resolvedValue;
     const error = resolvingError;
-
     if (error) {
       const err = String(error);
       const errorMessage = err.includes('.run()')
