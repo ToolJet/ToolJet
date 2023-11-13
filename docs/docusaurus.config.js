@@ -120,8 +120,13 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
+<<<<<<< HEAD
           includeCurrentVersion: true,
           lastVersion: '2.22.0',
+=======
+          includeCurrentVersion: false,
+          lastVersion: '2.23.0',
+>>>>>>> develop
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -137,5 +142,6 @@ module.exports = {
   ],
   plugins: [
     devServerPlugin,
+    'plugin-image-zoom'
   ],
 };

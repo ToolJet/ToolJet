@@ -160,7 +160,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       <div className="workspace-folder-modal">
         <div className="row">
           <div className="col modal-main tj-app-input">
-            <label>Workspace name</label>
+            <label data-cy="workspace-name-label">Workspace name</label>
             <input
               type="text"
               onChange={async (e) => {
@@ -177,15 +177,19 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               autoFocus
             />
             {fields['name']?.error ? (
-              <label className="label tj-input-error">{fields['name']?.error || ''}</label>
+              <label className="label tj-input-error" data-cy="workspace-error-label">
+                {fields['name']?.error || ''}
+              </label>
             ) : (
-              <label className="label label-info">Name must be unique and max 50 characters</label>
+              <label className="label label-info" data-cy="workspace-name-info-label">
+                Name must be unique and max 50 characters
+              </label>
             )}
           </div>
         </div>
         <div className="row">
           <div className="col tj-app-input input-with-icon">
-            <label>Unique workspace slug</label>
+            <label data-cy="slug-input-label">Unique workspace slug</label>
             <input
               type="text"
               className={`form-control ${fields['slug']?.error ? 'is-invalid' : 'is-valid'}`}
@@ -214,18 +218,23 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               </div>
             )}
             {fields['slug']?.error ? (
-              <label className="label tj-input-error">{fields['slug']?.error || ''}</label>
+              <label className="label tj-input-error" data-cy="input-label-error">
+                {fields['slug']?.error || ''}
+              </label>
             ) : fields?.['slug']?.value !== currentValue?.slug && !slugProgress ? (
-              <label className="label label-success">{`Slug accepted!`}</label>
+              <label className="label label-success" data-cy="sucess-label">{`Slug accepted!`}</label>
             ) : (
-              <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
+              <label
+                className="label label-info"
+                data-cy="slug-info-label"
+              >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
             )}
           </div>
         </div>
         <div className="row mb-3">
           <div className="col modal-main tj-app-input">
-            <label>Workspace link</label>
-            <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
+            <label data-cy="workspace-link-label">Workspace link</label>
+            <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="slug-field">
               {!slugProgress ? (
                 `${getHostURL()}/${fields['slug']?.value || '<workspace-slug>'}`
               ) : (
@@ -237,7 +246,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
                 </div>
               )}
             </div>
-            <label className="label label-success label-updated">
+            <label className="label label-success label-updated" data-cy="slug-success-label">
               {!slugProgress &&
               fields['slug'].value &&
               !fields['slug'].error &&
@@ -249,13 +258,14 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
         </div>
         <div className="row">
           <div className="col d-flex justify-content-end gap-2">
-            <ButtonSolid variant="secondary" onClick={closeModal} className="cancel-btn">
+            <ButtonSolid variant="secondary" onClick={closeModal} className="cancel-btn" data-cy="cancel-button">
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
             <ButtonSolid
               isLoading={isCreating}
               disabled={isCreating || isDisabled || slugProgress || workspaceNameProgress}
               onClick={editOrganization}
+              data-cy="save-button"
             >
               {t('globals.save', 'Save')}
             </ButtonSolid>
