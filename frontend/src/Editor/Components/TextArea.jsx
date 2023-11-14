@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
 export const TextArea = function TextArea({ height, properties, styles, setExposedVariable, dataCy }) {
-  const [value, setValue] = useState(properties.value);
+  const [value, setValue] = useState(typeof properties.value == 'string' ? properties.value : '');
   useEffect(() => {
-    setValue(properties.value);
-    setExposedVariable('value', properties.value);
+    setValue(typeof properties.value == 'string' ? properties.value : '');
+    setExposedVariable('value', typeof properties.value == 'string' ? properties.value : '');
 
     setExposedVariable('setText', async function (text) {
       setValue(text);
