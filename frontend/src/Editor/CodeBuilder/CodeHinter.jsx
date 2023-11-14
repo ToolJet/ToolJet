@@ -165,7 +165,7 @@ export function CodeHinter({
       const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
       setPrevCurrentValue(currentValue);
 
-      if (error) {
+      if (error || typeof preview == 'function') {
         setResolvingError(error);
         setResolvedValue(null);
       } else {
