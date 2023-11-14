@@ -35,7 +35,7 @@ With this feature, you gain the ability to rebrand the following key elements:
 
 ## Configuration
 
-To enable white labelling, you'll need to go to the **Instance Settings** from the Dashboard and click on the `White labelling` tab. On the White labelling page, you'll be able to configure the following:
+To enable white labelling, you'll need to go to the **Settings** from the Dashboard and click on the `White labelling` tab. On the White labelling page, you'll be able to configure the following:
 
 - **Application Logo**: Add the URL of the image you want to use as your application logo. Preferred dimensions of the logo are: width `130px` and height `26px`.
 - **Favicon**: Enter the URL of the image you want to use as your application's favicon. Preferred dimensions of the favicon are: width `32px` and height `32px` or `16px` and height `16px`.
