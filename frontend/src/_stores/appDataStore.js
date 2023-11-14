@@ -24,6 +24,7 @@ const initialState = {
   appId: null,
   areOthersOnSameVersionAndPage: false,
   appVersionPreviewLink: null,
+  environments: [],
 };
 
 export const useAppDataStore = create(
@@ -121,6 +122,7 @@ export const useAppDataStore = create(
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
         setAppId: (appId) => set(() => ({ appId })),
         setAppPreviewLink: (appVersionPreviewLink) => set(() => ({ appVersionPreviewLink })),
+        setEnvironments: (environments) => set(() => ({ environments })),
       },
     }),
     { name: 'App Data Store' }

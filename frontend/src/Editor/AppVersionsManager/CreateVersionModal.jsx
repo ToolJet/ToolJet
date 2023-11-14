@@ -14,7 +14,6 @@ export const CreateVersion = ({
   setAppDefinitionFromVersion,
   showCreateAppVersion,
   setShowCreateAppVersion,
-  onSelectVersion,
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');

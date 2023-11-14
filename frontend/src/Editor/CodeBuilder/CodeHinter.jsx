@@ -95,6 +95,7 @@ export function CodeHinter({
     placeholder,
   };
   const currentState = useCurrentState();
+
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState('');
 

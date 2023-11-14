@@ -915,13 +915,13 @@ export class AppsService {
   }
 
   async updateVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
-    const { name, currentEnvironmentId, definition } = body;
+    const { name, currentEnvironmentId } = body;
     let currentEnvironment: AppEnvironment;
 
     if (version.id === version.app.currentVersionId && !body?.is_user_switched_version)
       throw new BadRequestException('You cannot update a released version');
 
-    if (currentEnvironmentId || definition) {
+    if (currentEnvironmentId) {
       currentEnvironment = await AppEnvironment.findOne({
         where: { id: version.currentEnvironmentId },
       });
@@ -957,19 +957,21 @@ export class AppsService {
         },
         order: { priority: 'ASC' },
       });
-      editableParams['currentEnvironmentId'] = nextEnvironment.id;
-    }
 
-    if (definition) {
       const environments = await AppEnvironment.count({
         where: {
           organizationId,
         },
       });
-      if (environments > 1 && currentEnvironment.priority !== 1 && !body?.is_user_switched_version) {
+      if (
+        environments > 1 &&
+        currentEnvironment.priority < nextEnvironment.priority &&
+        !body?.is_user_switched_version
+      ) {
         throw new BadRequestException('You cannot update a promoted version');
       }
-      editableParams['definition'] = definition;
+
+      editableParams['currentEnvironmentId'] = nextEnvironment.id;
     }
 
     editableParams['updatedAt'] = new Date();

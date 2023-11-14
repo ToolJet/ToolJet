@@ -13,29 +13,26 @@ import { ToolTip } from '@/_components/ToolTip';
 import PromoteConfirmationModal from '../EnvironmentsManager/PromoteConfirmationModal';
 import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
-import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useAppVersionState, useAppVersionStore } from '@/_stores/appVersionStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import { LicenseTooltip } from '@/LicenseTooltip';
-import { licenseService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import UpdatePresence from './UpdatePresence';
 import { redirectToDashboard } from '@/_helpers/utils';
+import { useEditorActions, useEditorState } from '@/_stores/editorStore';
 
 export default function EditorHeader({
   M,
-
   canUndo,
   canRedo,
   handleUndo,
   handleRedo,
-
   saveError,
   onNameChanged,
   appEnvironmentChanged,
   setAppDefinitionFromVersion,
-
   onVersionRelease,
   saveEditingVersion,
   onVersionDelete,
@@ -44,14 +41,16 @@ export default function EditorHeader({
   setCurrentAppVersionPromoted,
 }) {
   const currentUser = useCurrentUser();
-  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink } = useAppInfo();
+  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, environments } = useAppInfo();
+  const { featureAccess, currentAppEnvironment, currentAppEnvironmentId } = useEditorState();
+  const { currentAppVersionEnvironment } = useAppVersionState();
+  const { setCurrentAppEnvironmentId } = useEditorActions();
 
-  const [environments, setEnvironments] = useState([]);
-  const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [promoteModalData, setPromoteModalData] = useState(null);
-  const [featureAccess, setFeatureAccess] = useState({});
+
   let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -61,10 +60,6 @@ export default function EditorHeader({
   );
   const currentState = useCurrentState();
 
-  useEffect(() => {
-    fetchFeatureAccess();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
   const handleLogoClick = (e) => {
     e.preventDefault();
     // Force a reload for clearing interval triggers
@@ -72,22 +67,16 @@ export default function EditorHeader({
   };
 
   const handlePromote = () => {
+    const curentEnvIndex = environments.findIndex((env) => env.id === currentAppEnvironmentId);
+
     setPromoteModalData({
-      current: currentEnvironment,
-      target: environments[currentEnvironment.index + 1],
+      current: currentAppEnvironment,
+      target: environments[curentEnvIndex + 1],
     });
   };
 
-  const fetchFeatureAccess = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      setFeatureAccess({ ...data });
-    });
-    licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
-  };
-
-  const currentAppEnvironmentId = editingVersion?.current_environment_id || editingVersion?.currentEnvironmentId;
   // a flag to disable the release button if the current environment is not production
-  const shouldDisablePromote = currentEnvironment?.id !== currentAppEnvironmentId || isSaving;
+  const shouldDisablePromote = isSaving || currentAppEnvironment.priority < currentAppVersionEnvironment.priority;
 
   return (
     <div className="header" style={{ width: '100%' }}>
@@ -162,10 +151,8 @@ export default function EditorHeader({
                       editingVersion={editingVersion}
                       appEnvironmentChanged={appEnvironmentChanged}
                       environments={environments}
-                      setEnvironments={setEnvironments}
-                      currentEnvironment={currentEnvironment}
                       multiEnvironmentEnabled={featureAccess?.multiEnvironment}
-                      setCurrentEnvironment={setCurrentEnvironment}
+                      setCurrentEnvironment={setCurrentAppEnvironmentId}
                       setCurrentAppVersionPromoted={setCurrentAppVersionPromoted}
                       licenseValid={licenseValid}
                     />
@@ -178,8 +165,8 @@ export default function EditorHeader({
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       onVersionDelete={onVersionDelete}
                       environments={environments}
-                      currentEnvironment={currentEnvironment}
-                      setCurrentEnvironment={setCurrentEnvironment}
+                      currentEnvironment={currentAppEnvironment}
+                      setCurrentEnvironment={setCurrentAppEnvironmentId}
                       isPublic={isPublic ?? false}
                     />
                   )}
@@ -206,7 +193,7 @@ export default function EditorHeader({
                   >
                     {appId && (
                       <ManageAppUsers
-                        currentEnvironment={currentEnvironment}
+                        currentEnvironment={currentAppEnvironment}
                         multiEnvironmentEnabled={featureAccess?.multiEnvironment}
                         app={app}
                         appId={appId}
@@ -233,7 +220,7 @@ export default function EditorHeader({
                 </div>
                 <div className="nav-item dropdown">
                   {featureAccess?.multiEnvironment &&
-                    (!isVersionReleased && currentEnvironment?.name !== 'production' ? (
+                    (!isVersionReleased && currentAppEnvironment?.name !== 'production' ? (
                       <ButtonSolid
                         variant="primary"
                         onClick={handlePromote}

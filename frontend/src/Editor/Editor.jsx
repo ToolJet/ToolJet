@@ -89,6 +89,7 @@ const EditorComponent = (props) => {
     createAppVersionEventHandlers,
     setAppPreviewLink,
     autoUpdateEventStore,
+    setEnvironments,
   } = useAppDataActions();
   const {
     updateEditorState,
@@ -96,10 +97,14 @@ const EditorComponent = (props) => {
     setSelectedComponents,
     setCurrentPageId,
     setCurrentAppEnvironmentId,
+    updateFeatureAccess,
+    setCurrentAppEnvironmentDetails,
   } = useEditorActions();
 
-  const { setAppVersions } = useAppVersionActions();
-  const { isVersionReleased, editingVersion, releasedVersionId, isEditorFreezed } = useAppVersionState();
+  const { setAppVersions, setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } =
+    useAppVersionActions();
+  const { isVersionReleased, editingVersion, releasedVersionId, isEditorFreezed, isAppVersionPromoted } =
+    useAppVersionState();
 
   const {
     appDefinition,
@@ -136,6 +141,7 @@ const EditorComponent = (props) => {
     appDiffOptions,
     events,
     areOthersOnSameVersionAndPage,
+    environments,
   } = useAppInfo();
 
   const currentState = useCurrentState();
@@ -151,8 +157,6 @@ const EditorComponent = (props) => {
 
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
-
-  const [isCurrentVersionPromoted, setIsCurrentVersionPromoted] = useState(false);
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -254,7 +258,7 @@ const EditorComponent = (props) => {
       computeComponentState(components);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentPageId]
+    [currentPageId, currentAppEnvironmentId]
   );
 
   useEffect(() => {
@@ -452,10 +456,11 @@ const EditorComponent = (props) => {
 
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
-
+    await updateFeatureAccess();
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
+    await fetchEnvironments();
 
     await fetchAndInjectCustomStyles();
     initComponentVersioning();
@@ -737,7 +742,26 @@ const EditorComponent = (props) => {
     });
   };
 
-  const callBack = async (data, startingPageHandle, versionSwitched = false) => {
+  const getEnvironmentDetails = (environmentId) => {
+    const queryParams = { slug: props.params.slug };
+    return appEnvironmentService.getEnvironment(environmentId, queryParams);
+  };
+
+  const fetchEnvironments = () => {
+    appEnvironmentService.getAllEnvironments(appId).then((data) => {
+      const envArray = data?.environments;
+
+      setEnvironments(envArray);
+    });
+  };
+
+  const callBack = async (
+    data,
+    startingPageHandle,
+    versionSwitched = false,
+    environmentSwitch = false,
+    selectedEnvironmentId = null
+  ) => {
     setWindowTitle(data.name);
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
     if (!releasedVersionId || !versionSwitched) {
@@ -745,10 +769,26 @@ const EditorComponent = (props) => {
     }
 
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
+
+    const currentAppVersionEnvId =
+      data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
     setAppVersions(appVersions.appVersions);
+
     const currentOrgId = data?.organization_id || data?.organizationId;
-    const currentEnvironmentId = data['editing_version']['current_environment_id'];
-    setCurrentAppEnvironmentId(currentEnvironmentId);
+
+    const currentEnvironmentId = !environmentSwitch ? currentAppVersionEnvId : selectedEnvironmentId;
+
+    let envDetails = useEditorStore.getState().currentAppEnvironment;
+
+    if (!environmentSwitch) {
+      setCurrentAppEnvironmentId(currentEnvironmentId);
+
+      const { environment } = await getEnvironmentDetails(currentEnvironmentId);
+      envDetails = environment;
+
+      setCurrentAppEnvironmentDetails(environment);
+      setAppVersionCurrentEnvironment(environment);
+    }
 
     updateState({
       slug: data.slug,
@@ -782,6 +822,13 @@ const EditorComponent = (props) => {
 
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
+      globals: {
+        ...currentState.globals,
+        environment: {
+          id: envDetails?.id,
+          name: envDetails?.name,
+        },
+      },
     });
 
     updateEditorState({
@@ -807,6 +854,13 @@ const EditorComponent = (props) => {
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
     await handleEvent('onPageLoad', currentPageEvents, {}, true);
+
+    const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
+    if (currentEnvironmentObj[appId] !== envDetails?.id) {
+      currentEnvironmentObj[appId] = currentEnvironmentId;
+      localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
+      // !isVersionChanged && window.location.reload(false);
+    }
   };
 
   const fetchApp = async (startingPageHandle, onMount = false) => {
@@ -833,6 +887,8 @@ const EditorComponent = (props) => {
         isLoading: true,
       });
 
+      onEditorFreeze(false);
+
       callBack(appData, null, true);
       initComponentVersioning();
     }
@@ -846,7 +902,7 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
-    if (isCurrentVersionPromoted) return;
+    if (isAppVersionPromoted) return;
 
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
@@ -1450,7 +1506,7 @@ const EditorComponent = (props) => {
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
     const appId = useAppDataStore.getState()?.appId;
-    const pageHandle = getCurrentState().pageHandle;
+    const pageHandle = getCurrentState().page.handle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
       return;
@@ -1704,7 +1760,18 @@ const EditorComponent = (props) => {
     });
   };
 
-  const appEnvironmentChanged = () => {};
+  const appEnvironmentChanged = (currentEnvironment, isVersionChanged, isEnvIdNotAvailableYet = false) => {
+    const shouldUpdate = currentAppEnvironmentId !== currentEnvironment?.id;
+
+    if (shouldUpdate) {
+      const selectedEnvironment = environments.find((env) => env.id === currentEnvironment?.id);
+      setCurrentAppEnvironmentDetails(selectedEnvironment);
+      setCurrentAppEnvironmentId(currentEnvironment?.id);
+      const pageHandle = getCurrentState().page.handle;
+
+      callBack(app, pageHandle, false, true, currentEnvironment?.id);
+    }
+  };
 
   useEffect(() => {
     //! const previewQuery = queryString.stringify({ version: editingVersion?.name, env: currentAppEnvironment?.name });
@@ -1764,8 +1831,7 @@ const EditorComponent = (props) => {
     !isEmpty(appDefinition?.pages[currentPageId]?.components[selectedComponents[0]?.id]);
 
   const formCustomPageSelectorClass = () => {
-    // const handle = this.state.appDefinition?.pages[this.state.currentPageId]?.handle;
-    const pageHandle = getCurrentState().pageHandle;
+    const pageHandle = getCurrentState().page.handle;
     return `_tooljet-page-${pageHandle}`;
   };
 
@@ -1812,9 +1878,7 @@ const EditorComponent = (props) => {
           appName={appName}
           appId={appId}
           slug={slug}
-          setCurrentAppVersionPromoted={(isCurrentVersionPromoted) =>
-            setIsCurrentVersionPromoted(isCurrentVersionPromoted)
-          }
+          setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => setAppVersionPromoted(isCurrentVersionPromoted)}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">

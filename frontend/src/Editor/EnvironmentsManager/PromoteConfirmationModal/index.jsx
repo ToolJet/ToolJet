@@ -7,11 +7,14 @@ import { appVersionService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
 import '@/_styles/versions.scss';
+import { useAppInfo } from '@/_stores/appDataStore';
 
 export default function EnvironmontConfirmationModal(props) {
   const { data, editingVersion, onEnvChange, onClose } = props;
+
   //TODO: Bug when creating a new version, the app_id is not set in the version object instead it is set as appId.
-  const appId = editingVersion?.app_id || editingVersion?.appId;
+
+  const { appId } = useAppInfo();
   const [promtingEnvirontment, setPromtingEnvirontment] = useState(false);
   const darkMode = props.darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(data);
@@ -28,6 +31,7 @@ export default function EnvironmontConfirmationModal(props) {
 
   const handleConfirm = () => {
     setPromtingEnvirontment(true);
+
     appVersionService
       .promoteEnvironment(appId, editingVersion?.id, data.current.id)
       .then(() => {

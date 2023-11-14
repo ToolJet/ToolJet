@@ -7,6 +7,8 @@ const initialState = {
   isVersionReleased: false,
   isEditorFreezed: false,
   appVersions: [],
+  isAppVersionPromoted: false,
+  currentAppVersionEnvironment: null,
 };
 
 export const useAppVersionStore = create(
@@ -25,6 +27,8 @@ export const useAppVersionStore = create(
           }),
         onEditorFreeze: (value = false) => set({ isEditorFreezed: value }),
         setAppVersions: (versions) => set({ appVersions: versions }),
+        setAppVersionCurrentEnvironment: (environment) => set({ currentAppVersionEnvironment: environment }),
+        setAppVersionPromoted: (value) => set({ isAppVersionPromoted: value }),
       },
     }),
     { name: 'App Version Manager Store' }

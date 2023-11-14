@@ -90,8 +90,9 @@ export const AppVersionsManager = function ({
 
   const selectVersion = (id) => {
     appVersionService
-      .getOne(appId, id)
+      .getAppVersionData(appId, id)
       .then((data) => {
+        console.log('piku check', { data });
         setAppDefinitionFromVersion(data, true, shouldFreezeEditor(data.currentEnvironmentId));
       })
       .catch((error) => {
