@@ -2125,8 +2125,9 @@ tr:focus {
   }
 
   .popover-body {
-    padding: 16px 12px 0px 12px;
+    padding: 16px 12px 1px 12px;
     color: var(--text-primary);
+    background-color: var(--layer-01) !important;
 
     .field {
       font-weight: 500;
@@ -3242,15 +3243,6 @@ input:focus-visible {
   }
 
   .app-users-list {
-    .text-muted {
-      color: #ffffff !important;
-    }
-  }
-
-  .main .query-pane .data-pane .queries-container .queries-header {
-    border-width: 0px 0px 1px 0px !important;
-    border-bottom: 1px solid var(--border-subtle-01);
-
     .text-muted {
       color: #ffffff !important;
     }
@@ -4654,10 +4646,10 @@ input[type="text"] {
     filter: brightness(0) invert(1);
   }
 
-  .form-control {
-    border-color: $border-grey-dark  !important;
-    color: inherit;
-  }
+  // .form-control {
+  //   border-color: $border-grey-dark  !important;
+  //   color: inherit;
+  // }
 
   input {
     background-color: $bg-dark-light  !important;
@@ -5898,7 +5890,7 @@ div#driver-page-overlay {
   &:active {
     background: var(--input-box-fill-clicked);
     border: 1px solid var(--input-box-fill-clicked-border);
-    box-shadow: none;
+    box-shadow: 0px 0px 0px 1px var(--input-box-fill-clicked-box-shadow);
   }
 
   &:disabled {
@@ -7310,7 +7302,7 @@ tbody {
 
 
   .dropdown-toggle-split {
-    border-left: 1px solid var(--indigo11) !important;
+    border-left: 1px solid #3451B2 !important;
   }
 
   button {
@@ -10101,7 +10093,7 @@ tbody {
     &:active {
       background: var(--input-box-fill-clicked);
       border: 1px solid var(--input-box-fill-clicked-border);
-      box-shadow: none;
+      box-shadow: 0px 0px 0px 1px var(--input-box-fill-clicked-box-shadow);
       outline: none;
       padding-left: 12px !important;
     }
@@ -10294,7 +10286,7 @@ tbody {
     &:active {
       background: var(--input-box-fill-clicked);
       border: 1px solid var(--input-box-fill-clicked-border);
-      box-shadow: none;
+      box-shadow: 0px 0px 0px 1px var(--input-box-fill-clicked-box-shadow);
     }
 
     &.input-error-border {
@@ -11928,4 +11920,23 @@ tbody {
 
 .cm-s-monokai .CodeMirror-gutters {
   background-color: var(--layer-01);
+}
+
+.homepage-app-card {
+  .page-body {
+    background-color: var(--layer-01) !important;
+  }
+}
+
+.database-table-header-wrapper {
+  border-bottom: 1px solid var(--border-subtle-01);
+}
+
+.main .query-pane .data-pane .queries-container .queries-header {
+  border-width: 0px 0px 1px 0px !important;
+  border-bottom: 1px solid var(--border-subtle-01);
+
+  .text-muted {
+    color: #ffffff !important;
+  }
 }

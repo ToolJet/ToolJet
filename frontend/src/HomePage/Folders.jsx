@@ -236,7 +236,7 @@ export const Folders = function Folders({
               {canCreateFolder && (
                 <>
                   <div
-                    className="folder-create-btn"
+                    className="folder-create-btn tj-tertiary-btn"
                     onClick={() => {
                       setNewFolderName('');
                       setShowForm(true);
@@ -246,7 +246,7 @@ export const Folders = function Folders({
                     <SolidIcon name="plus" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
                   </div>
                   <div
-                    className="folder-create-btn"
+                    className="folder-create-btn tj-tertiary-btn"
                     onClick={() => {
                       setShowInput(true);
                     }}

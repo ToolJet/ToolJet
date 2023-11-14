@@ -41,6 +41,7 @@
         &:active {
             background: var(--input-box-fill-clicked);
             border: 1px solid var(--input-box-fill-clicked-border);
+            box-shadow: 0px 0px 0px 1px var(--input-box-fill-clicked-box-shadow);
             box-shadow: none;
         }
     }
