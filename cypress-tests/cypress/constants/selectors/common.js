@@ -226,7 +226,10 @@ export const commonSelectors = {
   nameErrorText: '[data-cy="name-error-text"]',
   valueErrorText: '[data-cy="value-error-text"]',
   releaseButton: '[data-cy="button-release"]',
-  leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]'
+  leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
+  modalHeader: '[data-cy="modal-header"]',
+  modalDescription: '[data-cy="modal-description"]',
+  backToHomeButton: '[data-cy="back-to-home-button"]',
 };
 
 export const commonWidgetSelector = {
