@@ -45,8 +45,12 @@ export const ErrorModal = ({ errorMsg, ...props }) => {
               fill="#E54D2E"
             />
           </svg>
-          <span className="header-text">{t('globals.static-error-modal.title', errorMsg?.title)}</span>
-          <p className="description">{t('globals.static-error-modal.description', errorMsg?.message)}</p>
+          <span className="header-text" data-cy="modal-header">
+            {t('globals.static-error-modal.title', errorMsg?.title)}
+          </span>
+          <p className="description" data-cy="modal-description">
+            {t('globals.static-error-modal.description', errorMsg?.message)}
+          </p>
         </Modal.Header>
         <Modal.Footer>
           {errorMsg?.retry && (
@@ -62,6 +66,7 @@ export const ErrorModal = ({ errorMsg, ...props }) => {
                 alignItems: 'center',
               }}
               onClick={() => window.history.back()}
+              data-cy="retry-button"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -84,6 +89,7 @@ export const ErrorModal = ({ errorMsg, ...props }) => {
           <button
             className={errorMsg?.retry ? 'btn btn-primary' : 'btn btn-primary action-btn'}
             onClick={() => redirectToDashboard()}
+            data-cy="back-to-home-button"
           >
             {t('globals.workspace-modal.continue-btn', errorMsg?.cta)}
           </button>
