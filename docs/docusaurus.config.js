@@ -121,17 +121,15 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.22.0',
+          lastVersion: '2.23.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
         sitemap: {},
-        gtag: isProd
+        googleTagManager: isProd
           ? {
-            trackingID: process.env.GA_MID,
-            // Optional fields.
-            anonymizeIP: true, // Should IPs be anonymized?
+            containerId: process.env.GTM,
           }
           : undefined,
       },
@@ -139,5 +137,6 @@ module.exports = {
   ],
   plugins: [
     devServerPlugin,
+    'plugin-image-zoom'
   ],
 };

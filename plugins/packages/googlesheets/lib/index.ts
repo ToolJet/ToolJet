@@ -5,7 +5,9 @@ import { SourceOptions, QueryOptions } from './types';
 
 export default class GooglesheetsQueryService implements QueryService {
   authUrl(): string {
-    const tooljetHost = process.env.TOOLJET_HOST;
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
@@ -16,7 +18,7 @@ export default class GooglesheetsQueryService implements QueryService {
     return (
       'https://accounts.google.com/o/oauth2/v2/auth' +
       `?response_type=code&client_id=${clientId}` +
-      `&redirect_uri=${tooljetHost}/oauth2/authorize`
+      `&redirect_uri=${fullUrl}oauth2/authorize`
     );
   }
 
@@ -24,8 +26,10 @@ export default class GooglesheetsQueryService implements QueryService {
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const tooljetHost = process.env.TOOLJET_HOST;
-    const redirectUri = `${tooljetHost}/oauth2/authorize`;
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+    const redirectUri = `${fullUrl}oauth2/authorize`;
     const grantType = 'authorization_code';
     const customParams = { prompt: 'consent', access_type: 'offline' };
 

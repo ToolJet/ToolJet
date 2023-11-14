@@ -9,7 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
-import { getWorkspaceIdOrSlugFromURL, getSubpath } from './routes';
+import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
@@ -570,10 +570,11 @@ export const hightlightMentionedUserInComment = (comment) => {
 };
 
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
-  const currentPageId = _ref.state.currentPageId;
-  const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
-    ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
+  const currentPageId = _ref.currentPageId;
+  const currentComponents = _ref.appDefinition?.pages[currentPageId]?.components
+    ? Object.entries(_ref.appDefinition.pages[currentPageId]?.components)
     : {};
+
   const runQuery = (queryName = '', parameters) => {
     const query = useDataQueriesStore.getState().dataQueries.find((query) => {
       const isFound = query.name === queryName;
@@ -743,7 +744,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
         });
       return Promise.resolve();
     }
-    const pages = _ref.state.appDefinition.pages;
+    const pages = _ref.appDefinition.pages;
     const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
 
     if (!pageId) {
@@ -1026,13 +1027,6 @@ export function eraseRedirectUrl() {
   redirectPath && eraseCookie('redirectPath');
   return redirectPath;
 }
-
-export const returnWorkspaceIdIfNeed = (path) => {
-  if (path) {
-    return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
-  }
-  return `/${getWorkspaceId()}`;
-};
 
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
