@@ -74,7 +74,9 @@ describe("Manage Users", () => {
 
   it("Should verify the confirm invite page and new user account", () => {
     common.navigateToManageUsers();
-    users.inviteUser(data.firstName, data.email);
+    users.fillUserInviteForm(data.firstName, data.email);
+    cy.get(usersSelector.buttonInviteUsers).click();
+    users.fetchAndVisitInviteLink(data.email)
     users.confirmInviteElements();
 
     cy.clearAndType(commonSelectors.passwordInputField, "pass");
@@ -202,7 +204,13 @@ describe("Manage Users", () => {
     common.navigateToManageUsers();
 
     users.fillUserInviteForm(data.firstName, data.email);
-    cy.get(".dropdown-heading-value > .gray").click();
+    cy.wait(1500);
+    cy.get(".dropdown-heading-value > .gray").dblclick();
+    cy.get("body").then(($body) => {
+      if (!$body.find(".search > input").length > 0) {
+        cy.get(".dropdown-heading-value > .gray").click();
+      }
+    });
     cy.clearAndType(".search > input", "Test");
     cy.get(".no-options").verifyVisibleElement("have.text", "No options");
     users.selectUserGroup("Admin");
