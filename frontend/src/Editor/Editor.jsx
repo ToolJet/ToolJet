@@ -1811,7 +1811,7 @@ const EditorComponent = (props) => {
             {!showComments && (
               <Selecto
                 dragContainer={'.canvas-container'}
-                selectableTargets={['.widget-target']}
+                selectableTargets={['.moveable-box']}
                 hitRate={0}
                 selectByClick={true}
                 toggleContinueSelect={['shift']}

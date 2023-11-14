@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Moveable, { makeAble } from 'react-moveable';
 import './DragContainer.css';
 import { isEmpty } from 'lodash';
-import { useActiveGrid } from '@/_stores/gridStore';
 const NO_OF_GRIDS = 24;
 
 const MouseEnterLeaveAble = makeAble('enterLeave', {
@@ -37,7 +36,6 @@ export default function DragContainerNested({
   }));
   const [list, setList] = useState(boxList);
   const moveableRef = useRef();
-  const [activeGrid, setActiveGrid] = useActiveGrid();
 
   useEffect(() => {
     setList(boxList);
@@ -45,7 +43,7 @@ export default function DragContainerNested({
 
   useEffect(() => {
     moveableRef.current.updateRect();
-  }, [...Object.values(parentLayout), boxes?.length, activeGrid]);
+  }, [...Object.values(parentLayout), boxes?.length]);
 
   // const [isChildDragged, setIsChildDragged] = useState(false);
 
@@ -69,12 +67,11 @@ export default function DragContainerNested({
         {/* <button onClick={() => setList((list) => [...list, { id: new Date().getTime() }])}>Add</button> */}
         {list.map((i) => (
           <div
-            className={`target-${parent} target1-${i.parent} ele-${i.id} nested-target moveable-box target`}
+            className={`target-${parent} target1-${i.parent} ele-${i.id} nested-target`}
             key={i.id}
             id={i.id}
             style={{ transform: `translate(332px, -134px)`, ...getDimensions(i.id) }}
             widget-id={i.id}
-            widgetid={i.id}
           >
             {/* Target {i.id} */}
             {renderWidget(i.id)}
@@ -119,11 +116,7 @@ export default function DragContainerNested({
             onResizeStop(e.target.id, e.height, e.width, e.drag.translate[0], e.drag.translate[1]);
           }}
           checkInput
-          onDragStart={(e) => {
-            console.log('debugger====>', e, parent);
-            setActiveGrid(e.target.getAttribute('widgetid'));
-            setIsChildDragged(true);
-          }}
+          onDragStart={() => setIsChildDragged(true)}
           onDrag={(e) => {
             setIsChildDragged(true);
             // if (!isChildDragged) {
@@ -150,8 +143,6 @@ export default function DragContainerNested({
           //snap settgins
           snappable={true}
           onDragEnd={(e) => {
-            console.log('debugger====>', e, parent);
-            setActiveGrid(null);
             setIsChildDragged(false);
             // if (!isChildDragged) {
             // e.target.style.transform = `translate(${Math.round(e.translate[0] / gridWidth) * gridWidth}px, ${
