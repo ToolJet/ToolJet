@@ -147,34 +147,37 @@ export default function EditorHeader({
               className="d-flex justify-content-end navbar-right-section"
               style={{ width: '300px', paddingRight: '12px' }}
             >
-              <div className="navbar-nav flex-row order-md-last release-buttons ">
-                <div className="nav-item">
-                  {appId && (
-                    <ManageAppUsers
-                      app={app}
-                      appId={appId}
-                      slug={slug}
-                      darkMode={darkMode}
-                      isVersionReleased={isVersionReleased}
-                      pageHandle={currentState?.page?.handle}
-                      M={M}
-                      isPublic={isPublic ?? false}
-                    />
-                  )}
+              <div className=" release-buttons navbar-nav flex-row">
+                <div className="preview-share-wrap navbar-nav flex-row" style={{ gap: '4px' }}>
+                  <div className="nav-item">
+                    {appId && (
+                      <ManageAppUsers
+                        app={app}
+                        appId={appId}
+                        slug={slug}
+                        darkMode={darkMode}
+                        isVersionReleased={isVersionReleased}
+                        pageHandle={currentState?.page?.handle}
+                        M={M}
+                        isPublic={isPublic ?? false}
+                      />
+                    )}
+                  </div>
+                  <div className="nav-item">
+                    <Link
+                      title="Preview"
+                      to={appVersionPreviewLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      data-cy="preview-link-button"
+                      className="editor-header-icon tj-secondary-btn"
+                    >
+                      <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
+                    </Link>
+                  </div>
                 </div>
-                <div className="nav-item">
-                  <Link
-                    title="Preview"
-                    to={appVersionPreviewLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    data-cy="preview-link-button"
-                    className="editor-header-icon tj-secondary-btn"
-                  >
-                    <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
-                  </Link>
-                </div>
-                <div className="nav-item dropdown">
+
+                <div className="nav-item dropdown promote-release-btn">
                   <ReleaseVersionButton
                     appId={appId}
                     appName={appName}
