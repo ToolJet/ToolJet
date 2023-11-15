@@ -35,14 +35,13 @@ export const TextInput = function TextInput({
   } = styles;
 
   const [disable, setDisable] = useState(disabledState);
-  const [value, setValue] = useState(value);
+  const [value, setValue] = useState(properties.value);
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(value);
   const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const [elementWidth, setElementWidth] = useState(0);
-
   const computedStyles = {
     // height: padding == 'default' ? `calc(${height}px - 5px)` : height,
     borderRadius: `${borderRadius}px`,
@@ -62,7 +61,7 @@ export const TextInput = function TextInput({
       const width = textInputRef.current.getBoundingClientRect().width;
       setElementWidth(width);
     }
-  }, [isResizing, width]);
+  }, [isResizing, width, auto]);
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
