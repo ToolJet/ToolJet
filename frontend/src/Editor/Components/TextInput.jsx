@@ -132,7 +132,7 @@ export const TextInput = function TextInput({
               <label
                 style={{
                   color: darkMode && color == '#11181C' ? '#fff' : color,
-                  width: auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
+                  width: label.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
                   maxWidth: auto && alignment == 'side' ? '70%' : '100%',
                   overflowWrap: 'break-word',
                   marginRight: label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
@@ -161,7 +161,6 @@ export const TextInput = function TextInput({
                 className={`tj-text-input-widget ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
                   darkMode && 'dark-theme-placeholder'
                 }`}
-                style={{ ...computedStyles }}
                 ref={textInputRef}
                 onKeyUp={(e) => {
                   if (e.key == 'Enter') {
@@ -186,6 +185,7 @@ export const TextInput = function TextInput({
                 }}
                 type="text"
                 placeholder={placeholder}
+                style={computedStyles}
                 value={value}
                 data-cy={dataCy}
               />
@@ -215,7 +215,7 @@ export const TextInput = function TextInput({
               <label
                 style={{
                   color: darkMode && color == '#11181C' ? '#fff' : color,
-                  width: auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
+                  width: label?.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
                   maxWidth: auto && alignment == 'side' ? '70%' : '100%',
                   overflowWrap: 'break-word',
                   marginRight: label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',

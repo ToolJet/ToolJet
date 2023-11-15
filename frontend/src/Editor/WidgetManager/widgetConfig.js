@@ -5771,9 +5771,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           height: 30,
           width: 25,
         },
-        properties: ['placeholder'],
+        properties: ['placeholder', 'label'],
         defaultValue: {
           placeholder: 'Enter your name',
+          label: '',
         },
       },
       {
