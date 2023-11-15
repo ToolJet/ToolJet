@@ -32,12 +32,12 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const text = computeText();
-    setText(typeof text == 'string' ? text : '');
-    setExposedVariable('text', typeof text == 'string' ? text : '');
+    setText(typeof text != 'function' ? text : '');
+    setExposedVariable('text', typeof text != 'function' ? text : '');
 
     setExposedVariable('setText', async function (text) {
-      setText(typeof text == 'string' ? text : '');
-      setExposedVariable('text', typeof text == 'string' ? text : '');
+      setText(typeof text != 'function' ? text : '');
+      setExposedVariable('text', typeof text != 'function' ? text : '');
     });
 
     setExposedVariable('visibility', async function (value) {

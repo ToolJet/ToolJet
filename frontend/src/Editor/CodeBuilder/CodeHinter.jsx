@@ -166,7 +166,9 @@ export function CodeHinter({
       setPrevCurrentValue(currentValue);
 
       if (error || typeof preview == 'function') {
-        setResolvingError(error);
+        console.log('error--', error);
+
+        setResolvingError(typeof preview == 'function' ? 'Incomplete function usage' : error);
         setResolvedValue(null);
       } else {
         setResolvingError(null);

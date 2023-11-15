@@ -6,14 +6,15 @@ export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, component } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 
-  const [label, setLabel] = useState(typeof properties.text == 'string' ? properties.text : '');
+  const [label, setLabel] = useState(typeof properties.text != 'function' ? properties.text : '');
   const [disable, setDisable] = useState(disabledState);
   const [visibility, setVisibility] = useState(styles.visibility);
   const [loading, setLoading] = useState(properties.loadingState);
 
   useEffect(() => {
-    setLabel(typeof properties.text == 'string' ? properties.text : '');
-    setExposedVariable('buttonText', typeof properties.text == 'string' ? properties.text : '');
+    console.log('text---', properties.text);
+    setLabel(typeof properties.text != 'function' ? properties.text : '');
+    setExposedVariable('buttonText', typeof properties.text != 'function' ? properties.text : '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text]);
 
