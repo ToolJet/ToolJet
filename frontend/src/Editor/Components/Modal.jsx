@@ -49,7 +49,7 @@ export const Modal = function Modal({
   useEffect(() => {
     const exposedVariables = {
       open: async function () {
-        setExposedVariables('show', true);
+        setExposedVariable('show', true);
         setShowModal(true);
       },
       close: async function () {
@@ -57,7 +57,7 @@ export const Modal = function Modal({
         setExposedVariable('show', false);
       },
     };
-    setExposedVariable(exposedVariables);
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setShowModal]);
 
