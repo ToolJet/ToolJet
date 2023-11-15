@@ -67,7 +67,7 @@ export const SelectComponent = ({
   );
 };
 
-const CustomMenuList = ({ selectProps, ...props }) => {
+export const CustomMenuList = ({ selectProps, ...props }) => {
   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
 
   return (

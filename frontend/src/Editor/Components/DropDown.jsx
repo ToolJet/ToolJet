@@ -1,6 +1,9 @@
+import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
+import { CustomMenuList } from './Table/SelectComponent';
 
 export const DropDown = function DropDown({
   height,
@@ -16,11 +19,21 @@ export const DropDown = function DropDown({
   exposedVariables,
   dataCy,
 }) {
-  let { label, value, advanced, schema, placeholder, display_values, values, dropdownLoadingState, visibility } =
-    properties;
+  let {
+    label,
+    value,
+    advanced,
+    schema,
+    placeholder,
+    display_values,
+    values,
+    dropdownLoadingState,
+    visibility,
+    mandatory,
+  } = properties;
   const {
     selectedTextColor,
-    borderRadius,
+    fieldBorderRadius,
     disabledState,
     justifyContent,
     boxShadow,
@@ -34,7 +47,9 @@ export const DropDown = function DropDown({
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
   const [showValidationError, setShowValidationError] = useState(false);
-
+  const currentState = useCurrentState();
+  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  console.log(boxShadow, 'boxShadow');
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
@@ -169,15 +184,21 @@ export const DropDown = function DropDown({
   };
 
   const customStyles = {
-    control: (provided, state) => ({
-      ...provided,
-      minHeight: height,
-      height: height,
-      boxShadow: state.isFocused ? boxShadow : boxShadow,
-      borderRadius: Number.parseFloat(borderRadius),
-      borderColor: fieldBorderColor,
-      backgroundColor: fieldBackgroundColor,
-    }),
+    control: (provided, state) => {
+      return {
+        ...provided,
+        minHeight: height,
+        height: height,
+        boxShadow: state.isFocused ? boxShadow : boxShadow,
+        borderRadius: Number.parseFloat(fieldBorderRadius),
+        borderColor: fieldBorderColor,
+        backgroundColor: fieldBackgroundColor,
+        '&:hover': {
+          backgroundColor: '#f1f3f5',
+          borderColor: '#3E63DD',
+        },
+      };
+    },
 
     valueContainer: (provided, _state) => ({
       ...provided,
@@ -203,40 +224,10 @@ export const DropDown = function DropDown({
       ...provided,
       height: height,
     }),
-    option: (provided, state) => {
-      const styles = darkMode
-        ? {
-            color: state.isDisabled ? '#88909698' : 'white',
-            backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
-            ':hover': {
-              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#1F2E64' : '#323C4B',
-            },
-            maxWidth: 'auto',
-            minWidth: 'max-content',
-          }
-        : {
-            backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
-            color: state.isDisabled ? '#88909694' : state.value === currentValue ? 'white' : 'black',
-            ':hover': {
-              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#3650AF' : '#d8dce9',
-            },
-            maxWidth: 'auto',
-            minWidth: 'max-content',
-          };
-      return {
-        ...provided,
-        justifyContent,
-        height: 'auto',
-        display: 'flex',
-        flexDirection: 'rows',
-        alignItems: 'center',
-        ...styles,
-      };
-    },
-    menu: (provided, _state) => ({
-      ...provided,
-      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
-    }),
+    // menu: (provided, _state) => ({
+    //   ...provided,
+    //   backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+    // }),
   };
 
   const labelStyles = {
@@ -244,14 +235,6 @@ export const DropDown = function DropDown({
     color: labelColor,
     alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
   };
-
-  // const calculateDisplayStyle = () => {
-  //   if (visibility) {
-  //     return 'none';
-  //   }
-  //   if (alignment === 'Top') {
-  //   }
-  // };
 
   if (dropdownLoadingState) {
     return (
@@ -282,6 +265,7 @@ export const DropDown = function DropDown({
         >
           <label style={labelStyles} className="form-label py-0 my-0">
             {label}
+            <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         </div>
         <div className="col px-0 h-100">
@@ -289,7 +273,11 @@ export const DropDown = function DropDown({
             isDisabled={disabledState}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
+              console.log(selectedOption, 'selectedOption', actionProps);
               setShowValidationError(true);
+              if (actionProps.action === 'clear') {
+                setCurrentValue(null);
+              }
               if (actionProps.action === 'select-option') {
                 setCurrentValue(selectedOption.value);
                 setExposedVariable('value', selectedOption.value);
@@ -304,6 +292,10 @@ export const DropDown = function DropDown({
             onFocus={(event) => onComponentClick(event, component, id)}
             menuPortalTarget={document.body}
             placeholder={placeholder}
+            components={{
+              MenuList: CustomMenuList,
+            }}
+            isClearable
           />
         </div>
       </div>

@@ -2569,7 +2569,7 @@ export const widgets = [
     displayName: 'Dropdown',
     description: 'Single item selector',
     defaultSize: {
-      width: 8,
+      width: 15,
       height: 30,
     },
     component: 'DropDown',
@@ -2750,7 +2750,7 @@ export const widgets = [
           value: 'side',
         },
       },
-      autoWidth: {
+      labelAutoWidth: {
         type: 'checkbox',
         displayName: 'auto',
         showLabel: false,
@@ -2787,7 +2787,7 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
-      borderRadius: {
+      fieldBorderRadius: {
         type: 'input',
         displayName: 'Border radius',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
@@ -2809,34 +2809,6 @@ export const widgets = [
         ],
         accordian: 'container',
       },
-      // borderRadius: {
-      //   type: 'code',
-      //   displayName: 'Border radius',
-      //   validation: {
-      //     schema: {
-      //       type: 'union',
-      //       schemas: [{ type: 'number' }, { type: 'string' }],
-      //     },
-      //   },
-      // },
-      // selectedTextColor: {
-      //   type: 'color',
-      //   displayName: 'Selected Text Color',
-      //   validation: {
-      //     schema: {
-      //       type: 'string',
-      //     },
-      //   },
-      // },
-      // justifyContent: {
-      //   type: 'alignButtons',
-      //   displayName: 'Align Text',
-      //   validation: {
-      //     schema: {
-      //       type: 'string',
-      //     },
-      //   },
-      // },
     },
     exposedVariables: {
       value: 2,
@@ -2859,6 +2831,7 @@ export const widgets = [
       },
       validation: {
         customRule: { value: null },
+        mandatory: { value: false },
       },
       properties: {
         advanced: { value: `{{false}}` },
@@ -2866,7 +2839,6 @@ export const widgets = [
           value:
             "{{[\t{label: 'One',value: 1,disable: false,visible: true,default: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
         },
-
         label: { value: 'Select' },
         value: { value: '{{"2"}}' },
         values: { value: '{{["1","2","3"]}}' },
@@ -2878,17 +2850,19 @@ export const widgets = [
         dropdownLoadingState: { value: '{{false}}' },
       },
       events: [],
+
       styles: {
-        borderRadius: { value: '0' },
+        labelColor: { value: '#11181C' },
+        labelWidth: { value: '33' },
+        labelAutoWidth: { value: '{{false}}' },
+        fieldBorderRadius: { value: '6' },
         justifyContent: { value: 'left' },
-        textColor: { value: '#11181C' },
-        borderColor: { value: '#D7DBDF' },
+        selectedTextColor: { value: '#11181C' },
+        fieldBorderColor: { value: '#D7DBDF' },
         errTextColor: { value: '#DB4324' },
-        backgroundColor: { value: '#fff' },
-        direction: { value: 'alignleftinspector' },
-        width: { value: '33' },
+        fieldBackgroundColor: { value: '#fff' },
+        direction: { value: 'alignLeft' },
         alignment: { value: 'side' },
-        autoWidth: { value: '{{false}}' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
       },

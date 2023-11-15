@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
@@ -8,6 +8,7 @@ import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
+// import { useEditorState } from '@/_stores/editorStore';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -28,15 +29,15 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     const _options = labels?.map((label, index) => ({ label, value: values?.[index] }));
     return _options;
   };
+
   const _markedAsDefault = resolveReferences(component?.component?.definition?.properties?.value?.value, currentState);
   const isDynamicOptionsEnabled = resolveReferences(
     component?.component?.definition?.properties?.advanced?.value,
     currentState
   );
 
-  const [options, setOptions] = useState(constructOptions());
+  const [options, setOptions] = useState([]);
   const [markedAsDefault, setMarkedAsDefault] = useState(_markedAsDefault);
-
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
@@ -105,6 +106,82 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     paramUpdated({ name: 'value' }, 'value', _value, 'properties');
   };
 
+  // const paramUpdatedPromise = (param, value, mapFn, properties) => {
+  //   return new Promise((resolve, reject) => {
+  //     paramUpdated(param, value, mapFn, properties)
+  //       .then(() => {
+  //         resolve();
+  //       })
+  //       .catch((error) => {
+  //         reject(error);
+  //       });
+  //   });
+  // };
+
+  const reorderOptions = async (startIndex, endIndex) => {
+    const result = [...options];
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    setOptions(result);
+    // paramUpdatedPromise(
+    //   { name: 'display_values' },
+    //   'value',
+    //   result.map((option) => option.label),
+    //   'properties'
+    // )
+    //   .then(() => {
+    //     paramUpdatedPromise(
+    //       { name: 'display_values' },
+    //       'value',
+    //       result.map((option) => option.label),
+    //       'properties'
+    //     );
+    //     // return paramUpdatedPromise(
+    //     //   { name: 'values' },
+    //     //   'value',
+    //     //   result.map((option) => option.value),
+    //     //   'properties'
+    //     // );
+    //   })
+    //   .then(() => {
+    //     console.log('Both promises resolved successfully.');
+    //   })
+    //   .catch((error) => {
+    //     console.error('An error occurred:', error);
+    //   });
+    // await ;
+    // await paramUpdated(
+    //   { name: 'values' },
+    //   'value',
+    //   result.map((option) => option.value),
+    //   'properties'
+    // );
+    await paramUpdated(
+      { name: 'display_values' },
+      'value',
+      result.map((option) => option.label),
+      'properties'
+    );
+
+    await paramUpdated(
+      { name: 'values' },
+      'value',
+      result.map((option) => option.value),
+      'properties'
+    );
+  };
+
+  const onDragEnd = ({ source, destination }) => {
+    if (!destination || source?.index === destination?.index) {
+      return;
+    }
+    reorderOptions(source.index, destination.index);
+  };
+
+  useEffect(() => {
+    setOptions(constructOptions());
+  }, []);
+
   const _renderOverlay = (item, index) => {
     return (
       <Popover id="popover-basic" className={`${darkMode && 'dark-theme'}`} style={{ minWidth: '248px' }}>
@@ -164,7 +241,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       <List>
         <DragDropContext
           onDragEnd={(result) => {
-            this.onDragEnd(result);
+            onDragEnd(result);
           }}
         >
           <Droppable droppableId="droppable">
@@ -288,8 +365,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     isOpen: true,
     children: (
       <EventManager
-        component={component}
-        componentMeta={componentMeta}
+        sourceId={component?.id}
+        eventSourceType="component"
+        eventMetaDefinition={componentMeta}
         currentState={currentState}
         dataQueries={dataQueries}
         components={allComponents}
