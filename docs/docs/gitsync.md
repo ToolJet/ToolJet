@@ -9,6 +9,22 @@ GitSync feature allows users to synchronize the applications on their workspace 
 
 ToolJet applications can be synchronized with a Git repository, offering the flexibility to tailor your application development and deployment processes across various environments while aligning with best practices for the application development lifecycle.
 
+### Key Use-Cases:
+
+#### Backup of Apps
+
+GitSync provides a straightforward solution for creating backups of your applications. By pushing changes to a Git repository, users can ensure a secure and versioned history of their application. This serves as a reliable backup mechanism, safeguarding against accidental application/version deletion or corruption.
+
+#### Environment Migration
+
+Facilitating the movement of applications across different ToolJet deployments (e.g., from development to staging to production), GitSync acts as a pivotal tool for environment migration. Users can effortlessly transfer their applications across environments by pushing changes to a Git repository.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/gitsync/envmigration.png" alt="GitSync" />
+
+</div>
+
 ## Setting up GitSyncing with GitHub
 
 :::caution
