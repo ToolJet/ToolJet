@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, MoreThan, Repository } from 'typeorm';
@@ -234,11 +240,12 @@ export class AppsService {
     return result;
   }
 
-  async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {
+  async update(app: App, appUpdateDto: AppUpdateDto, organizationId?: string, manager?: EntityManager) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const { name, slug, icon } = appUpdateDto;
+    const { id: appId, currentVersionId: lastReleasedVersion } = app;
 
     const updatableParams = {
       name,
@@ -256,7 +263,7 @@ export class AppsService {
         //check if the app version is eligible for release
         const currentEnvironment: AppEnvironment = await manager
           .createQueryBuilder(AppEnvironment, 'app_environments')
-          .select(['app_environments.id', 'app_environments.isDefault'])
+          .select(['app_environments.id', 'app_environments.isDefault', 'app_environments.priority'])
           .innerJoinAndSelect(
             'app_versions',
             'app_versions',
@@ -266,9 +273,47 @@ export class AppsService {
             currentVersionId,
           })
           .getOne();
+        const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
 
-        if (!currentEnvironment?.isDefault) {
+        /* 
+        Allow version release only if the environment is on 
+        production with a valid license or 
+        expired license and development environment (priority no.1) (CE rollback) 
+        */
+        if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
           throw new BadRequestException('You can only release when the version is promoted to production');
+        }
+        let promotedFromQuery: string;
+        if (!isMultiEnvironmentEnabled) {
+          if (!currentEnvironment.isDefault) {
+            /* For basic plan users, Promote to the production environment first then release it */
+            const productionEnv = await this.appEnvironmentService.get(organizationId, null, false, manager);
+            await manager.update(AppVersion, currentVersionId, {
+              currentEnvironmentId: productionEnv.id,
+              promotedFrom: currentEnvironment.id,
+            });
+          }
+
+          /* demote the last released environment back to the promoted_from (if not null) */
+          if (lastReleasedVersion) {
+            promotedFromQuery = `
+            UPDATE app_versions
+            SET current_environment_id = promoted_from
+            WHERE promoted_from IS NOT NULL
+            AND id = $1;`;
+          }
+        } else {
+          if (lastReleasedVersion) {
+            promotedFromQuery = `
+            UPDATE app_versions
+            SET promoted_from = NULL
+            WHERE promoted_from IS NOT NULL
+            AND id = $1;`;
+          }
+        }
+
+        if (promotedFromQuery) {
+          await manager.query(promotedFromQuery, [lastReleasedVersion]);
         }
       }
       return await catchDbException(async () => {
@@ -688,6 +733,15 @@ export class AppsService {
         order: { priority: 'ASC' },
       });
       editableParams['currentEnvironmentId'] = nextEnvironment.id;
+
+      if (version.promotedFrom) {
+        /* 
+        should make this field null. 
+        otherwise unreleased versions will demote back to promoted_from when the user go back to base plan again. 
+        (this query will only run one time after the user buys a paid plan)
+        */
+        editableParams['promotedFrom'] = null;
+      }
     }
 
     if (definition) {
@@ -757,9 +811,19 @@ export class AppsService {
     currentEnvIdOfVersion: string,
     organizationId: string
   ): Promise<AppEnvironment> {
+    const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+    if (environmentName && !isMultiEnvironmentEnabled) {
+      throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
+    }
+
+    const processEnvironmentName = environmentName
+      ? environmentName
+      : !isMultiEnvironmentEnabled
+      ? 'development'
+      : null;
     const environment: AppEnvironment = environmentId
       ? await this.appEnvironmentService.get(organizationId, environmentId)
-      : await this.appEnvironmentService.getEnvironmentByName(environmentName, organizationId);
+      : await this.appEnvironmentService.getEnvironmentByName(processEnvironmentName, organizationId);
     if (!environment) {
       throw new NotFoundException("Couldn't found environment in the organization");
     }

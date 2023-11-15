@@ -6,6 +6,7 @@ import {
   orgEnvironmentVariableService,
   customStylesService,
   orgEnvironmentConstantService,
+  licenseService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -136,6 +137,12 @@ class EditorComponent extends React.Component {
     this.shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
   }
 
+  fetchFeatureAccesss = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      this.setState({ featureAccess: data });
+    });
+  };
+
   setWindowTitle(name) {
     document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `My App - ${retrieveWhiteLabelText()}`;
   }
@@ -190,6 +197,7 @@ class EditorComponent extends React.Component {
     await this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
+    this.fetchFeatureAccesss();
     this.setCurrentAppEnvironmentId();
     this.fetchApp(this.props.params.pageHandle);
     await this.fetchOrgEnvironmentVariables();
@@ -1598,7 +1606,10 @@ class EditorComponent extends React.Component {
     const currentState = this.props?.currentState;
     const editingVersion = this.props?.editingVersion;
     //TODO-url: replace env-id with env name
-    const previewQuery = queryString.stringify({ version: editingVersion?.name, env: currentAppEnvironment?.name });
+    const previewQuery = queryString.stringify({
+      version: editingVersion?.name,
+      ...(this.state?.featureAccess?.multiEnvironment ? { env: currentAppEnvironment?.name } : {}),
+    });
     const appVersionPreviewLink = editingVersion
       ? `/applications/${slug || appId}/${currentState.page.handle}${
           !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
