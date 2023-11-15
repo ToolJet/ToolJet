@@ -201,7 +201,7 @@ const EditorComponent = (props) => {
         updateState({
           currentUser: currentUser,
         });
-        //! Why in CE we update theme, urlparams, currentUser, mode
+
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
             ...currentState.globals,
@@ -322,6 +322,8 @@ const EditorComponent = (props) => {
       navigate: props.navigate,
       switchPage: switchPage,
       currentPageId: useEditorStore.getState().currentPageId,
+      currentAppEnvironmentId: useEditorStore.getState().currentAppEnvironmentId,
+      environmentId: useAppVersionStore.getState().currentAppVersionEnvironment?.id,
     };
     return editorRef;
   };
@@ -623,7 +625,7 @@ const EditorComponent = (props) => {
     return onEvent(getEditorRef(), eventName, event, options, 'edit');
   };
 
-  const handleRunQuery = (queryId, queryName) => runQuery(editorRef, queryId, queryName);
+  const handleRunQuery = (queryId, queryName) => runQuery(getEditorRef(), queryId, queryName);
 
   const dataSourceModalHandler = () => {
     dataSourceModalRef.current.dataSourceModalToggleStateHandler();
@@ -823,7 +825,7 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
       globals: {
-        ...currentState.globals,
+        ...useCurrentStateStore.getState().globals,
         environment: {
           id: envDetails?.id,
           name: envDetails?.name,
@@ -1058,7 +1060,7 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
-    if (isVersionReleased && !isUserSwitchedVersion) {
+    if (isEditorFreezed || (isVersionReleased && !isUserSwitchedVersion)) {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
       });
@@ -1784,18 +1786,9 @@ const EditorComponent = (props) => {
 
     setAppPreviewLink(appVersionPreviewLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, currentVersionId]);
+  }, [slug, currentVersionId, currentAppEnvironmentId]);
 
   const deviceWindowWidth = 450;
-
-  const editorRef = {
-    appDefinition: appDefinition,
-    queryConfirmationList: queryConfirmationList,
-    updateQueryConfirmationList: updateQueryConfirmationList,
-    navigate: props.navigate,
-    switchPage: switchPage,
-    currentPageId: currentPageId,
-  };
 
   if (isLoading) {
     return (
@@ -1840,8 +1833,8 @@ const EditorComponent = (props) => {
       <Confirm
         show={queryConfirmationList?.length > 0}
         message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
-        onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(editorRef, queryConfirmationData, true)}
-        onCancel={() => onQueryConfirmOrCancel(editorRef, queryConfirmationList[0])}
+        onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationData, true)}
+        onCancel={() => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationList[0])}
         queryConfirmationData={queryConfirmationList[0]}
         darkMode={props.darkMode}
         key={queryConfirmationList[0]?.queryName}
@@ -1879,6 +1872,7 @@ const EditorComponent = (props) => {
           appId={appId}
           slug={slug}
           setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => setAppVersionPromoted(isCurrentVersionPromoted)}
+          fetchEnvironments={fetchEnvironments}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
@@ -2058,7 +2052,7 @@ const EditorComponent = (props) => {
                 appId={appId}
                 appDefinition={appDefinition}
                 dataSourceModalHandler={dataSourceModalHandler}
-                editorRef={editorRef}
+                editorRef={getEditorRef()}
               />
               <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
             </div>

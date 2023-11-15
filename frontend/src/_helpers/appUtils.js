@@ -817,7 +817,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
   const options = getQueryVariables(query.options, getCurrentState());
 
   // passing current env through props only for querymanager
-  const currentAppEnvironmentId = _ref.state?.currentAppEnvironmentId;
+  const currentAppEnvironmentId = _ref?.currentAppEnvironmentId;
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   setPreviewLoading(true);
@@ -949,7 +949,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   let dataQuery = {};
 
   //for viewer we will only get the environment id from the url
-  const { currentAppEnvironmentId, environmentId } = _ref.state;
+  const { currentAppEnvironmentId, environmentId } = _ref;
 
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));

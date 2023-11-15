@@ -39,6 +39,7 @@ export default function EditorHeader({
   slug,
   darkMode,
   setCurrentAppVersionPromoted,
+  fetchEnvironments,
 }) {
   const currentUser = useCurrentUser();
   const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, environments } = useAppInfo();
@@ -148,7 +149,6 @@ export default function EditorHeader({
                 <div className="d-flex version-manager-container p-0  align-items-center ">
                   {editingVersion && (
                     <EnvironmentManager
-                      editingVersion={editingVersion}
                       appEnvironmentChanged={appEnvironmentChanged}
                       environments={environments}
                       multiEnvironmentEnabled={featureAccess?.multiEnvironment}
@@ -261,6 +261,7 @@ export default function EditorHeader({
                     editingVersion={editingVersion}
                     onClose={() => setPromoteModalData(null)}
                     onEnvChange={(env) => appEnvironmentChanged(env)}
+                    fetchEnvironments={fetchEnvironments}
                   />
                 </div>
               </div>

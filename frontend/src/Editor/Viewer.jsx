@@ -265,8 +265,6 @@ class ViewerComponent extends React.Component {
         orgConstants[constant.name] = constantValue;
       });
 
-      // console.log('--org constant 2.0', { orgConstants });
-
       return {
         constants: orgConstants,
       };

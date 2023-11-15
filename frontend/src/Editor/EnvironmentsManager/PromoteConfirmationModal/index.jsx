@@ -8,9 +8,10 @@ import { toast } from 'react-hot-toast';
 import ArrowRightIcon from '@assets/images/icons/arrow-right.svg';
 import '@/_styles/versions.scss';
 import { useAppInfo } from '@/_stores/appDataStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 export default function EnvironmontConfirmationModal(props) {
-  const { data, editingVersion, onEnvChange, onClose } = props;
+  const { data, editingVersion, onEnvChange, onClose, fetchEnvironments } = props;
 
   //TODO: Bug when creating a new version, the app_id is not set in the version object instead it is set as appId.
 
@@ -37,6 +38,8 @@ export default function EnvironmontConfirmationModal(props) {
       .then(() => {
         toast.success(`${editingVersion.name} has been promoted to ${data.target.name}!`);
         onEnvChange(data.target);
+        fetchEnvironments();
+        useAppVersionStore.getState().actions.setAppVersionCurrentEnvironment(data.target);
         setPromtingEnvirontment(false);
         onClose();
       })

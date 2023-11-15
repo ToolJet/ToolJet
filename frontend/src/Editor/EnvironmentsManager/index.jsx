@@ -6,22 +6,17 @@ import { ToolTip } from '@/_components/ToolTip';
 import '@/_styles/versions.scss';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-import { useEditorState, useEditorStore } from '@/_stores/editorStore';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const EnvironmentManager = (props) => {
   const {
-    editingVersion,
     appEnvironmentChanged,
     environments,
-    // setEnvironments,
-    // currentEnvironment,
     setCurrentEnvironment,
     multiEnvironmentEnabled,
     setCurrentAppVersionPromoted,
     licenseValid,
   } = props;
-
-  // TODO: fix naming with the current environment id
 
   const { currentAppEnvironmentId, currentAppEnvironment } = useEditorStore(
     (state) => ({
@@ -31,10 +26,11 @@ const EnvironmentManager = (props) => {
     shallow
   );
 
-  const { onEditorFreeze, currentAppVersionEnvironment } = useAppVersionStore(
+  const { onEditorFreeze, currentAppVersionEnvironment, editingVersion } = useAppVersionStore(
     (state) => ({
       onEditorFreeze: state.actions.onEditorFreeze,
       currentAppVersionEnvironment: state.currentAppVersionEnvironment,
+      editingVersion: state.editingVersion,
     }),
     shallow
   );
@@ -42,20 +38,16 @@ const EnvironmentManager = (props) => {
   /**
    * if the current promoted environment is production or staging, then we need to freeze the editor
    */
+
   useEffect(() => {
-    if (!currentAppEnvironment || !environments.length) return;
-    const currentPromotedEnvironment = currentAppEnvironmentId
-      ? environments.find((env) => env.id === currentAppEnvironmentId)
-      : environments.find((env) => env.name === 'development');
-    setCurrentAppVersionPromoted(currentPromotedEnvironment.priority > 1);
+    if (!currentAppVersionEnvironment || !environments.length) return;
 
     if (currentAppVersionEnvironment.name === 'production' || currentAppVersionEnvironment.name === 'staging') {
-      // we don't want to allow editing of production and staging environments
-      // so let's freeze the editor
       onEditorFreeze(true);
+      setCurrentAppVersionPromoted(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentAppEnvironment, onEditorFreeze, editingVersion.id, environments.length]);
+  }, [currentAppVersionEnvironment, editingVersion.id, environments.length]);
 
   const selectEnvironment = (env, isVersionChanged = false) => {
     const isEnvIdNotAvailableYet = !currentAppEnvironmentId;
