@@ -2,9 +2,9 @@
 import React from 'react';
 import './Loader.scss'; // Import a CSS file for styling
 
-const Loader = ({ width }) => {
+const Loader = ({ width, style }) => {
   return (
-    <div class="tj-widget-loader">
+    <div class="tj-widget-loader" style={style}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width={width}

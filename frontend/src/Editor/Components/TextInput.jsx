@@ -41,8 +41,10 @@ export const TextInput = function TextInput({
   const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const [elementWidth, setElementWidth] = useState(0);
+
   const computedStyles = {
-    height: padding == 'default' ? `calc(${height}px - 5px)` : height,
+    // height: padding == 'default' ? `calc(${height}px - 5px)` : height,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
@@ -51,8 +53,10 @@ export const TextInput = function TextInput({
     padding: styles.iconVisibility ? '3px 28px' : '3px 5px',
   };
 
-  const [elementWidth, setElementWidth] = useState(0);
-
+  const loaderStyle = {
+    left: direction === 'alignrightinspector' && alignment === 'side' ? `${elementWidth - 19}px` : undefined,
+    top: alignment === 'top' && '28px',
+  };
   useEffect(() => {
     if (textInputRef.current) {
       const width = textInputRef.current.getBoundingClientRect().width;
@@ -145,9 +149,10 @@ export const TextInput = function TextInput({
                     width: '16',
                     height: '16',
                     right: direction == 'alignleftinspector' && alignment == 'side' && `${elementWidth - 21}px`,
-                    left: direction == 'alignrightinspector' && alignment == 'side' && `6px`,
+                    left:
+                      direction == 'alignrightinspector' && alignment == 'side' ? `6px` : alignment == 'top' && `6px`,
                     position: 'absolute',
-                    top: alignment == 'side' ? '50%' : '32px',
+                    top: alignment == 'side' ? '50%' : '37.5px',
                     transform: ' translateY(-50%)',
                   }}
                   stroke={1.5}
@@ -185,8 +190,17 @@ export const TextInput = function TextInput({
                 value={value}
                 data-cy={dataCy}
               />
-              {loadingState && <Loader width="16" />}
+              {loadingState && <Loader style={{ ...loaderStyle }} width="16" />}
             </div>
+            {showValidationError && (
+              <div
+                className="tj-text-sm"
+                data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+                style={{ color: errTextColor, textAlign: direction == 'alignleftinspector' && 'end' }}
+              >
+                {showValidationError && validationError}
+              </div>
+            )}
           </ToolTip>
         ) : (
           <div>
@@ -218,9 +232,10 @@ export const TextInput = function TextInput({
                     width: '16',
                     height: '16',
                     right: direction == 'alignleftinspector' && alignment == 'side' && `${elementWidth - 21}px`,
-                    left: direction == 'alignrightinspector' && alignment == 'side' && `6px`,
+                    left:
+                      direction == 'alignrightinspector' && alignment == 'side' ? `6px` : alignment == 'top' && `6px`,
                     position: 'absolute',
-                    top: alignment == 'side' ? '50%' : '32px',
+                    top: alignment == 'side' ? '50%' : '37.5px',
                     transform: ' translateY(-50%)',
                   }}
                   stroke={1.5}
@@ -258,13 +273,13 @@ export const TextInput = function TextInput({
                 value={value}
                 data-cy={dataCy}
               />
-              {loadingState && <Loader width="16" />}
+              {loadingState && <Loader style={{ ...loaderStyle }} width="16" />}
             </div>
             {showValidationError && (
               <div
                 className="tj-text-sm"
                 data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
-                style={{ color: errTextColor }}
+                style={{ color: errTextColor, textAlign: direction == 'alignleftinspector' && 'end' }}
               >
                 {showValidationError && validationError}
               </div>
