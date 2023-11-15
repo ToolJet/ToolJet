@@ -46,8 +46,6 @@ export const reset = () => {
 export const addNewUserMW = (firstName, email, companyName) => {
   common.navigateToManageUsers();
   users.inviteUser(firstName, email);
-  cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
-  cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(
     "have.text",
     "My workspace"
