@@ -28,16 +28,7 @@ export const initEditorWalkThrough = () => {
           title: 'Drag and drop components',
           description: 'From the component sidebar, drag and drop components to the canvas.',
           position: 'left',
-          closeBtnText: 'Skip (1/7)',
-        },
-      },
-      {
-        element: '.sidebar-datasources',
-        popover: {
-          title: 'Connect to data sources',
-          description: 'You can manage your data sources from here.',
-          position: 'right',
-          closeBtnText: 'Skip (2/7)',
+          closeBtnText: 'Skip (1/6)',
         },
       },
       {
@@ -46,7 +37,7 @@ export const initEditorWalkThrough = () => {
           title: 'Inspector',
           description: 'Inspector lets you check the properties of components, results of queries etc.',
           position: 'right',
-          closeBtnText: 'Skip (3/7)',
+          closeBtnText: 'Skip (2/6)',
         },
       },
       {
@@ -56,7 +47,7 @@ export const initEditorWalkThrough = () => {
           description:
             'Create queries to interact with your data sources, run JavaScript snippets and to make API requests.',
           position: 'top',
-          closeBtnText: 'Skip (4/7)',
+          closeBtnText: 'Skip (3/6)',
         },
       },
       {
@@ -66,7 +57,7 @@ export const initEditorWalkThrough = () => {
           description:
             'Click on preview to view the current changes on app viewer. Click on share button to view the sharing options.',
           position: 'left',
-          closeBtnText: 'Skip (5/7)',
+          closeBtnText: 'Skip (4/6)',
         },
       },
       {
@@ -76,7 +67,7 @@ export const initEditorWalkThrough = () => {
           description:
             ' Release the editing version to make the changes live. Released versions cannot be modified, you will have to create another version to make more changes.',
           position: 'left',
-          closeBtnText: 'Skip (6/7)',
+          closeBtnText: 'Skip (5/6)',
         },
       },
       {
@@ -85,7 +76,7 @@ export const initEditorWalkThrough = () => {
           title: 'Collaborate',
           description: 'Add comments on canvas and tag your team members to collaborate.',
           position: 'top',
-          closeBtnText: 'Skip (7/7)',
+          closeBtnText: 'Skip (6/6)',
         },
       },
     ]);
