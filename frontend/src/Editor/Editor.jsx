@@ -63,6 +63,7 @@ import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateSto
 import { resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { shallow } from 'zustand/shallow';
+import { getQueryParams } from '@/_helpers/routes';
 
 setAutoFreeze(false);
 enablePatches();
@@ -1309,7 +1310,8 @@ class EditorComponent extends React.Component {
       },
       () => {
         toast.success('Page handle updated successfully');
-        this.switchPage(pageId);
+        const queryParams = getQueryParams();
+        this.switchPage(pageId, Object.entries(queryParams));
         this.autoSave();
       }
     );
