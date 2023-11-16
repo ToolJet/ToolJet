@@ -398,7 +398,8 @@ export class AppImportExportService {
             const mappedComponents = transformComponentData(
               pageComponents,
               componentEvents,
-              appResourceMappings.componentsMapping
+              appResourceMappings.componentsMapping,
+              isNormalizedAppDefinitionSchema
             );
 
             const componentLayouts = [];
@@ -707,7 +708,7 @@ export class AppImportExportService {
 
           let parentId = component.parent ? component.parent : null;
 
-          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
+          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
 
           if (isParentTabOrCalendar) {
             const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
@@ -1561,7 +1562,8 @@ function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
 function transformComponentData(
   data: object,
   componentEvents: any[],
-  componentsMapping: Record<string, string>
+  componentsMapping: Record<string, string>,
+  isNormalizedAppDefinitionSchema = true
 ): Component[] {
   const transformedComponents: Component[] = [];
 
@@ -1581,7 +1583,12 @@ function transformComponentData(
 
     let parentId = component.parent ? component.parent : null;
 
-    const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, allComponents, parentId);
+    const isParentTabOrCalendar = isChildOfTabsOrCalendar(
+      component,
+      allComponents,
+      parentId,
+      isNormalizedAppDefinitionSchema
+    );
 
     if (isParentTabOrCalendar) {
       const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
@@ -1618,20 +1625,25 @@ function transformComponentData(
     }
   }
 
-  // if (skippedComponents.length) {
-
-  // }
-
   return transformedComponents;
 }
 
-const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+const isChildOfTabsOrCalendar = (
+  component,
+  allComponents = [],
+  componentParentId = undefined,
+  isNormalizedAppDefinitionSchema: boolean
+) => {
   if (componentParentId) {
     const parentId = component?.parent?.split('-').slice(0, -1).join('-');
 
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
     if (parentComponent) {
+      if (!isNormalizedAppDefinitionSchema) {
+        return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+      }
+
       return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
     }
   }
