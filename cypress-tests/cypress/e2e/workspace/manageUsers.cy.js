@@ -17,7 +17,7 @@ data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 
 describe("Manage Users", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
   });
   let invitationToken,
     organizationToken,
@@ -74,7 +74,9 @@ describe("Manage Users", () => {
 
   it("Should verify the confirm invite page and new user account", () => {
     common.navigateToManageUsers();
-    users.inviteUser(data.firstName, data.email);
+    users.fillUserInviteForm(data.firstName, data.email);
+    cy.get(usersSelector.buttonInviteUsers).click();
+    users.fetchAndVisitInviteLink(data.email)
     users.confirmInviteElements();
 
     cy.clearAndType(commonSelectors.passwordInputField, "pass");
@@ -89,7 +91,7 @@ describe("Manage Users", () => {
     updateWorkspaceName(data.email);
 
     common.logout();
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
     cy.contains("td", data.email)
@@ -120,7 +122,7 @@ describe("Manage Users", () => {
       });
 
     common.logout();
-    cy.visit('/');
+    cy.visit("/");
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
     cy.get(commonSelectors.loginButton).click();
@@ -130,7 +132,7 @@ describe("Manage Users", () => {
     cy.contains("My workspace").should("not.exist");
     common.logout();
 
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
     cy.contains("td", data.email)
@@ -186,7 +188,7 @@ describe("Manage Users", () => {
     cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
     cy.url().should("include", path.loginPath);
 
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     common.navigateToManageUsers();
     common.searchUser(data.email);
     cy.contains("td", data.email)
@@ -196,13 +198,19 @@ describe("Manage Users", () => {
       });
   });
 
-  it.skip("Should verify the user onboarding with groups", () => {
+  it("Should verify the user onboarding with groups", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     common.navigateToManageUsers();
 
     users.fillUserInviteForm(data.firstName, data.email);
-    cy.get(".dropdown-heading-value > .gray").click();
+    cy.wait(1500);
+    cy.get(".dropdown-heading-value > .gray").dblclick();
+    cy.get("body").then(($body) => {
+      if (!$body.find(".search > input").length > 0) {
+        cy.get(".dropdown-heading-value > .gray").click();
+      }
+    });
     cy.clearAndType(".search > input", "Test");
     cy.get(".no-options").verifyVisibleElement("have.text", "No options");
     users.selectUserGroup("Admin");
@@ -239,7 +247,8 @@ describe("Manage Users", () => {
     cy.get(groupsSelector.createGroupButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      groupsText.groupCreatedToast)
+      groupsText.groupCreatedToast
+    );
 
     common.navigateToManageUsers();
     users.inviteUserWithUserGroup(
@@ -248,9 +257,9 @@ describe("Manage Users", () => {
       "All users",
       data.groupName
     );
-    common.logout()
+    common.logout();
 
-    cy.appUILogin()
+    cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
     cy.get(groupsSelector.groupLink(data.groupName)).click();
     cy.get(groupsSelector.usersLink).click();
