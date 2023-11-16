@@ -35,8 +35,11 @@ class Conditions {
 
 class ConditionField {
   @IsString()
-  @IsIn(['Column', 'Value'])
+  @IsIn(['Column', 'Value'], { message: 'Condition value not specified' })
   type: string;
+
+  @IsOptional() // present only when type is value
+  value: unknown;
 
   @IsString()
   @IsOptional() // present only when type is column
@@ -45,8 +48,6 @@ class ConditionField {
   @IsString()
   @IsOptional() // present only when type is column
   columnName: string;
-
-  value: unknown;
 }
 
 class ConditionsList {
