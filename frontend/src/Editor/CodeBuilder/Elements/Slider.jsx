@@ -10,7 +10,8 @@ function Slider1({ value, onChange, disabled }) {
   };
   const onInputChange = (e) => {
     setSliderValue(e.target.value);
-    onChange(`{{${e.target.value}}}`);
+    if (e.target.value > 100) onChange(`{{${100}}}`);
+    else onChange(`{{${e.target.value}}}`);
   };
   return (
     <div className="d-flex flex-column" style={{ width: '142px' }}>

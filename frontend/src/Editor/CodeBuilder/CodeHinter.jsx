@@ -39,6 +39,8 @@ import Switch from './Elements/Switch';
 import Checkbox from './Elements/Checkbox';
 import Slider from './Elements/Slider';
 import { Input } from './Elements/Input';
+import { Icon } from './Elements/Icon';
+import { Visibility } from './Elements/Visibility';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Text'];
 
@@ -55,11 +57,14 @@ const AllElements = {
   Switch,
   Input,
   Checkbox,
+  Icon,
+  Visibility,
 };
 
 export function CodeHinter({
   initialValue,
   onChange,
+  onVisibilityChange,
   mode,
   theme,
   lineNumbers,
@@ -413,6 +418,12 @@ export function CodeHinter({
                 onChange={(value) => {
                   if (value !== currentValue) {
                     onChange(value);
+                    setCurrentValue(value);
+                  }
+                }}
+                onVisibilityChange={(value) => {
+                  if (value !== currentValue) {
+                    onVisibilityChange(value);
                     setCurrentValue(value);
                   }
                 }}

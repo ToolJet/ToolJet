@@ -316,6 +316,7 @@ export const DraggableBox = React.memo(
                     allComponents={allComponents}
                     sideBarDebugger={sideBarDebugger}
                     childComponents={childComponents}
+                    isResizing={isResizing}
                   />
                 </ErrorBoundary>
               </div>
