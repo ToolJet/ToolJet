@@ -2808,6 +2808,13 @@ export const widgets = [
         validation: { schema: { type: 'string' } },
         accordian: 'field',
       },
+      icon: {
+        type: 'icon',
+        displayName: 'Icon',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+        visibility: false,
+      },
       fieldBorderRadius: {
         type: 'input',
         displayName: 'Border radius',
@@ -2886,6 +2893,8 @@ export const widgets = [
         alignment: { value: 'side' },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
+        icon: { value: 'IconHome2' },
+        iconVisibility: { value: false },
       },
     },
   },

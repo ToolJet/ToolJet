@@ -2,8 +2,46 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 import { CustomMenuList } from './Table/SelectComponent';
+import * as Icons from '@tabler/icons-react';
+import Check from '@/_ui/Icon/solidIcons/Check';
+
+const ValueContainer = ({ children, doShowIcon = false, icon, ...props }) => {
+  // eslint-disable-next-line import/namespace
+  const IconElement = Icons[icon] == undefined ? Icons['IconHome2'] : Icons[icon];
+  return (
+    <components.ValueContainer {...props}>
+      {doShowIcon && (
+        <IconElement
+          style={{
+            width: '16px',
+            height: '16px',
+            fill: 'var(--slate8)',
+          }}
+        />
+      )}
+      <span className="d-flex" {...props}>
+        {children}
+      </span>
+    </components.ValueContainer>
+  );
+};
+
+const Option = (props) => {
+  return (
+    <components.Option {...props}>
+      <div className="d-flex justify-content-between">
+        <span>{props.label}</span>
+        {props.isSelected && (
+          <span>
+            <Check width={'20'} fill={'#3E63DD'} />
+          </span>
+        )}
+      </div>
+    </components.Option>
+  );
+};
 
 export const DropDown = function DropDown({
   height,
@@ -43,13 +81,14 @@ export const DropDown = function DropDown({
     fieldBorderColor,
     fieldBackgroundColor,
     labelWidth,
+    icon,
+    iconVisibility,
   } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
   const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
-  console.log(boxShadow, 'boxShadow');
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
 
@@ -205,6 +244,8 @@ export const DropDown = function DropDown({
       height: height,
       padding: '0 6px',
       justifyContent,
+      display: 'flex',
+      gap: '0.13rem',
     }),
 
     singleValue: (provided, _state) => ({
@@ -223,6 +264,15 @@ export const DropDown = function DropDown({
     indicatorsContainer: (provided, _state) => ({
       ...provided,
       height: height,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: 'white',
+      color: '#11181C',
+      '&:hover': {
+        backgroundColor: '#3E63DD',
+        color: 'white',
+      },
     }),
     // menu: (provided, _state) => ({
     //   ...provided,
@@ -294,6 +344,8 @@ export const DropDown = function DropDown({
             placeholder={placeholder}
             components={{
               MenuList: CustomMenuList,
+              ValueContainer: (props) => <ValueContainer {...props} icon={icon} doShowIcon={iconVisibility} />,
+              Option,
             }}
             isClearable
           />
