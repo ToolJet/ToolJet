@@ -36,7 +36,7 @@ describe("Basic components", () => {
   beforeEach(() => {
     data.appName = `${fake.companyName}-${fake.companyName}-App`;
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(data.appName);
     cy.openApp();
     cy.modifyCanvasSize(900, 900);
     cy.intercept("GET", "/api/comments/*").as("loadComments");
@@ -584,9 +584,9 @@ describe("Basic components", () => {
     verifyComponentWithOutLabel("Tags", "tags1", "tags2", data.appName);
   });
 
-  it("Should verify Textarea", () => {
+  it("Should verify Text area", () => {
     verifyComponentWithOutLabel(
-      "Textarea",
+      "Text area",
       "textarea1",
       "textarea2",
       data.appName

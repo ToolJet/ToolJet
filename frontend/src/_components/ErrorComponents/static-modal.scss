@@ -1,0 +1,30 @@
+.static-error-modal {  
+	.modal-footer {
+	  border: none;
+	  padding-top: 0px;
+	}
+  
+	.modal-header {
+	  border-bottom: none;
+	  padding-bottom: 0px;
+	}
+
+	.header-text {
+	  font-size: 16px !important;
+	  font-weight: 500 !important;
+	}
+
+	.description {
+	  font-size: 14px;
+	  font-weight: 400;
+	}
+  
+	.action-btn {
+	  width: 100%;
+	  height: 40px;
+	  margin-top: 24px;
+	  margin-bottom: 16px;
+	  font-size: 14px !important;
+	  font-weight: 500 !important;
+	}
+  }
