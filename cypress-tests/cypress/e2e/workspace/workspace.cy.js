@@ -134,6 +134,7 @@ describe("Workspace", () => {
         );
         cy.get(commonSelectors.cancelButton).click();
 
+        cy.wait(2000)
         cy.get(commonSelectors.workspaceName).click();
         cy.get(commonSelectors.addWorkspaceButton).click();
         cy.get(commonSelectors.workspaceNameInputField).verifyVisibleElement(
