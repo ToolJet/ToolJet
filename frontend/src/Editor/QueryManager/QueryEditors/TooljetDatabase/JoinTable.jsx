@@ -90,8 +90,8 @@ const SelectTableMenu = ({ darkMode }) => {
     <div>
       {/* Join Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">From</label>
-        <div className="field flex-grow-1 mt-1">
+        <label className="form-label flex-shrink-0">From</label>
+        <div className="field flex-grow-1 mt-1 overflow-hidden">
           {joins.map((join, joinIndex) => (
             <JoinConstraint
               darkMode={darkMode}
@@ -133,24 +133,24 @@ const SelectTableMenu = ({ darkMode }) => {
       </div>
       {/* Filter Section */}
       <div className="tdb-join-filtersection field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Filter</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Filter</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <RenderFilterSection darkMode={darkMode} />
         </div>
       </div>
       {/* Sort Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Sort</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Sort</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <JoinSort darkMode={darkMode} />
         </div>
       </div>
       {/* Limit Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Limit</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Limit</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <CodeHinter
-            className="codehinter-plugins"
+            className="tjdb-codehinter border rounded"
             theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
             placeholder="Enter limit"
@@ -168,10 +168,10 @@ const SelectTableMenu = ({ darkMode }) => {
       </div>
       {/* Offset Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Offset</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Offset</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <CodeHinter
-            className="codehinter-plugins"
+            className="tjdb-codehinter border rounded"
             theme={darkMode ? 'monokai' : 'default'}
             height={'32px'}
             placeholder="Enter offset"
@@ -189,8 +189,8 @@ const SelectTableMenu = ({ darkMode }) => {
       </div>
       {/* Select Section */}
       <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label">Select</label>
-        <div className="field flex-grow-1">
+        <label className="form-label flex-shrink-0">Select</label>
+        <div className="field flex-grow-1 overflow-hidden">
           <JoinSelect darkMode={darkMode} />
         </div>
       </div>
@@ -364,10 +364,11 @@ const RenderFilterSection = ({ darkMode }) => {
     const { operator = '', leftField = {}, rightField = {} } = conditionDetail;
     const LeftSideTableDetails = leftField?.table ? findTableDetails(leftField?.table) : '';
     return (
-      <Row className="border rounded mb-2 mx-0" key={index}>
-        <Col sm="2" className="p-0 border-end">
+      <Row className="mb-2 mx-0" key={index}>
+        <Col sm="2" className="p-0">
           {index === 1 && (
             <DropDownSelect
+              buttonClasses="border border-end-0 rounded-start"
               showPlaceHolder
               onChange={(change) => updateOperatorForConditions(change?.value)}
               options={groupOperators}
@@ -375,11 +376,32 @@ const RenderFilterSection = ({ darkMode }) => {
               value={groupOperators.find((op) => op.value === conditions.operator)}
             />
           )}
-          {index === 0 && <div className="tj-small-btn px-2">Where</div>}
-          {index > 1 && <div className="tj-small-btn px-2">{conditions?.operator}</div>}
+          {index === 0 && (
+            <div
+              style={{
+                borderRadius: 0,
+                height: '30px',
+              }}
+              className="tj-small-btn px-2 border border-end-0 rounded-start"
+            >
+              Where
+            </div>
+          )}
+          {index > 1 && (
+            <div
+              style={{
+                borderRadius: 0,
+                height: '30px',
+              }}
+              className="tj-small-btn px-2 rounded-start border border-end-0"
+            >
+              {conditions?.operator}
+            </div>
+          )}
         </Col>
-        <Col sm="3" className="p-0 border-end">
+        <Col sm="3" className="p-0">
           <DropDownSelect
+            buttonClasses="border border-end-0"
             showPlaceHolder
             onChange={(newValue) =>
               updateFilterConditionEntry('Column', index, {
@@ -399,8 +421,9 @@ const RenderFilterSection = ({ darkMode }) => {
             darkMode={darkMode}
           />
         </Col>
-        <Col sm="3" className="p-0 border-end">
+        <Col sm="3" className="p-0">
           <DropDownSelect
+            buttonClasses="border border-end-0"
             showPlaceHolder
             onChange={(change) => updateFilterConditionEntry('Operator', index, { operator: change?.value })}
             value={filterOperatorOptions.find((op) => op.value === operator)}
@@ -409,9 +432,10 @@ const RenderFilterSection = ({ darkMode }) => {
           />
         </Col>
         <Col sm="4" className="p-0 d-flex">
-          <div className="flex-grow-1">
+          <div className="flex-grow-1 overflow-hidden">
             {operator === 'IS' ? (
               <DropDownSelect
+                buttonClasses="border border-end-0"
                 showPlaceHolder
                 onChange={(change) =>
                   updateFilterConditionEntry('Value', index, { value: change?.value, isLeftSideCondition: false })
@@ -429,9 +453,9 @@ const RenderFilterSection = ({ darkMode }) => {
                       : JSON.stringify(rightField?.value)
                     : rightField?.value
                 }
-                className="codehinter-plugins"
+                className="border border-end-0 fs-12 tjdb-codehinter"
                 theme={darkMode ? 'monokai' : 'default'}
-                height={'28px'}
+                height={'30px'}
                 placeholder="Value"
                 onChange={(newValue) =>
                   updateFilterConditionEntry('Value', index, { value: newValue, isLeftSideCondition: false })
@@ -439,10 +463,14 @@ const RenderFilterSection = ({ darkMode }) => {
               />
             )}
           </div>
+
           <ButtonSolid
+            customStyles={{
+              height: '30px',
+            }}
             size="sm"
             variant="ghostBlack"
-            className="px-1 rounded-0 border-start"
+            className="px-1 rounded-0 border rounded-end"
             onClick={() => removeFilterConditionEntry(index)}
           >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />
@@ -470,7 +498,7 @@ const RenderFilterSection = ({ darkMode }) => {
         </Row>
       )}
       {filterComponents}
-      <Row className="mx-0">
+      <Row className="mx-1 mb-1">
         <Col className="p-0">
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewFilterConditionEntry()}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />

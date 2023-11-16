@@ -12,7 +12,7 @@ describe("Password reset functionality", () => {
   let passwordResetLink = "";
 
   before(() => {
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     addNewUserMW(data.firstName, data.email);
     logout();
   });

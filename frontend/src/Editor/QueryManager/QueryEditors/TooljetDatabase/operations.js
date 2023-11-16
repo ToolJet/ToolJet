@@ -2,7 +2,7 @@ import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { isEmpty } from 'lodash';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { resolveReferences } from '@/_helpers/utils';
-import { hasEqualWithNull } from './util';
+import { hasNullValueInFilters } from './util';
 
 export const tooljetDbOperations = {
   perform,
@@ -46,7 +46,7 @@ function buildPostgrestQuery(filters) {
         postgrestQueryBuilder.order(column, order);
       }
 
-      if (!isEmpty(column) && !isEmpty(operator) && value && value !== '') {
+      if (!isEmpty(column) && !isEmpty(operator)) {
         postgrestQueryBuilder[operator](column, value);
       }
     }
@@ -57,7 +57,7 @@ function buildPostgrestQuery(filters) {
 async function listRows(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  if (hasEqualWithNull(resolvedOptions, 'list_rows')) {
+  if (hasNullValueInFilters(resolvedOptions, 'list_rows')) {
     return {
       status: 'failed',
       statusText: 'failed',
@@ -70,7 +70,7 @@ async function listRows(dataQuery, currentState) {
   let query = [];
 
   if (!isEmpty(listRows)) {
-    const { limit, where_filters: whereFilters, order_filters: orderFilters } = listRows;
+    const { limit, where_filters: whereFilters, order_filters: orderFilters, offset } = listRows;
 
     if (limit && isNaN(limit)) {
       return {
@@ -88,6 +88,7 @@ async function listRows(dataQuery, currentState) {
     !isEmpty(whereQuery) && query.push(whereQuery);
     !isEmpty(orderQuery) && query.push(orderQuery);
     !isEmpty(limit) && query.push(`limit=${limit}`);
+    !isEmpty(offset) && query.push(`offset=${offset}`);
   }
   const headers = { 'data-query-id': dataQuery.id };
   return await tooljetDatabaseService.findOne(headers, tableId, query.join('&'));
@@ -107,7 +108,7 @@ async function createRow(dataQuery, currentState) {
 async function updateRows(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  if (hasEqualWithNull(resolvedOptions, 'update_rows')) {
+  if (hasNullValueInFilters(resolvedOptions, 'update_rows')) {
     return {
       status: 'failed',
       statusText: 'failed',
@@ -135,7 +136,7 @@ async function updateRows(dataQuery, currentState) {
 async function deleteRows(dataQuery, currentState) {
   const queryOptions = dataQuery.options;
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  if (hasEqualWithNull(resolvedOptions, 'delete_rows')) {
+  if (hasNullValueInFilters(resolvedOptions, 'delete_rows')) {
     return {
       status: 'failed',
       statusText: 'failed',

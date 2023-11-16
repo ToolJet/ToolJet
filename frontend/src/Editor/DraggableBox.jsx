@@ -235,6 +235,7 @@ export const DraggableBox = React.memo(
             style={getStyles(isDragging, isSelectedComponent)}
           >
             <Rnd
+              maxWidth={canvasWidth}
               style={{ ...style }}
               resizeGrid={[gridWidth, 10]}
               dragGrid={[gridWidth, 10]}

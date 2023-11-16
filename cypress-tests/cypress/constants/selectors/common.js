@@ -225,6 +225,11 @@ export const commonSelectors = {
   workspaceConstantsOption: '[data-cy="workspace-constants-list-item"]',
   nameErrorText: '[data-cy="name-error-text"]',
   valueErrorText: '[data-cy="value-error-text"]',
+  releaseButton: '[data-cy="button-release"]',
+  leftSideBarSettingsButton: '[data-cy="left-sidebar-settings-button"]',
+  modalHeader: '[data-cy="modal-header"]',
+  modalDescription: '[data-cy="modal-description"]',
+  backToHomeButton: '[data-cy="back-to-home-button"]',
 };
 
 export const commonWidgetSelector = {
@@ -330,10 +335,19 @@ export const commonWidgetSelector = {
     // iframeLinkLabel: '[data-cy="iframe-link-label"]',
     // ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
   },
-  copyAppLinkButton: '.input-group > :nth-child(3)',
+  copyAppLinkButton: '[data-cy="copy-app-link-button"]',
   makePublicAppToggle: '[data-cy="make-public-app-toggle"]',
   appLink: '[data-cy="app-link"]',
   appNameSlugInput: '[data-cy="app-name-slug-input"]',
-  // iframeLink: '[data-cy="iframe-link"]',
+  iframeLink: '[data-cy="iframe-link"]',
   modalCloseButton: '[data-cy="modal-close-button"]',
+  iframeLinkLabel: '[data-cy="iframe-link-label"]',
+  ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
+  appSlugLabel: '[data-cy="app-slug-label"]',
+  appSlugInput: '[data-cy="app-slug-input-field"]',
+  appSlugInfoLabel: '[data-cy="app-slug-info-label"]',
+  appLinkLabel: '[data-cy="app-link-label"]',
+  appLinkField: '[data-cy="app-link-field"]',
+  appSlugErrorLabel: '[data-cy="app-slug-error-label"]',
+  appLinkSucessLabel: '[data-cy="app-link-success-label"]',
 };

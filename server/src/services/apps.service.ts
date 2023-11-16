@@ -22,7 +22,14 @@ import { AppEnvironmentService } from './app_environments.service';
 import { decode } from 'js-base64';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { Page } from 'src/entities/page.entity';
+import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { Layout } from 'src/entities/layout.entity';
 
+import { Component } from 'src/entities/component.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
+
+const uuid = require('uuid');
 @Injectable()
 export class AppsService {
   constructor(
@@ -117,7 +124,30 @@ export class AppsService {
         );
 
         //create default app version
-        await this.createVersion(user, app, 'v1', null, null, manager);
+        const appVersion = await this.createVersion(user, app, 'v1', null, null, manager);
+
+        const defaultHomePage = await manager.save(
+          manager.create(Page, {
+            name: 'Home',
+            handle: 'home',
+            appVersionId: appVersion.id,
+            index: 1,
+          })
+        );
+
+        // Set default values for app version
+        appVersion.showViewerNavigation = true;
+        appVersion.homePageId = defaultHomePage.id;
+        appVersion.globalSettings = {
+          hideHeader: false,
+          appInMaintenance: false,
+          canvasMaxWidth: 100,
+          canvasMaxWidthType: '%',
+          canvasMaxHeight: 2400,
+          canvasBackgroundColor: '#edeff5',
+          backgroundFxQuery: '',
+        };
+        await manager.save(appVersion);
 
         await manager.save(
           manager.create(AppUser, {
@@ -345,9 +375,219 @@ export class AppsService {
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId);
+      if (versionFrom) {
+        (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+          (appVersion.globalSettings = versionFrom.globalSettings),
+          await manager.save(appVersion);
+
+        const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
+          manager,
+          appVersion,
+          versionFrom,
+          organizationId
+        );
+
+        const { oldComponentToNewComponentMapping, oldPageToNewPageMapping } =
+          await this.createNewPagesAndComponentsForVersion(manager, appVersion, versionFrom.id, versionFrom.homePageId);
+
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appVersion.id,
+          oldDataQueryToNewMapping,
+          oldComponentToNewComponentMapping,
+          oldPageToNewPageMapping
+        );
+      }
+
       return appVersion;
     }, manager);
+  }
+
+  async updateEventActionsForNewVersionWithNewMappingIds(
+    manager: EntityManager,
+    versionId: string,
+    oldDataQueryToNewMapping: Record<string, unknown>,
+    oldComponentToNewComponentMapping: Record<string, unknown>,
+    oldPageToNewPageMapping: Record<string, unknown>
+  ) {
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionId },
+    });
+
+    for (const event of allEvents) {
+      const eventDefinition = event.event;
+
+      if (eventDefinition?.actionId === 'run-query') {
+        eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
+      }
+
+      if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
+      if (eventDefinition?.actionId === 'switch-page') {
+        eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
+      }
+
+      if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'close-modal') {
+        eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
+      }
+
+      event.event = eventDefinition;
+
+      await manager.save(event);
+    }
+  }
+
+  async createNewPagesAndComponentsForVersion(
+    manager: EntityManager,
+    appVersion: AppVersion,
+    versionFromId: string,
+    prevHomePagePage: string
+  ) {
+    const pages = await manager
+      .createQueryBuilder(Page, 'page')
+      .leftJoinAndSelect('page.components', 'component')
+      .leftJoinAndSelect('component.layouts', 'layout')
+      .where('page.appVersionId = :appVersionId', { appVersionId: versionFromId })
+      .getMany();
+
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionFromId },
+    });
+
+    let homePageId = prevHomePagePage;
+
+    const newComponents = [];
+    const newComponentLayouts = [];
+    const oldComponentToNewComponentMapping = {};
+    const oldPageToNewPageMapping = {};
+
+    const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+      if (componentParentId) {
+        const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+        const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+        if (parentComponent) {
+          return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+        }
+      }
+
+      return false;
+    };
+
+    for (const page of pages) {
+      const savedPage = await manager.save(
+        manager.create(Page, {
+          name: page.name,
+          handle: page.handle,
+          index: page.index,
+          disabled: page.disabled,
+          hidden: page.hidden,
+          appVersionId: appVersion.id,
+        })
+      );
+      oldPageToNewPageMapping[page.id] = savedPage.id;
+      if (page.id === prevHomePagePage) {
+        homePageId = savedPage.id;
+      }
+
+      const pageEvents = allEvents.filter((event) => event.sourceId === page.id);
+
+      pageEvents.forEach(async (event, index) => {
+        const newEvent = new EventHandler();
+
+        newEvent.id = uuid.v4();
+        newEvent.name = event.name;
+        newEvent.sourceId = savedPage.id;
+        newEvent.target = event.target;
+        newEvent.event = event.event;
+        newEvent.index = event.index ?? index;
+        newEvent.appVersionId = appVersion.id;
+
+        await manager.save(newEvent);
+      });
+
+      page.components.forEach(async (component) => {
+        const newComponent = new Component();
+        const componentEvents = allEvents.filter((event) => event.sourceId === component.id);
+
+        newComponent.id = uuid.v4();
+
+        oldComponentToNewComponentMapping[component.id] = newComponent.id;
+
+        newComponent.name = component.name;
+        newComponent.type = component.type;
+        newComponent.pageId = savedPage.id;
+        newComponent.properties = component.properties;
+        newComponent.styles = component.styles;
+        newComponent.validation = component.validation;
+        newComponent.general = component.general;
+        newComponent.generalStyles = component.generalStyles;
+        newComponent.displayPreferences = component.displayPreferences;
+        newComponent.parent = component.parent;
+        newComponent.page = savedPage;
+
+        newComponents.push(newComponent);
+
+        component.layouts.forEach((layout) => {
+          const newLayout = new Layout();
+          newLayout.id = uuid.v4();
+          newLayout.type = layout.type;
+          newLayout.top = layout.top;
+          newLayout.left = layout.left;
+          newLayout.width = layout.width;
+          newLayout.height = layout.height;
+          newLayout.componentId = layout.componentId;
+
+          newLayout.component = newComponent;
+
+          newComponentLayouts.push(newLayout);
+        });
+
+        componentEvents.forEach(async (event, index) => {
+          const newEvent = new EventHandler();
+
+          newEvent.id = uuid.v4();
+          newEvent.name = event.name;
+          newEvent.sourceId = newComponent.id;
+          newEvent.target = event.target;
+          newEvent.event = event.event;
+          newEvent.index = event.index ?? index;
+          newEvent.appVersionId = appVersion.id;
+
+          await manager.save(newEvent);
+        });
+      });
+
+      newComponents.forEach((component) => {
+        let parentId = component.parent ? component.parent : null;
+
+        if (!parentId) return;
+
+        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
+
+        if (isParentTabOrCalendar) {
+          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
+
+          parentId = `${mappedParentId}-${childTabId}`;
+        } else {
+          parentId = oldComponentToNewComponentMapping[parentId];
+        }
+
+        component.parent = parentId;
+      });
+
+      await manager.save(newComponents);
+      await manager.save(newComponentLayouts);
+    }
+
+    await manager.update(AppVersion, { id: appVersion.id }, { homePageId });
+
+    return { oldComponentToNewComponentMapping, oldPageToNewPageMapping };
   }
 
   async deleteVersion(app: App, version: AppVersion): Promise<void> {
@@ -399,8 +639,11 @@ export class AppsService {
       const dataSources = versionFrom?.dataSources;
       const dataSourceMapping = {};
       const newDataQueries = [];
+      const allEvents = await manager.find(EventHandler, {
+        where: { appVersionId: versionFrom?.id, target: 'data_query' },
+      });
 
-      if (dataSources?.length) {
+      if (dataSources?.length > 0) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
             name: dataSource.name,
@@ -420,64 +663,92 @@ export class AppsService {
               dataSourceId: newDataSource.id,
               appVersionId: appVersion.id,
             };
-
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+
+            const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
+
+            dataQueryEvents.forEach(async (event, index) => {
+              const newEvent = new EventHandler();
+
+              newEvent.id = uuid.v4();
+              newEvent.name = event.name;
+              newEvent.sourceId = newQuery.id;
+              newEvent.target = event.target;
+              newEvent.event = event.event;
+              newEvent.index = event.index ?? index;
+              newEvent.appVersionId = appVersion.id;
+
+              await manager.save(newEvent);
+            });
+
             oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
         }
+      }
 
-        if (globalQueries?.length) {
-          for (const globalQuery of globalQueries) {
-            const dataQueryParams = {
-              name: globalQuery.name,
-              options: globalQuery.options,
-              dataSourceId: globalQuery.dataSourceId,
-              appVersionId: appVersion.id,
-            };
+      if (globalQueries?.length > 0) {
+        for (const globalQuery of globalQueries) {
+          const dataQueryParams = {
+            name: globalQuery.name,
+            options: globalQuery.options,
+            dataSourceId: globalQuery.dataSourceId,
+            appVersionId: appVersion.id,
+          };
 
-            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-            oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
-            newDataQueries.push(newQuery);
-          }
+          const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+          const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+
+          dataQueryEvents.forEach(async (event, index) => {
+            const newEvent = new EventHandler();
+
+            newEvent.id = uuid.v4();
+            newEvent.name = event.name;
+            newEvent.sourceId = newQuery.id;
+            newEvent.target = event.target;
+            newEvent.event = event.event;
+            newEvent.index = event.index ?? index;
+            newEvent.appVersionId = appVersion.id;
+
+            await manager.save(newEvent);
+          });
+          oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
+          newDataQueries.push(newQuery);
         }
+      }
 
-        for (const newQuery of newDataQueries) {
-          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-            newQuery.options,
-            oldDataQueryToNewMapping
+      for (const newQuery of newDataQueries) {
+        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, oldDataQueryToNewMapping);
+        newQuery.options = newOptions;
+
+        await manager.save(newQuery);
+      }
+
+      appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
+      await manager.save(appVersion);
+
+      for (const appEnvironment of appEnvironments) {
+        for (const dataSource of dataSources) {
+          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
+            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+          });
+
+          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
+          await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+
+          await manager.save(
+            manager.create(DataSourceOptions, {
+              options: newOptions,
+              dataSourceId: dataSourceMapping[dataSource.id],
+              environmentId: appEnvironment.id,
+            })
           );
-          newQuery.options = newOptions;
-          await manager.save(newQuery);
-        }
-
-        appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
-          appVersion.definition,
-          oldDataQueryToNewMapping
-        );
-        await manager.save(appVersion);
-
-        for (const appEnvironment of appEnvironments) {
-          for (const dataSource of dataSources) {
-            const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
-              where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
-            });
-
-            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-            const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
-            await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
-
-            await manager.save(
-              manager.create(DataSourceOptions, {
-                options: newOptions,
-                dataSourceId: dataSourceMapping[dataSource.id],
-                environmentId: appEnvironment.id,
-              })
-            );
-          }
         }
       }
     }
+
+    return oldDataQueryToNewMapping;
   }
 
   private async createEnvironments(appEnvironments: any[], manager: EntityManager, organizationId: string) {
@@ -643,6 +914,31 @@ export class AppsService {
     return await this.appVersionsRepository.update(version.id, editableParams);
   }
 
+  async updateAppVersion(version: AppVersion, body: AppVersionUpdateDto) {
+    const editableParams = {};
+
+    const { globalSettings, homePageId } = await this.appVersionsRepository.findOne({
+      where: { id: version.id },
+    });
+
+    if (body?.homePageId && homePageId !== body.homePageId) {
+      editableParams['homePageId'] = body.homePageId;
+    }
+
+    if (body?.globalSettings) {
+      editableParams['globalSettings'] = {
+        ...globalSettings,
+        ...body.globalSettings,
+      };
+    }
+
+    if (typeof body?.showViewerNavigation === 'boolean') {
+      editableParams['showViewerNavigation'] = body.showViewerNavigation;
+    }
+
+    return await this.appVersionsRepository.update(version.id, editableParams);
+  }
+
   convertToArrayOfKeyValuePairs(options): Array<object> {
     if (!options) return;
     return Object.keys(options).map((key) => {
@@ -681,9 +977,28 @@ export class AppsService {
         .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
         .getMany();
 
-      const uniqTableIds = [...new Set(tooljetDbDataQueries.map((dq) => dq.options['table_id']))];
+      const uniqTableIds = new Set();
+      tooljetDbDataQueries.forEach((dq) => {
+        if (dq.options?.operation === 'join_tables') {
+          const joinOptions = dq.options?.join_table?.joins ?? [];
+          (joinOptions || []).forEach((join) => {
+            const { table, conditions } = join;
+            if (table) uniqTableIds.add(table);
+            conditions?.conditionsList?.forEach((condition) => {
+              const { leftField, rightField } = condition;
+              if (leftField?.table) {
+                uniqTableIds.add(leftField?.table);
+              }
+              if (rightField?.table) {
+                uniqTableIds.add(rightField?.table);
+              }
+            });
+          });
+        }
+        if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
+      });
 
-      return uniqTableIds.map((table_id) => {
+      return [...uniqTableIds].map((table_id) => {
         return { table_id };
       });
     });

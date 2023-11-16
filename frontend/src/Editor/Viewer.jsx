@@ -1,9 +1,10 @@
 import React from 'react';
 import {
-  appsService,
   authenticationService,
   orgEnvironmentVariableService,
   orgEnvironmentConstantService,
+  dataqueryService,
+  appService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -18,6 +19,7 @@ import {
   onEvent,
   runQuery,
   computeComponentState,
+  buildAppDefinition,
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
@@ -33,9 +35,9 @@ import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
-import { useAppDataStore } from '@/_stores/appDataStore';
-import { getPreviewQueryParams, redirectToDashboard } from '@/_helpers/routes';
-import toast from 'react-hot-toast';
+import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
+import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -53,31 +55,44 @@ class ViewerComponent extends React.Component {
       isLoading: true,
       users: null,
       appDefinition: { pages: {} },
-      queryConfirmationList: [],
       isAppLoaded: false,
       pages: {},
       homepage: null,
     };
   }
 
-  setStateForApp = (data) => {
-    const copyDefinition = _.cloneDeep(data.definition);
-    const pagesObj = copyDefinition.pages || {};
-
-    const newDefinition = {
-      ...copyDefinition,
-      pages: pagesObj,
+  getViewerRef() {
+    return {
+      appDefinition: this.state.appDefinition,
+      queryConfirmationList: this.props.queryConfirmationList,
+      updateQueryConfirmationList: this.updateQueryConfirmationList,
+      navigate: this.props.navigate,
+      switchPage: this.switchPage,
+      currentPageId: this.state.currentPageId,
     };
+  }
+
+  setStateForApp = (data, byAppSlug = false) => {
+    const appDefData = buildAppDefinition(data);
+
+    if (byAppSlug) {
+      appDefData.globalSettings = data.globalSettings;
+      appDefData.homePageId = data.homePageId;
+      appDefData.showViewerNavigation = data.showViewerNavigation;
+    }
 
     this.setState({
       app: data,
       isLoading: false,
       isAppLoaded: true,
-      appDefinition: newDefinition || { components: {} },
+      appDefinition: { ...appDefData },
+      pages: appDefData.pages,
     });
   };
 
-  setStateForContainer = async (data) => {
+  setStateForContainer = async (data, appVersionId) => {
+    const appDefData = buildAppDefinition(data);
+
     const currentUser = this.state.currentUser;
     let userVars = {};
 
@@ -93,38 +108,57 @@ class ViewerComponent extends React.Component {
     let mobileLayoutHasWidgets = false;
 
     if (this.props.currentLayout === 'mobile') {
-      const currentComponents = data.definition.pages[data.definition.homePageId].components;
+      const currentComponents = appDefData.pages[appDefData.homePageId].components;
       mobileLayoutHasWidgets =
         Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
           .length > 0;
     }
 
     let queryState = {};
-    data.data_queries.forEach((query) => {
-      if (query.pluginId || query?.plugin?.id) {
-        queryState[query.name] = {
-          ...query.plugin.manifestFile.data.source.exposedVariables,
-          ...this.props.currentState.queries[query.name],
-        };
-      } else {
-        const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
-        queryState[query.name] = {
-          ...dataSourceTypeDetail.exposedVariables,
-          ...this.props.currentState.queries[query.name],
-        };
-      }
-    });
+    let dataQueries = [];
 
+    if (appVersionId) {
+      const { data_queries } = await dataqueryService.getAll(appVersionId);
+      dataQueries = data_queries;
+    } else {
+      dataQueries = data.data_queries;
+    }
+    const queryConfirmationList = [];
+
+    if (dataQueries.length > 0) {
+      dataQueries.forEach((query) => {
+        if (query?.options && query?.options?.requestConfirmation && query?.options?.runOnPageLoad) {
+          queryConfirmationList.push({ queryId: query.id, queryName: query.name });
+        }
+
+        if (query.pluginId || query?.plugin?.id) {
+          queryState[query.name] = {
+            ...query.plugin.manifestFile.data.source.exposedVariables,
+            ...this.props.currentState.queries[query.name],
+          };
+        } else {
+          const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
+          queryState[query.name] = {
+            ...dataSourceTypeDetail.exposedVariables,
+            ...this.props.currentState.queries[query.name],
+          };
+        }
+      });
+    }
+
+    if (queryConfirmationList.length !== 0) {
+      this.updateQueryConfirmationList(queryConfirmationList);
+    }
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
     const constants = await this.fetchOrgEnvironmentConstants(data.slug, data.is_public);
 
-    const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-    const homePageId = data.definition.homePageId;
+    const pages = data.pages;
+    const homePageId = appVersionId ? data.editing_version.homePageId : data?.homePageId;
     const startingPageHandle = this.props?.params?.pageHandle;
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
-    useDataQueriesStore.getState().actions.setDataQueries(data.data_queries);
+    useDataQueriesStore.getState().actions.setDataQueries(dataQueries);
     this.props.setCurrentState({
       queries: queryState,
       components: {},
@@ -147,6 +181,7 @@ class ViewerComponent extends React.Component {
       ...constants,
     });
     useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
+    this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
         currentUser,
@@ -158,21 +193,24 @@ class ViewerComponent extends React.Component {
             ? `${this.state.deviceWindowWidth}px`
             : '1292px',
         selectedComponent: null,
-        dataQueries: data.data_queries,
+        dataQueries: dataQueries,
         currentPageId: currentPage.id,
-        pages: {},
-        homepage: this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle,
+        homepage: appDefData?.pages?.[this.state.appDefinition?.homePageId]?.handle,
+        events: data.events ?? [],
       },
       () => {
-        computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(async () => {
-          this.setState({ initialComputationOfStateDone: true });
+        const components = appDefData?.pages[currentPageId]?.components || {};
+
+        computeComponentState(components).then(async () => {
+          this.setState({ initialComputationOfStateDone: true, defaultComponentStateComputed: true });
           console.log('Default component state computed and set');
-          this.runQueries(data.data_queries);
-          // eslint-disable-next-line no-unsafe-optional-chaining
-          const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
-          for (const event of events ?? []) {
-            await this.handleEvent(event.eventId, event);
-          }
+          this.runQueries(dataQueries);
+
+          const currentPageEvents = this.state.events.filter(
+            (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
+          );
+
+          await this.handleEvent('onPageLoad', currentPageEvents);
         });
       }
     );
@@ -181,7 +219,7 @@ class ViewerComponent extends React.Component {
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
       if (query.options.runOnPageLoad && isQueryRunnable(query)) {
-        runQuery(this, query.id, query.name, undefined, 'view');
+        runQuery(this.getViewerRef(), query.id, query.name, undefined, 'view');
       }
     });
   };
@@ -238,10 +276,14 @@ class ViewerComponent extends React.Component {
   };
 
   loadApplicationBySlug = (slug, authentication_failed = false) => {
-    appsService
-      .getAppBySlug(slug)
+    appService
+      .fetchAppBySlug(slug)
       .then((data) => {
-        this.setStateForApp(data);
+        const isAppPublic = data?.is_public;
+        if (authentication_failed && !isAppPublic) {
+          return redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
+        }
+        this.setStateForApp(data, true);
         this.setStateForContainer(data);
         this.setWindowTitle(data.name);
       })
@@ -249,22 +291,23 @@ class ViewerComponent extends React.Component {
         this.setState({
           isLoading: false,
         });
-        if (authentication_failed && error?.statusCode === 404) {
+        if (error?.statusCode === 404) {
           /* User is not authenticated. but the app url is wrong */
-          toast.error("Couldn't find the app. \n Please verify the app URL again.");
-          setTimeout(() => {
-            redirectToDashboard();
-          }, 3000);
+          redirectToErrorPage(ERROR_TYPES.INVALID);
+        } else if (error?.statusCode === 403) {
+          redirectToErrorPage(ERROR_TYPES.RESTRICTED);
+        } else {
+          redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }
       });
   };
 
   loadApplicationByVersion = (appId, versionId) => {
-    appsService
-      .getAppByVersion(appId, versionId)
+    appService
+      .fetchAppByVersion(appId, versionId)
       .then((data) => {
         this.setStateForApp(data);
-        this.setStateForContainer(data);
+        this.setStateForContainer(data, versionId);
       })
       .catch(() => {
         this.setState({
@@ -272,6 +315,9 @@ class ViewerComponent extends React.Component {
         });
       });
   };
+
+  updateQueryConfirmationList = (queryConfirmationList) =>
+    useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
 
   setupViewer() {
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
@@ -301,6 +347,7 @@ class ViewerComponent extends React.Component {
             userVars,
             versionId,
           });
+
           versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
           this.loadApplicationBySlug(slug, true);
@@ -347,9 +394,13 @@ class ViewerComponent extends React.Component {
 
   handlePageSwitchingBasedOnURLparam() {
     const handleOnURL = this.props.params.pageHandle;
-    const pageIdCorrespondingToHandleOnURL = handleOnURL
-      ? this.findPageIdFromHandle(handleOnURL)
-      : this.state.appDefinition.homePageId;
+
+    const shouldShowPage = handleOnURL ? this.validatePageHandle(handleOnURL) : true;
+
+    if (!shouldShowPage) return this.switchPage(this.state.appDefinition.homePageId);
+
+    const pageIdCorrespondingToHandleOnURL =
+      handleOnURL && shouldShowPage ? this.findPageIdFromHandle(handleOnURL) : this.state.appDefinition.homePageId;
     const currentPageId = this.state.currentPageId;
 
     if (pageIdCorrespondingToHandleOnURL != this.state.currentPageId) {
@@ -383,18 +434,21 @@ class ViewerComponent extends React.Component {
           name: targetPage.name,
         },
         async () => {
-          computeComponentState(this, this.state.appDefinition?.pages[this.state.currentPageId].components).then(
-            async () => {
-              // eslint-disable-next-line no-unsafe-optional-chaining
-              const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
-              for (const event of events ?? []) {
-                await this.handleEvent(event.eventId, event);
-              }
-            }
-          );
+          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
+            const currentPageEvents = this.state.events.filter(
+              (event) => event.target === 'page' && event.sourceId === this.state.currentPageId
+            );
+
+            await this.handleEvent('onPageLoad', currentPageEvents);
+          });
         }
       );
     }
+  }
+
+  validatePageHandle(handle) {
+    const allPages = this.state.appDefinition.pages;
+    return Object.values(allPages).some((page) => page.handle === handle && !page.disabled);
   }
 
   findPageIdFromHandle(handle) {
@@ -461,7 +515,9 @@ class ViewerComponent extends React.Component {
     );
   };
 
-  handleEvent = (eventName, options) => onEvent(this, eventName, options, 'view');
+  handleEvent = (eventName, events, options) => {
+    return onEvent(this.getViewerRef(), eventName, events, options, 'view');
+  };
 
   computeCanvasMaxWidth = () => {
     const { appDefinition } = this.state;
@@ -488,11 +544,11 @@ class ViewerComponent extends React.Component {
       deviceWindowWidth,
       defaultComponentStateComputed,
       dataQueries,
-      queryConfirmationList,
       canvasWidth,
     } = this.state;
 
     const currentCanvasWidth = canvasWidth;
+    const queryConfirmationList = this.props?.queryConfirmationList ?? [];
 
     const canvasMaxWidth = this.computeCanvasMaxWidth();
 
@@ -526,8 +582,10 @@ class ViewerComponent extends React.Component {
             <Confirm
               show={queryConfirmationList.length > 0}
               message={'Do you want to run this query?'}
-              onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
-              onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
+              onConfirm={(queryConfirmationData) =>
+                onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationData, true, 'view')
+              }
+              onCancel={() => onQueryConfirmOrCancel(this.getViewerRef(), queryConfirmationList[0], false, 'view')}
               queryConfirmationData={queryConfirmationList[0]}
               key={queryConfirmationList[0]?.queryName}
             />
@@ -586,7 +644,7 @@ class ViewerComponent extends React.Component {
                                   snapToGrid={true}
                                   appLoading={isLoading}
                                   darkMode={this.props.darkMode}
-                                  onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
+                                  onEvent={this.handleEvent}
                                   mode="view"
                                   deviceWindowWidth={deviceWindowWidth}
                                   selectedComponent={this.state.selectedComponent}
@@ -597,11 +655,9 @@ class ViewerComponent extends React.Component {
                                     onComponentClick(this, id, component, 'view');
                                   }}
                                   onComponentOptionChanged={(component, optionName, value) => {
-                                    return onComponentOptionChanged(this, component, optionName, value);
+                                    return onComponentOptionChanged(component, optionName, value);
                                   }}
-                                  onComponentOptionsChanged={(component, options) =>
-                                    onComponentOptionsChanged(this, component, options)
-                                  }
+                                  onComponentOptionsChanged={onComponentOptionsChanged}
                                   canvasWidth={this.getCanvasWidth()}
                                   dataQueries={dataQueries}
                                   currentPageId={this.state.currentPageId}
@@ -624,19 +680,23 @@ class ViewerComponent extends React.Component {
 }
 const withStore = (Component) => (props) => {
   const currentState = useCurrentStateStore();
-  const { currentLayout } = useEditorStore(
+  const { currentLayout, queryConfirmationList } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
+      queryConfirmationList: state?.queryConfirmationList,
     }),
     shallow
   );
 
+  const { updateState } = useAppDataActions();
   return (
     <Component
       {...props}
       currentState={currentState}
       setCurrentState={currentState?.actions?.setCurrentState}
       currentLayout={currentLayout}
+      updateState={updateState}
+      queryConfirmationList={queryConfirmationList}
     />
   );
 };
