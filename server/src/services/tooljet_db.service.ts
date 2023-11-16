@@ -3,6 +3,7 @@ import { EntityManager, In, QueryFailedError } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString, isEmpty } from 'lodash';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 export type TableColumnSchema = {
   column_name: string;
@@ -23,7 +24,8 @@ export class TooljetDbService {
     private readonly manager: EntityManager,
     @Optional()
     @InjectEntityManager('tooljetDb')
-    private readonly tooljetDbManager: EntityManager
+    private readonly tooljetDbManager: EntityManager,
+    private readonly postgrestProxyService: PostgrestProxyService
   ) {}
 
   async perform(organizationId: string, action: string, params = {}) {
