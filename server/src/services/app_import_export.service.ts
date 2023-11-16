@@ -545,21 +545,6 @@ export class AppImportExportService {
       }
     }
 
-    if (isNormalizedAppDefinitionSchema) {
-      const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
-
-      for (const appVersionId of appVersionIds) {
-        await this.updateEventActionsForNewVersionWithNewMappingIds(
-          manager,
-          appVersionId,
-          appResourceMappings.dataQueryMapping,
-          appResourceMappings.componentsMapping,
-          appResourceMappings.pagesMapping,
-          isNormalizedAppDefinitionSchema
-        );
-      }
-    }
-
     await this.setEditingVersionAsLatestVersion(manager, appResourceMappings.appVersionMapping, importingAppVersions);
 
     return appResourceMappings;
@@ -850,6 +835,19 @@ export class AppImportExportService {
         {
           homePageId: updateHomepageId,
         }
+      );
+    }
+
+    const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
+
+    for (const appVersionId of appVersionIds) {
+      await this.updateEventActionsForNewVersionWithNewMappingIds(
+        manager,
+        appVersionId,
+        appResourceMappings.dataQueryMapping,
+        appResourceMappings.componentsMapping,
+        appResourceMappings.pagesMapping,
+        true
       );
     }
 
