@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { appEnvironmentService } from '@/_services';
 import { capitalize } from 'lodash';
 import EnvironmentSelectBox from './EnvironmentSelectBox';
 import { ToolTip } from '@/_components/ToolTip';
@@ -49,9 +48,8 @@ const EnvironmentManager = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAppVersionEnvironment, editingVersion.id, environments.length]);
 
-  const selectEnvironment = (env, isVersionChanged = false) => {
-    const isEnvIdNotAvailableYet = !currentAppEnvironmentId;
-    appEnvironmentChanged(env, isVersionChanged, isEnvIdNotAvailableYet);
+  const selectEnvironment = (env) => {
+    appEnvironmentChanged(env, true);
   };
 
   // if any app is in production, then it is also in staging. So, we need to check if there is any version in production
@@ -65,7 +63,7 @@ const EnvironmentManager = (props) => {
     const handleClick = () => {
       if (haveVersions) {
         setCurrentEnvironment({ ...environment, index });
-        selectEnvironment(environment, false);
+        selectEnvironment(environment);
       }
     };
     return {
@@ -98,7 +96,7 @@ const EnvironmentManager = (props) => {
       <EnvironmentSelectBox
         options={options}
         currentEnv={currentAppEnvironment}
-        onEnvChange={(env) => appEnvironmentChanged(env)}
+        onEnvChange={(env) => selectEnvironment(env)}
         versionId={editingVersion.id}
         licenseValid={licenseValid}
       />

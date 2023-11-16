@@ -37,8 +37,8 @@ export default function EnvironmontConfirmationModal(props) {
       .promoteEnvironment(appId, editingVersion?.id, data.current.id)
       .then(() => {
         toast.success(`${editingVersion.name} has been promoted to ${data.target.name}!`);
-        onEnvChange(data.target);
         fetchEnvironments();
+        onEnvChange(data.target);
         useAppVersionStore.getState().actions.setAppVersionCurrentEnvironment(data.target);
         setPromtingEnvirontment(false);
         onClose();

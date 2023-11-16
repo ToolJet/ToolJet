@@ -15,7 +15,7 @@ export class CreateLayoutTable1691007037021 implements MigrationInterface {
           {
             name: 'type',
             type: 'enum',
-            enumName: 'layput_type',
+            enumName: 'layout_type',
             enum: ['desktop', 'mobile'],
             isNullable: false,
           },

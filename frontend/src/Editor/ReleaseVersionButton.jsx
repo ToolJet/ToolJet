@@ -43,6 +43,9 @@ export const ReleaseVersionButton = function DeployVersionButton({ appId, appNam
       .catch((_error) => {
         toast.error('Oops, something went wrong');
         setIsReleasing(false);
+      })
+      .finally(() => {
+        useAppVersionStore.getState().actions.updateReleasedVersionId(editingVersion.id);
       });
   };
 

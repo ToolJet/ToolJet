@@ -103,8 +103,7 @@ const EditorComponent = (props) => {
 
   const { setAppVersions, setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } =
     useAppVersionActions();
-  const { isVersionReleased, editingVersion, releasedVersionId, isEditorFreezed, isAppVersionPromoted } =
-    useAppVersionState();
+  const { isVersionReleased, editingVersion, releasedVersionId, isEditorFreezed } = useAppVersionState();
 
   const {
     appDefinition,
@@ -766,8 +765,10 @@ const EditorComponent = (props) => {
   ) => {
     setWindowTitle(data.name);
     useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
-    if (!releasedVersionId || !versionSwitched) {
-      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
+
+    if (!environmentSwitch && (!releasedVersionId || !versionSwitched)) {
+      const releasedId = data.current_version_id || data.currentVersionId;
+      releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
     }
 
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
@@ -779,9 +780,9 @@ const EditorComponent = (props) => {
     const currentOrgId = data?.organization_id || data?.organizationId;
 
     const currentEnvironmentId = !environmentSwitch ? currentAppVersionEnvId : selectedEnvironmentId;
+    await fetchOrgEnvironmentConstants(currentEnvironmentId);
 
     let envDetails = useEditorStore.getState().currentAppEnvironment;
-
     if (!environmentSwitch) {
       setCurrentAppEnvironmentId(currentEnvironmentId);
 
@@ -852,7 +853,6 @@ const EditorComponent = (props) => {
       .actions.fetchGlobalDataSources(data?.organization_id, data.editing_version?.id, currentEnvironmentId);
     await fetchDataSources(data.editing_version?.id, currentEnvironmentId);
     await fetchDataQueries(data.editing_version?.id, true, true);
-    await fetchOrgEnvironmentConstants(currentEnvironmentId);
     const currentPageEvents = data.events.filter((event) => event.target === 'page' && event.sourceId === homePageId);
 
     await handleEvent('onPageLoad', currentPageEvents, {}, true);
@@ -861,7 +861,6 @@ const EditorComponent = (props) => {
     if (currentEnvironmentObj[appId] !== envDetails?.id) {
       currentEnvironmentObj[appId] = currentEnvironmentId;
       localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
-      // !isVersionChanged && window.location.reload(false);
     }
   };
 
@@ -890,7 +889,7 @@ const EditorComponent = (props) => {
       });
 
       onEditorFreeze(false);
-
+      setAppVersionPromoted(false);
       callBack(appData, null, true);
       initComponentVersioning();
     }
@@ -904,7 +903,7 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
-    if (isAppVersionPromoted) return;
+    if (useAppVersionStore.getState().isAppVersionPromoted) return;
 
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
@@ -940,15 +939,6 @@ const EditorComponent = (props) => {
         const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
 
         draft.pages[_currentPageId].components = finalComponents;
-        // else if (opts?.componentAdding) {
-        //   const currentPageComponents = newDefinition.pages[_currentPageId]?.components;
-
-        //   const finalComponents = _.merge(draft?.pages[_currentPageId]?.components, currentPageComponents);
-
-        //   draft.pages[_currentPageId].components = finalComponents;
-        // } else {
-        //   Object.assign(draft, newDefinition);
-        // }
       });
     } else {
       updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
@@ -1060,7 +1050,11 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
-    if (isEditorFreezed || (isVersionReleased && !isUserSwitchedVersion)) {
+    if (
+      isEditorFreezed ||
+      useAppVersionStore.getState().isAppVersionPromoted ||
+      (isVersionReleased && !isUserSwitchedVersion)
+    ) {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
       });
@@ -1762,16 +1756,33 @@ const EditorComponent = (props) => {
     });
   };
 
-  const appEnvironmentChanged = (currentEnvironment, isVersionChanged, isEnvIdNotAvailableYet = false) => {
+  const appEnvironmentChanged = async (currentEnvironment, envSelection) => {
     const shouldUpdate = currentAppEnvironmentId !== currentEnvironment?.id;
 
     if (shouldUpdate) {
       const selectedEnvironment = environments.find((env) => env.id === currentEnvironment?.id);
       setCurrentAppEnvironmentDetails(selectedEnvironment);
       setCurrentAppEnvironmentId(currentEnvironment?.id);
-      const pageHandle = getCurrentState().page.handle;
 
-      callBack(app, pageHandle, false, true, currentEnvironment?.id);
+      if (!envSelection) {
+        window.location.reload(false);
+      } else {
+        await fetchOrgEnvironmentConstants(currentEnvironment?.id);
+        useCurrentStateStore.getState().actions.setCurrentState({
+          globals: {
+            ...useCurrentStateStore.getState().globals,
+            environment: {
+              id: currentEnvironment?.id,
+              name: currentEnvironment?.name,
+            },
+          },
+        });
+        const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
+        if (currentEnvironmentObj[appId] !== currentEnvironment?.id) {
+          currentEnvironmentObj[appId] = currentEnvironment.id;
+          localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
+        }
+      }
     }
   };
 
