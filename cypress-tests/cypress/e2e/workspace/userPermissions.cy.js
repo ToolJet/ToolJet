@@ -21,21 +21,20 @@ describe("User permissions", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
-    cy.visit('/')
+    cy.visit('/my-workspace')
     permissions.reset();
     cy.get(commonSelectors.homePageLogo).click();
     cy.wait("@homePage");
     permissions.addNewUserMW(data.firstName, data.email);
-    common.logout();
+    cy.logoutApi();
   });
   beforeEach(() => {
-    cy.appUILogin();
-    cy.visitTheWorkspace("My workspace");
+    cy.defaultWorkspaceLogin();
   });
 
   it("Should verify the create new app permission", () => {
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
     cy.get("body").then(($title) => {
       if ($title.text().includes(dashboardText.emptyPageDescription)) {
         cy.get(commonSelectors.dashboardAppCreateButton).should('be.disabled');
@@ -43,11 +42,12 @@ describe("User permissions", () => {
         cy.contains(dashboardText.createAppButton).should("not.exist");
       }
     });
-    common.logout();
+    cy.logoutApi();
   });
 
   it("Should verify the View and Edit permission", () => {
     common.navigateToManageGroups();
+    cy.wait(1000);
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
     cy.get(groupsSelector.selectAddButton).click();
@@ -58,8 +58,10 @@ describe("User permissions", () => {
         cy.get("td input").first().should("be.checked");
       });
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
     cy.contains(data.appName).should("exist");
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
@@ -74,8 +76,11 @@ describe("User permissions", () => {
           "tj-disabled-btn"
         );
       });
+    common.logout();
 
-    permissions.adminLogin();
+    cy.defaultWorkspaceLogin();
+    common.navigateToManageGroups();
+    cy.wait(500)
     cy.contains("tr", data.appName)
       .parent()
       .within(() => {
@@ -86,8 +91,10 @@ describe("User permissions", () => {
       "App permissions updated"
     );
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
       data.appName
@@ -114,9 +121,10 @@ describe("User permissions", () => {
 
   it("Should verify the Create and Delete app permission", () => {
     data.appName = `${fake.companyName}-App`;
-    cy.createApp(data.appName);
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.wait(1000);
+    cy.apiCreateApp(data.appName);
+    // cy.visit('/my-workspace')
+    cy.wait(500);
+
     common.navigateToManageGroups();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
@@ -133,18 +141,23 @@ describe("User permissions", () => {
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsDeleteCheck).check();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit('/my-workspace');
     cy.get(commonSelectors.appCreateButton).should("exist");
     common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("exist");
 
-    permissions.adminLogin();
+    common.logout();
+    cy.defaultWorkspaceLogin();
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsDeleteCheck).uncheck();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(1000)
     common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("not.exist");
 
@@ -157,12 +170,16 @@ describe("User permissions", () => {
     cy.get(commonSelectors.appCardOptions(commonText.deleteAppOption)).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
 
-    permissions.adminLogin();
+    common.logout
+    cy.defaultWorkspaceLogin();
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsCreateCheck).uncheck();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(1000)
     cy.contains("Create new application").should("not.exist");
   });
 
@@ -171,8 +188,10 @@ describe("User permissions", () => {
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.foldersCreateCheck).check();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
 
     cy.get(commonSelectors.createNewFolderButton).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.folderName);
@@ -188,15 +207,20 @@ describe("User permissions", () => {
       });
     cy.get(commonSelectors.deleteFolderOption(data.folderName)).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
+    common.logout();
 
-    permissions.adminLogin();
+    cy.defaultWorkspaceLogin();
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.foldersCreateCheck).uncheck();
 
     common.logout();
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
 
-    permissions.adminLogin();
+    cy.defaultWorkspaceLogin();
+    common.navigateToManageGroups();
     cy.contains("td", data.appName)
       .parent()
       .within(() => {
@@ -204,7 +228,9 @@ describe("User permissions", () => {
       });
 
     common.logout();
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
     cy.contains(data.appName).should("not.exist");
 
     common.logout();
@@ -223,7 +249,9 @@ describe("User permissions", () => {
     ).verifyVisibleElement("have.text", "Go to workspace constants");
     common.logout();
 
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
     common.navigateToWorkspaceVariable();
     cy.get('[data-cy="alert-info-text"]>>.text-muted').verifyVisibleElement(
       "have.text",

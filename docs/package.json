@@ -18,10 +18,14 @@
     "@docusaurus/plugin-google-gtag": "^2.4.3",
     "@docusaurus/plugin-sitemap": "^2.4.3",
     "@docusaurus/preset-classic": "^2.4.3",
-    "@mdx-js/react": "^1.6.22",
     "clsx": "^1.2.1",
+    "plugin-image-zoom": "github:flexanalytics/plugin-image-zoom",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
+  },
+  "overrides": {
+    "got": "^12.1.0",
+    "trim": "^0.0.3"
   },
   "browserslist": {
     "production": [
