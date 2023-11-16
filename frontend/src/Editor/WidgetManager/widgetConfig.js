@@ -2872,7 +2872,7 @@ export const widgets = [
         values: { value: '{{["1","2","3"]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         loadingState: { value: '{{false}}' },
-        placeholder: { value: 'Select an option' },
+        placeholder: { value: '-Select' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         dropdownLoadingState: { value: '{{false}}' },

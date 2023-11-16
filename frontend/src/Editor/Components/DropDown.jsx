@@ -265,6 +265,14 @@ export const DropDown = function DropDown({
       ...provided,
       height: height,
     }),
+    clearIndicator: (provided, _state) => ({
+      ...provided,
+      padding: '0px',
+    }),
+    dropdownIndicator: (provided, _state) => ({
+      ...provided,
+      padding: '0px',
+    }),
     option: (provided, state) => ({
       ...provided,
       backgroundColor: 'white',
@@ -274,10 +282,6 @@ export const DropDown = function DropDown({
         color: 'white',
       },
     }),
-    // menu: (provided, _state) => ({
-    //   ...provided,
-    //   backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
-    // }),
   };
 
   const labelStyles = {
