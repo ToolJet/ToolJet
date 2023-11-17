@@ -9,7 +9,7 @@ data.workspaceName = `${fake.firstName}-workspace`;
 data.workspaceSlug = `${data.workspaceName.toLowerCase()}-slug`;
 describe("Workspace", () => {
     before(() => {
-        cy.defaultWorkspaceLogin();
+        cy.appUILogin();
     });
 
     it("Should verify create and edit workspace modal and flow", () => {
@@ -128,13 +128,17 @@ describe("Workspace", () => {
         );
         cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
 
+        cy.clearAndType(dashboardSelector.workspaceSlugInputField, "my-workspace");
+        cy.wait(1000);
+
         cy.clearAndType(
             commonSelectors.workspaceNameInputField,
             data.workspaceName
         );
+        cy.wait(1000);
         cy.get(commonSelectors.cancelButton).click();
 
-        cy.wait(2000)
+        cy.wait(2000);
         cy.get(commonSelectors.workspaceName).click();
         cy.get(commonSelectors.addWorkspaceButton).click();
         cy.get(commonSelectors.workspaceNameInputField).verifyVisibleElement(
@@ -149,14 +153,15 @@ describe("Workspace", () => {
         );
         cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
 
-        cy.clearAndType(
-            commonSelectors.workspaceNameInputField,
-            data.workspaceName
-        );
-        cy.clearAndType(
-            dashboardSelector.workspaceSlugInputField,
-            data.workspaceSlug
-        );
+        cy.wait(1000);
+        cy.get(commonSelectors.workspaceNameInputField)
+            .clear()
+            .type(data.workspaceName);
+        cy.wait(1000);
+        cy.get(dashboardSelector.workspaceSlugInputField)
+            .clear()
+            .type(data.workspaceSlug);
+        cy.wait(4000);
         cy.get(dashboardSelector.createWorkspaceButton)
             .should("be.enabled")
             .click();
