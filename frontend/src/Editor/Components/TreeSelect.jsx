@@ -7,7 +7,7 @@ import { isExpectedDataType } from '@/_helpers/utils.js';
 
 export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode, dataCy }) => {
   const { label } = properties;
-  const { visibility, disabledState, checkboxColor } = styles;
+  const { visibility, disabledState, checkboxColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
@@ -72,10 +72,9 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
     });
     setExposedVariable('checkedPathArray', checkedPathArray);
     setExposedVariable('checkedPathStrings', checkedPathString);
-    setExposedVariable('checked', checked).then(() => {
-      updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
-      fireEvent('onChange');
-    });
+    setExposedVariable('checked', checked);
+    updatedNode.checked ? fireEvent('onCheck') : fireEvent('onUnCheck');
+    fireEvent('onChange');
     setChecked(checked);
   };
 
@@ -88,7 +87,13 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
     <div
       className="custom-checkbox-tree"
       data-disabled={disabledState}
-      style={{ maxHeight: height, display: visibility ? '' : 'none', color: textColor, accentColor: checkboxColor }}
+      style={{
+        maxHeight: height,
+        display: visibility ? '' : 'none',
+        color: textColor,
+        accentColor: checkboxColor,
+        boxShadow,
+      }}
       data-cy={dataCy}
     >
       <div className="card-title" style={{ marginBottom: '0.5rem' }}>

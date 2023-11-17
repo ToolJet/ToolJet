@@ -8,7 +8,7 @@ const Header = ({ children, className }) => {
       }}
       className={`header ${className}`}
     >
-      <header className="navbar navbar-expand-md navbar-light d-print-none">
+      <header className="navbar navbar-expand-md d-print-none">
         <div className="container-xl header-container position-relative">{children}</div>
       </header>
     </div>

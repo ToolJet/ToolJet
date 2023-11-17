@@ -11,7 +11,7 @@ describe("Profile Settings", () => {
   const randomLastName = fake.lastName;
   const avatarImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     common.navigateToProfile();
   });
 
@@ -35,14 +35,7 @@ describe("Profile Settings", () => {
     cy.get(profileSelector.updateButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      profileText.nameErrorToast
-    );
-
-    cy.clearAndType(profileSelector.firstNameInput, profileText.firstName);
-    cy.get(profileSelector.updateButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.lastNameNameErrorToast
+      profileText.firstNameErrorToast
     );
 
     cy.clearAndType(profileSelector.firstNameInput, randomFirstName);

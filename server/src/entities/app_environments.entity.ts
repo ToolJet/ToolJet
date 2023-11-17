@@ -7,12 +7,14 @@ import {
   ManyToOne,
   JoinColumn,
   Unique,
+  BaseEntity,
 } from 'typeorm';
 import { Organization } from './organization.entity';
 
 @Entity({ name: 'app_environments' })
-@Unique(['name'])
-export class AppEnvironment {
+@Unique(['name', 'organizationId'])
+@Unique(['organizationId', 'priority'])
+export class AppEnvironment extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -24,6 +26,12 @@ export class AppEnvironment {
 
   @Column({ name: 'default' })
   isDefault: boolean;
+
+  @Column({ name: 'priority' })
+  priority: number;
+
+  @Column({ name: 'enabled' })
+  enabled: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

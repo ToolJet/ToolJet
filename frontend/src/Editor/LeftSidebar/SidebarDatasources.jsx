@@ -1,7 +1,6 @@
 /* eslint-disable import/no-named-as-default */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LeftSidebarItem } from './SidebarItem';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
@@ -10,34 +9,44 @@ import { datasourceService, globalDatasourceService, authenticationService } fro
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import Popover from '@/_ui/Popover';
 import { Popover as PopoverBS, OverlayTrigger } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
 import { getPrivateRoute } from '@/_helpers/routes';
-
 import { useDataSources } from '@/_stores/dataSourcesStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const LeftSidebarDataSources = ({
   appId,
-  editingVersionId,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
   darkMode,
   dataSourcesChanged,
   globalDataSourcesChanged,
   dataQueriesChanged,
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
-  popoverContentHeight,
-  isVersionReleased,
-  setReleasedVersionPopupState,
+  onDeleteofAllDataSources,
+  setPinned,
+  pinned,
 }) => {
   const dataSources = useDataSources();
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+  useEffect(() => {
+    if (dataSources.length === 0) {
+      onDeleteofAllDataSources();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources.length]);
 
   const { admin } = authenticationService.currentSessionValue;
 
@@ -57,7 +66,7 @@ export const LeftSidebarDataSources = ({
         setSelectedDataSource(null);
         dataSourcesChanged();
         globalDataSourcesChanged();
-        dataQueriesChanged();
+        dataQueriesChanged({ isReloadSelf: true });
       })
       .catch(({ error }) => {
         setDeletingDatasource(false);
@@ -95,15 +104,7 @@ export const LeftSidebarDataSources = ({
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
   };
 
-  const RenderDataSource = ({
-    dataSource,
-    idx,
-    convertToGlobal,
-    showDeleteIcon = true,
-    enableEdit = true,
-    setReleasedVersionPopupState,
-    isVersionReleased,
-  }) => {
+  const RenderDataSource = ({ dataSource, idx, convertToGlobal, showDeleteIcon = true, enableEdit = true }) => {
     const [isConversionVisible, setConversionVisible] = React.useState(false);
     const sourceMeta = getSourceMetaData(dataSource);
 
@@ -130,7 +131,7 @@ export const LeftSidebarDataSources = ({
 
     const popover = (
       <PopoverBS key={dataSource.id} id="popover-change-scope">
-        <PopoverBS.Body key={dataSource.id} className={`${darkMode && 'theme-dark popover-dark-themed'}`}>
+        <PopoverBS.Body key={dataSource.id} className={`${darkMode && 'dark-theme'}`}>
           <div className={`row cursor-pointer`}>
             <div className="col text-truncate cursor-pointer" onClick={() => convertToGlobalDataSource(dataSource)}>
               Change scope
@@ -160,7 +161,7 @@ export const LeftSidebarDataSources = ({
           </span>
         </div>
         {showDeleteIcon && !isVersionReleased && (
-          <div className="col-auto">
+          <div className="col-auto cursor-pointer">
             <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
               <div>
                 <TrashIcon width="14" height="14" />
@@ -169,7 +170,7 @@ export const LeftSidebarDataSources = ({
           </div>
         )}
         {convertToGlobal && admin && !isVersionReleased && (
-          <div className="col-auto">
+          <div className="col-auto cursor-pointer">
             <OverlayTrigger
               rootClose={false}
               show={isConversionVisible}
@@ -187,17 +188,6 @@ export const LeftSidebarDataSources = ({
     );
   };
 
-  const popoverContent = (
-    <LeftSidebarDataSources.Container
-      darkMode={darkMode}
-      RenderDataSource={RenderDataSource}
-      dataSources={dataSources}
-      toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-      isVersionReleased={isVersionReleased}
-      setReleasedVersionPopupState={setReleasedVersionPopupState}
-    />
-  );
-
   if (dataSources?.length <= 0) return;
 
   return (
@@ -210,24 +200,14 @@ export const LeftSidebarDataSources = ({
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
       />
-      <Popover
-        handleToggle={(open) => {
-          if (!open) setSelectedSidebarItem('');
-        }}
-        popoverContentClassName="p-0 sidebar-h-100-popover"
-        side="right"
-        popoverContent={popoverContent}
-        popoverContentHeight={popoverContentHeight}
-      >
-        <LeftSidebarItem
-          selectedSidebarItem={selectedSidebarItem}
-          onClick={() => setSelectedSidebarItem('database')}
-          icon="database"
-          className={`left-sidebar-item sidebar-datasources left-sidebar-layout`}
-          tip="Sources"
-        />
-      </Popover>
-
+      <LeftSidebarDataSources.Container
+        darkMode={darkMode}
+        RenderDataSource={RenderDataSource}
+        dataSources={dataSources}
+        toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+        setPinned={setPinned}
+        pinned={pinned}
+      />
       <DataSourceManager
         appId={appId}
         showDataSourceManagerModal={showDataSourceManagerModal}
@@ -236,36 +216,51 @@ export const LeftSidebarDataSources = ({
           setSelectedDataSource(null);
           toggleDataSourceManagerModal(false);
         }}
-        editingVersionId={editingVersionId}
         dataSourcesChanged={dataSourcesChanged}
         globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
         isVersionReleased={isVersionReleased}
+        showSaveBtn={true}
       />
     </>
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({
-  darkMode,
-  RenderDataSource,
-  dataSources = [],
-  isVersionReleased,
-  setReleasedVersionPopupState,
-}) => {
+const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [], setPinned, pinned }) => {
   const { t } = useTranslation();
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   return (
-    <div>
+    <div className="left-sidebar-local-datasources-wrapper">
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Datasources"></HeaderSection.PanelHeader>
+        <HeaderSection.PanelHeader title="Datasources">
+          <div className="d-flex justify-content-end">
+            <ButtonSolid
+              title={`${pinned ? 'Unpin' : 'Pin'}`}
+              onClick={() => setPinned(!pinned)}
+              darkMode={darkMode}
+              styles={{ width: '28px', padding: 0 }}
+              data-cy={`left-sidebar-inspector`}
+              variant="tertiary"
+              className="left-sidebar-header-btn"
+              leftIcon={pinned ? 'unpin' : 'pin'}
+              iconWidth="14"
+              fill={`var(--slate12)`}
+            ></ButtonSolid>
+          </div>
+        </HeaderSection.PanelHeader>
       </HeaderSection>
       <div className="card-body pb-5">
         <div className="d-flex w-100 flex-column align-items-start">
           <div className="d-flex flex-column w-100">
             {dataSources.length ? (
               <>
-                <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
-                <div className="mt-2 w-100" data-cy="datasource-Label">
+                <div className="tj-text-sm my-2 datasources-category">Local Data sources</div>
+                <div className="mt-2 w-100 color-slate12" data-cy="datasource-Label">
                   {dataSources?.map((source, idx) => (
                     <RenderDataSource
                       key={idx}
@@ -273,8 +268,6 @@ const LeftSidebarDataSourcesContainer = ({
                       idx={idx}
                       convertToGlobal={true}
                       showDeleteIcon={true}
-                      isVersionReleased={isVersionReleased}
-                      setReleasedVersionPopupState={setReleasedVersionPopupState}
                     />
                   ))}
                 </div>
@@ -285,7 +278,7 @@ const LeftSidebarDataSourcesContainer = ({
       </div>
       {!isVersionReleased && (
         <div className="add-datasource-btn w-100 p-3">
-          <Link to={getPrivateRoute('global_datasources')}>
+          <Link to={getPrivateRoute('data_sources')}>
             <div className="p-2 color-primary cursor-pointer">
               {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
             </div>

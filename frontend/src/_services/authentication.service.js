@@ -7,8 +7,10 @@ import {
   handleResponseWithoutValidation,
   authHeader,
 } from '@/_helpers';
-import { excludeWorkspaceIdFromURL } from '@/_helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
+import queryString from 'query-string';
+import { getRedirectToWithParams } from '@/_helpers/routes';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
@@ -50,6 +52,9 @@ export const authenticationService = {
   authorize,
   validateSession,
   getUserDetails,
+  getLoginOrganizationSlug,
+  saveLoginOrganizationSlug,
+  deleteLoginOrganizationSlug,
 };
 
 function login(email, password, organizationId) {
@@ -68,12 +73,13 @@ function login(email, password, organizationId) {
     });
 }
 
-function validateSession(appId) {
+function validateSession(appId, workspaceSlug) {
   const requestOptions = {
     method: 'GET',
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/session${appId ? `?appId=${appId}` : ''}`, requestOptions).then(
+  const query = queryString.stringify({ appId, workspaceSlug });
+  return fetch(`${config.apiUrl}/session${query ? `?${query}` : ''}`, requestOptions).then(
     handleResponseWithoutValidation
   );
 }
@@ -93,6 +99,18 @@ function getLoginOrganizationId() {
 
 function deleteLoginOrganizationId() {
   eraseCookie('login-workspace');
+}
+
+function saveLoginOrganizationSlug(organizationSlug) {
+  organizationSlug && setCookie('login-workspace-slug', organizationSlug);
+}
+
+function getLoginOrganizationSlug() {
+  return getCookie('login-workspace-slug');
+}
+
+function deleteLoginOrganizationSlug() {
+  eraseCookie('login-workspace-slug');
 }
 
 function getOrganizationConfigs(organizationId) {
@@ -238,30 +256,20 @@ function logout(avoidRedirection = false) {
     credentials: 'include',
   };
 
+  const redirectToLoginPage = () => {
+    const loginPath =
+      (window.public_config?.SUB_PATH || '/') + 'login' + `${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`;
+    if (avoidRedirection) {
+      window.location.href = loginPath;
+    } else {
+      const pathname = getRedirectToWithParams();
+      window.location.href = loginPath + `?redirectTo=${`${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`}`;
+    }
+  };
+
   return fetch(`${config.apiUrl}/logout`, requestOptions)
     .then(handleResponseWithoutValidation)
-    .then(() => {
-      const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-      if (avoidRedirection) {
-        window.location.href = loginPath;
-      } else {
-        const pathname = window.public_config?.SUB_PATH
-          ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
-          : window.location.pathname;
-        window.location.href =
-          loginPath +
-          `?redirectTo=${
-            !pathname.includes('integrations')
-              ? excludeWorkspaceIdFromURL(pathname)
-              : `${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`
-          }`;
-      }
-    })
-    .catch(() => {
-      authenticationService.updateCurrentSession({
-        authentication_status: false,
-      });
-    });
+    .finally(() => redirectToLoginPage());
 }
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {

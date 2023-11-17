@@ -180,7 +180,7 @@
                 "table": "Tabella",
                 "pageIndex": "Indice delle Pagine",
                 "component": "Componente",
-                "addHandler": "+ Aggiungi handler",
+                "addHandler": "Aggiungi handler",
                 "addEventHandler": "+ Aggiungi handler eventi",
                 "emptyMessage": "Questo {{componentName}} non ha handler eventi"
             }

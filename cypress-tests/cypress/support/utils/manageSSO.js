@@ -206,6 +206,7 @@ export const visitWorkspaceLoginPage = () => {
   cy.get(ssoSelector.workspaceLoginUrl).then(($temp) => {
     const url = $temp.text();
     common.logout();
+    cy.wait(1000)
     cy.visit(url);
   });
 };
@@ -263,6 +264,7 @@ export const workspaceLogin = (workspaceName) => {
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.loginButton).click();
+  cy.wait(2000)
   cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(
     "have.text",
@@ -297,14 +299,6 @@ export const signInPageElements = () => {
     "have.text",
     ssoText.signInHeader
   );
-  cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
-    "have.text",
-    ssoText.googleSSOText
-  );
-  cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
-    "have.text",
-    ssoText.gitSignInText
-  );
   cy.get(commonSelectors.workEmailLabel).verifyVisibleElement(
     "have.text",
     commonText.workEmailLabel
@@ -325,6 +319,19 @@ export const signInPageElements = () => {
 
   cy.get(commonSelectors.workEmailInputField).should("be.visible");
   cy.get(commonSelectors.passwordInputField).should("be.visible");
+
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Google")) {
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSSOText
+      );
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignInText
+      );
+    }
+  });
 };
 
 export const SignUpPageElements = () => {

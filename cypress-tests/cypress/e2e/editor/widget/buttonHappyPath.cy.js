@@ -33,9 +33,10 @@ import {
 
 describe("Editor- Test Button widget", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText);
+    cy.apiLogin();
+    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.openApp();
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
   });
 
   it("should verify the properties of the button widget", () => {
@@ -75,6 +76,8 @@ describe("Editor- Test Button widget", () => {
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionEvents);
     addDefaultEventHandler(data.alertMessage);
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
 
@@ -95,9 +98,7 @@ describe("Editor- Test Button widget", () => {
     );
 
     verifyControlComponentAction(data.widgetName, data.customMessage);
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
+    cy.apiDeleteApp(data.appName);
   });
 
   it("should verify the styles of the button widget", () => {
@@ -224,9 +225,7 @@ describe("Editor- Test Button widget", () => {
       data.boxShadowColor,
       4
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
+    cy.apiDeleteApp(data.appName);
   });
 
   it("should verify the app preview", () => {
@@ -281,7 +280,7 @@ describe("Editor- Test Button widget", () => {
         commonWidgetText.parameterBorderRadius
       )
     )
-      .last()
+      .first()
       .clear()
       .type(buttonText.borderRadiusInput);
 
@@ -300,6 +299,7 @@ describe("Editor- Test Button widget", () => {
 
     cy.waitForAutoSave();
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(4000);
 
     cy.get(
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
@@ -308,6 +308,8 @@ describe("Editor- Test Button widget", () => {
     cy.get(
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
     ).click();
+    cy.wait(500);
+
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
     cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
       "have.value",
@@ -337,11 +339,11 @@ describe("Editor- Test Button widget", () => {
       data.boxShadowParam
     );
 
-    cy.get(commonSelectors.viewerPageLogo).click();
-    cy.deleteApp(data.appName);
+    cy.apiDeleteApp(data.appName);
   });
 
   it("Should verify csa", () => {
+    cy.get('[data-tooltip-content="Hide query panel"]').click();
     // cy.dragAndDropWidget(buttonText.defaultWidgetText);
     selectEvent("On click", "Show alert");
 
@@ -360,7 +362,8 @@ describe("Editor- Test Button widget", () => {
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 150);
     selectEvent("On click", "Control Component");
     selectCSA("button1", "Disable");
-    cy.get('[data-cy="Value-toggle-button"]').click();
+    cy.get('[data-cy="Value-fx-button"]').realClick();
+    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror(`{{true`);
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
@@ -371,7 +374,9 @@ describe("Editor- Test Button widget", () => {
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 250);
     selectEvent("On click", "Control Component");
     selectCSA("button1", "Loading");
-    cy.get('[data-cy="Value-toggle-button"]').click();
+    cy.wait(500);
+    cy.get('[data-cy="Value-fx-button"]').realClick();
+    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror(`{{true`);
 
     cy.get(commonWidgetSelector.draggableWidget("textinput1")).type("testBtn");
     cy.wait(500);
@@ -397,5 +402,6 @@ describe("Editor- Test Button widget", () => {
     cy.get(
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
     ).should("not.be.visible");
+    cy.apiDeleteApp();
   });
 });

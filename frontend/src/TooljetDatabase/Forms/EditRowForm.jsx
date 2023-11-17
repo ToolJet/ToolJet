@@ -49,10 +49,10 @@ const EditRowForm = ({ onEdit, onClose }) => {
   const handleSubmit = async () => {
     setFetching(true);
     const query = `id=eq.${selectedRow}&order=id`;
-    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable, rowData, query);
+    const { error } = await tooljetDatabaseService.updateRows(organizationId, selectedTable.id, rowData, query);
 
     if (error) {
-      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable}"`);
+      toast.error(error?.message ?? `Failed to create a new column table "${selectedTable.table_name}"`);
       return;
     }
     setFetching(false);
@@ -90,7 +90,6 @@ const EditRowForm = ({ onEdit, onClose }) => {
                 value={selectedRow}
                 options={options}
                 onChange={handleOnSelect}
-                customWrap={true}
               />
             </div>
           </div>
@@ -156,6 +155,7 @@ const RenderElement = ({ columnName, dataType, isPrimaryKey, defaultValue, value
   switch (dataType) {
     case 'character varying':
     case 'integer':
+    case 'bigint':
     case 'serial':
     case 'double precision':
       return (

@@ -69,7 +69,15 @@ export class GlobalDataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createGlobalDataSources(@User() user, @Body() createDataSourceDto: CreateDataSourceDto) {
-    const { kind, name, options, app_version_id: appVersionId, plugin_id: pluginId, scope } = createDataSourceDto;
+    const {
+      kind,
+      name,
+      options,
+      app_version_id: appVersionId,
+      plugin_id: pluginId,
+      scope,
+      environment_id,
+    } = createDataSourceDto;
 
     const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
@@ -93,7 +101,8 @@ export class GlobalDataSourcesController {
       appVersionId,
       user.organizationId,
       scope,
-      pluginId
+      pluginId,
+      environment_id
     );
 
     return decamelizeKeys(dataSource);

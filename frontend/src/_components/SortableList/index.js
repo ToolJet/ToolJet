@@ -21,7 +21,6 @@ const SortableComponent = ({ data, Element, ...restProps }) => {
 
   React.useEffect(() => {
     if (items.length > 0 && didItemChangePosition(data, items)) {
-      console.log('items changed ==>');
       onSort(items);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -37,8 +36,6 @@ const SortableComponent = ({ data, Element, ...restProps }) => {
             <Element page={page} {...restProps} />
           </SortableList.Item>
         )}
-        isVersionReleased={restProps.isVersionReleased}
-        setReleasedVersionPopupState={restProps.setReleasedVersionPopupState}
       />
     </div>
   );

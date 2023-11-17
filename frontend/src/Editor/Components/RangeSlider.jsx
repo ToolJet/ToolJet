@@ -4,7 +4,7 @@ import 'rc-slider/assets/index.css';
 
 export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
   const { value, min, max, enableTwoHandle } = properties;
-  const { trackColor, handleColor, lineColor, visibility } = styles;
+  const { trackColor, handleColor, lineColor, visibility, boxShadow } = styles;
   const sliderRef = useRef(null);
   const [sliderValue, setSliderValue] = useState(0);
   const [rangeValue, setRangeValue] = useState([0, 100]);
@@ -19,6 +19,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
     alignItems: 'center',
     justifyContent: 'center',
     padding: '0px 2px',
+    boxShadow,
   };
 
   useEffect(() => {

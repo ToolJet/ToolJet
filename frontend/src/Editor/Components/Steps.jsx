@@ -5,7 +5,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   const { stepsSelectable } = properties;
   const currentStep = isExpectedDataType(properties.currentStep, 'number');
   const steps = isExpectedDataType(properties.steps, 'array');
-  const { color, theme, visibility } = styles;
+  const { color, theme, visibility, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [activeStep, setActiveStep] = useState(null);
 
@@ -15,7 +15,8 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   };
   const activeStepHandler = (id) => {
     const active = steps.filter((item) => item.id == id);
-    setExposedVariable('currentStepId', active[0].id).then(() => fireEvent('onSelect'));
+    setExposedVariable('currentStepId', active[0].id);
+    fireEvent('onSelect');
     setActiveStep(active[0].id);
   };
 
@@ -29,7 +30,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
     visibility && (
       <div
         className={`steps ${theme == 'numbers' && 'steps-counter '}`}
-        style={{ color: textColor, height }}
+        style={{ color: textColor, height, boxShadow }}
         data-cy={dataCy}
       >
         {steps?.map((item) => (

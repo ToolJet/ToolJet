@@ -1,34 +1,52 @@
 import '@/_styles/editor/comment-notifications.scss';
 import cx from 'classnames';
 import React from 'react';
-
 import { commentsService } from '@/_services';
-
 import TabContent from './Content';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { shallow } from 'zustand/shallow';
 
-import useRouter from '@/_hooks/use-router';
-
-const CommentNotifications = ({ socket, toggleComments, appVersionsId, pageId }) => {
+const CommentNotifications = ({ socket, pageId }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
+  const { appVersionsId } = useAppVersionStore(
+    (state) => ({
+      appVersionsId: state?.editingVersion?.id,
+    }),
+    shallow
+  );
+  const { toggleComments } = useEditorStore(
+    (state) => ({
+      toggleComments: state?.actions.toggleComments,
+    }),
+    shallow
+  );
+  const { appId } = useAppDataStore(
+    (state) => ({
+      appId: state?.appId,
+    }),
+    shallow
+  );
   const [notifications, setNotifications] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [key, setKey] = React.useState('active');
 
-  const router = useRouter();
-
   async function fetchData(selectedKey) {
-    const isResolved = selectedKey === 'resolved';
-    setLoading(true);
-    const { data } = await commentsService.getNotifications(router.query.id, isResolved, appVersionsId, pageId);
-    setLoading(false);
-    setNotifications(data);
+    if (appId) {
+      console.log('inside-CommentNotifications', appId);
+      const isResolved = selectedKey === 'resolved';
+      setLoading(true);
+      const { data } = await commentsService.getNotifications(appId, isResolved, appVersionsId, pageId);
+      setLoading(false);
+      setNotifications(data);
+    }
   }
 
   React.useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [appId]);
 
   React.useEffect(() => {
     socket?.addEventListener('message', function (event) {

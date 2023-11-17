@@ -42,7 +42,16 @@ export const Tags = ({ value, onChange, readOnly }) => {
   }
 
   return (
-    <div className="tags row">
+    <div
+      className="tags row"
+      tabIndex={!readOnly ? 0 : null}
+      onKeyUp={(e) => {
+        e.stopPropagation();
+        if (e.key === 'Tab' && !readOnly) {
+          setShowForm(true);
+        }
+      }}
+    >
       {value.map((item) => {
         return renderTag(item);
       })}

@@ -9,6 +9,7 @@ import {
   verifyInvalidInvitationLink,
 } from "Support/utils/onboarding";
 import { dashboardText } from "Texts/dashboard";
+import { updateWorkspaceName } from "Support/utils/userPermissions";
 
 describe("User signup", () => {
   const data = {};
@@ -49,15 +50,9 @@ describe("User signup", () => {
     cy.get("body").then(($el) => {
       if (!$el.text().includes(dashboardText.emptyPageHeader)) {
         verifyOnboardingQuestions(data.fullName, data.workspaceName);
-        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-          "have.text",
-          data.workspaceName
-        );
+        updateWorkspaceName(data.email);
       } else {
-        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-          "have.text",
-          "Untitled workspace"
-        );
+        updateWorkspaceName(data.email);
       }
     });
   });

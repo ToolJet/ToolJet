@@ -9,13 +9,16 @@ title: Try ToolJet
 You can run the command below to have ToolJet up and running right away.
 
 ```bash
-docker run \
+docker run -d \
   --name tooljet \
   --restart unless-stopped \
-  -p 3000:3000 \
+  -p 80:80 \
+  --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
   tooljet/try:latest
 ```
+
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
 
 #### Setup information
 

@@ -87,7 +87,7 @@ The flow for installing and using a plugin as a datasource is really simple. The
 
 ## Creating a marketplace plugin
 
-The steps for creating a Marketplace plugin are similar to those for creating [plugins for ToolJet](/docs/contributing-guide/tutorials/creating-a-plugin) except that for a Marketplace plugin, the user will have to type `yes` when prompted `Is it a marketplace integration?` in the `tooljet command line`.
+The steps for creating a Marketplace plugin are similar to those for creating [plugins for ToolJet](/docs/2.0.0/contributing-guide/tutorials/creating-a-plugin/) except that for a Marketplace plugin, the user will have to type `yes` when prompted `Is it a marketplace integration?` in the `tooljet command line`.
 
 The steps to create a marketplace plugin are:
 

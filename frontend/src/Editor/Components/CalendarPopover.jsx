@@ -5,10 +5,12 @@ import { SubContainer } from '../SubContainer';
 export const CalendarEventPopover = function ({
   show,
   offset,
+  darkMode,
   calendarWidgetId,
   containerProps,
   removeComponent,
   popoverClosed,
+  component,
 }) {
   const parentRef = useRef(null);
   const [showPopover, setShow] = useState(show);
@@ -83,7 +85,7 @@ export const CalendarEventPopover = function ({
         }}
         role="tooltip"
         x-placement="left"
-        className="popover bs-popover-left shadow-lg"
+        className={`popover bs-popover-left shadow-lg ${darkMode ? 'dark' : ''}`}
         ref={parentRef}
         id={`${calendarWidgetId}-popover`}
       >
@@ -96,6 +98,7 @@ export const CalendarEventPopover = function ({
                 {...containerProps}
                 parentRef={parentRef}
                 removeComponent={removeComponent}
+                parentComponent={component}
               />
               <SubCustomDragLayer
                 parent={calendarWidgetId}

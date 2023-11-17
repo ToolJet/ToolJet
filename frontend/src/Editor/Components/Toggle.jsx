@@ -28,7 +28,7 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
   const [on, setOn] = React.useState(defaultValue);
   const label = properties.label;
 
-  const { visibility, disabledState, toggleSwitchColor } = styles;
+  const { visibility, disabledState, toggleSwitchColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
 
   function toggleValue(e) {
@@ -48,7 +48,7 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
   const toggle = () => setOn(!on);
 
   return (
-    <div className="row py-1" style={{ height, display: visibility ? '' : 'none' }} data-cy={dataCy}>
+    <div className="row py-1" style={{ height, display: visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
       <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
         {label}
       </span>

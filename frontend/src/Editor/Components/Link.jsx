@@ -1,23 +1,23 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import cx from 'classnames';
 
-export const Link = ({ height, properties, styles, fireEvent, registerAction, dataCy }) => {
+export const Link = ({ height, properties, styles, fireEvent, setExposedVariable, dataCy }) => {
   const { linkTarget, linkText, targetType } = properties;
-  const { textColor, textSize, underline, visibility } = styles;
+  const { textColor, textSize, underline, visibility, boxShadow } = styles;
   const clickRef = useRef();
 
   const computedStyles = {
     fontSize: textSize,
     height,
+    boxShadow,
   };
 
-  registerAction(
-    'click',
-    async function () {
+  useEffect(() => {
+    setExposedVariable('click', async function () {
       clickRef.current.click();
-    },
-    []
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
@@ -26,7 +26,7 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, da
       data-cy={dataCy}
     >
       <a
-        href={linkTarget}
+        {...(linkTarget != '' ? { href: linkTarget } : {})}
         target={targetType === 'new' && '_blank'}
         onClick={(event) => {
           event.stopPropagation();

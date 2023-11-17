@@ -3,23 +3,25 @@ import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx/xlsx.mjs';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { useAppInfo } from '@/_stores/appDataStore';
 
 export const FilePicker = ({
   id,
   width,
   height,
   component,
-  currentState,
   onComponentOptionChanged,
   onEvent,
   darkMode,
   styles,
-  registerAction,
+  setExposedVariable,
   dataCy,
 }) => {
+  const currentState = useCurrentState();
   //* properties definitions
   const instructionText =
-    component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
+    component.definition.properties.instructionText?.value ?? 'Drag and drop files here or click to select files';
   const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
   const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
   const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
@@ -53,6 +55,10 @@ export const FilePicker = ({
   const parsedWidgetVisibility =
     typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility, currentState) : widgetVisibility;
 
+  const { events: allAppEvents } = useAppInfo();
+
+  const filePickerEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
+
   const bgThemeColor = darkMode ? '#232E3C' : '#fff';
 
   const baseStyle = {
@@ -71,6 +77,7 @@ export const FilePicker = ({
     display: parsedWidgetVisibility ? 'flex' : 'none',
     height,
     backgroundColor: !parsedDisabledState && bgThemeColor,
+    boxShadow: styles.boxShadow,
   };
 
   const activeStyle = {
@@ -233,7 +240,7 @@ export const FilePicker = ({
       onComponentOptionChanged(component, 'file', [], id);
     }
 
-    if (acceptedFiles.length !== 0) {
+    if (acceptedFiles.length !== 0 && onEvent) {
       const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
       if (parseContent) {
         onComponentOptionChanged(component, 'isParsing', true, id);
@@ -248,7 +255,8 @@ export const FilePicker = ({
       });
       setSelectedFiles(fileData);
       onComponentOptionChanged(component, 'file', fileData, id);
-      onEvent('onFileSelected', { component })
+
+      onEvent('onFileSelected', filePickerEvents, { component })
         .then(() => {
           setAccepted(true);
           // eslint-disable-next-line no-unused-vars
@@ -261,7 +269,7 @@ export const FilePicker = ({
             }, 600);
           });
         })
-        .then(() => onEvent('onFileLoaded', { component }));
+        .then(() => onEvent('onFileLoaded', filePickerEvents, { component }));
     }
 
     if (fileRejections.length > 0) {
@@ -284,7 +292,7 @@ export const FilePicker = ({
       copy.splice(index, 1);
       return copy;
     });
-    onEvent('onFileDeselected', { component });
+    onEvent('onFileDeselected', filePickerEvents);
   };
 
   useEffect(() => {
@@ -292,16 +300,11 @@ export const FilePicker = ({
       setShowSelectedFiles(false);
     }
     onComponentOptionChanged(component, 'file', selectedFiles, id);
+    setExposedVariable('clearFiles', async function () {
+      setSelectedFiles([]);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
-
-  registerAction(
-    'clearFiles',
-    async function () {
-      setSelectedFiles([]);
-    },
-    [setSelectedFiles]
-  );
 
   return (
     <section>

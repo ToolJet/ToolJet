@@ -46,7 +46,7 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
       size="sm"
       animation={false}
       centered
-      className={`${darkMode && 'theme-dark'} page-handle-edit-modal `}
+      className={`${darkMode && 'dark-theme'} page-handle-edit-modal `}
       backdrop="static"
       onClick={(event) => event.stopPropagation()}
     >

@@ -134,9 +134,9 @@ export class DataSourcesController {
 
   @UseGuards(JwtAuthGuard)
   @Post('test_connection')
-  async testConnection(@Body() testDataSourceDto: TestDataSourceDto) {
-    const { kind, options, plugin_id } = testDataSourceDto;
-    return await this.dataSourcesService.testConnection(kind, options, plugin_id);
+  async testConnection(@User() user, @Body() testDataSourceDto: TestDataSourceDto) {
+    const { kind, options, plugin_id, environment_id } = testDataSourceDto;
+    return await this.dataSourcesService.testConnection(kind, options, plugin_id, user.organizationId, environment_id);
   }
 
   @UseGuards(JwtAuthGuard)

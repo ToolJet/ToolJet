@@ -1,10 +1,11 @@
 export type SourceOptions = {
-  accountSid: string;
-  authToken: string;
-  messagingServiceSid: string;
+  account_sid: string;
+  auth_token: string;
+  messaging_service_sid: string;
 };
+
 export type QueryOptions = {
   operation: string;
   body: string;
-  toNumber: string;
+  to_number: string;
 };

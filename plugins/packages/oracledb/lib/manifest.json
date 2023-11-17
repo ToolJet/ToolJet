@@ -42,6 +42,9 @@
     },
     "client_path_type":{
       "value": "default"
+    },
+    "instant_client_version": {
+      "value": "21_10"
     }
   },
   "properties": {
@@ -122,12 +125,31 @@
         "type": "text",
         "description": "Enter path"
       }
+    },
+    "default": {
+      "instant_client_version": {
+        "label": "Instant Client version",
+        "key": "instant_client_version",
+        "type": "dropdown",
+        "description": "Select Instant Client version",
+        "list": [
+          {
+            "name": "21.10",
+            "value": "21_10"
+          },
+          {
+            "name": "11.2",
+            "value": "11_2"
+          }
+        ]
+      }
     }
   },
   "required": [
     "host",
     "port",
     "username",
-    "password"
+    "password",
+    "client_path_type"
   ]
 }

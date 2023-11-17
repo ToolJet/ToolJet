@@ -8,6 +8,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
     accept: { parsedFileType: ['text/csv'] },
     onDrop,
+    noClick: true,
     onDropRejected: (files) => {
       if (files[0].size > 1048576) {
         toast.error('File size cannot exceed more than 1MB');
@@ -64,7 +65,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
             {errors['file']}
           </span>
           <ul>{acceptedFiles}</ul>
-          {fileData?.name && <ul>{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
+          {fileData?.name && <ul data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
         </div>
       </div>
     </form>

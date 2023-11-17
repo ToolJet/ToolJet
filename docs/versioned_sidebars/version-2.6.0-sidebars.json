@@ -16,9 +16,11 @@
         "setup/ec2",
         "setup/ecs",
         "setup/openshift",
+        "setup/helm",
         "setup/kubernetes",
         "setup/kubernetes-gke",
         "setup/kubernetes-aks",
+        "setup/azure-container",
         "setup/google-cloud-run",
         "setup/client",
         "setup/env-vars",
@@ -188,7 +190,7 @@
       "label": "App Builder",
       "items": [
         "app-builder/overview",
-        "app-builder/toolbar",
+        "app-builder/topbar",
         "app-builder/canvas",
         "app-builder/left-sidebar",
         "app-builder/components-library",
@@ -316,6 +318,8 @@
         "how-to/use-form-component",
         "how-to/access-cellvalue-rowdata",
         "how-to/bulk-update-multiple-rows",
+        "how-to/delete-multiple-rows",
+        "how-to/use-server-side-pagination",
         "how-to/access-currentuser",
         "how-to/use-axios-in-runjs",
         "how-to/import-external-libraries-using-runpy",
@@ -354,7 +358,8 @@
           "items": [
             "contributing-guide/setup/macos",
             "contributing-guide/setup/docker",
-            "contributing-guide/setup/ubuntu"
+            "contributing-guide/setup/ubuntu",
+            "contributing-guide/setup/windows"
           ]
         },
         {
@@ -371,7 +376,8 @@
           "type": "category",
           "label": "Troubleshooting",
           "items": [
-            "contributing-guide/troubleshooting/eslint"
+            "contributing-guide/troubleshooting/eslint",
+            "contributing-guide/troubleshooting/runpy-limitations"
           ]
         },
         "contributing-guide/code-of-conduct",
@@ -393,7 +399,7 @@
         {
           "type": "link",
           "label": "Roadmap",
-          "href": "https://github.com/ToolJet/ToolJet/projects/2?query=is%3Aopen+sort%3Aupdated-desc"
+          "href": "https://github.com/tooljet/tooljet/milestones"
         }
       ]
     }

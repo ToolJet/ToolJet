@@ -1,17 +1,21 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import MenuIcon from '@assets/images/icons/3dots-menu.svg';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const GlobalSettings = ({
-  darkMode,
-  showHideViewerNavigationControls,
-  showPageViwerPageNavitation,
-  isVersionReleased,
-  setReleasedVersionPopupState,
-}) => {
+export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, isViewerNavigationDisabled }) => {
+  const { isVersionReleased, enableReleasedVersionPopupState } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+    }),
+    shallow
+  );
+
   const onChange = () => {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     showHideViewerNavigationControls();
@@ -23,7 +27,7 @@ export const GlobalSettings = ({
       placement={'bottom-end'}
       rootClose={true}
       overlay={
-        <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'popover-dark-themed'}`}>
+        <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'dark-theme'}`}>
           <Popover.Body bsPrefix="popover-body">
             <div className="card-body">
               <label htmlFor="pin" className="form-label" data-cy={`page-settings-header`}>
@@ -31,7 +35,7 @@ export const GlobalSettings = ({
               </label>
               <hr style={{ margin: '0.75rem 0' }} />
               <div className="menu-options mb-0">
-                <Toggle onChange={onChange} value={!showPageViwerPageNavitation} />
+                <Toggle onChange={onChange} value={isViewerNavigationDisabled} />
               </div>
             </div>
           </Popover.Body>
@@ -39,7 +43,7 @@ export const GlobalSettings = ({
       }
     >
       <span>
-        <MenuIcon width="10" height="16" data-cy={'menu-icon'} />
+        <SolidIcon data-cy={'menu-icon'} name="morevertical" width="28" />
       </span>
     </OverlayTrigger>
   );

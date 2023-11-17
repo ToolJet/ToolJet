@@ -8,11 +8,10 @@ export const ColorPicker = function ({
   setExposedVariable,
   darkMode,
   height,
-  registerAction,
   fireEvent,
   dataCy,
 }) {
-  const { visibility } = styles;
+  const { visibility, boxShadow } = styles;
   const defaultColor = properties.defaultColor;
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [color, setColor] = useState(defaultColor);
@@ -46,25 +45,26 @@ export const ColorPicker = function ({
     return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
   };
 
-  registerAction(
-    'setColor',
-    async function (colorCode) {
+  useEffect(() => {
+    setExposedVariable('setColor', async function (colorCode) {
       if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(colorCode)) {
         if (colorCode !== color) {
           setColor(colorCode);
           setExposedVariable('selectedColorHex', `${colorCode}`);
           setExposedVariable('selectedColorRGB', hexToRgb(colorCode));
-          setExposedVariable('selectedColorRGBA', hexToRgba(colorCode)).then(() => fireEvent('onChange'));
+          setExposedVariable('selectedColorRGBA', hexToRgba(colorCode));
+          fireEvent('onChange');
         }
       } else {
         setExposedVariable('selectedColorHex', 'undefined');
         setExposedVariable('selectedColorRGB', 'undefined');
-        setExposedVariable('selectedColorRGBA', 'undefined').then(() => fireEvent('onChange'));
+        setExposedVariable('selectedColorRGBA', 'undefined');
+        fireEvent('onChange');
         setColor('Invalid Color');
       }
-    },
-    [setColor]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setColor]);
 
   useEffect(() => {
     if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(defaultColor)) {
@@ -90,7 +90,8 @@ export const ColorPicker = function ({
       setColor(hexColor);
       setExposedVariable('selectedColorHex', `${hexColor}`);
       setExposedVariable('selectedColorRGB', `rgb(${r},${g},${b})`);
-      setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`).then(() => fireEvent('onChange'));
+      setExposedVariable('selectedColorRGBA', `rgb(${r},${g},${b},${a})`);
+      fireEvent('onChange');
     }
   };
   //background color style for the div dispaying box filled by selected color
@@ -115,7 +116,7 @@ export const ColorPicker = function ({
     : { display: 'none' };
 
   return (
-    <div style={baseStyle} className="form-control" data-cy={dataCy}>
+    <div style={{ baseStyle, boxShadow }} className="form-control" data-cy={dataCy}>
       <div className="d-flex h-100 justify-content-between align-items-center" onClick={() => setShowColorPicker(true)}>
         <span>{color}</span>
         {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}

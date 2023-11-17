@@ -89,7 +89,6 @@ class VariableForm extends React.Component {
                       value={this.props.fields['variable_type'] ?? 'client'}
                       onChange={(value) => this.props.handleVariableTypeSelect(value)}
                       useMenuPortal={false}
-                      customWrap={true}
                     />
                   )}
                 </div>

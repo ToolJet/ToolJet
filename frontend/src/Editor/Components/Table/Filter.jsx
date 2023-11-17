@@ -2,6 +2,7 @@ import React from 'react';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff as deepDiff } from 'deep-object-diff';
@@ -110,7 +111,7 @@ export function Filter(props) {
   };
 
   return (
-    <div className="table-filters card">
+    <div className={`table-filters card ${darkMode && 'dark-theme'}`}>
       <div className="card-header row">
         <div className="col">
           <h4 data-cy={`header-filters`} className="font-weight-normal">
@@ -206,13 +207,28 @@ export function Filter(props) {
           </div>
         )}
       </div>
-      <div className="card-footer">
-        <button data-cy={`button-add-filter`} onClick={addFilter} className="btn btn-light btn-sm">
-          + add filter
-        </button>
-        <button data-cy={`button-clear-filters`} onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2">
-          clear filters
-        </button>
+      <div className="card-footer d-flex custom-gap-8">
+        <ButtonSolid
+          variant="primary"
+          className={`tj-text-xsm`}
+          onClick={addFilter}
+          size="sm"
+          customStyles={{ padding: '10px 20px' }}
+          data-cy={'button-add-filter'}
+        >
+          <span>+ add filter</span>
+        </ButtonSolid>
+
+        <ButtonSolid
+          variant="tertiary"
+          className={`tj-text-xsm`}
+          onClick={clearFilters}
+          size="sm"
+          customStyles={{ padding: '10px 20px' }}
+          data-cy={'button-clear-filters'}
+        >
+          <span>clear filters</span>
+        </ButtonSolid>
       </div>
     </div>
   );

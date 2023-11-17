@@ -5,6 +5,8 @@ title: Deploying ToolJet on a subpath
 
 ToolJet can now be deployed at a subpath rather than the root (`/`) of a public domain. Example subpath installation URL: **`http://www.yourcompany.com/apps/tooljet`**
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 You'll need to setup the following environment variables if ToolJet installation is on a domain subpath:
 
 | variable | value |

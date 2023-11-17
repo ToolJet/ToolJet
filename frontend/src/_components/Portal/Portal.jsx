@@ -30,7 +30,6 @@ const Portal = ({ children, ...restProps }) => {
 
   const portalStyles = {
     background: 'transparent',
-    backgroundColor: darkMode ? '#232E3C' : '#fff',
     borderRadius: '0px',
     width: '500px',
   };
@@ -81,7 +80,7 @@ const Modal = ({
   const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName) && isCopilotEnabled;
 
   const renderModalContent = () => (
-    <div className="modal-content" style={{ ...portalStyles, ...styles }}>
+    <div className="modal-content" style={{ ...portalStyles, ...styles }} onClick={(e) => e.stopPropagation()}>
       <div
         className={`resize-handle portal-header d-flex ${darkMode ? 'dark-mode-border' : ''}`}
         style={{ ...portalStyles }}
@@ -91,7 +90,8 @@ const Modal = ({
             style={{
               textTransform: 'none',
             }}
-            className="badge tj-badge"
+            className="color-indigo9"
+            data-cy="codehinder-popup-badge"
           >
             {componentName ?? 'Editor'}
           </span>
@@ -118,13 +118,14 @@ const Modal = ({
           size="sm"
           styles={{ width: '50px', padding: '2px' }}
         >
-          <Button.Content iconSrc={'assets/images/icons/portal-close.svg'} direction="left" />
+          <Button.Content
+            iconSrc={'assets/images/icons/portal-close.svg'}
+            direction="left"
+            dataCy={`codehinder-popup-close`}
+          />
         </Button>
       </div>
-      <div
-        className={`modal-body ${darkMode ? 'dark-mode-border' : ''}`}
-        style={{ background: 'transparent', height: 300 }}
-      >
+      <div className={`modal-body `} style={{ background: 'transparent', height: 300 }}>
         {children}
       </div>
     </div>

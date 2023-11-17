@@ -165,9 +165,7 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
-  createUser = (event) => {
-    event.preventDefault();
-
+  createUser = (selectedGroups) => {
     if (this.handleValidation()) {
       if (!this.state.fields.fullName?.trim()) {
         toast.error('Name should not be empty');
@@ -184,12 +182,7 @@ class ManageOrgUsersComponent extends React.Component {
       });
 
       organizationUserService
-        .create(
-          this.state.fields.firstName,
-          this.state.fields.lastName,
-          this.state.fields.email,
-          this.state.fields.role
-        )
+        .create(this.state.fields.firstName, this.state.fields.lastName, this.state.fields.email, selectedGroups)
         .then(() => {
           toast.success('User has been created');
           this.fetchUsers();
@@ -212,11 +205,13 @@ class ManageOrgUsersComponent extends React.Component {
     if (user.account_setup_token) {
       return urlJoin(
         window.public_config?.TOOLJET_HOST,
+        window.public_config?.SUB_PATH ?? '',
         `/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${authenticationService?.currentSessionValue.current_organization_id}`
       );
     }
     return urlJoin(
       window.public_config?.TOOLJET_HOST,
+      window.public_config?.SUB_PATH ?? '',
       `/organization-invitations/${user.invitation_token}?oid=${authenticationService?.currentSessionValue.current_organization_id}`
     );
   };

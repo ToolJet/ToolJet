@@ -2,6 +2,7 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
+import { navigateToAllUserGroup } from "../utils/common";
 
 export const manageGroupsElements = () => {
   cy.get(groupsSelector.groupLink("All users")).verifyVisibleElement(
@@ -13,8 +14,7 @@ export const manageGroupsElements = () => {
     groupsText.admin
   );
 
-  cy.get(groupsSelector.groupLink("Admin")).click();
-  cy.get(groupsSelector.groupLink("All users")).click();
+  navigateToAllUserGroup();
 
   cy.get(groupsSelector.groupPageTitle("All Users")).verifyVisibleElement(
     "have.text",
@@ -158,8 +158,7 @@ export const manageGroupsElements = () => {
   );
   cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
 
-  cy.get(groupsSelector.groupLink("Admin")).click();
-  cy.get(groupsSelector.groupLink("All users")).click();
+  navigateToAllUserGroup();
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("Admin")).verifyVisibleElement(
     "have.text",
@@ -234,4 +233,31 @@ export const manageGroupsElements = () => {
   cy.get(groupsSelector.workspaceVarCheckbox).verifyVisibleElement(
     "be.disabled"
   );
+};
+
+export const addAppToGroup = (appName) => {
+  cy.get(groupsSelector.appsLink).click();
+  cy.wait(500);
+  cy.get(groupsSelector.appSearchBox).realClick();
+  cy.wait(500);
+  cy.get(groupsSelector.searchBoxOptions).contains(appName).click();
+  cy.get(groupsSelector.selectAddButton).click();
+  cy.contains("tr", appName)
+    .parent()
+    .within(() => {
+      cy.get("td input").eq(1).check();
+    });
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "App permissions updated"
+  );
+};
+
+export const addUserToGroup = (groupName, email) => {
+  cy.get(groupsSelector.usersLink).click();
+  cy.get(".select-search__input").type(email);
+  cy.get(".item-renderer").within(() => {
+    cy.get("input").check();
+  });
+  cy.get(`[data-cy="${groupName}-group-add-button"]`).click();
 };

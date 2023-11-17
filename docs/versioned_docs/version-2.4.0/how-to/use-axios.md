@@ -23,7 +23,7 @@ var data = (await axios.get(url)).data;
 return data
 ```
 
-In the code snippet, a variable url is declared which is assigned the URL of the  JSON API. Then another variable is decalared which sends a GET request to the JSON API. Save the query and hit Preview to view the data returned by the API.
+In the code snippet, a variable url is declared which is assigned the URL of the  JSON API. Then another variable is declared which sends a GET request to the JSON API. Save the query and hit Preview to view the data returned by the API.
 
 <div style={{textAlign: 'center'}}>
 
@@ -56,7 +56,7 @@ The Axios POST request uses an object after the request URL to define the proper
 </div>
 
 :::tip
-Check out the tutorial on **[Build GitHub star history tracker](https://blog.tooljet.com/build-github-stars-history-app-in-5-minutes-using-low-code/)** that utlizes the axios library.
+Check out the tutorial on **[Build GitHub star history tracker](https://blog.tooljet.com/build-github-stars-history-app-in-5-minutes-using-low-code/)** that utilizes the axios library.
 :::
 
 

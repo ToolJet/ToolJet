@@ -8,12 +8,11 @@ export const RadioButton = function RadioButton({
   styles,
   fireEvent,
   setExposedVariable,
-  registerAction,
   darkMode,
   dataCy,
 }) {
   const { label, value, values, display_values } = properties;
-  const { visibility, disabledState, activeColor } = styles;
+  const { visibility, disabledState, activeColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checkedValue, setValue] = useState(() => value);
   useEffect(() => setValue(value), [value]);
@@ -32,27 +31,23 @@ export const RadioButton = function RadioButton({
 
   function onSelect(selection) {
     setValue(selection);
-    setExposedVariable('value', selection).then(() => fireEvent('onSelectionChange'));
+    setExposedVariable('value', selection);
+    fireEvent('onSelectionChange');
   }
 
   useEffect(() => {
     setExposedVariable('value', value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
-
-  registerAction(
-    'selectOption',
-    async function (option) {
+    setExposedVariable('selectOption', async function (option) {
       onSelect(option);
-    },
-    [setValue]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, setValue]);
 
   return (
     <div
       data-disabled={disabledState}
       className="row py-1"
-      style={{ height, display: visibility ? '' : 'none' }}
+      style={{ height, display: visibility ? '' : 'none', boxShadow }}
       data-cy={dataCy}
     >
       <span className="form-check-label col-auto py-0" style={{ color: textColor }}>

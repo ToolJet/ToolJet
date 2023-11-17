@@ -5,7 +5,7 @@ title: Bulk update multiple rows in table
 
 # Bulk update multiple rows in table
 
-Currently, the datasources in ToolJet have operation for **bulk update(GUI mode)** but that only works for changes made in the single row. We will soon be adding a new operation for bulk updating the multiple rows but for now we can bulk update multiple rows by creating a Custom JS query. 
+Currently, the datasources in ToolJet have operation for **bulk update(GUI mode)** but that only works for changes made in the single row. We will soon be adding a new operation for bulk updating the multiple rows but for now we can bulk update multiple rows by creating a Custom JS query.
 
 In this guide, We have assumed that you have successfully connected the data source. For this guide, we will be using the PostgreSQL data source as an example database, currently, this workaround can be used only for PostgreSQL and MySQL.
 
@@ -57,27 +57,30 @@ Let's create the query that will be getting the data from the database:
 We will create a new Custom JS query(**runjs1**) that will generate SQL query for updating multiple rows.
 
 ```js
-const uniqueIdentifier = "id"
+const uniqueIdentifier = "id";
 const cols = Object.values(components.table1.changeSet).map((col, index) => {
-  return {
-    col: Object.keys(col),
-    [uniqueIdentifier]: Object.values(components.table1.dataUpdates)[index][uniqueIdentifier],
-    values: Object.values(col),
-  };
+	return {
+		col: Object.keys(col),
+		[uniqueIdentifier]: Object.values(components.table1.dataUpdates)[index][uniqueIdentifier],
+		values: Object.values(col),
+	};
 });
 
 const sql = cols.map((column) => {
-  const { col, id, values } = column;
-  const cols = col.map((col, index) => `${col} = '${values[index]}'`);
-  return `UPDATE users SET ${cols.join(", ")} WHERE id = '${id}';`;
+	const { col, id, values } = column;
+	const cols = col.map((col, index) => `${col} = '${values[index]}'`);
+	return `UPDATE users SET ${cols.join(", ")} WHERE id = '${id}';`;
 });
 
-return sql
+return sql;
 ```
+
 :::info
 Here the **Unique identifier** is **id**, this is the column name that is used to identify the row in the database.
 Update the **Unique identifier** if you are using a different column name.
+Update **table1** with the name of the table you are using.
 :::
+
 <div style={{textAlign: 'center'}}>
 
 ![ToolJet - How To - Bulk update multiple rows in table](/img/how-to/bulk-update-multiple/runjs1.png)

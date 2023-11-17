@@ -7,6 +7,9 @@ title: Heroku
 
 <iframe width="800" height="500" src="https://www.youtube.com/embed/ApDtwE1OXY0" frameborder="0" allowfullscreen width="100%"></iframe>
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
+
 ### Follow the steps below to deploy ToolJet on Heroku:
 
 1. Click the button below to start one click deployment.  

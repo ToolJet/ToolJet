@@ -5,7 +5,7 @@ import '@/_styles/widgets/kanban.scss';
 
 export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
   const parentRef = useRef(null);
-  const { id, containerProps, exposedVariables } = kanbanProps;
+  const { id, containerProps, exposedVariables, component } = kanbanProps;
 
   const renderCloseButton = () => {
     return (
@@ -50,6 +50,7 @@ export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
           {...containerProps}
           parentRef={parentRef}
           customResolvables={{ cardData: exposedVariables?.lastSelectedCard }}
+          parentComponent={component}
         />
       </BootstrapModal.Body>
     </BootstrapModal>

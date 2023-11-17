@@ -4,7 +4,9 @@ import { AppVersion } from '../src/entities/app_version.entity';
 export class tabsWidth1656083459220 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
-    const appVersions = await entityManager.find(AppVersion);
+    const appVersions = await entityManager.find(AppVersion, {
+      select: ['id', 'definition'],
+    });
 
     for (const version of appVersions) {
       const definition = version['definition'];

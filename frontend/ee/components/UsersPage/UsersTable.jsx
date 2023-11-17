@@ -87,12 +87,18 @@ const UsersTable = ({
                             user.last_name ? user.last_name[0] : ''
                           }`}
                         />
-                        <span className="mx-3 tj-text-sm" data-cy="user-name">
+                        <span
+                          className="mx-3 tj-text-sm"
+                          data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
+                        >
                           {user.name}
                         </span>
                       </td>
                       <td className="text-muted">
-                        <a className="text-reset user-email tj-text-sm" data-cy="user-email">
+                        <a
+                          className="text-reset user-email tj-text-sm"
+                          data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-email`}
+                        >
                           {user.email}
                         </a>
                       </td>
@@ -106,7 +112,10 @@ const UsersTable = ({
                             })}
                             data-cy="status-badge"
                           ></span>
-                          <small className="workspace-user-status tj-text-sm text-capitalize" data-cy="user-status">
+                          <small
+                            className="workspace-user-status tj-text-sm text-capitalize"
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-status`}
+                          >
                             {user.status}
                           </small>
                           {user.status === 'invited' && 'invitation_token' in user ? (
@@ -120,7 +129,12 @@ const UsersTable = ({
                                     fill="#889096"
                                     name="copy"
                                   />
-                                  <p className="tj-text-xsm" data-cy="copy-invitation-link">
+                                  <p
+                                    className="tj-text-xsm"
+                                    data-cy={`${user.name
+                                      .toLowerCase()
+                                      .replace(/\s+/g, '-')}-user-copy-invitation-link`}
+                                  >
                                     Copy link
                                   </p>
                                 </span>

@@ -13,7 +13,7 @@ Canvas is the center area of the ToolJet app builder where the application is bu
 
 ### Arrange Components
 
-All the components are fully interactive in editor mode - to prevent interaction you can **click and hold** the **[Component Handle](docs/app-builder/components-library)** to change component's position.
+All the components are fully interactive in editor mode - to prevent interaction you can **click and hold** the **Component Handle** to change component's position.
 
 <div style={{textAlign: 'center'}}>
 

@@ -4,10 +4,11 @@ import 'react-circular-progressbar/dist/styles.css';
 
 export const CircularProgressBar = function CircularProgressBar({ height, properties, styles, dataCy }) {
   const { text, progress } = properties;
-  const { visibility, color, textColor, textSize, strokeWidth, counterClockwise, circleRatio } = styles;
+  const { visibility, color, textColor, textSize, strokeWidth, counterClockwise, circleRatio, boxShadow } = styles;
 
   const computedStyles = {
     display: visibility ? '' : 'none',
+    boxShadow,
   };
 
   return (

@@ -25,14 +25,18 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
   };
 
   const updateSelectedTableData = async () => {
+    const sortQuery = isEmpty(postgrestQueryBuilder.current.sortQuery.url.toString())
+      ? 'order=id.desc'
+      : postgrestQueryBuilder.current.sortQuery.url.toString();
+
     const query =
       postgrestQueryBuilder.current.filterQuery.url.toString() +
       '&' +
-      postgrestQueryBuilder.current.sortQuery.url.toString() +
+      sortQuery +
       '&' +
       postgrestQueryBuilder.current.paginationQuery.url.toString();
 
-    const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable, query);
+    const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable.id, query);
 
     if (error) {
       toast.error(error?.message ?? 'Something went wrong');
@@ -83,6 +87,7 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
   };
 
   const resetAll = () => {
+    console.log('resetAll');
     postgrestQueryBuilder.current.sortQuery = new PostgrestQueryBuilder();
 
     postgrestQueryBuilder.current.paginationQuery.limit(50);

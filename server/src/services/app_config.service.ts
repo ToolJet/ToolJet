@@ -27,6 +27,7 @@ export class AppConfigService {
       'ENABLE_MARKETPLACE_FEATURE',
       'ENABLE_TOOLJET_DB',
       'LANGUAGE',
+      'ENABLE_PRIVATE_APP_EMBED',
     ];
   }
 

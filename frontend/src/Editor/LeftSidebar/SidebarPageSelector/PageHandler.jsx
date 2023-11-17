@@ -6,6 +6,11 @@ import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 import { toast } from 'react-hot-toast';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
+import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
+import FileRemove from '@/_ui/Icon/solidIcons/FIleRemove';
+import Home from '@/_ui/Icon/solidIcons/Home';
 
 export const PageHandler = ({
   darkMode,
@@ -13,31 +18,37 @@ export const PageHandler = ({
   switchPage,
   deletePage,
   renamePage,
-  // clonePage,
+  clonePage,
   hidePage,
   unHidePage,
   homePageId,
   currentPageId,
   updateHomePage,
   updatePageHandle,
-  updateOnPageLoadEvents,
-  currentState,
+
   apps,
   pages,
   components,
-  isVersionReleased,
   pinPagesPopover,
   haveUserPinned,
+  disableEnablePage,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
   const isHidden = page?.hidden ?? false;
-
+  const isDisabled = page?.disabled ?? false;
+  const isIconApplied = isHomePage || isHidden || isDisabled;
   const [isEditingPageName, setIsEditingPageName] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const handleClose = () => {
     setShowEditModal(false);
@@ -75,9 +86,9 @@ export const PageHandler = ({
         showSettings();
         break;
 
-      // case 'duplicate-page':
-      //   clonePage(page.id);
-      //   break;
+      case 'clone-page':
+        clonePage(page.id);
+        break;
 
       case 'hide-page':
         hidePage(page.id);
@@ -85,6 +96,12 @@ export const PageHandler = ({
 
       case 'unhide-page':
         unHidePage(page.id);
+        break;
+      case 'disable-page':
+        disableEnablePage({ pageId: page.id, isDisabled: true });
+        break;
+      case 'enable-page':
+        disableEnablePage({ pageId: page.id });
         break;
 
       default:
@@ -117,43 +134,45 @@ export const PageHandler = ({
       onMouseLeave={() => setIsHovered(false)}
       className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
       onClick={() => page.id != currentPageId && switchPage(page.id)}
+      style={{ display: 'flex', justifyContent: 'center' }}
     >
-      <div className="card-body">
+      <div>
         <div className="row" role="button">
-          <div className="col-auto">
-            {!isHovered && isHomePage && (
-              <img
-                className="animation-fade"
-                data-toggle="tooltip"
-                title="home page"
-                src="assets/images/icons/home.svg"
-                height={14}
-                width={14}
-                data-cy={'home-page-icon'}
-              />
+          <div className="col-auto d-flex align-items-center">
+            {!isHovered && isHomePage && <Home width={16} height={16} />}
+            {/* When the page is hidden as well as disabled, disabled icon takes precedence */}
+            {!isHovered && (isDisabled || (isDisabled && isHidden)) && (
+              <FileRemove width={16} height={16} viewBox={'0 0 16 16'} />
             )}
-            <SortableList.DragHandle show={isHovered} />
+            {!isHovered && isHidden && !isDisabled && <EyeDisable width={16} height={16} />}
+            {/* When hovered on disabled page, show disabled icon instead of hovered icon */}
+            {isHovered && isDisabled && <FileRemove width={16} height={16} viewBox={'0 0 16 16'} />}
+            {isHovered && !isDisabled && (
+              <div style={{ paddingRight: '4px' }}>
+                <SortableList.DragHandle show />
+              </div>
+            )}
           </div>
           <div
-            className="col text-truncate font-weight-400 page-name"
+            className="col text-truncate font-weight-400 page-name tj-text-xsm"
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
+            style={isHomePage || isHidden || isHovered || isDisabled ? { paddingLeft: '0px' } : { paddingLeft: '16px' }}
           >
-            {page.name}
-          </div>
-          <div className="col-auto page-icons">
-            {isHidden && (
-              <img
-                data-toggle="tooltip"
-                title="hidden"
-                className="mx-2"
-                src="assets/images/icons/eye-off.svg"
-                height={14}
-                width={14}
-                data-cy={'hide-page-icon'}
-              />
+            <span className={darkMode && 'dark-theme'}>{`${page.name}`}</span>
+            {isIconApplied && (
+              <span
+                style={{
+                  marginLeft: '8px',
+                }}
+                className="color-slate09"
+              >
+                {isHomePage && 'Home'}
+                {isDisabled && 'Disabled'}
+                {isHidden && !isDisabled && 'Hidden'}
+              </span>
             )}
           </div>
-          <div className="col-auto">
+          <div className="col-auto" data-cy="page-menu-option-icon">
             {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
@@ -163,6 +182,7 @@ export const PageHandler = ({
                 setShowMenu={setShowPagehandlerMenu}
                 isHome={isHomePage}
                 isHidden={isHidden}
+                isDisabled={isDisabled}
               />
             )}
             <EditModal
@@ -181,8 +201,6 @@ export const PageHandler = ({
                 !haveUserPinned && pinPagesPopover(false);
               }}
               darkMode={darkMode}
-              updateOnPageLoadEvents={updateOnPageLoadEvents}
-              currentState={currentState}
               apps={apps}
               pages={pages}
               components={components}
@@ -210,11 +228,11 @@ export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode
   };
 
   return (
-    <div className="row" role="button">
+    <div className="row" role="button" style={{ marginTop: '2px' }}>
       <div className="col-12">
         <input
           type="text"
-          className={`form-control page-name-input ${darkMode && 'bg-transparent'}`}
+          className={`form-control page-name-input color-slate12 ${darkMode && 'bg-transparent'}`}
           autoFocus
           onBlur={(event) => {
             const name = event.target.value;

@@ -19,10 +19,11 @@ export const Datepicker = function Datepicker({
 }) {
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
-  const { visibility, disabledState, borderRadius } = styles;
+  const { visibility, disabledState, borderRadius, boxShadow } = styles;
 
   const [date, setDate] = useState(null);
   const [excludedDates, setExcludedDates] = useState([]);
+  const [showValidationError, setShowValidationError] = useState(false);
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
@@ -37,11 +38,11 @@ export const Datepicker = function Datepicker({
   };
 
   const onDateChange = (date) => {
+    setShowValidationError(true);
     setDate(date);
     const dateString = computeDateString(date);
-    setExposedVariable('value', dateString).then(() => {
-      fireEvent('onSelect');
-    });
+    setExposedVariable('value', dateString);
+    fireEvent('onSelect');
   };
 
   useEffect(() => {
@@ -85,12 +86,13 @@ export const Datepicker = function Datepicker({
       style={{
         height,
         display: visibility ? '' : 'none',
+        background: 'none',
       }}
     >
       <DatePickerComponent
-        className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
-          darkMode ? 'bg-dark color-white' : 'bg-light'
-        }`}
+        className={`input-field form-control ${
+          !isValid && showValidationError ? 'is-invalid' : ''
+        } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
@@ -103,11 +105,12 @@ export const Datepicker = function Datepicker({
         showYearDropdown
         dropdownMode="select"
         excludeDates={excludedDates}
-        customInput={<input style={{ borderRadius: `${borderRadius}px`, height }} />}
+        customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
+        timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
-        {validationError}
+        {showValidationError && validationError}
       </div>
     </div>
   );

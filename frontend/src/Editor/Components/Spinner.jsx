@@ -1,11 +1,12 @@
 import React from 'react';
 
 export const Spinner = ({ styles, height, dataCy }) => {
-  const { colour, size, visibility } = styles;
+  const { colour, size, visibility, boxShadow } = styles;
 
   const baseStyle = {
     height,
     display: visibility ? '' : 'none',
+    boxShadow,
   };
 
   return (

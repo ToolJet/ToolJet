@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import {
   verifyMultipleComponentValuesFromInspector,
   verifyComponentValueFromInspector,
@@ -14,23 +15,28 @@ import { multipageSelector } from "Selectors/multipage";
 
 describe("Editor- Inspector", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.openApp();
   });
 
   it("should verify the values of inspector", () => {
+    const countGlobal =
+      Cypress.env("environment") === "Community" ? "4 entries " : "5 entries ";
+    const countUser =
+      Cypress.env("environment") === "Community" ? "4 entries " : "5 entries ";
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("queries", "Object", "0 entry ");
     verifyNodeData("components", "Object", "0 entry ");
-    verifyNodeData("globals", "Object", "3 entries ");
+    verifyNodeData("globals", "Object", countGlobal);
     verifyNodeData("variables", "Object", "0 entry ");
     verifyNodeData("page", "Object", "4 entries ");
 
     openNode("globals");
     verifyNodeData("theme", "Object", "1 entry ");
     verifyNodeData("urlparams", "Object", "0 entry ");
-    verifyNodeData("currentUser", "Object", "4 entries ");
+    verifyNodeData("currentUser", "Object", countUser);
 
     openNode("theme");
     verifyValue("name", "String", `"light"`);
@@ -40,10 +46,28 @@ describe("Editor- Inspector", () => {
     verifyValue("firstName", "String", `"The"`);
     verifyValue("lastName", "String", `"Developer"`);
     verifyNodeData("groups", "Array", "2 items ");
+    if (Cypress.env("environment") !== "Community") {
+      cy.get(
+        '[data-cy="inspector-node-ssouserinfo"] > .node-key'
+      ).verifyVisibleElement("have.text", "ssoUserInfo");
+      cy.get(
+        '[data-cy="inspector-node-ssouserinfo"] > .mx-2'
+      ).verifyVisibleElement("have.text", "undefined");
+      openNode("theme");
+      openNode("environment");
+      verifyValue("name", "String", `"development"`);
+      cy.get('[data-cy="inspector-node-id"] > .node-key').verifyVisibleElement(
+        "have.text",
+        "id"
+      );
+    }
+    openNode("mode");
+    verifyValue("value", "String", `"edit"`);
 
     openNode("groups");
     verifyValue("0", "String", `"all_users"`);
     verifyValue("1", "String", `"admin"`);
+    verifyNodeData("constants", "Object", "0 entry ");
 
     openNode("globals");
     openNode("page");
@@ -53,27 +77,37 @@ describe("Editor- Inspector", () => {
     cy.get(multipageSelector.sidebarPageButton).click();
     addNewPage("test_page");
 
-    cy.dragAndDropWidget("Button", 100, 200);
+    cy.dragAndDropWidget("Button", 500, 500);
     selectEvent("On click", "Switch page");
     cy.get('[data-cy="switch-page-label-and-input"] > .select-search')
       .click()
       .type("home{enter}");
     cy.get('[data-cy="button-add-query-param"]').click();
+    cy.wait(1000);
+    cy.get('[data-cy="button-add-query-param"]').click();
+
     addSupportCSAData("query-param-key", "key");
     addSupportCSAData("query-param-value", "value");
+    cy.get('[data-cy="switch-page-label-and-input"] > .select-search')
+      .click()
+      .type("home{enter}");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 100, 300);
+    cy.dragAndDropWidget("Button", 500, 300);
     selectEvent("On click", "Set variable");
     addSupportCSAData("key", "globalVar");
     addSupportCSAData("variable", "globalVar");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("button2")).click();
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 100, 400);
+    cy.dragAndDropWidget("Button", 500, 400);
     selectEvent("On click", "Set page variable");
     addSupportCSAData("key", "pageVar");
     addSupportCSAData("variable", "pageVar");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("button3")).click();
 
     cy.get(commonWidgetSelector.sidebarinspector).click();
@@ -87,9 +121,9 @@ describe("Editor- Inspector", () => {
     verifyValue("name", "String", `"test_page"`);
 
     openNode("components");
-    verifyNodeData("button1", "Object", "6 entries ");
-    verifyNodeData("button2", "Object", "6 entries ");
-    verifyNodeData("button3", "Object", "6 entries ");
+    verifyNodeData("button1", "Object", "7 entries ");
+    verifyNodeData("button2", "Object", "7 entries ");
+    verifyNodeData("button3", "Object", "7 entries ");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
@@ -106,7 +140,7 @@ describe("Editor- Inspector", () => {
     verifyValue("key", "String", `"value"`);
 
     cy.get(`[data-cy="inspector-node-key"] > .mx-1`).realHover();
-    cy.get(".mx-1 > img").realClick();
+    cy.get('[data-cy="copy-path-to-clipboard"]').realClick();
     cy.realPress("Escape");
 
     cy.window().then((win) => {
@@ -115,21 +149,20 @@ describe("Editor- Inspector", () => {
       });
     });
 
-    cy.get(".action-icons-group > .d-flex > :nth-child(2)").click();
-    cy.get(".list-group-item").click();
+    cy.get('[data-cy="copy-value-to-clicpboard"]').realClick();
     cy.realPress("Escape");
-
     cy.window().then((win) => {
       win.navigator.clipboard.readText().then((text) => {
         expect(text).to.eq(`"value"`);
       });
     });
 
-    cy.dragAndDropWidget("Button", 100, 300);
+    cy.dragAndDropWidget("Button", 500, 300);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     openNode("components");
     cy.get(`[data-cy="inspector-node-button1"] > .mx-1`).realHover();
     cy.get('[style="height: 13px; width: 13px;"] > img').click();
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
+    cy.apiDeleteApp();
   });
 });

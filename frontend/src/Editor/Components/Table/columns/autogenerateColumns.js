@@ -7,7 +7,8 @@ export default function autogenerateColumns(
   columnDeletionHistory,
   useDynamicColumn,
   dynamicColumn = [],
-  setProperty
+  setProperty,
+  generateNestedColumns
 ) {
   if (useDynamicColumn) {
     if (dynamicColumn.length > 0 && dynamicColumn[0].name) {
@@ -25,13 +26,56 @@ export default function autogenerateColumns(
     return [];
   }
 
-  const firstRow = tableData?.[0] ?? {};
+  const firstRow = !_.isEmpty(tableData?.[0]) ? tableData?.[0] : {};
 
-  const firstRowWithoutNestedElements = Object.fromEntries(
-    Object.entries(firstRow).filter(([_key, value]) => typeof value != 'object')
-  );
+  const isValueIsPremitiveOrArray = (value) => {
+    if (typeof value !== 'object' || Array.isArray(value)) return true;
+  };
 
-  const keysOfTableData = Object.keys(firstRowWithoutNestedElements);
+  const isValueIsPlainObject = (value) => {
+    if (typeof value === 'object' && !Array.isArray(value) && value !== null) return true;
+  };
+
+  const limitToOneLevelNestingHelperFunc = (data, presentKey) => {
+    return Object.entries(data).reduce((accumulator, [key, value]) => {
+      if (isValueIsPremitiveOrArray(value)) {
+        accumulator.push(`${presentKey}.${key}`);
+      }
+      return accumulator;
+    }, []);
+  };
+  const generateNestedColumnsHelperFunc = (data, parentKey = '') => {
+    return Object.entries(data).reduce((accumulator, [key, value]) => {
+      const currentKey = parentKey ? `${parentKey}.${key}` : key;
+      if (isValueIsPlainObject(value)) {
+        // if value is object particularly, then we only want nested keys till one level of nesting
+        accumulator.push(...limitToOneLevelNestingHelperFunc(value, currentKey));
+      } else if (isValueIsPremitiveOrArray(value)) {
+        // check if value is premitive or array then simply push current key in the accumulator.
+        accumulator.push(currentKey);
+      }
+      return accumulator;
+    }, []);
+  };
+
+  const generateColumnKeys = (firstRow, generateNestedColumns) => {
+    if (generateNestedColumns) {
+      // This block is responsible to get all the keys, nested keys till one level of nesting from the firstRow
+      return generateNestedColumnsHelperFunc(firstRow);
+    } else {
+      /*
+        return keys whose value is premitive data type to support backward compatibility for older app,
+        where we do not auto-generate column for nested data
+      */
+      return Object.entries(firstRow).reduce((accumulator, [key, value]) => {
+        if (typeof value !== 'object') accumulator.push(key);
+        return accumulator;
+      }, []);
+    }
+  };
+
+  // mapping the keys of first row with one level of nested elements.
+  const keysOfTableData = generateColumnKeys(firstRow, generateNestedColumns);
 
   const keysOfExistingColumns = existingColumns.map((column) => column.key || column.name);
 

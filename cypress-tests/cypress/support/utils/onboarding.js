@@ -1,9 +1,11 @@
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
+import { dashboardText } from "Texts/dashboard";
 import {
   verifyandModifyUserRole,
   verifyandModifySizeOftheCompany,
 } from "Support/utils/selfHostSignUp";
+import { updateWorkspaceName } from "Support/utils/userPermissions";
 
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
@@ -136,4 +138,33 @@ export const verifyInvalidInvitationLink = () => {
     "have.text",
     commonText.backtoSignUpButton
   );
+};
+
+export const userSignUp = (fullName, email, workspaceName) => {
+  let invitationLink;
+  cy.visit("/");
+  cy.get(commonSelectors.createAnAccountLink).realClick();
+  cy.clearAndType(commonSelectors.nameInputField, fullName);
+  cy.clearAndType(commonSelectors.emailInputField, email);
+  cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+  cy.get(commonSelectors.signUpButton).click();
+
+  cy.wait(500);
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select invitation_token from users where email='${email}';`,
+  }).then((resp) => {
+    invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
+    cy.visit(invitationLink);
+    cy.get(commonSelectors.setUpToolJetButton).click();
+    cy.wait(4000);
+    cy.get("body").then(($el) => {
+      if (!$el.text().includes(dashboardText.emptyPageHeader)) {
+        verifyOnboardingQuestions(fullName, workspaceName);
+        updateWorkspaceName(email);
+      } else {
+        updateWorkspaceName(email);
+      }
+    });
+  });
 };

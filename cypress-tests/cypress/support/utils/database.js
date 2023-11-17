@@ -211,6 +211,7 @@ export const createNewColumnAndVerify = (
     .should("be.visible")
     .and("have.text", commonText.createButton)
     .click();
+  cy.wait(1000);
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     createNewColumnText.columnCreatedSuccessfullyToast
@@ -342,7 +343,7 @@ export const filterOperation = (
   cy.get(filterSelectors.selectOperationField).click();
   cy.contains(`[id*="react-select-"]`, operation[0]).click();
   cy.clearAndType(filterSelectors.valueInputField, value[0]);
-  cy.wait("@dbLoad");
+  //cy.wait("@dbLoad");
 
   for (let i = 1; i < columnName.length; i++) {
     cy.get(filterSelectors.addConditionLink).click();
@@ -402,6 +403,8 @@ export const deleteCondition = (selector, columnName = [], deleteIcon) => {
 };
 export const deleteRowAndVerify = (tableName, rowNumber = []) => {
   navigateToTable(tableName);
+  cy.wait(1000);
+  //cy.wait("@dbLoad");
   cy.get("body")
     .find(".table>>tr")
     .its("length")
@@ -411,9 +414,11 @@ export const deleteRowAndVerify = (tableName, rowNumber = []) => {
       }
       cy.get(databaseSelectors.deleteRecordButton).should("be.visible").click();
 
-      // cy.on('window:confirm', (ConfirmText) => {
-      //   expect(ConfirmText).to.equal('Are you sure you want to delete the selected rows?');
-      // })
+      cy.on("window:confirm", (ConfirmText) => {
+        expect(ConfirmText).to.equal(
+          "Are you sure you want to delete the selected rows?"
+        );
+      });
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
         databaseText.deleteRowToast(tableName, rowNumber.length)
@@ -438,7 +443,8 @@ export const editRowAndVerify = (
   cy.reload();
   cy.intercept("GET", "api/tooljet_db/organizations/**").as("dbLoad");
   navigateToTable(tableName);
-  cy.wait("@dbLoad");
+  cy.wait(1000);
+  //cy.wait("@dbLoad");
   cy.get(editRowSelectors.editRowbutton).should("be.visible").click();
   cy.get(editRowSelectors.editRowHeader).verifyVisibleElement(
     "have.text",
@@ -494,7 +500,7 @@ export const editRowWithInvalidData = (
 ) => {
   cy.intercept("GET", "api/tooljet_db/organizations/**").as("dbLoad");
   navigateToTable(tableName);
-  cy.wait("@dbLoad");
+  //cy.wait("@dbLoad");
 
   cy.get(editRowSelectors.editRowbutton).should("be.visible").click();
   cy.get(editRowSelectors.editRowHeader).verifyVisibleElement(

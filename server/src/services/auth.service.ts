@@ -21,7 +21,12 @@ import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap, generateNextName } from 'src/helpers/utils.helper';
+import {
+  dbTransactionWrap,
+  generateInviteURL,
+  generateNextNameAndSlug,
+  generateOrgInviteURL,
+} from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -33,7 +38,7 @@ import {
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
 import { MetadataService } from './metadata.service';
-import { Response } from 'express';
+import { CookieOptions, Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
@@ -121,7 +126,8 @@ export class AuthService {
           organization = organizationList[0];
         } else {
           // no form login enabled organization available for user - creating new one
-          organization = await this.organizationsService.create(generateNextName('My workspace'), user, manager);
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          organization = await this.organizationsService.create(name, slug, user, manager);
         }
 
         user.organizationId = organization.id;
@@ -192,7 +198,11 @@ export class AuthService {
       if (user.defaultOrganizationId !== user.organizationId)
         await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
+      const organization = await this.organizationsService.get(user.organizationId);
+
       return decamelizeKeys({
+        currentOrganizationId: user.organizationId,
+        currentOrganizationSlug: organization.slug,
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
@@ -259,8 +269,8 @@ export class AuthService {
       // Create default organization
       //TODO: check if there any case available that the firstname will be nil
 
-      const organizationName = generateNextName('My workspace');
-      organization = await this.organizationsService.create(organizationName, null, manager);
+      const { name, slug } = generateNextNameAndSlug('My workspace');
+      organization = await this.organizationsService.create(name, slug, null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -326,7 +336,12 @@ export class AuthService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
-      const organization = await this.organizationsService.create(workspace || 'My workspace', null, manager);
+      const organization = await this.organizationsService.create(
+        workspace || 'My workspace',
+        'my-workspace',
+        null,
+        manager
+      );
       const user = await this.usersService.create(
         {
           email,
@@ -458,7 +473,8 @@ export class AuthService {
             user.email,
             `${user.firstName} ${user.lastName} ?? ''`,
             user.invitationToken,
-            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`
+            `${organizationUser.invitationToken}`,
+            organizationUser.organizationId
           )
           .catch((err) => console.error('Error while sending welcome mail', err));
         throw new UnauthorizedException(
@@ -484,13 +500,11 @@ export class AuthService {
 
       if (!user && organizationUser) {
         return {
-          redirect_url: `${this.configService.get<string>(
-            'TOOLJET_HOST'
-          )}/organization-invitations/${organizationToken}?oid=${organizationUser.organizationId}`,
+          redirect_url: generateOrgInviteURL(organizationToken, organizationUser.organizationId),
         };
       } else if (user && !organizationUser) {
         return {
-          redirect_url: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${token}`,
+          redirect_url: generateInviteURL(token),
         };
       }
     }
@@ -541,14 +555,15 @@ export class AuthService {
     };
   }
 
-  generateSessionPayload(user: User, appOrganizationId: string) {
+  generateSessionPayload(user: User, currentOrganization: Organization) {
     return decamelizeKeys({
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      currentOrganizationId: appOrganizationId
-        ? appOrganizationId
+      currentOrganizationSlug: currentOrganization?.slug,
+      currentOrganizationId: currentOrganization?.id
+        ? currentOrganization?.id
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0],
@@ -593,11 +608,19 @@ export class AuthService {
     };
     user.organizationId = organization.id;
 
-    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), {
+    const cookieOptions: CookieOptions = {
       httpOnly: true,
       sameSite: 'strict',
       maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
-    });
+    };
+
+    if (this.configService.get<string>('ENABLE_PRIVATE_APP_EMBED') === 'true') {
+      // disable cookie security
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+
+    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), cookieOptions);
 
     return decamelizeKeys({
       id: user.id,
@@ -605,6 +628,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       currentOrganizationId: organization.id,
+      currentOrganizationSlug: organization.slug,
     });
   }
 }

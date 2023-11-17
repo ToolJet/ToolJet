@@ -4,13 +4,16 @@ import { authenticationService } from '@/_services';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { RedirectLoader } from '../_components';
+import { getCookie } from '@/_helpers';
+import { redirectToWorkspace } from '@/_helpers/utils';
 
 export function Authorize() {
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const router = useRouter();
 
   const organizationId = authenticationService.getLoginOrganizationId();
+  const organizationSlug = authenticationService.getLoginOrganizationSlug();
+  const redirectUrl = getCookie('redirectPath');
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
@@ -46,13 +49,13 @@ export function Authorize() {
         //logged users should send tj-workspace-id when login to unauthorized workspace
         if (session.authentication_status === false || session.current_organization_id) {
           signIn(authParams, configs);
+          subsciption.unsubscribe();
         }
       });
     } else {
       signIn(authParams, configs);
     }
 
-    () => subsciption && subsciption.unsubscribe();
     // Disabled for useEffect not being called for updation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -60,12 +63,15 @@ export function Authorize() {
   const signIn = (authParams, configs) => {
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-      .then(({ redirect_url }) => {
+      .then(({ redirect_url, current_organization_id }) => {
         if (redirect_url) {
           window.location.href = redirect_url;
           return;
         }
-        setSuccess(true);
+        /*for workspace login / normal login response will contain the next organization_id user want to login*/
+        if (current_organization_id) {
+          redirectToWorkspace();
+        }
       })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
   };
@@ -73,10 +79,12 @@ export function Authorize() {
   return (
     <div>
       <RedirectLoader origin={Configs[router.query.origin] ? router.query.origin : 'unknown'} />
-      {(success || error) && (
+      {error && (
         <Navigate
           replace
-          to={`/login${error && organizationId ? `/${organizationId}` : ''}`}
+          to={`/login${error && organizationSlug ? `/${organizationSlug}` : '/'}${
+            redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+          }`}
           state={{ errorMessage: error && error }}
         />
       )}
