@@ -446,6 +446,7 @@ class EditorComponent extends React.Component {
           variables: {},
         },
       });
+      this.fetchOrgEnvironmentConstants(data.editing_version?.current_environment_id);
       await this.getStoreData(data.editing_version?.id, data.editing_version?.current_environment_id);
 
       initEditorWalkThrough();
