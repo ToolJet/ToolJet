@@ -11,6 +11,7 @@ import {
   OAuthUnauthorizedClientError,
   getRefreshedToken,
   checkIfContentTypeIsURLenc,
+  checkIfContentTypeIsMultipartFormData,
   isEmpty,
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
@@ -83,6 +84,7 @@ export default class RestapiQueryService implements QueryService {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const isUrlEncoded = checkIfContentTypeIsURLenc(queryOptions['headers']);
+    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(queryOptions['headers']);
 
     /* Prefixing the base url of datasource if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
@@ -101,13 +103,15 @@ export default class RestapiQueryService implements QueryService {
       },
     };
 
-    const hasFiles = Object.values(json || {}).some((item) => {
-      return isFileObject(item);
-    });
+    const hasFiles = (json) => {
+      return Object.values(json || {}).some((item) => {
+        return isFileObject(item);
+      });
+    };
 
     if (isUrlEncoded) {
-      requestOptions.form = json;
-    } else if (hasFiles) {
+      _requestOptions.form = json;
+    } else if (isMultipartFormData && hasFiles(json)) {
       const form = new FormData();
       for (const key in json) {
         const value = json[key];
@@ -122,16 +126,11 @@ export default class RestapiQueryService implements QueryService {
           form.append(key, value);
         }
       }
-
-      requestOptions.body = form;
+      _requestOptions.body = form;
     } else {
-      requestOptions.json = json;
+      _requestOptions.json = json;
     }
 
-    if (authType === 'basic') {
-      requestOptions.username = sourceOptions.username;
-      requestOptions.password = sourceOptions.password;
-    }
     const authValidatedRequestOptions = validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
       context,
