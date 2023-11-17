@@ -8,7 +8,6 @@ import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
-// import { useEditorState } from '@/_stores/editorStore';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -16,6 +15,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     component,
     dataQueries,
     paramUpdated,
+    paramsUpdated,
     currentState,
     eventsChanged,
     apps,
@@ -26,7 +26,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const constructOptions = () => {
     const labels = resolveReferences(component?.component?.definition?.properties?.display_values?.value, currentState);
     const values = resolveReferences(component?.component?.definition?.properties?.values?.value, currentState);
-    const _options = labels?.map((label, index) => ({ label, value: values?.[index] }));
+    const _options = values?.map((value, index) => ({ value, label: labels?.[index] }));
     return _options;
   };
 
@@ -106,69 +106,25 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     paramUpdated({ name: 'value' }, 'value', _value, 'properties');
   };
 
-  // const paramUpdatedPromise = (param, value, mapFn, properties) => {
-  //   return new Promise((resolve, reject) => {
-  //     paramUpdated(param, value, mapFn, properties)
-  //       .then(() => {
-  //         resolve();
-  //       })
-  //       .catch((error) => {
-  //         reject(error);
-  //       });
-  //   });
-  // };
-
   const reorderOptions = async (startIndex, endIndex) => {
     const result = [...options];
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
     setOptions(result);
-    // paramUpdatedPromise(
-    //   { name: 'display_values' },
-    //   'value',
-    //   result.map((option) => option.label),
-    //   'properties'
-    // )
-    //   .then(() => {
-    //     paramUpdatedPromise(
-    //       { name: 'display_values' },
-    //       'value',
-    //       result.map((option) => option.label),
-    //       'properties'
-    //     );
-    //     // return paramUpdatedPromise(
-    //     //   { name: 'values' },
-    //     //   'value',
-    //     //   result.map((option) => option.value),
-    //     //   'properties'
-    //     // );
-    //   })
-    //   .then(() => {
-    //     console.log('Both promises resolved successfully.');
-    //   })
-    //   .catch((error) => {
-    //     console.error('An error occurred:', error);
-    //   });
-    // await ;
-    // await paramUpdated(
-    //   { name: 'values' },
-    //   'value',
-    //   result.map((option) => option.value),
-    //   'properties'
-    // );
-    await paramUpdated(
-      { name: 'display_values' },
-      'value',
-      result.map((option) => option.label),
-      'properties'
-    );
-
-    await paramUpdated(
-      { name: 'values' },
-      'value',
-      result.map((option) => option.value),
-      'properties'
-    );
+    paramsUpdated([
+      {
+        param: { name: 'values' },
+        attr: 'value',
+        value: result.map((option) => option.value),
+        paramType: 'properties',
+      },
+      {
+        param: { name: 'display_values' },
+        attr: 'value',
+        value: result.map((option) => option.label),
+        paramType: 'properties',
+      },
+    ]);
   };
 
   const onDragEnd = ({ source, destination }) => {
