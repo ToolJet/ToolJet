@@ -5396,7 +5396,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       events: [],
       styles: {
-        textColor: { value: '' },
+        textColor: { value: '#000' },
         checkboxColor: { value: '' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
