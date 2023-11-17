@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   appService,
   authenticationService,
@@ -114,7 +114,6 @@ const EditorComponent = (props) => {
     canRedo,
     isUpdatingEditorStateInProcess,
     saveError,
-    scrollOptions,
     isLoading,
     defaultComponentStateComputed,
     showComments,
@@ -122,7 +121,7 @@ const EditorComponent = (props) => {
     queryConfirmationList,
     currentPageId,
     currentSessionId,
-  } = useEditorState(
+  } = useEditorStore(
     (state) => ({
       appDefinition: state.appDefinition,
       currentLayout: state.currentLayout,
@@ -130,7 +129,6 @@ const EditorComponent = (props) => {
       canRedo: state.canRedo,
       isUpdatingEditorStateInProcess: state.isUpdatingEditorStateInProcess,
       saveError: state.saveError,
-      scrollOptions: state.scrollOptions,
       isLoading: state.isLoading,
       defaultComponentStateComputed: state.defaultComponentStateComputed,
       showComments: state.showComments,
@@ -156,7 +154,22 @@ const EditorComponent = (props) => {
     appDiffOptions,
     events,
     areOthersOnSameVersionAndPage,
-  } = useAppInfo();
+  } = useAppDataStore(
+    (state) => ({
+      isMaintenanceOn: state.isMaintenanceOn,
+      appId: state.appId,
+      app: state.app,
+      appName: state.appName,
+      slug: state.slug,
+      currentUser: state.currentUser,
+      currentVersionId: state.currentVersionId,
+      appDefinitionDiff: state.appDefinitionDiff,
+      appDiffOptions: state.appDiffOptions,
+      events: state.events,
+      areOthersOnSameVersionAndPage: state.areOthersOnSameVersionAndPage,
+    }),
+    shallow
+  );
 
   const currentState = useCurrentState();
 
@@ -1776,7 +1789,6 @@ const EditorComponent = (props) => {
             {!showComments && (
               <EditorSelecto
                 selectionRef={selectionRef}
-                scrollOptions={scrollOptions}
                 canvasContainerRef={canvasContainerRef}
                 setSelectedComponent={setSelectedComponent}
                 selectionDragRef={selectionDragRef}
