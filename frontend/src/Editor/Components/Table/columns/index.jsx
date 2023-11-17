@@ -36,14 +36,20 @@ export default function generateColumnsData({
     let sortType = 'alphanumeric';
 
     const columnOptions = {};
+    if (columnType === 'dropdown') {
+      // add condition here to only come inside this block for newer tables
+      columnOptions.selectOptions = [];
+      columnOptions.selectOptions = column?.options;
+    }
     if (
-      columnType === 'dropdown' ||
+      // columnType === 'dropdown' ||
       columnType === 'multiselect' ||
       columnType === 'badge' ||
       columnType === 'badges' ||
       columnType === 'radio' ||
       columnType === 'image'
     ) {
+      // add column type dropdown in if statement, for older tables
       columnOptions.selectOptions = [];
       const values = resolveReferences(column.values, currentState, []);
       const labels = resolveReferences(column.labels, currentState, []);
@@ -54,6 +60,7 @@ export default function generateColumnsData({
         });
       }
     }
+    console.log('shubham :: ', { columnOptions, column, selectOptions: columnOptions.selectOptions });
     if (columnType === 'datepicker') {
       column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
       column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
@@ -317,6 +324,7 @@ export default function generateColumnsData({
             });
 
             const { isValid, validationError } = validationData;
+            console.log('shubham :: case', { selectOptions: columnOptions.selectOptions });
 
             return (
               <div className="h-100 d-flex align-items-center">
