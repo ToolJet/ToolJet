@@ -653,8 +653,7 @@ export function Table({
     if (!sortOptions) {
       setExposedVariable('sortApplied', []);
     }
-    if (mounted) setExposedVariable('sortApplied', sortOptions);
-    fireEvent('onSort');
+    if (mounted) setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
   }, [JSON.stringify(sortOptions)]);
 
   useEffect(() => {
