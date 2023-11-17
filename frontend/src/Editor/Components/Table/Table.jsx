@@ -733,8 +733,9 @@ export function Table({
       mergeToTableDetails({ selectedRowsDetails });
     }
     if (
-      (!showBulkSelector && !highlightSelectedRow) ||
-      (showBulkSelector && !highlightSelectedRow && preSelectRow.current)
+      allowSelection &&
+      ((!showBulkSelector && !highlightSelectedRow) ||
+        (showBulkSelector && !highlightSelectedRow && preSelectRow.current))
     ) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
