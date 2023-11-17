@@ -46,10 +46,13 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
+import { useAppInfo } from '@/_stores/appDataStore';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -92,7 +95,7 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
-  events,
+  // events,
   setProperty,
   mode,
   exposedVariables,
@@ -132,6 +135,11 @@ export function Table({
 
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
+  const { events: allAppEvents } = useAppInfo();
+
+  const tableEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
+  const tableColumnEvents = allAppEvents.filter((event) => event.target === 'table_column' && event.sourceId === id);
+  const tableActionEvents = allAppEvents.filter((event) => event.target === 'table_action' && event.sourceId === id);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -185,13 +193,14 @@ export function Table({
   );
 
   useEffect(() => {
-    const hoverEvent = component?.definition?.events?.find((event) => {
+    const hoverEvent = tableEvents?.find(({ event }) => {
       return event?.eventId == 'onRowHovered';
     });
-    if (hoverEvent?.eventId) {
+
+    if (hoverEvent?.event?.eventId) {
       setHoverAdded(true);
     }
-  }, [JSON.stringify(component.definition.events)]);
+  }, [JSON.stringify(tableEvents)]);
 
   function showFilters() {
     mergeToFilterDetails({ filtersVisible: true });
@@ -287,7 +296,7 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     let headers = columns.map((column) => {
-      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+      return { exportValue: String(column?.exportValue), key: column.key ? String(column.key) : column?.key };
     });
     let data = globalFilteredRows.map((row) => {
       return headers.reduce((accumulator, header) => {
@@ -405,12 +414,13 @@ export function Table({
     tableRef,
     t,
     darkMode,
+    tableColumnEvents: tableColumnEvents,
   });
 
   columnData = useMemo(
     () =>
       columnData.filter((column) => {
-        if (resolveReferences(column.columnVisibility, currentState)) {
+        if (resolveReferences(column?.columnVisibility, currentState)) {
           return column;
         }
       }),
@@ -443,8 +453,9 @@ export function Table({
         defaultColumn,
         fireEvent,
         setExposedVariables,
+        tableActionEvents,
       }),
-    [JSON.stringify(actions)]
+    [JSON.stringify(actions), tableActionEvents]
   );
 
   const textWrapActions = (id) => {
@@ -454,7 +465,7 @@ export function Table({
     return wrapOption?.textWrap;
   };
 
-  const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
+  const optionsData = columnData.map((column) => column?.columnOptions?.selectOptions);
   const columns = useMemo(
     () => {
       return [...leftActionsCellData, ...columnData, ...rightActionsCellData];
@@ -473,6 +484,8 @@ export function Table({
       darkMode,
       allowSelection,
       highlightSelectedRow,
+      JSON.stringify(tableActionEvents),
+      JSON.stringify(tableColumnEvents),
     ] // Hack: need to fix
   );
 
@@ -648,7 +661,7 @@ export function Table({
     }
     if (mounted) setExposedVariable('sortApplied', sortOptions);
     fireEvent('onSort');
-  }, [sortOptions]);
+  }, [JSON.stringify(sortOptions)]);
 
   useEffect(() => {
     setExposedVariable('setPage', async function (targetPageIndex) {
@@ -758,6 +771,8 @@ export function Table({
       if (!serverSidePagination && clientSidePagination) {
         setPageSize(rowsPerPage || 10);
       }
+    } else {
+      setPageSize(rows?.length || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
   useEffect(() => {
@@ -781,11 +796,19 @@ export function Table({
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
-    if (!state.columnResizing.isResizingColumn && !_.isEmpty(newColumnSizes)) {
+
+    const isColumnSizeChanged = !_.isEmpty(diff(columnSizes, newColumnSizes));
+
+    if (isColumnSizeChanged && !state.columnResizing.isResizingColumn && !_.isEmpty(newColumnSizes)) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', {
-        value: newColumnSizes,
-      });
+      paramUpdated(
+        id,
+        'columnSizes',
+        {
+          value: newColumnSizes,
+        },
+        { componentDefinitionChanged: true }
+      );
     } else {
       changeCanDrag(false);
     }
@@ -912,7 +935,7 @@ export function Table({
           </div>
           {allColumns.map(
             (column) =>
-              typeof column.Header === 'string' && (
+              typeof column?.Header === 'string' && (
                 <div key={column.id}>
                   <div>
                     <label className="dropdown-item d-flex cursor-pointer">
@@ -1044,6 +1067,7 @@ export function Table({
                 component={component}
                 onEvent={onEvent}
                 darkMode={darkMode}
+                tableEvents={tableEvents}
               />
             )}
           </div>
@@ -1501,7 +1525,7 @@ export function Table({
                       variant="primary"
                       className={`tj-text-xsm`}
                       onClick={() => {
-                        onEvent('onBulkUpdate', { component }).then(() => {
+                        onEvent('onBulkUpdate', tableEvents, { component }).then(() => {
                           handleChangesSaved();
                         });
                       }}
@@ -1680,6 +1704,7 @@ export function Table({
           columns={columnsForAddNewRow}
           addNewRowsDetails={tableDetails.addNewRowsDetails}
           utilityForNestedNewRow={utilityForNestedNewRow}
+          tableEvents={tableEvents}
         />
       )}
     </div>

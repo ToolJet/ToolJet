@@ -6,39 +6,28 @@ export class ListviewDefaultMode1688977149516 implements MigrationInterface {
     const entityManager = queryRunner.manager;
     const appVersions = await entityManager.find(AppVersion);
     for (const version of appVersions) {
-      const definition = version['definition'];
+      const definition = JSON.parse(JSON.stringify(version?.definition));
 
       if (definition) {
         const pages = definition['pages'];
-        if (pages) {
+        if (Object.keys(pages).length > 0) {
           for (const pageId of Object.keys(pages)) {
             const components = definition['pages'][pageId]['components'];
-            if (components) {
+            if (Object.keys(components).length > 0) {
               for (const componentId of Object.keys(components)) {
                 const component = components[componentId];
 
-                if (component?.component?.component === 'Listview') {
-                  component['component']['definition']['properties']['mode'] = {
-                    value: 'list',
-                  };
-
-                  components[componentId] = {
-                    ...component,
-                    component: {
-                      ...component.component,
-                      definition: {
-                        ...component.component.definition,
-                      },
-                    },
-                  };
+                if (
+                  component?.component?.component === 'Listview' &&
+                  component.component?.definition?.properties?.mode
+                ) {
+                  component.component.definition.properties.mode['value'] = 'list';
                 }
               }
             }
-
-            definition['components'] = components;
-            version.definition = definition;
           }
         }
+        version.definition = definition;
         await entityManager.update(AppVersion, { id: version.id }, { definition });
       }
     }
