@@ -203,16 +203,16 @@ class ManageAppUsersComponent extends React.Component {
         ? this.props.currentEnvironment?.is_default
           ? true
           : false
-        : false
+        : this.props.currentEnvironment?.priority === 1
       : false;
+
+    const envTooltipFlag =
+      (!this.props.isVersionReleased && this.props.currentEnvironment?.is_default) ||
+      (!this.props.multiEnvironmentEnabled && this.props.currentEnvironment?.priority === 1);
 
     return (
       <ToolTip
-        message={
-          !this.props.isVersionReleased && this.props.currentEnvironment?.is_default
-            ? TOOLTIP_MESSAGES.SHARE_URL_UNAVAILABLE
-            : 'You can only share apps in production'
-        }
+        message={envTooltipFlag ? TOOLTIP_MESSAGES.SHARE_URL_UNAVAILABLE : 'You can only share apps in production'}
         placement="left"
         show={!shouldShowShareModal}
       >

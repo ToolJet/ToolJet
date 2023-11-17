@@ -279,7 +279,7 @@ function logout(avoidRedirection = false) {
     if (avoidRedirection) {
       window.location.href = loginPath;
     } else {
-      const pathname = getRedirectToWithParams();
+      const pathname = getRedirectToWithParams(true);
       window.location.href = loginPath + `?redirectTo=${`${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`}`;
     }
   };

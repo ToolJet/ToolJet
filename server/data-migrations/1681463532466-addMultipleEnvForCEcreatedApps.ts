@@ -7,11 +7,13 @@ import { EncryptionService } from '@services/encryption.service';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from 'src/app.module';
 import { filterEncryptedFromOptions } from 'src/helpers/utils.helper';
+import { CredentialsService } from '@services/credentials.service';
 
 export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const nestApp = await NestFactory.createApplicationContext(AppModule);
     const encryptionService = nestApp.get(EncryptionService);
+    const credentialService = nestApp.get(CredentialsService);
     const entityManager = queryRunner.manager;
 
     const organizations = await entityManager.find(Organization, {
@@ -34,8 +36,18 @@ export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInt
           delete dso?.options?.tokenData;
         });
 
+        /* rename the default environment to development and create the rest*/
+        const startingEnv = defaultAppEnvironments.find((env) => env.priority === 1);
+        await entityManager.update(AppEnvironment, defaultEnv.id, {
+          name: startingEnv.name,
+          isDefault: startingEnv.isDefault,
+          priority: startingEnv.priority,
+        });
+
         // create other two environments
-        for (const { name, isDefault, priority } of defaultAppEnvironments.filter((env) => !env.isDefault)) {
+        for (const { name, isDefault, priority } of defaultAppEnvironments.filter(
+          (env) => env.priority !== startingEnv.priority
+        )) {
           const newEnvironment: AppEnvironment = await entityManager.save(
             entityManager.create(AppEnvironment, {
               name,
@@ -47,7 +59,13 @@ export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInt
 
           for (const dsOption of dataSourceOptions) {
             //copy the options and remove secrets, then create new one for new environments
-            const newOptions = await filterEncryptedFromOptions(dsOption.options, encryptionService, entityManager);
+            const newOptions = await filterEncryptedFromOptions(
+              dsOption.options,
+              encryptionService,
+              credentialService,
+              true,
+              entityManager
+            );
 
             await entityManager.save(
               entityManager.create(DataSourceOptions, {
