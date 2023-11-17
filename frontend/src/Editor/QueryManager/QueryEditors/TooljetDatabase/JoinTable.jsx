@@ -222,6 +222,7 @@ const RenderFilterSection = ({ darkMode }) => {
       };
     } else {
       editedFilterCondition = {
+        operator: 'AND',
         ...conditions,
         conditionsList: [...conditionsList, { ...emptyConditionTemplate }],
       };

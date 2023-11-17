@@ -1,29 +1,31 @@
 import { IsString, IsArray, ValidateNested, IsIn, IsOptional, IsObject, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 
+// TODO: We need to remove custom error messages and make use of dto
+// default errors and let frontend show the errors on the specific fields
 class Table {
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Table name for join not selected' })
   name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Table type for join not selected' })
   type: string;
 }
 
 class Field {
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Columns names for join not selected' })
   name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Table names for join not selected' })
   table: string;
 }
 
 class Conditions {
   @IsString()
-  @IsIn(['AND', 'OR'])
+  @IsIn(['AND', 'OR'], { message: '::Operator for condition not selected (AND | OR)' })
   @IsOptional()
   operator: string;
 
@@ -35,7 +37,7 @@ class Conditions {
 
 class ConditionField {
   @IsString()
-  @IsIn(['Column', 'Value'], { message: 'Condition value not specified' })
+  @IsIn(['Column', 'Value'], { message: '::Condition parameter not specified' })
   type: string;
 
   @IsOptional() // present only when type is value
@@ -52,17 +54,19 @@ class ConditionField {
 
 class ConditionsList {
   @IsObject()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Condition value is empty' })
   @ValidateNested()
   @Type(() => ConditionField)
   leftField: ConditionField;
 
   @IsString()
-  @IsIn(['=', '>', '>=', '<', '<=', '!=', 'LIKE', 'NOT LIKE', 'ILIKE', 'NOT ILIKE', '~', '~*', 'IN', 'NOT IN', 'IS'])
+  @IsIn(['=', '>', '>=', '<', '<=', '!=', 'LIKE', 'NOT LIKE', 'ILIKE', 'NOT ILIKE', '~', '~*', 'IN', 'NOT IN', 'IS'], {
+    message: '::Condition operator not selected',
+  })
   operator: string;
 
   @IsObject()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Condition value is empty' })
   @ValidateNested()
   @Type(() => ConditionField)
   rightField: ConditionField;
@@ -75,15 +79,15 @@ class ConditionsList {
 
 class Join {
   @IsString()
-  @IsIn(['INNER', 'LEFT', 'RIGHT', 'FULL OUTER'])
+  @IsIn(['INNER', 'LEFT', 'RIGHT', 'FULL OUTER'], { message: '::Join type not selected' })
   joinType: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Join table is not selected' })
   table: string;
 
   @ValidateNested()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Join condition is not selected' })
   @Type(() => Conditions)
   conditions: Conditions;
 }
@@ -100,34 +104,33 @@ class GroupBy {
 
 class Order {
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Sort column not selected' })
   columnName: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Sort table not selected' })
   table: string;
 
-  @IsIn(['ASC', 'DESC'])
-  @IsNotEmpty()
+  @IsIn(['ASC', 'DESC'], { message: '::Sort direction not selected' })
   direction: string;
 }
 
 export class TooljetDbJoinDto {
   @ValidateNested()
   @Type(() => Table)
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Join table is empty' })
   from: Table;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Field)
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Join fields are empty' })
   fields: Field[];
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Join)
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '::Join parameters are empty' })
   joins: Join[];
 
   @ValidateNested()
