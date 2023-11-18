@@ -105,6 +105,7 @@ export const TooljetDatabase = (props) => {
 
   useEffect(() => {
     updateSidebarNAV('');
+    document.title = 'Database';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

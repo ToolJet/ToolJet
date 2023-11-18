@@ -22,6 +22,10 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    document.title = 'Marketplace';
+  }, []);
+
+  React.useEffect(() => {
     updateSidebarNAV('');
 
     if (!admin) {

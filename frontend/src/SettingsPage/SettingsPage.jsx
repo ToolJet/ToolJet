@@ -23,6 +23,7 @@ function SettingsPage(props) {
 
   useEffect(() => {
     updateSidebarNAV('');
+    document.title = 'Settings';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
