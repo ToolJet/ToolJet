@@ -1,4 +1,3 @@
-import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { EntityManager } from 'typeorm';
