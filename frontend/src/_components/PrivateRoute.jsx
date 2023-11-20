@@ -84,8 +84,7 @@ export const PrivateRoute = ({ children }) => {
     (pathname.startsWith('/applications/') && !isValidatingUserAccess) ||
     (pathname === '/switch-workspace' && session?.current_organization_id)
   ) {
-    const superAdminRoutes = ['/all-users', '/instance-settings'];
-    if (superAdminRoutes.includes(location.pathname) && !session.super_admin) {
+    if (location.pathname.startsWith('/instance-settings/') && !session.super_admin) {
       return (
         <Navigate
           to={{
