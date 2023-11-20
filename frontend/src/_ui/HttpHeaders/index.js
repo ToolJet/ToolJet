@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 import QueryEditor from './QueryEditor';
 import SourceEditor from './SourceEditor';
 
@@ -26,8 +27,9 @@ export default ({
         addNewKeyValuePair();
       }, 100);
     }
-    options[index][keyIndex] = value;
-    optionchanged(getter, options);
+    const newOptions = _.cloneDeep(options);
+    newOptions[index][keyIndex] = value;
+    optionchanged(getter, newOptions);
   }
 
   const commonProps = {
