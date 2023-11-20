@@ -166,9 +166,7 @@ export function CodeHinter({
       setPrevCurrentValue(currentValue);
 
       if (error || typeof preview == 'function') {
-        setResolvingError(
-          typeof preview == 'function' ? 'Invalid property detected: Expected a string, but received: function' : error
-        );
+        setResolvingError(typeof preview == 'function' ? 'Incomplete function usage' : error);
         setResolvedValue(null);
       } else {
         setResolvingError(null);
