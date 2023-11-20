@@ -6,6 +6,8 @@ import Select, { components } from 'react-select';
 import { CustomMenuList } from './Table/SelectComponent';
 import * as Icons from '@tabler/icons-react';
 import Check from '@/_ui/Icon/solidIcons/Check';
+import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
+// const { MenuList, ValueContainer, SingleValue, Placeholder } = components;
 
 const ValueContainer = ({ children, doShowIcon = false, icon, ...props }) => {
   // eslint-disable-next-line import/namespace
@@ -28,6 +30,42 @@ const ValueContainer = ({ children, doShowIcon = false, icon, ...props }) => {
   );
 };
 
+// const CustomValueContainer = ({ children, selectProps, ...props }) => {
+//   const commonProps = {
+//     cx: props.cx,
+//     clearValue: props.clearValue,
+//     getStyles: props.getStyles,
+//     getValue: props.getValue,
+//     hasValue: props.hasValue,
+//     isMulti: props.isMulti,
+//     isRtl: props.isRtl,
+//     options: props.options,
+//     selectOption: props.selectOption,
+//     setValue: props.setValue,
+//     selectProps,
+//     theme: props.theme,
+//     getClassNames: props.getClassNames,
+//   };
+
+//   return (
+//     <ValueContainer {...props} selectProps={selectProps}>
+//       {React.Children.map(children, (child) => {
+//         return child ? (
+//           child
+//         ) : props.hasValue ? (
+//           <SingleValue {...commonProps} isFocused={selectProps.isFocused} isDisabled={selectProps.isDisabled}>
+//             {selectProps?.getOptionLabel(props?.getValue()[0])}
+//           </SingleValue>
+//         ) : (
+//           <Placeholder {...commonProps} key="placeholder" isDisabled={selectProps.isDisabled} data={props.getValue()}>
+//             {selectProps.placeholder}
+//           </Placeholder>
+//         );
+//       })}
+//     </ValueContainer>
+//   );
+// };
+
 const Option = (props) => {
   return (
     <components.Option {...props}>
@@ -35,7 +73,7 @@ const Option = (props) => {
         <span>{props.label}</span>
         {props.isSelected && (
           <span>
-            <Check width={'20'} fill={'#3E63DD'} />
+            <CheckMark width={'20'} fill={props.isFocused ? '#FFFFFF' : '#3E63DD'} />
           </span>
         )}
       </div>
@@ -91,6 +129,7 @@ export const DropDown = function DropDown({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const validationData = validate(value);
   const { isValid, validationError } = validationData;
+  const [isFocused, setIsFocused] = useState(false);
 
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item?.default === true);
@@ -284,6 +323,24 @@ export const DropDown = function DropDown({
     }),
   };
 
+  const containerRef = React.useRef(null);
+  // const [isFocused, setIsFocused] = useState(false);
+  const [inputValue, setInputValue] = useState(value);
+  const onDomClick = (e) => {
+    let menu = containerRef?.current?.querySelector('.select__menu');
+    if (!containerRef?.current?.contains(e.target) || !menu || !menu?.contains(e.target)) {
+      // setIsFocused(false);
+      setInputValue('');
+    }
+  };
+  useEffect(() => {
+    document.addEventListener('mousedown', onDomClick);
+
+    return () => {
+      document.removeEventListener('mousedown', onDomClick);
+    };
+  }, []);
+
   const labelStyles = {
     marginRight: label !== '' ? '1rem' : '0.001rem',
     color: labelColor,
@@ -327,7 +384,8 @@ export const DropDown = function DropDown({
             isDisabled={disabledState}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
-              console.log(selectedOption, 'selectedOption', actionProps);
+              setIsFocused(false);
+
               setShowValidationError(true);
               if (actionProps.action === 'clear') {
                 setCurrentValue(null);
@@ -349,9 +407,15 @@ export const DropDown = function DropDown({
             components={{
               MenuList: CustomMenuList,
               ValueContainer: (props) => <ValueContainer {...props} icon={icon} doShowIcon={iconVisibility} />,
+              // ValueContainer: CustomValueContainer,
               Option,
             }}
             isClearable
+            onMenuInputFocus={() => setIsFocused(true)}
+            {...{
+              menuIsOpen: isFocused || undefined,
+              isFocused: isFocused || undefined,
+            }}
           />
         </div>
       </div>
