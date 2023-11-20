@@ -8,7 +8,6 @@ import {
   appEnvironmentService,
   customStylesService,
   orgEnvironmentConstantService,
-  licenseService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
