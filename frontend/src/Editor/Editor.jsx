@@ -8,6 +8,7 @@ import {
   appEnvironmentService,
   customStylesService,
   orgEnvironmentConstantService,
+  licenseService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -67,6 +68,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
+import { getQueryParams } from '@/_helpers/routes';
 
 setAutoFreeze(false);
 enablePatches();
@@ -124,6 +126,7 @@ const EditorComponent = (props) => {
     currentSessionId,
     currentAppEnvironment,
     currentAppEnvironmentId,
+    featureAccess,
   } = useEditorState();
 
   const dataQueries = useDataQueries();
@@ -1723,6 +1726,11 @@ const EditorComponent = (props) => {
     appDefinitionChanged(newDefinition, {
       pageDefinitionChanged: true,
     });
+
+    toast.success('Page handle updated successfully');
+
+    const queryParams = getQueryParams();
+    switchPage(pageId, Object.entries(queryParams));
   };
 
   const updateOnSortingPages = (newSortedPages) => {
@@ -1787,8 +1795,11 @@ const EditorComponent = (props) => {
   };
 
   useEffect(() => {
-    //! const previewQuery = queryString.stringify({ version: editingVersion?.name, env: currentAppEnvironment?.name });
-    const previewQuery = queryString.stringify({ version: editingVersion?.name, env: currentAppEnvironment?.name });
+    const previewQuery = queryString.stringify({
+      version: editingVersion?.name,
+      ...(featureAccess?.multiEnvironment ? { env: currentAppEnvironment?.name } : {}),
+    });
+
     const appVersionPreviewLink = editingVersion
       ? `/applications/${slug || appId}/${currentState.page.handle}${
           !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''

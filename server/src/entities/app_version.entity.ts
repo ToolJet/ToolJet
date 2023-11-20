@@ -43,6 +43,9 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'current_environment_id' })
   currentEnvironmentId: string;
 
+  @Column({ name: 'promoted_from' })
+  promotedFrom: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

@@ -11,6 +11,7 @@ const protobuf = require('protobufjs');
 const semver = require('semver');
 
 import { LICENSE_LIMIT } from './license.helper';
+import { CredentialsService } from '@services/credentials.service';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -166,7 +167,9 @@ function convertToArrayOfKeyValuePairs(options): Array<object> {
 export async function filterEncryptedFromOptions(
   options: Array<object>,
   encryptionService: EncryptionService,
-  entityManager: EntityManager
+  credentialService?: CredentialsService,
+  copyEncryptedValues = false,
+  entityManager?: EntityManager
 ) {
   const kvOptions = convertToArrayOfKeyValuePairs(options);
 
@@ -176,7 +179,8 @@ export async function filterEncryptedFromOptions(
 
   for (const option of kvOptions) {
     if (option['encrypted']) {
-      const credential = await createCredential('', encryptionService, entityManager);
+      const value = copyEncryptedValues ? await credentialService.getValue(option['credential_id']) : '';
+      const credential = await createCredential(value, encryptionService, entityManager);
 
       parsedOptions[option['key']] = {
         credential_id: credential.id,
@@ -234,15 +238,6 @@ export function generatePayloadForLimits(currentCount: number, totalCount: any, 
         licenseStatus,
         label,
       };
-}
-export class MigrationProgress {
-  private progress = 0;
-  constructor(private fileName: string, private totalCount: number) {}
-
-  show() {
-    this.progress++;
-    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
-  }
 }
 
 export const processDataInBatches = async <T>(

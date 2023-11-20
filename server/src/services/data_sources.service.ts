@@ -333,6 +333,7 @@ export class DataSourcesService {
     const dataSource = await this.findOne(dataSourceId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const isMultiEnvEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
       const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
 
       // if datasource is restapi then reset the token data
@@ -347,12 +348,21 @@ export class DataSourcesService {
         await this.appEnvironmentService.getOptions(dataSourceId, organizationId, envToUpdate.id)
       ).options;
 
-      await this.appEnvironmentService.updateOptions(
-        await this.parseOptionsForUpdate(dataSource, options),
-        envToUpdate.id,
-        dataSource.id,
-        manager
-      );
+      const newOptions = await this.parseOptionsForUpdate(dataSource, options);
+      if (isMultiEnvEnabled) {
+        await this.appEnvironmentService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+      } else {
+        const allEnvs = await this.appEnvironmentService.getAll(organizationId);
+        /* 
+          Basic plan customer. lets update all environment options. 
+          this will help us to run the queries successfully when the user buys enterprise plan 
+        */
+        await Promise.all(
+          allEnvs.map(async (envToUpdate) => {
+            await this.appEnvironmentService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+          })
+        );
+      }
       const updatableParams = {
         id: dataSourceId,
         name,
@@ -383,8 +393,18 @@ export class DataSourcesService {
       const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
+      const isMultiEnvEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
 
-      await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+      if (isMultiEnvEnabled) {
+        await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+      } else {
+        const allEnvs = await this.appEnvironmentService.getAll(organizationId);
+        await Promise.all(
+          allEnvs.map(async (envToUpdate) => {
+            await this.appEnvironmentService.updateOptions(updatedOptions, envToUpdate.id, dataSourceId, manager);
+          })
+        );
+      }
     });
   }
 

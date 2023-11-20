@@ -5,7 +5,8 @@ import { Page } from 'src/entities/page.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
-import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
+import { processDataInBatches } from 'src/helpers/utils.helper';
+import { MigrationProgress } from 'src/helpers/migration.helper';
 import { v4 as uuid } from 'uuid';
 
 interface AppResourceMappings {

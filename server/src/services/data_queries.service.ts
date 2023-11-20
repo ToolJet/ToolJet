@@ -1,4 +1,5 @@
 import got from 'got';
+import * as requestIp from 'request-ip';
 import { QueryError } from '@tooljet/plugins/dist/server';
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,6 +20,7 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import allPlugins from '@tooljet/plugins/dist/server';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { RequestContext } from 'src/models/request-context.model';
 
 @Injectable()
 export class DataQueriesService {
@@ -164,6 +166,16 @@ export class DataQueriesService {
           {}
         );
       }
+
+      if (dataSource.kind === 'restapi') {
+        const customXFFHeader = ['tj-x-forwarded-for', requestIp.getClientIp(RequestContext?.currentContext?.req)];
+        if (!sourceOptions['headers']) {
+          sourceOptions['headers'] = [customXFFHeader];
+        } else {
+          sourceOptions['headers'].push(customXFFHeader);
+        }
+      }
+
       result = await service.run(
         sourceOptions,
         parsedQueryOptions,
