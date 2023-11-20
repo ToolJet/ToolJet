@@ -57,7 +57,7 @@ Cypress.Commands.add("createApp", (appName) => {
   cy.get("body").then(($title) => {
     cy.get(getAppButtonSelector($title)).click();
     cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="+ Create app"]').click();
+    cy.get('[data-cy="+-create-app"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();
@@ -108,18 +108,23 @@ Cypress.Commands.add(
       .find("pre.CodeMirror-line")
       .invoke("text")
       .then((text) => {
-        cy.wrap(subject).type(createBackspaceText(text), { delay: 0 }),
+        cy
+          .wrap(subject)
+          .last()
+          .click()
+          .type(createBackspaceText(text), { delay: 0 }),
         {
           delay: 0,
         };
       });
     if (!Array.isArray(value)) {
-      cy.wrap(subject).type(value, {
+      cy.wrap(subject).last().type(value, {
         parseSpecialCharSequences: false,
         delay: 0,
       });
     } else {
       cy.wrap(subject)
+        .last()
         .type(value[1], {
           parseSpecialCharSequences: false,
           delay: 0,
@@ -293,3 +298,10 @@ Cypress.Commands.add("hideTooltip", () => {
     }
   });
 });
+
+
+Cypress.Commands.add("defaultWorkspaceLogin", () => {
+  cy.apiLogin();
+  cy.visit('/my-workspace');
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 })
+})

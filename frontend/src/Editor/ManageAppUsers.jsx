@@ -13,6 +13,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
 import { ToolTip } from '@/_components/ToolTip';
 import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -21,7 +22,7 @@ class ManageAppUsersComponent extends React.Component {
 
     this.state = {
       showModal: false,
-      app: { ...props.app },
+      appId: null,
       isLoading: true,
       isSlugVerificationInProgress: false,
       addingUser: false,
@@ -49,14 +50,14 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   componentDidMount() {
-    const appId = this.props.app.id;
-    this.fetchAppUsers();
+    const appId = this.props.appId;
+    this.fetchAppUsers(appId);
     this.setState({ appId });
   }
 
-  fetchAppUsers = () => {
+  fetchAppUsers = (appId) => {
     appsService
-      .getAppUsers(this.props.app.id)
+      .getAppUsers(appId)
       .then((data) =>
         this.setState({
           users: data.users,
@@ -65,7 +66,8 @@ class ManageAppUsersComponent extends React.Component {
       )
       .catch((error) => {
         this.setState({ isLoading: false });
-        toast.error(error);
+        const errorMessage = error?.message || 'Something went wrong';
+        toast.error(errorMessage);
       });
   };
 
@@ -89,11 +91,11 @@ class ManageAppUsersComponent extends React.Component {
     const { organizationUserId, role } = this.state.newUser;
 
     appService
-      .createAppUser(this.state.app.id, organizationUserId, role)
+      .createAppUser(this.state.appId, organizationUserId, role)
       .then(() => {
         this.setState({ addingUser: false, newUser: {} });
         toast.success('Added user successfully');
-        this.fetchAppUsers();
+        this.fetchAppUsers(this.state.appId);
       })
       .catch(({ error }) => {
         this.setState({ addingUser: false });
@@ -102,21 +104,19 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   toggleAppVisibility = () => {
-    const newState = !this.state.app.is_public;
+    const newState = !this.props.isPublic;
     this.setState({
       ischangingVisibility: true,
     });
 
+    useAppDataStore.getState().actions.updateState({ isPublic: newState });
+
     // eslint-disable-next-line no-unused-vars
     appsService
-      .setVisibility(this.state.app.id, newState)
+      .setVisibility(this.state.appId, newState)
       .then(() => {
         this.setState({
           ischangingVisibility: false,
-          app: {
-            ...this.state.app,
-            is_public: newState,
-          },
         });
 
         if (newState) {
@@ -153,7 +153,7 @@ class ManageAppUsersComponent extends React.Component {
         isSlugVerificationInProgress: true,
       });
       appsService
-        .setSlug(this.state.app.id, value)
+        .setSlug(this.state.appId, value)
         .then(() => {
           this.setState({
             newSlug: {
@@ -163,8 +163,9 @@ class ManageAppUsersComponent extends React.Component {
             isSlugVerificationInProgress: false,
             isSlugUpdated: true,
           });
-          this.props.handleSlugChange(value);
+
           replaceEditorURL(value, this.props.pageHandle);
+          useAppDataStore.getState().actions.updateState({ slug: value });
         })
         .catch(({ error }) => {
           this.setState({
@@ -189,8 +190,8 @@ class ManageAppUsersComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, app, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
-    const appId = app.id;
+    const { isLoading, appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
+
     const appLink = `${getHostURL()}/applications/`;
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
@@ -249,7 +250,7 @@ class ManageAppUsersComponent extends React.Component {
                         className="form-check-input"
                         type="checkbox"
                         onClick={this.toggleAppVisibility}
-                        checked={this.state.app.is_public}
+                        checked={this?.props?.isPublic}
                         disabled={this.state.ischangingVisibility}
                         data-cy="make-public-app-toggle"
                       />
@@ -335,6 +336,7 @@ class ManageAppUsersComponent extends React.Component {
                             viewBox="0 0 17 18"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
+                            data-cy="copy-app-link-button"
                           >
                             <path
                               d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
@@ -349,18 +351,28 @@ class ManageAppUsersComponent extends React.Component {
                       </span>
                     </div>
                     {newSlug?.error ? (
-                      <label className="label tj-input-error">{newSlug?.error || ''}</label>
+                      <label className="label tj-input-error" data-cy="app-slug-error-label">
+                        {newSlug?.error || ''}
+                      </label>
                     ) : isSlugUpdated ? (
-                      <label className="label label-success">{`Slug accepted!`}</label>
+                      <label
+                        className="label label-success"
+                        data-cy="app-slug-accepted-label"
+                      >{`Slug accepted!`}</label>
                     ) : (
-                      <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
+                      <label
+                        className="label label-info"
+                        data-cy="app-slug-info-label"
+                      >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
                     )}
                   </div>
-                  {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                  {(this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                     <div className="tj-app-input">
-                      <label className="field-name">Embedded app link</label>
+                      <label className="field-name" data-cy="iframe-link-label">
+                        Embedded app link
+                      </label>
                       <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
-                        <span>{embeddableLink}</span>
+                        <span data-cy="iframe-link">{embeddableLink}</span>
                         <span className="copy-container">
                           <CopyToClipboard
                             text={embeddableLink}
@@ -373,6 +385,7 @@ class ManageAppUsersComponent extends React.Component {
                               viewBox="0 0 17 18"
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
+                              data-cy="iframe-link-copy-button"
                             >
                               <path
                                 d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
