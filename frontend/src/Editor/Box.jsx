@@ -153,6 +153,7 @@ export const Box = memo(
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
     const currentState = useCurrentState();
+    const { events } = useAppInfo();
 
     const componentMeta = useMemo(() => {
       return componentTypes.find((comp) => component.component === comp.component);
