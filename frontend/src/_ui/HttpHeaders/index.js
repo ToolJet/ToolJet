@@ -27,9 +27,14 @@ export default ({
         addNewKeyValuePair();
       }, 100);
     }
-    const newOptions = _.cloneDeep(options);
-    newOptions[index][keyIndex] = value;
-    optionchanged(getter, newOptions);
+    if (!isRenderedAsQueryEditor) {
+      const newOptions = _.cloneDeep(options);
+      newOptions[index][keyIndex] = value;
+      optionchanged(getter, newOptions);
+    } else {
+      options[index][keyIndex] = value;
+      optionchanged(getter, options);
+    }
   }
 
   const commonProps = {
