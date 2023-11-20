@@ -52,8 +52,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     for (const version of versions) {
       const definition = version['definition'];
 
-      if (!definition) return;
-
       const dataQueriesRepository = entityManager.getRepository(DataQuery);
       const dataQueries = await dataQueriesRepository.find({
         where: { appVersionId: version.id },
