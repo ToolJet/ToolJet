@@ -70,6 +70,16 @@ export const PropertiesTabElements = ({
     newColumns[index] = column;
     props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
   };
+  const deleteOption = (option, optionIndex) => {
+    const columns = props.component.component.definition.properties.columns;
+    const column = columns.value[index];
+    const options = column.options;
+    options.splice(optionIndex, 1);
+    column.options = options;
+    const newColumns = columns.value;
+    newColumns[index] = column;
+    props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+  };
   const selectPopover = (option, optionIndex) => {
     const handleSelectOption = (option, optionIndex, value, index, optionItemChanged) => {
       const columns = props.component.component.definition.properties.columns;
@@ -213,10 +223,9 @@ export const PropertiesTabElements = ({
                                       data-cy={`column-${resolvedItemName}`}
                                       enableActionsMenu={false}
                                       // isEditable={item.isEditable === '{{true}}'}
-                                      // onMenuOptionClick={(listItem, menuOptionLabel) => {
-                                      //   if (menuOptionLabel === 'Delete')
-                                      //     this.removeColumn(index, `${item.name}-${index}`);
-                                      // }}
+                                      onMenuOptionClick={(listItem, menuOptionLabel) => {
+                                        if (menuOptionLabel === 'Delete') deleteOption(option, optionIndex);
+                                      }}
                                       darkMode={darkMode}
                                       // menuActions={[
                                       //   {
@@ -224,7 +233,7 @@ export const PropertiesTabElements = ({
                                       //     icon: '',
                                       //   },
                                       // ]}
-                                      // deleteIconOutsideMenu={true}
+                                      deleteIconOutsideMenu={true}
                                     />
                                   </div>
                                 </OverlayTrigger>
