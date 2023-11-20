@@ -154,7 +154,7 @@ export const AdminRoute = ({ children }) => {
         <Navigate
           to={{
             pathname: `/login${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`,
-            search: `?redirectTo=${location.pathname}`,
+            search: `?redirectTo=${excludeWorkspaceIdFromURL(location.pathname)}`,
             state: { from: location },
           }}
           replace
