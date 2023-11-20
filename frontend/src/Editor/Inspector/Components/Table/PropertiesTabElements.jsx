@@ -60,6 +60,16 @@ export const PropertiesTabElements = ({
     }
     await recordOptions(source.index, destination.index);
   };
+  const createNewOption = (newOptionIndex) => {
+    const columns = props.component.component.definition.properties.columns;
+    const column = columns.value[index];
+    const options = column.options;
+    options.push({ name: 'one', value: '1' });
+    column.options = options;
+    const newColumns = columns.value;
+    newColumns[index] = column;
+    props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+  };
   const selectPopover = (option, optionIndex) => {
     const handleSelectOption = (option, optionIndex, value, index, optionItemChanged) => {
       const columns = props.component.component.definition.properties.columns;
@@ -233,7 +243,7 @@ export const PropertiesTabElements = ({
           <div>
             {column?.options?.length === 0 && <NoListItem text={'There are no columns'} dataCy={`-columns`} />}
             <div>
-              <AddNewButton dataCy={`button-add-column`}>
+              <AddNewButton dataCy={`button-add-column`} onClick={() => createNewOption(column?.options?.length ?? 0)}>
                 {/* {this.props.t('widget.Table.addNewColumn', ' Add new column')} */}
                 Add new option
               </AddNewButton>
