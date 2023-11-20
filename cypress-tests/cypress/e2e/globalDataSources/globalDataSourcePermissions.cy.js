@@ -53,7 +53,7 @@ describe("Global Datasource Manager", () => {
         cy.get(commonSelectors.globalDataSourceIcon).click();
         cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
             "have.text",
-            "Data Sources"
+            "Data sources"
         );
         cy.get(dataSourceSelector.allDatasourceLabelAndCount).verifyVisibleElement(
             "have.text",
@@ -109,12 +109,12 @@ describe("Global Datasource Manager", () => {
             .should("eq", "Search Plugins");
 
         cy.get('[data-cy="added-ds-label"]').should(($el) => {
-            expect($el.contents().first().text().trim()).to.eq("Data Sources Added");
+            expect($el.contents().first().text().trim()).to.eq("Data sources added");
         });
         cy.get(dataSourceSelector.addedDsSearchIcon).should("be.visible").click();
         cy.get(dataSourceSelector.AddedDsSearchBar)
             .invoke("attr", "placeholder")
-            .should("eq", "Search for Data Sources");
+            .should("eq", "Search for Data sources");
 
         selectAndAddDataSource(
             "databases",
@@ -223,7 +223,7 @@ describe("Global Datasource Manager", () => {
 
         cy.get(".p-2 > .tj-base-btn")
             .should("be.visible")
-            .and("have.text", "+ Add new data source");
+            .and("have.text", "+ Add new Data source");
         cy.get(".p-2 > .tj-base-btn").click();
 
         selectAndAddDataSource(
@@ -299,12 +299,12 @@ describe("Global Datasource Manager", () => {
         verifyValueOnInspector("student_data", "8 items ");
     });
     it("Should verify the query creation and scope changing functionality.", () => {
+        data.appName = `${fake.companyName}-App`;
         logout();
         cy.apiLogin(data.email, "password");
         cy.visit('/')
-        cy.apiCreateApp();
+        cy.apiCreateApp(data.appName);
         cy.openApp();
-        cy.renameApp(data.appName);
         cy.dragAndDropWidget("Table", 250, 250);
 
         addQuery(

@@ -5,16 +5,20 @@ import { SourceOptions, QueryOptions } from './types';
 export default class SlackQueryService implements QueryService {
   authUrl(): string {
     const clientId = process.env.SLACK_CLIENT_ID;
-    const tooljetHost = process.env.TOOLJET_HOST;
-    return `https://slack.com/oauth/v2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${tooljetHost}/oauth2/authorize`;
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+    return `https://slack.com/oauth/v2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${fullUrl}oauth2/authorize`;
   }
 
   async accessDetailsFrom(authCode: string): Promise<object> {
     const accessTokenUrl = 'https://slack.com/api/oauth.v2.access';
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;
-    const tooljetHost = process.env.TOOLJET_HOST;
-    const redirectUri = `${tooljetHost}/oauth2/authorize`;
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+    const redirectUri = `${fullUrl}oauth2/authorize`;
 
     const body = `code=${authCode}&client_id=${clientId}&client_secret=${clientSecret}&redirect_uri=${redirectUri}`;
 

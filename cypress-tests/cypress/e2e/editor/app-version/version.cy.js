@@ -37,14 +37,19 @@ describe("App Version Functionality", () => {
   let currentVersion = "";
   let newVersion = [];
   let versionFrom = "";
-  beforeEach(() => {
-    cy.appUILogin();
+  before(() => {
+    cy.apiLogin();
+    cy.apiCreateApp(data.appName);
+    cy.logoutApi();
   });
+  beforeEach(() => {
+    cy.apiLogin();
+    cy.visit('/my-workspace')
+  })
 
   it("Verify the elements of the version module", () => {
-    cy.createApp();
+    navigateToAppEditor(data.appName);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.renameApp(data.appName);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "have.value",
       data.appName
@@ -104,6 +109,6 @@ describe("App Version Functionality", () => {
     createNewVersion((newVersion = ["v6"]), (versionFrom = "v3"));
 
     verifyVersionAfterPreview((currentVersion = "v6"));
-    cy.go("back");
+
   });
 });
