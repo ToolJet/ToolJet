@@ -220,13 +220,26 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         }
       }
 
+      let globalSettings = definition?.globalSettings;
+      if (!definition?.globalSettings) {
+        globalSettings = {
+          hideHeader: false,
+          appInMaintenance: false,
+          canvasMaxWidth: 100,
+          canvasMaxWidthType: '%',
+          canvasMaxHeight: 2400,
+          canvasBackgroundColor: '#edeff5',
+          backgroundFxQuery: '',
+        };
+      }
+
       await entityManager.update(
         AppVersion,
         { id: version.id },
         {
           homePageId: updateHomepageId,
           showViewerNavigation: definition?.showViewerNavigation || true,
-          globalSettings: definition.globalSettings,
+          globalSettings: globalSettings,
         }
       );
 
