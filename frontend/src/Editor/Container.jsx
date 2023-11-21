@@ -407,31 +407,46 @@ export const Container = ({
   };
 
   function onDragStop2(boxPositions) {
-    const updatedBoxes = boxPositions.reduce(
-      (boxesObj, { id, x, y, parent }) => ({
+    const updatedBoxes = boxPositions.reduce((boxesObj, { id, x, y, parent }) => {
+      let _width = boxes[id]['layouts'][currentLayout].width;
+      const containerWidth = parent ? subContainerWidths[parent] : gridWidth;
+      if (parent !== boxes[id]['component']?.parent) {
+        if (boxes[id]['component']?.parent) {
+          _width = Math.round(
+            (boxes[id]['layouts'][currentLayout].width * subContainerWidths[boxes[id]['component']?.parent]) /
+              containerWidth
+          );
+        } else {
+          _width = Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / containerWidth);
+        }
+      }
+      if (_width === 0) {
+        _width = 1;
+      }
+      return {
         ...boxesObj,
         [id]: {
           ...boxes[id],
           component: {
             ...boxes[id]['component'],
-            parent: parent ? parent : boxes[id]['component']?.parent,
+            parent: parent,
           },
           layouts: {
             ...boxes[id]['layouts'],
             [currentLayout]: {
               ...boxes[id]['layouts'][currentLayout],
               // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
-              width: parent
-                ? Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / subContainerWidths[parent])
-                : boxes[id]['layouts'][currentLayout].width,
+              // width: parent
+              //   ? Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / subContainerWidths[parent])
+              //   : boxes[id]['layouts'][currentLayout].width,
+              width: _width,
               top: y,
               left: Math.round(x / (parent ? subContainerWidths[parent] : gridWidth)),
             },
           },
         },
-      }),
-      {}
-    );
+      };
+    }, {});
     let newBoxes = {
       ...boxes,
       ...updatedBoxes,
@@ -836,6 +851,7 @@ export const Container = ({
         selectedComponents={selectedComponents}
         setIsDragging={setIsDragging}
         currentLayout={currentLayout}
+        subContainerWidths={subContainerWidths}
       />
       {/* {Object.keys(boxes).map((key) => {
         const box = boxes[key];

@@ -36,11 +36,13 @@ export default function DragContainer({
   selectedComponents = [],
   setIsDragging,
   currentLayout,
+  subContainerWidths,
 }) {
   const [dragTarget, setDragTarget] = useState();
   const [draggedTarget, setDraggedTarget] = useState();
   const moveableRef = useRef();
-  const [movableTargets, setMovableTargets] = useState([]);
+  const childMoveableRefs = useRef([]);
+  const [movableTargets, setMovableTargets] = useState({});
   const [isChildDragged, setIsChildDragged] = useState(false);
   const boxList = boxes.map((box) => ({
     id: box.id,
@@ -61,6 +63,13 @@ export default function DragContainer({
     moveableRef.current.updateRect();
     moveableRef.current.updateTarget();
     moveableRef.current.updateSelectors();
+    for (let refObj of Object.values(childMoveableRefs.current)) {
+      if (refObj) {
+        refObj.updateRect();
+        refObj.updateTarget();
+        refObj.updateSelectors();
+      }
+    }
     setTimeout(reloadGrid, 100);
   }, [JSON.stringify(selectedComponents), JSON.stringify(boxes)]);
 
@@ -75,6 +84,13 @@ export default function DragContainer({
       moveableRef.current.updateRect();
       moveableRef.current.updateTarget();
       moveableRef.current.updateSelectors();
+    }
+    for (let refObj of Object.values(childMoveableRefs.current)) {
+      if (refObj) {
+        refObj.updateRect();
+        refObj.updateTarget();
+        refObj.updateSelectors();
+      }
     }
   };
 
@@ -123,6 +139,8 @@ export default function DragContainer({
 
   const groupedTargets = [...selectedComponents.map((component) => '.ele-' + component.id)];
 
+  console.log('groupedTargets-->', groupedTargets);
+
   return (
     <div className="root">
       <div className="container rm-container p-0">
@@ -136,7 +154,10 @@ export default function DragContainer({
               key={i.id}
               id={i.id}
               widgetid={i.id}
-              style={{ transform: `translate(332px, -134px)`, ...getDimensions(i.id) }}
+              style={{
+                transform: `translate(332px, -134px)`,
+                ...getDimensions(i.id),
+              }}
               // onMouseEnter={(e) => {
               //   try {
               //     // console.log('onMouseEnter', e.target);
@@ -177,7 +198,8 @@ export default function DragContainer({
           flushSync={flushSync}
           // target={movableTargets}
           // target={'.move-target'}
-          target={isChildDragged ? 'nothing1' : groupedTargets.length ? [...groupedTargets] : ['.widget-target']}
+          // target={isChildDragged ? 'nothing1' : groupedTargets.length ? [...groupedTargets] : ['.widget-target']}
+          target={groupedTargets.length ? [...groupedTargets] : '.widget-target'}
           // hideDefaultLines
           origin={false}
           // hideChildMoveableDefaultLines={false}
@@ -431,17 +453,140 @@ export default function DragContainer({
           //snap settgins
           snappable={true}
           // snapDirections={{ top: true, left: true, bottom: true, right: true }}
-          snapDirections={{ top: true, left: true, bottom: true, right: true, center: true, middle: true }}
-          elementSnapDirections={{ top: true, left: true, bottom: true, right: true, center: true, middle: true }}
+          snapDirections={{
+            top: true,
+            left: true,
+            bottom: true,
+            right: true,
+            center: true,
+            middle: true,
+          }}
+          elementSnapDirections={{
+            top: true,
+            left: true,
+            bottom: true,
+            right: true,
+            center: true,
+            middle: true,
+          }}
           snapThreshold={5}
           elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}` }))}
           isDisplaySnapDigit={false}
           snapGridWidth={gridWidth}
+          stopPropagation={true}
           // snapGridHeight={10}
           // verticalGuidelines={[50, 150, 250, 450, 550]}
           // horizontalGuidelines={[0, 100, 200, 400, 500]}
         />
+
+        {removeDuplicates(list)
+          .filter((i) => !isEmpty(i.parent))
+          .map((i) => (
+            <Moveable
+              key={i.parent}
+              ref={(el) => (childMoveableRefs.current[i.id] = el)}
+              target={`.target-${i.parent}`}
+              draggable={true}
+              resizable
+              stopPropagation={true}
+              origin={false}
+              individualGroupable={true}
+              // onDragStart={(e) => {
+              //   // console.log("Draggingstart => ", e);
+              // }}
+              onDrag={(e) => {
+                e.target.style.transform = e.transform;
+              }}
+              onDragEnd={(e) => {
+                const { lastEvent, clientX, clientY } = e;
+                let {
+                  translate: [left, top],
+                } = lastEvent;
+                console.log('onDragEnd', subContainerWidths, subContainerWidths[i.parent]);
+                // if (parentElem) {
+                // left = left - parentElem.left * gridWidth;
+                // top = top - parentElem.top;
+                // } else {
+                e.target.style.transform = `translate(${
+                  Math.round(left / subContainerWidths[i.parent]) * subContainerWidths[i.parent]
+                }px, ${Math.round(top / 10) * 10}px)`;
+                // }
+
+                let draggedOverElemId = i.parent;
+                if (document.elementFromPoint(e.clientX, e.clientY)) {
+                  const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+                  console.log(
+                    'draggedOverElem - list',
+                    targetElems.find(
+                      (ele) =>
+                        ele.id !== e.target.id &&
+                        (ele.classList.contains('target') || ele.classList.contains('nested-target'))
+                    )
+                  );
+                  const draggedOverElem = targetElems.find(
+                    (ele) =>
+                      ele.id !== e.target.id &&
+                      (ele.classList.contains('target') || ele.classList.contains('nested-target'))
+                  );
+                  setDragTarget(draggedOverElem?.id);
+                  draggedOverElemId = draggedOverElem?.id;
+                  console.log('draggedOverElem', draggedOverElem, draggedOverElemId);
+                  if (draggedOverElemId !== i.parent) {
+                    const newParentElem = list[draggedOverElemId]?.layouts?.desktop;
+                    let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
+                    left = _left;
+                    top = _top;
+                  }
+                }
+
+                const _x = draggedOverElemId
+                  ? Math.round(left / subContainerWidths[draggedOverElemId]) * subContainerWidths[draggedOverElemId]
+                  : Math.round(left / gridWidth) * gridWidth;
+                onDrag([
+                  {
+                    id: e.target.id,
+                    x: _x,
+                    y: Math.round(top / 10) * 10,
+                    parent: draggedOverElemId,
+                  },
+                ]);
+              }}
+            />
+          ))}
       </div>
     </div>
   );
+}
+
+function getMouseDistanceFromParentDiv(event, id) {
+  // Get the parent div element.
+  const parentDiv = id ? document.getElementById(id) : document.getElementsByClassName('real-canvas')[0];
+
+  // Get the bounding rectangle of the parent div.
+  const parentDivRect = parentDiv.getBoundingClientRect();
+  const targetDivRect = event.target.getBoundingClientRect();
+
+  // Get the mouse position relative to the parent div.
+  // const mouseX = event.clientX - parentDivRect.left;
+  // const mouseY = event.clientYl- parentDivRect.top;
+
+  const mouseX = targetDivRect.left - parentDivRect.left;
+  const mouseY = targetDivRect.top - parentDivRect.top;
+
+  // Calculate the distance from the mouse pointer to the top and left edges of the parent div.
+  const top = mouseY;
+  const left = mouseX;
+
+  return { top, left };
+}
+
+function removeDuplicates(arr) {
+  const unique = arr
+    .map((e) => e['parent'])
+    .map((e, i, final) => final.indexOf(e) === i && i)
+    .filter((e) => arr[e])
+    .map((e) => arr[e]);
+
+  // debugger;
+  return unique;
 }

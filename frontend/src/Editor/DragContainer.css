@@ -22,3 +22,7 @@
 .moveable-control-box>.moveable-control-box:hover, .moveable-control-box>.moveable-dragging{
 	visibility: visible !important;
 }
+
+.moveable-control-box {
+	background: red;
+}

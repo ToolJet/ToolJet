@@ -44,7 +44,7 @@ export default function DragContainerNested({
   }, [boxes?.length]);
 
   useEffect(() => {
-    moveableRef.current.updateRect();
+    // moveableRef.current.updateRect();
   }, [...Object.values(parentLayout), boxes?.length, activeGrid]);
 
   // const [isChildDragged, setIsChildDragged] = useState(false);
@@ -80,17 +80,8 @@ export default function DragContainerNested({
             {renderWidget(i.id)}
           </div>
         ))}
-        {/* <div className="target target1">
-          <DragContainerNested setIsChildDragged={setIsChildDragged} />
-        </div> */}
-        {/* <div className="target target1">
-          Target12
-          <input type="text" />
-        </div> */}
-        {/* <div className="target target1">Target1</div>
-        <div className="target target2">Target2</div>
-        <div className="target target3">Target3</div> */}
-        <Moveable
+
+        {/* <Moveable
           ref={moveableRef}
           target={`.target-${parent}`}
           origin={false}
@@ -153,11 +144,6 @@ export default function DragContainerNested({
             console.log('debugger====>', e, parent);
             setActiveGrid(null);
             setIsChildDragged(false);
-            // if (!isChildDragged) {
-            // e.target.style.transform = `translate(${Math.round(e.translate[0] / gridWidth) * gridWidth}px, ${
-            //   Math.round(e.translate[1] / 10) * 10
-            // }px)`;
-            // }
 
             let draggedOverElemId;
             if (document.elementFromPoint(e.clientX, e.clientY)) {
@@ -173,10 +159,6 @@ export default function DragContainerNested({
             let left = e.lastEvent.translate[0];
             let top = e.lastEvent.translate[1];
             console.log('draggedOverElemId child', draggedOverElemId, parent);
-            // if (!draggedOverElemId) {
-            //   left = left + parentLayout.left * (parentGridWidth / 24);
-            //   top = top + parentLayout.top;
-            // }
 
             if (draggedOverElemId !== parent) {
               left = left + parentLayout.left * parentGridWidth;
@@ -184,8 +166,6 @@ export default function DragContainerNested({
               if (draggedOverElemId) {
                 const newParentElem = allComponents[draggedOverElemId]?.layouts?.desktop;
                 let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
-                // left = left - newParentElem.left * parentGridWidth;
-                // top = top - newParentElem.top;
                 left = _left;
                 top = _top;
               }
@@ -196,9 +176,7 @@ export default function DragContainerNested({
           snapDirections={{ top: true, left: true, bottom: true, right: true }}
           snapThreshold={5}
           elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}` }))}
-          // verticalGuidelines={[50, 150, 250, 450, 550]}
-          // horizontalGuidelines={[0, 100, 200, 400, 500]}
-        />
+        /> */}
       </div>
     </div>
   );
