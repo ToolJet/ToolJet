@@ -1,1 +1,1 @@
-export * from './AppLoader';
+export { AppLoader } from './AppLoader';

@@ -1,35 +1,38 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 // eslint-disable-next-line no-unused-vars
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
-import { authenticationService, tooljetService } from '@/_services';
-import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute } from '@/_components';
-import { HomePage } from '@/HomePage';
-import { LoginPage } from '@/LoginPage';
-import { SignupPage } from '@/SignupPage';
-import { TooljetDatabase } from '@/TooljetDatabase';
-import { OrganizationInvitationPage } from '@/ConfirmationPage';
-import { Authorize } from '@/Oauth2';
-import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
-import { OrganizationSettings } from '@/OrganizationSettingsPage';
-import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { ForgotPassword } from '@/ForgotPassword';
-import { ResetPassword } from '@/ResetPassword';
-import { MarketplacePage } from '@/MarketplacePage';
-import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
-import { GlobalDatasources } from '@/GlobalDatasources';
-import { lt } from 'semver';
-import Toast from '@/_ui/Toast';
-import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
-import '@/_styles/theme.scss';
-import { AppLoader } from '@/AppLoader';
-import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
-export const BreadCrumbContext = React.createContext({});
-import 'react-tooltip/dist/react-tooltip.css';
-import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
+import { AdminRoute, PrivateRoute } from '@/_components';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import { authorizeWorkspace } from '@/_helpers/authorizeWorkspace';
+import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
+import { withRouter } from '@/_hoc/withRouter';
+import { authenticationService, tooljetService } from '@/_services';
+import '@/_styles/theme.scss';
+import Toast from '@/_ui/Toast';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import 'react-tooltip/dist/react-tooltip.css';
+import { lt } from 'semver';
+export const BreadCrumbContext = React.createContext({});
+
+// Lazy-loaded components
+const HomePage = lazy(() => import('@/HomePage'));
+const LoginPage = lazy(() => import('@/LoginPage'));
+const SignupPage = lazy(() => import('@/SignupPage'));
+const TooljetDatabase = lazy(() => import('@/TooljetDatabase'));
+const OrganizationInvitationPage = lazy(() => import('@/ConfirmationPage'));
+const Authorize = lazy(() => import('@/Oauth2'));
+const Oauth = lazy(() => import('@/Oauth'));
+// const Viewer = lazy(() => import('@/Editor'));
+const OrganizationSettings = lazy(() => import('@/OrganizationSettingsPage'));
+const SettingsPage = lazy(() => import('../SettingsPage'));
+const ForgotPassword = lazy(() => import('@/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/ResetPassword'));
+const MarketplacePage = lazy(() => import('@/MarketplacePage'));
+const SwitchWorkspacePage = lazy(() => import('@/HomePage/SwitchWorkspacePage'));
+const GlobalDatasources = lazy(() => import('@/GlobalDatasources'));
+const VerificationSuccessInfoScreen = lazy(() => import('@/SuccessInfoScreen'));
+const AppLoader = lazy(() => import('@/AppLoader'));
+const SetupScreenSelfHost = lazy(() => import('../SuccessInfoScreen/SetupScreenSelfHost'));
 
 const AppWrapper = (props) => {
   return (

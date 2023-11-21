@@ -1,1 +1,1 @@
-export * from './Authorize';
+export { Authorize } from './Authorize';
