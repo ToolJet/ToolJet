@@ -87,7 +87,8 @@ export default function DragContainerNested({
         {/* <div className="target target1">Target1</div>
         <div className="target target2">Target2</div>
         <div className="target target3">Target3</div> */}
-        <Moveable
+
+        {/* <Moveable
           ref={moveableRef}
           target={`.target-${parent}`}
           origin={false}
@@ -189,7 +190,7 @@ export default function DragContainerNested({
           elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}` }))}
           // verticalGuidelines={[50, 150, 250, 450, 550]}
           // horizontalGuidelines={[0, 100, 200, 400, 500]}
-        />
+        /> */}
       </div>
     </div>
   );
