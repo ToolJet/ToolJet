@@ -96,6 +96,7 @@
     "react-virtuoso": "^4.1.0",
     "react-zoom-pan-pinch": "^2.6.1",
     "rxjs": "^7.8.0",
+    "sass": "^1.69.5",
     "semver": "^7.3.8",
     "superstruct": "^1.0.3",
     "tinycolor2": "^1.6.0",
@@ -151,6 +152,7 @@
     "style-loader": "^3.3.1",
     "terser-webpack-plugin": "^5.3.6",
     "webpack": "^5.75.0",
+    "webpack-bundle-analyzer": "^4.10.1",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1",
     "workbox-webpack-plugin": "^7.0.0"

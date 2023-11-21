@@ -10,6 +10,7 @@ const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 const { InjectManifest } = require("workbox-webpack-plugin");
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -23,31 +24,48 @@ const ASSET_PATH = process.env.ASSET_PATH || '';
 function stripTrailingSlash(str) {
   return str.replace(/[/]+$/, '');
 }
+const isProd = true;// environment === 'production'; // Define this at the start of your webpack.config.js
 
 module.exports = {
   mode: environment,
   optimization: {
-    minimize: environment === 'production',
+    minimize: isProd,
     usedExports: true,
     runtimeChunk: 'single',
     minimizer: [
-      new TerserPlugin({
-        minify: TerserPlugin.esbuildMinify,
-        terserOptions: {
-          ...(environment === 'production' && { drop: ['debugger'] }),
-        },
-        parallel: environment === 'production',
-      }),
+        new TerserPlugin({
+            terserOptions: {
+              compress: {
+                drop_console: true, // Removes console statements
+                drop_debugger: true // Removes debugger statements
+              },
+              // include any other terser options you need
+            },
+            parallel: true, // Use multi-process parallel running to improve the build speed
+          }),
     ],
     splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 20, // Increase for more parallel downloads
+      maxAsyncRequests: 20,
+    //   minSize: 250000, // Adjust this value as per your requirement
+    //   maxSize: 500000, // This can split larger chunks
       cacheGroups: {
         vendors: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendor',
           chunks: 'all',
         },
+        common: {
+          name: 'common',
+          minChunks: 2,
+          priority: -10,
+          reuseExistingChunk: true,
+        },
       },
     },
+    moduleIds: 'deterministic',
+    chunkIds: 'deterministic',
   },
   target: 'web',
   resolve: {
@@ -142,6 +160,7 @@ module.exports = {
     ],
   },
   plugins: [
+    new BundleAnalyzerPlugin(),
     new HtmlWebpackPlugin({
       template: './src/index.ejs',
       favicon: './assets/images/logo.svg',
@@ -156,12 +175,7 @@ module.exports = {
       'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
       'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
     }),
-    new InjectManifest({
-        swSrc: "./src/ServiceWorker/index.jsx",
-        swDest: "./service-worker.js",
-        exclude: [/\.(map)$/, /asset-manifest\.json$/],
-        include: [/\.html$/, /\.js$/, /\.css$/, /\.png$/, /\.jpg$/, /\.jpeg$/, /\.gif$/, /\.svg$/, /\.woff$/, /\.woff2$/, /\.ttf$/, /\.eot$/]
-      }),
+
     // Add Sentry plugin for error and performance monitoring
     sentryWebpackPlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
