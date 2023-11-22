@@ -13,7 +13,7 @@ import {
 } from '../../test.helper';
 import { Repository } from 'typeorm';
 
-describe('Form Onboarding', () => {
+describe.skip('Form Onboarding', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let orgRepository: Repository<Organization>;

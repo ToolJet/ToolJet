@@ -20,4 +20,11 @@ export class VersionEditDto {
   @IsOptional()
   @IsBoolean()
   is_user_switched_version: boolean;
+
+  @IsOptional()
+  diff: any;
+
+  @IsOptional()
+  @IsString()
+  pageId: string;
 }

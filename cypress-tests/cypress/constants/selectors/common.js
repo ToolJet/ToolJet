@@ -225,6 +225,7 @@ export const commonSelectors = {
   workspaceConstantsOption: '[data-cy="workspace-constants-list-item"]',
   nameErrorText: '[data-cy="name-error-text"]',
   valueErrorText: '[data-cy="value-error-text"]',
+  releaseButton: '[data-cy="button-release"]',
 };
 
 export const commonWidgetSelector = {
@@ -327,10 +328,10 @@ export const commonWidgetSelector = {
     modalHeader: '[data-cy="modal-header"]',
     makePublicAppToggleLabel: '[data-cy="make-public-app-label"]',
     shareableAppLink: '[data-cy="shareable-app-link-label"]',
-    copyAppLinkButton: '[data-cy="copy-app-link-button"]',
     // iframeLinkLabel: '[data-cy="iframe-link-label"]',
     // ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
   },
+  copyAppLinkButton: '.input-group > :nth-child(3)',
   makePublicAppToggle: '[data-cy="make-public-app-toggle"]',
   appLink: '[data-cy="app-link"]',
   appNameSlugInput: '[data-cy="app-name-slug-input"]',
