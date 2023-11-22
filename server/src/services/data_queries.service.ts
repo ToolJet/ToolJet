@@ -15,6 +15,7 @@ import { App } from 'src/entities/app.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
+import { EventHandler } from 'src/entities/event_handler.entity';
 
 @Injectable()
 export class DataQueriesService {
@@ -74,7 +75,19 @@ export class DataQueriesService {
   }
 
   async delete(dataQueryId: string) {
+    await this.deleteDataQueryEvents(dataQueryId);
+
     return await this.dataQueriesRepository.delete(dataQueryId);
+  }
+
+  async deleteDataQueryEvents(dataQueryId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const allEvents = await manager.find(EventHandler, {
+        where: { sourceId: dataQueryId },
+      });
+
+      return await manager.remove(allEvents);
+    });
   }
 
   async update(dataQueryId: string, name: string, options: object): Promise<DataQuery> {
