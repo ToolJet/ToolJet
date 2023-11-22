@@ -21,12 +21,14 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     const appVersions = await appVersionRepository.find();
     const totalVersions = appVersions.length;
 
+    const startTime = new Date().getTime();
+
     const migrationProgress = new MigrationProgress(
       'MigrateAppsDefinitionSchemaTransition1697473340856',
       totalVersions
     );
 
-    const batchSize = 100; // Number of apps to migrate at a time
+    const batchSize = 10; // Number of apps to migrate at a time
 
     await processDataInBatches(
       entityManager,
@@ -42,6 +44,10 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       },
       batchSize
     );
+
+    const endTime = new Date().getTime();
+
+    console.log(`Migration time taken: ${(endTime - startTime) / 1000} seconds`);
   }
 
   private async processVersions(
