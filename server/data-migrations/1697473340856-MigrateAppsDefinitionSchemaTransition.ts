@@ -28,13 +28,16 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       totalVersions
     );
 
-    const batchSize = 10; // Number of apps to migrate at a time
+    const batchSize = 100; // Number of apps to migrate at a time
 
     await processDataInBatches(
       entityManager,
       async (entityManager: EntityManager, skip: number, take: number) => {
         return entityManager.find(AppVersion, {
           where: { id: In(appVersions.map((appVersion) => appVersion.id)) },
+          order: {
+            createdAt: 'ASC',
+          },
           take,
           skip,
         });
