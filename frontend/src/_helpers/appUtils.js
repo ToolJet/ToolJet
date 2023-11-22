@@ -1944,8 +1944,18 @@ export const buildAppDefinition = (data) => {
     return acc;
   }, {});
 
+  const defaultGlobalSettings = {
+    hideHeader: false,
+    appInMaintenance: false,
+    canvasMaxWidth: 100,
+    canvasMaxWidthType: '%',
+    canvasMaxHeight: 2400,
+    canvasBackgroundColor: '#edeff5',
+    backgroundFxQuery: '',
+  };
+
   const appJSON = {
-    globalSettings: editingVersion.globalSettings,
+    globalSettings: editingVersion.globalSettings ?? defaultGlobalSettings,
     homePageId: editingVersion.homePageId,
     showViewerNavigation: editingVersion.showViewerNavigation ?? true,
     pages: pages,
