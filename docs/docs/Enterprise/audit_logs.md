@@ -96,6 +96,18 @@ The dropdown will display all the apps associated with your account. Select an a
 
 The log file can be created by specifying the path in the [environment variables](/docs/setup/env-vars) . The file will contain all the data from audit logs. The file will be updated every time a new audit log is created.
 
+#### Log Rotation
+
+The log file is configured to rotate on a daily basis. This means that a new log file will be created every day, ensuring efficient management and organization of audit data.
+
+#### Log File Path
+
+The path for the log file is defined using the `LOG_FILE_PATH` variable in the environment. It's important to understand that this path is relative to the home directory of the machine. For instance, if `LOG_FILE_PATH` is set to `hsbc/dashboard/log`, the resulting log file path will be structured as follows:
+```
+homepath/hsbc/dashboard/log/tooljet_log/{process_id}-{date}/audit.log
+```
+Here, `{process_id}` is a placeholder for the unique process identifier, and `{date}` represents the current date. This structured path ensures that audit logs are organized by both process and date, facilitating easy traceability and analysis.
+
 | Variable | Description                                                                 |
 | -------- | --------------------------------------------------------------------------- |
 | LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
