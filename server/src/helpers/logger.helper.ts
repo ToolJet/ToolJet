@@ -1,5 +1,7 @@
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
+const path = require('path');
+const os = require('os');
 
 export const auditlog = winston.format((info, opt) => {
   info.auditLog = info.options;
@@ -10,15 +12,12 @@ export const auditlog = winston.format((info, opt) => {
 const logForm = winston.format.printf((info) => `${info.timestamp} ${info.level} [${info.label}]: ${info.message}`);
 
 export const logfileTransportConfig = (filePath, processId) => {
-  let logPath = filePath;
-  if (!logPath.endsWith('.log')) {
-    logPath += '.log';
-  }
+  const absoluteLogDir = path.join(os.homedir(), filePath, 'tooljet_log');
   const transport = new winston.transports.DailyRotateFile({
-    filename: `${logPath}`,
+    filename: `audit.log`,
     level: 'info',
     zippedArchive: false,
-    dirname: `tooljet/log/${processId}-%DATE%`,
+    dirname: `${absoluteLogDir}/${processId}-%DATE%`,
     datePattern: 'YYYY-MM-DD',
     format: winston.format.combine(winston.format.prettyPrint()),
   });

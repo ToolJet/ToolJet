@@ -249,13 +249,28 @@ class AppComponent extends React.Component {
               >
                 <Route
                   path="users"
-                  element={<ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
                 <Route
                   path="groups"
-                  element={<ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
-                <Route path="sso" element={<ManageSSO switchDarkMode={this.switchDarkMode} darkMode={darkMode} />} />
+                <Route
+                  path="sso"
+                  element={
+                    <AdminRoute>
+                      <ManageSSO switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
                 <Route
                   path="workspace-variables"
                   element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
@@ -272,7 +287,11 @@ class AppComponent extends React.Component {
                 />
                 <Route
                   path="custom-styles"
-                  element={<CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
               </Route>
               <Route
