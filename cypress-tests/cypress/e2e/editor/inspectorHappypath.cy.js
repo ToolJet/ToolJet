@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import {
   verifyMultipleComponentValuesFromInspector,
   verifyComponentValueFromInspector,
@@ -15,7 +16,7 @@ import { multipageSelector } from "Selectors/multipage";
 describe("Editor- Inspector", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
   });
 
@@ -129,7 +130,7 @@ describe("Editor- Inspector", () => {
     verifyValue("key", "String", `"value"`);
 
     cy.get(`[data-cy="inspector-node-key"] > .mx-1`).realHover();
-    cy.get("[data-cy='copy-icon']").realClick();
+    cy.get('[data-cy="copy-path-to-clipboard"]').realClick();
     cy.realPress("Escape");
 
     cy.window().then((win) => {
@@ -138,10 +139,8 @@ describe("Editor- Inspector", () => {
       });
     });
 
-    cy.get(".action-icons-group > .d-flex > :nth-child(2)").click();
-    cy.get(".list-group-item").click();
+    cy.get('[data-cy="copy-value-to-clicpboard"]').realClick();
     cy.realPress("Escape");
-
     cy.window().then((win) => {
       win.navigator.clipboard.readText().then((text) => {
         expect(text).to.eq(`"value"`);

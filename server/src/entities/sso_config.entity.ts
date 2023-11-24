@@ -35,6 +35,11 @@ type LDAP = {
   };
   basedn: string;
 };
+type SAML = {
+  name: string;
+  idpMetadata: string;
+  groupAttribute: string;
+};
 
 @Entity({ name: 'sso_configs' })
 export class SSOConfigs {
@@ -45,10 +50,10 @@ export class SSOConfigs {
   organizationId: string;
 
   @Column({ name: 'sso' })
-  sso: 'google' | 'git' | 'form' | 'openid' | 'ldap';
+  sso: 'google' | 'git' | 'form' | 'openid' | 'ldap' | 'saml';
 
   @Column({ type: 'json' })
-  configs: Google | Git | OpenId | LDAP;
+  configs: Google | Git | OpenId | LDAP | SAML;
 
   @Column({ name: 'enabled' })
   enabled: boolean;

@@ -1,16 +1,16 @@
 import React from 'react';
 import {
-  appService,
+  appsService,
   authenticationService,
   appVersionService,
   orgEnvironmentVariableService,
   customStylesService,
   orgEnvironmentConstantService,
+  licenseService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
-import { shallow } from 'zustand/shallow';
+import _, { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -63,6 +63,8 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
 import { resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
+import { shallow } from 'zustand/shallow';
+import { getQueryParams } from '@/_helpers/routes';
 
 setAutoFreeze(false);
 enablePatches();
@@ -70,20 +72,16 @@ enablePatches();
 class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
+
     resetAllStores();
-    const appId = this.props.params.id;
+    const appId = props.id;
     useAppDataStore.getState().actions.setAppId(appId);
     useEditorStore.getState().actions.setIsEditorActive(true);
     const { socket } = createWebsocketConnection(appId);
-
-    this.renameQueryNameId = React.createRef();
-
     this.socket = socket;
-
+    this.renameQueryNameId = React.createRef();
     const defaultPageId = uuid();
-
     this.subscription = null;
-
     this.defaultDefinition = {
       showViewerNavigation: true,
       homePageId: defaultPageId,
@@ -139,6 +137,12 @@ class EditorComponent extends React.Component {
     this.shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
   }
 
+  fetchFeatureAccesss = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      this.setState({ featureAccess: data });
+    });
+  };
+
   setWindowTitle(name) {
     document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `My App - ${retrieveWhiteLabelText()}`;
   }
@@ -193,6 +197,7 @@ class EditorComponent extends React.Component {
     await this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
+    this.fetchFeatureAccesss();
     this.setCurrentAppEnvironmentId();
     this.fetchApp(this.props.params.pageHandle);
     await this.fetchOrgEnvironmentVariables();
@@ -209,7 +214,6 @@ class EditorComponent extends React.Component {
         threshold: 0,
       },
     });
-
     const globals = {
       ...this.props.currentState.globals,
       theme: { name: this.props.darkMode ? 'dark' : 'light' },
@@ -274,21 +278,20 @@ class EditorComponent extends React.Component {
   };
 
   fetchAndInjectCustomStyles = async () => {
-    const head = document.head || document.getElementsByTagName('head')[0];
-    let styleTag = document.getElementById('workspace-custom-css');
-    if (!styleTag) {
-      // If it doesn't exist, create a new style tag and append it to the head
-      styleTag = document.createElement('style');
-      styleTag.type = 'text/css';
-      styleTag.id = 'workspace-custom-css';
-      head.appendChild(styleTag);
-    }
     try {
-      const data = await customStylesService.get(false);
-      styleTag.innerHTML = data.css;
+      const head = document.head || document.getElementsByTagName('head')[0];
+      let styleTag = document.getElementById('workspace-custom-css');
+      if (!styleTag) {
+        // If it doesn't exist, create a new style tag and append it to the head
+        styleTag = document.createElement('style');
+        styleTag.type = 'text/css';
+        styleTag.id = 'workspace-custom-css';
+        head.appendChild(styleTag);
+      }
+      const data = await customStylesService.getForAppViewerEditor(false);
+      styleTag.innerHTML = data?.css || null;
     } catch (error) {
       console.log('Failed to fetch custom styles:', error);
-      styleTag.innerHTML = null;
     }
   };
 
@@ -369,7 +372,7 @@ class EditorComponent extends React.Component {
     const newState = !this.state.app.is_maintenance_on;
 
     // eslint-disable-next-line no-unused-vars
-    appService.setMaintenance(this.state.app.id, newState).then((data) => {
+    appsService.setMaintenance(this.state.app.id, newState).then((data) => {
       this.setState({
         app: {
           ...this.state.app,
@@ -386,7 +389,7 @@ class EditorComponent extends React.Component {
   };
 
   fetchApps = (page) => {
-    appService.getAll(page).then((data) =>
+    appsService.getAll(page, '', '', 'front-end').then((data) =>
       this.setState({
         apps: data.apps,
       })
@@ -400,7 +403,7 @@ class EditorComponent extends React.Component {
   };
 
   fetchApp = (startingPageHandle) => {
-    const appId = this.props.params.id;
+    const appId = this.props.id;
 
     const callBack = async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
@@ -443,6 +446,7 @@ class EditorComponent extends React.Component {
           variables: {},
         },
       });
+      this.fetchOrgEnvironmentConstants(data.editing_version?.current_environment_id);
       await this.getStoreData(data.editing_version?.id, data.editing_version?.current_environment_id);
 
       initEditorWalkThrough();
@@ -456,7 +460,7 @@ class EditorComponent extends React.Component {
         isLoading: true,
       },
       () => {
-        appService.getApp(appId).then(callBack);
+        appsService.getApp(appId).then(callBack);
       }
     );
   };
@@ -937,9 +941,7 @@ class EditorComponent extends React.Component {
   handleQueryPaneExpanding = (isQueryPaneExpanded) => this.setState({ isQueryPaneExpanded });
 
   saveEditingVersion = (isUserSwitchedVersion = false) => {
-    if (this.props.isVersionReleased && !isUserSwitchedVersion) {
-      useAppDataStore.getState().actions.setIsSaving(false);
-    } else if (!isEmpty(this.props?.editingVersion) && !this.state.isCurrentVersionPromoted) {
+    const callback = () => {
       appVersionService
         .save(
           this.state.appId,
@@ -968,6 +970,14 @@ class EditorComponent extends React.Component {
             toast.error('App could not save.');
           });
         });
+    };
+    if (this.props.isVersionReleased && !isUserSwitchedVersion) {
+      useAppDataStore.getState().actions.setIsSaving(false);
+    } else if (!isEmpty(this.props?.editingVersion) && !this.state.isCurrentVersionPromoted) {
+      callback();
+    } else if (!isEmpty(this.props?.editingVersion)) {
+      useAppDataStore.getState().actions.setIsSaving(false);
+      if (isUserSwitchedVersion) callback();
     }
   };
 
@@ -1068,6 +1078,7 @@ class EditorComponent extends React.Component {
     });
     this.setState(
       {
+        currentAppEnvironment: currentAppEnvironment,
         currentAppEnvironmentId: currentAppEnvironment?.id,
       },
       () => {
@@ -1308,7 +1319,8 @@ class EditorComponent extends React.Component {
       },
       () => {
         toast.success('Page handle updated successfully');
-        this.switchPage(pageId);
+        const queryParams = getQueryParams();
+        this.switchPage(pageId, Object.entries(queryParams));
         this.autoSave();
       }
     );
@@ -1471,7 +1483,11 @@ class EditorComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.slug}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
 
     const { globals: existingGlobals } = this.props.currentState;
 
@@ -1585,12 +1601,20 @@ class EditorComponent extends React.Component {
       defaultComponentStateComputed,
       queryConfirmationList,
       currentAppEnvironmentId,
+      currentAppEnvironment,
     } = this.state;
     const selectedComponents = this?.props?.selectedComponents;
     const currentState = this.props?.currentState;
     const editingVersion = this.props?.editingVersion;
+    //TODO-url: replace env-id with env name
+    const previewQuery = queryString.stringify({
+      version: editingVersion?.name,
+      ...(this.state?.featureAccess?.multiEnvironment ? { env: currentAppEnvironment?.name } : {}),
+    });
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${app.id}/versions/${editingVersion.id}/environments/${this.state.currentAppEnvironmentId}/${currentState.page.handle}`
+      ? `/applications/${slug || appId}/${currentState.page.handle}${
+          !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
+        }`
       : '';
     return (
       <div className="editor wrapper">
@@ -1688,6 +1712,8 @@ class EditorComponent extends React.Component {
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
+                slug={slug}
+                handleSlugChange={this.handleSlugChange}
               />
 
               {!this.props.showComments && (

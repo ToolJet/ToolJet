@@ -11,6 +11,8 @@ import {
   Body,
   BadRequestException,
   UseInterceptors,
+  NotFoundException,
+  NotImplementedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -24,12 +26,14 @@ import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AppCountGuard } from '@ee/licensing/guards/app.guard';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
+import { AppCreateDto } from '@dto/app-create.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
 import { VersionEditDto } from '@dto/version-edit.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
+import { AppCloneDto } from '@dto/app-clone.dto';
 
 @Controller('apps')
 export class AppsController {
@@ -48,20 +52,22 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post()
-  async create(@User() user, @Body('icon') icon: string, @Body('type') type: string) {
+  async create(@User() user, @Body() appCreateDto: AppCreateDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
+    const { name, icon, type } = appCreateDto;
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsService.create(user, manager, type);
+      const app = await this.appsService.create(name, user, type, manager);
 
       const appUpdateDto = new AppUpdateDto();
+      appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
-      await this.appsService.update(app.id, appUpdateDto, manager);
+      await this.appsService.update(app, appUpdateDto, null, manager);
 
       await this.auditLoggerService.perform({
         userId: user.id,
@@ -77,9 +83,18 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
-  @Get(':id')
-  async show(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
+  @Get('validate-private-app-access/:slug')
+  async appAccess(
+    @User() user,
+    @Param('slug') appSlug: string,
+    @Query('access_type') accessType: string,
+    @Query('version_name') versionName: string,
+    @Query('environment_name') environmentName: string,
+    @Query('version_id') versionId: string,
+    @Query('environment_id') envId: string
+  ) {
+    const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
+
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
@@ -90,6 +105,56 @@ export class AppsController {
     }
 
     if (accessType === 'edit' && !ability.can('editApp', app)) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
+    }
+
+    const { id, slug, type } = app;
+    const response = {
+      id,
+      slug,
+      type,
+    };
+    /* If the request comes from preview which needs version id */
+    if (versionName || environmentName || (versionId && envId)) {
+      if (!ability.can('fetchVersions', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+
+      /* Adding backward compatibility for old URLs */
+      const version = versionId
+        ? await this.appsService.findVersion(versionId)
+        : await this.appsService.findVersionFromName(versionName, id);
+      if (!version) {
+        throw new NotFoundException("Couldn't found app version. Please check the version name");
+      }
+      const environment = await this.appsService.validateVersionEnvironment(
+        environmentName,
+        envId,
+        version.currentEnvironmentId,
+        user.organizationId
+      );
+      if (versionId) response['versionName'] = version.name;
+      if (envId) response['environmentName'] = environment.name;
+      response['versionId'] = version.id;
+      response['environmentId'] = environment.id;
+    }
+    return response;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Get(':id')
+  async show(@User() user, @AppDecorator() app: App) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -121,6 +186,32 @@ export class AppsController {
       };
     }
     return response;
+  }
+
+  @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
+  @Get('validate-released-app-access/:slug')
+  async releasedAppAccess(@User() user, @AppDecorator() app: App) {
+    if (user) {
+      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+      if (!ability.can('viewApp', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+    }
+
+    if (!app.currentVersionId) {
+      throw new NotImplementedException('App is not released yet');
+    }
+
+    const { id, slug } = app;
+    return {
+      slug: slug,
+      id: id,
+    };
   }
 
   @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
@@ -168,17 +259,18 @@ export class AppsController {
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id')
   async update(@User() user, @AppDecorator() app: App, @Body('app') appUpdateDto: AppUpdateDto) {
+    const { id: userId, organizationId } = user;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('updateParams', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(app.id, appUpdateDto);
+    const result = await this.appsService.update(app, appUpdateDto, organizationId);
 
     await this.auditLoggerService.perform({
-      userId: user.id,
-      organizationId: user.organizationId,
+      userId,
+      organizationId,
       resourceId: app.id,
       resourceType: ResourceTypes.APP,
       resourceName: app.name,
@@ -193,14 +285,16 @@ export class AppsController {
   @UseGuards(JwtAuthGuard, AppCountGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/clone')
-  async clone(@User() user, @AppDecorator() app: App) {
+  async clone(@User() user, @AppDecorator() app: App, @Body() appCloneDto: AppCloneDto) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('cloneApp', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.clone(app, user);
+    const appName = appCloneDto.name;
+    const result = await this.appsService.clone(app, user, appName);
+
     await this.auditLoggerService.perform({
       userId: user.id,
       organizationId: user.organizationId,
@@ -424,7 +518,7 @@ export class AppsController {
 
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
-    const appUser = await this.appsService.update(app.id, appUpdateDto);
+    const appUser = await this.appsService.update(app, appUpdateDto);
     return decamelizeKeys(appUser);
   }
 

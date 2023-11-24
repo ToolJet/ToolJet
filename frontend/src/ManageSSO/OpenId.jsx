@@ -7,7 +7,8 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Toggle from '@/_ui/Toggle/index';
 import { LicenseBanner } from '@/LicenseBanner';
-import { getSubpath } from '@/_helpers/utils';
+import { ssoConfMessages } from '@/_helpers';
+import { getHostURL } from '@/_helpers/routes';
 
 export function OpenId({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -56,13 +57,13 @@ export function OpenId({ settings, updateData }) {
               well_known_url: wellKnownUrl,
             },
           });
-          toast.success('updated SSO configurations', {
+          toast.success(ssoConfMessages('OpenID', 'sso_updated'), {
             position: 'top-center',
           });
         },
         () => {
           setSaving(false);
-          toast.error('Error saving sso configurations', {
+          toast.error(ssoConfMessages('OpenID', 'sso_update_failed'), {
             position: 'top-center',
           });
         }
@@ -77,20 +78,20 @@ export function OpenId({ settings, updateData }) {
 
   const changeStatus = () => {
     setSaving(true);
+    const enabled_tmp = !enabled;
     organizationService.editOrganizationConfigs({ type: 'openid', enabled: !enabled }).then(
       (data) => {
         setSaving(false);
-        const enabled_tmp = !enabled;
         setEnabled(enabled_tmp);
         data.id && setConfigId(data.id);
         updateData('openid', { id: data.id, enabled: enabled_tmp });
-        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} OpenId SSO`, {
+        toast.success(ssoConfMessages('OpenID', 'sso_updated'), {
           position: 'top-center',
         });
       },
       () => {
         setSaving(false);
-        toast.error('Error saving sso configurations', {
+        toast.error(ssoConfMessages('OpenID', 'sso_update_failed'), {
           position: 'top-center',
         });
       }
@@ -189,10 +190,7 @@ export function OpenId({ settings, updateData }) {
                   {t('header.organization.menus.manageSSO.openid.redirectUrl', 'Redirect URL')}
                 </label>
                 <div className="d-flex justify-content-between form-control align-items-center">
-                  <p
-                    data-cy="redirect-url"
-                    id="redirect-url"
-                  >{`${window.public_config?.TOOLJET_HOST}/sso/openid/${configId}`}</p>
+                  <p data-cy="redirect-url" id="redirect-url">{`${getHostURL()}/sso/openid/${configId}`}</p>
                   <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
                 </div>
               </div>

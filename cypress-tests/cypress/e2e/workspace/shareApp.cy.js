@@ -1,6 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { logout, navigateToAppEditor } from "Support/utils/common";
+import { logout, navigateToAppEditor, verifyTooltip, releaseApp } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { addNewUserMW } from "Support/utils/userPermissions";
 import { userSignUp } from "Support/utils/onboarding";
@@ -14,21 +14,26 @@ describe("App share functionality", () => {
   const slug = data.appName.toLowerCase().replace(/\s+/g, "-");
   const firstUserEmail = data.email
   const envVar = Cypress.env("environment");
-
   beforeEach(() => {
     cy.appUILogin();
   });
+  before(() => {
+    cy.apiLogin();
+    cy.apiCreateApp(data.appName);
+    cy.visit('/')
+    logout();
+  })
 
   if (envVar === "Community") {
-
     it("Verify private and public app share funtionality", () => {
-      cy.apiLogin();
-      cy.apiCreateApp();
-      cy.openApp();
-      cy.renameApp(data.appName);
+      cy.openApp(data.appName);
       cy.dragAndDropWidget("Table", 250, 250);
 
+      verifyTooltip(commonWidgetSelector.shareAppButton, "Share URL is unavailable until current version is released")
+      cy.get('[data-cy="share-button-link"]>span').should("have.class", "share-disabled");
+      releaseApp();
       cy.get(commonWidgetSelector.shareAppButton).click();
+
 
       for (const elements in commonWidgetSelector.shareModalElements) {
         cy.get(
@@ -38,7 +43,7 @@ describe("App share functionality", () => {
           commonText.shareModalElements[elements]
         );
       }
-
+      cy.get(commonWidgetSelector.copyAppLinkButton).should("be.visible");
       cy.get(commonWidgetSelector.makePublicAppToggle).should("be.visible");
       cy.get(commonWidgetSelector.appLink).should("be.visible");
       cy.get(commonWidgetSelector.appNameSlugInput).should("be.visible");
@@ -46,9 +51,9 @@ describe("App share functionality", () => {
       cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
+      cy.wait(2000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.forceClickOnCanvas()
-      cy.dragAndDropWidget("Button", 50, 50);
       cy.get(commonSelectors.editorPageLogo).click();
 
       logout();

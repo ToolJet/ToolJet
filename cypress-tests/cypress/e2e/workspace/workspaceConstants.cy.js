@@ -51,7 +51,7 @@ describe("Workspace constants", () => {
             });
             cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
                 "have.text",
-                " Workspace constants"
+                "Workspace constants"
             );
 
             cy.get(
@@ -279,8 +279,7 @@ describe("Workspace constants", () => {
 
         cy.get(commonSelectors.homePageLogo).click();
         cy.wait("@homePage");
-        cy.createApp();
-        cy.renameApp(data.appName);
+        cy.createApp(data.appName);
 
         selectQueryFromLandingPage("runjs", "JavaScript");
         addInputOnQueryField("runjs", `return constants.${data.constantsName}`);

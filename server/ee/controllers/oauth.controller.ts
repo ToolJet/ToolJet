@@ -1,19 +1,19 @@
 import { Body, Controller, Param, Post, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { OauthService } from '../services/oauth/oauth.service';
 import { OidcOAuthService } from '../services/oauth/oidc_auth.service';
-import { CookieOptions, Response } from 'express';
+import { CookieOptions, Response, Request } from 'express';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { User } from 'src/decorators/user.decorator';
 import { ConfigService } from '@nestjs/config';
-import { LdapService } from '@ee/services/oauth/ldap.service';
+import { SAMLService } from '@ee/services/oauth/saml.service';
 import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
 
-@Controller('oauth')
+@Controller(['oauth', 'sso'])
 export class OauthController {
   constructor(
     private oauthService: OauthService,
     private oidcOAuthService: OidcOAuthService,
-    private ldapService: LdapService,
+    private samlService: SAMLService,
     private configService: ConfigService
   ) {}
 
@@ -50,6 +50,12 @@ export class OauthController {
     return { authorizationUrl };
   }
 
+  @Get(['saml/configs/:configId'])
+  async getSAMLRedirect(@Param('configId') configId) {
+    const authorizationUrl = await this.samlService.getSAMLAuthorizationURL(configId);
+    return { authorizationUrl };
+  }
+
   @UseGuards(OrganizationAuthGuard)
   @Post('sign-in/common/:ssoType')
   async commonSignIn(
@@ -61,5 +67,13 @@ export class OauthController {
   ) {
     const result = await this.oauthService.signIn(response, body, null, ssoType, user, req.cookies);
     return result;
+  }
+
+  @Post('/saml/:configId')
+  async samlResponse(@Req() req: Request, @Param('configId') configId, @Res() res: Response) {
+    const responseId = await this.samlService.saveSAMLResponse(configId, req.body?.SAMLResponse);
+    return res.redirect(
+      `${process.env.TOOLJET_HOST}${process.env.SUB_PATH || '/'}sso/saml/${configId}?saml_response_id=${responseId}`
+    );
   }
 }

@@ -29,7 +29,7 @@ export const oidcSSOPageElements = () => {
       cy.get(ssoEeSelector.oidcToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoEeText.oidcDisabledToast
+        ssoText.toggleUpdateToast('OpenID')
       );
       cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -38,7 +38,7 @@ export const oidcSSOPageElements = () => {
       cy.get(ssoEeSelector.oidcToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoEeText.oidcEnabledToast
+        ssoText.toggleUpdateToast('OpenID')
       );
       cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -52,7 +52,7 @@ export const oidcSSOPageElements = () => {
       cy.get(ssoEeSelector.oidcToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoEeText.oidcEnabledToast
+        ssoText.toggleUpdateToast('OpenID')
       );
       cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -61,7 +61,7 @@ export const oidcSSOPageElements = () => {
       cy.get(ssoEeSelector.oidcToggle).uncheck();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
-        ssoEeText.oidcDisabledToast
+        ssoText.toggleUpdateToast('OpenID')
       );
       cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
         "have.text",
@@ -86,7 +86,7 @@ export const oidcSSOPageElements = () => {
     cy.get(commonEeSelectors.saveButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      ssoEeText.oidcUpdatedToast
+      ssoText.toggleUpdateToast('OpenID')
     );
     cy.get(ssoEeSelector.nameInput).should("have.value", ssoEeText.testName);
     cy.get(ssoEeSelector.clientIdInput).should(
@@ -167,9 +167,9 @@ export const userSignUp = (fullName, email, workspaceName) => {
 export const resetAllowPersonalWorkspace = () => {
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
+  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).then(($el) => {
     if (!$el.is(":checked")) {
-      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).check();
+      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).check();
       cy.get(commonEeSelectors.saveButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
@@ -217,9 +217,9 @@ export const defaultWorkspace = () => {
 export const trunOffAllowPersonalWorkspace = () => {
   cy.get(commonEeSelectors.instanceSettingIcon).click();
   cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
+  cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).then(($el) => {
     if ($el.is(":checked")) {
-      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).uncheck();
+      cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).uncheck();
       cy.get(commonEeSelectors.saveButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
@@ -248,14 +248,9 @@ export const verifySSOSignUpPageElements = () => {
     commonText.emailInputLabel
   );
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
-  cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
-    "have.text",
-    commonText.passwordLabel
-  );
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
   cy.get(commonSelectors.acceptInviteButton)
     .verifyVisibleElement("have.text", commonText.acceptInviteButton)
-    .should("be.disabled");
+
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -291,14 +286,8 @@ export const VerifyWorkspaceInvitePageElements = () => {
     commonText.emailInputLabel
   );
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
-  cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
-    "have.text",
-    commonText.passwordLabel
-  );
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
   cy.get(commonSelectors.acceptInviteButton)
     .verifyVisibleElement("have.text", commonText.acceptInviteButton)
-    .should("be.disabled");
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -438,4 +427,26 @@ export const verifyPromoteModalUI = (versionName, currEnv, targetEnv) => {
   cy.get('[data-cy="target-env-name"]').verifyVisibleElement("have.text", targetEnv)
   cy.get('[data-cy="cancel-button"]').verifyVisibleElement("have.text", "Cancel")
   cy.get(commonEeSelectors.promoteButton).eq(1).verifyVisibleElement("have.text", "Promote ")
+}
+
+export const resetPassword = (email) => {
+  cy.visit('/')
+  cy.get(commonSelectors.forgotPasswordLink).click();
+  cy.clearAndType(commonSelectors.emailInputField, email);
+  cy.get(commonSelectors.resetPasswordLinkButton).click();
+
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select forgot_password_token from users where email='${email}';`,
+  }).then((resp) => {
+    const passwordResetLink = `/reset-password/${resp.rows[0].forgot_password_token}`;
+    cy.visit(passwordResetLink);
+  });
+  cy.wait(500)
+
+  cy.clearAndType(commonSelectors.newPasswordInputField, "Password");
+  cy.clearAndType(commonSelectors.confirmPasswordInputField, "Password");
+  cy.wait(4000)
+  cy.get(commonSelectors.resetPasswordButton).click();
+  cy.get(commonSelectors.backToLoginButton).click()
 }

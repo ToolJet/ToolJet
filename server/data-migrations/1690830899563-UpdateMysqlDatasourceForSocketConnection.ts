@@ -1,6 +1,7 @@
 import { DataSource } from 'src/entities/data_source.entity';
 import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
-import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
+import { processDataInBatches } from 'src/helpers/utils.helper';
+import { MigrationProgress } from 'src/helpers/migration.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 export class UpdateMysqlDatasourceForSocketConnection1690830899563 implements MigrationInterface {

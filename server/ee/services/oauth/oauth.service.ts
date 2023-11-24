@@ -18,7 +18,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, generateInviteURL, isSuperAdmin, generateNextName } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateInviteURL, isSuperAdmin, generateNextNameAndSlug } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -28,6 +28,7 @@ import { Response } from 'express';
 import { LicenseService } from '@services/license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
 import { LdapService } from './ldap.service';
+import { SAMLService } from './saml.service';
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
 
 @Injectable()
@@ -43,6 +44,7 @@ export class OauthService {
     private readonly instanceSettingsService: InstanceSettingsService,
     private readonly licenseService: LicenseService,
     private readonly ldapService: LdapService,
+    private readonly samlService: SAMLService,
     private configService: ConfigService
   ) {}
 
@@ -71,7 +73,7 @@ export class OauthService {
   };
 
   async #findOrCreateUser(
-    { firstName, lastName, email, sso, groups: ldapGroups, profilePhoto }: any,
+    { firstName, lastName, email, sso, groups: ssoGroups, profilePhoto }: any,
     organization: DeepPartial<Organization>,
     manager?: EntityManager
   ): Promise<User> {
@@ -92,11 +94,11 @@ export class OauthService {
     }
 
     if (!user && allowPersonalWorkspace) {
-      const organizationName = generateNextName('My workspace');
-      defaultOrganization = await this.organizationService.create(organizationName, null, manager);
+      const { name, slug } = generateNextNameAndSlug('My workspace');
+      defaultOrganization = await this.organizationService.create(name, slug, null, manager);
     }
 
-    const groups = ['all_users', ...(ldapGroups ? ldapGroups : [])];
+    const groups = ['all_users', ...(ssoGroups ? ssoGroups : [])];
     user = await this.usersService.create(
       { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso) },
       organization.id,
@@ -177,7 +179,7 @@ export class OauthService {
     user?: User,
     cookies?: object
   ): Promise<any> {
-    const { organizationId } = ssoResponse;
+    const { organizationId, samlResponseId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
@@ -240,6 +242,10 @@ export class OauthService {
         userResponse = await this.ldapService.signIn({ username, password }, configs);
         break;
 
+      case 'saml':
+        userResponse = await this.samlService.signIn(samlResponseId, configs, configId);
+        break;
+
       default:
         break;
     }
@@ -283,8 +289,8 @@ export class OauthService {
           let defaultOrganization: DeepPartial<Organization> = organization;
 
           // Not logging in to specific organization, creating new
-          const organizationName = generateNextName('My workspace');
-          defaultOrganization = await this.organizationService.create(organizationName, null, manager);
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          defaultOrganization = await this.organizationService.create(name, slug, null, manager);
 
           const groups = ['all_users', 'admin'];
           userDetails = await this.usersService.create(
@@ -325,8 +331,8 @@ export class OauthService {
             organizationDetails = organizationList[0];
           } else if (allowPersonalWorkspace) {
             // no SSO login enabled organization available for user - creating new one
-            const organizationName = generateNextName('My workspace');
-            organizationDetails = await this.organizationService.create(organizationName, userDetails, manager);
+            const { name, slug } = generateNextNameAndSlug('My workspace');
+            organizationDetails = await this.organizationService.create(name, slug, userDetails, manager);
           } else {
             throw new UnauthorizedException(
               'User not included in any workspace or workspace does not supports SSO login'
@@ -444,4 +450,5 @@ interface SSOResponse {
   password?: string;
   codeVerifier?: string;
   organizationId?: string;
+  samlResponseId?: string;
 }

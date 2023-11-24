@@ -15,7 +15,6 @@ on:
         required: true
 
 jobs:
-
   build-tooljet-image:
     runs-on: ubuntu-latest
     if: "${{ github.event.release }}"
@@ -25,15 +24,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: refs/heads/develop
-
-      # Create Docker Buildx builder with platform configuration
-      - name: Set up Docker Buildx
-        run: |
-          mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
-          chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
-          docker buildx use mybuilder
 
       # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx
@@ -75,8 +65,7 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! docker image tooljet/tooljet-ee:${{ github.event.release.tag_name }} \n tooljet/tooljet:${{ github.event.release.tag_name }}"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}                   
-
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
   try-tooljet-image-build:
     runs-on: ubuntu-latest
@@ -113,7 +102,7 @@ jobs:
       - name: Check if Docker image is present
         id: check-image-presence
         run: |
-          response=$(curl -s "https://hub.docker.com/v2/repositories/tooljet/tooljet-ce/tags/${{ github.event.release.tag_name }}")
+          response=$(curl -s "https://hub.docker.com/v2/repositories/tooljet/tooljet/tags/${{ github.event.release.tag_name }}")
           if [[ $? -ne 0 ]]; then
             echo "Failed to fetch JSON response. Stopping workflow execution."
             exit 1
@@ -148,7 +137,6 @@ jobs:
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
-
   #Below code helps to trigger the workflow manually
 
   tooljet:
@@ -159,15 +147,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: refs/heads/develop
-
-      # Create Docker Buildx builder with platform configuration
-      - name: Set up Docker Buildx
-        run: |
-          mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
-          chmod a+x ~/.docker/cli-plugins/docker-buildx
-          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
-          docker buildx use mybuilder
 
       # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx
@@ -209,7 +188,7 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! docker image tooljet/tooljet-ee:${{ github.event.inputs.image }} & tooljet/tooljet:${{ github.event.inputs.image }}"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}          
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
   try-tooljet:
     runs-on: ubuntu-latest
@@ -219,7 +198,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: main
+          ref: develop
 
       # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx

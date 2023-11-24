@@ -183,6 +183,7 @@ module.exports = {
       apiUrl: `${stripTrailingSlash(API_URL[environment]) || ''}/api`,
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: process.env.COMMENT_FEATURE_ENABLE ?? true,
+      TOOLJET_SERVER_URL: process.env.TOOLJET_SERVER_URL,
       ENABLE_TOOLJET_DB: process.env.ENABLE_TOOLJET_DB ?? true,
       ENABLE_MULTIPLAYER_EDITING: true,
       ENABLE_MARKETPLACE_FEATURE: process.env.ENABLE_MARKETPLACE_FEATURE ?? true,

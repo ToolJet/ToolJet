@@ -9,6 +9,7 @@ import {
   BadRequestException,
   Query,
   Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -20,7 +21,7 @@ import {
 } from '@dto/app-authentication.dto';
 import { AuthService } from '../services/auth.service';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
-import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, CreateUserDto, TrialUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { UserCountGuard } from '@ee/licensing/guards/user.guard';
 import { EditorUserCountGuard } from '@ee/licensing/guards/editorUser.guard';
@@ -33,13 +34,17 @@ import { Response } from 'express';
 import { SessionAuthGuard } from 'src/modules/auth/session-auth-guard';
 import { UsersService } from '@services/users.service';
 import { SessionService } from '@services/session.service';
+import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
+import { OrganizationsService } from '@services/organizations.service';
+import { Organization } from 'src/entities/organization.entity';
 
 @Controller()
 export class AppController {
   constructor(
     private authService: AuthService,
     private userService: UsersService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private organizationService: OrganizationsService
   ) {}
 
   @Post('authenticate')
@@ -60,18 +65,23 @@ export class AppController {
 
   @UseGuards(SessionAuthGuard)
   @Get('session')
-  async getSessionDetails(@User() user, @Query('appId') appId: string) {
-    let appOrganizationId: string;
+  async getSessionDetails(@User() user, @Query('appId') appId: string, @Query('workspaceSlug') workspaceSlug: string) {
+    let currentOrganization: Organization;
     let appData: any;
     if (appId) {
-      appData = await this.userService.returnOrgIdOfAnApp(appId);
-      //if the user has a session and the app is public, we don't need to authorize the app organization id
-      if (!appData?.isPublic) appOrganizationId = appData.organizationId;
-      if (appOrganizationId && user.organizationIds?.includes(appOrganizationId)) {
-        user.organization_id = appOrganizationId;
-      }
+      appData = await this.userService.retrieveAppDataUsingSlug(appId);
     }
-    return this.authService.generateSessionPayload(user, appOrganizationId, appData);
+
+    /* if the user has a session and the app is public, we don't need to authorize the app organization id */
+    if ((appData && !appData?.isPublic) || workspaceSlug) {
+      const organization = await this.organizationService.fetchOrganization(workspaceSlug || appData.organizationId);
+      if (!organization) {
+        throw new NotFoundException("Coudn't found workspace. workspace id or slug is incorrect!.");
+      }
+      currentOrganization = organization;
+    }
+
+    return this.authService.generateSessionPayload(user, currentOrganization, appData);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -106,6 +116,23 @@ export class AppController {
   @Post('setup-admin')
   async setupAdmin(@Body() userCreateDto: CreateAdminDto, @Res({ passthrough: true }) response: Response) {
     return await this.authService.setupAdmin(response, userCreateDto);
+  }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Post('activate-trial')
+  async activateTrial() {
+    const { companyName, companySize, role, email, phoneNumber, firstName, lastName } =
+      await this.userService.findSelfhostOnboardingDetails();
+    const userDto: TrialUserDto = {
+      companyName,
+      companySize,
+      role,
+      email,
+      phoneNumber,
+      name: `${firstName} ${lastName}`,
+      requestedTrial: true,
+    };
+    return await this.authService.activateTrial(userDto);
   }
 
   @UseGuards(FirstUserSignupDisableGuard)

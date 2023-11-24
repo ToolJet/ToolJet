@@ -18,12 +18,17 @@ export interface Terms {
     oidc?: boolean;
     auditLogs?: boolean;
     ldap?: boolean;
+    saml?: boolean;
     customStyling?: boolean;
     whiteLabelling?: boolean;
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
+    comments?: boolean;
   };
   type?: LICENSE_TYPE;
+  auditLogs?: {
+    maximumDays?: number | string;
+  };
   meta?: {
     customerName?: string;
     generatedFrom?: 'API';

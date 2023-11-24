@@ -24,10 +24,12 @@ export class EmailService {
   private NODE_ENV;
   private WHITE_LABEL_TEXT;
   private WHITE_LABEL_LOGO;
+  private SUB_PATH;
 
   constructor(private readonly instancesettingsService: InstanceSettingsService) {
     this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io';
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
+    this.SUB_PATH = process.env.SUB_PATH;
     this.NODE_ENV = process.env.NODE_ENV || 'development';
   }
 
@@ -163,7 +165,7 @@ export class EmailService {
   async sendPasswordResetEmail(to: string, token: string) {
     await this.init();
     const subject = 'password reset instructions';
-    const url = `${this.TOOLJET_HOST}/reset-password/${token}`;
+    const url = `${this.TOOLJET_HOST}${this.SUB_PATH ? this.SUB_PATH : '/'}reset-password/${token}`;
     const html = `
       Please use this link to reset your password: <a href="${url}">${url}</a>
     `;

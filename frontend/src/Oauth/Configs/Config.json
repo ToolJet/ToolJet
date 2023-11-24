@@ -18,5 +18,12 @@
     "params": {
       "token": "code"
     }
+  },
+  "saml": {
+    "name": "SAML",
+    "responseType": "query",
+    "params": {
+      "token": "code"
+    }
   }
 }

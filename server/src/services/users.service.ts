@@ -143,6 +143,13 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
+  async findSelfhostOnboardingDetails(): Promise<User> {
+    return await this.usersRepository.findOne({
+      where: { userType: USER_TYPE.INSTANCE },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
   async findByEmail(
     email: string,
     organizationId?: string,
@@ -154,6 +161,7 @@ export class UsersService {
       if (!organizationId) {
         user = await manager.findOne(User, {
           where: { email },
+          relations: ['organization'],
         });
       } else {
         const statusList = status
@@ -258,7 +266,8 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      await this.attachUserGroup(groups, organizationId, user.id, source === 'ldap', manager);
+      const isValidatingExistingGroups = ['ldap', 'saml'].includes(source);
+      await this.attachUserGroup(groups, organizationId, user.id, isValidatingExistingGroups, manager);
     }, manager);
 
     return user;
@@ -597,7 +606,9 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
-  async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean; isReleased: boolean }> {
+  async retrieveAppDataUsingSlug(
+    slug: string
+  ): Promise<{ organizationId: string; isPublic: boolean; isReleased: boolean }> {
     let app: App;
     try {
       app = await this.appsRepository.findOneOrFail(slug);

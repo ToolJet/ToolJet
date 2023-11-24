@@ -37,10 +37,10 @@ export const dashboardText = {
   },
   seeAllAppsTemplateButton: "See all templates",
   addToFolderTitle: "Add to folder",
-  appClonedToast: "App cloned successfully.",
+  appClonedToast: "App cloned successfully!",
   darkModeText: "Dark Mode",
   lightModeText: "Light Mode",
-  dashboardAppsHeaderLabel: " All apps",
+  dashboardAppsHeaderLabel: "All apps",
 
   moveAppText: (appName) => {
     return `Move "${appName}" to`;

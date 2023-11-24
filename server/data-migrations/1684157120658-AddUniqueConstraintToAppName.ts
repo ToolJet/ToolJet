@@ -26,9 +26,15 @@ export class AddUniqueConstraintToAppName1684145489093 implements MigrationInter
         [organizationId]
       );
       for (const app of apps) {
+        console.log('Found ' + apps.length + ' apps with same name');
         const { name } = app;
-        const sameApps = await entityManager.find(App, { where: { name, organizationId } });
+        const sameApps = await entityManager.query(
+          'select id, name from apps where name = $1 and organization_id = $2',
+          [name, organizationId]
+        );
         for (const appToChange of sameApps.slice(1)) {
+          console.log('Renaming app id: ' + appToChange.id + ' name: ' + appToChange.name);
+
           await entityManager.update(App, { id: appToChange.id }, { name: `${appToChange.name} ${Date.now()}` });
           // Add 1 millisecond wait to prevent duplicate timestamp generation
           addWait(1);

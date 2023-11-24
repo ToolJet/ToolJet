@@ -9,7 +9,6 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 export const AppVersionsManager = function ({
   appId,
-  releasedVersionId,
   setAppDefinitionFromVersion,
   onVersionDelete,
   currentEnvironment,
@@ -24,9 +23,10 @@ export const AppVersionsManager = function ({
     showModal: false,
   });
 
-  const { editingVersion } = useAppVersionStore(
+  const { editingVersion, releasedVersionId } = useAppVersionStore(
     (state) => ({
       editingVersion: state.editingVersion,
+      releasedVersionId: state.releasedVersionId,
     }),
     shallow
   );

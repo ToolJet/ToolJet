@@ -5,6 +5,11 @@ import { isEmpty } from 'lodash';
 import { USER_TYPE } from './user_lifecycle';
 import { EncryptionService } from '@services/encryption.service';
 import { Credential } from 'src/entities/credential.entity';
+import { ConflictException } from '@nestjs/common';
+import { DataBaseConstraints } from './db_constraints.constants';
+const protobuf = require('protobufjs');
+import { LICENSE_LIMIT } from './license.helper';
+import { CredentialsService } from '@services/credentials.service';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -13,10 +18,6 @@ export function parseJson(jsonString: string, errorMessage?: string): object {
     throw new QueryError(errorMessage, err.message, {});
   }
 }
-const protobuf = require('protobufjs');
-import { ConflictException } from '@nestjs/common';
-import { DataBaseConstraints } from './db_constraints.constants';
-import { LICENSE_LIMIT } from './license.helper';
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -93,17 +94,22 @@ export const defaultAppEnvironments = [
 export const isSuperAdmin = (user) => {
   return !!(user?.userType === USER_TYPE.INSTANCE);
 };
-export async function catchDbException(
-  operation: () => any,
-  dbConstraint: DataBaseConstraints,
-  errorMessage: string
-): Promise<any> {
+
+type DbContraintAndMsg = {
+  dbConstraint: DataBaseConstraints;
+  message: string;
+};
+
+export async function catchDbException(operation: () => any, dbConstraints: DbContraintAndMsg[]): Promise<any> {
   try {
     return await operation();
   } catch (err) {
-    if (err?.message?.includes(dbConstraint)) {
-      throw new ConflictException(errorMessage);
-    }
+    dbConstraints.map((dbConstraint) => {
+      if (err?.message?.includes(dbConstraint.dbConstraint)) {
+        throw new ConflictException(dbConstraint.message);
+      }
+    });
+
     throw err;
   }
 }
@@ -139,7 +145,9 @@ function convertToArrayOfKeyValuePairs(options): Array<object> {
 export async function filterEncryptedFromOptions(
   options: Array<object>,
   encryptionService: EncryptionService,
-  entityManager: EntityManager
+  credentialService?: CredentialsService,
+  copyEncryptedValues = false,
+  entityManager?: EntityManager
 ) {
   const kvOptions = convertToArrayOfKeyValuePairs(options);
 
@@ -149,7 +157,8 @@ export async function filterEncryptedFromOptions(
 
   for (const option of kvOptions) {
     if (option['encrypted']) {
-      const credential = await createCredential('', encryptionService, entityManager);
+      const value = copyEncryptedValues ? await credentialService.getValue(option['credential_id']) : '';
+      const credential = await createCredential(value, encryptionService, entityManager);
 
       parsedOptions[option['key']] = {
         credential_id: credential.id,
@@ -208,15 +217,6 @@ export function generatePayloadForLimits(currentCount: number, totalCount: any, 
         label,
       };
 }
-export class MigrationProgress {
-  private progress = 0;
-  constructor(private fileName: string, private totalCount: number) {}
-
-  show() {
-    this.progress++;
-    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
-  }
-}
 
 export const processDataInBatches = async <T>(
   entityManager: EntityManager,
@@ -237,8 +237,13 @@ export const processDataInBatches = async <T>(
   } while (data.length === batchSize);
 };
 
-export const generateNextName = (firstWord: string) => {
-  return `${firstWord} ${Date.now()}`;
+export const generateNextNameAndSlug = (firstWord: string) => {
+  const name = `${firstWord} ${Date.now()}`;
+  const slug = name.replace(/\s+/g, '-').toLowerCase();
+  return {
+    name,
+    slug,
+  };
 };
 
 export const truncateAndReplace = (name) => {
@@ -269,4 +274,27 @@ export const generateOrgInviteURL = (organizationToken: string, organizationId?:
   return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
   }`;
+};
+
+export function extractFirstAndLastName(fullName: string) {
+  if (fullName) {
+    const nameParts = fullName.trim().split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ');
+
+    return {
+      firstName: firstName,
+      lastName: lastName,
+    };
+  }
+}
+
+export const getServerURL = () => {
+  const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+  const API_URL = {
+    production: process.env.TOOLJET_SERVER_URL || (process.env.SERVE_CLIENT !== 'false' ? '__REPLACE_SUB_PATH__' : ''),
+    development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
+  };
+
+  return API_URL[environment];
 };

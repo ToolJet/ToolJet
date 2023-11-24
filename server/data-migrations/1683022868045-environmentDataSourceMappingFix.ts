@@ -47,6 +47,8 @@ export class environmentDataSourceMappingFix1683022868045 implements MigrationIn
               const newOptions = await filterEncryptedFromOptions(
                 dataSourcesOptionToAdd.options,
                 encryptionService,
+                null,
+                false,
                 entityManager
               );
 

@@ -23,7 +23,7 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 3. Create a Kubernetes deployment
 
    ```bash
-    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/deployment.yaml
+   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
    ```
 
 :::info
@@ -40,7 +40,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
     kubectl get pods
    ```
 
-5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.
+5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.
 
    **Examples:**
 
@@ -61,4 +61,4 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
     kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/postgrest.yaml
    ```
 
-2. Update ToolJet deployment with the appropriate env variables [here](https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/deployment.yaml) and apply the changes.
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml) and apply the changes.

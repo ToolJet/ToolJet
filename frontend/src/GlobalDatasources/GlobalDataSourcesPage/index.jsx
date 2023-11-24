@@ -41,6 +41,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     setEditing,
     currentEnvironment,
     environments,
+    featureAccess,
     setCurrentEnvironment,
     fetchDataSourceByEnvironment,
     activeDatasourceList,
@@ -372,6 +373,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             modalProps={modalProps}
             currentEnvironment={currentEnvironment}
             environments={environments}
+            featureAccess={featureAccess}
             environmentChanged={environmentChanged}
             container={selectedDataSource ? containerRef?.current : null}
             isEditing={isEditing}

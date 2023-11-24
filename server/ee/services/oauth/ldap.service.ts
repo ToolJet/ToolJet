@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import UserResponse from './models/user_response';
 import { SearchOptions, createClient, Client } from 'ldapjs';
 import { TlsOptions } from 'tls';
+import { extractFirstAndLastName } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class LdapService {
@@ -52,7 +53,7 @@ export class LdapService {
               searchResult?.photo ||
               searchResult?.thumbnailLogo;
 
-            const name = this.extractFirstAndLastName(fullName);
+            const name = extractFirstAndLastName(fullName);
 
             const ssoResponse = {
               userSSOId: uid,
@@ -73,17 +74,6 @@ export class LdapService {
         });
       });
     });
-  }
-
-  extractFirstAndLastName(fullName: string) {
-    const nameParts = fullName.trim().split(' ');
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ');
-
-    return {
-      firstName: firstName,
-      lastName: lastName,
-    };
   }
 
   async initializeLdapClient(configs: any) {

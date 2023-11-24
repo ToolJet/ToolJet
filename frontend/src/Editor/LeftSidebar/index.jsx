@@ -55,6 +55,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     toggleAppMaintenance,
     app,
     disableEnablePage,
+    slug,
+    handleSlugChange,
   } = props;
   const { is_maintenance_on } = app;
 
@@ -227,6 +229,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
         app={app}
         backgroundFxQuery={backgroundFxQuery}
         realState={realState}
+        slug={slug}
+        handleSlugChange={handleSlugChange}
       />
     ),
   };
@@ -307,20 +311,15 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <div className="left-sidebar-stack-bottom">
         <div className="">
-          {config.COMMENT_FEATURE_ENABLE && (
-            <div
-              className={`${(isVersionReleased || isEditorFreezed) && 'disabled'}`}
-              style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}
-            >
-              <LeftSidebarComment
-                selectedSidebarItem={showComments ? 'comments' : ''}
-                currentPageId={currentPageId}
-                isVersionReleased={isVersionReleased}
-                isEditorFreezed={isEditorFreezed}
-                ref={setSideBarBtnRefs('comments')}
-              />
-            </div>
-          )}
+          <div style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}>
+            <LeftSidebarComment
+              selectedSidebarItem={showComments ? 'comments' : ''}
+              currentPageId={currentPageId}
+              isVersionReleased={isVersionReleased}
+              isEditorFreezed={isEditorFreezed}
+              ref={setSideBarBtnRefs('comments')}
+            />
+          </div>
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
         {/* <LeftSidebarItem icon='support' className='left-sidebar-item' /> */}

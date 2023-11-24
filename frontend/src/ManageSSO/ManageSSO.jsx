@@ -12,6 +12,7 @@ import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import { SAML } from './SAML';
 
 export function ManageSSO({ darkMode }) {
   const [featureAccess, setFeatureAccess] = useState({});
@@ -21,10 +22,12 @@ export function ManageSSO({ darkMode }) {
     { id: 'git', label: 'GitHub' },
     { id: 'openid', label: 'OpenID Connect' },
     { id: 'ldap', label: 'LDAP' },
+    { id: 'saml', label: 'SAML' },
   ];
   const protectedMenuItems = [
     { id: 'openid', label: 'OpenID Connect' },
     { id: 'ldap', label: 'LDAP' },
+    { id: 'saml', label: 'SAML' },
   ];
 
   const changePage = useCallback(
@@ -65,6 +68,8 @@ export function ManageSSO({ darkMode }) {
         return <Ldap updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'ldap')} />;
       case 'openid':
         return <OpenId updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'openid')} />;
+      case 'saml':
+        return <SAML updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'saml')} />;
       default:
         return <Loader />;
     }

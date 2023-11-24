@@ -30,7 +30,8 @@ data.workspaceName = `${fake.companyName}-workspace`;
 
 describe("dashboard", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.visit('/my-workspace')
     cy.intercept("GET", "/api/folders?searchKey=&type=front-end").as("homePage");
     resetAllowPersonalWorkspace();
   });
@@ -59,7 +60,7 @@ describe("dashboard", () => {
     });
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      " All users"
+      "All users"
     );
     cy.get(usersSelector.usersPageTitle).should(($el) => {
       expect($el.contents().last().text().trim()).to.eq(
@@ -174,25 +175,26 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      " Manage instance settings"
+      "Manage instance settings"
     );
 
     cy.get(commonEeSelectors.cardTitle).verifyVisibleElement(
       "have.text",
-      "Instance Settings"
+      "Manage instance settings"
     );
-    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).should("be.visible");
+
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(2).should("be.visible");
     cy.get(
       instanceSettingsSelector.allowWorkspaceToggleLabel
-    ).eq(0).verifyVisibleElement(
+    ).eq(2).verifyVisibleElement(
       "have.text",
-      "Multiplayer editing"
+      "Comments"
     );
     cy.get(
       instanceSettingsSelector.allowWorkspaceHelperText
-    ).eq(0).verifyVisibleElement(
+    ).eq(2).verifyVisibleElement(
       "have.text",
-      "Work collaboratively and edit applications in real-time with multi-player editing"
+      "Collaborate with others by adding comments anywhere on the canvas"
     );
 
     cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).should("be.visible");
@@ -200,11 +202,25 @@ describe("dashboard", () => {
       instanceSettingsSelector.allowWorkspaceToggleLabel
     ).eq(1).verifyVisibleElement(
       "have.text",
-      instanceSettingsText.allowWorkspaceToggleLabel
+      "Multiplayer editing"
     );
     cy.get(
       instanceSettingsSelector.allowWorkspaceHelperText
     ).eq(1).verifyVisibleElement(
+      "have.text",
+      "Work collaboratively and edit applications in real-time with multi-player editing"
+    );
+
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).should("be.visible");
+    cy.get(
+      instanceSettingsSelector.allowWorkspaceToggleLabel
+    ).eq(0).verifyVisibleElement(
+      "have.text",
+      instanceSettingsText.allowWorkspaceToggleLabel
+    );
+    cy.get(
+      instanceSettingsSelector.allowWorkspaceHelperText
+    ).eq(0).verifyVisibleElement(
       "have.text",
       instanceSettingsText.allowWorkspaceHelperText
     );
@@ -215,7 +231,7 @@ describe("dashboard", () => {
     );
     cy.get(commonEeSelectors.saveButton).verifyVisibleElement(
       "have.text",
-      instanceSettingsText.saveButton
+      "Save changes"
     );
   });
 
@@ -223,8 +239,10 @@ describe("dashboard", () => {
     addNewUserMW(data.firstName, data.email);
     common.logout();
 
-    cy.appUILogin();
-    cy.wait(2000)
+    cy.apiLogin();
+    cy.visit('/my-workspace');
+    cy.wait(500)
+
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(
@@ -255,8 +273,10 @@ describe("dashboard", () => {
       });
     cy.get(commonEeSelectors.modalCloseButton).click();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, "password");
+    cy.visit('/my-workspace');
+    cy.wait(500);
     cy.get(commonEeSelectors.instanceSettingIcon).should("not.exist");
     cy.contains("My workspace").click();
     cy.wait(500);
@@ -267,8 +287,9 @@ describe("dashboard", () => {
     cy.wait("@homePage");
 
     common.logout();
-    cy.appUILogin();
-    cy.wait(2000)
+    cy.apiLogin();
+    cy.visit('/my-workspace')
+    cy.wait(500)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -287,13 +308,15 @@ describe("dashboard", () => {
     );
     cy.get(commonEeSelectors.modalCloseButton).click();
     common.logout();
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit('/')
     cy.contains(data.email).click();
     cy.contains(commonEeText.defaultWorkspace).should("not.exist");
 
     common.logout();
-    cy.appUILogin();
-    cy.wait(2000)
+    cy.apiLogin();
+    cy.visit('/my-workspace')
+    cy.wait(500)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -310,14 +333,17 @@ describe("dashboard", () => {
       usersText.archivedToast
     );
     cy.get(commonEeSelectors.modalCloseButton).click();
-    common.logout();
+    cy.logoutApi();
 
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, "password");
+    cy.visit('/')
+    cy.wait(500)
     cy.get(commonSelectors.workspaceName).should("contain", "My workspace");
-    common.logout();
+    common.logout()
 
-    cy.appUILogin();
-    cy.wait(2000)
+    cy.apiLogin();
+    cy.visit('/my-workspace')
+    cy.wait(500)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -327,7 +353,7 @@ describe("dashboard", () => {
     cy.get(
       instanceSettingsSelector.userStatus(data.firstName)
     ).verifyVisibleElement("have.text", "archived");
-    common.logout();
+    cy.logoutApi();
     cy.visit('/')
 
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
@@ -344,13 +370,16 @@ describe("dashboard", () => {
     data.email = fake.email.toLowerCase();
     data.workspaceName = `${fake.companyName}-workspace`;
 
-    common.logout();
+    cy.logoutApi();
+    cy.visit('/')
     userSignUp(data.firstName, data.email, data.workspaceName);
     updateWorkspaceName(data.email)
-
+    cy.wait(1000);
     common.logout();
-    cy.appUILogin();
-    cy.wait(2000)
+
+    cy.apiLogin();
+    cy.visit('/')
+    cy.wait(500)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(
@@ -373,15 +402,16 @@ describe("dashboard", () => {
       usersText.archivedToast
     );
     cy.get(commonEeSelectors.modalCloseButton).click();
-    common.logout();
+    cy.logoutApi();
 
-    cy.appUILogin();
-    cy.wait(2000)
+    cy.apiLogin();
+    cy.visit('/')
+    cy.wait(500)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.get(instanceSettingsSelector.manageInstanceSettings).click();
-    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).then(($el) => {
       if ($el.is(":checked")) {
-        cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).click();
+        cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).click();
         cy.get(commonEeSelectors.saveButton).click();
         cy.verifyToastMessage(
           commonSelectors.toastMessage,
@@ -389,7 +419,7 @@ describe("dashboard", () => {
         );
       }
     });
-    common.logout();
+    cy.logoutApi();
 
     cy.visit('/')
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
@@ -399,8 +429,10 @@ describe("dashboard", () => {
       commonSelectors.toastMessage,
       "User is not assigned to any workspaces"
     );
-    cy.appUILogin();
-    cy.wait(2000)
+
+    cy.apiLogin();
+    cy.visit('/')
+    cy.wait(500)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -438,9 +470,9 @@ describe("dashboard", () => {
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.get(instanceSettingsSelector.manageInstanceSettings).click();
 
-    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).then(($el) => {
+    cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).then(($el) => {
       if ($el.is(":checked")) {
-        cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(1).uncheck();
+        cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).uncheck();
         cy.get(commonEeSelectors.saveButton).click();
         cy.verifyToastMessage(
           commonSelectors.toastMessage,
@@ -448,20 +480,22 @@ describe("dashboard", () => {
         );
       }
     });
-    common.logout();
+    cy.logoutApi();
     cy.visit('/')
     cy.get(commonSelectors.createAnAccountLink).should("not.exist");
 
-    cy.appUILogin();
-    cy.wait(2000)
+    cy.apiLogin();
+    cy.visit('/my-workspace')
+    cy.wait(500)
     addNewUser(data.firstName, data.email);
     cy.get(commonSelectors.workspaceName).click();
     cy.contains(data.email).should("not.exist");
     cy.get(".add-new-workspace-icon-wrap").should("not.exist");
+    cy.logoutApi();
 
-    common.logout();
-    cy.appUILogin();
-    cy.wait(2000)
+    cy.apiLogin();
+    cy.visit('/my-workspace')
+    cy.wait(500)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(
@@ -497,21 +531,25 @@ describe("dashboard", () => {
     data.email = fake.email.toLowerCase();
     data.workspaceName = `${fake.companyName}-workspace`;
 
-    common.logout();
+    cy.logoutApi();
+    cy.visit('/')
     userSignUp(data.firstName, data.email, data.workspaceName);
     updateWorkspaceName(data.email)
     common.logout();
 
-    cy.appUILogin();
-    cy.wait(2000)
+    cy.apiLogin();
+    cy.visit('/')
+    cy.wait(500)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.editButton(data.firstName)).click();
     cy.get(instanceSettingsSelector.superAdminToggle).check();
     cy.get(commonEeSelectors.saveButton).click();
-    common.logout();
+    cy.logoutApi();
 
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, "password");
+    cy.visit('/')
+    cy.wait(500)
     common.navigateToManageSSO();
     cy.get(ssoSelector.passwordEnableToggle).uncheck();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
@@ -521,8 +559,10 @@ describe("dashboard", () => {
     );
     cy.get(commonEeSelectors.saveButton).click();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, "password");
+    cy.visit('/')
+    cy.wait(500)
     cy.contains(data.email).should("be.visible");
   });
 });

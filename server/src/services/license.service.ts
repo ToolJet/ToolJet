@@ -53,11 +53,17 @@ export class LicenseService {
       case LICENSE_FIELD.LDAP:
         return License.Instance().ldap;
 
+      case LICENSE_FIELD.SAML:
+        return License.Instance().saml;
+
       case LICENSE_FIELD.CUSTOM_STYLE:
         return License.Instance().customStyling;
 
       case LICENSE_FIELD.AUDIT_LOGS:
         return License.Instance().auditLogs;
+
+      case LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS:
+        return License.Instance().maxDurationForAuditLogs;
 
       case LICENSE_FIELD.MULTI_ENVIRONMENT:
         return License.Instance().multiEnvironment;
@@ -109,7 +115,7 @@ export class LicenseService {
 
   async init(): Promise<void> {
     const licenseSetting: InstanceSettings = await this.getLicense();
-    const updatedAt = await License.Instance()?.updatedAt;
+    const updatedAt = License.Instance()?.updatedAt;
     const isUpdated: boolean = updatedAt?.getTime() !== new Date(licenseSetting.updatedAt).getTime();
 
     if (!updatedAt || isUpdated) {
@@ -119,6 +125,10 @@ export class LicenseService {
   }
 
   validateHostnameSubpath(domainsList = []) {
+    if (!domainsList.length && (!License.Instance()?.isValid || License.Instance()?.isExpired)) {
+      // not validating license for invalid licenses -> Basic plan
+      return;
+    }
     //check for valid hostname
     const domain = process.env.TOOLJET_HOST;
     const subPath = process.env.SUB_PATH;

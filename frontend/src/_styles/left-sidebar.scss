@@ -197,6 +197,24 @@
   }
 }
 
+.expired-gradient-border {
+  border: none !important;
+  position: relative;
+  background-color: var(--slate3) !important;
+  color: var(--indigo9) !important;
+}
+
+.expired-gradient-border::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(96deg, #FF5F6D -15.44%, #FFC371 99.37%);
+  z-index: 1;
+}
+
 .debugger-content {
   background-color: var(--base);
 

@@ -22,7 +22,7 @@ import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, CreateUserDto, TelemetryDataDto, TrialUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import {
   getUserErrorMessages,
@@ -38,7 +38,7 @@ import {
   dbTransactionWrap,
   isSuperAdmin,
   generateInviteURL,
-  generateNextName,
+  generateNextNameAndSlug,
   generateOrgInviteURL,
 } from 'src/helpers/utils.helper';
 import { InstanceSettingsService } from './instance_settings.service';
@@ -48,6 +48,7 @@ import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
 import { LicenseService } from './license.service';
+import { uuid4 } from '@sentry/utils';
 import got from 'got/dist/source';
 import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
@@ -144,7 +145,8 @@ export class AuthService {
           organization = organizationList[0];
         } else if (allowPersonalWorkspace) {
           // no form login enabled organization available for user - creating new one
-          organization = await this.organizationsService.create(generateNextName('My workspace'), user, manager);
+          const { name, slug } = generateNextNameAndSlug('My workspace');
+          organization = await this.organizationsService.create(name, slug, user, manager);
         } else {
           throw new UnauthorizedException('User is not assigned to any workspaces');
         }
@@ -232,7 +234,11 @@ export class AuthService {
       if (user.defaultOrganizationId !== user.organizationId)
         await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
+      const organization = await this.organizationsService.get(user.organizationId);
+
       return decamelizeKeys({
+        currentOrganizationId: user.organizationId,
+        currentOrganizationSlug: organization.slug,
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         super_admin: user.userType === 'instance',
         groupPermissions: await this.usersService.groupPermissions(user, manager),
@@ -306,8 +312,8 @@ export class AuthService {
       // Create default organization
       //TODO: check if there any case available that the firstname will be nil
 
-      const organizationName = generateNextName('My workspace');
-      organization = await this.organizationsService.create(organizationName, null, manager);
+      const { name, slug } = generateNextNameAndSlug('My workspace');
+      organization = await this.organizationsService.create(name, slug, null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -385,7 +391,12 @@ export class AuthService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
-      const organization = await this.organizationsService.create(workspace || 'My workspace', null, manager);
+      const organization = await this.organizationsService.create(
+        workspace || 'My workspace',
+        'my-workspace',
+        null,
+        manager
+      );
       const user = await this.usersService.create(
         {
           email,
@@ -406,15 +417,15 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
-      if (requestedTrial) await this.activateTrial(userCreateDto);
+      if (requestedTrial) await this.activateTrial(new TrialUserDto(userCreateDto));
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
-    await this.metadataService.finishOnboarding(name, email, companyName, companySize, role, requestedTrial);
+    await this.metadataService.finishOnboarding(new TelemetryDataDto(userCreateDto));
     return result;
   }
 
-  async activateTrial(userCreateDto: CreateAdminDto) {
+  async activateTrial(userCreateDto: TrialUserDto) {
     const { companyName, companySize, name, role, email, phoneNumber } = userCreateDto;
     /* generate trial license if needed */
     const hostname = this.configService.get<string>('TOOLJET_HOST');
@@ -422,7 +433,7 @@ export class AuthService {
 
     const metadata = await this.metadataService.getMetaData();
     const { id: customerId } = metadata;
-    const otherData = { companySize, role, phoneNumber, name };
+    const otherData = { companySize, role, phoneNumber };
 
     const body = {
       hostname,
@@ -430,6 +441,8 @@ export class AuthService {
       customerId,
       email,
       companyName,
+      version: '2',
+      ...this.splitName(name),
       otherData,
     };
 
@@ -441,12 +454,23 @@ export class AuthService {
       const { license_key } = JSON.parse(licenseResponse.body);
       await this.licenseService.updateLicense({ key: license_key });
     } catch (error) {
-      throw new HttpException(error?.error || 'Trial could not be activated. Please try again!', error?.status || 500);
+      const response = JSON.parse(error?.response?.body || '{}');
+      throw new HttpException(response?.message || 'Trial could not be activated. Please try again!', 500);
     }
   }
 
   async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
-    const { companyName, companySize, token, role, organizationToken, password, source, phoneNumber } = userCreateDto;
+    const {
+      companyName,
+      companySize,
+      token,
+      role,
+      organizationToken,
+      password: userPassword,
+      source,
+      phoneNumber,
+    } = userCreateDto;
+    let password = userPassword;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -470,6 +494,12 @@ export class AuthService {
           relations: ['user'],
         });
       }
+
+      if (!password && source === URL_SSO_SOURCE) {
+        /* For SSO we don't need password. let us set uuid as a password. */
+        password = uuid4();
+      }
+
       if (user?.organizationUsers) {
         if (isPasswordMandatory(user.source) && !password) {
           throw new BadRequestException('Please enter password');
@@ -494,6 +524,7 @@ export class AuthService {
           (user.source === SOURCE.GOOGLE ||
             user.source === SOURCE.GIT ||
             user.source === SOURCE.OPENID ||
+            user.source === SOURCE.SAML ||
             user.source === SOURCE.LDAP);
 
         const lifecycleParams = getUserStatusAndSource(
@@ -667,14 +698,15 @@ export class AuthService {
     };
   }
 
-  generateSessionPayload(user: User, appOrganizationId: string, appData?: any) {
+  generateSessionPayload(user: User, currentOrganization: Organization, appData?: any) {
     return decamelizeKeys({
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      currentOrganizationId: appOrganizationId
-        ? appOrganizationId
+      currentOrganizationSlug: currentOrganization?.slug,
+      currentOrganizationId: currentOrganization?.id
+        ? currentOrganization?.id
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0],
@@ -700,9 +732,10 @@ export class AuthService {
 
     // logged in user and new user are different -> creating session
     if (loggedInUser?.id !== user.id) {
+      const clientIp = (request as any)?.clientIp;
       const session: UserSessions = await this.sessionService.createSession(
         user.id,
-        `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+        `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
           request?.headers['user-agent'] || 'unknown'
         }`,
         manager
@@ -749,6 +782,7 @@ export class AuthService {
       appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
       dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
       currentOrganizationId: organization.id,
+      currentOrganizationSlug: organization.slug,
     });
   }
 }

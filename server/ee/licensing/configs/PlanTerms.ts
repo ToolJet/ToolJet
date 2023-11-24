@@ -16,13 +16,18 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
   features: {
     auditLogs: false,
     oidc: false,
+    saml: false,
     customStyling: false,
     ldap: false,
     whiteLabelling: false,
     multiEnvironment: false,
     multiPlayerEdit: false,
+    comments: false,
   },
   domains: [],
+  auditLogs: {
+    maximumDays: 0,
+  },
 };
 
 export const BASIC_PLAN_SETTINGS = {
@@ -43,5 +48,20 @@ export const BASIC_PLAN_SETTINGS = {
   },
   ENABLE_MULTIPLAYER_EDITING: {
     value: 'false',
+  },
+  ENABLE_COMMENTS: {
+    value: 'false',
+  },
+};
+
+export const BUSINESS_PLAN_TERMS = {
+  auditLogs: {
+    maximumDays: 14,
+  },
+};
+
+export const ENTERPRISE_PLAN_TERMS = {
+  auditLogs: {
+    maximumDays: 30,
   },
 };

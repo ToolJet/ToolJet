@@ -708,7 +708,11 @@ class DataSourceManagerComponent extends React.Component {
                   feature={'multi-environments'}
                   isAvailable={env?.enabled}
                   noTooltipIfValid={true}
-                  customMessage={'Multi-environments are available only in paid plans'}
+                  customMessage={
+                    !this.props?.featureAccess?.isLicenseValid || this.props?.featureAccess?.isExpired
+                      ? 'Multi-environments are available only in paid plans'
+                      : 'Multi-environments are not included in your current plan'
+                  }
                 >
                   {children}
                 </LicenseTooltip>
@@ -1048,7 +1052,7 @@ const EmptyStateContainer = ({
               </div>
             </div>
             <div className="col-auto">
-              <Button className="mt-2" variant="primary" onClick={handleSend}>
+              <Button className="mt-2" disabled={!inputValue.length} variant="primary" onClick={handleSend}>
                 {t('editor.queryManager.dataSourceManager.send', 'Send')}
               </Button>
             </div>

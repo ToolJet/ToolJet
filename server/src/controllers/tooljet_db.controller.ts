@@ -1,4 +1,20 @@
-import { All, Controller, Req, Res, Next, UseGuards, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
+import {
+  All,
+  Controller,
+  Req,
+  Res,
+  Next,
+  UseGuards,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Patch,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { ActiveWorkspaceGuard } from 'src/modules/auth/active-workspace.guard';
 import { TableCountGuard } from '@ee/licensing/guards/table.guard';
@@ -11,12 +27,17 @@ import { Action, TooljetDbAbility } from 'src/modules/casl/abilities/tooljet-db-
 import { TooljetDbGuard } from 'src/modules/casl/tooljet-db.guard';
 import { CreatePostgrestTableDto, RenamePostgrestTableDto, PostgrestTableColumnDto } from '@dto/tooljet-db.dto';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.service';
 
-@Controller('tooljet_db')
+const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
+
+@Controller('tooljet-db')
 export class TooljetDbController {
   constructor(
     private readonly tooljetDbService: TooljetDbService,
-    private readonly postgrestProxyService: PostgrestProxyService
+    private readonly postgrestProxyService: PostgrestProxyService,
+    private readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService
   ) {}
 
   @All('/proxy/*')
@@ -104,6 +125,29 @@ export class TooljetDbController {
     };
 
     const result = await this.tooljetDbService.perform(organizationId, 'drop_column', params);
+    return decamelizeKeys({ result });
+  }
+
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('/organizations/:organizationId/table/:tableName/bulk-upload')
+  async bulkUpload(@Param('organizationId') organizationId, @Param('tableName') tableName, @UploadedFile() file: any) {
+    if (file?.size > MAX_CSV_FILE_SIZE) {
+      throw new BadRequestException('File size cannot be greater than 2MB');
+    }
+    const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file?.buffer);
+
+    return decamelizeKeys({ result });
+  }
+
+  @Post('/organizations/:organizationId/join')
+  @UseGuards(TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
+  async joinTables(@Body() joinQueryJsonDto: any, @Param('organizationId') organizationId) {
+    const params = {
+      joinQueryJson: { ...joinQueryJsonDto },
+    };
+
+    const result = await this.tooljetDbService.perform(organizationId, 'join_tables', params);
     return decamelizeKeys({ result });
   }
 }

@@ -6,6 +6,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Toggle from '@/_ui/Toggle/index';
 import Select from 'react-select';
+import { ssoConfMessages } from '@/_helpers';
 
 export function Ldap({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -118,13 +119,13 @@ export function Ldap({ settings, updateData }) {
               basedn,
             },
           });
-          toast.success('Updated SSO configurations', {
+          toast.success(ssoConfMessages('LDAP', 'sso_updated'), {
             position: 'top-center',
           });
         },
         () => {
           setSaving(false);
-          toast.error('Error saving SSO configurations', {
+          toast.error(ssoConfMessages('LDAP', 'sso_update_failed'), {
             position: 'top-center',
           });
         }
@@ -133,19 +134,19 @@ export function Ldap({ settings, updateData }) {
 
   const changeStatus = () => {
     setSaving(true);
+    const enabled_tmp = !enabled;
     organizationService.editOrganizationConfigs({ type: 'ldap', enabled: !enabled }).then(
       (data) => {
         setSaving(false);
-        const enabled_tmp = !enabled;
         setEnabled(enabled_tmp);
         updateData('ldap', { id: data.id, enabled: enabled_tmp });
-        toast.success(`${enabled_tmp ? 'Enabled' : 'Disabled'} LDAP SSO`, {
+        toast.success(ssoConfMessages('LDAP', 'sso_updated'), {
           position: 'top-center',
         });
       },
       () => {
         setSaving(false);
-        toast.error('Error saving SSO configurations', {
+        toast.error(ssoConfMessages('LDAP', 'sso_update_failed'), {
           position: 'top-center',
         });
       }
