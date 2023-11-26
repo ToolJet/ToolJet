@@ -1308,7 +1308,7 @@ export const widgets = [
         width: { value: '33' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: '{{false}}' },
+        auto: { value: true },
         padding: { value: 'default' },
         boxShadow: { value: '0px 0px 0px 0px #00000090' },
         icon: { value: 'IconHome2' },
