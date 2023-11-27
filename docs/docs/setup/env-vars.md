@@ -63,7 +63,7 @@ Self-hosted version of ToolJet pings our server to fetch the latest product upda
 
 ### Comment feature enable ( optional )
 
-Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. To configure this environment variable, ensure that multiplayer editing is enabled in the instance settings.
+Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. To configure this environment variable, ensure that multiplayer editing is enabled in the Settings.
 
 | variable               | value             |
 | ---------------------- | ----------------- |
@@ -304,6 +304,14 @@ If this parameter is not specified then PostgREST refuses authentication request
 :::info
 Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
 :::
+
+## Log file path ( Optional )
+
+If a log file path is specified in environment variables, a log file containing all the data from audit logs will be created at the specified path. The file will be updated every time a new audit log is created.
+
+| Variable | Description                                                                 |
+| -------- | --------------------------------------------------------------------------- |
+| LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
 
 ## ToolJet Apps
 
