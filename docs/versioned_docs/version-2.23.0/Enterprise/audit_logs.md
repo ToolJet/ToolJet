@@ -94,7 +94,7 @@ The dropdown will display all the apps associated with your account. Select an a
 
 ### Log file
 
-The log file can be created by specifying the path in the [environment variables](/docs/setup/env-vars) . The file will contain all the data from audit logs. The file will be updated every time a new audit log is created.
+The file will contain all the data from audit logs. The log file can be created by specifying the path in the [environment variables](/docs/setup/env-vars). The log file is rotated on a daily basis and is updated dynamically every time a new audit log is generated.
 
 #### Log Rotation
 
