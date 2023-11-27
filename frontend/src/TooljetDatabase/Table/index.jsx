@@ -25,7 +25,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     setQueryFilters,
     setSortFilters,
     resetAll,
-    setSelectRows,
   } = useContext(TooljetDatabaseContext);
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
@@ -160,8 +159,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       ]);
     }
   );
-
-  setSelectRows(rows);
 
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');

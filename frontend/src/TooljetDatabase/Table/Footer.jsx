@@ -14,10 +14,8 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
     { label: '1000 records', value: 1000 },
   ];
 
-  const { selectedTable, totalRecords, buildPaginationQuery } = useContext(TooljetDatabaseContext);
-
-  const [pageCount, setPageCount] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const { selectedTable, totalRecords, buildPaginationQuery, setPageCount, pageCount, setPageSize, pageSize } =
+    useContext(TooljetDatabaseContext);
 
   const totalPage = Math.ceil(totalRecords / pageSize);
   const pageRange = `${(pageCount - 1) * pageSize + 1} - ${
