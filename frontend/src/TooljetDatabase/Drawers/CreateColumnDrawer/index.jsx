@@ -7,7 +7,8 @@ import { tooljetDatabaseService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen }) => {
-  const { organizationId, selectedTable, setColumns, setSelectedTableData } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setColumns, setSelectedTableData, setPageCount } =
+    useContext(TooljetDatabaseContext);
 
   return (
     <>
@@ -55,6 +56,7 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                   setSelectedTableData(data);
                 }
               });
+            setPageCount(1);
             setIsCreateColumnDrawerOpen(false);
           }}
           onClose={() => setIsCreateColumnDrawerOpen(false)}

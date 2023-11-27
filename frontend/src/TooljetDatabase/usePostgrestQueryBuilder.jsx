@@ -58,6 +58,7 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
         const { column, operator, value } = filters[key];
         if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
           postgrestQueryBuilder.current.filterQuery.filter(column, operator, value);
+          buildPaginationQuery(value, 0);
         }
       }
     });

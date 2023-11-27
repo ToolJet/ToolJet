@@ -31,6 +31,10 @@ export const TooljetDatabaseContext = createContext({
   setSortFilters: () => {},
   selectRows: [],
   setSelectRows: () => {},
+  pageCount: 1,
+  setPageCount: () => {},
+  pageSize: 50,
+  setPageSize: () => {},
 });
 
 export const TooljetDatabase = (props) => {
@@ -42,7 +46,8 @@ export const TooljetDatabase = (props) => {
   const [searchParam, setSearchParam] = useState('');
   const [selectedTable, setSelectedTable] = useState({});
   const [selectedTableData, setSelectedTableData] = useState([]);
-  const [selectRows, setSelectRows] = useState([]);
+  const [pageCount, setPageCount] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
 
   const [totalRecords, setTotalRecords] = useState(0);
 
@@ -89,8 +94,10 @@ export const TooljetDatabase = (props) => {
       sortFilters,
       setSortFilters,
       resetAll,
-      setSelectRows,
-      selectRows,
+      pageCount,
+      setPageCount,
+      pageSize,
+      setPageSize,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
