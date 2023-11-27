@@ -1,4 +1,17 @@
-const { type, number, string, array, any, optional, assert, boolean, union, size, pattern } = require('superstruct');
+const {
+  type,
+  number,
+  string,
+  array,
+  any,
+  optional,
+  assert,
+  boolean,
+  union,
+  size,
+  pattern,
+  func,
+} = require('superstruct');
 import _ from 'lodash';
 
 const generateSchemaFromValidationDefinition = (definition) => {
@@ -53,7 +66,6 @@ const generateSchemaFromValidationDefinition = (definition) => {
 const validate = (value, schema, _defaultValue) => {
   let valid = true;
   const errors = [];
-
   try {
     assert(value, schema);
   } catch (structError) {
@@ -75,13 +87,11 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
     Object.entries(resolvedProperties ?? {}).map(([propertyName, value]) => {
       const validationDefinition = propertyDefinitions[propertyName]?.validation?.schema;
       const defaultValue = propertyDefinitions[propertyName]?.validation?.defaultValue;
-
       const schema = _.isUndefined(validationDefinition)
         ? any()
         : generateSchemaFromValidationDefinition(validationDefinition);
 
       const [_valid, errors] = propertyName ? validate(value, schema, defaultValue) : [true, []];
-
       if (!_.isUndefined(propertyName)) {
         allErrors = [
           ...allErrors,
@@ -96,3 +106,56 @@ export const validateProperties = (resolvedProperties, propertyDefinitions) => {
   );
   return [coercedProperties, allErrors];
 };
+
+export function validateTypeAgainstDefinition(definition, value) {
+  let schema;
+
+  switch (definition?.disallowedTypes ?? '') {
+    case 'string': {
+      schema = string();
+      if (definition?.pattern) schema = pattern(schema, RegExp(definition.pattern, 'i'));
+      break;
+    }
+    case 'number': {
+      schema = number();
+      break;
+    }
+    case 'boolean': {
+      schema = boolean();
+      break;
+    }
+    case 'union': {
+      schema = union(definition.schemas?.map((subSchema) => generateSchemaFromValidationDefinition(subSchema)));
+      break;
+    }
+    case 'array': {
+      const elementSchema = generateSchemaFromValidationDefinition(definition.element ?? {});
+      schema = array(elementSchema);
+      break;
+    }
+    case 'function': {
+      schema = func();
+      break;
+    }
+    case 'object': {
+      const obJectSchema = Object.fromEntries(
+        Object.entries(definition.object ?? {}).map(([key, value]) => {
+          const generatedSchema = generateSchemaFromValidationDefinition(value);
+          return [key, generatedSchema];
+        })
+      );
+      schema = type(obJectSchema);
+      break;
+    }
+    default:
+      schema = any();
+  }
+
+  const [isValid, errors] = validate(value, schema);
+  console.log('checker--', isValid, errors);
+  if (isValid) {
+    return true;
+  } else {
+    return false;
+  }
+}
