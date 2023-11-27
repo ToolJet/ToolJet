@@ -1209,6 +1209,13 @@ export const widgets = [
         accordian: 'field',
         visibility: false,
       },
+      iconColor: {
+        type: 'color',
+        displayName: 'Icon color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+        visibility: false,
+      },
       // iconAlignment: {
       //   type: 'switch',
       //   displayName: '',
@@ -1304,6 +1311,7 @@ export const widgets = [
         errTextColor: { value: '#DB4324' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
+        iconColor: { value: '#DB4324' },
         direction: { value: 'alignleftinspector' },
         width: { value: '33' },
         alignment: { value: 'side' },

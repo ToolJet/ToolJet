@@ -32,6 +32,7 @@ export const TextInput = function TextInput({
     color,
     auto,
     errTextColor,
+    iconColor,
   } = styles;
 
   const [disable, setDisable] = useState(disabledState || loadingState);
@@ -154,6 +155,7 @@ export const TextInput = function TextInput({
                       position: 'absolute',
                       top: alignment == 'side' ? '19px' : '38.5px',
                       transform: ' translateY(-50%)',
+                      color: iconColor,
                     }}
                     stroke={1.5}
                   />
@@ -240,6 +242,7 @@ export const TextInput = function TextInput({
                     position: 'absolute',
                     top: alignment == 'side' ? '19px' : '38.5px',
                     transform: ' translateY(-50%)',
+                    color: iconColor,
                   }}
                   stroke={1.5}
                 />
