@@ -1,0 +1,13 @@
+{
+  "name": "Customer ticketing form",
+  "description": "The Customer Ticketing Form optimizes support ticket management, seamlessly gathering customer info and tracking ticket progress with deep integration into Customer Support Admin.",
+  "widgets": ["Table", "Chart"],
+  "sources": [
+    {
+      "name": "Tooljet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "customer-ticketing-form",
+  "category": "operations"
+}
