@@ -1,5 +1,6 @@
 import { Organization } from 'src/entities/organization.entity';
-import { defaultAppEnvironments, MigrationProgress } from 'src/helpers/utils.helper';
+import { defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { MigrationProgress } from 'src/helpers/migration.helper';
 import { EntityManager, MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 
 export class BackFillAppEnvironmentsPriorityColumn1686826460358 implements MigrationInterface {

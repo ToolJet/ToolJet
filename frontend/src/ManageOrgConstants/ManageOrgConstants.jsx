@@ -466,7 +466,7 @@ const RenderEnvironmentsTab = ({
 
   const menuItems = allEnvironments.map((env) => ({
     id: env.id,
-    label: `${capitalize(env.name)} (${constantCount(allConstants, env?.id)})`,
+    label: `${capitalize(env.name)} ${env.enabled ? `(${constantCount(allConstants, env?.id)})` : ''}`,
     priority: env?.priority,
     enabled: env?.enabled,
   }));

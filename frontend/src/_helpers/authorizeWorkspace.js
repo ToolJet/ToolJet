@@ -29,10 +29,10 @@ export const authorizeWorkspace = () => {
     /* CASE-1 */
     authenticationService
       .validateSession(appId, workspaceIdOrSlug)
-      .then(({ current_organization_id, current_organization_slug, app_data }) => {
+      .then(({ current_organization_id, current_organization_slug }) => {
         if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
           /*CASE-2*/
-          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, app_data);
+          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
         } else {
           updateCurrentSession({
             current_organization_id,
@@ -114,7 +114,7 @@ export const updateCurrentSession = (newSession) => {
     CASE-3: If CASE-2 fails (indicating the need to log in to the workspace or having an invalid session), the user is directed to the workspace login page.
     CASE-4: During the execution of CASE-2, if the user has a valid session but encounters errors such as an incorrect workspace ID or non-existent workspace, they will be directed to the switch-workspace page.
 */
-export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, appData = null) => {
+export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
   const subpath = getSubpath();
   //initial session details
   updateCurrentSession({
@@ -124,19 +124,6 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, appDa
   authenticationService
     .authorize()
     .then((data) => {
-      /* License check */
-      if (appData) {
-        if (appData.is_released) {
-          licenseService.getLicenseStatus().then((data) => {
-            const { isBasicPlan } = data;
-            if (isBasicPlan) {
-              /* License expired for the users. now they can't access released apps */
-              redirectToErrorPage(ERROR_TYPES.RESTRICTED);
-            }
-          });
-        }
-      }
-
       /* CASE-1 */
       const { current_organization_id } = data;
       fetchOrganizations(current_organization_id, ({ organizations, current_organization }) => {
