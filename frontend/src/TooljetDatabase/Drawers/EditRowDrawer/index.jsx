@@ -6,7 +6,8 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
 const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, setTotalRecords, setSelectRows, selectRows } =
+    useContext(TooljetDatabaseContext);
 
   return (
     <>
@@ -48,7 +49,7 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
                 if (Array.isArray(data) && data?.length > 0) {
                   const totalContentRangeRecords = headers['content-range'].split('/')[1] || 0;
                   setTotalRecords(totalContentRangeRecords);
-                  setSelectedTableData(data);
+                  setSelectRows(selectRows);
                 }
               });
             setIsCreateRowDrawerOpen(false);
