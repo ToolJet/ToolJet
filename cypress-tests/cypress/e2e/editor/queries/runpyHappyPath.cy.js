@@ -63,7 +63,7 @@ import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 describe("runpy", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
     cy.viewport(1800, 1800);
     cy.dragAndDropWidget("Button");
@@ -214,7 +214,10 @@ actions.unsetPageVariable('pageVar')`
     cy.wait(200);
     cy.waitForAutoSave();
     query("run");
-    cy.get('[data-cy="sign-in-header"]').should("be.visible");
+
+    cy.get('[data-cy="sign-in-header"]', { timeout: 20000 }).should(
+      "be.visible"
+    );
   });
 
   it("should verify global and page data", () => {

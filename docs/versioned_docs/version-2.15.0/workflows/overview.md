@@ -128,7 +128,7 @@ In the above screenshot, Logs indicate that all three nodes have successfully ex
 </div>
 <br/>
 
-Click on the *sendSMS* node and look at the **Results**. Under the **data** property, we can see an **errorMessage** indentifier. The **errorMessage** will be null for the messages that are successfully sent to the intended number. 
+Click on the *sendSMS* node and look at the **Results**. Under the **data** property, we can see an **errorMessage** identifier. The **errorMessage** will be null for the messages that are successfully sent to the intended number. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/sendSMS-result.png" alt="Send SMS result" />

@@ -51,3 +51,10 @@ div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
   margin-left: 47px !important;
   transform: none !important;
 }
+@-moz-document url-prefix() {
+  div[data-radix-popper-content-wrapper]{
+    top: 48px !important;
+    z-index: 100 !important;
+    left: 1px !important;
+  }
+}
