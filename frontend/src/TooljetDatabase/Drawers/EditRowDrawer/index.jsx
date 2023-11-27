@@ -14,6 +14,7 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
     selectedTableData,
     pageSize,
     totalRecords,
+    pageCount,
   } = useContext(TooljetDatabaseContext);
 
   return (
@@ -46,9 +47,9 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
         <EditRowForm
           onEdit={() => {
             const limit = pageSize;
-            const offset = totalRecords - selectedTableData[0].id;
+            const pageRange = `${(pageCount - 1) * pageSize + 1}`;
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${offset}`)
+              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
