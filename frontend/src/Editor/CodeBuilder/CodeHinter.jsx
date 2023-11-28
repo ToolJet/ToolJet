@@ -97,7 +97,7 @@ export function CodeHinter({
   const currentState = useCurrentStateStore((state) => state);
   const [realState, setRealState] = useState({ ...currentState, ..._currentState, ...context });
 
-  const [currentValue, setCurrentValue] = useState(initialValue);
+  const [currentValue, setCurrentValue] = useState('');
 
   const [prevCurrentValue, setPrevCurrentValue] = useState(null);
   const [resolvedValue, setResolvedValue] = useState(null);
@@ -125,6 +125,17 @@ export function CodeHinter({
   const prevCountRef = useRef(false);
 
   useEffect(() => {
+    setCurrentValue(initialValue);
+
+    return () => {
+      setPrevCurrentValue(null);
+      setResolvedValue(null);
+      setResolvingError(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const newState = { ...currentState, ..._currentState, ...context };
     setRealState(newState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -150,7 +161,7 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   useEffect(() => {
-    if (JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+    if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
       const customResolvables = getCustomResolvables();
       const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
       setPrevCurrentValue(currentValue);
@@ -163,13 +174,8 @@ export function CodeHinter({
         setResolvedValue(preview);
       }
     }
-
-    return () => {
-      setPrevCurrentValue(null);
-      setResolvedValue(null);
-      setResolvingError(null);
-    };
-  }, [JSON.stringify({ currentValue, realState })]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ currentValue, realState, isFocused })]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {

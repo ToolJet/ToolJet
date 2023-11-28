@@ -1,8 +1,8 @@
 name: AWS AMI build using Packer config
 
 on:
-  release:
-    types: [published]
+  # release:
+  #   types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

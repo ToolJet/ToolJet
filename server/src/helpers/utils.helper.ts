@@ -2,9 +2,10 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
-const protobuf = require('protobufjs');
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
+const protobuf = require('protobufjs');
+const semver = require('semver');
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -80,21 +81,46 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
-export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
-export async function catchDbException(
-  operation: () => any,
-  dbConstraint: DataBaseConstraints,
-  errorMessage: string
+export const updateTimestampForAppVersion = async (manager, appVersionId) => {
+  const appVersion = await manager.findOne('app_versions', appVersionId);
+  if (appVersion) {
+    await manager.update('app_versions', appVersionId, { updatedAt: new Date() });
+  }
+};
+
+export async function dbTransactionForAppVersionAssociationsUpdate(
+  operation: (...args) => any,
+  appVersionId: string
 ): Promise<any> {
+  return await getManager().transaction(async (manager) => {
+    const result = await operation(manager);
+
+    await updateTimestampForAppVersion(manager, appVersionId);
+
+    return result;
+  });
+}
+
+type DbContraintAndMsg = {
+  dbConstraint: DataBaseConstraints;
+  message: string;
+};
+
+export async function catchDbException(operation: () => any, dbConstraints: DbContraintAndMsg[]): Promise<any> {
   try {
     return await operation();
   } catch (err) {
-    if (err?.message?.includes(dbConstraint)) {
-      throw new ConflictException(errorMessage);
-    }
+    dbConstraints.map((dbConstraint) => {
+      if (err?.message?.includes(dbConstraint.dbConstraint)) {
+        throw new ConflictException(dbConstraint.message);
+      }
+    });
+
     throw err;
   }
 }
+
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
 
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
@@ -153,8 +179,13 @@ export const processDataInBatches = async <T>(
   } while (data.length === batchSize);
 };
 
-export const generateNextName = (firstWord: string) => {
-  return `${firstWord} ${Date.now()}`;
+export const generateNextNameAndSlug = (firstWord: string) => {
+  const name = `${firstWord} ${Date.now()}`;
+  const slug = name.replace(/\s+/g, '-').toLowerCase();
+  return {
+    name,
+    slug,
+  };
 };
 
 export const truncateAndReplace = (name) => {
@@ -186,3 +217,21 @@ export const generateOrgInviteURL = (organizationToken: string, organizationId?:
     organizationId ? `?oid=${organizationId}` : ''
   }`;
 };
+
+export function extractMajorVersion(version) {
+  return semver.valid(semver.coerce(version));
+}
+
+/**
+ * Checks if a given Tooljet version is compatible with normalized app definition schemas.
+ *
+ * This function uses the 'semver' library to compare the provided version with a minimum version requirement
+ * for normalized app definition schemas (2.24.1). It returns true if the version is greater than or equal to
+ * the required version, indicating compatibility.
+ *
+ * @param {string} version - The Tooljet version to check.
+ * @returns {boolean} - True if the version is compatible, false otherwise.
+ */
+export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
+  return semver.satisfies(semver.coerce(version), '>= 2.24.0');
+}
