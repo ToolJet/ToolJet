@@ -44,7 +44,6 @@ export const TextInput = function TextInput({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const [elementWidth, setElementWidth] = useState(0);
   const computedStyles = {
-    height: padding == 'default' ? '32px' : '38px',
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
@@ -52,6 +51,11 @@ export const TextInput = function TextInput({
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '3px 28px' : '3px 5px',
   };
+
+  console.log('height---', height);
+  if (padding === 'default' && parseInt(height) !== 32) {
+    computedStyles.height = height;
+  } else computedStyles.height = padding == 'default' ? '32px' : '38px';
 
   const loaderStyle = {
     left: direction === 'alignrightinspector' && alignment === 'side' ? `${elementWidth - 19}px` : undefined,
