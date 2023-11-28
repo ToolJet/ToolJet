@@ -11884,6 +11884,10 @@ tbody {
   background-color: var(--tj-text-input-widget-field-default);
   width: 100%;
 
+  &.is-invalid {
+    border: 1px solid var(--tj-text-input-widget-error) !important; // For example, a red border for invalid input
+  }
+
   &:hover {
     background-color: var(--tj-text-input-widget-hover) !important;
   }

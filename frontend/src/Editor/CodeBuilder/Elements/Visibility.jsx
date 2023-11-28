@@ -5,6 +5,7 @@ export const Visibility = ({ value, onVisibilityChange, component }) => {
   return (
     <div
       className="cursor-pointer visibility-eye"
+      style={{ top: component.component.definition.styles.iconVisibility.value && '42%' }}
       onClick={(e) => {
         e.stopPropagation();
         onVisibilityChange(!component.component.definition.styles.iconVisibility.value);
@@ -13,11 +14,8 @@ export const Visibility = ({ value, onVisibilityChange, component }) => {
       <SolidIcon
         name={component.component.definition.styles.iconVisibility.value ? 'eye1' : 'eyedisable'}
         width="16"
-        fill="#11181C"
+        fill={'var(--slate8)'}
       />
     </div>
   );
 };
-
-// {name: 'visibility'} value {{false}} styles
-// console.log('nnn', param, 'value', value, paramType);
