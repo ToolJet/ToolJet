@@ -131,19 +131,23 @@ export const TextInput = function TextInput({
       ${visibility || 'invisible'}`}
                 style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
               >
-                <label
-                  style={{
-                    color: darkMode && color == '#11181C' ? '#fff' : color,
-                    width: label.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
-                    maxWidth: auto && alignment == 'side' ? '70%' : '100%',
-                    overflowWrap: 'break-word',
-                    marginRight: label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
-                    marginLeft: label.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
-                  }}
-                >
-                  {label}
-                  <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-                </label>
+                {label.length && (
+                  <label
+                    style={{
+                      color: darkMode && color == '#11181C' ? '#fff' : color,
+                      width: label.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
+                      maxWidth: auto && alignment == 'side' ? '70%' : '100%',
+                      overflowWrap: 'break-word',
+                      marginRight:
+                        label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
+                      marginLeft:
+                        label.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
+                    }}
+                  >
+                    {label}
+                    <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+                  </label>
+                )}
                 {component?.definition?.styles?.iconVisibility?.value && (
                   <IconElement
                     style={{
@@ -216,21 +220,21 @@ export const TextInput = function TextInput({
       ${visibility || 'invisible'}`}
               style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
             >
-              <label
-                style={{
-                  color: darkMode && color == '#11181C' ? '#fff' : color,
-                  width: label?.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
-                  maxWidth: auto && alignment == 'side' ? '70%' : '100%',
-                  overflowWrap: 'break-word',
-                  marginRight: label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
-                  marginLeft: label.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
-                  marginTop: alignment == 'side' && '16px',
-                  lineHeight: alignment == 'side' && '0px',
-                }}
-              >
-                {label}
-                <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-              </label>
+              {label.length && (
+                <label
+                  style={{
+                    color: darkMode && color == '#11181C' ? '#fff' : color,
+                    width: label.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
+                    maxWidth: auto && alignment == 'side' ? '70%' : '100%',
+                    overflowWrap: 'break-word',
+                    marginRight: label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
+                    marginLeft: label.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
+                  }}
+                >
+                  {label}
+                  <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+                </label>
+              )}
               {component?.definition?.styles?.iconVisibility?.value && (
                 <IconElement
                   style={{
