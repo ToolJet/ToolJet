@@ -10,7 +10,7 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import _, { cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
+import _, { cloneDeep, isEqual, isEmpty, debounce, omit, noop } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -52,13 +52,13 @@ import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
-import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
 import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
-import { EMPTY_ARRAY, useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
+import { EMPTY_ARRAY, useEditorActions, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
@@ -96,11 +96,12 @@ const EditorComponent = (props) => {
     useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
-  const { isVersionReleased, editingVersion, releasedVersionId } = useAppVersionState(
+  const { isVersionReleased, editingVersionId, editingVersionName, releasedVersionId } = useAppVersionState(
     (state) => (
       {
         isVersionReleased: state?.isVersionReleased,
-        editingVersion: state?.editingVersion,
+        editingVersionId: state?.editingVersion.id,
+        editingVersionName: state?.editingVersion.name,
         releasedVersionId: state?.releasedVersionId,
       },
       shallow
@@ -112,8 +113,8 @@ const EditorComponent = (props) => {
     currentLayout,
     canUndo,
     canRedo,
-    isUpdatingEditorStateInProcess,
-    saveError,
+    // isUpdatingEditorStateInProcess,
+    // saveError,
     isLoading,
     defaultComponentStateComputed,
     showComments,
@@ -121,14 +122,15 @@ const EditorComponent = (props) => {
     queryConfirmationList,
     currentPageId,
     currentSessionId,
+    // updateEditorState,
   } = useEditorStore(
     (state) => ({
       appDefinition: state.appDefinition,
       currentLayout: state.currentLayout,
       canUndo: state.canUndo,
       canRedo: state.canRedo,
-      isUpdatingEditorStateInProcess: state.isUpdatingEditorStateInProcess,
-      saveError: state.saveError,
+      // isUpdatingEditorStateInProcess: state.isUpdatingEditorStateInProcess,
+      // saveError: state.saveError,
       isLoading: state.isLoading,
       defaultComponentStateComputed: state.defaultComponentStateComputed,
       showComments: state.showComments,
@@ -140,7 +142,7 @@ const EditorComponent = (props) => {
     shallow
   );
 
-  const dataQueries = useDataQueries();
+  const dataQueries = useDataQueriesStore((state) => state.dataQueries, shallow);
 
   const {
     isMaintenanceOn,
@@ -171,6 +173,14 @@ const EditorComponent = (props) => {
     shallow
   );
 
+  const { existingGlobals, pageHandle } = useCurrentStateStore(
+    (state) => ({
+      existingGlobals: state.globals,
+      pageHandle: state.page.handle,
+    }),
+    shallow
+  );
+
   const currentState = useCurrentState();
 
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -183,15 +193,13 @@ const EditorComponent = (props) => {
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
 
-  // const [currentSessionId, setCurrentSessionId] = useState(null);
-
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [optsStack, setOptsStack] = useState({
     undo: [],
     redo: [],
   });
-
+  console.log('render');
   // refs
   const canvasContainerRef = useRef(null);
   const dataSourceModalRef = useRef(null);
@@ -246,8 +254,6 @@ const EditorComponent = (props) => {
 
     $componentDidMount();
 
-    // setCurrentSessionId(() => uuid());
-
     // 6. Unsubscribe from the observable when the component is unmounted
     return () => {
       document.title = 'Tooljet - Dashboard';
@@ -274,7 +280,7 @@ const EditorComponent = (props) => {
 
       computeComponentState(components);
 
-      if (isUpdatingEditorStateInProcess) {
+      if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
       }
     }
@@ -293,6 +299,7 @@ const EditorComponent = (props) => {
   useEffect(() => {
     // This effect runs when lastKeyPressTimestamp changes
     if (Date.now() - lastKeyPressTimestamp < 500) {
+      console.log('phenomenol');
       updateEditorState({
         isUpdatingEditorStateInProcess: true,
       });
@@ -527,7 +534,7 @@ const EditorComponent = (props) => {
         })
       );
     } else {
-      fetchDataSources(editingVersion?.id);
+      fetchDataSources(editingVersionId);
     }
   };
 
@@ -544,7 +551,7 @@ const EditorComponent = (props) => {
         })
       );
     } else {
-      fetchDataQueries(editingVersion?.id);
+      fetchDataQueries(editingVersionId);
     }
   };
 
@@ -610,7 +617,7 @@ const EditorComponent = (props) => {
     return onEvent(getEditorRef(), eventName, event, options, 'edit');
   };
 
-  const handleRunQuery = (queryId, queryName) => runQuery(editorRef, queryId, queryName);
+  const handleRunQuery = (queryId, queryName) => runQuery(getEditorRef(), queryId, queryName);
 
   const dataSourceModalHandler = () => {
     dataSourceModalRef.current.dataSourceModalToggleStateHandler();
@@ -717,7 +724,7 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
     });
-
+    console.log('Why me');
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
@@ -752,7 +759,7 @@ const EditorComponent = (props) => {
 
   const setAppDefinitionFromVersion = (appData) => {
     const version = appData?.editing_version?.id;
-    if (version?.id !== editingVersion?.id) {
+    if (version?.id !== editingVersionId) {
       if (version?.id === currentVersionId) {
         updateEditorState({
           canUndo: false,
@@ -779,7 +786,7 @@ const EditorComponent = (props) => {
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
-
+      console.log('appDefinitionChanged');
       return new Promise((resolve) => {
         updateEditorState({
           isUpdatingEditorStateInProcess: true,
@@ -931,6 +938,7 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
+    const editingVersion = useEditorStore.getState().editingVersion;
     if (isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
@@ -948,14 +956,13 @@ const EditorComponent = (props) => {
         toast(toastMessage, {
           icon: '🚫',
         });
-
         return updateEditorState({
           saveError: true,
           isUpdatingEditorStateInProcess: false,
         });
       }
 
-      updateAppVersion(appId, editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
+      updateAppVersion(appId, editingVersionId, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {
             ...editingVersion,
@@ -966,7 +973,7 @@ const EditorComponent = (props) => {
           if (config.ENABLE_MULTIPLAYER_EDITING) {
             props.ymap?.set('appDef', {
               newDefinition: appDefinition,
-              editingVersionId: editingVersion?.id,
+              editingVersionId: editingVersionId,
               currentSessionId,
               areOthersOnSameVersionAndPage,
               opts: appDiffOptions,
@@ -988,7 +995,6 @@ const EditorComponent = (props) => {
               events: updatedEvents,
             });
           }
-
           updateEditorState({
             saveError: false,
             isUpdatingEditorStateInProcess: false,
@@ -1016,7 +1022,6 @@ const EditorComponent = (props) => {
           }
         });
     }
-
     updateEditorState({
       saveError: false,
       isUpdatingEditorStateInProcess: false,
@@ -1147,7 +1152,6 @@ const EditorComponent = (props) => {
       // Update the component definition in the copy
       updatedAppDefinition.pages[currentPageId].components[componentDefinition.id].component =
         componentDefinition.component;
-
       updateEditorState({
         isUpdatingEditorStateInProcess: true,
       });
@@ -1159,7 +1163,7 @@ const EditorComponent = (props) => {
       }
     }
   };
-
+  // console.log(isUpdatingEditorStateInProcess, 'isUpdatingEditorStateInProcess');
   const removeComponent = (componentId) => {
     if (!isVersionReleased) {
       let newDefinition = cloneDeep(appDefinition);
@@ -1373,8 +1377,6 @@ const EditorComponent = (props) => {
       },
     });
 
-    const { globals: existingGlobals } = currentState;
-
     const page = {
       id: newPageId,
       name,
@@ -1383,7 +1385,7 @@ const EditorComponent = (props) => {
     };
 
     const globals = {
-      ...existingGlobals,
+      ...currentState.globals,
     };
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
@@ -1410,8 +1412,6 @@ const EditorComponent = (props) => {
       },
     });
 
-    const { globals: existingGlobals } = currentState;
-
     const page = {
       id: pageId,
       name,
@@ -1420,7 +1420,7 @@ const EditorComponent = (props) => {
     };
 
     const globals = {
-      ...existingGlobals,
+      ...currentState.globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
@@ -1542,7 +1542,7 @@ const EditorComponent = (props) => {
   const clonePage = (pageId) => {
     setIsSaving(true);
     appVersionService
-      .clonePage(appId, editingVersion?.id, pageId)
+      .clonePage(appId, editingVersionId, pageId)
       .then((data) => {
         const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
@@ -1656,8 +1656,8 @@ const EditorComponent = (props) => {
   };
 
   useEffect(() => {
-    const previewQuery = queryString.stringify({ version: editingVersion?.name });
-    const appVersionPreviewLink = editingVersion
+    const previewQuery = queryString.stringify({ version: editingVersionName });
+    const appVersionPreviewLink = editingVersionId
       ? `/applications/${slug || appId}/${currentState.page.handle}${
           !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
         }`
@@ -1668,15 +1668,6 @@ const EditorComponent = (props) => {
   }, [slug, currentVersionId]);
 
   const deviceWindowWidth = 450;
-
-  const editorRef = {
-    appDefinition: appDefinition,
-    queryConfirmationList: queryConfirmationList,
-    updateQueryConfirmationList: updateQueryConfirmationList,
-    navigate: props.navigate,
-    switchPage: switchPage,
-    currentPageId: currentPageId,
-  };
 
   if (isLoading) {
     return (
@@ -1709,8 +1700,8 @@ const EditorComponent = (props) => {
       <Confirm
         show={queryConfirmationList?.length > 0}
         message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
-        onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(editorRef, queryConfirmationData, true)}
-        onCancel={() => onQueryConfirmOrCancel(editorRef, queryConfirmationList[0])}
+        onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationData, true)}
+        onCancel={() => onQueryConfirmOrCancel(getEditorRef(), queryConfirmationList[0])}
         queryConfirmationData={queryConfirmationList[0]}
         darkMode={props.darkMode}
         key={queryConfirmationList[0]?.queryName}
@@ -1729,12 +1720,11 @@ const EditorComponent = (props) => {
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
-          editingVersion={editingVersion}
           canUndo={canUndo}
           canRedo={canRedo}
           handleUndo={handleUndo}
           handleRedo={handleRedo}
-          saveError={saveError}
+          // saveError={saveError}
           onNameChanged={onNameChanged}
           setAppDefinitionFromVersion={setAppDefinitionFromVersion}
           onVersionRelease={onVersionRelease}
@@ -1768,7 +1758,6 @@ const EditorComponent = (props) => {
               removeComponent={removeComponent}
               runQuery={(queryId, queryName) => handleRunQuery(queryId, queryName)}
               ref={dataSourceModalRef}
-              isSaving={isUpdatingEditorStateInProcess}
               currentPageId={currentPageId}
               addNewPage={addNewPage}
               switchPage={switchPage}
@@ -1829,7 +1818,7 @@ const EditorComponent = (props) => {
                     }}
                   >
                     {config.ENABLE_MULTIPLAYER_EDITING && (
-                      <RealtimeCursors editingVersionId={editingVersion?.id} editingPageId={currentPageId} />
+                      <RealtimeCursors editingVersionId={editingVersionId} editingPageId={currentPageId} />
                     )}
                     {isLoading && (
                       <div className="apploader">
@@ -1874,7 +1863,7 @@ const EditorComponent = (props) => {
                           handleUndo={handleUndo}
                           handleRedo={handleRedo}
                           removeComponent={removeComponent}
-                          onComponentClick={handleComponentClick}
+                          onComponentClick={noop} // Prop is used in Viewer hence using a dummy function to prevent error in editor
                           sideBarDebugger={sideBarDebugger}
                           currentPageId={currentPageId}
                         />
@@ -1898,7 +1887,7 @@ const EditorComponent = (props) => {
                 appId={appId}
                 appDefinition={appDefinition}
                 dataSourceModalHandler={dataSourceModalHandler}
-                editorRef={editorRef}
+                editorRef={getEditorRef()}
               />
               <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
             </div>
