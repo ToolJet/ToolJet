@@ -39,7 +39,7 @@ This Getting Started Guide will show you how to create an employee directory app
 
 Once you have created an account with ToolJet, go to the dashboard and click on the Create new app button. Name your application as "Employee Directory". You are ready to design your application now.
 
-<div style={{marginBottom:'15px', height:'429px'}}>
+<div style={{marginBottom:'15px', height:'397px'}}>
     <iframe
         className="screenshot-full"
         src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/b4059c71-812d-407b-9d4a-fc598eac6260-flo.html"
@@ -54,7 +54,7 @@ Once you have created an account with ToolJet, go to the dashboard and click on 
 
 Click and drag a **[Table](/docs/widgets/table)** component to the canvas and style it. 
 
-<div style={{marginBottom:'15px', height:'429px'}}>
+<div style={{marginBottom:'15px', height:'397px'}}>
     <iframe
         className="screenshot-full"
         src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/c1d2d1ca-077e-406d-8692-faf87f9c28a4-flo.html"
@@ -101,7 +101,7 @@ To display employees in the application, we first need to fetch data from the da
 - Toggle Run this query on application load? to automatically run the query when the app starts
 - Click on Run to fetch data
 
-<div style={{marginBottom:'15px', height:'429px'}}>
+<div style={{marginBottom:'15px', height:'397px'}}>
     <iframe
         className="screenshot-full"
         src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/de162474-7861-4275-bc8a-da275517908c-flo.html"
@@ -116,7 +116,7 @@ To display employees in the application, we first need to fetch data from the da
 
 Click on the Preview button to see a preview of the fetched data. 
 
-<div style={{marginBottom:'15px', height:'429px'}}>
+<div style={{marginBottom:'15px', height:'397px'}}>
     <iframe
         className="screenshot-full"
         src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/b01e837b-b1b0-468e-a4e3-4b8064ba2e56-flo.html"
@@ -140,7 +140,7 @@ Now, we need to bind the data returned by the `getEmployees` query above with th
 ```js
 {{queries.getEmployees.data}}
 ```
-<div style={{marginBottom:'15px', height:'429px'}}>
+<div style={{marginBottom:'15px', height:'397px'}}>
     <iframe
         className="screenshot-full"
         src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/f780f25f-0832-4a06-86f2-46864b891db1-flo.html"
@@ -198,7 +198,7 @@ In the bottom-right corner of the Table component, there is a `+`/Add new row bu
 - Choose Add new rows as Event, Run Query as Action
 - Select `addEmployee` as the Query
 
-<div style={{marginBottom:'15px', height:'429px'}}>
+<div style={{marginBottom:'15px', height:'397px'}}>
     <iframe
         className="screenshot-full"
         src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/e53c2517-41f1-4ee0-a5c0-59f5c3622c4a-flo.html"
@@ -213,7 +213,7 @@ In the bottom-right corner of the Table component, there is a `+`/Add new row bu
 
 Now if you click on the `+`/Add new row button, enter the employee data and click on Save. The `addEmployee` query will run and the data will be written to the `employees` table in the ToolJet Database.
 
-<div style={{marginBottom:'15px', height:'429px'}}>
+<div style={{marginBottom:'15px', height:'397px'}}>
     <iframe
         className="screenshot-full"
         src="https://www.floik.com/embed/e4f537b5-7b36-4760-9a52-caefc659a90b/a33b3f9d-a33d-49c3-a031-db09b0202cfd-flo.html"
