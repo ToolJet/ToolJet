@@ -5,16 +5,16 @@ import React, { useState, useEffect } from 'react';
 import Select, { components } from 'react-select';
 import { CustomMenuList } from './Table/SelectComponent';
 import * as Icons from '@tabler/icons-react';
-import Check from '@/_ui/Icon/solidIcons/Check';
 import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
-// const { MenuList, ValueContainer, SingleValue, Placeholder } = components;
+const { ValueContainer, SingleValue, Placeholder } = components;
 
-const ValueContainer = ({ children, doShowIcon = false, icon, ...props }) => {
+const CustomValueContainer = ({ children, ...props }) => {
+  const selectProps = props.selectProps;
   // eslint-disable-next-line import/namespace
-  const IconElement = Icons[icon] == undefined ? Icons['IconHome2'] : Icons[icon];
+  const IconElement = Icons[selectProps?.icon] == undefined ? Icons['IconHome2'] : Icons[selectProps?.icon];
   return (
-    <components.ValueContainer {...props}>
-      {doShowIcon && (
+    <ValueContainer {...props}>
+      {selectProps?.doShowIcon && (
         <IconElement
           style={{
             width: '16px',
@@ -24,47 +24,23 @@ const ValueContainer = ({ children, doShowIcon = false, icon, ...props }) => {
         />
       )}
       <span className="d-flex" {...props}>
-        {children}
+        {React.Children.map(children, (child) => {
+          return child ? (
+            child
+          ) : props.hasValue ? (
+            <SingleValue {...props} {...selectProps}>
+              {selectProps?.getOptionLabel(props?.getValue()[0])}
+            </SingleValue>
+          ) : (
+            <Placeholder {...props} key="placeholder" {...selectProps} data={props.getValue()}>
+              {selectProps.placeholder}
+            </Placeholder>
+          );
+        })}
       </span>
-    </components.ValueContainer>
+    </ValueContainer>
   );
 };
-
-// const CustomValueContainer = ({ children, selectProps, ...props }) => {
-//   const commonProps = {
-//     cx: props.cx,
-//     clearValue: props.clearValue,
-//     getStyles: props.getStyles,
-//     getValue: props.getValue,
-//     hasValue: props.hasValue,
-//     isMulti: props.isMulti,
-//     isRtl: props.isRtl,
-//     options: props.options,
-//     selectOption: props.selectOption,
-//     setValue: props.setValue,
-//     selectProps,
-//     theme: props.theme,
-//     getClassNames: props.getClassNames,
-//   };
-
-//   return (
-//     <ValueContainer {...props} selectProps={selectProps}>
-//       {React.Children.map(children, (child) => {
-//         return child ? (
-//           child
-//         ) : props.hasValue ? (
-//           <SingleValue {...commonProps} isFocused={selectProps.isFocused} isDisabled={selectProps.isDisabled}>
-//             {selectProps?.getOptionLabel(props?.getValue()[0])}
-//           </SingleValue>
-//         ) : (
-//           <Placeholder {...commonProps} key="placeholder" isDisabled={selectProps.isDisabled} data={props.getValue()}>
-//             {selectProps.placeholder}
-//           </Placeholder>
-//         );
-//       })}
-//     </ValueContainer>
-//   );
-// };
 
 const Option = (props) => {
   return (
@@ -105,12 +81,11 @@ export const DropDown = function DropDown({
     values,
     dropdownLoadingState,
     visibility,
-    mandatory,
+    disabledState,
   } = properties;
   const {
     selectedTextColor,
     fieldBorderRadius,
-    disabledState,
     justifyContent,
     boxShadow,
     labelColor,
@@ -121,15 +96,16 @@ export const DropDown = function DropDown({
     labelWidth,
     icon,
     iconVisibility,
+    errTextColor,
   } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
-  const [showValidationError, setShowValidationError] = useState(false);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
-  const validationData = validate(value);
+  const validationData = validate(currentValue);
   const { isValid, validationError } = validationData;
-  const [isFocused, setIsFocused] = useState(false);
+  const ref = React.useRef(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item?.default === true);
@@ -269,7 +245,7 @@ export const DropDown = function DropDown({
         height: height,
         boxShadow: state.isFocused ? boxShadow : boxShadow,
         borderRadius: Number.parseFloat(fieldBorderRadius),
-        borderColor: fieldBorderColor,
+        borderColor: !isValid ? 'var(--tj-text-input-widget-error)' : fieldBorderColor,
         backgroundColor: fieldBackgroundColor,
         '&:hover': {
           backgroundColor: '#f1f3f5',
@@ -323,21 +299,15 @@ export const DropDown = function DropDown({
     }),
   };
 
-  const containerRef = React.useRef(null);
-  // const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState(value);
-  const onDomClick = (e) => {
-    let menu = containerRef?.current?.querySelector('.select__menu');
-    if (!containerRef?.current?.contains(e.target) || !menu || !menu?.contains(e.target)) {
-      // setIsFocused(false);
-      setInputValue('');
-    }
-  };
   useEffect(() => {
-    document.addEventListener('mousedown', onDomClick);
-
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', onDomClick);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -356,6 +326,7 @@ export const DropDown = function DropDown({
       </div>
     );
   }
+
   return (
     <>
       <div
@@ -379,14 +350,11 @@ export const DropDown = function DropDown({
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         </div>
-        <div className="col px-0 h-100">
+        <div className="col px-0 h-100" ref={ref}>
           <Select
             isDisabled={disabledState}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
-              setIsFocused(false);
-
-              setShowValidationError(true);
               if (actionProps.action === 'clear') {
                 setCurrentValue(null);
               }
@@ -396,31 +364,42 @@ export const DropDown = function DropDown({
                 fireEvent('onSelect');
                 setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
+              setDropdownOpen(false);
             }}
             options={selectOptions}
             styles={customStyles}
-            isLoading={properties.loadingState}
+            // Only show loading when dynamic options are enabled
+            isLoading={advanced && properties.loadingState}
             onInputChange={onSearchTextChange}
-            onFocus={(event) => onComponentClick(event, component, id)}
+            onFocus={(event) => {
+              onComponentClick(event, component, id);
+            }}
+            menuIsOpen={dropdownOpen}
+            onBlur={() => setDropdownOpen(false)}
             menuPortalTarget={document.body}
             placeholder={placeholder}
             components={{
               MenuList: CustomMenuList,
-              ValueContainer: (props) => <ValueContainer {...props} icon={icon} doShowIcon={iconVisibility} />,
-              // ValueContainer: CustomValueContainer,
+              ValueContainer: CustomValueContainer,
               Option,
+              Input: () => null,
             }}
             isClearable
-            onMenuInputFocus={() => setIsFocused(true)}
-            {...{
-              menuIsOpen: isFocused || undefined,
-              isFocused: isFocused || undefined,
-            }}
+            icon={icon}
+            doShowIcon={iconVisibility}
+            onMenuOpen={() => setDropdownOpen(true)}
           />
         </div>
       </div>
-      <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>
-        {showValidationError && validationError}
+      <div
+        className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
+        style={{
+          color: errTextColor,
+          justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+          marginTop: alignment === 'top' ? '1.25rem' : '0.25rem',
+        }}
+      >
+        {!isValid && validationError}
       </div>
     </>
   );

@@ -302,16 +302,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               allComponents
             )
           : _renderOptions()}
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'loadingState',
-          'properties',
-          currentState,
-          allComponents
-        )}
+        {isDynamicOptionsEnabled &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'loadingState',
+            'properties',
+            currentState,
+            allComponents
+          )}
       </>
     ),
   });
@@ -352,6 +353,25 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
         componentMeta.validation?.[property]?.placeholder
       )
     ),
+  });
+
+  items.push({
+    title: `Additional Actions`,
+    isOpen: true,
+    children: additionalActions.map((property) => {
+      const paramType = property === 'Tooltip' ? 'general' : 'properties';
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        paramType,
+        currentState,
+        allComponents,
+        darkMode
+      );
+    }),
   });
 
   items.push({

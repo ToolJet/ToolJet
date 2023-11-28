@@ -397,7 +397,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   }
 
   const resolvedMandatory = resolveWidgetFieldValue(mandatory, currentState, false, customResolveObjects);
-  if (resolvedMandatory == true) {
+  if (resolvedMandatory) {
     if (!widgetValue) {
       return { isValid: false, validationError: `Field cannot be empty` };
     }
