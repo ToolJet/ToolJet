@@ -63,7 +63,7 @@ Go to the **Workspace settings**, and click on the **Configure git** tab.
 </div>
 <br/>
 
-Enter the **SSH URL** of the repository (obtained in Step 2) in the **Git Repository URL** field. Click on the **Generate SSH Key** button, and copy the SSH key that is generated. The SSH key is used to authenticate ToolJet with the repository.
+Enter the **SSH URL** of the repository (obtained in Step 2) in the **Git repository URL** field. Click on the **Generate SSH key** button, and copy the SSH key that is generated. The SSH key is used to authenticate ToolJet with the repository.
 
 <div style={{textAlign: 'center'}}>
 
@@ -103,6 +103,14 @@ Go back to the **Configure git** tab on ToolJet, and click on the **Finalize set
 
 To enable or disable the GitSync feature, go to the **Configure git** tab on the **Workspace settings** page, and toggle on/off the **Connect** switch. This is only available if the GitSync feature is configured.
 
+**When enabled**
+
+On clicking the GitSync button, the users will be able to commit changes to the git repository.
+
+**When disabled**
+1. For non-admin users: The users will not be able to commit changes to the git repository. They will see a dialogue box that the GitSync feature is not configured and they need to contact the admin to configure it.
+2. For admin users: The users will see a dialogue box with a link to configure the GitSync feature.
+
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/gitsync/connect.png" alt="GitSync" />
@@ -111,7 +119,10 @@ To enable or disable the GitSync feature, go to the **Configure git** tab on the
 
 ## Delete GitSync configuration
 
-To delete the GitSync configuration, go to the **Configure git** tab on the **Workspace settings** page, and click on the **Delete configuration** button. This will delete the SSH key from the GitHub repository and the GitSync feature will be disabled.
+To delete the GitSync configuration, go to the **Configure git** tab on the **Workspace settings** page, and click on the **Delete configuration** button. This will delete the SSH key from the ToolJet configuration and the GitSync feature will be disabled.
+
+**Note:**
+- Deleting the GitSync configuration will not delete the apps from the git repository. The apps will still be available in the git repository in the same state as they were before the GitSync configuration was deleted.
 
 <div style={{textAlign: 'center'}}>
 
@@ -138,6 +149,10 @@ Once the GitSync feature is configured, you can start pushing changes to the git
 ### App creation
 
 When you create a new app, you will see an option to select the `Commit changes`. If you select the `commit changes` option, the changes will be committed to the git repository.
+
+:::info
+If the app name is same as the name of the existing app in the git repo, it will overwrite the existing app in the git repo.
+:::
 
 <div style={{textAlign: 'center'}}>
 
@@ -166,7 +181,9 @@ Whenever an app is renamed, the changes will be automatically committed to the g
 
 ### App updates
 
-Whenever a user makes a change in an app, they can make a commit to the git repository by clicking on the **GitSync** button on the topbar. On clicking the **GitSync** button, a modal will open with the option to enter the commit message. The user can enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. Along with the commit message, the user can also see the connnected **Git repo URL** and the **last commit details**.
+Whenever a user makes a change in an app, they can make a commit to the git repository by clicking on the **GitSync** button on the topbar. On clicking the **GitSync** button, a modal will open with the option to enter the commit message. The user can enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. Along with the commit message, the user can also see the connnected **Git repo URL** and the **last commit details**. 
+
+**Last commit details** helps the user to know the last commit message, author, date, and time. This helps the user to know the last commit details and make the commit message accordingly.
 
 <div style={{textAlign: 'center'}}>
 
@@ -182,6 +199,10 @@ Once the changes are committed, the user can see the commit message, author, and
 <img className="screenshot-full" src="/img/gitsync/commitgitsync.png" alt="GitSync" />
 
 </div>
+
+### App deletion
+
+Whenever a user deleted an app from the workspace, the app will not be deleted from the git repository. The app will be available in the git repository in the same state as it was before the app was deleted.
 
 ### App version update
 
@@ -208,15 +229,16 @@ Once the GitSync feature is configured, go to the ToolJet dashboard and click on
 
 On clicking the **Import from git repository** option, a modal will open with the dropdown to select the app to be imported from the git repository. Once the app is selected, the app name and the last commit will be displayed. Click on the **Import app** button to import the app from the git repository. 
 
+:::caution
+- The app imported from the git repository cannot be edited.
+- The app imported from the Git repository should have a unique name. If the app's name is the same as that of an existing app in the workspace, the user will need to either delete the existing app or rename the app being imported from the workspace that has write access to the repository.
+:::
+
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/gitsync/importmodal.png" alt="GitSync" />
 
 </div>
-
-:::caution
-The apps imported from the git repository cannot be edited.
-:::
 
 ### Checking for updates
 
