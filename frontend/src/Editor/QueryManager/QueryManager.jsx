@@ -8,6 +8,7 @@ import { defaultSources } from './constants';
 import { useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
 import { useDataSources, useGlobalDataSources, useLoadingDataSources } from '@/_stores/dataSourcesStore';
 import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 
 const QueryManager = ({ mode, dataQueriesChanged, appId, darkMode, apps, allComponents, appDefinition, editorRef }) => {
   const loadingDataSources = useLoadingDataSources();
@@ -68,15 +69,24 @@ const QueryManager = ({ mode, dataQueriesChanged, appId, darkMode, apps, allComp
       })}
     >
       <QueryManagerHeader darkMode={darkMode} options={options} editorRef={editorRef} appId={appId} />
-      <QueryManagerBody
-        darkMode={darkMode}
-        options={options}
-        allComponents={allComponents}
-        apps={apps}
-        appId={appId}
-        appDefinition={appDefinition}
-        setOptions={setOptions}
-      />
+      <CodeHinterContext.Provider
+        value={{
+          parameters: selectedQuery?.options?.parameters?.reduce(
+            (parameters, parameter) => ({ ...parameters, [parameter.name]: parameter.defaultValue }),
+            {}
+          ),
+        }}
+      >
+        <QueryManagerBody
+          darkMode={darkMode}
+          options={options}
+          allComponents={allComponents}
+          apps={apps}
+          appId={appId}
+          appDefinition={appDefinition}
+          setOptions={setOptions}
+        />
+      </CodeHinterContext.Provider>
     </div>
   );
 };

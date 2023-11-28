@@ -33,8 +33,9 @@ import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { Alert } from '@/_ui/Alert/Alert';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import ClientServerSwitch from './Elements/ClientServerSwitch';
+import { CodeHinterContext } from './CodeHinterContext';
 
 const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
@@ -79,6 +80,8 @@ export function CodeHinter({
   currentState: _currentState,
   verticalLine = true,
 }) {
+  const context = useContext(CodeHinterContext);
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
     lineNumbers: lineNumbers ?? false,
@@ -91,8 +94,9 @@ export function CodeHinter({
     highlightSelectionMatches: true,
     placeholder,
   };
-  const currentState = useCurrentState();
-  const [realState, setRealState] = useState(currentState);
+  const currentState = useCurrentStateStore((state) => state);
+  const [realState, setRealState] = useState({ ...currentState, ..._currentState, ...context });
+
   const [currentValue, setCurrentValue] = useState(initialValue);
 
   const [prevCurrentValue, setPrevCurrentValue] = useState(null);
@@ -121,13 +125,10 @@ export function CodeHinter({
   const prevCountRef = useRef(false);
 
   useEffect(() => {
-    if (_currentState) {
-      setRealState(_currentState);
-    } else {
-      setRealState(currentState);
-    }
+    const newState = { ...currentState, ..._currentState, ...context };
+    setRealState(newState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components, _currentState]);
+  }, [JSON.stringify([currentState.components, _currentState, context])]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

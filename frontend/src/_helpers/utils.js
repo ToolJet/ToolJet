@@ -66,6 +66,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'client',
           'server',
           'constants',
+          'parameters',
           'moment',
           '_',
           ...Object.keys(customObjects),
@@ -82,6 +83,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
+        state?.parameters,
         moment,
         _,
         ...Object.values(customObjects),

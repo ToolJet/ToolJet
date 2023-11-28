@@ -19,6 +19,7 @@ import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+import ParameterList from './ParameterList';
 
 export const QueryManagerBody = ({
   darkMode,
@@ -270,14 +271,48 @@ export const QueryManagerBody = ({
 
   if (selectedQueryId !== selectedQuery?.id) return;
 
+  const handleAddParameter = (newParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
+      optionsChanged({
+        ...prevOptions,
+        parameters: [...(prevOptions?.parameters ?? []), newParameter],
+      });
+    }
+  };
+
+  const handleParameterChange = (index, updatedParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
+      const updatedParameters = [...prevOptions.parameters];
+      updatedParameters[index] = updatedParameter;
+      optionsChanged({ ...prevOptions, parameters: updatedParameters });
+    }
+  };
+
+  const handleParameterRemove = (index) => {
+    const prevOptions = { ...options };
+    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
+    optionsChanged({ ...prevOptions, parameters: updatedParameters });
+  };
+
   return (
     <div
       className={`row row-deck px-2 mt-0 query-details ${
         selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
       }`}
     >
+      <ParameterList
+        parameters={options.parameters}
+        handleAddParameter={handleAddParameter}
+        handleParameterChange={handleParameterChange}
+        handleParameterRemove={handleParameterRemove}
+        currentState={currentState}
+        darkMode={darkMode}
+      />
       {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
-
       {selectedDataSource === null || !selectedQuery ? renderDataSourcesList() : renderQueryElement()}
       {selectedDataSource !== null ? renderQueryOptions() : null}
     </div>
