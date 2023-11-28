@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { ToolTip } from '@/_components/ToolTip';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const PasswordInputField = ({
   disabledState,
@@ -13,22 +14,75 @@ const PasswordInputField = ({
   showValidationError,
   isValid,
   setShowValidationError,
+  width,
+  alignment,
+  direction,
+  color,
+  auto,
+  label,
+  padding,
+  visibility,
+  height,
+  iconVisibility,
+  setIconVisibility,
 }) => (
-  <input
-    disabled={disabledState}
-    onChange={(e) => {
-      onChange(e.target.value);
-      setShowValidationError(true);
-    }}
-    type={'password'}
-    className={`tj-text-input-widget  ${!isValid && showValidationError ? 'is-invalid' : ''} validation-without-icon ${
-      darkMode && 'dark-theme-placeholder'
-    }`}
-    placeholder={placeholder}
-    value={value}
-    style={computedStyles}
-    data-cy={dataCy}
-  />
+  <div
+    // data-disabled={disable}
+    className={`text-input d-flex ${alignment == 'top' && 'flex-column'}  ${
+      direction == 'alignrightinspector' && alignment == 'side' && 'flex-row-reverse'
+    }
+    ${direction == 'alignrightinspector' && alignment == 'top' && 'text-right'}`}
+    style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
+  >
+    <label
+      style={{
+        color: darkMode && color == '#11181C' ? '#fff' : color,
+        width: auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
+        maxWidth: auto && alignment == 'side' ? '70%' : '100%',
+        overflowWrap: 'break-word',
+        marginRight: label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
+        marginLeft: label.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
+      }}
+    >
+      {label}
+    </label>
+    <input
+      disabled={disabledState}
+      onChange={(e) => {
+        onChange(e.target.value);
+        setShowValidationError(true);
+      }}
+      type={iconVisibility ? 'text' : 'password'}
+      className={`tj-text-input-widget  ${
+        !isValid && showValidationError ? 'is-invalid' : ''
+      } validation-without-icon ${darkMode && 'dark-theme-placeholder'}`}
+      placeholder={placeholder}
+      value={value}
+      style={computedStyles}
+      data-cy={dataCy}
+    />
+    <div
+      onClick={() => {
+        // alert('hi');
+        setIconVisibility(!iconVisibility);
+      }}
+    >
+      <SolidIcon
+        className="password-component-eye"
+        name={iconVisibility ? 'eye' : 'eyedisable'}
+        style={{
+          width: '7',
+          height: '7',
+          // right: direction == 'alignleftinspector' && alignment == 'side' && `${elementWidth - 21}px`,
+          left: direction == 'alignrightinspector' && alignment == 'side' && `6px`,
+          position: 'absolute',
+          top: alignment == 'side' ? '50%' : '32px',
+          transform: ' translateY(-50%)',
+        }}
+        stroke={1.5}
+      />
+    </div>
+  </div>
 );
 
 export const PasswordInput = ({
@@ -42,8 +96,9 @@ export const PasswordInput = ({
   fireEvent,
   dataCy,
 }) => {
-  const { borderRadius, backgroundColor, boxShadow } = styles;
-  const { visibility, disabledState, tooltip, loadingState } = properties;
+  const { borderRadius, backgroundColor, boxShadow, width, alignment, direction, color, auto, padding } = styles;
+  const { visibility, disabledState, tooltip, loadingState, label } = properties;
+  const [iconVisibility, setIconVisibility] = useState(false);
 
   const placeholder = properties.placeholder;
 
@@ -52,13 +107,14 @@ export const PasswordInput = ({
   const [showValidationError, setShowValidationError] = useState(false);
 
   const computedStyles = {
-    height,
+    height: padding == 'default' ? '32px' : '38px',
     display: visibility ? '' : 'none',
     borderRadius: `${borderRadius}px`,
     color: darkMode ? '#fff' : '#11181C',
     borderColor: 'var(--tj-text-input-widget-border-default)',
     backgroundColor: darkMode && ['#ffffff'].includes(backgroundColor) ? '#232e3c' : backgroundColor,
     boxShadow: boxShadow,
+    padding: '3px 5px',
   };
 
   React.useEffect(() => {
@@ -86,6 +142,8 @@ export const PasswordInput = ({
               showValidationError={showValidationError}
               isValid={isValid}
               setShowValidationError={setShowValidationError}
+              iconVisibility={iconVisibility}
+              setIconVisibility={setIconVisibility}
             />
           </>
         </ToolTip>
@@ -105,6 +163,14 @@ export const PasswordInput = ({
           showValidationError={showValidationError}
           isValid={isValid}
           setShowValidationError={setShowValidationError}
+          label={label}
+          alignment={alignment}
+          color={color}
+          width={width}
+          direction={direction}
+          auto={auto}
+          iconVisibility={iconVisibility}
+          setIconVisibility={setIconVisibility}
         />
       )}
 
