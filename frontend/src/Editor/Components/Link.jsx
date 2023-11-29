@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import cx from 'classnames';
 
-export const Link = ({ height, properties, styles, fireEvent, registerAction, dataCy }) => {
+export const Link = ({ height, properties, styles, fireEvent, setExposedVariable, dataCy }) => {
   const { linkTarget, linkText, targetType } = properties;
   const { textColor, textSize, underline, visibility, boxShadow } = styles;
   const clickRef = useRef();
@@ -12,13 +12,13 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, da
     boxShadow,
   };
 
-  registerAction(
-    'click',
-    async function () {
+  useEffect(() => {
+    setExposedVariable('click', async function () {
       clickRef.current.click();
-    },
-    []
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div
       className={cx('link-widget', { 'd-none': !visibility }, `${underline}`)}

@@ -17,8 +17,8 @@ export const Alert = ({ children, svg, cls = '', imgHeight = null, imgWidth = nu
   );
 };
 
-const Container = ({ children, cls = '', darkMode }) => {
-  return <div className={`alert alert-component ${darkMode && 'dark'} ${cls}`}>{children}</div>;
+const Container = ({ children, cls = '', useDarkMode }) => {
+  return <div className={`alert alert-component ${useDarkMode && 'dark'} ${cls}`}>{children}</div>;
 };
 
 const Message = ({ children }) => {

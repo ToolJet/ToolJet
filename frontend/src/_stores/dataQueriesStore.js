@@ -1,13 +1,15 @@
 import { create, zustandDevTools } from './utils';
 import { getDefaultOptions } from './storeHelper';
 import { dataqueryService } from '@/_services';
-import debounce from 'lodash/debounce';
+// import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
+import { isEmpty, throttle } from 'lodash';
+import { useEditorStore } from './editorStore';
 
 const initialState = {
   dataQueries: [],
@@ -16,25 +18,40 @@ const initialState = {
   loadingDataQueries: true,
   isDeletingQueryInProcess: false,
   /** TODO: Below two params are primarily used only for websocket invocation post update. Can be removed onece websocket logic is revamped */
-  isCreatingQueryInProcess: false,
+  // isCreatingQueryInProcess: false,
+  creatingQueryInProcessId: null,
   isUpdatingQueryInProcess: false,
+  /** When a 'Create Data Query' operation is in progress, rename/update API calls are cached in the variable. */
+  queuedActions: {},
 };
 
 export const useDataQueriesStore = create(
   zustandDevTools(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       actions: {
         // TODO: Remove editor state while changing currentState
-        fetchDataQueries: async (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorRef) => {
+        fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
           set({ loadingDataQueries: true });
-          const data = await dataqueryService.getAll(appId);
+          const data = await dataqueryService.getAll(appVersionId);
           set((state) => ({
             dataQueries: sortByAttribute(data.data_queries, state.sortBy, state.sortOrder),
             loadingDataQueries: false,
           }));
-          // Runs query on loading application
-          if (runQueriesOnAppLoad) runQueries(data.data_queries, editorRef);
+
+          if (data.data_queries.length !== 0) {
+            const queryConfirmationList = [];
+            data.data_queries.forEach(({ id, name, options }) => {
+              if (options && options?.requestConfirmation && options?.runOnPageLoad) {
+                queryConfirmationList.push({ queryId: id, queryName: name });
+              }
+            });
+
+            if (queryConfirmationList.length !== 0) {
+              useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
+            }
+          }
+
           // Compute query state to be added in the current state
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           if (selectFirstQuery) {
@@ -43,6 +60,9 @@ export const useDataQueriesStore = create(
             const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
             actions.setSelectedQuery(query?.id);
           }
+
+          // Runs query on loading application
+          if (runQueriesOnAppLoad) runQueries(data.data_queries, ref);
         },
         setDataQueries: (dataQueries) => set({ dataQueries }),
         deleteDataQueries: (queryId) => {
@@ -93,14 +113,14 @@ export const useDataQueriesStore = create(
           const appId = useAppDataStore.getState().appId;
           const { options, name } = getDefaultOptions(selectedDataSource);
           const kind = selectedDataSource.kind;
-          set({ isCreatingQueryInProcess: true });
+          const tempId = uuidv4();
+          set({ creatingQueryInProcessId: tempId });
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
           const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
           useAppDataStore.getState().actions.setIsSaving(true);
           const { dataQueries } = useDataQueriesStore.getState();
           const currDataQueries = [...dataQueries];
-          const tempId = uuidv4();
           set(() => ({
             dataQueries: [
               {
@@ -117,25 +137,40 @@ export const useDataQueriesStore = create(
             ],
           }));
           actions.setSelectedQuery(tempId);
+          actions.setNameInputFocussed(true);
           dataqueryService
             .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
             .then((data) => {
               set((state) => ({
-                isCreatingQueryInProcess: false,
+                creatingQueryInProcessId: null,
                 dataQueries: state.dataQueries.map((query) => {
                   if (query.id === tempId) {
-                    return { ...query, ...data, data_source_id: dataSourceId };
+                    return {
+                      ...query,
+                      id: data.id,
+                      data_source_id: dataSourceId,
+                    };
                   }
                   return query;
                 }),
               }));
               actions.setSelectedQuery(data.id, data);
-              actions.setNameInputFocussed(true);
               if (shouldRunQuery) actions.setQueryToBeRun(data);
+
+              /** Checks if there is an API call cached. If yes execute it */
+              if (!isEmpty(get()?.queuedActions?.renameQuery)) {
+                get().actions.renameQuery(data.id, get().queuedActions.renameQuery);
+                set({ queuedActions: { ...get().queuedActions, renameQuery: undefined } });
+              }
+
+              if (!isEmpty(get()?.queuedActions?.saveData)) {
+                get().actions.saveData({ ...get().queuedActions.saveData, id: data.id });
+                set({ queuedActions: { ...get().queuedActions, saveData: undefined } });
+              }
             })
             .catch((error) => {
               set((state) => ({
-                isCreatingQueryInProcess: false,
+                creatingQueryInProcessId: null,
                 dataQueries: state.dataQueries.filter((query) => query.id !== tempId),
               }));
               actions.setSelectedQuery(null);
@@ -144,6 +179,11 @@ export const useDataQueriesStore = create(
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         renameQuery: (id, newName) => {
+          /** If query creation in progress, skips call and pushes the update to queue */
+          if (get().creatingQueryInProcessId === id) {
+            set({ queuedActions: { ...get().queuedActions, renameQuery: newName } });
+            return;
+          }
           useAppDataStore.getState().actions.setIsSaving(true);
           /**
            * Seting name to store before api call for instant UI update and better UX.
@@ -196,7 +236,7 @@ export const useDataQueriesStore = create(
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         duplicateQuery: (id, appId) => {
-          set({ isCreatingQueryInProcess: true });
+          set({ creatingQueryInProcessId: uuidv4() });
           const { actions } = useQueryPanelStore.getState();
           const { dataQueries } = useDataQueriesStore.getState();
           const queryToClone = { ...dataQueries.find((query) => query.id === id) };
@@ -208,7 +248,7 @@ export const useDataQueriesStore = create(
             newName = queryToClone.name + '_copy' + count.toString();
           }
           queryToClone.name = newName;
-          delete queryToClone.id;
+
           useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
             .create(
@@ -222,20 +262,45 @@ export const useDataQueriesStore = create(
             )
             .then((data) => {
               set((state) => ({
-                isCreatingQueryInProcess: false,
+                creatingQueryInProcessId: null,
                 dataQueries: [{ ...data, data_source_id: queryToClone.data_source_id }, ...state.dataQueries],
               }));
               actions.setSelectedQuery(data.id, { ...data, data_source_id: queryToClone.data_source_id });
+
+              const dataQueryEvents = useAppDataStore
+                .getState()
+                .events?.filter((event) => event.target === 'data_query' && event.sourceId === queryToClone.id);
+
+              if (dataQueryEvents?.length === 0) return;
+
+              return Promise.all(
+                dataQueryEvents.map((event) => {
+                  const newEvent = {
+                    event: {
+                      ...event?.event,
+                    },
+                    eventType: event?.target,
+                    attachedTo: data.id,
+                    index: event?.index,
+                  };
+                  useAppDataStore.getState().actions?.createAppVersionEventHandlers(newEvent);
+                })
+              );
             })
             .catch((error) => {
               console.error('error', error);
               set({
-                isCreatingQueryInProcess: false,
+                creatingQueryInProcessId: null,
               });
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
-        saveData: debounce((newValues) => {
+        saveData: throttle((newValues) => {
+          /** If query creation in progress, skips call and pushes the update to queue */
+          if (get().creatingQueryInProcessId && get().creatingQueryInProcessId === newValues.id) {
+            set({ queuedActions: { ...get().queuedActions, saveData: newValues } });
+            return;
+          }
           useAppDataStore.getState().actions.setIsSaving(true);
           set({ isUpdatingQueryInProcess: true });
           dataqueryService
@@ -286,5 +351,5 @@ const sortByAttribute = (data, sortBy, order) => {
 
 export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries);
 export const useDataQueriesActions = () => useDataQueriesStore((state) => state.actions);
-export const useQueryCreationLoading = () => useDataQueriesStore((state) => state.isCreatingQueryInProcess);
+export const useQueryCreationLoading = () => useDataQueriesStore((state) => !!state.creatingQueryInProcessId);
 export const useQueryUpdationLoading = () => useDataQueriesStore((state) => state.isUpdatingQueryInProcess);

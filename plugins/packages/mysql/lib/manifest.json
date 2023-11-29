@@ -12,6 +12,9 @@
       "rawData": {}
     },
     "options": {
+      "connection_type": {
+        "type": "string"
+      },
       "host": {
         "type": "string"
       },
@@ -19,6 +22,9 @@
         "type": "string"
       },
       "database": {
+        "type": "string"
+      },
+      "socket_path": {
         "type": "string"
       },
       "username": {
@@ -31,6 +37,9 @@
     }
   },
   "defaults": {
+    "connection_type": {
+      "value": "hostname"
+    },
     "host": {
       "value": "localhost"
     },
@@ -40,6 +49,9 @@
     "database": {
       "value": ""
     },
+    "socket": {
+      "value": ""
+    },
     "username": {
       "value": ""
     },
@@ -47,49 +59,77 @@
       "value": ""
     },
     "ssl_enabled": {
-      "value": true
+      "value": false
     }
   },
   "properties": {
-    "host": {
-      "label": "Host",
-      "key": "host",
-      "type": "text",
-      "description": "Enter host"
+    "connection_type": {
+      "label": "Connection type",
+      "key": "connection_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for connection type",
+      "list": [
+        {
+          "value": "hostname",
+          "name": "Hostname"
+        },
+        {
+          "value": "socket_path",
+          "name": "Socket"
+        }
+      ],
+      "commonFields": {
+        "username": {
+          "label": "Username",
+          "key": "username",
+          "type": "text",
+          "description": "Enter username"
+        },
+        "password": {
+          "label": "Password",
+          "key": "password",
+          "type": "password",
+          "description": "Enter password"
+        },
+        "database": {
+          "label": "Database Name",
+          "key": "database",
+          "type": "text",
+          "description": "Name of the database"
+        }
+      }
     },
-    "port": {
-      "label": "Port",
-      "key": "port",
-      "type": "text",
-      "description": "Enter port"
+    "hostname": {
+      "host": {
+        "label": "Host",
+        "key": "host",
+        "type": "text",
+        "description": "Enter host"
+      },
+      "port": {
+        "label": "Port",
+        "key": "port",
+        "type": "text",
+        "description": "Enter port"
+      },
+      "ssl_enabled": {
+        "label": "SSL",
+        "key": "ssl_enabled",
+        "type": "toggle",
+        "description": "Toggle for ssl_enabled"
+      }
     },
-    "database": {
-      "label": "Database Name",
-      "key": "database",
-      "type": "text",
-      "description": "Name of the database"
-    },
-    "ssl_enabled": {
-      "label": "SSL",
-      "key": "ssl_enabled",
-      "type": "toggle",
-      "description": "Toggle for ssl_enabled"
-    },
-    "username": {
-      "label": "Username",
-      "key": "username",
-      "type": "text",
-      "description": "Enter username"
-    },
-    "password": {
-      "label": "Password",
-      "key": "password",
-      "type": "password",
-      "description": "Enter password"
+    "socket_path": {
+      "socket": {
+        "label": "Socket Path",
+        "type": "text",
+        "name": "socket_path",
+        "description": "Enter the socket path"
+      }
     }
   },
   "required": [
-    "host",
+    "connection_type",
     "port",
     "username",
     "password"

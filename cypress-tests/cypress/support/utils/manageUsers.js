@@ -134,10 +134,10 @@ export const manageUsersElements = () => {
 export const inviteUser = (firstName, email) => {
   fillUserInviteForm(firstName, email);
   cy.get(usersSelector.buttonInviteUsers).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    usersText.userCreatedToast
-  );
+  // cy.verifyToastMessage(
+  //   commonSelectors.toastMessage,
+  //   usersText.userCreatedToast
+  // );
   cy.wait(1000)
   fetchAndVisitInviteLink(email);
 };

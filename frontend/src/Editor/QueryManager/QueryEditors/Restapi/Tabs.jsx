@@ -44,7 +44,7 @@ function ControlledTabs({
           )}
         </div>
 
-        <div className={`col ${darkMode && 'theme-dark'}`}>
+        <div className={`col`}>
           <Tab.Content bsPrefix="rest-api-tab-content" className="query-manager-border-color rounded">
             <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers
@@ -68,7 +68,11 @@ function ControlledTabs({
                 componentName={componentName}
               />
             </Tab.Pane>
-            <Tab.Pane eventKey="body" bsPrefix="rest-api-tabpanes" transition={false}>
+            <Tab.Pane
+              eventKey="body"
+              bsPrefix={`rest-api-tabpanes ${bodyToggle && 'rest-api-tabpanes-body'}`}
+              transition={false}
+            >
               <Body
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}

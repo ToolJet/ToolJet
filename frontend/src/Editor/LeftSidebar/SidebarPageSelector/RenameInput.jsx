@@ -10,7 +10,7 @@ export const RenameInput = ({ page, updaterCallback, updatePageEditMode }) => {
 
   return (
     <div className="row" role="button">
-      <div className="col-12">
+      <div className="col-12 tj-app-input">
         <input
           data-cy={`page-rename-input`}
           type="text"

@@ -30,7 +30,6 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
               </div>
             </div>
             <ButtonSolid variant="ghostBlue" size="sm" className="py-3" onClick={() => removeKeyValuePair(index)}>
-              {/* <img src="assets/images/icons/trash-light.svg" className="h-3" /> */}
               <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   fillRule="evenodd"
@@ -43,9 +42,6 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
           </div>
         );
       })}
-      {/* <ButtonSolid variant="ghostBlue" size="sm" onClick={addNewKeyValuePair}>
-        + Add header
-      </ButtonSolid> */}
       <ButtonSolid variant="ghostBlue" size="sm" onClick={addNewKeyValuePair}>
         <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
         &nbsp;&nbsp; Add header

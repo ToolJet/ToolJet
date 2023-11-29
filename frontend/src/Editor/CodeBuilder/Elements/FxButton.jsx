@@ -1,3 +1,4 @@
+import Fx from '@/_ui/Icon/bulkIcons/Fx';
 import React from 'react';
 
 export default function FxButton({ active, onPress, dataCy }) {
@@ -8,7 +9,7 @@ export default function FxButton({ active, onPress, dataCy }) {
       onClick={onPress}
       data-cy={`${dataCy}-fx-button`}
     >
-      Fx
+      <Fx width={16} fill={active ? '#3E63DD' : '#889096'} />
     </div>
   );
 }

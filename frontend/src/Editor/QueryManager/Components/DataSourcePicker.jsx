@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import Information from '@/_ui/Icon/solidIcons/Information';
-import Search from '@/_ui/Icon/solidIcons/Search';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId } from '@/_helpers/utils';
@@ -13,6 +12,7 @@ import { Col, Container, Row } from 'react-bootstrap';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { Tooltip } from 'react-tooltip';
+import { authenticationService } from '@/_services';
 
 function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalDataSources }) {
   const allUserDefinedSources = [...dataSources, ...globalDataSources];
@@ -21,6 +21,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
   const navigate = useNavigate();
   const { createDataQuery } = useDataQueriesActions();
   const { setPreviewData } = useQueryPanelActions();
+  const { admin } = authenticationService.currentSessionValue;
 
   const handleChangeDataSource = (source) => {
     createDataQuery(source);
@@ -38,22 +39,28 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
     } else {
       setFilteredUserDefinedDataSources(allUserDefinedSources);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, globalDataSources, dataSources]);
 
   const handleAddClick = () => {
     const workspaceId = getWorkspaceId();
-    navigate(`/${workspaceId}/global-datasources`);
+    navigate(`/${workspaceId}/data-sources`);
   };
 
   return (
     <>
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
-        Connect to a datasource
+        Connect to a Data source
       </h4>
       <p className="mb-3" style={{ textAlign: 'center' }}>
-        Select a datasource to start creating a new query. To know more about queries in ToolJet, you can read our
+        Select a Data source to start creating a new query. To know more about queries in ToolJet, you can read our
         &nbsp;
-        <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
+        <a
+          data-cy="querymanager-doc-link"
+          target="_blank"
+          href="https://docs.tooljet.com/docs/app-builder/query-panel"
+          rel="noreferrer"
+        >
           documentation
         </a>
       </p>
@@ -81,17 +88,19 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </div>
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
-            {`Available Datasources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
+            {`Available Data sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
-          <ButtonSolid
-            size="sm"
-            variant="ghostBlue"
-            onClick={handleAddClick}
-            data-cy={`landing-page-add-new-ds-button`}
-          >
-            <Plus style={{ height: '16px' }} fill="var(--indigo9)" />
-            Add new
-          </ButtonSolid>
+          {admin && (
+            <ButtonSolid
+              size="sm"
+              variant="ghostBlue"
+              onClick={handleAddClick}
+              data-cy={`landing-page-add-new-ds-button`}
+            >
+              <Plus style={{ height: '16px' }} fill="var(--indigo9)" />
+              Add new
+            </ButtonSolid>
+          )}
         </div>
         {isEmpty(allUserDefinedSources) ? (
           <EmptyDataSourceBanner />
@@ -139,10 +148,7 @@ const EmptyDataSourceBanner = () => (
     <div className="me-2">
       <Information fill="var(--slate9)" />
     </div>
-    <div>
-      No global datasources have been added yet. <br />
-      Add new datasources to connect to your app! 🚀
-    </div>
+    <div>No Data sources have been added yet.</div>
   </div>
 );
 

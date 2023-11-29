@@ -10,7 +10,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -25,12 +25,9 @@ describe("Data sources", () => {
     cy.appUILogin();
   });
 
-  it("Should verify elements on connection form", () => {
+  it("Should verify elements on CouchDB connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -49,14 +46,8 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("CouchDB");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "CouchDB");
-    cy.get('[data-cy="data-source-couchdb"]').click();
+    selectAndAddDataSource("databases", "CouchDB", data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      "CouchDB"
-    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -113,15 +104,11 @@ describe("Data sources", () => {
       "have.text",
       "Invalid URL"
     );
+    deleteDatasource(`cypress-${data.lastName}-couchdb`);
   });
 
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource("CouchDB");
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-couchdb`
-    );
+  it("Should verify the functionality of CouchDB connection form.", () => {
+    selectAndAddDataSource("databases", "CouchDB", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -140,7 +127,7 @@ describe("Data sources", () => {
       Cypress.env("couchdb_user")
     );
     cy.get(".react-select__input-container").type("HTTP{enter}");
-
+    cy.get(".datasource-edit-btn").should("be.visible").click();
     cy.get(postgreSqlSelector.passwordTextField).type(
       Cypress.env("couchdb_password"),
       { log: false }
@@ -154,7 +141,7 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(

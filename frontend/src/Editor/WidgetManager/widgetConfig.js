@@ -152,13 +152,7 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      serverSidePagination: {
-        type: 'toggle',
-        displayName: 'Server-side pagination',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
+
       enableNextButton: {
         type: 'toggle',
         displayName: 'Enable next page button',
@@ -168,7 +162,7 @@ export const widgets = [
       },
       enabledSort: {
         type: 'toggle',
-        displayName: 'Enable sorting',
+        displayName: 'Enable column sorting',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -194,33 +188,67 @@ export const widgets = [
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
-      clientSidePagination: {
+      // clientSidePagination: {
+      //   type: 'toggle',
+      //   displayName: 'Enable pagination',
+      //   validation: {
+      //     schema: { type: 'boolean' },
+      //   },
+      // },
+      enablePagination: {
         type: 'toggle',
-        displayName: 'Client-side pagination',
+        displayName: 'Enable pagination',
         validation: {
           schema: { type: 'boolean' },
         },
       },
+      serverSidePagination: {
+        type: 'clientServerSwitch',
+        displayName: 'Type',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        // defaultValue: 'clientSide',
+      },
       serverSideSearch: {
-        type: 'toggle',
-        displayName: 'Server-side search',
+        type: 'clientServerSwitch',
+        displayName: 'Type',
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        // defaultValue: 'clientSide',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       serverSideSort: {
-        type: 'toggle',
-        displayName: 'Server-side sort',
+        type: 'clientServerSwitch',
+        displayName: 'Type',
         validation: {
           schema: { type: 'boolean' },
         },
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        // defaultValue: 'clientSide',
       },
       serverSideFilter: {
-        type: 'toggle',
-        displayName: 'Server-side filter',
+        type: 'clientServerSwitch',
+        displayName: 'Type',
         validation: {
           schema: { type: 'boolean' },
         },
+        options: [
+          { displayName: 'Client side', value: 'clientSide' },
+          { displayName: 'Server side', value: 'serverSide' },
+        ],
+        defaultValue: 'clientSide',
       },
       actionButtonBackgroundColor: {
         type: 'color',
@@ -238,7 +266,7 @@ export const widgets = [
       },
       displaySearchBox: {
         type: 'toggle',
-        displayName: 'Show search box',
+        displayName: 'Show search',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -252,7 +280,7 @@ export const widgets = [
       },
       showFilterButton: {
         type: 'toggle',
-        displayName: 'Show filter button',
+        displayName: 'Enable filtering',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -308,8 +336,8 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     defaultSize: {
-      width: 20,
-      height: 358,
+      width: 28.86,
+      height: 456,
     },
     events: {
       onRowHovered: { displayName: 'Row hovered' },
@@ -333,7 +361,7 @@ export const widgets = [
       },
       actionButtonRadius: {
         type: 'code',
-        displayName: 'Action Button Radius',
+        displayName: 'Action button radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
         },
@@ -343,10 +371,8 @@ export const widgets = [
         displayName: 'Table type',
         options: [
           { name: 'Bordered', value: 'table-bordered' },
-          { name: 'Borderless', value: 'table-borderless' },
-          { name: 'Classic', value: 'table-classic' },
+          { name: 'Regular', value: 'table-classic' },
           { name: 'Striped', value: 'table-striped' },
-          { name: 'Striped & bordered', value: 'table-striped table-bordered' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -356,8 +382,8 @@ export const widgets = [
         type: 'select',
         displayName: 'Cell size',
         options: [
-          { name: 'Compact', value: 'compact' },
-          { name: 'Spacious', value: 'spacious' },
+          { name: 'Condensed', value: 'condensed' },
+          { name: 'Regular', value: 'regular' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -365,7 +391,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -466,7 +492,7 @@ export const widgets = [
         enableNextButton: { value: '{{true}}' },
         enablePrevButton: { value: '{{true}}' },
         totalRecords: { value: '' },
-        clientSidePagination: { value: '{{true}}' },
+        enablePagination: { value: '{{true}}' },
         serverSideSort: { value: '{{false}}' },
         serverSideFilter: { value: '{{false}}' },
         displaySearchBox: { value: '{{true}}' },
@@ -509,16 +535,16 @@ export const widgets = [
         actionButtonRadius: { value: '0' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        cellSize: { value: 'compact' },
+        cellSize: { value: 'regular' },
         borderRadius: { value: '0' },
-        tableType: { value: 'table-bordered' },
+        tableType: { value: 'table-classic' },
       },
     },
   },
   {
     name: 'Button',
     displayName: 'Button',
-    description: 'Trigger actions: queries, alerts etc',
+    description: 'Trigger actions: queries, alerts, set variables etc.',
     component: 'Button',
     defaultSize: {
       width: 3,
@@ -531,14 +557,14 @@ export const widgets = [
     properties: {
       text: {
         type: 'code',
-        displayName: 'Button Text',
+        displayName: 'Button text',
         validation: {
           schema: { type: 'string' },
         },
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -659,7 +685,7 @@ export const widgets = [
   {
     name: 'Chart',
     displayName: 'Chart',
-    description: 'Display charts',
+    description: 'Visualize data',
     component: 'Chart',
     defaultSize: {
       width: 20,
@@ -688,7 +714,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -855,7 +881,7 @@ export const widgets = [
   {
     name: 'Modal',
     displayName: 'Modal',
-    description: 'Modal triggered by events',
+    description: 'Show pop-up windows',
     component: 'Modal',
     defaultSize: {
       width: 10,
@@ -875,7 +901,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -917,7 +943,7 @@ export const widgets = [
       },
       modalHeight: {
         type: 'code',
-        displayName: 'Modal Height',
+        displayName: 'Modal height',
         validation: {
           schema: { type: 'string' },
         },
@@ -1026,7 +1052,7 @@ export const widgets = [
   {
     name: 'TextInput',
     displayName: 'Text Input',
-    description: 'Text field for forms',
+    description: 'User text input field',
     component: 'TextInput',
     defaultSize: {
       width: 6,
@@ -1069,22 +1095,22 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: { schema: { type: 'string' } },
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: { schema: { type: 'string' } },
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border Color',
+        displayName: 'Border color',
         validation: { schema: { type: 'string' } },
       },
       errTextColor: {
         type: 'color',
-        displayName: 'Error Text Color',
+        displayName: 'Error text color',
         validation: { schema: { type: 'string' } },
       },
       borderRadius: {
@@ -1157,7 +1183,7 @@ export const widgets = [
   {
     name: 'NumberInput',
     displayName: 'Number Input',
-    description: 'Number field for forms',
+    description: 'Numeric input field',
     component: 'NumberInput',
     defaultSize: {
       width: 4,
@@ -1283,7 +1309,7 @@ export const widgets = [
   {
     name: 'PasswordInput',
     displayName: 'Password Input',
-    description: 'Password input field for forms',
+    description: 'Secure text input',
     component: 'PasswordInput',
     defaultSize: {
       width: 4,
@@ -1335,7 +1361,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1370,7 +1396,7 @@ export const widgets = [
   {
     name: 'Datepicker',
     displayName: 'Date Picker',
-    description: 'Select a date and time',
+    description: 'Choose date and time',
     component: 'Datepicker',
     defaultSize: {
       width: 5,
@@ -1477,7 +1503,7 @@ export const widgets = [
   {
     name: 'Checkbox',
     displayName: 'Checkbox',
-    description: 'A single checkbox',
+    description: 'Single checkbox toggle',
     component: 'Checkbox',
     defaultSize: {
       width: 5,
@@ -1568,7 +1594,7 @@ export const widgets = [
   {
     name: 'Radio-button',
     displayName: 'Radio Button',
-    description: 'Radio buttons',
+    description: 'Select one from multiple choices',
     component: 'RadioButton',
     defaultSize: {
       width: 6,
@@ -1617,14 +1643,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       activeColor: {
         type: 'color',
-        displayName: 'Active Color',
+        displayName: 'Active color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1681,7 +1707,7 @@ export const widgets = [
   {
     name: 'ToggleSwitch',
     displayName: 'Toggle Switch',
-    description: 'Toggle Switch',
+    description: 'User-controlled on-off switch',
     component: 'ToggleSwitch',
     defaultSize: {
       width: 6,
@@ -1763,8 +1789,8 @@ export const widgets = [
   },
   {
     name: 'Textarea',
-    displayName: 'Textarea',
-    description: 'Text area form field',
+    displayName: 'Text Area',
+    description: 'Multi-line text input',
     component: 'TextArea',
     defaultSize: {
       width: 6,
@@ -1852,7 +1878,7 @@ export const widgets = [
   {
     name: 'DateRangePicker',
     displayName: 'Range Picker',
-    description: 'Select a date range',
+    description: 'Choose date ranges',
     component: 'DaterangePicker',
     defaultSize: {
       width: 10,
@@ -1950,7 +1976,7 @@ export const widgets = [
   {
     name: 'Text',
     displayName: 'Text',
-    description: 'Display markdown or HTML',
+    description: 'Display text or HTML',
     component: 'Text',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -1980,7 +2006,7 @@ export const widgets = [
     styles: {
       fontWeight: {
         type: 'select',
-        displayName: 'Font Weight',
+        displayName: 'Font weight',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'bold', value: 'bold' },
@@ -1990,7 +2016,7 @@ export const widgets = [
       },
       decoration: {
         type: 'select',
-        displayName: 'Text Decoration',
+        displayName: 'Text decoration',
         options: [
           { name: 'none', value: 'none' },
           { name: 'overline', value: 'overline' },
@@ -2001,7 +2027,7 @@ export const widgets = [
       },
       transformation: {
         type: 'select',
-        displayName: 'Text Transformation',
+        displayName: 'Text transformation',
         options: [
           { name: 'none', value: 'none' },
           { name: 'uppercase', value: 'uppercase' },
@@ -2011,20 +2037,20 @@ export const widgets = [
       },
       fontStyle: {
         type: 'select',
-        displayName: 'Font Style',
+        displayName: 'Font style',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'italic', value: 'italic' },
           { name: 'oblique', value: 'oblique' },
         ],
       },
-      lineHeight: { type: 'number', displayName: 'Line Height' },
-      textIndent: { type: 'number', displayName: 'Text Indent' },
-      letterSpacing: { type: 'number', displayName: 'Letter Spacing' },
-      wordSpacing: { type: 'number', displayName: 'Word Spacing' },
+      lineHeight: { type: 'number', displayName: 'Line height' },
+      textIndent: { type: 'number', displayName: 'Text indent' },
+      letterSpacing: { type: 'number', displayName: 'Letter spacing' },
+      wordSpacing: { type: 'number', displayName: 'Word spacing' },
       fontVariant: {
         type: 'select',
-        displayName: 'Font Variant',
+        displayName: 'Font variant',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'small-caps', value: 'small-caps' },
@@ -2034,28 +2060,28 @@ export const widgets = [
       },
       textSize: {
         type: 'number',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'number' },
         },
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textAlign: {
         type: 'alignButtons',
-        displayName: 'Align Text',
+        displayName: 'Align text',
         validation: {
           schema: { type: 'string' },
         },
@@ -2122,7 +2148,7 @@ export const widgets = [
   {
     name: 'Image',
     displayName: 'Image',
-    description: 'Display an Image',
+    description: 'Show image files',
     defaultSize: {
       width: 3,
       height: 100,
@@ -2256,7 +2282,7 @@ export const widgets = [
   {
     name: 'Container',
     displayName: 'Container',
-    description: 'Wrapper for multiple components',
+    description: 'Group components',
     defaultSize: {
       width: 5,
       height: 200,
@@ -2269,7 +2295,7 @@ export const widgets = [
     properties: {
       loadingState: {
         type: 'toggle',
-        displayName: 'loading state',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2286,7 +2312,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border Radius',
+        displayName: 'Border radius',
         validation: {
           schema: {
             type: 'union',
@@ -2339,7 +2365,7 @@ export const widgets = [
   {
     name: 'Dropdown',
     displayName: 'Dropdown',
-    description: 'Select one value from options',
+    description: 'Single item selector',
     defaultSize: {
       width: 8,
       height: 30,
@@ -2533,7 +2559,7 @@ export const widgets = [
   {
     name: 'Multiselect',
     displayName: 'Multiselect',
-    description: 'Select multiple values from options',
+    description: 'Multiple item selector',
     defaultSize: {
       width: 12,
       height: 30,
@@ -2608,6 +2634,7 @@ export const widgets = [
     },
     events: {
       onSelect: { displayName: 'On select' },
+      onSearchTextChanged: { displayName: 'On search text changed' },
     },
     styles: {
       borderRadius: {
@@ -2634,6 +2661,7 @@ export const widgets = [
     },
     exposedVariables: {
       values: {},
+      searchText: '',
     },
     definition: {
       others: {
@@ -2679,7 +2707,7 @@ export const widgets = [
       },
       defaultValue: {
         type: 'code',
-        displayName: 'Default Value',
+        displayName: 'Default value',
         validation: {
           schema: { type: 'string' },
         },
@@ -2728,7 +2756,7 @@ export const widgets = [
   {
     name: 'Map',
     displayName: 'Map',
-    description: 'Display Google Maps',
+    description: 'Display map locations',
     component: 'Map',
     defaultSize: {
       width: 16,
@@ -2770,6 +2798,21 @@ export const widgets = [
           },
         },
       },
+      polygonPoints: {
+        type: 'code',
+        displayName: 'Polygon points',
+        options: {
+          mode: 'javascript',
+          theme: 'duotone-light',
+          className: 'map-location-input pr-2',
+        },
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'object' } }, { type: 'object' }],
+          },
+        },
+      },
       addNewMarkers: {
         type: 'toggle',
         displayName: 'Add new markers',
@@ -2793,6 +2836,7 @@ export const widgets = [
       onBoundsChange: { displayName: 'On bounds change' },
       onCreateMarker: { displayName: 'On create marker' },
       onMarkerClick: { displayName: 'On marker click' },
+      onPolygonClick: { displayName: 'On polygon click' },
     },
     actions: [
       {
@@ -2838,6 +2882,9 @@ export const widgets = [
         },
         defaultMarkers: {
           value: `{{ [{"lat": 40.7128, "lng": -73.935242}] }}`,
+        },
+        polygonPoints: {
+          value: `{{[\n\t\t{"lat": 40.7032, "lng": -73.975242},\n\t\t{"lat": 40.7532, "lng": -73.943242},\n\t\t{"lat": 40.7032, "lng": -73.916242}\n]}}`,
         },
         canSearch: {
           value: `{{true}}`,
@@ -2956,14 +3003,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Star Color',
+        displayName: 'Star color',
         validation: {
           schema: { type: 'string' },
         },
       },
       labelColor: {
         type: 'color',
-        displayName: 'Label Color',
+        displayName: 'Label color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3026,7 +3073,7 @@ export const widgets = [
     styles: {
       dividerColor: {
         type: 'color',
-        displayName: 'Divider Color',
+        displayName: 'Divider color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3077,21 +3124,21 @@ export const widgets = [
     properties: {
       instructionText: {
         type: 'code',
-        displayName: 'Instruction Text',
+        displayName: 'Instruction text',
         validation: {
           schema: { type: 'string' },
         },
       },
       enableDropzone: {
         type: 'code',
-        displayName: 'Use Drop zone',
+        displayName: 'Use drop zone',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       enablePicker: {
         type: 'code',
-        displayName: 'Use File Picker',
+        displayName: 'Use file picker',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -3215,7 +3262,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        instructionText: { value: 'Drag and Drop some files here, or click to select files' },
+        instructionText: { value: 'Drag and drop files here or click to select files' },
         enableDropzone: { value: '{{true}}' },
         enablePicker: { value: '{{true}}' },
         maxFileCount: { value: '{{2}}' },
@@ -3237,7 +3284,7 @@ export const widgets = [
   {
     name: 'Calendar',
     displayName: 'Calendar',
-    description: 'Calendar',
+    description: 'Display calendar events',
     component: 'Calendar',
     defaultSize: {
       width: 30,
@@ -3348,7 +3395,7 @@ export const widgets = [
   {
     name: 'Iframe',
     displayName: 'Iframe',
-    description: 'Display an Iframe',
+    description: 'Embed external content',
     defaultSize: {
       width: 10,
       height: 310,
@@ -3404,7 +3451,7 @@ export const widgets = [
   {
     name: 'CodeEditor',
     displayName: 'Code Editor',
-    description: 'Code Editor',
+    description: 'Edit source code',
     component: 'CodeEditor',
     defaultSize: {
       width: 15,
@@ -3485,7 +3532,7 @@ export const widgets = [
   {
     name: 'Tabs',
     displayName: 'Tabs',
-    description: 'Tabs component',
+    description: 'Organize content in tabs',
     defaultSize: {
       width: 30,
       height: 300,
@@ -3565,7 +3612,7 @@ export const widgets = [
       },
       hideTabs: {
         type: 'toggle',
-        displayName: 'Hide Tabs',
+        displayName: 'Hide tabs',
         validation: {
           schema: {
             type: 'boolean',
@@ -3586,7 +3633,7 @@ export const widgets = [
     styles: {
       highlightColor: {
         type: 'color',
-        displayName: 'Highlight Color',
+        displayName: 'Highlight color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3657,7 +3704,7 @@ export const widgets = [
   {
     name: 'Timer',
     displayName: 'Timer',
-    description: 'timer',
+    description: 'Countdown or stopwatch',
     component: 'Timer',
     defaultSize: {
       width: 11,
@@ -3679,8 +3726,8 @@ export const widgets = [
         type: 'select',
         displayName: 'Timer type',
         options: [
-          { name: 'Count Up', value: 'countUp' },
-          { name: 'Count Down', value: 'countDown' },
+          { name: 'Count up', value: 'countUp' },
+          { name: 'Count down', value: 'countDown' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -3750,7 +3797,7 @@ export const widgets = [
   {
     name: 'Listview',
     displayName: 'List View',
-    description: 'Wrapper for multiple components',
+    description: 'List multiple items',
     defaultSize: {
       width: 20,
       height: 300,
@@ -3936,7 +3983,7 @@ export const widgets = [
   {
     name: 'Tags',
     displayName: 'Tags',
-    description: 'Content can be shown as tags',
+    description: 'Display tag labels',
     component: 'Tags',
     defaultSize: {
       width: 8,
@@ -3992,7 +4039,7 @@ export const widgets = [
   {
     name: 'Pagination',
     displayName: 'Pagination',
-    description: 'Pagination ',
+    description: 'Navigate pages',
     component: 'Pagination',
     defaultSize: {
       width: 10,
@@ -4064,9 +4111,9 @@ export const widgets = [
     },
   },
   {
-    name: 'CircularProgressbar',
+    name: 'CircularProgressBar',
     displayName: 'Circular Progressbar',
-    description: 'Show the progress using circular progressbar',
+    description: 'Show circular progress',
     component: 'CircularProgressBar',
     defaultSize: {
       width: 7,
@@ -4110,28 +4157,28 @@ export const widgets = [
       },
       textSize: {
         type: 'code',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       strokeWidth: {
         type: 'code',
-        displayName: 'Stroke Width',
+        displayName: 'Stroke width',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       counterClockwise: {
         type: 'code',
-        displayName: 'Counter Clockwise',
+        displayName: 'Counter clockwise',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       circleRatio: {
         type: 'code',
-        displayName: 'Circle Ratio',
+        displayName: 'Circle ratio',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
@@ -4173,7 +4220,7 @@ export const widgets = [
   {
     name: 'Spinner',
     displayName: 'Spinner',
-    description: 'Spinner can be used to display loading status',
+    description: 'Indicate loading state',
     component: 'Spinner',
     defaultSize: {
       width: 4,
@@ -4230,7 +4277,7 @@ export const widgets = [
   {
     name: 'Statistics',
     displayName: 'Statistics',
-    description: 'Statistics can be used to display different statistical information',
+    description: 'Show key metrics',
     component: 'Statistics',
     defaultSize: {
       width: 9.2,
@@ -4264,28 +4311,28 @@ export const widgets = [
 
         validation: { schema: { type: 'string' } },
       },
-      loadingState: { type: 'toggle', displayName: 'Loading State', validation: { schema: { type: 'boolean' } } },
+      loadingState: { type: 'toggle', displayName: 'Loading state', validation: { schema: { type: 'boolean' } } },
     },
     events: {},
     styles: {
       primaryLabelColour: {
         type: 'color',
-        displayName: 'Primary Label Colour',
+        displayName: 'Primary label colour',
         validation: { schema: { type: 'string' } },
       },
       primaryTextColour: {
         type: 'color',
-        displayName: 'Primary Text  Colour',
+        displayName: 'Primary text  colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryLabelColour: {
         type: 'color',
-        displayName: 'Secondary Label Colour',
+        displayName: 'Secondary label colour',
         validation: { schema: { type: 'string' } },
       },
       secondaryTextColour: {
         type: 'color',
-        displayName: 'Secondary Text Colour',
+        displayName: 'Secondary text colour',
         validation: { schema: { type: 'string' } },
       },
       visibility: {
@@ -4320,7 +4367,7 @@ export const widgets = [
   {
     name: 'RangeSlider',
     displayName: 'Range Slider',
-    description: 'Can be used to show slider with a range',
+    description: 'Adjust value range',
     component: 'RangeSlider',
     defaultSize: {
       width: 9,
@@ -4425,7 +4472,7 @@ export const widgets = [
   {
     name: 'Timeline',
     displayName: 'Timeline',
-    description: 'Visual representation of a sequence of events',
+    description: 'Show event timeline',
     component: 'Timeline',
     properties: {
       data: {
@@ -4437,7 +4484,7 @@ export const widgets = [
       },
       hideDate: {
         type: 'toggle',
-        displayName: 'Hide Date',
+        displayName: 'Hide date',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -4483,7 +4530,7 @@ export const widgets = [
   {
     name: 'SvgImage',
     displayName: 'Svg Image',
-    description: 'Svg image',
+    description: 'Display SVG graphics',
     component: 'SvgImage',
     properties: {
       data: {
@@ -4535,7 +4582,7 @@ export const widgets = [
   {
     name: 'Html',
     displayName: 'HTML Viewer',
-    description: 'HTML Viewer',
+    description: 'View HTML content',
     component: 'Html',
     defaultSize: {
       width: 10,
@@ -4585,7 +4632,7 @@ export const widgets = [
   {
     name: 'VerticalDivider',
     displayName: 'Vertical Divider',
-    description: 'Vertical Separator between components',
+    description: 'Vertical line separator',
     component: 'VerticalDivider',
     defaultSize: {
       width: 2,
@@ -4600,7 +4647,7 @@ export const widgets = [
     styles: {
       dividerColor: {
         type: 'color',
-        displayName: 'Divider Color',
+        displayName: 'Divider color',
         validation: {
           schema: { type: 'string' },
         },
@@ -4632,7 +4679,7 @@ export const widgets = [
   {
     name: 'CustomComponent',
     displayName: 'Custom Component',
-    description: 'Visual representation of a sequence of events',
+    description: 'Create React components',
     component: 'CustomComponent',
     properties: {
       data: { type: 'code', displayName: 'Data', validation: { schema: { type: 'object' } } },
@@ -4697,7 +4744,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'ButtonGroup',
     displayName: 'Button Group',
-    description: 'ButtonGroup',
+    description: 'Group of buttons',
     component: 'ButtonGroup',
     properties: {
       label: {
@@ -4839,7 +4886,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'PDF',
     displayName: 'PDF',
-    description: 'Embed PDF file',
+    description: 'Embed PDF documents',
     component: 'PDF',
     properties: {
       url: { type: 'code', displayName: 'File URL', validation: { schema: { type: 'string' } } },
@@ -4847,7 +4894,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
       showDownloadOption: {
         type: 'toggle',
-        displayName: 'Show the Download',
+        displayName: 'Show the download',
         validation: { schema: { type: 'boolean' } },
       },
     },
@@ -4898,7 +4945,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'Steps',
     displayName: 'Steps',
-    description: 'Steps',
+    description: 'Step-by-step navigation aid',
     component: 'Steps',
     properties: {
       steps: {
@@ -4999,7 +5046,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'KanbanBoard',
     displayName: 'Kanban Board',
-    description: 'Kanban Board',
+    description: 'Task management board',
     component: 'KanbanBoard',
     defaultSize: {
       width: 40,
@@ -5065,7 +5112,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'Kanban',
     displayName: 'Kanban',
-    description: 'Kanban',
+    description: 'Task management board',
     component: 'Kanban',
     defaultSize: {
       width: 40,
@@ -5230,10 +5277,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'ColorPicker',
     displayName: 'Color Picker',
-    description: 'Color Picker Palette',
+    description: 'Choose colors from a palette',
     component: 'ColorPicker',
     properties: {
-      defaultColor: { type: 'color', displayName: 'Default Color' },
+      defaultColor: { type: 'color', displayName: 'Default color' },
     },
     defaultSize: {
       width: 9,
@@ -5280,7 +5327,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
   {
     name: 'TreeSelect',
     displayName: 'Tree Select',
-    description: 'Select values from a tree view',
+    description: 'Hierarchical item selector',
     defaultSize: {
       width: 12,
       height: 200,
@@ -5490,7 +5537,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     styles: {
       iconColor: {
         type: 'color',
-        displayName: 'Icon Color',
+        displayName: 'Icon color',
         validation: {
           schema: { type: 'string' },
         },
@@ -5757,7 +5804,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       imageUrl: {
         type: 'code',
-        displayName: 'Image Url',
+        displayName: 'Image URL',
         validation: {
           schema: { type: 'string' },
         },

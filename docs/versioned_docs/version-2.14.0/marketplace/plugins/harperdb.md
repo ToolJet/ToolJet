@@ -3,7 +3,7 @@ id: marketplace-plugin-harperdb
 title: HarperDB
 ---
 
-HarperDB is a managed non-relational database service known for its flexibility and scalability, offering efficient data storage and retrieval. ToolJet seamlessly connects to HarperDB, enabling easy reading and writing of data.
+HarperDB is a database and application development platform that is focused on performance and ease of use. With flexible user-defined APIs, simple HTTP/S interface, and a high-performance single-model data store that accommodates both NoSQL and SQL workloads, HarperDB scales with your application from proof of concept to production. ToolJet integrates with HarperDB, providing a streamlined interface for reading and writing data.
 
 <div style={{textAlign: 'center'}}>
 

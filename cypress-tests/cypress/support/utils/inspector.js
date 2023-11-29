@@ -13,11 +13,11 @@ export const verifyNodeData = (node, type, children, index = 0) => {
     .verifyVisibleElement("have.text", type);
 };
 
-export const openNode = (node, index = 0) => {
+export const openNode = (node, index = 0, time = 1000) => {
   cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .node-key`)
     .eq(index)
     .click();
-  cy.wait(1000);
+  cy.wait(time);
 };
 
 export const verifyValue = (node, type, children, index = 0) => {

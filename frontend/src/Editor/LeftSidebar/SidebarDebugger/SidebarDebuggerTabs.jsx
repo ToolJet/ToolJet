@@ -8,9 +8,9 @@ import cx from 'classnames';
 const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
   const { t } = useTranslation();
   return (
-    <div className="card-body mb-5">
+    <div className="debugger-card-body color-slate12">
       {logs.length === 0 && (
-        <center className="p-2 text-muted">
+        <center className="p-2">
           {tabName === 'errors'
             ? t(`leftSidebar.Debugger.noErrors`, 'No errors found.')
             : t(`leftSidebar.Debugger.noLogs`, 'No Logs found.')}
@@ -19,7 +19,7 @@ const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
 
       <div
         className={cx('tab-content', {
-          'theme-dark dark-theme': darkMode,
+          'dark-theme': darkMode,
         })}
       >
         {logs.map((error, index) => (
@@ -35,8 +35,8 @@ const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
     <Tabs
       defaultActiveKey="allLog"
       id="sidebar-debugger"
-      className={cx('mb-3 sidebar-debugger', {
-        'theme-dark dark-theme': darkMode,
+      className={cx('sidebar-debugger', {
+        'dark-theme': darkMode,
       })}
       justify
     >

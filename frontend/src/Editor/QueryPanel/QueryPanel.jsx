@@ -15,7 +15,6 @@ const QueryPanel = ({
   dataQueriesChanged,
   fetchDataQueries,
   darkMode,
-  apps,
   allComponents,
   appId,
   appDefinition,
@@ -151,7 +150,6 @@ const QueryPanel = ({
         className="query-pane"
         style={{
           height: 40,
-          background: '#fff',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -204,7 +202,6 @@ const QueryPanel = ({
                   dataQueriesChanged={updateDataQueries}
                   appId={appId}
                   darkMode={darkMode}
-                  apps={apps}
                   allComponents={allComponents}
                   appDefinition={appDefinition}
                   editorRef={editorRef}

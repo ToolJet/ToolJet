@@ -30,7 +30,7 @@ const Button = ({
       type="button"
       title={title}
       style={{ height: baseHeight, width: baseWidth, ...styles, ...(disabled ? diabledStyles : {}) }}
-      className={`btn base-button m-1 ${darkMode && 'dark'} ${classNames} ${isLoading && 'btn-loading'}`}
+      className={`btn base-button ${darkMode && 'dark'} ${classNames} ${isLoading && 'btn-loading'}`}
       onClick={onClick}
     >
       {!isLoading && children}
