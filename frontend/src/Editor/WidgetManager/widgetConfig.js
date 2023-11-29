@@ -1066,11 +1066,11 @@ export const widgets = [
       value: true,
     },
     properties: {
-      labelEnabled: {
-        type: 'boolean',
-        displayName: 'labelEnabled',
-        validation: { schema: { type: 'string' } },
-      },
+      // labelEnabled: {
+      //   type: 'toggle',
+      //   displayName: 'labelEnabled',
+      //   validation: { schema: { type: 'string' } },
+      // },
       label: {
         type: 'code',
         displayName: 'Label',
