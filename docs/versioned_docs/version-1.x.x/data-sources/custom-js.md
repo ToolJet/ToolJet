@@ -8,7 +8,7 @@ title: Custom JavaScript
 You can write custom JavaScript code to interact with components and queries. To do that, you just need to create a new query and select **Run JavaScript Code** from the data sources dropdown.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/custom-javascript.png" alt="custom js" />
+<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/run-js.png" alt="custom js" />
 
 
 #### Example: Displaying random number

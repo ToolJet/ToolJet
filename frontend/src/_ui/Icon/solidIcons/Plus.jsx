@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Plus = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25', dataCy = '' }) => (
+const Plus = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25', dataCy = '', style }) => (
   <svg
     width={width}
     height={width}
@@ -9,6 +9,7 @@ const Plus = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 2
     xmlns="http://www.w3.org/2000/svg"
     className={className}
     data-cy={dataCy}
+    style={style}
   >
     <path
       fillRule="evenodd"

@@ -9,6 +9,8 @@ title: Azure container apps
 Please note that you need to set up a PostgreSQL database manually to be used by ToolJet
 :::
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 ## Deploying ToolJet application
 
 1. Open the Azure dashboard at https://portal.azure.com, navigate to Container Apps, and click on "Create container app".

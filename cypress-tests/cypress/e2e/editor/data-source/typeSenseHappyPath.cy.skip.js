@@ -9,7 +9,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -27,9 +27,6 @@ describe("Data sources", () => {
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
-    cy.get(commonSelectors.addNewDataSourceButton)
-      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-      .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -48,14 +45,8 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("TypeSense");
-    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "TypeSense");
-    cy.get('[data-cy="data-source-typesense"]').click();
+    selectAndAddDataSource("databases", "TypeSense", data.lastName);
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      "TypeSense"
-    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -103,15 +94,11 @@ describe("Data sources", () => {
       "have.text",
       "Ensure that apiKey is set"
     );
+    deleteDatasource(`cypress-${data.lastName}-typesense`);
   });
 
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource("TypeSense");
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      `cypress-${data.lastName}-typesense`
-    );
+  it("Should verify the functionality of TypeSense connection form.", () => {
+    selectAndAddDataSource("databases", "TypeSense", data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -138,7 +125,7 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();

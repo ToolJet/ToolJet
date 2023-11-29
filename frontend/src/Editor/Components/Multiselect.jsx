@@ -20,12 +20,12 @@ export const Multiselect = function Multiselect({
   onComponentClick,
   darkMode,
   fireEvent,
-  registerAction,
   dataCy,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const [selected, setSelected] = useState([]);
+  const [searched, setSearched] = useState('');
 
   let selectOptions = [];
   try {
@@ -70,12 +70,12 @@ export const Multiselect = function Multiselect({
     setExposedVariable(
       'values',
       items.map((item) => item.value)
-    ).then(() => fireEvent('onSelect'));
+    );
+    fireEvent('onSelect');
   };
 
-  registerAction(
-    'selectOption',
-    async function (value) {
+  useEffect(() => {
+    setExposedVariable('selectOption', async function (value) {
       if (
         selectOptions.some((option) => option.value === value) &&
         !selected.some((option) => option.value === value)
@@ -91,14 +91,15 @@ export const Multiselect = function Multiselect({
         setExposedVariable(
           'values',
           newSelected.map((item) => item.value)
-        ).then(() => fireEvent('onSelect'));
+        );
+        fireEvent('onSelect');
       }
-    },
-    [selected, setSelected]
-  );
-  registerAction(
-    'deselectOption',
-    async function (value) {
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, setSelected]);
+
+  useEffect(() => {
+    setExposedVariable('deselectOption', async function (value) {
       if (selectOptions.some((option) => option.value === value) && selected.some((option) => option.value === value)) {
         const newSelected = [
           ...selected.filter(function (item) {
@@ -109,21 +110,37 @@ export const Multiselect = function Multiselect({
         setExposedVariable(
           'values',
           newSelected.map((item) => item.value)
-        ).then(() => fireEvent('onSelect'));
+        );
+        fireEvent('onSelect');
       }
-    },
-    [selected, setSelected]
-  );
-  registerAction(
-    'clearSelections',
-    async function () {
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, setSelected]);
+
+  useEffect(() => {
+    setExposedVariable('clearSelections', async function () {
       if (selected.length >= 1) {
         setSelected([]);
-        setExposedVariable('values', []).then(() => fireEvent('onSelect'));
+        setExposedVariable('values', []);
+        fireEvent('onSelect');
       }
-    },
-    [selected, setSelected]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, setSelected]);
+
+  const filterOptions = (options, filter) => {
+    setSearched(filter);
+
+    if (searched !== filter) {
+      setExposedVariable('searchText', filter);
+      fireEvent('onSearchTextChanged');
+    }
+    if (!filter) return options;
+
+    return options.filter(
+      ({ label, value }) => label != null && value != null && label.toLowerCase().includes(filter.toLowerCase())
+    );
+  };
 
   return (
     <div
@@ -153,6 +170,8 @@ export const Multiselect = function Multiselect({
           disabled={disabledState}
           className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
           ItemRenderer={ItemRenderer}
+          filterOptions={filterOptions}
+          debounceDuration={0}
         />
       </div>
     </div>

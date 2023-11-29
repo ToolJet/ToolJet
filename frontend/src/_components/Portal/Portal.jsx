@@ -30,7 +30,6 @@ const Portal = ({ children, ...restProps }) => {
 
   const portalStyles = {
     background: 'transparent',
-    backgroundColor: darkMode ? '#232E3C' : '#fff',
     borderRadius: '0px',
     width: '500px',
   };
@@ -91,7 +90,7 @@ const Modal = ({
             style={{
               textTransform: 'none',
             }}
-            className="badge tj-badge"
+            className="color-indigo9"
             data-cy="codehinder-popup-badge"
           >
             {componentName ?? 'Editor'}
@@ -126,10 +125,7 @@ const Modal = ({
           />
         </Button>
       </div>
-      <div
-        className={`modal-body ${darkMode ? 'dark-mode-border' : ''}`}
-        style={{ background: 'transparent', height: 300 }}
-      >
+      <div className={`modal-body `} style={{ background: 'transparent', height: 300 }}>
         {children}
       </div>
     </div>

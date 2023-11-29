@@ -2,6 +2,7 @@
 
 set -e
 # Setup prerequisite dependencies
+sudo apt-get update
 sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates apt-utils git curl postgresql-client
 curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
 export NVM_DIR="$HOME/.nvm"

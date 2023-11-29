@@ -155,7 +155,7 @@ Enabling this option will fire the query every time the app is loaded.
 
 Enabling this option show a confirmation modal to confirm `Yes` or `No` if you want to fire that query.
 
-#### Run this query on application load?
+#### Show notification on success?
 
 Enabling this option show a success toast notification when the query is successfully triggered.
 

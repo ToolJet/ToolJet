@@ -7,6 +7,9 @@ title: Heroku
 
 <iframe width="800" height="500" src="https://www.youtube.com/embed/ApDtwE1OXY0" frameborder="0" allowfullscreen width="100%"></iframe>
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
+
 ### Follow the steps below to deploy ToolJet on Heroku:
 
 1. Click the button below to start one click deployment.  
@@ -83,7 +86,7 @@ Please install Heroku CLI on your local machine. Please refer Heroku CLI install
 
   `${HEROKU_PG_DB_NAME` Should be the name of the PostgreSQL created by the Tooljet app. 
 
-  You can get the `${HEROKU_PG_DB_NAME` of the Tooljet application from the Resources tab under Heroku Postgre attachments as shown below. (eg: `${HEROKU_PG_DB_NAME = postgresql-transparent-24158` ). 
+  You can get the `${HEROKU_PG_DB_NAME` of the Tooljet application from the Resources tab under Heroku Postgres attachments as shown below. (eg: `${HEROKU_PG_DB_NAME = postgresql-transparent-24158` ). 
 
   ```bash
   heroku addons:attach ${HEROKU_PG_DB_NAME} -a ${YOUR_PGRST_APP_NAME}

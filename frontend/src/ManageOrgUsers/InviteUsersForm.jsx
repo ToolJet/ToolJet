@@ -101,7 +101,7 @@ function InviteUsersForm({
                       <input
                         type="text"
                         className="form-control"
-                        placeholder={t('header.organization.menus.manageUsers.enterFirstName', 'Enter full name')}
+                        placeholder={t('header.organization.menus.manageUsers.enterFullName', 'Enter full name')}
                         name="fullName"
                         onChange={changeNewUserOption.bind(this, 'fullName')}
                         value={fields['fullName']}

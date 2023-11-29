@@ -21,6 +21,7 @@ const OpenapiAuth = ({
   scopes,
   auth_url,
   auth_type,
+  access_token_custom_headers,
 }) => {
   const apiKeyChanges = (key, value) => {
     const apiKeys = api_keys ?? [];
@@ -150,6 +151,7 @@ const OpenapiAuth = ({
           client_auth={client_auth}
           scopes={scopes}
           auth_url={auth_url}
+          access_token_custom_headers={access_token_custom_headers}
           authObject={authObject}
         />
       );

@@ -13,6 +13,7 @@ ToolJet version 2 comes with a bunch of exciting features, with the major ones b
 
 Checkout the latest changelog for v2 [here](https://github.com/ToolJet/ToolJet/releases).
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
 ## Deployment
 
 Based on your opted deployment method from our [setup doc](/docs/setup/), you can directly deploy v2 without any additional configuration for the default setup.

@@ -152,7 +152,7 @@
         "description": "Enter max keys",
         "width": "320px",
         "height": "36px",
-        "className": "codehinter-plugins col-6"
+        "className": "codehinter-plugins"
       },
       "offset": {
         "label": "Offset",

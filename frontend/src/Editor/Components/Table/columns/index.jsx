@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import SelectSearch from 'react-select-search';
-import { resolveReferences, validateWidget } from '@/_helpers/utils';
+import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
 import { CustomSelect } from '../CustomSelect';
 import { Tags } from '../Tags';
 import { Radio } from '../Radio';
@@ -26,10 +26,13 @@ export default function generateColumnsData({
   tableRef,
   t,
   darkMode,
+  tableColumnEvents,
 }) {
   return columnProperties.map((column) => {
-    const columnSize = columnSizes[column.id] || columnSizes[column.name];
-    const columnType = column.columnType;
+    if (!column) return;
+
+    const columnSize = columnSizes[column?.id] || columnSizes[column?.name];
+    const columnType = column?.columnType;
     let sortType = 'alphanumeric';
 
     const columnOptions = {};
@@ -94,15 +97,16 @@ export default function generateColumnsData({
       customRule: column?.customRule,
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
-      Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
+      horizontalAlignment: column?.horizontalAlignment ?? 'left',
+      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
 
-        const rowData = tableData[cell.row.index];
+        const rowData = tableData?.[cell?.row?.index];
         if (
           cell.row.index === 0 &&
-          variablesExposedForPreview &&
+          !_.isEmpty(variablesExposedForPreview) &&
           !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)
         ) {
           const customResolvables = {};
@@ -183,7 +187,12 @@ export default function generateColumnsData({
               );
             }
             return (
-              <div className="d-flex align-items-center h-100" style={cellStyles}>
+              <div
+                className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
+                style={cellStyles}
+              >
                 {String(cellValue)}
               </div>
             );
@@ -251,7 +260,12 @@ export default function generateColumnsData({
               );
             }
             return (
-              <div className="d-flex align-items-center h-100" style={cellStyles}>
+              <div
+                className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
+                style={cellStyles}
+              >
                 {cellValue}
               </div>
             );
@@ -272,7 +286,7 @@ export default function generateColumnsData({
                 }}
                 onKeyDown={(e) => {
                   e.persist();
-                  if (e.key === 'Enter' && isEditable) {
+                  if (e.key === 'Enter' && !e.shiftKey && isEditable) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
@@ -419,6 +433,7 @@ export default function generateColumnsData({
                           column: column,
                           rowId: cell.row.id,
                           row: cell.row.original,
+                          tableColumnEvents,
                         });
                       }
                     );

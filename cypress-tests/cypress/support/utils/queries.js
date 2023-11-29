@@ -1,12 +1,12 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 
-export const selectQuery = (dbName) => {
-  cy.get(postgreSqlSelector.buttonAddNewQueries).click();
+export const selectQueryFromLandingPage = (dbName, label) => {
   cy.get(
     `[data-cy="${dbName.toLowerCase().replace(/\s+/g, "-")}-add-query-card"]`
   )
-    .should("contain", dbName)
+    .should("contain", label)
     .click();
+  cy.waitForAutoSave();
 };
 
 export const deleteQuery = (queryName) => {
@@ -34,4 +34,12 @@ export const addInputOnQueryField = (field, data) => {
     .click()
     .clearAndTypeOnCodeMirror(`{backSpace}`);
   cy.get(`[data-cy="${field}-input-field"]`).clearAndTypeOnCodeMirror(data);
+  cy.forceClickOnCanvas();
+};
+
+export const waitForQueryAction = (action) => {
+  cy.get(`[data-cy="query-${action}-button"]`, { timeout: 20000 }).should(
+    "not.have.class",
+    "button-loading"
+  );
 };

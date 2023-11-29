@@ -31,7 +31,7 @@ Let's take a look at the layout of the Inspector panel:
 
     </div>
 
-- On hovering an item on the inspector, the **copy path** and **copy value** buttons will appear on the right of the item. Copying the path and pasting it onto the component property or query parameter will always get the dynamic value but using `Copy value` uption will copy the current value of the item and will be static when pasted in a component property or query parameter.
+- On hovering an item on the inspector, the **copy path** and **copy value** buttons will appear on the right of the item. Copying the path and pasting it onto the component property or query parameter will always get the dynamic value but using `Copy value` option will copy the current value of the item and will be static when pasted in a component property or query parameter.
     <div style={{textAlign: 'center'}}>
 
     <img className="screenshot-full" src="/img/how-to/use-inspector/path.png" alt="How to - Use Inspector" width="500" />

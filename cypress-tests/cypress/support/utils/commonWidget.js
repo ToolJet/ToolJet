@@ -27,12 +27,14 @@ export const verifyAndModifyParameter = (paramName, value) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName))
     .scrollIntoView()
     .should("have.text", paramName);
-  cy.get(
-    commonWidgetSelector.parameterInputField(paramName)
-  ).clearAndTypeOnCodeMirror(value);
+  cy.get(commonWidgetSelector.parameterInputField(paramName))
+    .clearAndTypeOnCodeMirror(" ")
+    .clearAndTypeOnCodeMirror(value);
 };
 
 export const openEditorSidebar = (widgetName = "") => {
+  cy.hideTooltip();
+
   cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).trigger(
     "mouseover"
   );
@@ -48,14 +50,7 @@ export const verifyAndModifyToggleFx = (
     "have.text",
     paramName
   );
-  cy.get(
-    commonWidgetSelector.parameterFxButton(
-      paramName,
-      "[class*='fx-button  unselectable']"
-    )
-  )
-    .should("have.text", "Fx")
-    .click();
+  cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
   if (defaultValue)
     cy.get(commonWidgetSelector.parameterInputField(paramName))
       .find("pre.CodeMirror-line")
@@ -67,7 +62,7 @@ export const verifyAndModifyToggleFx = (
 
 export const addDefaultEventHandler = (message) => {
   cy.get(commonWidgetSelector.addEventHandlerLink)
-    .should("have.text", commonWidgetText.addEventHandlerLink)
+    .should("contain.text", commonWidgetText.addEventHandlerLink)
     .click();
   cy.get(commonWidgetSelector.eventHandlerCard).click();
   cy.get(commonWidgetSelector.alertMessageInputField)
@@ -214,7 +209,8 @@ export const verifyAndModifyStylePickerFx = (
   paramName,
   defaultValue,
   value,
-  index = 0
+  index = 0,
+  boxShadow = ""
 ) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName)).should(
     "have.text",
@@ -228,19 +224,12 @@ export const verifyAndModifyStylePickerFx = (
   cy.get(commonWidgetSelector.stylePickerValue(paramName))
     .should("be.visible")
     .verifyVisibleElement("have.text", defaultValue);
-  cy.get(
-    commonWidgetSelector.parameterFxButton(
-      paramName,
-      "[class*='fx-button  unselectable']"
-    )
-  )
-    .should("have.text", "Fx")
-    .click();
+  cy.get(commonWidgetSelector.parameterFxButton(paramName, " > svg")).click();
 
   cy.get(commonWidgetSelector.stylePickerFxInput(paramName)).within(() => {
     cy.get(".CodeMirror-line")
       .should("be.visible")
-      .and("have.text", defaultValue);
+      .and("have.text", `${boxShadow}${defaultValue}`);
   });
 
   cy.get(
@@ -321,11 +310,13 @@ export const verifyStylesGeneralAccordion = (
 ) => {
   openEditorSidebar(widgetName);
   cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-  openAccordion(commonWidgetText.accordionGenaral, []);
+  // openAccordion(commonWidgetText.accordionGenaral, []);
   verifyAndModifyStylePickerFx(
     commonWidgetText.parameterBoxShadow,
     commonWidgetText.boxShadowDefaultValue,
-    `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`
+    `${boxShadowParameter[0]}px ${boxShadowParameter[1]}px ${boxShadowParameter[2]}px ${boxShadowParameter[3]}px ${hexColor}`,
+    0,
+    "0px 0px 0px 0px "
   );
   cy.get(
     commonWidgetSelector.parameterFxButton(commonWidgetText.parameterBoxShadow)

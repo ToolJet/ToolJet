@@ -7,6 +7,8 @@ title: DigitalOcean
 
 Now you can quickly deploy ToolJet using the Deploy to DigitalOcean button.
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 ## Deploying
 
 #### Follow the steps below to deploy ToolJet on DigitalOcean:

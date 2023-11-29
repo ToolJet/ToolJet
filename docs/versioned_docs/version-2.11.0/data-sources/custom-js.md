@@ -120,7 +120,7 @@ Both code snippets will produce IDs that are highly likely to be unique. However
 :::tip Resources
 - You can also write custom JavaScript code to get the data from **External APIs** and manipulate the response for graphical representation. Here's the [tutorial](https://blog.tooljet.com/build-github-stars-history-app-in-5-minutes-using-low-code/) on how we used custom JavaScript code to build an app using GitHub API.
 - [Import external libraries](/docs/how-to/import-external-libraries-using-runjs) using RunJS.
-- [Intentionally Fail](docs/how-to/intentionally-fail-js-query) a RunJS query.
+- [Intentionally Fail](/docs/how-to/intentionally-fail-js-query) a RunJS query.
 - [Trigger query at specified intervals](/docs/how-to/run-query-at-specified-intervals) using RunJS.
 :::
 

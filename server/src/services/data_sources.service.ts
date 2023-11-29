@@ -294,7 +294,13 @@ export class DataSourcesService {
     });
   }
 
-  async testConnection(kind: string, options: object, plugin_id: string, organization_id: string): Promise<object> {
+  async testConnection(
+    kind: string,
+    options: object,
+    plugin_id: string,
+    organization_id: string,
+    environment_id: string
+  ): Promise<object> {
     let result = {};
 
     const parsedOptions = JSON.parse(JSON.stringify(options));
@@ -302,10 +308,16 @@ export class DataSourcesService {
     for (const key of Object.keys(parsedOptions)) {
       const currentOption = parsedOptions[key]?.['value'];
       const variablesMatcher = /(%%.+?%%)/g;
-      const matched = variablesMatcher.exec(currentOption);
+      // need to match if currentOption is a contant, {{constants.psql_db}
+      const constantMatcher = /{{constants\..+?}}/g;
+      const variableMatched = variablesMatcher.exec(currentOption);
 
-      if (matched) {
+      if (variableMatched) {
         const resolved = await this.resolveVariable(currentOption, organization_id);
+        parsedOptions[key]['value'] = resolved;
+      }
+      if (constantMatcher.test(currentOption)) {
+        const resolved = await this.resolveConstants(currentOption, organization_id, environment_id);
         parsedOptions[key]['value'] = resolved;
       }
     }
@@ -498,6 +510,27 @@ export class DataSourcesService {
   getAuthUrl(provider: string, sourceOptions?: any): { url: string } {
     const service = new allPlugins[provider]();
     return { url: service.authUrl(sourceOptions) };
+  }
+
+  async resolveConstants(str: string, organization_id: string, environmentId: string) {
+    const tempStr: string = str.match(/\{\{(.*?)\}\}/g)[0].replace(/[{}]/g, '');
+    let result = tempStr;
+    if (new RegExp('^constants.').test(tempStr)) {
+      const splitArray = tempStr.split('.');
+      const constantName = splitArray[splitArray.length - 1];
+
+      const constant = await this.appEnvironmentService.getOrgEnvironmentConstant(
+        constantName,
+        organization_id,
+        environmentId
+      );
+
+      if (constant) {
+        result = constant.value;
+      }
+    }
+
+    return result;
   }
 
   async resolveVariable(str: string, organization_id: string) {

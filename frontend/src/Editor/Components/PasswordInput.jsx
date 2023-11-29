@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export const PasswordInput = ({
   height,
@@ -15,8 +15,19 @@ export const PasswordInput = ({
 
   const placeholder = properties.placeholder;
 
-  const [passwordValue, setPasswordValue] = React.useState('');
+  const [passwordValue, setPasswordValue] = useState('');
   const { isValid, validationError } = validate(passwordValue);
+  const [showValidationError, setShowValidationError] = useState(false);
+
+  const computedStyles = {
+    height,
+    display: visibility ? '' : 'none',
+    borderRadius: `${borderRadius}px`,
+    color: darkMode && '#fff',
+    borderColor: darkMode && '#DADCDE',
+    backgroundColor: darkMode && ['#ffffff'].includes(backgroundColor) ? '#232e3c' : backgroundColor,
+    boxShadow: boxShadow,
+  };
 
   React.useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -29,25 +40,21 @@ export const PasswordInput = ({
         disabled={disabledState}
         onChange={(e) => {
           setPasswordValue(e.target.value);
-          setExposedVariable('value', e.target.value).then(() => fireEvent('onChange'));
+          setExposedVariable('value', e.target.value);
+          fireEvent('onChange');
+          setShowValidationError(true);
         }}
         type={'password'}
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+        className={`form-control ${!isValid && showValidationError ? 'is-invalid' : ''} validation-without-icon ${
           darkMode && 'dark-theme-placeholder'
         }`}
         placeholder={placeholder}
         value={passwordValue}
-        style={{
-          height,
-          display: visibility ? '' : 'none',
-          borderRadius: `${borderRadius}px`,
-          backgroundColor,
-          boxShadow,
-        }}
+        style={computedStyles}
         data-cy={dataCy}
       />
       <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
-        {validationError}
+        {showValidationError && validationError}
       </div>
     </div>
   );

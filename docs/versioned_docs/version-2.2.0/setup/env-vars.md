@@ -7,6 +7,8 @@ title: Environment variables
 
 Both the ToolJet server and client requires some environment variables to start running.
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 ## ToolJet server
 
 #### ToolJet host ( required )
@@ -47,7 +49,7 @@ If you are using docker-compose setup, you can set PG_HOST as `postgres` which w
 :::
 
 :::info
-If you intent you use the DB connection url and if the connection does not support ssl. Please use the below format using the variable DATABASE_URL.
+If you intend to use the DB connection url and if the connection does not support ssl. Please use the below format using the variable DATABASE_URL.
 `postgres://username:password@hostname:port/database_name?sslmode=disable`
 :::
 
@@ -77,7 +79,7 @@ Use this environment variable to enable/disable the feature that allows users to
 
 #### Marketplace feature enable ( optional )
 
-Use this environment variable to enable/disable the feature that allows users to use the [marketplace](/docs/marketplace).
+Use this environment variable to enable/disable the feature that allows users to use the marketplace.
 
 | variable                   | value             |
 | -------------------------- | ----------------- |
@@ -104,7 +106,7 @@ Incase you want to trigger it manually, use the command `npm run db:create` on T
 :::
 
 :::info
-If you intent you use the DB connection url and if the connection does not support ssl. Please use the below format using the variable TOOLJET_DB_URL.
+If you intend to use the DB connection url and if the connection does not support ssl. Please use the below format using the variable TOOLJET_DB_URL.
 `postgres://username:password@hostname:port/database_name?sslmode=disable`
 :::
 

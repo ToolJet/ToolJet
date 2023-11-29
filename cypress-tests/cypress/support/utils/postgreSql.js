@@ -9,27 +9,28 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { closeDSModal } from "Support/utils/dataSource";
 
-
 export const addQuery = (queryName, query, dbName) => {
   cy.get(postgreSqlSelector.buttonAddNewQueries).click();
   cy.get(`[data-cy="${dbName}-add-query-card"]`)
     .should("contain", dbName)
     .click();
   // selectQueryMode(postgreSqlText.queryModeSql, "3");
-  cy.get('[data-cy="query-name-label"]').realHover().then(() => {
-    cy.get('[class*="breadcrum-rename-query-icon"]').click();
-  });
+  cy.get('[data-cy="query-name-label"]')
+    .realHover()
+    .then(() => {
+      cy.get('[class*="breadcrum-rename-query-icon"]').click();
+    });
   cy.get(postgreSqlSelector.queryLabelInputField).clear().type(queryName);
-  cy.get(postgreSqlSelector.queryInputField).realMouseDown({ position: "center" }).realType(' ');
-  cy.get(postgreSqlSelector.queryInputField).clearAndTypeOnCodeMirror(query)
+  cy.get(postgreSqlSelector.queryInputField)
+    .realMouseDown({ position: "center" })
+    .realType(" ");
+  cy.get(postgreSqlSelector.queryInputField).clearAndTypeOnCodeMirror(query);
   cy.get(postgreSqlSelector.queryCreateAndRunButton).click();
 };
 
 export const addQueryOnGui = (queryName, query) => {
   cy.get(postgreSqlSelector.buttonAddNewQueries).click();
-  cy.get('[data-cy="cypress-postgresql"]')
-    .should("contain", dbName)
-    .click();
+  cy.get('[data-cy="cypress-postgresql"]').should("contain", dbName).click();
 
   cy.get(postgreSqlSelector.queryLabelInputField).clear().type(queryName);
   cy.get(postgreSqlSelector.queryInputField)
@@ -41,16 +42,57 @@ export const addQueryOnGui = (queryName, query) => {
     `Query (${queryName}) completed.`
   );
 };
-export const selectDataSource = (dataSource) => {
+export const selectAndAddDataSource = (
+  dscategory,
+  dataSource,
+  dataSourceName
+) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
-  closeDSModal()
-  cy.wait(500);
-  cy.get(commonSelectors.addNewDataSourceButton).click();
+  cy.wait(1000)
+  cy.get(`[data-cy="${cyParamName(dscategory)}-datasource-button"]`).click();
+  cy.wait(500)
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
-  cy.get(`[data-cy='data-source-${dataSource.toLowerCase()}']`).click();
+  cy.get(`[data-cy="data-source-${(dataSource).toLowerCase()}"]`)
+    .parent()
+    .within(() => {
+      cy.get(
+        `[data-cy="data-source-${(
+          dataSource
+        ).toLowerCase()}"]>>>.datasource-card-title`
+      ).realHover("mouse");
+      cy.get(
+        `[data-cy="${cyParamName(dataSource).toLowerCase()}-add-button"]`
+      ).click();
+    });
+
+  cy.wait(1000)
+  cy.get(postgreSqlSelector.buttonSave).should("be.disabled")
+  cy.clearAndType(
+    '[data-cy="data-source-name-input-filed"]',
+    cyParamName(`cypress-${dataSourceName}-${dataSource}`)
+  );
+  cy.get(postgreSqlSelector.buttonSave).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    postgreSqlText.toastDSAdded
+  );
+  cy.get(
+    `[data-cy="cypress-${cyParamName(dataSourceName)}-${cyParamName(
+      dataSource
+    )}-button"]`
+  ).verifyVisibleElement(
+    "have.text",
+    `cypress-${cyParamName(dataSourceName)}-${cyParamName(dataSource)}`
+  );
 };
 
 export const fillConnectionForm = (data, toggle = "") => {
+  cy.get("body").then(($body) => {
+    const editButton = $body.find(".tj-btn");
+    if (editButton.length > 0) {
+      editButton.click();
+    }
+  });
   for (const property in data) {
     cy.clearAndType(
       `[data-cy="${cyParamName(property)}-text-field"]`,
@@ -60,11 +102,16 @@ export const fillConnectionForm = (data, toggle = "") => {
   if (toggle != "") {
     cy.get(toggle).click();
   }
+
+  cy.get(postgreSqlSelector.buttonSave).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    postgreSqlText.toastDSSaved
+  );
   cy.get(postgreSqlSelector.buttonTestConnection).click();
   cy.get(postgreSqlSelector.textConnectionVerified, {
     timeout: 7000,
-  }).should("have.text", "connection verified");
-  cy.get(postgreSqlSelector.buttonSave).click();
+  }).should("have.text", postgreSqlText.labelConnectionVerified);
 };
 
 export const fillDataSourceTextField = (
@@ -78,9 +125,15 @@ export const fillDataSourceTextField = (
     `${assertionType}.text`,
     fieldName
   );
+  cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`).then(($field) => {
+    if ($field.is(":disabled")) {
+      cy.get(".datasource-edit-btn").click();
+    }
+  });
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
     .invoke("attr", "placeholder")
     .should("eq", placeholder.replace(/\u00a0/g, " "));
+
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
     .clear()
     .type(input, args);

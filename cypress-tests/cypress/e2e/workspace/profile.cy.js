@@ -35,15 +35,15 @@ describe("Profile Settings", () => {
     cy.get(profileSelector.updateButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      profileText.nameErrorToast
+      profileText.firstNameErrorToast
     );
 
-    cy.clearAndType(profileSelector.firstNameInput, profileText.firstName);
-    cy.get(profileSelector.updateButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      profileText.lastNameNameErrorToast
-    );
+    // cy.clearAndType(profileSelector.firstNameInput, profileText.firstName);
+    // cy.get(profileSelector.updateButton).click();
+    // cy.verifyToastMessage(
+    //   commonSelectors.toastMessage,
+    //   profileText.lastNameNameErrorToast
+    // );
 
     cy.clearAndType(profileSelector.firstNameInput, randomFirstName);
     cy.clearAndType(profileSelector.lastNameInput, randomLastName);

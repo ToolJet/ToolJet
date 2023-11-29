@@ -45,6 +45,13 @@ export class GroupPermission extends BaseEntity {
 
   @Column({ name: 'org_environment_variable_delete', default: false })
   orgEnvironmentVariableDelete: boolean;
+
+  @Column({ name: 'org_environment_constant_create', default: false })
+  orgEnvironmentConstantCreate: boolean;
+
+  @Column({ name: 'org_environment_constant_delete', default: false })
+  orgEnvironmentConstantDelete: boolean;
+
   @Column({ name: 'folder_delete', default: false })
   folderDelete: boolean;
 

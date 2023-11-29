@@ -37,7 +37,7 @@ They are commonly used to provide additional information to the server or to mod
 
 ## Using RunJS query to switch page
 
-Alternatively, the switch page command can be activated via a RunJS query using the following syntax:
+Alternatively, the switch page action can be activated via a RunJS query using the following syntax:
 ```js
 await actions.switchPage('<page-handle>')
 ```
@@ -45,4 +45,12 @@ await actions.switchPage('<page-handle>')
 :::info
 For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/how-to/run-actions-from-runjs).
 :::
+
+### Switch page with query params
+
+The switch page action can also be triggered along with query parameters using the following syntax:
+
+```js
+actions.switchPage('<pageHandle>', [['param1', 'value1'], ['param2', 'value2']])
+```
 

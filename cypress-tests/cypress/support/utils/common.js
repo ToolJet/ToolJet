@@ -5,6 +5,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
+import { groupsText } from "Texts/manageGroups";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.profileSettings).click();
@@ -15,6 +16,9 @@ export const navigateToProfile = () => {
 export const logout = () => {
   cy.get(commonSelectors.profileSettings).click();
   cy.get(commonSelectors.logoutLink).click();
+  cy.intercept("GET", "/api/metadata").as("publicConfig");
+  cy.wait("@publicConfig");
+  cy.wait(500);
 };
 
 export const navigateToManageUsers = () => {
@@ -48,7 +52,7 @@ export const navigateToAllUserGroup = () => {
       cy.wait(2000);
     }
   });
-}
+};
 
 export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
@@ -109,8 +113,7 @@ export const navigateToAppEditor = (appName) => {
     cy.intercept("GET", "/api/v2/data_sources").as("appDs");
     cy.wait("@appDs", { timeout: 15000 });
     cy.skipEditorPopover();
-  }
-  else {
+  } else {
     cy.intercept("GET", "/api/app-environments/**").as("appDs");
     cy.wait("@appDs", { timeout: 15000 });
     cy.skipEditorPopover();
@@ -204,6 +207,8 @@ export const createWorkspace = (workspaceName) => {
   cy.get(commonSelectors.workspaceName).click();
   cy.get(commonSelectors.addWorkspaceButton).click();
   cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
+  cy.clearAndType('[data-cy="workspace-slug-input-field"]', workspaceName);
+  cy.wait(1000)
   cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
   cy.get(commonSelectors.createWorkspaceButton).click();
   cy.wait("@homePage");
@@ -234,17 +239,34 @@ export const verifyTooltip = (selector, message) => {
 export const pinInspector = () => {
   cy.get(commonWidgetSelector.sidebarinspector).click();
   cy.get(commonSelectors.inspectorPinIcon).click();
-  cy.intercept("GET", "/api/v2/data_sources").as("editor");
-  cy.reload();
-  cy.wait("@editor");
+  cy.wait(500);
+
   cy.get("body").then(($body) => {
     if (!$body.find(commonSelectors.inspectorPinIcon).length > 0) {
       cy.get(commonWidgetSelector.sidebarinspector).click();
       cy.get(commonSelectors.inspectorPinIcon).click();
-      cy.wait(500);
-      cy.intercept("GET", "/api/v2/data_sources").as("editor");
-      cy.reload();
-      cy.wait("@editor");
     }
   });
+};
+
+export const createGroup = (groupName) => {
+  cy.get(groupsSelector.createNewGroupButton).click();
+  cy.clearAndType(groupsSelector.groupNameInput, groupName);
+  cy.get(groupsSelector.createGroupButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.groupCreatedToast
+  );
+};
+
+export const navigateToworkspaceConstants = () => {
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.workspaceConstantsOption).click();
+};
+
+export const releaseApp = () => {
+  cy.get(commonSelectors.releaseButton).click();
+  cy.get(commonSelectors.yesButton).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, "Version v1 released");
+  cy.wait(1000);
 };

@@ -52,6 +52,18 @@
       },
       "custom_auth_params": {
         "type": "array"
+      },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "client_key": {
+        "encrypted": true
+      },
+      "client_cert": {
+        "encrypted": true
+      },
+      "root_cert": {
+        "encrypted": true
       }
     },
     "exposedVariables": {
@@ -105,40 +117,119 @@
       "value": "header"
     },
     "headers": {
-      "value": [["", ""]]
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
     },
     "custom_query_params": {
-      "value": [["", ""]]
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
     },
     "custom_auth_params": {
-      "value": [["", ""]]
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
     },
     "access_token_custom_headers": {
-      "value": [["", ""]]
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
     },
     "multiple_auth_enabled": {
       "value": false
+    },
+    "ssl_certificate": {
+      "value": "none"
     }
   },
   "properties": {
-    "url": {
-      "label": "Base URL",
-      "key": "url",
-      "type": "text",
-      "description": "https://api.example.com/v1/"
+    "ssl_certificate": {
+      "label": "SSL Certificate",
+      "key": "ssl_certificate",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "ca_certificate",
+          "name": "CA certificate"
+        },
+        {
+          "value": "client_certificate",
+          "name": "Client certificate"
+        },
+        {
+          "value": "none",
+          "name": "None"
+        }
+      ],
+      "commonFields": {
+        "url": {
+          "label": "Base URL",
+          "key": "url",
+          "type": "text",
+          "description": "https://api.example.com/v1/"
+        },
+        "headers": {
+          "label": "Headers",
+          "key": "headers",
+          "type": "react-component-headers",
+          "description": "key-value pair headers for rest api"
+        },
+        "auth_type": {
+          "label": "Authentication Type",
+          "key": "auth_type",
+          "type": "react-component-oauth-authentication",
+          "description": "key-value pair headers for rest api"
+        }
+      }
     },
-    "headers": {
-      "label": "Headers",
-      "key": "headers",
-      "type": "react-component-headers",
-      "description": "key-value pair headers for rest api"
+    "ca_certificate": {
+      "ca_cert": {
+        "label": "CA Cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
     },
-    "auth_type": {
-      "label": "Authentication Type",
-      "key": "auth_type",
-      "type": "react-component-oauth-authentication",
-      "description": "key-value pair headers for rest api"
+    "client_certificate": {
+      "client_key": {
+        "label": "Client Key",
+        "key": "client_key",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client key"
+      },
+      "client_cert": {
+        "label": "Client Cert",
+        "key": "client_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client certificate"
+      },
+      "ca_cert": {
+        "label": "CA Cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
     }
   },
-  "required": ["url"]
+  "required": [
+    "url"
+  ]
 }

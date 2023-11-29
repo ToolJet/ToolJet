@@ -6,7 +6,7 @@ title: User Lifecycle
 # User Lifecycle
 
 :::info
-Check Workspace docs [here](/docs/tutorial/workspace_overview).
+Check Workspace docs [here](/docs/2.9.4/tutorial/workspace_overview).
 :::
 
 ### User onboarding

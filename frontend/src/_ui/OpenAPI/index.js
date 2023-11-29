@@ -25,7 +25,9 @@ const OpenApi = ({
   grant_type,
   scopes,
   auth_url,
+  access_token_custom_headers,
   spec,
+  workspaceConstants,
 }) => {
   const [securities, setSecurities] = useState([]);
   const [loadingSpec, setLoadingSpec] = useState(false);
@@ -141,7 +143,7 @@ const OpenApi = ({
       case 'apiKey':
         return { name: `${auth.key} (API Key)`, value: auth.key };
       case 'oauth2':
-        return { name: `${auth.key} (Ouath2)`, value: auth.key };
+        return { name: `${auth.key} (Oauth2)`, value: auth.key };
     }
   };
 
@@ -195,6 +197,7 @@ const OpenApi = ({
           rows="14"
           value={definition}
           onChange={(e) => optionchanged('definition', e.target.value)}
+          workspaceConstants={workspaceConstants}
         />
       </div>
 
@@ -237,6 +240,7 @@ const OpenApi = ({
             grant_type={grant_type}
             custom_auth_params={custom_auth_params}
             custom_query_params={custom_query_params}
+            access_token_custom_headers={access_token_custom_headers}
             client_id={client_id}
             client_secret={client_secret}
             client_auth={client_auth}

@@ -11,6 +11,8 @@ import {
   Body,
   BadRequestException,
   UseInterceptors,
+  NotFoundException,
+  NotImplementedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -21,12 +23,14 @@ import { FoldersService } from '@services/folders.service';
 import { App } from 'src/entities/app.entity';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
+import { AppCreateDto } from '@dto/app-create.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
 import { VersionEditDto } from '@dto/version-edit.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
+import { AppCloneDto } from '@dto/app-clone.dto';
 
 @Controller('apps')
 export class AppsController {
@@ -38,17 +42,20 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@User() user, @Body('icon') icon: string) {
+  async create(@User() user, @Body() appCreateDto: AppCreateDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
+    const name = appCreateDto.name;
+    const icon = appCreateDto.icon;
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsService.create(user, manager);
+      const app = await this.appsService.create(name, user, manager);
 
       const appUpdateDto = new AppUpdateDto();
+      appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
       await this.appsService.update(app.id, appUpdateDto, manager);
@@ -58,9 +65,16 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
-  @Get(':id')
-  async show(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
+  @Get('validate-private-app-access/:slug')
+  async appAccess(
+    @User() user,
+    @Param('slug') appSlug: string,
+    @Query('access_type') accessType: string,
+    @Query('version_name') versionName: string,
+    @Query('version_id') versionId: string
+  ) {
+    const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
+
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
@@ -71,6 +85,47 @@ export class AppsController {
     }
 
     if (accessType === 'edit' && !ability.can('editApp', app)) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
+    }
+
+    const { id, slug } = app;
+    const response = {
+      id,
+      slug,
+    };
+    /* If the request comes from preview which needs version id */
+    if (versionName || versionId) {
+      if (!ability.can('fetchVersions', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+
+      /* Adding backward compatibility for old URLs */
+      const version = versionId
+        ? await this.appsService.findVersion(versionId)
+        : await this.appsService.findVersionFromName(versionName, id);
+      if (!version) {
+        throw new NotFoundException("Couldn't found app version. Please check the version name");
+      }
+      if (versionId) response['versionName'] = version.name;
+      response['versionId'] = version.id;
+    }
+    return response;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Get(':id')
+  async show(@User() user, @AppDecorator() app: App) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -102,6 +157,32 @@ export class AppsController {
       };
     }
     return response;
+  }
+
+  @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
+  @Get('validate-released-app-access/:slug')
+  async releasedAppAccess(@User() user, @AppDecorator() app: App) {
+    if (user) {
+      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+      if (!ability.can('viewApp', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+    }
+
+    if (!app.currentVersionId) {
+      throw new NotImplementedException('App is not released yet');
+    }
+
+    const { id, slug } = app;
+    return {
+      slug: slug,
+      id: id,
+    };
   }
 
   @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
@@ -154,14 +235,14 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/clone')
-  async clone(@User() user, @AppDecorator() app: App) {
+  async clone(@User() user, @AppDecorator() app: App, @Body() appCloneDto: AppCloneDto) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('cloneApp', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-
-    const result = await this.appsService.clone(app, user);
+    const appName = appCloneDto.name;
+    const result = await this.appsService.clone(app, user, appName);
     const response = decamelizeKeys(result);
 
     return response;
@@ -354,5 +435,19 @@ export class AppsController {
     appUpdateDto.icon = icon;
     const appUser = await this.appsService.update(app.id, appUpdateDto);
     return decamelizeKeys(appUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Get(':id/tables')
+  async tables(@User() user, @AppDecorator() app: App) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+    if (!ability.can('cloneApp', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const result = await this.appsService.findTooljetDbTables(app.id);
+    return { tables: result };
   }
 }

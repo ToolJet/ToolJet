@@ -12,7 +12,8 @@ import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
-import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
+import { useNavigate } from 'react-router-dom';
 
 export const Folders = function Folders({
   folders,
@@ -40,6 +41,7 @@ export const Folders = function Folders({
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
   const [filteredData, setFilteredData] = useState(folders);
   const [errorText, setErrorText] = useState('');
+  const navigate = useNavigate();
 
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -55,9 +57,15 @@ export const Folders = function Folders({
   }, [folders]);
 
   useEffect(() => {
-    updateSidebarNAV('All apps');
+    if (_.isEmpty(currentFolder)) {
+      updateSidebarNAV('All apps');
+      setActiveFolder({});
+    } else {
+      updateSidebarNAV(currentFolder.name);
+      setActiveFolder(currentFolder);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentFolder]);
 
   const handleSearch = (e) => {
     const value = e?.target?.value;
@@ -98,6 +106,13 @@ export const Folders = function Folders({
     }
     folderChanged(folder);
     updateSidebarNAV(folder?.name ?? 'All apps');
+    //update the url query parameter with folder name
+    updateFolderQuery(folder?.name);
+  }
+
+  function updateFolderQuery(name) {
+    const path = `${name ? `?folder=${name}` : ''}`;
+    navigate({ pathname: location.pathname, search: path }, { replace: true });
   }
 
   function deleteFolder(folder) {
@@ -150,6 +165,7 @@ export const Folders = function Folders({
           setUpdationStatus(false);
           setShowUpdateForm(false);
           setNewFolderName('');
+          updateFolderQuery(folderName);
           updateSidebarNAV(newFolderName);
           foldersChanged();
         })
@@ -160,9 +176,19 @@ export const Folders = function Folders({
     }
   }
 
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      if (showUpdateForm) {
+        executeEditFolder();
+      } else {
+        saveFolder();
+      }
+    }
+  };
+
   const handleInputChange = (e) => {
     setErrorText('');
-    const error = validateName(e.target.value, 'Folder name', false, false);
+    const error = validateName(e.target.value, 'Folder name', true, false, false);
     if (!error.status) {
       setErrorText(error.errorMsg);
     }
@@ -178,6 +204,7 @@ export const Folders = function Folders({
     setShowInput(false);
     setFilteredData(folders);
   }
+
   return (
     <div
       className={`w-100 folder-list ${!canCreateApp && 'folder-list-user'}`}
@@ -319,6 +346,7 @@ export const Folders = function Folders({
               value={newFolderName}
               maxLength={50}
               data-cy="folder-name-input"
+              onKeyPress={handleKeyPress}
               autoFocus
             />
             <label className="tj-input-error">{errorText || ''}</label>

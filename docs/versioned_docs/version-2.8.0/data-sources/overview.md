@@ -66,7 +66,7 @@ Global datasources are available only on **ToolJet version 2.3.0 and above**.
 
 On ToolJet versions below 2.3.0, the datasource connection was made from within the individual apps. To make it backward compatible, we added an option to change the scope of the datasources and make it global datasource.
 
-1. If you open an app created on previos versions of ToolJet, you'll find the datasource manager on the left sidebar of the App Builder.
+1. If you open an app created on previous versions of ToolJet, you'll find the datasource manager on the left sidebar of the App Builder.
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/datasource-reference/overview/leftsidebar.png" alt="Datasources: Overview" />
@@ -80,7 +80,7 @@ On ToolJet versions below 2.3.0, the datasource connection was made from within 
 
   </div>
 
-3. Once you change the scope of the datasource and make it global, you'll see that the **datasource manager** is removed from the left sidebar and now you'll find the datasource on the **query panel** under Global Datasources. You can now configure the datasource fromt the Global Datasource page on the **dashboard**.
+3. Once you change the scope of the datasource and make it global, you'll see that the **datasource manager** is removed from the left sidebar and now you'll find the datasource on the **query panel** under Global Datasources. You can now configure the datasource from the Global Datasource page on the **dashboard**.
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/datasource-reference/overview/queryadd.png" alt="Datasources: Overview" />

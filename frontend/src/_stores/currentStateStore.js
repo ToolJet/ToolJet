@@ -50,6 +50,8 @@ export const useCurrentState = () =>
       server: state.server,
       page: state.page,
       succededQuery: state.succededQuery,
+      constants: state.constants,
+      layout: state.layout,
     };
   }, shallow);
 

@@ -9,6 +9,8 @@ title: Google Cloud Run
 You should setup a PostgreSQL database manually to be used by ToolJet.
 :::
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 
@@ -47,7 +49,7 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 4. Under containers tab, please make sure the port is set 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity is set to 2GiB.
 
   <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-tooljet.png" alt="port-and-capacity-tooljet" />
+  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-tooljet" />
   </div>
 
 

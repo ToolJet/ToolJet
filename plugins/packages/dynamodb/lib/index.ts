@@ -1,6 +1,15 @@
 import { ConnectionTestResult, QueryService, QueryResult, QueryError } from '@tooljet-plugins/common';
-
-import { deleteItem, getItem, listTables, queryTable, scanTable } from './operations';
+import {
+  deleteItem,
+  getItem,
+  listTables,
+  queryTable,
+  scanTable,
+  describeTable,
+  updateItem,
+  createTable,
+  putItem,
+} from './operations';
 const AWS = require('aws-sdk');
 import { AssumeRoleCredentials, SourceOptions, QueryOptions } from './types';
 
@@ -27,9 +36,20 @@ export default class DynamodbQueryService implements QueryService {
         case 'scan_table':
           result = await scanTable(client, JSON.parse(queryOptions.scan_condition));
           break;
+        case 'update_item':
+          result = await updateItem(client, JSON.parse(queryOptions.update_condition));
+          break;
+        case 'create_table':
+          result = await createTable(client, JSON.parse(queryOptions.table_parameters));
+          break;
+        case 'describe_table':
+          result = await describeTable(client, queryOptions.table);
+          break;
+        case 'put_item':
+          result = await putItem(client, JSON.parse(queryOptions.new_item_details));
+          break;
       }
     } catch (err) {
-      console.log(err);
       throw new QueryError('Query could not be completed', err.message, {});
     }
 
@@ -91,7 +111,7 @@ export default class DynamodbQueryService implements QueryService {
       credentials = new AWS.Credentials(sourceOptions['access_key'], sourceOptions['secret_key']);
     }
 
-    if (options['operation'] == 'list_tables') {
+    if (['create_table', 'list_tables', 'describe_table'].includes(options['operation'])) {
       return new AWS.DynamoDB({ region, credentials });
     } else {
       return new AWS.DynamoDB.DocumentClient({ region, credentials });

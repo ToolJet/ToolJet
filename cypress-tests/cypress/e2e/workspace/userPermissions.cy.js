@@ -19,38 +19,31 @@ data.folderName = `${fake.companyName.toLowerCase()}-folder`;
 describe("User permissions", () => {
   before(() => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.apiCreateApp(data.appName);
+    cy.visit('/my-workspace')
     permissions.reset();
     cy.get(commonSelectors.homePageLogo).click();
     cy.wait("@homePage");
-    cy.createApp();
-    cy.renameApp(data.appName);
-    cy.dragAndDropWidget("Table", 250, 250);
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.reloadAppForTheElement(data.appName);
     permissions.addNewUserMW(data.firstName, data.email);
-    common.logout();
+    cy.logoutApi();
   });
   beforeEach(() => {
-    cy.appUILogin();
-    cy.visitTheWorkspace('My workspace')
+    cy.apiLogin();
+    cy.visit("/my-workspace");
   });
 
   it("Should verify the create new app permission", () => {
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
     cy.get("body").then(($title) => {
       if ($title.text().includes(dashboardText.emptyPageDescription)) {
-        cy.get(commonSelectors.dashboardAppCreateButton).click();
-        cy.verifyToastMessage(
-          commonSelectors.toastMessage,
-          usersText.createAppPermissionToast
-        );
+        cy.get(commonSelectors.dashboardAppCreateButton).should('be.disabled');
       } else {
         cy.contains(dashboardText.createAppButton).should("not.exist");
       }
     });
-    common.logout();
+    cy.logoutApi();
   });
 
   it("Should verify the View and Edit permission", () => {
@@ -66,7 +59,9 @@ describe("User permissions", () => {
       });
 
     common.logout();
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
     cy.contains(data.appName).should("exist");
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
@@ -81,17 +76,25 @@ describe("User permissions", () => {
           "tj-disabled-btn"
         );
       });
+    common.logout();
 
-    permissions.adminLogin();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.contains("tr", data.appName)
       .parent()
       .within(() => {
         cy.get("td input").eq(1).check();
       });
-    cy.verifyToastMessage(commonSelectors.toastMessage, "App permissions updated")
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "App permissions updated"
+    );
 
     common.logout();
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
       data.appName
@@ -117,43 +120,68 @@ describe("User permissions", () => {
   });
 
   it("Should verify the Create and Delete app permission", () => {
+    data.appName = `${fake.companyName}-App`;
+    cy.apiCreateApp(data.appName);
+    cy.visit('/my-workspace')
+    cy.wait(500);
+
     common.navigateToManageGroups();
+    cy.get(groupsSelector.appSearchBox).click();
+    cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
+    cy.get(groupsSelector.selectAddButton).click();
+    cy.get("table").contains("td", data.appName);
+    cy.contains("td", data.appName)
+      .parent()
+      .within(() => {
+        cy.get("td input").first().should("be.checked");
+      });
+    cy.wait(500)
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsCreateCheck).check();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsDeleteCheck).check();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit('/my-workspace');
     cy.get(commonSelectors.appCreateButton).should("exist");
     common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("exist");
 
-    permissions.adminLogin();
+    common.logout();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsDeleteCheck).uncheck();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(1000)
     common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("not.exist");
 
-    cy.createApp();
-    cy.renameApp(data.email);
+    cy.createApp(data.email);
+
     cy.dragAndDropWidget("Table", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
-    cy.reloadAppForTheElement(data.email);
     common.viewAppCardOptions(data.email);
     cy.contains("Delete app").should("exist");
     cy.get(commonSelectors.appCardOptions(commonText.deleteAppOption)).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
 
-    permissions.adminLogin();
+    common.logout
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.appsCreateCheck).uncheck();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(1000)
     cy.contains("Create new application").should("not.exist");
   });
 
@@ -162,8 +190,10 @@ describe("User permissions", () => {
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.foldersCreateCheck).check();
 
-    common.logout();
-    cy.login(data.email, usersText.password);
+    cy.logoutApi();
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
 
     cy.get(commonSelectors.createNewFolderButton).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.folderName);
@@ -179,15 +209,22 @@ describe("User permissions", () => {
       });
     cy.get(commonSelectors.deleteFolderOption(data.folderName)).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
+    common.logout();
 
-    permissions.adminLogin();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.foldersCreateCheck).uncheck();
 
     common.logout();
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
 
-    permissions.adminLogin();
+    cy.apiLogin();
+    cy.visit("/my-workspace");
+    common.navigateToManageGroups();
     cy.contains("td", data.appName)
       .parent()
       .within(() => {
@@ -195,7 +232,9 @@ describe("User permissions", () => {
       });
 
     common.logout();
-    cy.login(data.email, usersText.password);
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
     cy.contains(data.appName).should("not.exist");
 
     common.logout();
@@ -205,56 +244,25 @@ describe("User permissions", () => {
 
   it("Should verify Create/Update/Delete workspace variable permission", () => {
     common.navigateToWorkspaceVariable();
-    cy.get(workspaceVarSelectors.addNewVariableButton).should("exist");
-
-    common.logout();
-    cy.login(data.email, usersText.password);
-    common.navigateToWorkspaceVariable();
-    cy.get(workspaceVarSelectors.addNewVariableButton).should("not.exist");
-
-    permissions.adminLogin();
-    cy.get(groupsSelector.permissionsLink).click();
-    cy.get(groupsSelector.workspaceVarCheckbox).check();
-    common.logout();
-
-    cy.login(data.email, usersText.password);
-    common.navigateToWorkspaceVariable();
-    cy.get(workspaceVarSelectors.addNewVariableButton).should("exist").click();
-    cy.clearAndType(
-      workspaceVarSelectors.workspaceVarNameInput,
-      data.firstName
-    );
-    cy.clearAndType(
-      workspaceVarSelectors.workspaceVarValueInput,
-      common.randomValue()
-    );
-    cy.get(workspaceVarSelectors.addVariableButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      workspaceVarText.workspaceVarCreatedToast
-    );
-    cy.get(workspaceVarSelectors.workspaceVarName(data.firstName)).should(
-      "be.visible"
+    cy.get('[data-cy="alert-info-text"]>>.text-muted').verifyVisibleElement(
+      "have.text",
+      "There are no Workspace variables. Workspace variables are being deprecated soon, so please use Workspace constants instead."
     );
     cy.get(
-      workspaceVarSelectors.workspaceVarEditButton(data.firstName)
-    ).click();
-    cy.clearAndType(workspaceVarSelectors.workspaceVarNameInput, data.lastName);
-    cy.get(workspaceVarSelectors.addVariableButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      workspaceVarText.workspaceVarUpdatedToast
-    );
-    cy.get(workspaceVarSelectors.workspaceVarName(data.lastName)).should(
-      "be.visible"
+      '[data-cy="go-to-workspace-constants-option-button"]'
+    ).verifyVisibleElement("have.text", "Go to workspace constants");
+    common.logout();
+
+    cy.apiLogin(data.email, usersText.password);
+    cy.visit("/my-workspace");
+    cy.wait(500)
+    common.navigateToWorkspaceVariable();
+    cy.get('[data-cy="alert-info-text"]>>.text-muted').verifyVisibleElement(
+      "have.text",
+      "There are no Workspace variables. Workspace variables are being deprecated soon, so please use Workspace constants instead."
     );
     cy.get(
-      workspaceVarSelectors.workspaceVarDeleteButton(data.lastName)
-    ).click();
-    cy.get(commonSelectors.buttonSelector("Yes")).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      workspaceVarText.workspaceVarDeletedToast
-    );
+      '[data-cy="go-to-workspace-constants-option-button"]'
+    ).verifyVisibleElement("have.text", "Go to workspace constants");
   });
 });

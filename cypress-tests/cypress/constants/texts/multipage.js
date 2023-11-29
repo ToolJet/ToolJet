@@ -1,6 +1,6 @@
 export const multipageText = {
   labelPages: "Pages",
-  pageNameHome: "Home",
+  pageNameHome: "HomeHome",
   headerPageHandle: "Page Handle",
   pageHandleModalTitle: "Edit page handle",
   editPagehandleInfo:
@@ -10,13 +10,13 @@ export const multipageText = {
 
   optionRename: "Rename",
   optionMarkHome: "Mark home",
-  optionHidePage: "Hide page",
+  optionHidePage: "Hide page on app menu",
 
   optionEventHandler: "Event Handlers",
   eventModalTitle: "Page Events",
   labelEvents: "Events",
-  addEventHandlerLink: "+ Add event handler",
-  noEventHandlerInfo: "This page doesn't have any event handlers",
+  addEventHandlerLink: "New event handler",
+  noEventHandlerInfo: "No event handlers",
 
   optionDeletePage: "Delete Page",
   deleteModalMessage: "Do you really want to delete Home page?",

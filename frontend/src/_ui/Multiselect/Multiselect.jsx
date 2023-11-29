@@ -13,9 +13,11 @@ const Multiselect = (props) => {
   };
 
   useEffect(() => {
-    renameKeys(props.options);
+    if (Array.isArray(props?.options)) {
+      renameKeys(props.options);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props?.options]);
+  }, [props?.options?.length]);
 
   const onChangeHandler = (data) => {
     props.onChange(data);
@@ -24,11 +26,12 @@ const Multiselect = (props) => {
     <div>
       <MultiSelect
         options={optionData}
-        placeholder={props.placeholder}
+        placeholder={props?.placeholder}
         value={props?.value || []}
         onChange={onChangeHandler}
         labelledBy="Select"
         overrideStrings={props.overrideStrings}
+        disableSearch={props?.disableSearch || false}
       />
     </div>
   );

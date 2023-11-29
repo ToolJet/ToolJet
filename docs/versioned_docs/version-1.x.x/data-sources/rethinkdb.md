@@ -4,7 +4,7 @@ title: RethinkDB
 ---
 # RethinkDB
 
-ToolJet can connect to RethinkDB databases to read and write data. For more info visit::https://rethinkdb.com/api/javascript/.com/
+ToolJet can connect to RethinkDB databases to read and write data. For more info visit::https://rethinkdb.com/api/javascript
 
 <img class="screenshot-full" src="/img/datasource-reference/rethink/rethink_auth.png" alt="ToolJet - Data source - RethinkDB" height="420" />
 

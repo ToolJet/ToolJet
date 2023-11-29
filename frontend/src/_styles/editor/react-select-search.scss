@@ -1,10 +1,9 @@
-
 /**
  * Main wrapper
  */
- @import "../colors.scss";
+@import "../colors.scss";
 
- .custom-select{
+.custom-select {
     .select-search-container .select-search-select {
         position: absolute;
         z-index: 2;
@@ -14,19 +13,20 @@
         border-radius: 4px;
         display: none;
     }
+
     .select-search-container.select-search-has-focus .select-search-select {
         display: block;
     }
 }
 
 .select-search-container {
-    --select-search-background: #fff;
-    --select-search-border: #dadcde;
+    --select-search-background: var(--base);
+    --select-search-border: var(--slate7);
     --select-search-selected: #dadcde;
-    --select-search-text: 232e3c;
+    --select-search-text: var(--slate12);
     --select-search-subtle-text: #6c6f85;
     --select-search-inverted-text: var(--select-search-background);
-    --select-search-highlight: #F8FAFF;
+    --select-search-highlight: var(--indigo3);
     --select-search-font: "Roboto", sans-serif;
     width: 100%;
     position: relative;
@@ -93,7 +93,7 @@
 .select-search-input::-webkit-search-cancel-button,
 .select-search-input::-webkit-search-results-button,
 .select-search-input::-webkit-search-results-decoration {
-    -webkit-appearance:none;
+    -webkit-appearance: none;
 }
 
 .select-search-input[readonly] {
@@ -106,13 +106,11 @@
 
 .select-search-container:not(.select-search-is-disabled).select-search-has-focus .select-search-input,
 .select-search-container:not(.select-search-is-disabled) .select-search-input:hover {
-    border-color: var(--select-search-selected);
+    border-color: var(--slate8);
 }
 
 .select-search-select {
-    background: var(--select-search-background);
-    border: 1px solid $color-dark-indigo-09;
-    background-color: #fff;
+    border: 1px solid var(--slate3) !important;
     box-shadow: 0 0 0 1px #0000001a, 0 4px 11px #0000001a;
     overflow: auto;
     max-height: 360px;
@@ -191,6 +189,7 @@
 .select-search-row:not(:last-child) .select-search-group-header {
     margin-bottom: 5px;
 }
-.select-search-row button{
+
+.select-search-row button {
     border-radius: 0px;
 }

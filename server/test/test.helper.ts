@@ -8,7 +8,7 @@ import { User } from 'src/entities/user.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
 import { Plugin } from 'src/entities/plugin.entity';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -51,6 +51,10 @@ export async function createNestAppInstance(): Promise<INestApplication> {
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: VERSION_NEUTRAL,
+  });
   await app.init();
 
   return app;
@@ -390,6 +394,8 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         orgEnvironmentVariableCreate: group == 'admin',
         orgEnvironmentVariableUpdate: group == 'admin',
         orgEnvironmentVariableDelete: group == 'admin',
+        orgEnvironmentConstantCreate: group == 'admin',
+        orgEnvironmentConstantDelete: group == 'admin',
         folderUpdate: group == 'admin',
         folderDelete: group == 'admin',
       });

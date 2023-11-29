@@ -13,7 +13,7 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
     <>
       <button
         onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
-        className={`add-new-column-btn ghost-black-operation ${isCreateColumnDrawerOpen && 'open'}`}
+        className={`ghost-black-operation ${isCreateColumnDrawerOpen ? 'open' : ''}`}
         data-cy="add-new-column-button"
       >
         <SolidIcon name="column" width="14" fill={isCreateColumnDrawerOpen ? '#3E63DD' : '#889096'} />
@@ -25,7 +25,7 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
         <CreateColumnForm
           onCreate={() => {
-            tooljetDatabaseService.viewTable(organizationId, selectedTable).then(({ data = [], error }) => {
+            tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
               if (error) {
                 toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
                 return;
@@ -43,16 +43,18 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
                 );
               }
             });
-            tooljetDatabaseService.findOne(organizationId, selectedTable).then(({ data = [], error }) => {
-              if (error) {
-                toast.error(error?.message ?? `Failed to fetch table "${selectedTable}"`);
-                return;
-              }
+            tooljetDatabaseService
+              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .then(({ data = [], error }) => {
+                if (error) {
+                  toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
+                  return;
+                }
 
-              if (Array.isArray(data) && data?.length > 0) {
-                setSelectedTableData(data);
-              }
-            });
+                if (Array.isArray(data) && data?.length > 0) {
+                  setSelectedTableData(data);
+                }
+              });
             setIsCreateColumnDrawerOpen(false);
           }}
           onClose={() => setIsCreateColumnDrawerOpen(false)}

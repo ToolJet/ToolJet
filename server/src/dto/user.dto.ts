@@ -12,7 +12,6 @@ export class CreateUserDto {
 
   @IsString()
   @IsOptional()
-  @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   last_name: string;
 

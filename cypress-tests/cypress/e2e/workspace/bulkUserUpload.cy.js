@@ -137,10 +137,11 @@ describe("Bulk user upload", () => {
       force: true,
     });
     cy.get(usersSelector.buttonUploadUsers).click();
+    cy.wait(1000);
     cy.get(".go2072408551")
       .should("be.visible")
       .and("have.text", "250 users are being added");
-    cy.wait(500);
+    cy.wait(1000);
     common.searchUser("test12@gmail.com");
     cy.contains("td", "test12@gmail.com")
       .parent()

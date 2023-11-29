@@ -27,7 +27,8 @@ export function renderElement(
   paramType,
   currentState,
   components = {},
-  darkMode = false
+  darkMode = false,
+  verticalLine = true
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -70,6 +71,7 @@ export function renderElement(
         paramUpdated({ name: param, ...component.component.properties[param] }, 'fxActive', active, paramType);
       }}
       component={component}
+      verticalLine={verticalLine}
     />
   );
 }

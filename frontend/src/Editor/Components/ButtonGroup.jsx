@@ -65,16 +65,20 @@ export const ButtonGroup = function Button({
       const copyDefaultActive = defaultActive;
       copyDefaultActive?.splice(copyDefaultActive?.indexOf(values[index]), 1);
       setDefaultActive(copyDefaultActive);
-      setExposedVariable('selected', copyDefaultActive.join(',')).then(() => fireEvent('onClick'));
+      setExposedVariable('selected', copyDefaultActive.join(','));
+      fireEvent('onClick');
     } else if (multiSelection) {
-      setExposedVariable('selected', [...defaultActive, values[index]].join(',')).then(() => fireEvent('onClick'));
+      setExposedVariable('selected', [...defaultActive, values[index]].join(','));
+      fireEvent('onClick');
       setDefaultActive([...defaultActive, values[index]]);
     } else if (!multiSelection) {
-      setExposedVariable('selected', [values[index]]).then(() => fireEvent('onClick'));
+      setExposedVariable('selected', [values[index]]);
+      fireEvent('onClick');
       setDefaultActive([values[index]]);
     }
     if (values?.length == 0) {
-      setExposedVariable('selected', []).then(() => fireEvent('onClick'));
+      setExposedVariable('selected', []);
+      fireEvent('onClick');
     }
   };
   return (

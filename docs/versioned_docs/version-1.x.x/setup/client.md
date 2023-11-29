@@ -12,6 +12,8 @@ You can build standalone client with the below command:
 SERVE_CLIENT=false npm run build
 ```
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 ## Deploying ToolJet client on Firebase
 
 :::tip

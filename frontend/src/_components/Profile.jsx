@@ -8,7 +8,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const Profile = function Header({ darkMode }) {
+export const Profile = function Header({ darkMode, checkForUnsavedChanges }) {
   const currentSession = authenticationService.currentSessionValue;
   const [currentUser, setCurrentUser] = React.useState({
     first_name: currentSession?.current_user.first_name,
@@ -44,6 +44,7 @@ export const Profile = function Header({ darkMode }) {
       <div className={`profile-card card ${darkMode && 'dark-theme'}`}>
         <Link
           data-testid="settingsBtn"
+          onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}
           to={getPrivateRoute('settings')}
           className="dropdown-item tj-text-xsm"
           data-cy="profile-link"
