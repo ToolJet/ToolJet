@@ -1062,6 +1062,9 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+    labelEnabled: {
+      value: true,
+    },
     properties: {
       label: {
         type: 'code',
