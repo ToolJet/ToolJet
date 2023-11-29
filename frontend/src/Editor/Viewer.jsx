@@ -237,7 +237,7 @@ class ViewerComponent extends React.Component {
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
       if (query.options.runOnPageLoad && isQueryRunnable(query)) {
-        runQuery(this, query.id, query.name, undefined, 'view');
+        runQuery(this.getViewerRef(), query.id, query.name, undefined, 'view');
       }
     });
   };

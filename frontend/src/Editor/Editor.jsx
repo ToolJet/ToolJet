@@ -1774,21 +1774,9 @@ const EditorComponent = (props) => {
       if (!envSelection) {
         window.location.reload(false);
       } else {
-        await fetchOrgEnvironmentConstants(currentEnvironment?.id);
-        useCurrentStateStore.getState().actions.setCurrentState({
-          globals: {
-            ...useCurrentStateStore.getState().globals,
-            environment: {
-              id: currentEnvironment?.id,
-              name: currentEnvironment?.name,
-            },
-          },
-        });
-        const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
-        if (currentEnvironmentObj[appId] !== currentEnvironment?.id) {
-          currentEnvironmentObj[appId] = currentEnvironment.id;
-          localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
-        }
+        const selectedEnvironmentId = currentEnvironment?.id;
+
+        callBack(app, props.params.pageHandle, false, true, selectedEnvironmentId);
       }
     }
   };

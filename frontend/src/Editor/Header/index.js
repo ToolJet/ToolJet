@@ -201,6 +201,7 @@ export default function EditorHeader({
                       pageHandle={currentState?.page?.handle}
                       darkMode={darkMode}
                       isVersionReleased={isVersionReleased}
+                      isPublic={isPublic ?? false}
                     />
                   )}
                 </div>
