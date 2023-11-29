@@ -92,3 +92,50 @@ The dropdown will display all the apps associated with your account. Select an a
 | resource_type | Indicates the type of the [resources](#select-resources) involved in the logged event. |
 | user_id | Each user account in ToolJet has a unique ID associated with it, which is recorded when an event occurs. |
 
+### Log file
+
+The file will contain all the data from audit logs. The log file can be created by specifying the path in the [environment variables](/docs/setup/env-vars). The log file is rotated on a daily basis and is updated dynamically every time a new audit log is generated.
+
+#### Log Rotation
+
+The log file is configured to rotate on a daily basis. This means that a new log file will be created every day, ensuring efficient management and organization of audit data.
+
+#### Log File Path
+
+The path for the log file is defined using the `LOG_FILE_PATH` variable in the environment. It's important to understand that this path is relative to the home directory of the machine. For instance, if `LOG_FILE_PATH` is set to `hsbc/dashboard/log`, the resulting log file path will be structured as follows:
+```
+homepath/hsbc/dashboard/log/tooljet_log/{process_id}-{date}/audit.log
+```
+Here, `{process_id}` is a placeholder for the unique process identifier, and `{date}` represents the current date. This structured path ensures that audit logs are organized by both process and date, facilitating easy traceability and analysis.
+
+| Variable | Description                                                                 |
+| -------- | --------------------------------------------------------------------------- |
+| LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
+
+<details>
+<summary>Example Log file data</summary>
+
+```bash
+{
+  level: 'info',
+  message: 'PERFORM APP_CREATE OF awdasdawdwd APP',
+  timestamp: '2023-11-02 17:12:40',
+  auditLog: {
+    userId: '0ad48e21-e7a2-4597-9568-c4535aedf687',
+    organizationId: 'cf8e132f-a68a-4c81-a0d4-3617b79e7b17',
+    resourceId: 'eac02f79-b8e2-495a-bffe-82633416c829',
+    resourceType: 'APP',
+    actionType: 'APP_CREATE',
+    resourceName: 'awdasdawdwd',
+    ipAddress: '::1',
+    metadata: {
+      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+      tooljetVersion: '2.22.2-ee2.8.3'
+    }
+  },
+  label: 'APP'
+}
+```
+
+</details>
+
