@@ -52,7 +52,7 @@ export const TextInput = function TextInput({
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '3px 28px' : '3px 5px',
   };
-  console.log('component--', component.labelEnabled.value);
+  console.log('component--', component?.labelEnabled?.value);
 
   const loaderStyle = {
     left: direction === 'alignrightinspector' && alignment === 'side' ? `${elementWidth - 19}px` : undefined,
@@ -132,7 +132,7 @@ export const TextInput = function TextInput({
       ${visibility || 'invisible'}`}
                 style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
               >
-                {labelEnabled && (
+                {component?.labelEnabled?.value && (
                   <label
                     style={{
                       color: darkMode && color == '#11181C' ? '#fff' : color,
@@ -221,7 +221,7 @@ export const TextInput = function TextInput({
       ${visibility || 'invisible'}`}
               style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
             >
-              {labelEnabled && (
+              {component?.labelEnabled?.value && (
                 <label
                   style={{
                     color: darkMode && color == '#11181C' ? '#fff' : color,
