@@ -53,7 +53,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
           <div>
             {index === 0 && (
               <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
-                Global data sources
+                Data sources
               </div>
             )}
             <DataSourceIcon source={sources?.[0]} height={16} />
@@ -66,6 +66,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
               className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
               data-tooltip-id="tooltip-for-add-query-dd-option"
               data-tooltip-content={source.name}
+              data-cy={`ds-${source.name.toLowerCase()}`}
             >
               {source.name}
               <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
@@ -83,7 +84,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
   const DataSourceOptions = [
     {
       label: (
-        <span className="color-slate9" style={{ fontWeight: 500 }}>
+        <span data-cy="ds-section-header-default" className="color-slate9" style={{ fontWeight: 500 }}>
           Defaults
         </span>
       ),
@@ -92,7 +93,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
         ...staticDataSources.map((source) => ({
           label: (
             <div>
-              <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.name}</span>
+              <DataSourceIcon source={source} height={16} />{' '}
+              <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small">
+                {source.name}
+              </span>
             </div>
           ),
           value: source.id,
@@ -246,7 +250,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       {admin && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
-            + Add new data source
+            + Add new Data source
           </ButtonSolid>
         </div>
       )}
