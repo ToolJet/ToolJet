@@ -58,6 +58,8 @@ Cypress.Commands.add("createApp", (appName) => {
 
   cy.get("body").then(($title) => {
     cy.get(getAppButtonSelector($title)).click();
+    cy.clearAndType('[data-cy="app-name-input"]', appName);
+    cy.get('[data-cy="+ Create app"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();
@@ -108,19 +110,23 @@ Cypress.Commands.add(
       .find("pre.CodeMirror-line")
       .invoke("text")
       .then((text) => {
-        cy.wrap(subject).realType(`${createBackspaceText(text)}`, { delay: 0 }),
-          {
-            delay: 0,
-          };
+        cy
+          .wrap(subject)
+          .last()
+          .click()
+          .type(createBackspaceText(text), { delay: 0 }),
+        {
+          delay: 0,
+        };
       });
     if (!Array.isArray(value)) {
-      cy.wrap(subject).as("element").realClick().type(value, {
+      cy.wrap(subject).last().type(value, {
         parseSpecialCharSequences: false,
         delay: 0,
       });
     } else {
       cy.wrap(subject)
-        .as("element")
+        .last()
         .type(value[1], {
           parseSpecialCharSequences: false,
           delay: 0,
@@ -303,5 +309,57 @@ Cypress.Commands.add("importApp", (appFile) => {
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     importText.appImportedToastMessage
+  );
+});
+
+Cypress.Commands.add("moveComponent", (componentName, x, y) => {
+  cy.get(`[data-cy="draggable-widget-${componentName}"]`, { log: false })
+    .trigger("mouseover", {
+      force: true,
+      log: false,
+    })
+    .trigger("mousedown", {
+      which: 1,
+      force: true,
+      log: false,
+    });
+  cy.get(commonSelectors.canvas, { log: false })
+    .trigger("mousemove", {
+      which: 1,
+      clientX: x,
+      ClientY: y,
+      clientX: x,
+      clientY: y,
+      pageX: x,
+      pageY: y,
+      screenX: x,
+      screenY: y,
+      log: false,
+    })
+    .trigger("mouseup", { log: false });
+
+  const log = Cypress.log({
+    name: "moveComponent",
+    displayName: "Component moved:",
+    message: `X: ${x}, Y:${y}`,
+  });
+});
+
+Cypress.Commands.add("getPosition", (componentName) => {
+  cy.get(commonWidgetSelector.draggableWidget(componentName)).then(
+    ($element) => {
+      const element = $element[0];
+      const rect = element.getBoundingClientRect();
+
+      const clientX = Math.round(rect.left + window.scrollX + rect.width / 2);
+      const clientY = Math.round(rect.top + window.scrollY + rect.height / 2);
+
+      const log = Cypress.log({
+        name: "getPosition",
+        displayName: `${componentName}'s Position:\n`,
+        message: `\nX: ${clientX}, Y:${clientY}`,
+      });
+      return [clientX, clientY];
+    }
   );
 });

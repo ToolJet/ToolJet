@@ -83,5 +83,6 @@ import { SessionService } from '@services/session.service';
     SessionService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
+  exports: [OrganizationsService],
 })
 export class OrganizationsModule {}

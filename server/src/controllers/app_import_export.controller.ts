@@ -6,6 +6,7 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { App } from 'src/entities/app.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { User } from 'src/decorators/user.decorator';
+import { AppImportDto } from '@dto/app-import.dto';
 
 @Controller('apps')
 export class AppsImportExportController {
@@ -17,13 +18,14 @@ export class AppsImportExportController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/import')
-  async import(@User() user, @Body() body) {
+  async import(@User() user, @Body() appImportDto: AppImportDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const app = await this.appImportExportService.import(user, body);
+    const { name: appName, app: appContent } = appImportDto;
+    const app = await this.appImportExportService.import(user, appContent, appName);
     return decamelizeKeys(app);
   }
 

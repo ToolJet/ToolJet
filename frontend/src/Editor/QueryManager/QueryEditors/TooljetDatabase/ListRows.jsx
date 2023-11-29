@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { isEmpty, uniqueId } from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
+import { isEmpty } from 'lodash';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
@@ -21,14 +22,14 @@ export const ListRows = React.memo(({ darkMode }) => {
   function addNewFilterConditionPair() {
     const existingFilters = listRowsOptions?.where_filters ? Object.values(listRowsOptions?.where_filters) : [];
     const emptyFilter = { column: '', operator: '', value: '' };
-    const newFilter = { ...emptyFilter, ...{ id: uniqueId() } };
+    const newFilter = { ...emptyFilter, ...{ id: uuidv4() } };
     handleWhereFiltersChange({ ...existingFilters, ...{ [newFilter.id]: newFilter } });
   }
 
   function addNewSortConditionPair() {
     const existingFilters = listRowsOptions?.order_filters ? Object.values(listRowsOptions?.order_filters) : [];
     const emptyFilter = { column: '', order: '' };
-    const newFilter = { ...emptyFilter, ...{ id: uniqueId() } };
+    const newFilter = { ...emptyFilter, ...{ id: uuidv4() } };
     handleOrderFiltersChange({ ...existingFilters, ...{ [newFilter.id]: newFilter } });
   }
 
