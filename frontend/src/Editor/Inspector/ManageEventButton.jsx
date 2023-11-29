@@ -3,6 +3,7 @@ import './manageEventButton.scss';
 import AddRectangle from '@/_ui/Icon/solidIcons/AddRectangle';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SortableList from '@/_components/SortableList';
 
 const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index, removeHandler }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -14,8 +15,15 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div data-cy="event-handler-card">
-          <div className="d-flex justify-content-between" role="button" style={{ padding: '6px 12px' }}>
+        <div data-cy="event-handler-card" className="d-flex">
+          <span className="d-flex align-items-center px-2">
+            <SortableList.DragHandle show />
+          </span>
+          <div
+            className="d-flex justify-content-between"
+            role="button"
+            style={{ padding: '6px 12px 6px 8px', width: '100%' }}
+          >
             <div className="text-truncate event-handler-text" data-cy="event-handler">
               {eventDisplayName}
             </div>
