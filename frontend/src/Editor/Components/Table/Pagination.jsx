@@ -30,8 +30,6 @@ export const Pagination = function Pagination({
       setPageCount(lastActivePageIndex);
     } else if (serverSide || lastActivePageIndex === 0) {
       setPageIndex(1);
-    } else {
-      gotoPage(lastActivePageIndex + 1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverSide, lastActivePageIndex]);
