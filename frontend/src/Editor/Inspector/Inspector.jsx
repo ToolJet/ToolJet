@@ -96,7 +96,7 @@ export const Inspector = ({
   });
   useHotkeys('escape', () => setSelectedComponents(EMPTY_ARRAY));
 
-  const componentMeta = componentTypes.find((comp) => component?.component?.component === comp?.component);
+  const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
 
   const isMounted = useMounted();
 
