@@ -89,8 +89,8 @@ export const AppVersionsManager = function ({
   }, [currentEnvironment, appId]);
 
   const selectVersion = (id) => {
-    appVersionService
-      .getOne(appId, id)
+    return appVersionService
+      .getAppVersionData(appId, id)
       .then((data) => {
         setAppDefinitionFromVersion(data, true, shouldFreezeEditor(data.currentEnvironmentId));
       })
@@ -185,17 +185,23 @@ export const AppVersionsManager = function ({
     resetDeleteModal,
   };
 
+  const handleOnSelectVersion = (id) => {
+    if (editingVersion.id === id) return;
+
+    return selectVersion(id);
+  };
+
   return (
     <div className="app-versions-selector" data-cy="app-version-selector">
       <CustomSelect
         isLoading={appVersionStatus === 'loading'}
         options={options}
         value={editingVersion.id}
-        onChange={(id) => selectVersion(id)}
+        onChange={(id) => handleOnSelectVersion(id)}
         {...customSelectProps}
         className={` ${darkMode && 'dark-theme'}`}
         currentEnvironment={currentEnvironment}
-        onSelectVersion={selectVersion}
+        onSelectVersion={handleOnSelectVersion}
       />
     </div>
   );

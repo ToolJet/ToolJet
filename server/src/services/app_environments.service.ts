@@ -145,6 +145,7 @@ export class AppEnvironmentService {
         order: {
           createdAt: 'DESC',
         },
+        select: ['id', 'name', 'appId'],
       });
     });
   }

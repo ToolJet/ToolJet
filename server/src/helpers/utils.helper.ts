@@ -8,6 +8,8 @@ import { Credential } from 'src/entities/credential.entity';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 const protobuf = require('protobufjs');
+const semver = require('semver');
+
 import { LICENSE_LIMIT } from './license.helper';
 import { CredentialsService } from '@services/credentials.service';
 
@@ -94,6 +96,26 @@ export const defaultAppEnvironments = [
 export const isSuperAdmin = (user) => {
   return !!(user?.userType === USER_TYPE.INSTANCE);
 };
+
+export const updateTimestampForAppVersion = async (manager, appVersionId) => {
+  const appVersion = await manager.findOne('app_versions', appVersionId);
+  if (appVersion) {
+    await manager.update('app_versions', appVersionId, { updatedAt: new Date() });
+  }
+};
+
+export async function dbTransactionForAppVersionAssociationsUpdate(
+  operation: (...args) => any,
+  appVersionId: string
+): Promise<any> {
+  return await getManager().transaction(async (manager) => {
+    const result = await operation(manager);
+
+    await updateTimestampForAppVersion(manager, appVersionId);
+
+    return result;
+  });
+}
 
 type DbContraintAndMsg = {
   dbConstraint: DataBaseConstraints;
@@ -298,3 +320,21 @@ export const getServerURL = () => {
 
   return API_URL[environment];
 };
+
+export function extractMajorVersion(version) {
+  return semver.valid(semver.coerce(version));
+}
+
+/**
+ * Checks if a given Tooljet version is compatible with normalized app definition schemas.
+ *
+ * This function uses the 'semver' library to compare the provided version with a minimum version requirement
+ * for normalized app definition schemas (2.24.1). It returns true if the version is greater than or equal to
+ * the required version, indicating compatibility.
+ *
+ * @param {string} version - The Tooljet version to check.
+ * @returns {boolean} - True if the version is compatible, false otherwise.
+ */
+export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
+  return semver.satisfies(semver.coerce(version), '>= 2.24.0');
+}
