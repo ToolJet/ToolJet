@@ -1,3 +1,4 @@
+import WidgetIcon from '@/../assets/images/icons/widgets';
 import React from 'react';
 export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy }) {
   const {
@@ -97,15 +98,13 @@ export const Statistics = function Statistics({ width, height, properties, style
             <div>
               <div className="d-flex flex-row justify-content-center align-items-baseline">
                 {secondarySignDisplay !== 'negative' ? (
-                  <img
-                    src="assets/images/icons/widgets/upstatistics.svg"
-                    style={{ ...marginStyle, marginRight: '6.5px' }}
-                  />
+                  <span style={{ ...marginStyle, marginRight: '6.5px' }}>
+                    <WidgetIcon name={'upstatistics'} />
+                  </span>
                 ) : (
-                  <img
-                    src="assets/images/icons/widgets/downstatistics.svg"
-                    style={{ ...marginStyle, marginRight: '6.5px' }}
-                  />
+                  <span style={{ ...marginStyle, marginRight: '6.5px' }}>
+                    <WidgetIcon name={'downstatistics'} />
+                  </span>
                 )}
                 <p style={{ ...secondaryContainerStyle }}>{secondaryValue}</p>
               </div>

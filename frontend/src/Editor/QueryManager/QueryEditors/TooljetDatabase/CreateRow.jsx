@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import Select from '@/_ui/Select';
-import { isEmpty, uniqueId } from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
+import { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
@@ -40,7 +41,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
     }
     const existingColumnOption = Object.values ? Object.values(columnOptions) : [];
     const emptyColumnOption = { column: '', value: '' };
-    handleColumnOptionChange({ ...existingColumnOption, ...{ [uniqueId()]: emptyColumnOption } });
+    handleColumnOptionChange({ ...existingColumnOption, ...{ [uuidv4()]: emptyColumnOption } });
   }
 
   return (
@@ -142,7 +143,6 @@ const RenderColumnOptions = ({
             value={column}
             options={displayColumns}
             onChange={handleColumnChange}
-            customWrap={true}
           />
         </div>
 

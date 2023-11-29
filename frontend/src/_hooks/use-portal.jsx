@@ -20,6 +20,7 @@ const usePortal = ({ children, ...restProps }) => {
     const { selectors } = restProps;
     return React.createElement('div', { ...selectors }, component);
   };
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   React.useEffect(() => {
     if (isOpen) {
@@ -33,7 +34,7 @@ const usePortal = ({ children, ...restProps }) => {
     <React.Fragment>
       {isOpen && (
         <Portal
-          className={`modal-portal-wrapper ${dragResizePortal && 'resize-modal-portal'}`}
+          className={`modal-portal-wrapper ${darkMode && 'dark-theme'} ${dragResizePortal && 'resize-modal-portal'}`}
           isOpen={isOpen}
           trigger={callback}
           componentName={componentName}

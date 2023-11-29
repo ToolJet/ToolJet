@@ -14,7 +14,45 @@
     "options": {
       "username": { "type": "string" },
       "account": { "type": "string" },
-      "password": { "type": "string", "encrypted": true }
+      "password": {
+        "type": "string",
+        "encrypted": true
+      },
+      "database": {
+        "type": "string"
+      },
+      "schema": {
+        "type": "string"
+      },
+      "warehouse": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "username": {
+      "value": ""
+    },
+    "account": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "database": {
+      "value": ""
+    },
+    "schema": {
+      "value": ""
+    },
+    "warehouse": {
+      "value": ""
+    },
+    "role": {
+      "value": ""
     }
   },
   "properties": {

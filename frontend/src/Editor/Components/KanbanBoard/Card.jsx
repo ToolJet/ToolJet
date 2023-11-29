@@ -34,7 +34,8 @@ export const Card = ({
     const newState = [...state];
     const removedCard = newState[colIndex]['cards'].splice(cardIndex, 1)[0];
     updateCb(newState);
-    setExposedVariable('lastRemovedCard', removedCard).then(() => fireEvent('onCardRemoved'));
+    setExposedVariable('lastRemovedCard', removedCard);
+    fireEvent('onCardRemoved');
   };
 
   const draggableId = item.id ?? uuidv4();
@@ -54,7 +55,8 @@ export const Card = ({
 
   const handleCardClick = (event) => {
     handleEventPopoverOptions(event);
-    setExposedVariable('selectedCard', item).then(() => fireEvent('onCardSelected'));
+    setExposedVariable('selectedCard', item);
+    fireEvent('onCardSelected');
   };
 
   const target = React.useRef(null);

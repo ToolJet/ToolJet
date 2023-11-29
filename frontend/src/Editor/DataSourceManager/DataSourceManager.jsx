@@ -758,7 +758,7 @@ class DataSourceManagerComponent extends React.Component {
                         <input
                           type="text"
                           onChange={(e) => this.onNameChanged(e.target.value)}
-                          className="form-control-plaintext form-control-plaintext-sm"
+                          className="form-control-plaintext form-control-plaintext-sm color-slate12"
                           value={selectedDataSource.name}
                           style={{ width: '160px' }}
                           data-cy="data-source-name-input-filed"
@@ -784,7 +784,7 @@ class DataSourceManagerComponent extends React.Component {
                     className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
                     onClick={() => this.hideModal()}
                   >
-                    <img src="assets/images/icons/close.svg" width="12" height="12" />
+                    <SolidIcon name="remove" width="20" fill={'var(--slate12)'} />
                   </span>
                 )}
               </div>
@@ -1003,7 +1003,7 @@ const EmptyStateContainer = ({
               </div>
             </div>
             <div className="col-auto">
-              <Button className="mt-2" variant="primary" onClick={handleSend}>
+              <Button className="mt-2" disabled={!inputValue.length} variant="primary" onClick={handleSend}>
                 {t('editor.queryManager.dataSourceManager.send', 'Send')}
               </Button>
             </div>

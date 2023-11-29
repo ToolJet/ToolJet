@@ -37,7 +37,7 @@ const PopoverComponent = ({
           style={computeStyle()}
           {...(onInteractOutside && { onInteractOutside })}
           side={side}
-          className={`PopoverContent ${popoverContentClassName} ${darkMode && 'dark'} ${
+          className={`PopoverContent ${popoverContentClassName} ${darkMode && 'dark dark-theme'} ${
             popoverContentHeight && 'drawer-height'
           }`}
         >

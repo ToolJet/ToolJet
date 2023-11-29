@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Information = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
+const Information = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25', style }) => (
   <svg
     width={width}
     height={width}
@@ -9,6 +9,7 @@ const Information = ({ fill = '#C1C8CD', width = '25', className = '', viewBox =
     xmlns="http://www.w3.org/2000/svg"
     className={className}
     data-cy="information-icon"
+    style={style}
   >
     <path
       fillRule="evenodd"

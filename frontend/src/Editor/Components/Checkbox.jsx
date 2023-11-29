@@ -6,7 +6,6 @@ export const Checkbox = function Checkbox({
   styles,
   fireEvent,
   setExposedVariable,
-  registerAction,
   darkMode,
   dataCy,
 }) {
@@ -28,20 +27,23 @@ export const Checkbox = function Checkbox({
     }
   }
   useEffect(() => {
+    const setCheckedAndNotify = async (status) => {
+      await setExposedVariable('value', status);
+      if (status) {
+        fireEvent('onCheck');
+      } else {
+        fireEvent('onUnCheck');
+      }
+      setChecked(status);
+    };
+
     setExposedVariable('value', defaultValueFromProperties);
     setDefaultvalue(defaultValueFromProperties);
     setChecked(defaultValueFromProperties);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultValueFromProperties]);
+    setExposedVariable('setChecked', setCheckedAndNotify);
 
-  registerAction(
-    'setChecked',
-    async function (status) {
-      setExposedVariable('value', status).then(() => (status ? fireEvent('onCheck') : fireEvent('onUnCheck')));
-      setChecked(status);
-    },
-    [setChecked]
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValueFromProperties, setChecked]);
 
   return (
     <div

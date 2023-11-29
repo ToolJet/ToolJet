@@ -255,10 +255,11 @@ const DataSourceSelector = ({
         <div>
           <input
             className="bg-transparent border-0 form-control form-control-sm"
-            placeholder="Select datasource"
+            placeholder="Select data source"
             onChange={(e) => setSearch(e.target.value)}
             ref={searchBoxRef}
             value={search}
+            data-cy="input-query-ds-filter"
           />
         </div>
       </div>
@@ -279,7 +280,10 @@ const DataSourceSelector = ({
               label={
                 <div className="d-flex align-items-center">
                   <DataSourceIcon source={source} height={12} styles={{ minWidth: 12 }} />
-                  &nbsp;<span className="ms-1 text-truncate">{source.name}</span>
+                  &nbsp;
+                  <span className="ms-1 text-truncate" data-cy={`ds-filter-${source.name.toLowerCase()}`}>
+                    {source.name}
+                  </span>
                 </div>
               }
             />

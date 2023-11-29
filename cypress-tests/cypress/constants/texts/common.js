@@ -10,7 +10,7 @@ export const path = {
 };
 
 export const commonText = {
-  autoSave: "Saved changes",
+  autoSave: "Changes saved",
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
@@ -164,16 +164,17 @@ export const commonText = {
 
   shareModalElements: {
     modalHeader: "Share",
-    makePublicAppToggleLabel: "Make application public?",
-    shareableAppLink: "Get shareable link for this application",
-    copyAppLinkButton: "copy",
+    makePublicAppToggleLabel: "Make application public",
+    shareableAppLink: "Shareable app link",
     // iframeLinkLabel: "Get embeddable link for this application",
     // ifameLinkCopyButton: "copy",
   },
   groupInputFieldLabel: "Select Group",
   documentationLink: "Read Documentation",
-  constantsNameError: "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
-  constantsValueError: "Value should be less than 10000 characters and cannot be empty"
+  constantsNameError:
+    "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
+  constantsValueError:
+    "Value should be less than 10000 characters and cannot be empty",
 };
 
 export const commonWidgetText = {
@@ -182,6 +183,7 @@ export const commonWidgetText = {
   accordionGenaral: "General",
   accordionValidation: "Validation",
   accordionLayout: "Layout",
+  accordionDevices: "Devices",
 
   parameterCustomValidation: "Custom validation",
   parameterShowOnDesktop: "Show on desktop",
@@ -192,7 +194,7 @@ export const commonWidgetText = {
   borderRadiusInput: ["{{", "20}}"],
   parameterOptionLabels: "Option labels",
   parameterBoxShadow: "Box Shadow",
-  boxShadowDefaultValue: "0px 0px 0px 0px #00000040",
+  boxShadowDefaultValue: "#00000040",
   parameterOptionvalues: "Option values",
   boxShadowColor: "Box Shadow Color",
   boxShadowFxValue: "-5px 6px 5px 8px #ee121240",
@@ -202,7 +204,7 @@ export const commonWidgetText = {
   codeMirrorInputTrue: codeMirrorInputLabel(true),
   codeMirrorInputFalse: codeMirrorInputLabel("false"),
 
-  addEventHandlerLink: "Add handler",
+  addEventHandlerLink: "New event handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
   labelDefaultValue: "Default Value",
@@ -224,7 +226,7 @@ export const commonWidgetText = {
     return `Maximum ${value} characters is allowed`;
   },
 
-  datepickerDocumentationLink: "Datepicker documentation",
+  datepickerDocumentationLink: "Read documentation for Datepicker",
   text1: "text1",
   textinput1: "textinput1",
   toggleswitch1: "toggleswitch1",

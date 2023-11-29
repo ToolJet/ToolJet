@@ -40,9 +40,13 @@ import {
 
 describe("Modal", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget("Modal");
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the modal component", () => {
@@ -54,7 +58,6 @@ describe("Modal", () => {
     data.tooltipText = fake.randomSentence;
     data.buttonText = fake.companyName;
 
-    cy.renameApp(data.appName);
     launchModal("modal1");
     cy.get('[data-cy="modal-title"]').verifyVisibleElement(
       "have.text",
@@ -161,11 +164,8 @@ describe("Modal", () => {
 
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
-      "Modal documentation"
+      "Read documentation for Modal"
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 
   it("should verify the styles of the modal widget", () => {
@@ -176,7 +176,6 @@ describe("Modal", () => {
     data.boxShadowParam = fake.boxShadowParam;
     data.backgroundColor = fake.randomRgba;
 
-    cy.renameApp(data.appName);
     launchModal("modal1");
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
@@ -246,9 +245,6 @@ describe("Modal", () => {
       "have.text",
       "This title can be changed"
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 
   it("should verify the app preview", () => {
@@ -261,19 +257,18 @@ describe("Modal", () => {
     data.buttonTextColor = fake.randomRgba;
     data.customTitle = fake.randomSentence;
 
-    cy.get(".close-svg > path").click();
+    cy.forceClickOnCanvas();
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 50);
-    cy.get(".close-svg > path").click();
+    cy.forceClickOnCanvas();
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 100);
-    cy.get(".close-svg > path").click();
+    cy.forceClickOnCanvas();
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 150);
-    cy.get(".close-svg > path").click();
+    cy.forceClickOnCanvas();
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 200);
-    cy.get(".close-svg > path").click();
+    cy.forceClickOnCanvas();
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 250);
-    cy.get(".close-svg > path").click();
+    cy.forceClickOnCanvas();
 
-    cy.renameApp(data.appName);
     launchModal("modal1");
     verifyAndModifyParameter("Title", data.customTitle);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -329,7 +324,7 @@ describe("Modal", () => {
       commonWidgetText.parameterDisable,
       "{{components.toggleswitch2.value"
     );
-    cy.get('[data-cy="sidebar-option-properties"]').click();
+    cy.get("#inspector-tab-properties").click();
 
     typeOnFx("Loading State", "{{components.toggleswitch3.value");
     cy.get("[data-cy='modal-header']").realClick();
@@ -437,7 +432,7 @@ describe("Modal", () => {
       "This title can be changed"
     );
 
-    cy.get(".close-svg > path").click();
+    cy.forceClickOnCanvas();
     cy.dragAndDropWidget("Button", 500, 300, "Button", "[id*=canvas]:eq(2)");
     selectEvent("On click", "Control Component");
     selectCSA("modal1", "close");

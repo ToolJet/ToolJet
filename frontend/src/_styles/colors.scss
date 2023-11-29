@@ -188,6 +188,14 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
   background-color: var(--slate3) !important;
 }
 
+.color-slate12{
+  color: var(--slate12) !important;
+}
+
+.color-slate09{
+  color: $color-light-slate-09 !important;
+}
+
 .bg-slate6 {
   background-color: var(--slate6) !important;
 }
