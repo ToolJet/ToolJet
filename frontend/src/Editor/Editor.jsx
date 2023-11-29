@@ -199,7 +199,6 @@ const EditorComponent = (props) => {
     undo: [],
     redo: [],
   });
-  console.log('render');
   // refs
   const canvasContainerRef = useRef(null);
   const dataSourceModalRef = useRef(null);
