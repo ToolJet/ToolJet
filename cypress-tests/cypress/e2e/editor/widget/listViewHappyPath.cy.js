@@ -34,12 +34,16 @@ import {
 
 describe("List view widget", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp(`${fake.companyName}-App`);
+    cy.openApp();
     cy.viewport(1200, 1200);
     cy.dragAndDropWidget("List View", 50, 500);
     cy.modifyCanvasSize(1200, 700);
     cy.intercept("PUT", "/api/apps/**").as("apps");
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the list view widget", () => {
@@ -160,6 +164,8 @@ describe("List view widget", () => {
       )
     );
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, data.marks[1]);
 
@@ -224,7 +230,7 @@ describe("List view widget", () => {
     ).should("have.attr", "data-disabled", "true");
     cy.get("[data-cy='disable-toggle-button']").click();
 
-    cy.get("[data-cy='border-radius-fx-button']:eq(1)").click();
+    cy.get("[data-cy='border-radius-fx-button']:eq(0)").click();
     verifyAndModifyParameter(
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
@@ -236,15 +242,15 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
-      commonWidgetText.boxShadowDefaultValue,
+      "0px 0px 0px 0px #00000040",
       false
     );
 
-    cy.get('[data-cy="border-radius-fx-button"]').click();
+    cy.get('[data-cy="border-radius-fx-button"] > svg').click();
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
 
     fillBoxShadowParams(
@@ -369,7 +375,7 @@ describe("List view widget", () => {
       )
     ).click();
 
-    cy.get("[data-cy='border-radius-fx-button']:eq(1)").click();
+    cy.get("[data-cy='border-radius-fx-button']:eq(0)").click();
     verifyAndModifyParameter(
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
@@ -382,11 +388,11 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
-      commonWidgetText.boxShadowDefaultValue,
+      "0px 0px 0px 0px #00000040",
       false
     );
 

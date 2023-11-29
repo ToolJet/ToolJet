@@ -86,7 +86,6 @@ const ColumnForm = ({ onCreate, onClose }) => {
             value={dataType}
             options={dataTypes}
             onChange={handleTypeChange}
-            customWrap={true}
           />
         </div>
         <div className="mb-3 tj-app-input">

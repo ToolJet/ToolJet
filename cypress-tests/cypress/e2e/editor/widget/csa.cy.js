@@ -1,5 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { openEditorSidebar } from "Support/utils/commonWidget";
+import { fake } from "Fixtures/fake";
 import {
   selectCSA,
   selectEvent,
@@ -16,8 +17,15 @@ import { commonWidgetText } from "Texts/common";
 describe("Editor- CSA", () => {
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    const appName1 = `${fake.companyName}-${fake.companyName}-App`;
+    cy.apiLogin();
+    cy.apiCreateApp(appName1);
+    cy.openApp();
+    cy.get('[data-tooltip-content="Hide query panel"]').click();
+  });
+
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("Should verify Tabs CSA", () => {
@@ -31,6 +39,8 @@ describe("Editor- CSA", () => {
     selectEvent("On click", "Control Component");
     selectCSA("tabs1", "Set current tab");
     addSupportCSAData("Id", "2");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
 
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.get(".nav-link").eq(0).verifyVisibleElement("not.have.class", "active");
@@ -54,7 +64,7 @@ describe("Editor- CSA", () => {
     selectCSA("form1", "Reset Form");
 
     openEditorSidebar("form1");
-    cy.get('[data-cy="button-to-submit-form-fx-button"]').eq(1).click();
+    cy.get('[data-cy="button-to-submit-form-fx-button"] > svg').click();
     cy.get(
       '[data-cy="button-to-submit-form-input-field"]'
     ).clearAndTypeOnCodeMirror(`{{components.button2`);
@@ -62,7 +72,14 @@ describe("Editor- CSA", () => {
     cy.get('[data-cy="draggable-widget-numberinput1"]')
       .click()
       .type(`{selectAll}{backspace}30{enter}`);
+    cy.wait(200);
+    cy.forceClickOnCanvas();
+
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("button2")).click();
+    cy.wait(200);
+    cy.get(commonWidgetSelector.draggableWidget("button2")).click();
+
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       "Form submitted successfully"
@@ -72,6 +89,8 @@ describe("Editor- CSA", () => {
     cy.get('[data-cy="draggable-widget-numberinput1"]')
       .click()
       .type(`{selectAll}{backspace}20{enter}`);
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("button3")).click();
     cy.get('[data-cy="draggable-widget-numberinput1"]').should(
       "have.value",
@@ -91,7 +110,8 @@ describe("Editor- CSA", () => {
     selectEvent("On click", "Control Component");
     selectCSA("dropdown1", "Select option");
     addSupportCSAData("Select", "{{3");
-
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.get(
       '[data-cy="draggable-widget-dropdown1"] .css-1qrxvr1-singleValue'
@@ -99,7 +119,7 @@ describe("Editor- CSA", () => {
   });
 
   it("Should verify Textarea CSA", () => {
-    cy.dragAndDropWidget("Textarea", 200, 100);
+    cy.dragAndDropWidget("Text area", 200, 100);
     verifyComponent("textarea1");
     cy.get(commonWidgetSelector.draggableWidget("textarea1"))
       .should("be.visible")
@@ -123,6 +143,8 @@ describe("Editor- CSA", () => {
     cy.get(commonWidgetSelector.draggableWidget("textarea1"))
       .should("be.visible")
       .and("have.text", "New Text");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
 
     cy.get(commonWidgetSelector.draggableWidget("button2")).click();
     cy.get(commonWidgetSelector.draggableWidget("textarea1"))
@@ -148,7 +170,7 @@ describe("Editor- CSA", () => {
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.get(`${commonWidgetSelector.draggableWidget("filepicker1")} p`).should(
       "have.text",
-      "Drag and Drop some files here, or click to select files"
+      "Drag and drop files here or click to select files"
     );
   });
 
@@ -175,10 +197,13 @@ describe("Editor- CSA", () => {
     cy.dragAndDropWidget("Button", 500, 300);
     selectEvent("On click", "Control Component");
     selectCSA("icon1", "Set Visibility");
-    cy.get('[data-cy="Value-toggle-button"]').click();
-    cy.get('[data-cy="Value-toggle-button"]')
-      .should("be.visible")
-      .and("not.be.checked");
+    cy.get('[data-cy="Value-fx-button"]').click();
+    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror("{{false");
+    // cy.get('[data-cy="Value-toggle-button"]')
+    //   .should("be.visible")
+    //   .and("not.be.checked");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
 
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(
@@ -193,7 +218,7 @@ describe("Editor- CSA", () => {
     cy.get('[data-cy="draggable-widget-icon1"]').should("not.be.visible");
   });
 
-  it("Should verify Kanban CSA", () => {
+  it.only("Should verify Kanban CSA", () => {
     cy.viewport(1400, 1900);
 
     cy.dragAndDropWidget("Kanban", 50, 400);

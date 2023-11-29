@@ -20,10 +20,7 @@ export default function AlertDialog({
         `animation-fade ${!checkForBackground ? 'home-modal-component' : 'home-modal-component-editor'} ${
           darkMode && 'dark-theme'
         }`,
-        customClassName,
-        {
-          dark: checkForBackground && darkMode,
-        }
+        customClassName
       )}
       show={show}
       size={size}

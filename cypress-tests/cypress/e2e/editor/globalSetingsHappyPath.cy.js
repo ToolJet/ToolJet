@@ -19,16 +19,16 @@ import {
 } from "Texts/common";
 
 describe("Editor- Global Settings", () => {
+  const data = {};
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    data.appName = `${fake.companyName}-App`;
+    cy.apiLogin();
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
   });
 
   it("should verify global settings", () => {
-    const data = {};
     data.backgroundColor = fake.randomRgba;
-    data.appName = `${fake.companyName}-App`;
-    cy.renameApp(data.appName);
     cy.get("[data-cy='left-sidebar-settings-button']").click();
 
     cy.get('[data-cy="label-global settings"]').verifyVisibleElement(
@@ -42,13 +42,14 @@ describe("Editor- Global Settings", () => {
       "have.text",
       "Maintenance mode"
     );
+    cy.hideTooltip();
     cy.get('[data-cy="label-max-canvas-width"]').verifyVisibleElement(
       "have.text",
       "Max width of canvas"
     );
     cy.get('[data-cy="label-bg-canvas"]').verifyVisibleElement(
       "have.text",
-      "Background color of canvas"
+      "Canvas background"
     );
     // cy.get('[data-cy="canvas-bg-colour-picker"]').click();
     selectColourFromColourPicker(
@@ -103,6 +104,6 @@ describe("Editor- Global Settings", () => {
       .invoke("attr", "class")
       .should("contains", "disabled-btn");
 
-    cy.wait(2000);
+    cy.apiDeleteApp();
   });
 });

@@ -13,7 +13,6 @@ export const Tabs = function Tabs({
   removeComponent,
   setExposedVariable,
   fireEvent,
-  registerAction,
   styles,
   darkMode,
   dataCy,
@@ -71,11 +70,6 @@ export const Tabs = function Tabs({
   }, [parsedDefaultTab]);
 
   useEffect(() => {
-    setExposedVariable('currentTab', currentTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab]);
-
-  useEffect(() => {
     const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,16 +91,18 @@ export const Tabs = function Tabs({
     return id === currentTab ? 'visible' : 'hidden';
   }
 
-  registerAction(
-    'setTab',
-    async function (id) {
+  useEffect(() => {
+    setExposedVariable('setTab', async function (id) {
       if (id) {
         setCurrentTab(id);
-        setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
+        setExposedVariable('currentTab', id);
+        fireEvent('onTabSwitch');
       }
-    },
-    [setCurrentTab]
-  );
+    });
+    setExposedVariable('currentTab', currentTab);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setCurrentTab, currentTab]);
 
   const renderTabContent = (id, tab) => (
     <div
@@ -153,7 +149,8 @@ export const Tabs = function Tabs({
             style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
               !tab?.disabled && setCurrentTab(tab.id);
-              !tab?.disabled && setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+              !tab?.disabled && setExposedVariable('currentTab', tab.id);
+              fireEvent('onTabSwitch');
             }}
             key={tab.id}
           >

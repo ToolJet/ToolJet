@@ -12,6 +12,18 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta, c
     bottom: '0px',
     left: '0px',
   };
+  const outerStyles = {
+    width: '142px',
+    height: '32px',
+    borderRadius: ' 6px',
+    display: 'flex',
+    paddingLeft: '4px',
+    alignItems: 'center',
+    gap: '4px',
+    background: showPicker && 'var(--indigo2)',
+    outline: showPicker && '1px solid var(--indigo9)',
+    boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
+  };
 
   const paramMeta = componentMeta[paramType][param.name] || {};
   const displayName = paramMeta.displayName || param.name;
@@ -41,18 +53,21 @@ export const Color = ({ param, definition, onChange, paramType, componentMeta, c
       )}
 
       <div
-        className="row mx-0 form-control color-picker-input"
+        className="row mx-0 color-picker-input"
         onClick={() => setShowPicker(true)}
         data-cy={`${String(cyLabel)}-picker`}
+        style={outerStyles}
       >
         <div
           className="col-auto"
           style={{
             float: 'right',
-            width: '20px',
-            height: '20px',
+            width: '24px',
+            height: '24px',
             backgroundColor: definition.value,
-            border: `0.25px solid ${['#ffffff', '#fff', '#1f2936'].includes(definition.value) && '#c5c8c9'}`,
+            borderRadius: ' 6px',
+            border: `1px solid var(--slate7, #D7DBDF)`,
+            boxShadow: `0px 1px 2px 0px rgba(16, 24, 40, 0.05)`,
           }}
         ></div>
         <div style={{ height: '20px' }} className="col">

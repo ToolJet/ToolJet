@@ -30,11 +30,11 @@ export const verifyComponentWithOutLabel = (
   appName,
   properties = []
 ) => {
-  cy.dragAndDropWidget(component, 50, 50);
+  cy.dragAndDropWidget(component, 200, 200);
   cy.get(`[data-cy="draggable-widget-${defaultName}"]`).click({ force: true });
   verifyComponent(defaultName);
 
-  cy.resizeWidget(defaultName, 650, 400);
+  cy.resizeWidget(defaultName, 650, 400, false);
 
   openEditorSidebar(defaultName);
   editAndVerifyWidgetName(fakeName, properties);
@@ -47,7 +47,4 @@ export const verifyComponentWithOutLabel = (
 
   cy.go("back");
   deleteComponentAndVerify(fakeName);
-  cy.get(commonSelectors.editorPageLogo).click();
-
-  cy.deleteApp(appName);
 };

@@ -38,10 +38,12 @@ export const ButtonBase = function ButtonBase(props) {
       {...restProps}
       className={`tj-base-btn ${mapBaseSize[size]}  ${className}`}
       disabled={disabled}
-      style={{
-        ...customStyles,
-        backgroundColor: backgroundColor && backgroundColor,
-      }}
+      style={
+        ({
+          backgroundColor: backgroundColor && backgroundColor,
+        },
+        { ...restProps.style, ...customStyles })
+      }
       type={isAnchor ? undefined : type || 'button'}
     >
       {!isLoading && leftIcon && (
@@ -66,7 +68,7 @@ export const ButtonBase = function ButtonBase(props) {
       )}
       {!isLoading && rightIcon && (
         <span className="tj-btn-right-icon">
-          {<SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} />}
+          {<SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} width={iconWidth} />}
         </span>
       )}
     </Element>

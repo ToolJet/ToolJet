@@ -39,15 +39,16 @@ const Preview = ({ darkMode }) => {
   }, [queryPreviewData]);
 
   const renderRawData = () => {
-    if (queryPreviewData) {
+    if (!queryPreviewData) {
+      return `${queryPreviewData}`;
+    } else {
       return isJson ? JSON.stringify(queryPreviewData).toString() : queryPreviewData.toString();
     }
-    return '';
   };
 
   return (
     <div className="preview-header preview-section d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
-      <div className="w-100 border rounded-top">
+      <div className="w-100" style={{ borderRadius: '0px 0px 6px 6px' }}>
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
           <div className="position-relative">
             {previewLoading && (
@@ -83,15 +84,23 @@ const Preview = ({ darkMode }) => {
                 </ListGroup>
               </Col>
               <Col className="text-right d-flex align-items-center justify-content-end">
-                {queryPreviewData && (
-                  <ButtonSolid variant="ghostBlack" size="sm" onClick={() => setPreviewData()}>
+                {queryPreviewData !== '' && (
+                  <ButtonSolid variant="ghostBlack" size="sm" onClick={() => setPreviewData('')}>
                     <RemoveRectangle width={17} viewBox="0 0 28 28" fill="var(--slate8)" /> Clear
                   </ButtonSolid>
                 )}
               </Col>
             </Row>
             <Row className="m-0">
-              <Tab.Content style={{ overflowWrap: 'anywhere', padding: 0 }}>
+              <Tab.Content
+                style={{
+                  overflowWrap: 'anywhere',
+                  padding: 0,
+                  border: '1px solid var(--slate5)',
+                  borderBottomLeftRadius: '6px',
+                  borderBottomRightRadius: '6px',
+                }}
+              >
                 <Tab.Pane eventKey="json" transition={false}>
                   <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
                     <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />

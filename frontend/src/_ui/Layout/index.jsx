@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
 import { ToolTip } from '@/_components/ToolTip';
@@ -58,9 +58,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         fill={
                           router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
                             ? '#3E63DD'
-                            : darkMode
-                            ? '#4C5155'
-                            : '#C1C8CD'
+                            : 'var(--slate8)'
                         }
                       />
                     </Link>
@@ -82,9 +80,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                           fill={
                             router.pathname === getPrivateRoute('database') && `current-seleted-route`
                               ? '#3E63DD'
-                              : darkMode
-                              ? '#4C5155'
-                              : '#C1C8CD'
+                              : 'var(--slate8)'
                           }
                         />
                       </Link>
@@ -95,7 +91,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 {/* DATASOURCES */}
                 {admin && (
                   <li className="text-center cursor-pointer">
-                    <ToolTip message="Data Sources" placement="right">
+                    <ToolTip message="Data sources" placement="right">
                       <Link
                         to={getPrivateRoute('data_sources')}
                         onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
@@ -106,13 +102,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       >
                         <SolidIcon
                           name="datasource"
-                          fill={
-                            router.pathname === getPrivateRoute('data_sources')
-                              ? '#3E63DD'
-                              : darkMode
-                              ? '#4C5155'
-                              : '#C1C8CD'
-                          }
+                          fill={router.pathname === getPrivateRoute('data_sources') ? '#3E63DD' : 'var(--slate8)'}
                         />
                       </Link>
                     </ToolTip>
@@ -131,7 +121,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       >
                         <SolidIcon
                           name="marketplace"
-                          fill={router.pathname === '/integrations' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                          fill={router.pathname === '/integrations' ? '#3E63DD' : 'var(--slate8)'}
                         />
                       </Link>
                     </ToolTip>
@@ -148,14 +138,9 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       data-cy="icon-workspace-settings"
                     >
                       <SolidIcon
-                        name="setting"
-                        fill={
-                          router.pathname === getPrivateRoute('workspace_settings')
-                            ? '#3E63DD'
-                            : darkMode
-                            ? '#4C5155'
-                            : '#C1C8CD'
-                        }
+                        name="settings"
+                        fill={router.pathname === getPrivateRoute('workspace_settings') ? '#3E63DD' : 'var(--slate8)'}
+                        width={28}
                       />
                     </Link>
                   </ToolTip>
@@ -169,7 +154,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       onClick={() => switchDarkMode(!darkMode)}
                       data-cy="mode-switch-button"
                     >
-                      <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill={darkMode ? '#4C5155' : '#C1C8CD'} />
+                      <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill="var(--slate8)" />
                     </div>
                   </ToolTip>
 
@@ -186,7 +171,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
           </div>
         </aside>
       </div>
-      <div style={{ paddingLeft: 56, paddingRight: 0 }} className="col">
+      <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
         <Header />
         <div style={{ paddingTop: 64 }}>{children}</div>
       </div>

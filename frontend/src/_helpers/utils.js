@@ -9,6 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
+import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
 
@@ -391,7 +392,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   }
 
   const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
-  if (typeof resolvedCustomRule === 'string') {
+  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
@@ -569,10 +570,11 @@ export const hightlightMentionedUserInComment = (comment) => {
 };
 
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
-  const currentPageId = _ref.state.currentPageId;
-  const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
-    ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
+  const currentPageId = _ref.currentPageId;
+  const currentComponents = _ref.appDefinition?.pages[currentPageId]?.components
+    ? Object.entries(_ref.appDefinition.pages[currentPageId]?.components)
     : {};
+
   const runQuery = (queryName = '', parameters) => {
     const query = useDataQueriesStore.getState().dataQueries.find((query) => {
       const isFound = query.name === queryName;
@@ -742,7 +744,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
         });
       return Promise.resolve();
     }
-    const pages = _ref.state.appDefinition.pages;
+    const pages = _ref.appDefinition.pages;
     const pageId = Object.keys(pages).find((key) => pages[key].handle === pageHandle);
 
     if (!pageId) {
@@ -804,73 +806,14 @@ export const getuserName = (formData) => {
   return '';
 };
 
-export const pathnameWithoutSubpath = (path) => {
-  const subpath = getSubpath();
-  if (subpath) return path.replace(subpath, '');
-  return path;
-};
-
-// will replace or append workspace-id in a path
-export const appendWorkspaceId = (workspaceId, path, replaceId = false) => {
-  const subpath = getSubpath();
-  path = pathnameWithoutSubpath(path);
-
-  let newPath = path;
-  if (path === '/:workspaceId' || path.split('/').length === 2) {
-    newPath = `/${workspaceId}`;
-  } else {
-    const paths = path.split('/').filter((path) => path !== '');
-    if (replaceId) {
-      paths[0] = workspaceId;
-    } else {
-      paths.unshift(workspaceId);
-    }
-    newPath = `/${paths.join('/')}`;
-  }
-  return subpath ? `${subpath}${newPath}` : newPath;
-};
-
-export const getWorkspaceIdFromURL = () => {
-  const pathname = window.location.pathname;
-  const pathnameArray = pathname.split('/').filter((path) => path !== '');
-  const subpath = window?.public_config?.SUB_PATH;
-  const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
-  const existedPaths = [
-    'forgot-password',
-    'switch-workspace',
-    'reset-password',
-    'invitations',
-    'organization-invitations',
-    'sso',
-    'setup',
-    'confirm',
-    ':workspaceId',
-    'confirm-invite',
-    'oauth2',
-    'applications',
-    'integrations',
-  ];
-
-  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
-  if (workspaceId === 'login') {
-    return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
-  }
-
-  return !existedPaths.includes(workspaceId) ? workspaceId : '';
+export const removeSpaceFromWorkspace = (name) => {
+  return name?.replace(' ', '-') || '';
 };
 
 export const getWorkspaceId = () =>
-  getWorkspaceIdFromURL() || authenticationService.currentSessionValue?.current_organization_id;
-
-export const excludeWorkspaceIdFromURL = (pathname) => {
-  if (!pathname.includes('/applications/')) {
-    const paths = pathname?.split('/').filter((path) => path !== '');
-    paths.shift();
-    const newPath = paths.join('/');
-    return newPath ? `/${newPath}` : '/';
-  }
-  return pathname;
-};
+  getWorkspaceIdOrSlugFromURL() ||
+  authenticationService.currentSessionValue?.current_organization_slug ||
+  authenticationService.currentSessionValue?.current_organization_id;
 
 export const handleUnSubscription = (subsciption) => {
   setTimeout(() => {
@@ -891,8 +834,6 @@ export const getAvatar = (organization) => {
   }
 };
 
-export const getSubpath = () =>
-  window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
 export function isExpectedDataType(data, expectedDataType) {
   function getCurrentDataType(node) {
     return Object.prototype.toString.call(node).slice(8, -1).toLowerCase();
@@ -920,10 +861,18 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
-export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
-  const newName = name.trim();
+export const validateName = (
+  name,
+  nameType,
+  emptyCheck = true,
+  showError = false,
+  allowSpecialChars = true,
+  allowSpaces = true,
+  checkReservedWords = false
+) => {
+  const newName = name;
   let errorMsg = '';
-  if (!newName) {
+  if (emptyCheck && !newName) {
     errorMsg = `${nameType} can't be empty`;
     showError &&
       toast.error(errorMsg, {
@@ -935,33 +884,78 @@ export const validateName = (name, nameType, showError = false, allowSpecialChar
     };
   }
 
-  //check for alphanumeric
-  if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
-    if (/[A-Z]/.test(newName)) {
-      errorMsg = 'Only lowercase letters are accepted.';
-    } else {
-      errorMsg = `Special characters are not accepted.`;
+  if (newName) {
+    //check for alphanumeric
+    if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
+      if (/[A-Z]/.test(newName)) {
+        errorMsg = 'Only lowercase letters are accepted.';
+      } else {
+        errorMsg = `Special characters are not accepted.`;
+      }
+      showError &&
+        toast.error(errorMsg, {
+          id: '2',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
     }
-    showError &&
-      toast.error(errorMsg, {
-        id: '2',
-      });
-    return {
-      status: false,
-      errorMsg,
-    };
-  }
 
-  if (newName.length > 50) {
-    errorMsg = `Maximum length has been reached.`;
-    showError &&
-      toast.error(errorMsg, {
-        id: '3',
-      });
-    return {
-      status: false,
-      errorMsg,
-    };
+    if (!allowSpaces && /\s/g.test(newName)) {
+      errorMsg = 'Cannot contain spaces';
+      showError &&
+        toast.error(errorMsg, {
+          id: '3',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
+    }
+
+    if (newName.length > 50) {
+      errorMsg = `Maximum length has been reached.`;
+      showError &&
+        toast.error(errorMsg, {
+          id: '3',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
+    }
+
+    /* Add more reserved paths here, which doesn't have /:workspace-id prefix */
+    const reservedPaths = [
+      'forgot-password',
+      'switch-workspace',
+      'reset-password',
+      'invitations',
+      'organization-invitations',
+      'sso',
+      'setup',
+      'confirm',
+      ':workspaceId',
+      'confirm-invite',
+      'oauth2',
+      'applications',
+      'integrations',
+      'login',
+      'signup',
+    ];
+
+    if (checkReservedWords && reservedPaths.includes(newName)) {
+      errorMsg = `Reserved words are not allowed.`;
+      showError &&
+        toast.error(errorMsg, {
+          id: '3',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
+    }
   }
 
   return {
@@ -1034,13 +1028,6 @@ export function eraseRedirectUrl() {
   return redirectPath;
 }
 
-export const returnWorkspaceIdIfNeed = (path) => {
-  if (path) {
-    return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
-  }
-  return `/${getWorkspaceId()}`;
-};
-
 export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
   const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
@@ -1059,4 +1046,17 @@ export const isQueryRunnable = (query) => {
 export const redirectToDashboard = () => {
   const subpath = getSubpath();
   window.location = `${subpath ? `${subpath}` : ''}/${getWorkspaceId()}`;
+};
+
+export const determineJustifyContentValue = (value) => {
+  switch (value) {
+    case 'left':
+      return 'start';
+    case 'right':
+      return 'end';
+    case 'center':
+      return 'center';
+    default:
+      return 'start';
+  }
 };

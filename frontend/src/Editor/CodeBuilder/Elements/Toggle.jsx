@@ -1,12 +1,14 @@
 import React from 'react';
-import FxButton from './FxButton';
 
-export const Toggle = ({ value, onChange, forceCodeBox, cyLabel }) => {
+export const Toggle = ({ value, onChange, cyLabel }) => {
   return (
     <div className="row fx-container">
-      <div className="col">
-        <div className="field mb-3">
-          <label className="form-check form-switch my-1">
+      <div className="col d-flex align-items-center">
+        <div className="field">
+          <label
+            className="form-check form-switch mb-0 d-flex justify-content-end"
+            style={{ marginBottom: '0px', paddingLeft: '28px' }}
+          >
             <input
               className="form-check-input"
               type="checkbox"
@@ -14,12 +16,8 @@ export const Toggle = ({ value, onChange, forceCodeBox, cyLabel }) => {
               checked={value}
               data-cy={`${cyLabel}-toggle-button`}
             />
-            {/* <ToolTip label={paramLabel} meta={{}} labelClass="form-check-label" /> */}
           </label>
         </div>
-      </div>
-      <div className="col-auto pt-0 style-fx fx-common">
-        <FxButton active={false} onPress={forceCodeBox} dataCy={cyLabel} />
       </div>
     </div>
   );
