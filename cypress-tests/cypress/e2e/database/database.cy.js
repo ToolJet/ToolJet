@@ -20,7 +20,7 @@ import {
   editRowWithInvalidData,
   editRowAndVerify,
   exportTableAndVerify,
-  bulkUploadDataTemplateDownload,
+  bulkUploadDataTemplateDownloadAndVerify,
 } from "Support/utils/database";
 import { fake } from "Fixtures/fake";
 import { randomNumber } from "Support/utils/commonWidget";
@@ -197,6 +197,10 @@ describe("Database Functionality", () => {
       column1.name,
       column2.name,
     ]);
-    bulkUploadDataTemplateDownload(data.tableName);
+    bulkUploadDataTemplateDownloadAndVerify(data.tableName, [
+      databaseText.idColumnName,
+      column1.name,
+      column2.name,
+    ]);
   });
 });

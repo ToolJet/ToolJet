@@ -1,3 +1,4 @@
+import { deleteDownloadsFolder } from "Support/utils/common";
 import {
   databaseSelectors,
   createNewColumnSelectors,
@@ -545,6 +546,7 @@ export const editRowWithInvalidData = (
   cy.get(commonSelectors.buttonSelector(commonText.cancelButton)).click();
 };
 export const exportTableAndVerify = (tableName, columnName) => {
+  deleteDownloadsFolder();
   cy.reload();
   selectTableOperationOption(tableName, databaseSelectors.tableExportOption);
   verifyDownloadedTableSchema(tableName, columnName);
@@ -574,7 +576,11 @@ export const verifyDownloadedTableSchema = (tableName, columnName) => {
     });
   });
 };
-export const bulkUploadDataTemplateDownload = (tableName) => {
+export const bulkUploadDataTemplateDownloadAndVerify = (
+  tableName,
+  columnName
+) => {
+  deleteDownloadsFolder();
   cy.reload();
   cy.intercept("GET", "api/tooljet_db/organizations/**").as("dbLoad");
   navigateToTable(tableName);
@@ -597,4 +603,15 @@ export const bulkUploadDataTemplateDownload = (tableName) => {
   cy.get(bulkUploadDataSelectors.templateDownloadButton)
     .should("be.visible")
     .click();
+  cy.readFile(`cypress/downloads/${tableName}.csv`, "utf-8").then((table) => {
+    let exportedTableData = table.split(",");
+    cy.log(exportedTableData);
+    for (let i = 0; i <= columnName.length - 1; i++) {
+      cy.get(databaseSelectors.columnHeader(columnName[i])).each(($el) => {
+        cy.wrap($el)
+          .should("be.visible")
+          .and("contain.text", exportedTableData[i].toLowerCase());
+      });
+    }
+  });
 };
