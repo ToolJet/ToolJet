@@ -388,7 +388,7 @@ export function Table({
     if (!Array.isArray(tableData)) tableData = [];
   }
 
-  tableData = tableData || [];
+  tableData = _.isArray(tableData) ? tableData : [];
 
   const tableRef = useRef();
 

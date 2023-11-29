@@ -371,7 +371,7 @@ class ManageAppUsersComponent extends React.Component {
                       <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
                     )}
                   </div>
-                  {(this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                  {this?.props?.isPublic && window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true' && (
                     <div className="tj-app-input">
                       <label className="field-name" data-cy="iframe-link-label">
                         {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
