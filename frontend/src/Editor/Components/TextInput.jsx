@@ -44,6 +44,7 @@ export const TextInput = function TextInput({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const [elementWidth, setElementWidth] = useState(0);
   const computedStyles = {
+    height: padding == 'default' ? '32px' : '38px',
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
@@ -51,11 +52,6 @@ export const TextInput = function TextInput({
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '3px 28px' : '3px 5px',
   };
-
-  console.log('height---', height);
-  if (padding === 'default' && parseInt(height) !== 32) {
-    computedStyles.height = height;
-  } else computedStyles.height = padding == 'default' ? '32px' : '38px';
 
   const loaderStyle = {
     left: direction === 'alignrightinspector' && alignment === 'side' ? `${elementWidth - 19}px` : undefined,
@@ -135,23 +131,19 @@ export const TextInput = function TextInput({
       ${visibility || 'invisible'}`}
                 style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
               >
-                {label?.length > 0 && (
-                  <label
-                    style={{
-                      color: darkMode && color == '#11181C' ? '#fff' : color,
-                      width: label?.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
-                      maxWidth: auto && alignment == 'side' ? '70%' : '100%',
-                      overflowWrap: 'break-word',
-                      marginRight:
-                        label?.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
-                      marginLeft:
-                        label?.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
-                    }}
-                  >
-                    {label}
-                    <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-                  </label>
-                )}
+                <label
+                  style={{
+                    color: darkMode && color == '#11181C' ? '#fff' : color,
+                    width: label.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
+                    maxWidth: auto && alignment == 'side' ? '70%' : '100%',
+                    overflowWrap: 'break-word',
+                    marginRight: label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
+                    marginLeft: label.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
+                  }}
+                >
+                  {label}
+                  <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+                </label>
                 {component?.definition?.styles?.iconVisibility?.value && (
                   <IconElement
                     style={{
@@ -224,21 +216,21 @@ export const TextInput = function TextInput({
       ${visibility || 'invisible'}`}
               style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
             >
-              {label?.length > 0 && (
-                <label
-                  style={{
-                    color: darkMode && color == '#11181C' ? '#fff' : color,
-                    width: label?.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
-                    maxWidth: auto && alignment == 'side' ? '70%' : '100%',
-                    overflowWrap: 'break-word',
-                    marginRight: label?.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
-                    marginLeft: label?.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
-                  }}
-                >
-                  {label}
-                  <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
-                </label>
-              )}
+              <label
+                style={{
+                  color: darkMode && color == '#11181C' ? '#fff' : color,
+                  width: label?.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
+                  maxWidth: auto && alignment == 'side' ? '70%' : '100%',
+                  overflowWrap: 'break-word',
+                  marginRight: label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
+                  marginLeft: label.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
+                  marginTop: alignment == 'side' && '16px',
+                  lineHeight: alignment == 'side' && '0px',
+                }}
+              >
+                {label}
+                <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
+              </label>
               {component?.definition?.styles?.iconVisibility?.value && (
                 <IconElement
                   style={{
