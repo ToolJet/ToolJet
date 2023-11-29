@@ -41,13 +41,12 @@ import {
 describe("Multipage", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
   });
 
   it("should verify the elements on multipage", () => {
     const data = {};
-    data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
     data.tooltipText = fake.randomSentence;
     data.minimumLength = randomNumber(1, 4);

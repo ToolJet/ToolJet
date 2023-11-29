@@ -1,23 +1,23 @@
 [
   {
     "name": "plivo",
-    "description": "Datasource plugin for Plivo",
+    "description": "Plugin for Plivo APIs",
     "version": "1.0.0",
     "id": "plivo",
     "author": "Tooljet",
     "timestamp": "Thu, 02 Mar 2023 10:40:06 GMT"
   },
   {
-    "name": "github",
-    "description": "Datasource plugin for GitHub",
+    "name": "GitHub",
+    "description": "Plugin for GitHub APIs",
     "version": "1.0.0",
     "id": "github",
     "author": "Tooljet",
     "timestamp": "Thu, 02 Mar 2023 11:52:32 GMT"
   },
   {
-    "name": "openai",
-    "description": "api plugin from openai",
+    "name": "OpenAI",
+    "description": "Plugin for OpenAI APIs",
     "version": "1.0.0",
     "id": "openai",
     "author": "Tooljet",
@@ -25,7 +25,7 @@
   },
   {
     "name": "AWS Textract",
-    "description": "Datasource plugin from textract",
+    "description": "Plugin for AWS Textract machine-learning service",
     "version": "1.0.0",
     "id": "textract",
     "author": "Tooljet",
@@ -34,7 +34,7 @@
   {
     "name": "HarperDB",
     "repo": "",
-    "description": "Datasource plugin for HarperDB",
+    "description": "Plugin for HarperDB data source",
     "version": "1.0.0",
     "id": "harperdb",
     "author": "Tooljet",

@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import {
   verifyMultipleComponentValuesFromInspector,
   verifyComponentValueFromInspector,
@@ -15,7 +16,7 @@ import { multipageSelector } from "Selectors/multipage";
 describe("Editor- Inspector", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
   });
 
@@ -76,27 +77,37 @@ describe("Editor- Inspector", () => {
     cy.get(multipageSelector.sidebarPageButton).click();
     addNewPage("test_page");
 
-    cy.dragAndDropWidget("Button", 100, 200);
+    cy.dragAndDropWidget("Button", 500, 500);
     selectEvent("On click", "Switch page");
     cy.get('[data-cy="switch-page-label-and-input"] > .select-search')
       .click()
       .type("home{enter}");
     cy.get('[data-cy="button-add-query-param"]').click();
+    cy.wait(1000);
+    cy.get('[data-cy="button-add-query-param"]').click();
+
     addSupportCSAData("query-param-key", "key");
     addSupportCSAData("query-param-value", "value");
+    cy.get('[data-cy="switch-page-label-and-input"] > .select-search')
+      .click()
+      .type("home{enter}");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 100, 300);
+    cy.dragAndDropWidget("Button", 500, 300);
     selectEvent("On click", "Set variable");
     addSupportCSAData("key", "globalVar");
     addSupportCSAData("variable", "globalVar");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("button2")).click();
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 100, 400);
+    cy.dragAndDropWidget("Button", 500, 400);
     selectEvent("On click", "Set page variable");
     addSupportCSAData("key", "pageVar");
     addSupportCSAData("variable", "pageVar");
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget("button3")).click();
 
     cy.get(commonWidgetSelector.sidebarinspector).click();
@@ -129,7 +140,7 @@ describe("Editor- Inspector", () => {
     verifyValue("key", "String", `"value"`);
 
     cy.get(`[data-cy="inspector-node-key"] > .mx-1`).realHover();
-    cy.get("[data-cy='copy-icon']").realClick();
+    cy.get('[data-cy="copy-path-to-clipboard"]').realClick();
     cy.realPress("Escape");
 
     cy.window().then((win) => {
@@ -138,17 +149,15 @@ describe("Editor- Inspector", () => {
       });
     });
 
-    cy.get(".action-icons-group > .d-flex > :nth-child(2)").click();
-    cy.get(".list-group-item").click();
+    cy.get('[data-cy="copy-value-to-clicpboard"]').realClick();
     cy.realPress("Escape");
-
     cy.window().then((win) => {
       win.navigator.clipboard.readText().then((text) => {
         expect(text).to.eq(`"value"`);
       });
     });
 
-    cy.dragAndDropWidget("Button", 100, 300);
+    cy.dragAndDropWidget("Button", 500, 300);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     openNode("components");
     cy.get(`[data-cy="inspector-node-button1"] > .mx-1`).realHover();
