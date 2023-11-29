@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import posthog from 'posthog-js';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import { ToolTip } from '@/_components';
 import { LicenseTooltip } from '@/LicenseTooltip';
 
@@ -69,7 +69,7 @@ const Menu = (props) => {
             </div>
           </LicenseTooltip>
         )}
-        <LicenseBanner classes="mb-3 mx-1 small" limits={workspacesLimit} type="workspaces" size="small" />
+        <LicenseBannerCloud classes="mb-3 mx-1 small" limits={workspacesLimit} type="workspaces" size="small" />
       </div>
     </components.Menu>
   );

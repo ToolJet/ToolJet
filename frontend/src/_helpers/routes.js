@@ -12,6 +12,7 @@ export const getPrivateRoute = (page, params = {}) => {
     launch: '/applications/:slug/:pageHandle',
     workspace_settings: '/workspace-settings',
     settings: '/settings',
+    account_settings: '/account-settings',
     database: '/database',
     integrations: '/integrations',
     data_sources: '/data-sources',

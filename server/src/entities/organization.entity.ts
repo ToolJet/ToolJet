@@ -7,13 +7,14 @@ import {
   OneToMany,
   JoinColumn,
   BaseEntity,
+  OneToOne,
 } from 'typeorm';
 import { GroupPermission } from './group_permission.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
 import { InternalTable } from './internal_table.entity';
 import { AppEnvironment } from './app_environments.entity';
-
+import { OrganizationsLicense } from './organization_license.entity';
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -33,6 +34,9 @@ export class Organization extends BaseEntity {
 
   @Column({ name: 'inherit_sso' })
   inheritSSO: boolean;
+
+  @Column({ name: 'ownerId' })
+  ownerId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -56,4 +60,7 @@ export class Organization extends BaseEntity {
 
   @OneToMany(() => InternalTable, (internalTable) => internalTable.organization)
   internalTable: InternalTable[];
+
+  @OneToOne(() => OrganizationsLicense, (license) => license.organization, { onDelete: 'CASCADE' })
+  organizationsLicense: OrganizationsLicense;
 }

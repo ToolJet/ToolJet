@@ -55,11 +55,12 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
-  @Get('/tables/limits')
+  //cloud-licensing specific, don't change
+  @Get('organizations/:organizationId/tables/limits')
   @UseGuards(TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTables, 'all'))
   async getTablesLimit(@Param('organizationId') organizationId) {
-    const data = await this.tooljetDbService.getTablesLimit();
+    const data = await this.tooljetDbService.getTablesLimit(organizationId);
     return data;
   }
 

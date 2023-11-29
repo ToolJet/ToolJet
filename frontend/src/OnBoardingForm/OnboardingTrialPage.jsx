@@ -1,9 +1,10 @@
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import React from 'react';
+import ContinueButton from './ContinueButton';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
 
 function OnboardingTrialPage(props) {
-  const { btnProps } = props;
+  const { btnProps, isSelfHosted } = props;
   const { setIsLoading, setCompleted } = btnProps;
   const { formData, setFormData, setSkipLoading, skipLoading } = props;
 
@@ -86,12 +87,14 @@ function OnboardingTrialPage(props) {
     setCompleted(true);
     return;
   };
+
+  const ActivateTrialBtn = isSelfHosted ? ContinueButtonSelfHost : ContinueButton;
   return (
     <div className="trial-page-wrapper">
       <div className="start-trial">
         <div className="tj-header-h1 mb-3">Start your 14-day Free Trial</div>
         <div className="tj-text-md mb-4">Build internal tools faster than ever with our advanced features.</div>
-        <ContinueButtonSelfHost buttonName="Start your free trial" {...btnProps} setFormData={setFormData} />
+        <ActivateTrialBtn buttonName="Start your free trial" {...btnProps} setFormData={setFormData} />
         <ButtonSolid onClick={skipHandler} variant="tertiary">
           <span style={{ marginRight: 'auto' }}>Skip</span>
         </ButtonSolid>

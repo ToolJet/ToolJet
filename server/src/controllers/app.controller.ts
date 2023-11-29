@@ -121,9 +121,10 @@ export class AppController {
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Post('activate-trial')
   async activateTrial() {
-    const { companyName, companySize, role, email, phoneNumber, firstName, lastName } =
+    const { companyName, companySize, role, email, phoneNumber, firstName, lastName, id } =
       await this.userService.findSelfhostOnboardingDetails();
     const userDto: TrialUserDto = {
+      id,
       companyName,
       companySize,
       role,

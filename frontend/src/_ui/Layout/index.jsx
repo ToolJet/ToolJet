@@ -245,20 +245,26 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </Link>
                   </ToolTip>
                 </li>
-                {super_admin && (
+                {admin && (
                   <li className="text-center cursor-pointer">
                     <ToolTip message="Settings" placement="right">
                       <Link
-                        to="/instance-settings"
-                        onClick={(event) => checkForUnsavedChanges('/instance-settings', event)}
+                        to={getPrivateRoute('settings')}
                         className={`tj-leftsidebar-icon-items  ${
-                          router.pathname.startsWith('/instance-settings') && `current-seleted-route`
+                          router.pathname === getPrivateRoute('settings') && `current-seleted-route`
                         }`}
-                        data-cy="icon-instance-settings"
+                        data-cy="icon-settings"
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}
                       >
                         <SolidIcon
                           name="instancesettings"
-                          fill={router.pathname.startsWith('/instance-settings') ? '#3E63DD' : 'var(--slate8)'}
+                          fill={
+                            router.pathname === getPrivateRoute('settings')
+                              ? '#3E63DD'
+                              : darkMode
+                              ? '#4C5155'
+                              : '#C1C8CD'
+                          }
                         />
                       </Link>
                     </ToolTip>

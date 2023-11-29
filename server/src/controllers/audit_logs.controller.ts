@@ -40,11 +40,13 @@ export class AuditLogsController {
     return;
   }
 
+  //cloud-licensing specific, don't change
   @UseGuards(JwtAuthGuard, AuditLogsEnabledGuard)
   @Get('max_duration')
   @CheckPolicies((ability: AppAbility) => ability.can('accessAuditLogs', UserEntity))
-  async getMaxDuration() {
-    const data = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS);
+  async getMaxDuration(@User() user) {
+    const organizationId = user.organizationId;
+    const data = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS, organizationId);
     return data;
   }
 }

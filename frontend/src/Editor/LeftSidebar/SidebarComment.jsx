@@ -32,8 +32,10 @@ export const LeftSidebarComment = forwardRef(
     );
     const [isActive, toggleActive] = React.useState(false);
     const [notifications, setNotifications] = React.useState([]);
-    const shouldEnableComments = window.public_config?.ENABLE_COMMENTS === 'true';
+    //not valid for cloud-licensing
+    // const shouldEnableComments = window.public_config?.ENABLE_COMMENTS === 'true';
     const [basicPlan, setBasicPlan] = useState(false);
+    const [shouldEnableComments, setShouldEnableComments] = useState(false);
 
     React.useEffect(() => {
       if (appVersionsId && appId) {
@@ -45,6 +47,7 @@ export const LeftSidebarComment = forwardRef(
         try {
           const data = await licenseService.getFeatureAccess();
           setBasicPlan(data?.licenseStatus?.isExpired || !data?.licenseStatus?.isLicenseValid);
+          setShouldEnableComments(data?.comments);
         } catch (error) {
           console.error('Error:', error);
         }

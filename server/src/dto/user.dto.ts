@@ -54,11 +54,16 @@ export class CreateUserDto {
   @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
   source: string;
+
+  @IsBoolean()
+  @IsOptional()
+  requestedTrial: boolean;
 }
 
 export class TelemetryDataDto {
   constructor(obj: any = {}) {
     this.email = obj.email;
+    this.id = obj.id;
     this.name = obj.name;
     this.phoneNumber = obj.phoneNumber;
     this.companyName = obj.companyName;
@@ -70,6 +75,10 @@ export class TelemetryDataDto {
   @Transform(({ value }) => lowercaseString(value))
   @IsNotEmpty()
   email: string;
+
+  @IsOptional()
+  @IsString()
+  id: string;
 
   @IsString()
   @IsNotEmpty()
@@ -101,8 +110,8 @@ export class TelemetryDataDto {
   @MaxLength(500)
   role: string;
 
-  @IsOptional()
   @IsBoolean()
+  @IsOptional()
   requestedTrial: boolean;
 }
 export class CreateAdminDto extends TelemetryDataDto {
@@ -119,5 +128,4 @@ export class CreateAdminDto extends TelemetryDataDto {
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
-
 export class TrialUserDto extends TelemetryDataDto {}

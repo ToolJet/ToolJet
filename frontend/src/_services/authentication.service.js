@@ -156,7 +156,17 @@ function resendInvite(email) {
       return response;
     });
 }
-function onboarding({ companyName, companySize, role, token, organizationToken, source, password, phoneNumber }) {
+function onboarding({
+  companyName,
+  companySize,
+  role,
+  token,
+  organizationToken,
+  source,
+  password,
+  phoneNumber,
+  requestedTrial,
+}) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -170,6 +180,7 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
       ...(source?.length > 0 && { source }),
       ...(password?.length > 0 && { password }),
       ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
+      requestedTrial,
     }),
   };
 

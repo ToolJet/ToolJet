@@ -40,7 +40,7 @@ export class DataSourcesService {
     const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
     const groupPermissions = await this.usersService.groupPermissions(user);
     const canPerformCreateOrDelete = groupPermissions?.some((gp) => gp['dataSourceCreate'] || gp['dataSourceDelete']);
-    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, organizationId);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {

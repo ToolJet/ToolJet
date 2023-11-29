@@ -9,7 +9,9 @@ export class EditorUserCountGuard implements CanActivate {
   constructor(private usersService: UsersService, private licenseService: LicenseService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const editorsCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.EDITORS);
+    const request = context.switchToHttp().getRequest();
+    const organizationId = request.headers['tj-workspace-id'];
+    const editorsCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.EDITORS, organizationId);
     if (editorsCount === LICENSE_LIMIT.UNLIMITED) {
       return true;
     }

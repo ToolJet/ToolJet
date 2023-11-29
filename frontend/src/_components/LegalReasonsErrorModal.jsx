@@ -15,24 +15,26 @@ const LegalReasonsErrorModal = ({
   showFooter = true,
   toggleModal,
 }) => {
-  const [showModal, setShowModal] = useState(propShowModal);
+  const [isOpen, setShowModal] = useState(propShowModal);
   const currentUser = authenticationService.currentSessionValue;
+
+  const handleClose = () => {
+    setShowModal(false);
+    toggleModal && toggleModal();
+    document.querySelector('.legal-reason-backdrop').remove();
+  };
 
   useEffect(() => {
     setShowModal(propShowModal);
   }, [propShowModal]);
 
-  const handleClose = () => {
-    setShowModal(false);
-    toggleModal && toggleModal();
-  };
-
   const modalContent = (
     <>
       <Modal
         id="legal-reason-modal"
-        show={showModal}
-        onHide={handleClose}
+        show={isOpen}
+        onHide={toggleModal ?? handleClose}
+        backdropClassName="legal-reason-backdrop"
         size="sm"
         centered={true}
         contentClassName={`${darkMode ? 'theme-dark dark-theme license-error-modal' : 'license-error-modal'}`}
@@ -45,14 +47,6 @@ const LegalReasonsErrorModal = ({
         </Modal.Header>
         <Modal.Body data-cy="modal-message">
           {message}
-          {(message?.includes('builders') || message?.includes('workspaces')) && (
-            <div className="info">
-              <div>
-                <SolidIcon name="idea" />
-              </div>
-              <span>To add more users, please disable the personal workspace in instance settings and retry.</span>
-            </div>
-          )}
           {body}
         </Modal.Body>
         {showFooter && (
@@ -60,11 +54,11 @@ const LegalReasonsErrorModal = ({
             <Button className="cancel-btn" onClick={handleClose}>
               Cancel
             </Button>
-            {currentUser?.super_admin && (
+            {currentUser?.admin && (
               <Button className="upgrade-btn" autoFocus onClick={() => {}}>
                 <a
                   style={{ color: 'white', textDecoration: 'none' }}
-                  href={`https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=onpremise&instance_id=${currentUser?.instance_id}`}
+                  href={`https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=tooljet-cloud&workspace_id=${currentUser.current_organization_id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

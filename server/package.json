@@ -100,6 +100,7 @@
     "rxjs": "^7.2.0",
     "sanitize-html": "^2.7.0",
     "semver": "^7.3.5",
+    "stripe": "^14.3.0",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.2.38",

@@ -44,10 +44,12 @@ export class AppsController {
     private auditLoggerService: AuditLoggerService
   ) {}
 
+  //cloud-licensing specific, don't change
   @UseGuards(JwtAuthGuard)
   @Get('limits')
-  async getAppsLimit() {
-    return await this.appsService.getAppsLimit();
+  async getAppsLimit(@User() user) {
+    const organizationId = user.organizationId;
+    return await this.appsService.getAppsLimit(organizationId);
   }
 
   @UseGuards(JwtAuthGuard, AppCountGuard)

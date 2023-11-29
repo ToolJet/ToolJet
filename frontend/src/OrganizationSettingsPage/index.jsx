@@ -7,8 +7,9 @@ import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 import { licenseService } from '../_services/license.service';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import Skeleton from 'react-loading-skeleton';
+import { getDateDifferenceInDays } from '@/_helpers/utils';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
@@ -90,6 +91,12 @@ export function OrganizationSettings(props) {
     fetchData();
   }, [featuresLoaded, navigate, workspaceId, authenticationService.currentSessionValue?.admin]);
 
+  const { licenseStatus } = featureAccess ?? {};
+  const { isExpired, expiryDate } = licenseStatus ?? {};
+
+  const daysLeft = expiryDate && getDateDifferenceInDays(new Date(), new Date(expiryDate));
+  const isExpiring = daysLeft <= 14;
+
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">
@@ -146,12 +153,14 @@ export function OrganizationSettings(props) {
                 <Skeleton count={7} height={22} />
               )}
             </div>
-            <LicenseBanner
-              limits={featureAccess}
-              classes="m-3 trial-banner"
-              size="xsmall"
-              type={featureAccess?.licenseStatus?.licenseType}
-            />
+            {(isExpired || isExpiring) && (
+              <LicenseBannerCloud
+                limits={featureAccess}
+                classes="m-3 trial-banner"
+                size="xsmall"
+                type={featureAccess?.licenseStatus?.licenseType}
+              />
+            )}
             <OrganizationList />
           </div>
 

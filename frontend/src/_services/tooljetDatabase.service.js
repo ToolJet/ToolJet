@@ -1,4 +1,5 @@
 import HttpClient from '@/_helpers/http-client';
+import { authHeader } from '@/_helpers';
 
 const tooljetAdapter = new HttpClient();
 
@@ -12,7 +13,9 @@ function findAll(organizationId) {
 }
 
 async function getTablesLimit() {
-  const res = await tooljetAdapter.get(`/tooljet-db/tables/limits`);
+  const headers = authHeader();
+  const organizationId = headers['tj-workspace-id'];
+  const res = await tooljetAdapter.get(`/tooljet-db/organizations/${organizationId}/tables/limits`);
   return res;
 }
 

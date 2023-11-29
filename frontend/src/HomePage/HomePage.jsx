@@ -23,8 +23,8 @@ import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { withRouter } from '@/_hoc/withRouter';
-import { LicenseBanner } from '@/LicenseBanner';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import Skeleton from 'react-loading-skeleton';
 
 const { iconList, defaultIcon } = configs;
@@ -823,16 +823,11 @@ class HomePageComponent extends React.Component {
             <div className="home-page-sidebar col p-0">
               {this.canCreateApp() && (
                 <div className="create-new-app-license-wrapper">
-                  <LicenseTooltip
-                    limits={appsLimit}
-                    feature={this.props.appType === 'workflow' ? 'workflows' : 'apps'}
-                    isAvailable={true}
-                    noTooltipIfValid={true}
-                  >
+                  <LicenseTooltip limits={appsLimit} feature={'apps'} isAvailable={true} noTooltipIfValid={true}>
                     <div className="create-new-app-wrapper">
                       <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                         <Button
-                          disabled={appsLimit?.percentage >= 100}
+                          disabled={appsLimit?.percentage >= 100 && this.props.appType !== 'workflow'}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                           onClick={() => this.setState({ showCreateAppModal: true })}
                           data-cy="create-new-app-button"
@@ -899,7 +894,9 @@ class HomePageComponent extends React.Component {
                       </Dropdown>
                     </div>
                   </LicenseTooltip>
-                  <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
+                  {this.props.appType !== 'workflow' && (
+                    <LicenseBannerCloud classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
+                  )}
                 </div>
               )}
               <Folders
@@ -926,7 +923,7 @@ class HomePageComponent extends React.Component {
             >
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
-                  <LicenseBanner
+                  <LicenseBannerCloud
                     classes="mt-3"
                     limits={featureAccess}
                     type={featureAccess?.licenseStatus?.licenseType}

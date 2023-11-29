@@ -11,7 +11,6 @@ import { SeedsService } from '@services/seeds.service';
 import { LoggerModule } from 'nestjs-pino';
 import { SentryModule } from './modules/observability/sentry/sentry.module';
 import * as Sentry from '@sentry/node';
-import { WinstonModule } from 'nest-winston';
 
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -52,7 +51,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { LicenseModule } from './modules/license/license.module';
 import { CustomStylesModule } from './modules/custom_styles/custom_styles.module';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
-import { logfileTransportConfig, logFormat } from './helpers/logger.helper';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -61,14 +59,6 @@ const imports = [
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT) || 6379,
     },
-  }),
-  WinstonModule.forRootAsync({
-    useFactory: () => ({
-      format: logFormat,
-      transports: process.env.LOG_FILE_PATH ? [logfileTransportConfig(process.env.LOG_FILE_PATH, process.pid)] : [],
-      exitOnError: false,
-    }),
-    inject: [],
   }),
   ConfigModule.forRoot({
     isGlobal: true,

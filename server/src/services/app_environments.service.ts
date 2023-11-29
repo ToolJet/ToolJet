@@ -21,7 +21,7 @@ export class AppEnvironmentService {
     licenseCheck = false
   ): Promise<AppEnvironment> {
     const isMultiEnvironmentEnabled = licenseCheck
-      ? await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT)
+      ? await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId)
       : false;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -105,7 +105,10 @@ export class AppEnvironmentService {
         }
       }
 
-      const multiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const multiEnvironmentEnabled = await this.licenseService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      );
       for (const appEnvironment of appEnvironments) {
         appEnvironment.priority !== 1 && !multiEnvironmentEnabled
           ? (appEnvironment['enabled'] = false)

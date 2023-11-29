@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, MoreThan, Repository } from 'typeorm';
+import { EntityManager, MoreThan, Repository, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -196,9 +196,10 @@ export class AppsService {
   }
 
   async count(user: User, searchKey, type: string, from?: string): Promise<number> {
+    const organizationId = user?.organizationId;
     return await viewableAppsQuery(
       user,
-      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, organizationId),
       searchKey,
       [],
       type
@@ -212,9 +213,10 @@ export class AppsService {
   };
 
   async all(user: User, page: number, searchKey: string, type: string): Promise<App[]> {
+    const organizationId = user?.organizationId;
     const viewableAppsQb = viewableAppsQuery(
       user,
-      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, organizationId),
       searchKey,
       undefined,
       type
@@ -717,7 +719,7 @@ export class AppsService {
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
     if (currentEnvironmentId) {
-      if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+      if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId))) {
         throw new BadRequestException('You do not have permissions to perform this action');
       }
 
@@ -773,15 +775,22 @@ export class AppsService {
     });
   }
 
-  async appsCount() {
-    return await this.appsRepository.count();
+  async appsCount(organizationId?: string): Promise<number> {
+    const whereCondition: any = organizationId
+      ? { organizationId, type: Not('workflow') }
+      : { type: Not('workflow') };
+  
+    return await this.appsRepository.count({ where: whereCondition });
   }
 
-  async getAppsLimit() {
-    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.APP_COUNT, LICENSE_FIELD.STATUS]);
+  async getAppsLimit(organizationId?: string) {
+    const licenseTerms = await this.licenseService.getLicenseTerms(
+      [LICENSE_FIELD.APP_COUNT, LICENSE_FIELD.STATUS],
+      organizationId
+    );
     return {
       appsCount: generatePayloadForLimits(
-        licenseTerms[LICENSE_FIELD.APP_COUNT] !== LICENSE_LIMIT.UNLIMITED ? await this.appsCount() : 0,
+        licenseTerms[LICENSE_FIELD.APP_COUNT] !== LICENSE_LIMIT.UNLIMITED ? await this.appsCount(organizationId) : 0,
         licenseTerms[LICENSE_FIELD.APP_COUNT],
         licenseTerms[LICENSE_FIELD.STATUS],
         LICENSE_LIMITS_LABEL.APPS
@@ -811,7 +820,10 @@ export class AppsService {
     currentEnvIdOfVersion: string,
     organizationId: string
   ): Promise<AppEnvironment> {
-    const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+    const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(
+      LICENSE_FIELD.MULTI_ENVIRONMENT,
+      organizationId
+    );
     if (environmentName && !isMultiEnvironmentEnabled) {
       throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
     }

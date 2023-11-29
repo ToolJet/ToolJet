@@ -44,7 +44,7 @@ import { decamelize } from 'humps';
 import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
 import { LicenseService } from './license.service';
-import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL, LICENSE_TYPE } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { OrganizationUpdateDto } from '@dto/organization.dto';
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
@@ -69,6 +69,10 @@ interface UserCsvRow {
   last_name: string;
   email: string;
   groups?: any;
+}
+
+class OrganizationWithLicenseType extends Organization {
+  licenseType: string | null;
 }
 
 const orgConstraints = [
@@ -135,19 +139,21 @@ export class OrganizationsService {
           await this.groupPermissionService.createUserGroupPermission(user.id, groupPermission.id, manager);
         }
 
-        await this.usersService.validateLicense(manager);
+        await this.updateOwner(organization.id, user.id, manager);
+        await this.usersService.validateLicense(manager, organization.id);
       }
-      await this.organizationUserService.validateLicense(manager);
+      //does not apply to cloud-licensing (workspace specific)
+      //await this.organizationUserService.validateLicense(manager);
     }, manager);
 
     return organization;
   }
 
-  async constructSSOConfigs() {
+  async constructSSOConfigs(organizationId?: string) {
     const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings(
       INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE
     );
-    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC);
+    const oidcEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC, organizationId);
     return {
       google: {
         enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
@@ -181,6 +187,13 @@ export class OrganizationsService {
 
   async get(id: string): Promise<Organization> {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
+  }
+
+  async updateOwner(id: string, ownerId: string, manager?: EntityManager): Promise<void> {
+    await dbTransactionWrap(
+      (manager: EntityManager) => manager.update(Organization, { id }, { ownerId: ownerId }),
+      manager
+    );
   }
 
   async fetchOrganization(slug: string): Promise<Organization> {
@@ -348,25 +361,30 @@ export class OrganizationsService {
     return await this.organizationUsersQuery(user.organizationId, options, condition).getCount();
   }
 
-  async fetchOrganizations(user: any): Promise<Organization[]> {
-    if (isSuperAdmin(user)) {
-      return await this.organizationsRepository.find({ order: { name: 'ASC' } });
-    } else {
-      return await createQueryBuilder(Organization, 'organization')
-        .innerJoin(
-          'organization.organizationUsers',
-          'organization_users',
-          'organization_users.status IN(:...statusList)',
-          {
-            statusList: ['active'],
-          }
-        )
-        .andWhere('organization_users.userId = :userId', {
-          userId: user.id,
-        })
-        .orderBy('name', 'ASC')
-        .getMany();
-    }
+  async fetchOrganizations(user: any): Promise<OrganizationWithLicenseType[]> {
+    const organizations = await createQueryBuilder(Organization, 'organization')
+      .leftJoinAndSelect('organization.organizationsLicense', 'license')
+      .innerJoin(
+        'organization.organizationUsers',
+        'organization_users',
+        'organization_users.status IN(:...statusList)',
+        {
+          statusList: ['active'],
+        }
+      )
+      .andWhere('organization_users.userId = :userId', { userId: user.id })
+      .orderBy('organization.name', 'ASC')
+      .getMany();
+
+    return organizations.map((org) => {
+      const organizationWithLicenseType = new OrganizationWithLicenseType();
+      Object.assign(organizationWithLicenseType, org);
+      organizationWithLicenseType.licenseType =
+        org.organizationsLicense && org.organizationsLicense.expiryDate > new Date()
+          ? org.organizationsLicense.licenseType
+          : LICENSE_TYPE.BASIC;
+      return organizationWithLicenseType;
+    });
   }
 
   async findOrganizationWithLoginSupport(
@@ -516,11 +534,10 @@ export class OrganizationsService {
     }
 
     // filter oidc and ldap configs
-    const licenseTerms = await this.licenseService.getLicenseTerms([
-      LICENSE_FIELD.OIDC,
-      LICENSE_FIELD.LDAP,
-      LICENSE_FIELD.SAML,
-    ]);
+    const licenseTerms = await this.licenseService.getLicenseTerms(
+      [LICENSE_FIELD.OIDC, LICENSE_FIELD.LDAP, LICENSE_FIELD.SAML],
+      result.id || organizationId
+    );
     if (result?.ssoConfigs?.some((sso) => sso.sso === 'openid') && !licenseTerms[LICENSE_FIELD.OIDC]) {
       result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'openid');
     }
@@ -654,7 +671,7 @@ export class OrganizationsService {
       throw new BadRequestException();
     }
 
-    if (type === 'openid' && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC))) {
+    if (type === 'openid' && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC, organizationId))) {
       throw new HttpException('OIDC disabled', 451);
     }
 
@@ -759,6 +776,7 @@ export class OrganizationsService {
 
       if (defaultOrganization) {
         // Setting up default organization
+        await this.updateOwner(defaultOrganization.id, user.id, manager);
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
         await this.organizationUserService.validateLicense(manager);
         await this.usersService.attachUserGroup(
@@ -776,7 +794,7 @@ export class OrganizationsService {
 
       const organizationUser = await this.organizationUserService.create(user, currentOrganization, true, manager);
 
-      await this.usersService.validateLicense(manager);
+      await this.usersService.validateLicense(manager, currentOrganization.id);
 
       await this.auditLoggerService.perform(
         {

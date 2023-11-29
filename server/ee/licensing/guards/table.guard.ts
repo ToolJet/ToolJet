@@ -14,11 +14,17 @@ export class TableCountGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const tablesCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.TABLE_COUNT);
+    const request = context.switchToHttp().getRequest();
+    const organizationId = request.headers['tj-workspace-id'];
+    const tablesCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.TABLE_COUNT, organizationId);
     if (tablesCount === LICENSE_LIMIT.UNLIMITED) {
       return true;
     }
-    const existingTablesCount = await this.tablesRepository.count();
+    const existingTablesCount = await this.tablesRepository.count({
+      where: {
+        organizationId: organizationId,
+      },
+    });
     if (existingTablesCount >= tablesCount) {
       throw new HttpException('You have reached your maximum limit for tables.', 451);
     }

@@ -390,7 +390,7 @@ export function TrialPage({
   };
   return (
     <div className="onboarding-pages-wrapper">
-      <OnboardingTrialPage {...props} btnProps={btnProps} />
+      <OnboardingTrialPage isSelfHosted={true} {...props} btnProps={btnProps} />
     </div>
   );
 }

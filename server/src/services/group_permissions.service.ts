@@ -115,7 +115,7 @@ export class GroupPermissionsService {
         id: groupPermissionId,
       });
 
-      await this.usersService.validateLicense(manager);
+      await this.usersService.validateLicense(manager, user?.organizationId);
 
       await this.auditLoggerService.perform(
         {
@@ -160,7 +160,7 @@ export class GroupPermissionsService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(AppGroupPermission, appGroupPermissionId, actions);
 
-      await this.usersService.validateLicense(manager);
+      await this.usersService.validateLicense(manager, user?.organizationId);
 
       await this.auditLoggerService.perform(
         {
@@ -206,7 +206,7 @@ export class GroupPermissionsService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(DataSourceGroupPermission, dataSourceGroupPermissionId, actions);
 
-      await this.usersService.validateLicense(manager);
+      await this.usersService.validateLicense(manager, user?.organizationId);
 
       await this.auditLoggerService.perform(
         {
@@ -391,7 +391,7 @@ export class GroupPermissionsService {
         }
       }
 
-      await this.usersService.validateLicense(manager);
+      await this.usersService.validateLicense(manager, user?.organizationId);
 
       await this.auditLoggerService.perform(
         {
@@ -420,7 +420,8 @@ export class GroupPermissionsService {
   }
 
   async findAll(user: User): Promise<GroupPermission[]> {
-    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+    const organizationId = user?.organizationId;
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, organizationId);
     const groupPermissions = await this.groupPermissionsRepository.find({
       where: { organizationId: user.organizationId },
       order: { createdAt: 'ASC' },

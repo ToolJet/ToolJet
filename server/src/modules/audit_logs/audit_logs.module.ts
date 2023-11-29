@@ -8,5 +8,6 @@ import { AuditLogsQueryService } from '@services/audit_logs_query.service';
   controllers: [AuditLogsController],
   imports: [CaslModule],
   providers: [AuditLoggerService, AuditLogsQueryService],
+  exports: [AuditLoggerService],
 })
 export class AuditLogsModule {}

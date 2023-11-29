@@ -1,13 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException } from '@nestjs/common';
 import { LicenseService } from '@services/license.service';
-import { LICENSE_FIELD, LICENSE_TYPE } from 'src/helpers/license.helper';
-
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { LICENSE_TYPE } from 'src/helpers/license.helper';
 @Injectable()
 export class AuditLogsEnabledGuard implements CanActivate {
   constructor(private licenseService: LicenseService) {}
-
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const auditLogsEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.AUDIT_LOGS);
+    const request = context.switchToHttp().getRequest();
+    const organizationId = request.headers['tj-workspace-id'];
+    const auditLogsEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.AUDIT_LOGS, organizationId);
 
     if (!auditLogsEnabled) {
       throw new HttpException(
@@ -24,22 +25,22 @@ export class AuditLogsEnabledGuard implements CanActivate {
 export class AuditLogsDurationGuard implements CanActivate {
   constructor(private licenseService: LicenseService) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const organizationId = request.headers['tj-workspace-id'];
     const {
       status: { licenseType },
       maxDurationForAuditLogs,
       auditLogsEnabled,
-    } = await this.licenseService.getLicenseTerms([
-      LICENSE_FIELD.STATUS,
-      LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS,
-      LICENSE_FIELD.AUDIT_LOGS,
-    ]);
+    } = await this.licenseService.getLicenseTerms(
+      [LICENSE_FIELD.STATUS, LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS, LICENSE_FIELD.AUDIT_LOGS],
+      organizationId
+    );
     if (!auditLogsEnabled) {
       throw new HttpException(
         "Oops! Your current plan doesn't have access to this feature. Please upgrade your plan now to use this.",
         451
       );
     }
-    const request = context.switchToHttp().getRequest();
     const { timeFrom, timeTo } = request.query;
     if (!timeFrom || !timeTo) {
       throw new HttpException(

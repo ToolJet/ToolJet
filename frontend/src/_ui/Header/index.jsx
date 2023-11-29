@@ -25,6 +25,8 @@ function Header() {
       case 'data-sources':
         return 'Data sources';
       case 'settings':
+        return 'Settings';
+      case 'account-settings':
         return 'Profile settings';
       case 'integrations':
         return 'Integrations';

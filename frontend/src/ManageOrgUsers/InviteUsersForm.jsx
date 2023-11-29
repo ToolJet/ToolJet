@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
 import posthog from 'posthog-js';
 import { authenticationService, userService } from '@/_services';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import Multiselect from '@/_ui/Multiselect/Multiselect';
 
 function InviteUsersForm({
@@ -33,7 +33,7 @@ function InviteUsersForm({
   }, [activeTab]);
 
   const fetchUserLimits = () => {
-    userService.getUserLimits('total').then((data) => {
+    userService.getUserLimits('all').then((data) => {
       setUserLimits(data);
     });
   };
@@ -61,6 +61,35 @@ function InviteUsersForm({
     const selectedGroupsIds = selectedGroups.map((group) => group.value);
     createUser(selectedGroupsIds);
   };
+
+  const generateBanner = () => {
+    const { usersCount, editorsCount, viewersCount } = userLimits;
+
+    if (usersCount?.percentage >= 100) {
+      return <LicenseBannerCloud classes="mb-3" limits={usersCount} type="users" size="small" />;
+    } else if (editorsCount?.percentage >= 100) {
+      return <LicenseBannerCloud classes="mb-3" limits={editorsCount} type="builders" size="small" />;
+    } else if (viewersCount?.percentage >= 100) {
+      return <LicenseBannerCloud classes="mb-3" limits={viewersCount} type="end users" size="small" />;
+    } else if (
+      usersCount?.percentage >= 90 ||
+      (usersCount?.total <= 10 && usersCount.current === usersCount?.total - 1)
+    ) {
+      return <LicenseBannerCloud classes="mb-3" limits={usersCount} type="users" size="small" />;
+    } else if (
+      editorsCount?.percentage >= 90 ||
+      (editorsCount?.total <= 10 && editorsCount.current === editorsCount?.total - 1)
+    ) {
+      return <LicenseBannerCloud classes="mb-3" limits={editorsCount} type="builders" size="small" />;
+    } else if (
+      viewersCount?.percentage >= 90 ||
+      (viewersCount?.total <= 10 && viewersCount.current === viewersCount?.total - 1)
+    ) {
+      return <LicenseBannerCloud classes="mb-3" limits={viewersCount} type="end users" size="small" />;
+    }
+  };
+
+  const Banner = generateBanner();
 
   return (
     <div>
@@ -119,10 +148,10 @@ function InviteUsersForm({
           </div>
           {activeTab == 1 ? (
             <div className={`manage-users-drawer-content`}>
-              <LicenseBanner classes="mb-3" limits={userLimits} type="users" size="small" />
+              {Banner}
               <div
                 className={`invite-user-by-email ${
-                  !userLimits?.canAddUnlimited && userLimits?.percentage >= 100 && 'disabled'
+                  !userLimits?.canAddUnlimited && userLimits?.usersCount?.percentage >= 100 && 'disabled'
                 }`}
               >
                 <form onSubmit={handleCreateUser} noValidate className="invite-email-body" id="inviteByEmail">
@@ -186,7 +215,7 @@ function InviteUsersForm({
             </div>
           ) : (
             <div className="manage-users-drawer-content-bulk">
-              <LicenseBanner limits={userLimits} type="users" size="small" />
+              {Banner}
               <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">
                   <div>
@@ -212,14 +241,18 @@ function InviteUsersForm({
                   </div>
                 </div>
               </div>
-              <FileDropzone
-                handleClick={handleClick}
-                hiddenFileInput={hiddenFileInput}
-                errors={errors}
-                handleFileChange={handleFileChange}
-                inviteBulkUsers={inviteBulkUsers}
-                onDrop={onDrop}
-              />
+              <div
+                className={`${!userLimits?.canAddUnlimited && userLimits?.usersCount?.percentage >= 100 && 'disabled'}`}
+              >
+                <FileDropzone
+                  handleClick={handleClick}
+                  hiddenFileInput={hiddenFileInput}
+                  errors={errors}
+                  handleFileChange={handleFileChange}
+                  inviteBulkUsers={inviteBulkUsers}
+                  onDrop={onDrop}
+                />
+              </div>
             </div>
           )}
           <div className="manage-users-drawer-footer">
@@ -238,7 +271,10 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={uploadingUsers || (!userLimits?.canAddUnlimited && userLimits?.percentage >= 100 && 'disabled')}
+              disabled={
+                uploadingUsers ||
+                (!userLimits?.canAddUnlimited && userLimits?.usersCount?.percentage >= 100 && 'disabled')
+              }
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

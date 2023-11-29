@@ -6,7 +6,7 @@ import Layout from '@/_ui/Layout';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
 
-function SettingsPage(props) {
+function AccountSettings(props) {
   const currentSession = authenticationService.currentSessionValue;
   const email = currentSession?.current_user.email;
   const [firstName, setFirstName] = React.useState(currentSession?.current_user.first_name);
@@ -299,4 +299,4 @@ function SettingsPage(props) {
   );
 }
 
-export { SettingsPage };
+export { AccountSettings };
