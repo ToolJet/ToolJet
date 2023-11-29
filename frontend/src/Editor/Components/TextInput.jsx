@@ -18,7 +18,7 @@ export const TextInput = function TextInput({
   isResizing,
 }) {
   const textInputRef = useRef();
-  const { loadingState, tooltip, disabledState, label, placeholder } = properties;
+  const { loadingState, tooltip, disabledState, label, placeholder, labelEnabled } = properties;
   const {
     padding,
     borderRadius,
@@ -132,7 +132,7 @@ export const TextInput = function TextInput({
       ${visibility || 'invisible'}`}
                 style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
               >
-                {component?.labelEnabled?.value && (
+                {labelEnabled && (
                   <label
                     style={{
                       color: darkMode && color == '#11181C' ? '#fff' : color,
@@ -221,7 +221,7 @@ export const TextInput = function TextInput({
       ${visibility || 'invisible'}`}
               style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
             >
-              {component?.labelEnabled?.value && (
+              {labelEnabled && (
                 <label
                   style={{
                     color: darkMode && color == '#11181C' ? '#fff' : color,

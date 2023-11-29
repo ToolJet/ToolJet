@@ -1066,6 +1066,11 @@ export const widgets = [
       value: true,
     },
     properties: {
+      labelEnabled: {
+        type: 'boolean',
+        displayName: 'labelEnabled',
+        validation: { schema: { type: 'string' } },
+      },
       label: {
         type: 'code',
         displayName: 'Label',
@@ -1300,6 +1305,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        labelEnabled: { value: '{{true}}' },
         value: { value: '' },
         label: { value: 'Label' },
         placeholder: { value: 'Enter your input' },
