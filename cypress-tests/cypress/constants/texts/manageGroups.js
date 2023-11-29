@@ -37,7 +37,7 @@ export const groupsText = {
   helperTextPermissions:
     "Add app to the group to control permissions for users in this group",
   helperTextAllUsersIncluded:
-    " All users include every users in the app. This list is not editable",
+    " All users within the workspace are included in this list. This list cannot be edited.",
   helperTextAdminAppAccess:
     "Admin has edit access to all apps. These are not editable",
   helperTextAdminPermissions: "Admin has all permissions",

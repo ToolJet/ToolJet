@@ -6,6 +6,7 @@ import moment from 'moment';
 import useRouter from '@/_hooks/use-router';
 
 import Spinner from '@/_ui/Spinner';
+import { getPathname } from '@/_helpers/routes';
 
 const Content = ({ notifications, loading, darkMode }) => {
   const router = useRouter();
@@ -35,7 +36,7 @@ const Content = ({ notifications, loading, darkMode }) => {
               onClick={() => {
                 router.push({
                   // react router updates the url with the set basename resulting invalid url unless replaced
-                  pathname: window.location.pathname.replace(window.public_config?.SUB_PATH, '/'),
+                  pathname: getPathname(),
                   search: `?threadId=${comment.thread.id}&commentId=${comment.id}`,
                 });
               }}
