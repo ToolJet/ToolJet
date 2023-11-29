@@ -1592,6 +1592,12 @@ export const widgets = [
         ],
         accordian: 'container',
       },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error text color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
     },
     exposedVariables: {
       value: '',
@@ -1627,6 +1633,7 @@ export const widgets = [
         color: { value: '#11181C' },
         auto: { value: '{{false}}' },
         padding: { value: 'default' },
+        errTextColor: { value: '#DB4324' },
       },
     },
   },
