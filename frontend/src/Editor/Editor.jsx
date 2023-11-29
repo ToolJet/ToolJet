@@ -723,7 +723,7 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       page: currentpageData,
     });
-    console.log('Why me');
+
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
