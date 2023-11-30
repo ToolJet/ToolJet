@@ -1,10 +1,13 @@
-import { useRef } from 'react';
+import { useRef, useContext } from 'react';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
+import { TooljetDatabaseContext } from './index';
 
 export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSelectedTableData, setTotalRecords }) => {
+  const { pageSize } = useContext(TooljetDatabaseContext);
+
   const postgrestQueryBuilder = useRef({
     filterQuery: new PostgrestQueryBuilder(),
     sortQuery: new PostgrestQueryBuilder(),
@@ -36,6 +39,8 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
       '&' +
       postgrestQueryBuilder.current.paginationQuery.url.toString();
 
+    //console.log('first', postgrestQueryBuilder.current.paginationQuery.url.toString());
+
     const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable.id, query);
 
     if (error) {
@@ -58,7 +63,7 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
         const { column, operator, value } = filters[key];
         if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
           postgrestQueryBuilder.current.filterQuery.filter(column, operator, value);
-          buildPaginationQuery(value, 0);
+          buildPaginationQuery(pageSize, 0);
         }
       }
     });
