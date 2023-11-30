@@ -60,7 +60,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   }}
                   value={columns[index].column_name}
                   type="text"
-                  className="form-control"
+                  className="tj-input-element"
                   placeholder="Enter name"
                   data-cy={`name-input-field-${columns[index].column_name}`}
                   disabled={columns[index].constraint_type === 'PRIMARY KEY'}
@@ -90,7 +90,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   }}
                   value={columns[index].column_default}
                   type="text"
-                  className="form-control"
+                  className="tj-input-element"
                   data-cy="default-input-field"
                   placeholder="NULL"
                   disabled={columns[index].constraint_type === 'PRIMARY KEY' || columns[index].data_type === 'serial'}

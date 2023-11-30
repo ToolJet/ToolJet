@@ -133,12 +133,12 @@ export function AppModal({
       }
     >
       <div className="row workspace-folder-modal mb-3">
-        <div className="col modal-main tj-app-input">
+        <div className="col modal-main">
           <label className="tj-input-label">{'App Name'}</label>
           <input
             type="text"
             onChange={handleInputChange}
-            className={`form-control ${errorText ? 'input-error-border' : ''}`}
+            className={`tj-input-element ${errorText ? 'input-error-border' : ''}`}
             placeholder={'Enter app name'}
             value={newAppName}
             data-cy="app-name-input"

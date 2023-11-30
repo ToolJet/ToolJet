@@ -42,6 +42,7 @@ $border-radius: 4px;
 
 .query-pane {
   scrollbar-width: none;
+  background-color: var(--background-strong);
 }
 
 .query-pane {
@@ -57,7 +58,8 @@ $border-radius: 4px;
   line-height: 20px;
   border: 1px solid var(--slate5);
   border-width: 1px 0px 0px 0px;
-  background-color: var(--base);
+  background-color: var(--layer-01);
+
 
   .table-responsive {
     scrollbar-width: none;
@@ -83,7 +85,7 @@ $border-radius: 4px;
     font-weight: 500;
     width: 272px;
     height: 32px;
-    color: var(--slate12);
+    color: var(--text-primary);
     border-radius: 6px;
     margin-bottom: 4px;
 
@@ -131,7 +133,7 @@ $border-radius: 4px;
     }
 
     &:hover {
-      background: var(--slate3) !important;
+      background: var(--layer-02-hover) !important;
 
     }
 
@@ -187,7 +189,7 @@ $border-radius: 4px;
 
   .query-definition-pane-wrapper {
     flex: 1;
-    background-color: var(--base);
+    background-color: var(--layer-01);
     overflow-x: hidden;
     overflow-y: scroll;
     height: 100%;
@@ -209,9 +211,9 @@ $border-radius: 4px;
 
   .query-definition-pane {
     .header {
-      border: solid var(--slate5);
+      border: solid var(--border-subtle-01);
       border-width: 0px 0px 1px 0px;
-      background: var(--base);
+      background: var(--layer-03);
       z-index: 3;
       min-height: 44px;
       max-height: 44px;
@@ -219,7 +221,7 @@ $border-radius: 4px;
       font-weight: 500 !important;
 
       .query-manager-header-query-name {
-        color: var(--slate12);
+        color: var(--text-primary);
       }
 
       .ellipsis {
@@ -251,7 +253,6 @@ $border-radius: 4px;
 
   .data-pane {
     flex: 0 0 288px;
-    border: solid var(--slate5);
     border-width: 0px 1px 0px 0px;
     overflow-x: hidden;
     overflow-y: scroll;
@@ -275,10 +276,10 @@ $border-radius: 4px;
 
     .queries-container {
       width: 100%;
-      background-color: var(--base);
+      background-color: var(--layer-01);
+      border-right: 1px solid var(--border-subtle-01);
 
       .queries-header {
-        border: solid var(--slate5);
         border-width: 0px 0px 1px 0px;
         height: 44px;
         --tblr-gutter-x: 0rem;
@@ -287,6 +288,7 @@ $border-radius: 4px;
         justify-content: center;
         padding: 8px 12px;
         gap: 12px;
+        background: var(--layer-03);
 
         .queries-search {
           height: 28px !important;
@@ -325,7 +327,7 @@ $border-radius: 4px;
                 font-weight: 400;
                 line-height: 20px;
                 border: 1px solid var(--slate-07, #D7DBDF);
-                color: var(--slate12);
+                color: var(--text-primary);
                 padding-left: 12px !important;
 
                 &::placeholder {
@@ -506,8 +508,7 @@ $border-radius: 4px;
         }
 
         .code-hinter.codehinter-default-input:focus-within {
-          border: 1px solid var(--indigo9) !important;
-          background-color: #F8FAFF;
+
           border-radius: 0;
         }
 
@@ -572,7 +573,7 @@ $border-radius: 4px;
     font-size: 12px;
     padding: 0 !important;
     height: 32px;
-    color: var(--slate11);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--slate5) !important;
@@ -585,7 +586,7 @@ $border-radius: 4px;
   }
 
   .list-group-item:hover {
-    color: var(--slate12) !important;
+    color: var(--text-primary) !important;
     background-color: var(--slate3) !important;
   }
 
@@ -619,7 +620,7 @@ $border-radius: 4px;
     font-size: 12px;
     padding: 0 !important;
     height: 24px;
-    color: var(--slate11);
+    color: var(--text-secondary);
     border-radius: 6px;
     display: flex;
     align-items: center;
@@ -634,7 +635,7 @@ $border-radius: 4px;
   }
 
   .list-group-item:hover {
-    color: var(--slate12) !important;
+    color: var(--text-primary) !important;
     background-color: var(--slate3) !important;
     border-radius: 6px;
   }
@@ -774,7 +775,7 @@ $border-radius: 4px;
   }
 
   .text-heading {
-    color: var(--slate12);
+    color: var(--text-primary);
     font-weight: 400;
     line-height: 20px;
   }
@@ -897,10 +898,12 @@ $border-radius: 4px;
 
 //query manager
 .query-manager {
-  background-color: var(--base);
+  background-color: var(--layer-01);
 
   .header {
-    background-color: var(--base);
+    background-color: var(--background-strong);
+    ;
+    ;
   }
 
   .query-name-breadcrum {
@@ -929,12 +932,6 @@ $border-radius: 4px;
     }
   }
 
-  .code-hinter.codehinter-default-input {
-    &:hover {
-      background-color: #FBFCFD;
-      border-radius: 6px;
-    }
-  }
 
   .breadcrum {
     width: 15.33px;
@@ -976,6 +973,9 @@ $border-radius: 4px;
   }
 
   .preview-section {
+    border: 1px solid var(--border-subtle-01);
+    border-radius: 6px;
+
     ul {
       margin: 0 !important;
       padding: 0.5em !important;
@@ -990,15 +990,15 @@ $border-radius: 4px;
 
     .tab-pane.active {
       ul {
-        background-color: var(--slate3) !important;
+        background-color: var(--layer-02) !important;
       }
 
     }
 
     .preview-section-header {
-      background-color: var(--slate1);
+      background-color: var(--layer-03);
       border-radius: 6px 6px 0px 0px;
-      border: 1px solid var(--slate5);
+      // border: 1px solid var(--border-subtle-01);
     }
   }
 
@@ -1021,7 +1021,7 @@ $border-radius: 4px;
 
     .preview-data-container {
       min-height: 65px;
-      background-color: var(--slate3);
+      background-color: var(--layer-02);
     }
   }
 
@@ -1039,9 +1039,9 @@ $border-radius: 4px;
       border-radius: 6px !important;
 
       &:focus-within {
-        box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-        border: 1px solid var(--indigo9) !important;
-        background-color: #F8FAFF;
+        // box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+        // border: 1px solid var(--indigo9) !important;
+        // background-color: #F8FAFF;
         position: relative;
         z-index: 1 !important;
       }
@@ -1053,7 +1053,7 @@ $border-radius: 4px;
       .cm-variable,
       .cm-comment {
         font-size: 12px !important;
-        color: var(--slate12) !important;
+        color: var(--text-primary) !important;
       }
     }
   }
@@ -1083,24 +1083,23 @@ $border-radius: 4px;
     }
 
     .form-label {
-      color: var(--slate11) !important;
+      color: var(--text-secondary) !important;
     }
 
     .form-check-label {
-      color: var(--slate12);
+      color: var(--text-primary);
     }
 
     .cm-s-monokai.CodeMirror,
     .query-manager-input-elem>input {
-      color: var(--slate12) !important;
+      color: var(--text-primary) !important;
     }
 
     .codehinter-default-input:focus-within,
     .query-manager-input-elem>input:focus {
-      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-      border: 1px solid var(--indigo9) !important;
-      background-color: #F8FAFF;
-
+      // box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+      // border: 1px solid var(--indigo9) !important;
+      // background-color: #F8FAFF;
     }
 
     .code-hinter.codehinter-default-input,
@@ -1114,7 +1113,7 @@ $border-radius: 4px;
 
         .event-handler-display,
         .event-name-display {
-          color: var(--slate12) !important;
+          color: var(--text-primary) !important;
         }
 
         .text-danger {
@@ -1157,7 +1156,7 @@ $border-radius: 4px;
     }
 
     .tranformation-label {
-      color: var(--slate12);
+      color: var(--text-primary);
     }
 
     .CodeMirror-scroll,
@@ -1173,18 +1172,18 @@ $border-radius: 4px;
       height: 32px;
 
       span {
-        color: var(--slate11);
+        color: var(--text-secondary);
       }
     }
   }
 
   .runjs-editor {
-    background-color: var(--base) !important;
+    background-color: var(--background-strong) !important;
     border: 1px solid var(--slate5);
     border-radius: 6px;
 
     .card-header {
-      background-color: var(--slate1);
+      background-color: var(--layer-03);
       color: var(--slate9);
       border-radius: 6px 6px 0px 0px;
     }
@@ -1192,7 +1191,7 @@ $border-radius: 4px;
     .CodeMirror-scroll,
     .CodeMirror-gutters,
     .CodeMirror {
-      background-color: var(--slate3) !important;
+      background-color: var(--layer-02) !important;
     }
 
     .CodeMirror-sizer {
@@ -1249,10 +1248,10 @@ $border-radius: 4px;
     }
 
     .code-hinter.codehinter-plugins:focus-within {
-      box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
-      border: 1px solid var(--indigo9) !important;
-      border-radius: 6px;
-      background-color: #F8FAFF;
+      // box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
+      // border: 1px solid var(--indigo9) !important;
+      // border-radius: 6px;
+      // background-color: #F8FAFF;
     }
 
     &>.row:first-child {
@@ -1290,7 +1289,7 @@ $border-radius: 4px;
 
   .query-datasource-card-container {
     .query-datasource-card {
-      color: var(--slate12) !important;
+      color: var(--text-primary) !important;
       font-weight: 400;
       font-size: 12px;
       height: 32px;
@@ -1310,7 +1309,7 @@ $border-radius: 4px;
 
 .rest-api-tabpanes-body {
   .CodeMirror.cm-s-monokai.CodeMirror-wrap {
-    background-color: var(--slate3) !important;
+    background-color: var(--layer-02) !important;
   }
 }
 
@@ -1321,7 +1320,7 @@ $border-radius: 4px;
 
   .CodeMirror.cm-s-monokai.CodeMirror-wrap,
   .cm-s-monokai .CodeMirror-gutters {
-    background-color: var(--slate3) !important;
+    background-color: var(--layer-02) !important;
   }
 }
 
@@ -1490,7 +1489,7 @@ $border-radius: 4px;
     border-radius: $border-radius;
     padding: 16px 32px;
     font-size: 12px;
-    color: var(--slate11);
+    color: var(--text-secondary);
 
     .info {
       margin-left: 10px;
@@ -1515,7 +1514,7 @@ $border-radius: 4px;
 
   &:hover {
     background-color: var(--slate7);
-    color: var(--slate11);
+    color: var(--text-secondary);
   }
 }
 
@@ -1576,25 +1575,20 @@ $border-radius: 4px;
 }
 
 .copilot-section-header {
-  background-color: var(--slate2);
-  border: 1px solid var(--slate5);
+  background-color: var(--layer-03);
+  border: 1px solid var(--border-subtle-01);
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
 }
 
-.query-manager-input-elem {
-  input {
-    background-color: var(--base) !important;
-  }
-}
 
 .query-hinter {
-  border: 1px solid var(--slate5);
+  // border: 1px solid var(--slate5);
   border-radius: 0px 0px 6px 6px;
 
   .cm-s-base16-light.CodeMirror,
   .CodeMirror-scroll,
   .CodeMirror-gutters {
-    background-color: var(--slate3) !important;
+    background-color: var(--layer-02) !important;
   }
 }

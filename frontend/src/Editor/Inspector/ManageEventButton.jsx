@@ -11,11 +11,11 @@ const ManageEventButton = ({ eventDisplayName = 'Upon events', actionName, index
   return (
     <div style={{ marginBottom: '8px' }}>
       <div
-        className="manage-event-btn border-0"
+        className="manage-event-btn  border-0"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div data-cy="event-handler-card" className="d-flex">
+        <div data-cy="event-handler-card tj-list-item" className="d-flex">
           <span className="d-flex align-items-center px-2">
             <SortableList.DragHandle show />
           </span>

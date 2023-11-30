@@ -69,7 +69,7 @@ export default function AppCard({
   }
 
   return (
-    <div className="card homepage-app-card animation-fade">
+    <div className="homepage-app-card animation-fade">
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
@@ -129,7 +129,7 @@ export default function AppCard({
                   })}
                 >
                   <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">
-                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
+                    <SolidIcon name="editrectangle" width="14" fill={'#FDFDFE'} />
                     &nbsp;{t('globals.edit', 'Edit')}
                   </button>
                 </Link>

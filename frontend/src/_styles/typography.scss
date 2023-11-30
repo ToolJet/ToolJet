@@ -2,7 +2,7 @@
 .tj-text {
     font-family: 'IBM Plex Sans';
     font-style: normal;
-    color: var(--slate12) !important;
+    color: var(--text-primary) !important;
     margin: 0;
     padding: 0;
 }
@@ -14,6 +14,7 @@
     letter-spacing: -0.02em;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
 }
 
 .tj-header-sm {
@@ -23,6 +24,7 @@
     letter-spacing: -0.02em;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
 }
 
 .tj-header-h1 {
@@ -30,6 +32,8 @@
     font-size: 40px;
     line-height: 48px;
     letter-spacing: -0.02em;
+    color: var(--text-primary);
+
 }
 
 .tj-header-h2 {
@@ -39,6 +43,8 @@
     letter-spacing: -0.02em;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
+
 }
 
 .tj-header-h3 {
@@ -46,6 +52,8 @@
     font-size: 32px;
     line-height: 40px;
     letter-spacing: -0.02em;
+    color: var(--text-primary);
+
 }
 
 .tj-header-h4 {
@@ -55,6 +63,8 @@
     letter-spacing: -0.02em;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
+
 }
 
 .tj-header-h5 {
@@ -64,6 +74,8 @@
     letter-spacing: -0.02em;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
+
 }
 
 .tj-header-h6 {
@@ -73,11 +85,16 @@
     letter-spacing: -0.02em;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
+
 }
-.tj-header-h7{
+
+.tj-header-h7 {
     font-weight: 500;
     font-size: 18px;
     line-height: 28px;
+    color: var(--text-primary);
+
 
 }
 
@@ -89,6 +106,8 @@
     line-height: 28px;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
+
 }
 
 .tj-text-md {
@@ -97,6 +116,8 @@
     line-height: 24px;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
+
 }
 
 .tj-text-sm {
@@ -105,6 +126,8 @@
     line-height: 20px;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
+
 }
 
 .tj-text-xsm {
@@ -113,6 +136,8 @@
     line-height: 20px;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
+
 }
 
 .tj-text-xxsm {
@@ -121,4 +146,6 @@
     line-height: 16px;
     margin: 0;
     padding: 0;
+    color: var(--text-primary);
+
 }

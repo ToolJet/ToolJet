@@ -38,6 +38,7 @@
     top: 40px;
     width: 20rem;
     max-width: 30rem;
+    background-color: var(--background-strong) !important;
   }
 
   .open-left {
@@ -65,11 +66,14 @@
   .comment-author {
     font-size: 14px;
   }
+
   .comment-time {
     font-size: 12px;
   }
+
   .comment-body {
     font-size: 14px;
+    scroll-padding-block-start: var(--background-strong) !important;
   }
 }
 
@@ -91,18 +95,20 @@
 .comment-preview-bubble-border {
   border: 2.5px solid #FCAA0D;
 }
-.theme-dark{
-  .comment-action-component{
-    .comment-option{
-      svg{
-        path{
+
+.theme-dark {
+  .comment-action-component {
+    .comment-option {
+      svg {
+        path {
           stroke: white;
         }
       }
     }
-    .card.popover.comment-actions-popover.show{
-      border-color: #ffffff17; 
+
+    .card.popover.comment-actions-popover.show {
+      border-color: #ffffff17;
     }
-  
+
   }
 }

@@ -5,7 +5,7 @@
     line-height: 20px;
     display: flex;
     align-items: center;
-    color: var(--slate12);
+    color: var(--text-primary);
     min-height: 32px;
     cursor: pointer;
     padding: 6px 8px;
@@ -19,17 +19,17 @@
 
 
     &:focus-visible {
-        box-shadow: 0px 0px 0px 4px #DFE3E6;
+        // box-shadow: 0px 0px 0px 4px #DFE3E6;
         outline: none;
     }
 
     &:hover {
-        background: var(--slate4);
+        background: var(--layer-02-hover);
         border-radius: 6px;
     }
 
     &:active {
-        background: var(--indigo4);
+        background: var(--layer-02-selected);
         box-shadow: none;
 
     }
@@ -37,7 +37,7 @@
 }
 
 .tj-list-item-disabled {
-    color: var(--slate8);
+    color: var(--text-disabled);
 }
 
 .tj-list-item-icon {
@@ -57,5 +57,5 @@
 }
 
 .tj-list-item-selected {
-    background-color: var(--slate5);;
+    background-color: var(--layer-02-selected);
 }

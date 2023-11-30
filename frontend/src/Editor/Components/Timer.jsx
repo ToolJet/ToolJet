@@ -146,7 +146,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
 
   return (
     <div
-      className="card"
+      className="card tj-widget-base"
       style={{ height, display: styles.visibility ? '' : 'none', boxShadow: styles.boxShadow }}
       data-cy={dataCy}
     >

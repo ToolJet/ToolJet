@@ -62,7 +62,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
   return (
     <>
       <div
-        className={`row query-row pe-2 ${darkMode && 'dark-theme'}` + (isSeletedQuery ? ' query-row-selected' : '')}
+        className={
+          `row query-row tj-list-item pe-2 ${darkMode && 'dark-theme'}` +
+          (isSeletedQuery ? ' tj-list-item-selected' : '')
+        }
         key={dataQuery.id}
         onClick={() => {
           if (selectedQuery?.id === dataQuery?.id) return;

@@ -44,17 +44,17 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     return (
       <Popover
         id="popover-basic"
-        style={{ width: '460px', maxWidth: '460px' }}
+        style={{ width: '460px', maxWidth: '460px', border: 'none' }}
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow icon-widget-popover`}
       >
-        <Popover.Header>
+        <Popover.Header style={{ backgroundColor: darkMode && '#2B2F31' }}>
           <SearchBox onSubmit={searchIcon} width="100%" />
         </Popover.Header>
         <Popover.Body>
           <div className="row">
             {
               <VirtuosoGrid
-                style={{ height: 300 }}
+                style={{ height: 300, backgroundColor: darkMode && '#2B2F31' }}
                 totalCount={filteredIcons.length}
                 listClassName="icon-list-wrapper"
                 itemClassName="icon-list"
@@ -108,7 +108,11 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                 rootClose={true}
                 overlay={eventPopover()}
               >
-                <div className="row p-2" role="button">
+                <div
+                  className="row p-2"
+                  style={{ borderRadius: '4px', backgroundColor: 'var(--layer-02)' }}
+                  role="button"
+                >
                   <div className="col-auto">
                     <IconElement
                       color={`${darkMode ? '#fff' : '#000'}`}

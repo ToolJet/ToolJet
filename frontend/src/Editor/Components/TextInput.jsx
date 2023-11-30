@@ -23,8 +23,8 @@ export const TextInput = function TextInput({
     height,
     borderRadius: `${styles.borderRadius}px`,
     color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
-    borderColor: styles.borderColor,
-    backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
+    borderColor: darkMode && ['#FBFCFD'].includes(styles.borderColor) ? '#3A3F42' : styles.borderColor,
+    backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? 'var(--layer-01)' : styles.backgroundColor,
     boxShadow: styles.boxShadow,
   };
 
@@ -103,7 +103,7 @@ export const TextInput = function TextInput({
           fireEvent('onFocus');
         }}
         type="text"
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+        className={`form-control  ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
           darkMode && 'dark-theme-placeholder'
         }`}
         placeholder={properties.placeholder}

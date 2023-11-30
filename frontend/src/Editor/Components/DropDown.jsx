@@ -158,7 +158,7 @@ export const DropDown = function DropDown({
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
-      background: darkMode ? 'rgb(31,40,55)' : 'white',
+      background: darkMode ? '#2B2F31' : 'white',
       minHeight: height,
       height: height,
       boxShadow: state.isFocused ? boxShadow : boxShadow,
@@ -193,7 +193,7 @@ export const DropDown = function DropDown({
       const styles = darkMode
         ? {
             color: state.isDisabled ? '#88909698' : 'white',
-            backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
+            backgroundColor: state.value === currentValue ? '#3650AF' : '#2B2F31',
             ':hover': {
               backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#1F2E64' : '#323C4B',
             },
@@ -221,7 +221,7 @@ export const DropDown = function DropDown({
     },
     menu: (provided, _state) => ({
       ...provided,
-      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+      backgroundColor: darkMode ? '#2B2F31' : 'white',
     }),
   };
   return (

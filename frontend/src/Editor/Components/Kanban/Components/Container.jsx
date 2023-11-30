@@ -34,11 +34,11 @@ export const Container = ({ children, id, disabled, ...props }) => {
         ...style,
         '--columns': 1,
       }}
-      className={cx('kanban-container', 'scrollable', darkMode && 'dark')}
+      className={cx('kanban-container', 'scrollable')}
       onMouseDown={(e) => e.stopPropagation()}
     >
       {label ? (
-        <div className={cx('header', darkMode && 'dark')}>
+        <div className={cx('header')} style={{ backgroundColor: 'var(--layer-01)' }}>
           <span style={colAccentColor} className="container-name">
             {label}
           </span>

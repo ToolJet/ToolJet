@@ -236,7 +236,7 @@ export const Folders = function Folders({
               {canCreateFolder && (
                 <>
                   <div
-                    className="folder-create-btn"
+                    className="folder-create-btn tj-tertiary-btn"
                     onClick={() => {
                       setNewFolderName('');
                       setShowForm(true);
@@ -246,7 +246,7 @@ export const Folders = function Folders({
                     <SolidIcon name="plus" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
                   </div>
                   <div
-                    className="folder-create-btn"
+                    className="folder-create-btn tj-tertiary-btn"
                     onClick={() => {
                       setShowInput(true);
                     }}
@@ -273,14 +273,15 @@ export const Folders = function Folders({
       {!isLoading && (
         <div data-testid="applicationFoldersList" className={cx(`mb-1 all-apps-link-cotainer`)}>
           <a
-            className={cx(
-              `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
-              {
-                'bg-light-indigo': _.isEmpty(activeFolder) && !darkMode,
-                'bg-dark-indigo': _.isEmpty(activeFolder) && darkMode,
-              }
-            )}
-            style={{ height: '32px' }}
+            className={cx(`tj-list-item border-0  d-flex align-items-center tj-text-xsm`)}
+            style={{
+              height: '32px',
+              background: _.isEmpty(activeFolder) && 'var(--layer-02)',
+              padding: '6px 8px',
+              textDecoration: 'none',
+              color: 'var(--text-primary)',
+              linkStyle: 'none',
+            }}
             onClick={() => handleFolderChange({})}
             data-cy="all-applications-link"
           >
@@ -295,13 +296,12 @@ export const Folders = function Folders({
         filteredData.map((folder, index) => (
           <a
             key={index}
-            className={cx(
-              `folder-list-group-item rounded-2 list-group-item h-4 mb-1 list-group-item-action no-border d-flex align-items-center`,
-              {
-                'bg-light-indigo': activeFolder.id === folder.id && !darkMode,
-                'bg-dark-indigo': activeFolder.id === folder.id && darkMode,
-              }
-            )}
+            className={cx(`tj-list-item rounded-2  h-4 mb-1  no-border d-flex align-items-center`, {
+              'tj-list-item-selected': activeFolder.id === folder.id,
+            })}
+            style={{
+              textDecoration: 'none',
+            }}
             onClick={() => handleFolderChange(folder)}
             data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
           >

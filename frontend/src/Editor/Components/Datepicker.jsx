@@ -90,7 +90,7 @@ export const Datepicker = function Datepicker({
       }}
     >
       <DatePickerComponent
-        className={`input-field form-control ${
+        className={`input-field form-control tj-widget-base ${
           !isValid && showValidationError ? 'is-invalid' : ''
         } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
         selected={date}

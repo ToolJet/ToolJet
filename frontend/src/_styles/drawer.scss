@@ -3,7 +3,9 @@
 }
 
 .drawer {
-  background: var(--base);
+  background: var(--background-strong);
+
+
   width: 534px;
   height: 100%;
   overflow: auto;
@@ -12,7 +14,10 @@
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   transition: transform var(--transition-speed) ease;
   z-index: 1000;
-  background: var(--base);
+
+  background: var(--background-strong);
+
+
 
   &.left {
     top: 0;

@@ -1,7 +1,7 @@
 // for selects and dropdowns across app dashboard
 .react-select__control {
-    background-color: var(--base) !important;
-    border: 1px solid var(--slate7) !important;
+    background-color: var(--input-box-fill-default) !important;
+    border: 1px solid var(--input-box-border-default) !important;
 
     &:active {
         border: 1px solid var(--indigo9);
@@ -12,32 +12,32 @@
     z-index: 100 !important;
 
     .react-select__option {
-        color: var(--slate12);
+        color: var(--text-primary);
         z-index: 100;
 
     }
 }
 
 .react-select__single-value {
-    color: var(--slate12) !important;
+    color: var(--text-primary) !important;
 }
 
 .react-select__menu {
-    background-color: var(--base) !important;
-    border: 1px solid var(--slate3) !important;
-    box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
+    background-color: var(--layer-01) !important;
+    border: 1px solid var(--border-subtle-01) !important;
+    box-shadow: 0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10);
     margin: 0px !important;
     z-index: 100;
 
     .react-select__menu-list {
-        background-color: var(--base) !important;
+        background-color: var(--layer-01) !important;
         overflow-y: auto;
 
         .react-select__option {
-            background-color: var(--base) !important;
+            background-color: var(--layer-01) !important;
 
             &:hover {
-                background-color: var(--slate3) !important;
+                background-color: var(--border-subtle-01) !important;
             }
         }
     }
@@ -48,7 +48,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-top: 1px solid var(--slate5);
+    border-top: 1px solid var(--border-subtle-01);
 }
 
 .tj-org-select {
@@ -56,13 +56,14 @@
         width: 262px;
         height: 32px;
         border: none !important;
+        background: none !important;
 
         &:hover {
-            background: var(--slate2) !important;
+            background: var(--layer-02-hover) !important;
         }
 
         &:active {
-            background: var(--slate3) !important;
+            background: var(--layer-02-selected) !important;
         }
     }
 
@@ -84,7 +85,7 @@
 .select-column-field,
 .records-dropdown-field {
     .react-select__control {
-        border: 1px solid var(--slate7) !important;
+        border: 1px solid var(--input-box-border-default) !important;
     }
 }
 
@@ -98,6 +99,7 @@
 .css-nw08ma-menu {
     box-shadow: none !important;
 }
-.react-select__menu-portal{
+
+.react-select__menu-portal {
     z-index: 9999 !important;
 }

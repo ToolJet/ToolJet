@@ -1088,7 +1088,7 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
           type="text"
           value={searchText}
           onChange={handleChange}
-          className="form-control"
+          className="form-control tj-input-element"
           placeholder={t('globals.search', 'Search')}
           autoFocus
           data-cy={dataCy}

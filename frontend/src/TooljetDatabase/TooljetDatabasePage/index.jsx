@@ -169,7 +169,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
         {!isEmpty(selectedTable) && (
           <>
             <div className="database-table-header-wrapper">
-              <div className="card border-0">
+              <div className="card">
                 <div className="card-body  tj-db-operations-header">
                   <div className="row align-items-center">
                     <div className="col-8 align-items-center p-3">

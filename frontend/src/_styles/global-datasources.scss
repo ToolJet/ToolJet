@@ -4,9 +4,12 @@
 .global-datasources-sidebar {
     height: calc(100vh - 64px);
     max-width: 288px;
-    background: var(--base);
+    background: var(--background-strong);
+
     display: grid;
     grid-template-rows: auto 1fr auto;
+    border-right: 1px solid var(--border-subtle-01);
+
 
     .add-datasource-btn {
         height: 40px;
@@ -27,26 +30,7 @@
         padding: 6px 15px;
         width: 248px;
         height: 32px;
-        margin-bottom: 10px;
-
-        &:focus-visible {
-            box-shadow: 0px 0px 0px 4px #dfe3e6;
-            outline: none;
-        }
-
-        &:hover {
-            background: var(--slate4);
-            border-radius: 6px;
-
-            .ds-delete-btn {
-                visibility: visible;
-            }
-        }
-
-        &:active {
-            background: var(--indigo4);
-            box-shadow: none;
-        }
+        // margin-bottom: 10px;
 
         .ds-delete-btn {
             display: block;
@@ -57,7 +41,7 @@
     }
 
     .datasources-list-item {
-        background-color: var(--indigo3);
+        background-color: var(--layer-02-selected);
     }
 }
 
@@ -77,7 +61,7 @@
     }
 
     .heading {
-        color: var(--slate12);
+        color: var(--text-primary);
         font-weight: 600;
     }
 
@@ -93,7 +77,6 @@
 
 .datasource-modal-container {
     position: relative;
-    // background: var(--slate2);
 
     .modal-header {
         background-color: var(--slate3) !important;
@@ -101,12 +84,14 @@
 
     .modal {
         position: absolute;
-        background: var(--slate2);
+        // background: var(--background-strong);
+        background-color: var(--layer-01) !important;
+
     }
 
     .modal-content {
-        border: 1px solid var(--slate5);
-        background-color: var(--base) !important;
+        border: 1px solid var(--border-subtle-01);
+        background-color: var(--layer-01) !important;
 
         .input-icon {
             &:hover {
@@ -129,6 +114,7 @@
 
 .datasource-inner-sidebar-wrap {
     height: 100%;
+
     .datasources-search {
         width: 240px;
         margin: 0 auto;
@@ -139,7 +125,8 @@
         .datasources-search-btn {
             width: 28px;
             height: 28px;
-            background: var(--base);
+            background: var(--background-strong);
+
             border: 1px solid;
             border-color: var(--slate7);
             cursor: pointer;
@@ -165,6 +152,7 @@
 .datasource-list-container {
     overflow-y: auto;
     max-height: calc(100vh - 64px);
+
     .datasource-list {
         width: 976px;
         margin: 0 auto;
@@ -183,6 +171,13 @@
                 background: transparent;
             }
         }
+    }
+
+    .row-deck {
+        display: flex;
+        flex-direction: row;
+        column-gap: 7px;
+        row-gap: 7px;
     }
 }
 
@@ -203,8 +198,41 @@
 }
 
 .datasource-card {
-    height: 30px;
-    height: 122px !important;
+    background-color: var(--layer-01);
+    border: 1px solid var(--border-subtle-01) !important;
+    height: 180px !important;
+    width: 156px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+
+
+    .card {
+        background-color: var(--layer-01);
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0px !important;
+
+
+
+
+        .card-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0px !important;
+
+
+            center {
+                width: 156px !important;
+
+            }
+        }
+    }
+
+
+
     button {
         display: none;
         padding: 5px 10px;
@@ -220,7 +248,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
+
         br:first-of-type {
             display: none !important;
         }

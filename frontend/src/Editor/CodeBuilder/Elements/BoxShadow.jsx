@@ -170,7 +170,7 @@ export const BoxShadow = ({ value, onChange, cyLabel }) => {
             overlay={eventPopover()}
           >
             <div
-              className="row mx-0 color-picker-input d-flex align-items-center"
+              className="row mx-0 color-picker-input d-flex tj-input-element align-items-center"
               style={outerStyles}
               data-cy={`${cyLabel}-picker`}
             >

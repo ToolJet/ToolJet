@@ -209,7 +209,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
           data-tooltip-content="Show sort/filter"
           data-cy={`query-filter-button`}
         >
-          <Filter width="13" height="13" fill="var(--slate12)" />
+          <Filter width="13" height="13" fill="var(--button-tirtiary-icon)" />
           {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
         </button>
         <Tooltip id="tooltip-for-open-filter" className="tooltip" />

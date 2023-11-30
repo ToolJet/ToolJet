@@ -129,7 +129,7 @@ export const Tabs = function Tabs({
   return (
     <div
       data-disabled={parsedDisabledState}
-      className="jet-tabs card"
+      className="jet-tabs card tj-widget-base"
       style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
       data-cy={dataCy}
     >
@@ -139,7 +139,7 @@ export const Tabs = function Tabs({
         style={{
           zIndex: 1,
           display: parsedHideTabs && 'none',
-          backgroundColor: darkMode ? '#324156' : '#fff',
+          backgroundColor: darkMode ? 'var(--layer-01)' : '#fff',
           margin: '-1px',
         }}
       >

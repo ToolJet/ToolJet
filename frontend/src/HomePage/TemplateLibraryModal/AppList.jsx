@@ -112,7 +112,7 @@ const SearchBoxContainer = ({ onChange, queryString }) => {
           type="text"
           value={searchText}
           onChange={handleChange}
-          className="form-control"
+          className="form-control tj-input-element"
           placeholder={t('globals.search', 'Search')}
         />
       </div>

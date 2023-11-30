@@ -90,7 +90,7 @@ export const ApiKeyContainer = ({
                 request. Join our waitlist to be notified when API keys become available, or sign up for beta access to
                 get started today.
               </div>
-              <div class="text-muted mt-2">
+              <div class="text-secondary mt-2">
                 <strong style={{ fontWeight: 700, color: '#df4759' }}>Please note : </strong>
                 Copilot functionality is dependent on your workspace admin completing the setup process.
               </div>

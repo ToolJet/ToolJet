@@ -24,7 +24,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
     width: width - 4,
     height,
     display: visibility ? '' : 'none',
-    background: darkMode ? '#1f2936' : 'white',
+    backgroundColor: 'var(--layer-01)',
     boxShadow,
   };
   const dataString = data ?? [];

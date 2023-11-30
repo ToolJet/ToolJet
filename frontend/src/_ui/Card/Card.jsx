@@ -25,7 +25,7 @@ const Card = ({
   };
 
   return (
-    <div style={{ height: '112px', width: '164px' }} className={`col-md-2  mb-4 ${className}`}>
+    <div style={{ height: '180px', width: '156px' }} className={`${className}`}>
       <div
         className="card"
         role="button"

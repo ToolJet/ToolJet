@@ -72,7 +72,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
             <input
               value={filterInputValue}
               type="text"
-              className="form-control css-zz6spl-container"
+              className="tj-input-element css-zz6spl-container"
               data-cy="value-input-field"
               placeholder="Value"
               onChange={(event) => {

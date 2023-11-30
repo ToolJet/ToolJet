@@ -12,8 +12,8 @@ export const SegregatedList = ({ dataSources, activeDatasourceList, handleOnSele
       {dataSources.slice(1, 5).map((dataSource, index) => (
         <div
           key={index}
-          className={cx('mx-3 rounded-3 datasources-list', {
-            'datasources-list-item': activeDatasourceList === dataSource.key,
+          className={cx('mx-3 rounded-3 tj-list-item datasources-list', {
+            'tj-list-item-selected': activeDatasourceList === dataSource.key,
           })}
         >
           <div

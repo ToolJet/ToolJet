@@ -58,7 +58,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         fill={
                           router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
                             ? '#3E63DD'
-                            : 'var(--slate8)'
+                            : 'var(--button-tirtiary-icon)'
                         }
                       />
                     </Link>
@@ -80,7 +80,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                           fill={
                             router.pathname === getPrivateRoute('database') && `current-seleted-route`
                               ? '#3E63DD'
-                              : 'var(--slate8)'
+                              : 'var(--button-tirtiary-icon)'
                           }
                         />
                       </Link>
@@ -102,7 +102,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       >
                         <SolidIcon
                           name="datasource"
-                          fill={router.pathname === getPrivateRoute('data_sources') ? '#3E63DD' : 'var(--slate8)'}
+                          fill={
+                            router.pathname === getPrivateRoute('data_sources')
+                              ? '#3E63DD'
+                              : 'var(--button-tirtiary-icon)'
+                          }
                         />
                       </Link>
                     </ToolTip>
@@ -121,7 +125,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       >
                         <SolidIcon
                           name="marketplace"
-                          fill={router.pathname === '/integrations' ? '#3E63DD' : 'var(--slate8)'}
+                          fill={router.pathname === '/integrations' ? '#3E63DD' : 'var(--button-tirtiary-icon)'}
                         />
                       </Link>
                     </ToolTip>
@@ -139,7 +143,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     >
                       <SolidIcon
                         name="settings"
-                        fill={router.pathname === getPrivateRoute('workspace_settings') ? '#3E63DD' : 'var(--slate8)'}
+                        fill={
+                          router.pathname === getPrivateRoute('workspace_settings')
+                            ? '#3E63DD'
+                            : 'var(--button-tirtiary-icon)'
+                        }
                         width={28}
                       />
                     </Link>
@@ -154,7 +162,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       onClick={() => switchDarkMode(!darkMode)}
                       data-cy="mode-switch-button"
                     >
-                      <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill="var(--slate8)" />
+                      <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill="var(--button-tirtiary-icon)" />
                     </div>
                   </ToolTip>
 

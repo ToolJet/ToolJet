@@ -252,7 +252,7 @@ export const GlobalSettings = ({
                       style={{ width: '103px', borderRight: 'none' }}
                       data-cy="maximum-canvas-width-input-field"
                       type="text"
-                      className={`form-control`}
+                      className={`form-control `}
                       placeholder={'0'}
                       onChange={(e) => {
                         const width = e.target.value;
@@ -315,7 +315,7 @@ export const GlobalSettings = ({
                   )}
                   {forceCodeBox && (
                     <div
-                      className="row mx-0 color-picker-input d-flex"
+                      className="row mx-0 color-picker-input d-flex tj-input-element "
                       onClick={() => setShowPicker(true)}
                       style={outerStyles}
                     >

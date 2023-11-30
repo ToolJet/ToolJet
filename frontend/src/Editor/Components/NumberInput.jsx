@@ -60,9 +60,9 @@ export const NumberInput = function NumberInput({
     height,
     display: visibility ? '' : 'none',
     borderRadius: `${borderRadius}px`,
-    borderColor,
+    borderColor: darkMode && ['#F1F3F5'].includes(borderColor) ? '#3A3F42' : borderColor,
     color: textColor,
-    backgroundColor: darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#000000' : backgroundColor,
+    backgroundColor: darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#2B2F31' : backgroundColor,
     boxShadow,
   };
 

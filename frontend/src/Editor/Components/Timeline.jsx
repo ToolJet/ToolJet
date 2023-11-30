@@ -9,7 +9,7 @@ export const Timeline = function Timeline({ height, darkMode, properties, styles
 
   return (
     <div
-      className="card"
+      className="card tj-widget-base"
       style={{ display: visibility ? '' : 'none', height, overflow: 'auto', overflowWrap: 'normal', boxShadow }}
       data-cy={dataCy}
     >

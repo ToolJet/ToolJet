@@ -95,10 +95,10 @@ $btn-dark-color: #FFFFFF;
 }
 
 .leftsidebar-panel-header {
-  background-color: var(--slate3);
+  background-color: var(--layer-03);
   padding: 12px 16px;
   min-height: 52px;
-  border-bottom: 1px solid var(--slate5);
+  border-bottom: 1px solid var(--border-subtle-02);
 
 
   .panel-header-container {
@@ -125,7 +125,7 @@ $btn-dark-color: #FFFFFF;
 .page-selector-panel-body {
   height: 100%;
   padding: 12px 16px;
-  background-color: var(--base);
+  background-color: var(--layer-01);
 
   .page-handler {
     height: 32px !important;
@@ -134,7 +134,8 @@ $btn-dark-color: #FFFFFF;
     font-weight: 500;
 
     .card {
-      background: var(--base);
+      color: var(--text-primary);
+
       padding: 8px;
     }
 
@@ -143,24 +144,26 @@ $btn-dark-color: #FFFFFF;
       height: 32px;
 
       .page-name {
-        color: var(--slate12);
+        color: var(--text-primary);
         display: flex;
         align-items: center;
       }
     }
 
     .card.active {
-      background: var(--slate5);
+      background: var(--layer-02-selected);
       gap: 0px;
     }
 
     .card.non-active-page {
       border: none;
       box-shadow: none;
+      background: none;
+
     }
 
     .card:hover {
-      background: var(--slate4);
+      background: var(--layer-02-hover);
     }
 
     .card:focus {
@@ -198,12 +201,12 @@ $btn-dark-color: #FFFFFF;
   border-radius: 6px;
   border: 1px solid var(--slate3, #F1F3F5);
   box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08);
-  background-color: var(--base);
+  background-color: var(--background-strong);
 
   .popover-body {
     padding: 16px 6px 0px 6px;
     height: 100%;
-    color: var(--slate12);
+    color: var(--text-primary);
 
 
     .card-body {
@@ -274,11 +277,11 @@ $btn-dark-color: #FFFFFF;
 
 
   input {
-    background-color: var(--base);
-    color: var(--slate12);
+    background-color: var(--background-strong);
+    color: var(--text-primary);
 
     &:focus {
-      background-color: var(--base);
+      background-color: var(--background-strong);
     }
   }
 
@@ -368,10 +371,10 @@ $btn-dark-color: #FFFFFF;
 }
 
 #page-handler-menu.global-settings {
-  background-color: var(--base);
+  background-color: var(--background-strong);
 
   .popover-body {
-    color: var(--slate12);
+    color: var(--text-primary);
   }
 
   border: none;

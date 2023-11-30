@@ -26,7 +26,7 @@ export const TextArea = function TextArea({ height, properties, styles, setExpos
         setExposedVariable('value', e.target.value);
       }}
       type="text"
-      className="form-control textarea"
+      className="form-control textarea tj-widget-base"
       placeholder={properties.placeholder}
       style={{
         height,
