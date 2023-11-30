@@ -17,14 +17,14 @@ export class TextInputMaxHeight1701335703893 implements MigrationInterface {
       console.log('properties---', component);
 
       // Check if properties.label is not present, then assign it as null
-      if (properties.label === undefined) {
-        properties.label = null;
+      if (properties.label == undefined || null) {
+        properties.label = '';
       }
-      throw new Error('xxx');
 
       // Update the component in the database with the modified properties
       await entityManager.update(Component, component.id, { properties });
     }
+    console.log('properties---', components);
   }
 
   //  implemented in this example
