@@ -1069,6 +1069,7 @@ export const widgets = [
         validation: {
           schema: {
             type: 'string',
+            disallowedTypes: 'function',
           },
         },
       },

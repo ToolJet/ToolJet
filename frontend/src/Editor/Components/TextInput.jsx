@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { validateTypeAgainstDefinition } from '../component-properties-validation';
 
 export const TextInput = function TextInput({
   height,
@@ -12,9 +13,9 @@ export const TextInput = function TextInput({
   dataCy,
 }) {
   const textInputRef = useRef();
-
+  const isDisallowed = validateTypeAgainstDefinition(component.properties.value.validation.schema, properties.value);
   const [disable, setDisable] = useState(styles.disabledState);
-  const [value, setValue] = useState(properties.value);
+  const [value, setValue] = useState(!isDisallowed ? properties.value : '');
   const [visibility, setVisibility] = useState(styles.visibility);
   const { isValid, validationError } = validate(value);
   const [showValidationError, setShowValidationError] = useState(false);
@@ -44,8 +45,8 @@ export const TextInput = function TextInput({
   }, [isValid]);
 
   useEffect(() => {
-    setValue(properties.value);
-    setExposedVariable('value', properties.value);
+    setValue(!isDisallowed ? properties.value : '');
+    setExposedVariable('value', !isDisallowed ? properties.value : '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
