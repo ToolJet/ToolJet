@@ -63,7 +63,7 @@ export const PropertiesTabElements = ({
   const createNewOption = (newOptionIndex) => {
     const columns = props.component.component.definition.properties.columns;
     const column = columns.value[index];
-    const options = column.options;
+    const options = column.options || [];
     options.push({ name: 'one', value: '1' });
     column.options = options;
     const newColumns = columns.value;
@@ -354,8 +354,10 @@ export const PropertiesTabElements = ({
           />
         </div>
       )}
-      {column.columnType === 'dropdown' && <Accordion items={items} />}
-      {(column.columnType === 'dropdown' ||
+      {column.columnType === 'dropdown' && (!column.hasOwnProperty('values') || !column.hasOwnProperty('values')) && (
+        <Accordion items={items} />
+      )}
+      {((column.columnType === 'dropdown' && (column.hasOwnProperty('values') || column.hasOwnProperty('values'))) ||
         column.columnType === 'multiselect' ||
         column.columnType === 'badge' ||
         column.columnType === 'badges' ||
