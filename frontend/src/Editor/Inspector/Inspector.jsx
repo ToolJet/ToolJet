@@ -93,7 +93,7 @@ export const Inspector = ({
   });
   useHotkeys('escape', () => switchSidebarTab(2));
 
-  const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
+  const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component.component === comp.component));
 
   const isMounted = useMounted();
 
