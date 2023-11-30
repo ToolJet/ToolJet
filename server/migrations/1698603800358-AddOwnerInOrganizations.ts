@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from 'typeorm';
 
 export class AddOwnerInOrganization1698603800358 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -8,6 +8,15 @@ export class AddOwnerInOrganization1698603800358 implements MigrationInterface {
         name: 'owner_id',
         type: 'uuid',
         isNullable: true,
+      })
+    );
+
+    await queryRunner.createForeignKey(
+      'organizations',
+      new TableForeignKey({
+        columnNames: ['owner_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'users',
       })
     );
   }
