@@ -190,10 +190,7 @@ export class OrganizationsService {
   }
 
   async updateOwner(id: string, ownerId: string, manager?: EntityManager): Promise<void> {
-    await dbTransactionWrap(
-      (manager: EntityManager) => manager.update(Organization, { id }, { ownerId: ownerId }),
-      manager
-    );
+    await dbTransactionWrap((manager: EntityManager) => manager.update(Organization, { id }, { ownerId }), manager);
   }
 
   async fetchOrganization(slug: string): Promise<Organization> {

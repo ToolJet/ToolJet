@@ -5,14 +5,14 @@ export class AddOwnerInOrganization1698603800358 implements MigrationInterface {
     await queryRunner.addColumn(
       'organizations',
       new TableColumn({
-        name: 'ownerId',
-        type: 'varchar',
+        name: 'owner_id',
+        type: 'uuid',
         isNullable: true,
       })
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropColumn('organizations', 'ownerId');
+    await queryRunner.dropColumn('organizations', 'owner_id');
   }
 }

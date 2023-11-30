@@ -21,7 +21,7 @@ export class FillOwnerInOrganizations1698847997735 implements MigrationInterface
         )
         
         UPDATE organizations org 
-        SET "ownerId" = orgs_cte.new_owner
+        SET owner_id = orgs_cte.new_owner
         FROM orgs_cte
         WHERE org.id = orgs_cte.org_id
         RETURNING org.created_at

@@ -35,7 +35,7 @@ export class Organization extends BaseEntity {
   @Column({ name: 'inherit_sso' })
   inheritSSO: boolean;
 
-  @Column({ name: 'ownerId' })
+  @Column({ name: 'owner_id' })
   ownerId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
