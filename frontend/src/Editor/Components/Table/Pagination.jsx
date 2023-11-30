@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 
 export const Pagination = function Pagination({
   onPageIndexChanged,
@@ -16,6 +17,7 @@ export const Pagination = function Pagination({
   // eslint-disable-next-line no-unused-vars
   darkMode,
   tableWidth,
+  loadingState,
 }) {
   const [pageCount, setPageCount] = useState(autoPageCount);
 
@@ -48,6 +50,16 @@ export const Pagination = function Pagination({
 
   function goToPreviousPage() {
     gotoPage(pageIndex - 1);
+  }
+
+  if (loadingState) {
+    return (
+      <div className="w-100">
+        <SkeletonTheme baseColor="var(--slate3)" width="100%">
+          <Skeleton count={1} width={'100%'} height={28} className="mb-1" />
+        </SkeletonTheme>
+      </div>
+    );
   }
 
   return (
