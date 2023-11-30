@@ -137,13 +137,13 @@ export const TextInput = function TextInput({
                   <label
                     style={{
                       color: darkMode && color == '#11181C' ? '#fff' : color,
-                      width: label.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
+                      width: label?.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
                       maxWidth: auto && alignment == 'side' ? '70%' : '100%',
                       overflowWrap: 'break-word',
                       marginRight:
-                        label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
+                        label?.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
                       marginLeft:
-                        label.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
+                        label?.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
                     }}
                   >
                     {label}
@@ -230,11 +230,11 @@ export const TextInput = function TextInput({
                 <label
                   style={{
                     color: darkMode && color == '#11181C' ? '#fff' : color,
-                    width: label.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
+                    width: label?.length == 0 ? '0%' : auto ? 'auto' : alignment == 'side' ? `${width}%` : '100%',
                     maxWidth: auto && alignment == 'side' ? '70%' : '100%',
                     overflowWrap: 'break-word',
-                    marginRight: label.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
-                    marginLeft: label.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
+                    marginRight: label?.length > 0 && direction == 'alignleftinspector' && alignment == 'side' && '9px',
+                    marginLeft: label?.length > 0 && direction == 'alignrightinspector' && alignment == 'side' && '9px',
                   }}
                 >
                   {label}
