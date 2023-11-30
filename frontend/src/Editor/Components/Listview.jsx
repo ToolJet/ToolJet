@@ -154,7 +154,7 @@ export const Listview = function Listview({
           style={{ border: '1px solid', borderColor, margin: '1px', borderTop: 0 }}
         >
           <div style={{ backgroundColor }}>
-            {data?.length && (
+            {data?.length > 0 ? (
               <Pagination
                 darkMode={darkMode}
                 currentPage={currentPage}
@@ -162,6 +162,8 @@ export const Listview = function Listview({
                 count={data?.length}
                 itemsPerPage={rowPerPageValue}
               />
+            ) : (
+              <div style={{ height: '61px' }}></div>
             )}
           </div>
         </div>
