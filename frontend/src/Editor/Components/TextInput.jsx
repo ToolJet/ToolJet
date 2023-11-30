@@ -44,7 +44,8 @@ export const TextInput = function TextInput({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const [elementWidth, setElementWidth] = useState(0);
   const computedStyles = {
-    height: padding == 'default' ? '32px' : '38px',
+    height: height == 37 ? (padding == 'default' ? '32px' : '38px') : height,
+
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
@@ -52,7 +53,7 @@ export const TextInput = function TextInput({
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '3px 28px' : '3px 5px',
   };
-  console.log('component--', component?.labelEnabled?.value);
+  console.log('height---', height);
 
   const loaderStyle = {
     left: direction === 'alignrightinspector' && alignment === 'side' ? `${elementWidth - 19}px` : undefined,
@@ -219,7 +220,11 @@ export const TextInput = function TextInput({
               }
       ${direction == 'alignrightinspector' && alignment == 'top' && 'text-right'}
       ${visibility || 'invisible'}`}
-              style={{ height: height, padding: padding == 'default' && '3px 2px', position: 'relative' }}
+              style={{
+                height: height == 37 ? 37 : height,
+                padding: padding == 'default' && '3px 2px',
+                position: 'relative',
+              }}
             >
               {component?.labelEnabled?.value && (
                 <label
