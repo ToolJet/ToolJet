@@ -44,7 +44,7 @@ export const TextInput = function TextInput({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const [elementWidth, setElementWidth] = useState(0);
   const computedStyles = {
-    height: height == 37 ? (padding == 'default' ? '32px' : '38px') : height,
+    height: height == 37 ? (padding == 'default' ? '32px' : '38px') : height - 2,
 
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
