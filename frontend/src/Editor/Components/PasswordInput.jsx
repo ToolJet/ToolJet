@@ -195,24 +195,26 @@ export const PasswordInput = ({
                 >
                   {label}
                 </label>
-                <div
-                  onClick={() => {
-                    setIconVisibility(!iconVisibility);
-                  }}
-                  style={{
-                    width: '7',
-                    height: '7',
-                    right:
-                      alignment == 'top' ? `6px` : direction == 'alignleftinspector' && alignment == 'side' && `6px`,
-                    left: direction == 'alignrightinspector' && alignment == 'side' && `${elementWidth - 21}px`,
-                    position: 'absolute',
-                    top: alignment == 'side' ? '19px' : '38.5px',
-                    transform: ' translateY(-50%)',
-                  }}
-                  stroke={1.5}
-                >
-                  <SolidIcon className="password-component-eye" name={iconVisibility ? 'eye' : 'eyedisable'} />
-                </div>
+                {!loadingState && (
+                  <div
+                    onClick={() => {
+                      setIconVisibility(!iconVisibility);
+                    }}
+                    style={{
+                      width: '7',
+                      height: '7',
+                      right:
+                        alignment == 'top' ? `6px` : direction == 'alignleftinspector' && alignment == 'side' && `6px`,
+                      left: direction == 'alignrightinspector' && alignment == 'side' && `${elementWidth - 21}px`,
+                      position: 'absolute',
+                      top: alignment == 'side' ? '19px' : '38.5px',
+                      transform: ' translateY(-50%)',
+                    }}
+                    stroke={1.5}
+                  >
+                    <SolidIcon className="password-component-eye" name={iconVisibility ? 'eye' : 'eyedisable'} />
+                  </div>
+                )}
                 <input
                   disabled={disabledState}
                   onChange={(e) => {
@@ -232,7 +234,7 @@ export const PasswordInput = ({
                 />
               </div>
 
-              {loadingState && <Loader width="16" />}
+              {loadingState && <Loader style={{ ...loaderStyle }} width="16" />}
               {showValidationError && (
                 <div
                   className="tj-text-sm"
