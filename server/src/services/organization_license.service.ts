@@ -294,106 +294,107 @@ export class OrganizationLicenseService {
     }
   }
 
-  async UpdateOrInsertCloudLicense(
-    organizationLicensePayment: OrganizationPayment,
-    licenseExpiryDate?: Date,
-    manager?: EntityManager
-  ) {
-    try {
-      return await dbTransactionWrap(async (manager: EntityManager) => {
-        if (licenseExpiryDate) {
-          licenseExpiryDate.setDate(licenseExpiryDate.getDate() + 2);
-          licenseExpiryDate.setHours(23, 59, 59, 999);
-        }
-        let expiryDate = new Date(`${new Date().toISOString().split('T')[0]} 23:59:59`);
+  async UpdateOrInsertCloudLicense(organizationLicensePayment: OrganizationPayment, manager?: EntityManager) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const expiryDate = new Date(`${new Date().toISOString().split('T')[0]} 23:59:59`);
 
-        //Initializing expiry date for license
-        if (organizationLicensePayment.subscriptionType == 'monthly') expiryDate.setDate(expiryDate.getDate() + 32);
-        else {
-          expiryDate.setDate(expiryDate.getDate() + 367);
-        }
-        expiryDate = licenseExpiryDate ? licenseExpiryDate : expiryDate;
+      //Initializing expiry date for license
+      if (organizationLicensePayment.subscriptionType == 'monthly') expiryDate.setDate(expiryDate.getDate() + 32);
+      else {
+        expiryDate.setDate(expiryDate.getDate() + 367);
+      }
 
-        const currLicense = await this.getLicense(organizationLicensePayment.organizationId);
-        //License update will take place if already a license present
-        if (currLicense) {
-          const terms = { ...currLicense.terms };
-          terms.type = terms.type === LICENSE_TYPE.TRIAL ? LICENSE_TYPE.BUSINESS : terms.type;
-          terms.users.editor = organizationLicensePayment.noOfEditors;
-          terms.users.viewer = organizationLicensePayment.noOfReaders;
-          (terms.users.total = organizationLicensePayment.noOfEditors + organizationLicensePayment.noOfReaders),
-            (terms.expiry = expiryDate.toISOString().split('T')[0]);
-          await manager.update(
-            OrganizationsLicense,
-            { organizationId: organizationLicensePayment.organizationId },
-            {
-              expiryDate,
-              terms,
-              licenseType:
-                currLicense.licenseType === LICENSE_TYPE.TRIAL ? LICENSE_TYPE.BUSINESS : currLicense.licenseType,
+      const currLicense = await this.getLicense(organizationLicensePayment.organizationId);
+      const totalUsers =
+        parseInt(organizationLicensePayment?.noOfEditors?.toString() || '0') +
+        parseInt(organizationLicensePayment?.noOfReaders?.toString() || '0');
+      //License update will take place if already a license present
+      if (currLicense) {
+        if (currLicense.licenseType !== LICENSE_TYPE.TRIAL) {
+          const currentExpiry = currLicense.expiryDate;
+          const dayDiff = Math.round((currentExpiry.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+          if (dayDiff > 0) {
+            // License not expired starts new license from current expiry
+            if (organizationLicensePayment.subscriptionType == 'monthly') {
+              expiryDate.setDate(currentExpiry.getDate() + (dayDiff > 1 ? 31 : 32));
+            } else {
+              expiryDate.setDate(currentExpiry.getDate() + (dayDiff > 1 ? 366 : 367));
             }
-          );
-        } else {
-          //Generating new licesne since old is not present
-          const licenseTerm: Terms = {
-            expiry: expiryDate.toISOString().split('T')[0],
-            type: LICENSE_TYPE.BUSINESS,
-            workspaceId: organizationLicensePayment.organizationId,
-            users: {
-              total: organizationLicensePayment.noOfEditors + organizationLicensePayment.noOfReaders,
-              editor: organizationLicensePayment.noOfEditors,
-              viewer: organizationLicensePayment.noOfReaders,
-              superadmin: 1,
-            },
-            database: {
-              table: '',
-            },
-            features: {
-              oidc: true,
-              auditLogs: true,
-              ldap: true,
-              customStyling: true,
-            },
-            meta: {
-              generatedFrom: 'API',
-              customerName: organizationLicensePayment.companyName || organizationLicensePayment.email,
-              customerId: organizationLicensePayment.userId,
-            },
-          };
-
-          const organizationLicenseObject = manager.create(OrganizationsLicense, {
-            organizationId: organizationLicensePayment.organizationId,
-            licenseType: LICENSE_TYPE.BUSINESS,
-            expiryDate: expiryDate,
-            terms: licenseTerm,
-          });
-
-          await manager.save(OrganizationsLicense, organizationLicenseObject);
+          }
         }
+        const terms = { ...currLicense.terms };
+        terms.type = terms.type === LICENSE_TYPE.TRIAL ? LICENSE_TYPE.BUSINESS : terms.type;
+        terms.users.editor = organizationLicensePayment.noOfEditors;
+        terms.users.viewer = organizationLicensePayment.noOfReaders;
+        (terms.users.total = totalUsers), (terms.expiry = expiryDate.toISOString().split('T')[0]);
+        await manager.update(
+          OrganizationsLicense,
+          { organizationId: organizationLicensePayment.organizationId },
+          {
+            expiryDate,
+            terms,
+            licenseType:
+              currLicense.licenseType === LICENSE_TYPE.TRIAL ? LICENSE_TYPE.BUSINESS : currLicense.licenseType,
+          }
+        );
+      } else {
+        //Generating new licesne since old is not present
+        const licenseTerm: Terms = {
+          expiry: expiryDate.toISOString().split('T')[0],
+          type: LICENSE_TYPE.BUSINESS,
+          workspaceId: organizationLicensePayment.organizationId,
+          users: {
+            total: totalUsers,
+            editor: organizationLicensePayment.noOfEditors,
+            viewer: organizationLicensePayment.noOfReaders,
+            superadmin: 1,
+          },
+          database: {
+            table: '',
+          },
+          features: {
+            oidc: true,
+            auditLogs: true,
+            ldap: true,
+            customStyling: true,
+          },
+          meta: {
+            generatedFrom: 'API',
+            customerName: organizationLicensePayment.companyName || organizationLicensePayment.email,
+            customerId: organizationLicensePayment.userId,
+          },
+        };
 
-        //Updating payment status after licesne generation
-        organizationLicensePayment.paymentStatus = 'success';
-        organizationLicensePayment.isLicenseGenerated = true;
-        manager.update(OrganizationPayment, { id: organizationLicensePayment.id }, organizationLicensePayment);
+        const organizationLicenseObject = manager.create(OrganizationsLicense, {
+          organizationId: organizationLicensePayment.organizationId,
+          licenseType: LICENSE_TYPE.BUSINESS,
+          expiryDate: expiryDate,
+          terms: licenseTerm,
+        });
 
-        // if (paymentType == 'subscription') {
-        //   await this.auditLoggerService.perform(
-        //     {
-        //       userId: organizationLicensePayment.userId,
-        //       organizationId: organizationLicensePayment.organizationId,
-        //       resourceId: organizationLicensePayment.userId,
-        //       resourceType: ResourceTypes.USER,
-        //       resourceName: organizationLicensePayment.email,
-        //       actionType: ActionTypes.CLOUD_LICENSE_GENERATION_FOR_WORKSPACE,
-        //     },
-        //     manager
-        //   );
-        // }
-        return;
-      }, manager);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+        await manager.save(OrganizationsLicense, organizationLicenseObject);
+      }
+
+      //Updating payment status after licesne generation
+      organizationLicensePayment.paymentStatus = 'success';
+      organizationLicensePayment.isLicenseGenerated = true;
+      manager.update(OrganizationPayment, { id: organizationLicensePayment.id }, organizationLicensePayment);
+
+      // if (paymentType == 'subscription') {
+      //   await this.auditLoggerService.perform(
+      //     {
+      //       userId: organizationLicensePayment.userId,
+      //       organizationId: organizationLicensePayment.organizationId,
+      //       resourceId: organizationLicensePayment.userId,
+      //       resourceType: ResourceTypes.USER,
+      //       resourceName: organizationLicensePayment.email,
+      //       actionType: ActionTypes.CLOUD_LICENSE_GENERATION_FOR_WORKSPACE,
+      //     },
+      //     manager
+      //   );
+      // }
+      return;
+    }, manager);
   }
 
   async getOrganizationLicensePayments(
@@ -560,35 +561,40 @@ export class OrganizationLicenseService {
     const existOrgSubscription = await this.getOrganizationLicensePayments(organizationId, subscriptionId);
 
     //Checking if subscription already exist in table as checkout successful event will only handle new subscriptions
-    if (existOrgSubscription.length > 0) {
+    if (existOrgSubscription && existOrgSubscription.length > 0) {
       //If subscription exist then either this is recurring payment or pending payment. These case will be handle in invoice payment succesfull event
-      return;
+      throw new ConflictException(`Subscription ${subscriptionId} already exist`);
     }
 
-    //Creating Organization Payment since its new subscription
-    const organizationPayment = await this.createOrganizationLicensePayment({
-      organizationId,
-      userId,
-      subscriptionId,
-      invoiceId,
-      invoicePaidDate,
-      subscriptionType,
-      mode,
-      noOfEditors,
-      invoiceType,
-      noOfReaders,
-      companyName,
-      email,
-      paymentStatus,
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      //Creating Organization Payment since its new subscription
+      const organizationPayment = await this.createOrganizationLicensePayment(
+        {
+          organizationId,
+          userId,
+          subscriptionId,
+          invoiceId,
+          invoicePaidDate,
+          subscriptionType,
+          mode,
+          noOfEditors,
+          invoiceType,
+          noOfReaders,
+          companyName,
+          email,
+          paymentStatus,
+        },
+        manager
+      );
+
+      //Will generate license only if the amount is paid for the event
+      if (paymentStatus == 'success') {
+        //do we need to cancel other subscription??Right now its manual based. To be checked in revamp
+
+        //Generating license
+        await this.UpdateOrInsertCloudLicense(organizationPayment, manager);
+      }
     });
-
-    //Will generate license only if the amount is paid for the event
-    if (paymentStatus == 'success') {
-      //do we need to cancel other subscription??Right now its manual based. To be checked in revamp
-
-      //Generating license
-      await this.UpdateOrInsertCloudLicense(organizationPayment);
-    }
   }
   async webhookInvoicePaidHandler(invoiceObject) {
     /**
@@ -598,21 +604,20 @@ export class OrganizationLicenseService {
      * @returns void.
      */
 
-    if (invoiceObject.paid != true) return;
+    if (!invoiceObject.paid) {
+      throw new BadRequestException('Payment not success');
+    }
 
     const invoiceId = invoiceObject.id;
     const subscriptionId = invoiceObject?.subscription;
     const invoicePaidDate = new Date(invoiceObject.created * 1000);
     const invoiceType = 'recurring';
 
-    let expiryDate = new Date();
     let productList: any = {};
     let interval;
     const STRIPE_PRICE_CODE_ITEM_MAPPING = this.STRIPE_PRICE_CODE_ITEM_MAPPING;
 
     function createItemsList(lineItem) {
-      const itemDate = new Date(lineItem.period.end * 1000);
-      expiryDate = new Date(Math.max(expiryDate.getTime(), itemDate.getTime()));
       const productType = STRIPE_PRICE_CODE_ITEM_MAPPING[lineItem.plan.interval]?.[lineItem.price.id];
       if (productType) interval = lineItem.plan.interval;
       if (productType == 'reader') productList = { noOfReaders: parseInt(lineItem.quantity), ...productList };
@@ -627,44 +632,54 @@ export class OrganizationLicenseService {
     //Getting all invoice paid for given subscriptions id
     const organizationLicensePayment = await this.getOrganizationLicensePayments(undefined, subscriptionId);
 
+    if (!organizationLicensePayment || organizationLicensePayment.length === 0) {
+      throw new BadRequestException(`Subscription id : ${subscriptionId} not found`);
+    }
+
     //Check if given invoice is present for the subscriptionId and then checking payment status for the same
     const organizationPaymentForInvoice = organizationLicensePayment.find((item) => item.invoiceId === invoiceId);
     const paymentStatus = 'success';
-    //If payment status was pending while checkout successfull this will handle that checkout and geenrate the license
-    if (
-      organizationPaymentForInvoice &&
-      (organizationPaymentForInvoice.paymentStatus != 'success' || !organizationPaymentForInvoice.isLicenseGenerated)
-    ) {
-      //Handling pending payment
-      organizationPaymentForInvoice.subscriptionType = interval;
-      await this.UpdateOrInsertCloudLicense(organizationPaymentForInvoice);
-    } else if (
-      organizationPaymentForInvoice?.paymentStatus == 'success' &&
-      organizationPaymentForInvoice.isLicenseGenerated
-    ) {
-      throw new ConflictException('Already activated for the invoice id : ' + organizationPaymentForInvoice.invoiceId);
-    } else {
-      //Handling recurring payment as its new invoice for given subscription
-      if (organizationLicensePayment.length > 0) {
+    //If payment status was pending while checkout successful this will handle that checkout and generate the license
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      if (
+        organizationPaymentForInvoice &&
+        (organizationPaymentForInvoice.paymentStatus != 'success' || !organizationPaymentForInvoice.isLicenseGenerated)
+      ) {
+        //Handling pending payment
+        organizationPaymentForInvoice.subscriptionType = interval;
+        await this.UpdateOrInsertCloudLicense(organizationPaymentForInvoice, manager);
+      } else if (
+        organizationPaymentForInvoice?.paymentStatus == 'success' &&
+        organizationPaymentForInvoice.isLicenseGenerated
+      ) {
+        throw new ConflictException(
+          'Already activated for the invoice id : ' + organizationPaymentForInvoice.invoiceId
+        );
+      } else {
+        //Handling recurring payment as its new invoice for given subscription
         const anyOrgPayment = organizationLicensePayment[0];
 
-        const organizationLicenseRecurringPayment = await this.createOrganizationLicensePayment({
-          organizationId: anyOrgPayment.organizationId,
-          userId: anyOrgPayment.userId,
-          subscriptionId,
-          invoiceId,
-          invoicePaidDate,
-          invoiceType,
-          paymentStatus,
-          subscriptionType: interval,
-          mode: anyOrgPayment.mode,
-          noOfEditors: productList.noOfEditors,
-          noOfReaders: productList.noOfReaders,
-          companyName: anyOrgPayment.companyName,
-          email: anyOrgPayment.email,
-        });
-        await this.UpdateOrInsertCloudLicense(organizationLicenseRecurringPayment, expiryDate);
+        const organizationLicenseRecurringPayment = await this.createOrganizationLicensePayment(
+          {
+            organizationId: anyOrgPayment.organizationId,
+            userId: anyOrgPayment.userId,
+            subscriptionId,
+            invoiceId,
+            invoicePaidDate,
+            invoiceType,
+            paymentStatus,
+            subscriptionType: interval,
+            mode: anyOrgPayment.mode,
+            noOfEditors: productList.noOfEditors,
+            noOfReaders: productList.noOfReaders,
+            companyName: anyOrgPayment.companyName,
+            email: anyOrgPayment.email,
+          },
+          manager
+        );
+        await this.UpdateOrInsertCloudLicense(organizationLicenseRecurringPayment, manager);
       }
-    }
+    });
   }
 }

@@ -26,7 +26,7 @@ export class FilIOrganizationLicenseTablewithTrialData1698848975590 implements M
           total: 15,
           editor: 5,
           viewer: 10,
-          superadmin: 1,
+          superadmin: 0,
         },
         database: {
           table: '',

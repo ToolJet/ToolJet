@@ -32,7 +32,7 @@ export class OrganizationsLicense extends BaseEntity {
   licenseType: string;
 
   @Column({ name: 'expiry_date' })
-  expiryDate: Date;
+  expiryDate: Date; // this should be with time add 23:59:59
 
   @Column({ type: 'json' })
   terms: Terms;
