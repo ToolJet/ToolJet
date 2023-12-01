@@ -59,7 +59,6 @@ export const commonSelectors = {
   filterButton: '[data-cy="filter-button"]',
   copyIcon: '[data-cy="copy-icon"]',
   addWorkspaceButton: '[data-cy="add-new-workspace-link"]',
-  workspaceNameInput: '[data-cy="workspace-name-input-field"]',
   createWorkspaceButton: '[data-cy="create-workspace-button"]',
   workspaceLoginUrl: "[data-cy=workspace-login-url]",
   workspaceName: '[data-cy="workspace-name"]',
@@ -166,6 +165,7 @@ export const commonSelectors = {
   emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
   globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
   addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
+  saveButton: '[data-cy="save-button"]',
 
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
