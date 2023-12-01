@@ -9,8 +9,8 @@ import toast from 'react-hot-toast';
 import { LoadingScreen } from './LoadingScreen';
 
 const PLAN_VALUES = {
-  BUILDER: 24,
-  VIEWER: 8,
+  BUILDER: 30,
+  VIEWER: 10,
   YEARLY_OFF: 20,
 };
 
@@ -22,6 +22,8 @@ export default function UpgradePlan({ current_organization_id }) {
   const [costing, setCosting] = useState({
     totalValue: '',
     valueOff: '',
+    viewerValue: PLAN_VALUES.VIEWER,
+    editorValue: PLAN_VALUES.BUILDER,
   });
   const [planForm, setPlanForm] = useState({
     viewersCount: '',
@@ -91,17 +93,21 @@ export default function UpgradePlan({ current_organization_id }) {
   useEffect(() => {
     const { viewersCount, editorsCount, subscriptionType } = planForm;
     let totalValue = viewersCount * PLAN_VALUES.VIEWER + editorsCount * PLAN_VALUES.BUILDER;
-    let valueOff = (totalValue * (PLAN_VALUES.YEARLY_OFF / 100)).toFixed(2);
+    let valueOff = (totalValue * (PLAN_VALUES.YEARLY_OFF / 100)).toFixed(2) * 12;
+    let viewerValue = PLAN_VALUES.VIEWER;
+    let builderValue = PLAN_VALUES.BUILDER;
     if (subscriptionType === 'yearly') {
-      totalValue = (totalValue - valueOff).toFixed(2);
+      totalValue = (totalValue * 12 - valueOff).toFixed(2);
+      viewerValue = PLAN_VALUES.VIEWER - PLAN_VALUES.VIEWER * (PLAN_VALUES.YEARLY_OFF / 100);
+      builderValue = PLAN_VALUES.BUILDER - PLAN_VALUES.BUILDER * (PLAN_VALUES.YEARLY_OFF / 100);
     }
-    setCosting({ valueOff, totalValue });
+    setCosting({ valueOff, totalValue, viewerValue, builderValue });
   }, [planForm]);
 
   const { viewersCount, editorsCount, subscriptionType, couponCode } = planForm;
 
   const isUpgradeDisabled = () => {
-    const { licenseStatus: { expiryDate, isExpired } = {} } = viewersCount?.licenseStatus ?? {};
+    const { licenseStatus: { expiryDate, isExpired } = {} } = currentPlan?.viewersCount ?? {};
     const daysLeft = expiryDate && getDateDifferenceInDays(new Date(), new Date(expiryDate));
     return daysLeft > 14 && !isExpired;
   };
@@ -113,7 +119,7 @@ export default function UpgradePlan({ current_organization_id }) {
           <div className="input-container">
             <div className="label-container">
               <label className="tj-text-xsm tj-text font-weight-500">No. of builders</label>
-              <div className="price tj-text-sm">${PLAN_VALUES.BUILDER}/month</div>
+              <div className="price tj-text-sm">${costing.builderValue}/month</div>
             </div>
             <div className="input-wrapper">
               <input
@@ -128,7 +134,7 @@ export default function UpgradePlan({ current_organization_id }) {
           <div className="input-container">
             <div className="label-container">
               <label className="tj-text-xsm tj-text font-weight-500">No. of end users</label>
-              <div className="price tj-text-sm">${PLAN_VALUES.VIEWER}/month</div>
+              <div className="price tj-text-sm">${costing.viewerValue}/month</div>
             </div>
             <div className="input-wrapper">
               <input
@@ -161,7 +167,7 @@ export default function UpgradePlan({ current_organization_id }) {
           <div>
             <label className="form-check form-switch">
               <input
-                disabled={isUpgradeDisabled}
+                disabled={isUpgradeDisabled()}
                 className="form-check-input"
                 type="checkbox"
                 checked={subscriptionType === 'yearly'}
