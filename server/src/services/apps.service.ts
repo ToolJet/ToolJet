@@ -275,7 +275,10 @@ export class AppsService {
             currentVersionId,
           })
           .getOne();
-        const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+        const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(
+          LICENSE_FIELD.MULTI_ENVIRONMENT,
+          organizationId
+        );
 
         /* 
         Allow version release only if the environment is on 

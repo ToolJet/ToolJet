@@ -192,7 +192,7 @@ export default function UpgradePlan({ current_organization_id }) {
         </div>
         <div className="terms-info">
           <div className="tj-text-xsm font-weight-400 mt-1">
-            By clicking continue, you agree to the{' '}
+            By upgrading, you agree to the{' '}
             <a
               href="https://www.tooljet.com/terms"
               target="_blank"
