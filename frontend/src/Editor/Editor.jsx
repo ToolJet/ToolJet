@@ -113,7 +113,7 @@ const EditorComponent = (props) => {
     currentLayout,
     canUndo,
     canRedo,
-    // isUpdatingEditorStateInProcess,
+    isUpdatingEditorStateInProcess,
     // saveError,
     isLoading,
     defaultComponentStateComputed,
@@ -129,7 +129,7 @@ const EditorComponent = (props) => {
       currentLayout: state.currentLayout,
       canUndo: state.canUndo,
       canRedo: state.canRedo,
-      // isUpdatingEditorStateInProcess: state.isUpdatingEditorStateInProcess,
+      isUpdatingEditorStateInProcess: state.isUpdatingEditorStateInProcess,
       // saveError: state.saveError,
       isLoading: state.isLoading,
       defaultComponentStateComputed: state.defaultComponentStateComputed,
@@ -169,14 +169,6 @@ const EditorComponent = (props) => {
       appDiffOptions: state.appDiffOptions,
       events: state.events,
       areOthersOnSameVersionAndPage: state.areOthersOnSameVersionAndPage,
-    }),
-    shallow
-  );
-
-  const { existingGlobals, pageHandle } = useCurrentStateStore(
-    (state) => ({
-      existingGlobals: state.globals,
-      pageHandle: state.page.handle,
     }),
     shallow
   );
@@ -279,7 +271,7 @@ const EditorComponent = (props) => {
 
       computeComponentState(components);
 
-      if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
+      if (isUpdatingEditorStateInProcess) {
         autoSave();
       }
     }
@@ -298,7 +290,6 @@ const EditorComponent = (props) => {
   useEffect(() => {
     // This effect runs when lastKeyPressTimestamp changes
     if (Date.now() - lastKeyPressTimestamp < 500) {
-      console.log('phenomenol');
       updateEditorState({
         isUpdatingEditorStateInProcess: true,
       });
@@ -785,7 +776,6 @@ const EditorComponent = (props) => {
   const appDefinitionChanged = async (newDefinition, opts = {}) => {
     if (opts?.versionChanged) {
       setCurrentPageId(newDefinition.homePageId);
-      console.log('appDefinitionChanged');
       return new Promise((resolve) => {
         updateEditorState({
           isUpdatingEditorStateInProcess: true,
@@ -937,7 +927,7 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
-    const editingVersion = useEditorStore.getState().editingVersion;
+    const editingVersion = useAppVersionStore.getState().editingVersion;
     if (isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
         isUpdatingEditorStateInProcess: false,
@@ -961,7 +951,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      updateAppVersion(appId, editingVersionId, currentPageId, updateDiff, isUserSwitchedVersion)
+      updateAppVersion(appId, editingVersion.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {
             ...editingVersion,
@@ -972,7 +962,7 @@ const EditorComponent = (props) => {
           if (config.ENABLE_MULTIPLAYER_EDITING) {
             props.ymap?.set('appDef', {
               newDefinition: appDefinition,
-              editingVersionId: editingVersionId,
+              editingVersionId: editingVersion.id,
               currentSessionId,
               areOthersOnSameVersionAndPage,
               opts: appDiffOptions,
