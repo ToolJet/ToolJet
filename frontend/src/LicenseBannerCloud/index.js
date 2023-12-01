@@ -20,9 +20,11 @@ export function LicenseBannerCloud({
   children,
   isAvailable,
   style = {},
+  showPaidFeatureBanner = false,
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { workspaceId } = useParams();
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const currentUser = authenticationService.currentSessionValue;
@@ -160,6 +162,13 @@ export function LicenseBannerCloud({
 
   const generateButtonTextAndLink = () => {
     switch (true) {
+      case showPaidFeatureBanner === true:
+        return {
+          text: 'Paid feature',
+          onClick: () => {
+            navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
+          },
+        };
       case licenseType === 'basic' && !isLicenseValid && isWorkspaceAdmin:
         return {
           text: 'Start free trial',
@@ -198,14 +207,14 @@ export function LicenseBannerCloud({
         return {
           text: 'Upgrade',
           onClick: () => {
-            navigate(`settings/subscription?currentTab=upgradePlan`);
+            navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
           },
         };
       case type === 'trial':
         return {
           text: 'Upgrade',
           onClick: () => {
-            navigate(`settings/subscription?currentTab=upgradePlan`);
+            navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
           },
           replaceText: false,
         };
@@ -213,14 +222,14 @@ export function LicenseBannerCloud({
         return {
           text: 'Renew',
           onClick: () => {
-            setIsModalOpen(true);
+            navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
           },
         };
       default:
         return {
           text: 'Upgrade',
           onClick: () => {
-            navigate(`settings/subscription?currentTab=upgradePlan`);
+            navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
           },
         };
     }
@@ -232,6 +241,23 @@ export function LicenseBannerCloud({
     let text = document.getElementById(input).innerHTML;
     copyToClipboard(text);
   };
+
+  if (showPaidFeatureBanner) {
+    const buttonTextAndClick = generateButtonTextAndLink();
+    const { onClick: handleClick, text: buttonText } = buttonTextAndClick;
+    return (
+      <div className={`paid-feature-banner d-flex`}>
+        {!warningText && currentUser.admin && <SolidIcon {...iconSize} fill={'None'} name="enterpriseGradient" />}
+        <span
+          onClick={currentUser?.admin && handleClick}
+          className={`upgrade-link ${currentUser?.admin ? 'cursor-pointer' : ''}`}
+          style={{ fontWeight: '500' }}
+        >
+          {buttonText}
+        </span>
+      </div>
+    );
+  }
 
   const warningText = generateWarningText();
   const message = customMessage || generateMessage();

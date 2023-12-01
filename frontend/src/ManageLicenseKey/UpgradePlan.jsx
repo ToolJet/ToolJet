@@ -14,7 +14,7 @@ const PLAN_VALUES = {
   YEARLY_OFF: 20,
 };
 
-export default function UpgradePlan() {
+export default function UpgradePlan({ current_organization_id }) {
   const [licenseLoaded, setLicenseLoaded] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [currentPlan, setCurrentPlan] = useState({});
@@ -42,8 +42,8 @@ export default function UpgradePlan() {
       setCurrentPlan(data);
       setPlanForm({
         ...planForm,
-        viewersCount: viewersCount?.total,
-        editorsCount: editorsCount?.total,
+        viewersCount: viewersCount?.current === 0 ? 1 : viewersCount?.current,
+        editorsCount: editorsCount?.current,
       });
       setLicenseLoaded(true);
     });
@@ -53,14 +53,15 @@ export default function UpgradePlan() {
     setUpgradeLoading(true);
     const { viewersCount, editorsCount, subscriptionType, couponCode } = planForm;
     const planDetails = {
-      workspaceId: workspaceId,
+      workspaceId: current_organization_id,
       subsribtionType: subscriptionType,
       mode: 'subscription',
       customer_email: current_user?.email,
-      NumberOfEditor: editorsCount,
-      NumberOfBuilder: viewersCount,
+      NumberOfEditor: parseInt(editorsCount),
+      NumberOfViewers: parseInt(viewersCount),
       success_url: `${REDIRECT_URL}?payment=success`,
       cancel_url: `${REDIRECT_URL}?payment=failure`,
+      coupon_code: couponCode,
     };
     licenseService
       .upgradePlan(planDetails)
@@ -90,9 +91,9 @@ export default function UpgradePlan() {
   useEffect(() => {
     const { viewersCount, editorsCount, subscriptionType } = planForm;
     let totalValue = viewersCount * PLAN_VALUES.VIEWER + editorsCount * PLAN_VALUES.BUILDER;
-    let valueOff = totalValue * (PLAN_VALUES.YEARLY_OFF / 100);
+    let valueOff = (totalValue * (PLAN_VALUES.YEARLY_OFF / 100)).toFixed(2);
     if (subscriptionType === 'yearly') {
-      totalValue = totalValue - valueOff;
+      totalValue = (totalValue - valueOff).toFixed(2);
     }
     setCosting({ valueOff, totalValue });
   }, [planForm]);
@@ -117,7 +118,7 @@ export default function UpgradePlan() {
             <div className="input-wrapper">
               <input
                 readOnly={isUpgradeDisabled()}
-                type="text"
+                type="number"
                 onChange={(e) => updatePlanDetailsForm('editorsCount', e.target.value)}
                 className="form-control"
                 value={editorsCount}
@@ -132,7 +133,7 @@ export default function UpgradePlan() {
             <div className="input-wrapper">
               <input
                 readOnly={isUpgradeDisabled()}
-                type="text"
+                type="number"
                 onChange={(e) => updatePlanDetailsForm('viewersCount', e.target.value)}
                 className="form-control"
                 value={viewersCount}
@@ -154,24 +155,25 @@ export default function UpgradePlan() {
               />
             </div>
           </div>
-          <div style={{ marginLeft: '120px' }} className="input-container">
-            <div>
-              <label className="form-check form-switch">
-                <input
-                  disabled={isUpgradeDisabled}
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={subscriptionType === 'yearly'}
-                  onChange={(e) => updatePlanDetailsForm('subscriptionType', e.target.checked ? 'yearly' : 'monthly')}
-                />
-                <span className="tj-text-sm font-weight-500">
-                  Pay {subscriptionType}{' '}
-                  <span
-                    className={cx('text-muted', { ' text-striked': subscriptionType === 'yearly' })}
-                  >{`${PLAN_VALUES.YEARLY_OFF}% $(${costing.valueOff}) off`}</span>
-                </span>
-              </label>
-            </div>
+        </div>
+
+        <div style={{ marginLeft: '120px' }} className="input-container">
+          <div>
+            <label className="form-check form-switch">
+              <input
+                disabled={isUpgradeDisabled}
+                className="form-check-input"
+                type="checkbox"
+                checked={subscriptionType === 'yearly'}
+                onChange={(e) => updatePlanDetailsForm('subscriptionType', e.target.checked ? 'yearly' : 'monthly')}
+              />
+              <span className="tj-text-sm font-weight-500">
+                Pay {subscriptionType}{' '}
+                <span
+                  className={cx('text-muted', { ' text-striked': subscriptionType !== 'yearly' })}
+                >{`${PLAN_VALUES.YEARLY_OFF}% $(${costing.valueOff}) off`}</span>
+              </span>
+            </label>
           </div>
         </div>
 
@@ -184,7 +186,15 @@ export default function UpgradePlan() {
         </div>
         <div className="terms-info">
           <div className="tj-text-xsm font-weight-400 mt-1">
-            By clicking continue, you agree to the <span className="link-btn cursor-pointer">terms and conditions</span>
+            By clicking continue, you agree to the{' '}
+            <a
+              href="https://www.tooljet.com/terms"
+              target="_blank"
+              className="link-btn cursor-pointer"
+              rel="noreferrer"
+            >
+              terms and conditions
+            </a>
           </div>
           <div className="help-box">
             <div className="info-box">
@@ -192,7 +202,9 @@ export default function UpgradePlan() {
             </div>
             <div className="tailored-plan text-primary">
               Want a custom plan tailored to your needs? Contact us at{' '}
-              <span className="link-btn font-weight-500">hello@tooljet.com</span>
+              <a target="_blank" href="mailto:hello@tooljet.com" className="link-btn font-weight-500" rel="noreferrer">
+                hello@tooljet.com
+              </a>
             </div>
           </div>
         </div>

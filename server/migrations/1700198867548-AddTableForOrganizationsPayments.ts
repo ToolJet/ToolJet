@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
 export class AddTableForOrganizationsPayments1700198867548 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -18,6 +18,11 @@ export class AddTableForOrganizationsPayments1700198867548 implements MigrationI
             isNullable: false,
           },
           {
+            name: 'user_id',
+            type: 'uuid',
+            isNullable: false,
+          },
+          {
             name: 'subscription_id',
             type: 'varchar',
             isNullable: false,
@@ -26,6 +31,7 @@ export class AddTableForOrganizationsPayments1700198867548 implements MigrationI
             name: 'invoice_id',
             type: 'varchar',
             isNullable: false,
+            isUnique: true,
           },
           {
             name: 'invoice_paid_date',
@@ -40,6 +46,37 @@ export class AddTableForOrganizationsPayments1700198867548 implements MigrationI
           {
             name: 'no_of_readers',
             type: 'integer',
+            isNullable: false,
+          },
+          {
+            name: 'payment_status',
+            type: 'enum',
+            enumName: 'stripe_payment_status',
+            enum: ['success', 'failed'],
+            default: `'failed'`,
+            isNullable: false,
+          },
+          {
+            name: 'email',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
+            name: 'company_name',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
+            name: 'is_license_generated',
+            type: 'boolean',
+            isNullable: false,
+            default: false,
+          },
+          {
+            name: 'invoice_type',
+            type: 'enum',
+            enumName: 'stripe_invoice_type',
+            enum: ['recurring', 'subscription'],
             isNullable: false,
           },
           {
@@ -69,6 +106,22 @@ export class AddTableForOrganizationsPayments1700198867548 implements MigrationI
         ],
       }),
       true
+    );
+    await queryRunner.createForeignKey(
+      'organizations_payments',
+      new TableForeignKey({
+        columnNames: ['organization_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'organizations',
+      })
+    );
+    await queryRunner.createForeignKey(
+      'organizations_payments',
+      new TableForeignKey({
+        columnNames: ['user_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'users',
+      })
     );
   }
 

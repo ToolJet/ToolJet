@@ -923,11 +923,13 @@ class HomePageComponent extends React.Component {
             >
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
-                  <LicenseBannerCloud
-                    classes="mt-3"
-                    limits={featureAccess}
-                    type={featureAccess?.licenseStatus?.licenseType}
-                  />
+                  this.props.appType !== 'workflow' && (
+                    <LicenseBannerCloud
+                      classes="mt-3"
+                      limits={featureAccess}
+                      type={featureAccess?.licenseStatus?.licenseType}
+                    />
+                  )
                 ) : (
                   <Skeleton
                     count={1}

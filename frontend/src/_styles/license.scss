@@ -145,42 +145,53 @@
                 }
 
                 .requirements-form {
-                    max-width: 58%;
+                    max-width: 60%;
+                }
 
-                    .input-container {
-                        display: flex;
-                        align-items: center;
-                        margin-bottom: 25px;
+                .input-container {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 25px;
 
-                        label {
-                            color: var(--slate12) !important;
+                    label {
+                        color: var(--slate12) !important;
+                    }
+
+                    .price {
+                        color: var(--slate11);
+                    }
+
+                    .label-container {
+                        margin-right: 30px;
+                        min-width: 90px;
+                    }
+
+                    .input-wrapper {
+                        width: 100% !important;
+
+                        input::-webkit-outer-spin-button,
+                        input::-webkit-inner-spin-button {
+                            -webkit-appearance: none;
+                            margin: 0;
                         }
 
-                        .price {
-                            color: var(--slate11);
+                        /* Firefox */
+                        input[type="number"] {
+                            -moz-appearance: textfield;
                         }
 
-                        .label-container {
-                            margin-right: 30px;
-                            min-width: 90px;
+                        .form-control {
+                            height: 40px !important;
                         }
+                    }
 
-                        .input-wrapper {
-                            width: 100% !important;
-
-                            .form-control {
-                                height: 40px !important;
-                            }
-                        }
-
-                        .text-striked {
-                            text-decoration: line-through;
-                        }
+                    .text-striked {
+                        text-decoration: line-through;
                     }
                 }
 
                 .total-amount {
-                    max-width: 58%;
+                    max-width: 60%;
                     background: var(--slate3);
                     padding: 10px 15px;
                     border-radius: 6px;
@@ -189,7 +200,7 @@
                 }
 
                 .terms-info {
-                    max-width: 58%;
+                    max-width: 60%;
 
                     .link-btn {
                         color: var(--indigo9);

@@ -251,7 +251,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       <Link
                         to={getPrivateRoute('settings')}
                         className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === getPrivateRoute('settings') && `current-seleted-route`
+                          router.pathname.startsWith(getPrivateRoute('settings')) && `current-seleted-route`
                         }`}
                         data-cy="icon-settings"
                         onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}
@@ -259,7 +259,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         <SolidIcon
                           name="instancesettings"
                           fill={
-                            router.pathname === getPrivateRoute('settings')
+                            router.pathname.startsWith(getPrivateRoute('settings'))
                               ? '#3E63DD'
                               : darkMode
                               ? '#4C5155'

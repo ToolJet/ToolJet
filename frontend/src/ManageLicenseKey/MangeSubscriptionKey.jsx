@@ -20,7 +20,7 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
   const [sidebarNavs, setSidebarNavs] = useState(['Subscription key']);
   const [featureAccess, setFeatureAccess] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const { load_app } = authenticationService.currentSessionValue;
+  const { load_app, current_organization_id } = authenticationService.currentSessionValue;
   const expiryDate = featureAccess?.licenseStatus?.expiryDate;
   const [searchParams, setSearchParams] = useSearchParams();
   const paymentStatus = searchParams.get('payment');
@@ -37,6 +37,21 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
         return 'access';
       case 'Upgrade plan':
         return 'upgradePlan';
+      default:
+        return groupName;
+    }
+  };
+
+  const headerName = (groupName) => {
+    switch (groupName) {
+      case 'subscriptionKey':
+        return 'Subscription key';
+      case 'limits':
+        return 'Limits';
+      case 'access':
+        return 'Access';
+      case 'upgradePlan':
+        return 'Upgrade to business plan';
       default:
         return groupName;
     }
@@ -135,7 +150,7 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
                 selectedTab === 'limits' && 'border-none'
               }`}
             >
-              <div>{sidebarNavs.find((nav) => selectedTab === defaultOrgName(nav))}</div>
+              <div>{headerName(selectedTab)}</div>
               {!isLoading ? (
                 expiryDate && (
                   <div className={`status-container ${licenseExpiryStatus.className}`}>{licenseExpiryStatus.text}</div>
@@ -152,7 +167,9 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
             <>
               <div className="content-wrapper">{selectedTab === 'limits' && <Limits />}</div>
               <div className="content-wrapper">{selectedTab === 'access' && <Access />}</div>
-              <div className="content-wrapper">{selectedTab === 'upgradePlan' && <UpgradePlan />}</div>
+              <div className="content-wrapper">
+                {selectedTab === 'upgradePlan' && <UpgradePlan current_organization_id={current_organization_id} />}
+              </div>
             </>
           </div>
         </div>

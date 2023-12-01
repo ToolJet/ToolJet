@@ -83,7 +83,10 @@ export class OrganizationConstantsService {
     organizationId: string
   ): Promise<OrganizationConstant | []> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const isMultiEnvEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const isMultiEnvEnabled = await this.licenseService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      );
       const newOrganizationConstant = manager.create(OrganizationConstant, {
         constantName: organizationConstant.constant_name,
         organizationId,

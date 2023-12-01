@@ -11,7 +11,7 @@ function Header() {
     const pathParts = path.split('/');
     if (pathParts.length > 1) {
       const parentPath = pathParts[pathParts.length - 2];
-      if (['workspace-settings', 'instance-settings'].includes(parentPath)) {
+      if (['workspace-settings', 'instance-settings', 'settings'].includes(parentPath)) {
         return parentPath === 'workspace-settings' ? 'Workspace settings' : 'Settings';
       }
     }

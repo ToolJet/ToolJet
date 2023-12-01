@@ -15,7 +15,6 @@ export enum SubscriptionType {
 
 export class PaymentRedirectDto {
   @IsString()
-  @IsOptional()
   @IsNotEmpty()
   workspaceId: string;
 
@@ -31,6 +30,10 @@ export class PaymentRedirectDto {
   @IsString()
   cancel_url: string;
 
+  @IsOptional()
+  @IsString()
+  coupon_code: string;
+
   @IsEmail()
   customer_email: string;
 
@@ -38,7 +41,7 @@ export class PaymentRedirectDto {
   NumberOfEditor: number;
 
   @IsInt()
-  NumberOfBuilder: number;
+  NumberOfViewers: number;
 }
 
 export class PaymentRedirectDtoObject extends PartialType(PaymentRedirectDto) {}

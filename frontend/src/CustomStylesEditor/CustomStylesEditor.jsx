@@ -7,6 +7,7 @@ import { LicenseBanner } from '@/LicenseBanner';
 import { licenseService, customStylesService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import InformationCircle from '@/_ui/Icon/solidIcons/InformationCircle';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 
 export default function CustomStylesEditor({ darkMode }) {
   const { t } = useTranslation();
@@ -75,7 +76,9 @@ export default function CustomStylesEditor({ darkMode }) {
               <div className="col p-3 border-bottom">
                 <div className="d-flex justify-content-between align-items-center">
                   <h3 className="card-title m-0">Custom Styles</h3>
-                  {disabled && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>}
+                  {disabled && (
+                    <LicenseBannerCloud isAvailable={false} showPaidFeatureBanner={true}></LicenseBannerCloud>
+                  )}
                 </div>
               </div>
               <div className="w-100 p-4 custom-css-input-container">

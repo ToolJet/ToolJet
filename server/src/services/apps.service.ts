@@ -776,10 +776,8 @@ export class AppsService {
   }
 
   async appsCount(organizationId?: string): Promise<number> {
-    const whereCondition: any = organizationId
-      ? { organizationId, type: Not('workflow') }
-      : { type: Not('workflow') };
-  
+    const whereCondition: any = organizationId ? { organizationId, type: Not('workflow') } : { type: Not('workflow') };
+
     return await this.appsRepository.count({ where: whereCondition });
   }
 

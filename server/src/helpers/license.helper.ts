@@ -21,7 +21,6 @@ export enum LICENSE_FIELD {
   MAX_DURATION_FOR_AUDIT_LOGS = 'maxDaysForAuditLogs',
   MULTI_ENVIRONMENT = 'multiEnvironmentEnabled',
   MULTI_PLAYER_EDIT = 'multiPlayerEnabled',
-  COMMENTS = 'commentsEnabled',
   UPDATED_AT = 'updatedAt',
   ALL = 'all',
   USER = 'allUsers',
