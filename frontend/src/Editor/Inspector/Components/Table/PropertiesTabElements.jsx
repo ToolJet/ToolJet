@@ -176,45 +176,11 @@ export const PropertiesTabElements = ({
     );
   };
 
-  // const renderSelectColumnTypeMenuList = (option, optionIndex) => {
-  //   console.log('index ::', { optionIndex });
-  //   return (
-  //     <OverlayTrigger
-  //       trigger="click"
-  //       placement="top"
-  //       rootClose={true}
-  //       overlay={selectPopover(option, optionIndex)}
-  //       onToggle={(showing) => setShowPopover(showing)}
-  //     >
-  //       <div>
-  //         <List>
-  //           <List.Item primaryText={option.name} />
-  //         </List>
-  //       </div>
-  //     </OverlayTrigger>
-  //   );
-  // };
-
   if (column.columnType === 'dropdown') {
     console.log('arpit', { column });
     items.push({
       title: 'Options',
       children: (
-        // <div className="field">
-        //   <div className="row g-2">
-        //     <div>
-        //       {column?.options?.map((option, optionIndex) => {
-        //         return renderSelectColumnTypeMenuList(option, optionIndex);
-        //       })}
-        //     </div>
-        //     {column?.options?.length === 0 && (
-        //       <NoListItem text={'There are no action buttons'} dataCy={`-action-button`} />
-        //     )}
-        //     <AddNewButton dataCy="button-add-new-action-button" onClick={addNewOptionForSelect} className="mt-0">
-        //       Add new option
-        //     </AddNewButton>
-        //   </div>
-        // </div>
         <List>
           <DragDropContext
             onDragEnd={(result) => {
@@ -254,20 +220,12 @@ export const PropertiesTabElements = ({
                                     <List.Item
                                       isDraggable={true}
                                       primaryText={resolvedItemName}
-                                      // secondaryText={capitalize(item?.columnType)}
                                       data-cy={`column-${resolvedItemName}`}
                                       enableActionsMenu={false}
-                                      // isEditable={item.isEditable === '{{true}}'}
                                       onMenuOptionClick={(listItem, menuOptionLabel) => {
                                         if (menuOptionLabel === 'Delete') deleteOption(option, optionIndex);
                                       }}
                                       darkMode={darkMode}
-                                      // menuActions={[
-                                      //   {
-                                      //     label: 'Delete',
-                                      //     icon: '',
-                                      //   },
-                                      // ]}
                                       deleteIconOutsideMenu={true}
                                     />
                                   </div>
