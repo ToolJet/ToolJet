@@ -113,7 +113,7 @@ const EditorComponent = (props) => {
     currentLayout,
     canUndo,
     canRedo,
-    isUpdatingEditorStateInProcess,
+    // isUpdatingEditorStateInProcess,
     // saveError,
     isLoading,
     defaultComponentStateComputed,
@@ -129,7 +129,7 @@ const EditorComponent = (props) => {
       currentLayout: state.currentLayout,
       canUndo: state.canUndo,
       canRedo: state.canRedo,
-      isUpdatingEditorStateInProcess: state.isUpdatingEditorStateInProcess,
+      // isUpdatingEditorStateInProcess: state.isUpdatingEditorStateInProcess,
       // saveError: state.saveError,
       isLoading: state.isLoading,
       defaultComponentStateComputed: state.defaultComponentStateComputed,
@@ -271,7 +271,7 @@ const EditorComponent = (props) => {
 
       computeComponentState(components);
 
-      if (isUpdatingEditorStateInProcess) {
+      if (useEditorStore.getState().isUpdatingEditorStateInProcess) {
         autoSave();
       }
     }
@@ -1683,7 +1683,7 @@ const EditorComponent = (props) => {
       </div>
     );
   }
-
+  console.log('render');
   return (
     <div className="editor wrapper">
       <Confirm

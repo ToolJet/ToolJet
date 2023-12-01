@@ -42,7 +42,6 @@ export const EventManager = ({
     return dataQueries;
   }, shallow);
   const { apps, appId, events: allAppEvents } = useAppInfo();
-
   const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
     useAppDataActions();
 
@@ -59,6 +58,7 @@ export const EventManager = ({
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
+  console.log({ allAppEvents, currentEvents, events }, 'allAppEvents');
 
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
