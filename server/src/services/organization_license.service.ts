@@ -318,6 +318,7 @@ export class OrganizationLicenseService {
         //License update will take place if already a license present
         if (currLicense) {
           const terms = { ...currLicense.terms };
+          terms.type = terms.type === LICENSE_TYPE.TRIAL ? LICENSE_TYPE.BUSINESS : terms.type;
           terms.users.editor = organizationLicensePayment.noOfEditors;
           terms.users.viewer = organizationLicensePayment.noOfReaders;
           (terms.users.total = organizationLicensePayment.noOfEditors + organizationLicensePayment.noOfReaders),
@@ -325,7 +326,12 @@ export class OrganizationLicenseService {
           await manager.update(
             OrganizationsLicense,
             { organizationId: organizationLicensePayment.organizationId },
-            { expiryDate, terms }
+            {
+              expiryDate,
+              terms,
+              licenseType:
+                currLicense.licenseType === LICENSE_TYPE.TRIAL ? LICENSE_TYPE.BUSINESS : currLicense.licenseType,
+            }
           );
         } else {
           //Generating new licesne since old is not present
