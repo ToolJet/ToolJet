@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { resolveReferences } from '@/_helpers/utils';
 import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,8 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NoListItem from './NoListItem';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-
+import { useMounted } from '@/_hooks/use-mount';
+import _ from 'lodash';
 export const PropertiesTabElements = ({
   column,
   index,
@@ -28,10 +29,15 @@ export const PropertiesTabElements = ({
 }) => {
   const { t } = useTranslation();
   const [showPopover, setShowPopover] = useState(false);
+
   let items = [];
+
   const addNewOptionForSelect = () => {
     const options = column?.options || [];
   };
+
+  const mounted = useMounted();
+
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => {
     return {
       userSelect: 'none',
@@ -60,6 +66,35 @@ export const PropertiesTabElements = ({
     }
     await recordOptions(source.index, destination.index);
   };
+
+  const newTableDrop = (columnType) => {
+    switch (columnType) {
+      case 'dropdown':
+        if (column.hasOwnProperty('values') || column.hasOwnProperty('labels')) return false;
+        return true;
+      default:
+        break;
+    }
+  };
+
+  const addDefaultOptionsOnMounting = () => {
+    const columns = props.component.component.definition.properties.columns;
+    const column = columns.value[index];
+    const options = [
+      { name: 'Jane Cooper', value: 'Jane Copoper' },
+      { name: 'Cameron Williamson', value: 'Cameron Williamson' },
+      { name: 'Leslie Alexander', value: 'Leslie Alexander' },
+      { name: 'Brooklyn Simmons', value: 'Brooklyn Simmons' },
+    ];
+    column.options = options;
+    const newColumns = columns.value;
+    newColumns[index] = column;
+    props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+  };
+  if (!mounted && newTableDrop(column.columnType || 'dropdown') && !column.hasOwnProperty('options')) {
+    addDefaultOptionsOnMounting();
+  }
+
   const createNewOption = (newOptionIndex) => {
     const columns = props.component.component.definition.properties.columns;
     const column = columns.value[index];

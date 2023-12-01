@@ -342,15 +342,6 @@ class TableComponent extends React.Component {
   onColumnItemChange = (index, item, value) => {
     const columns = this.props.component.component.definition.properties.columns;
     const column = columns.value[index];
-    if (item === 'columnType' && value === 'dropdown' && !column.hasOwnProperty('options')) {
-      column.options = [
-        { name: 'Jane Cooper', value: 'Jane Copoper' },
-        { name: 'Cameron Williamson', value: 'Cameron Williamson' },
-        { name: 'Leslie Alexander', value: 'Leslie Alexander' },
-        { name: 'Brooklyn Simmons', value: 'Brooklyn Simmons' },
-      ];
-    }
-    console.log('kavin :: first', { columns, column, value, item });
 
     column[item] = value;
     const newColumns = columns.value;
