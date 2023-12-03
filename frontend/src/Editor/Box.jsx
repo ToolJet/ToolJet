@@ -280,7 +280,6 @@ export const Box = memo(
         customResolveObjects: customResolvables,
       });
     const shouldAddBoxShadow = ['TextInput', 'PasswordInput'];
-    console.log('test---', component.component);
 
     return (
       <OverlayTrigger
