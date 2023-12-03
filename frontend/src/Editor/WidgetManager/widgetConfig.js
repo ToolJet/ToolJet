@@ -1062,15 +1062,7 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    labelEnabled: {
-      value: true,
-    },
     properties: {
-      // labelEnabled: {
-      //   type: 'toggle',
-      //   displayName: 'labelEnabled',
-      //   validation: { schema: { type: 'string' } },
-      // },
       label: {
         type: 'code',
         displayName: 'Label',
@@ -1158,8 +1150,8 @@ export const widgets = [
         showLabel: false,
         isIcon: true,
         options: [
-          { displayName: 'alignleftinspector', value: 'alignleftinspector' },
-          { displayName: 'alignrightinspector', value: 'alignrightinspector' },
+          { displayName: 'alignleftinspector', value: 'left' },
+          { displayName: 'alignrightinspector', value: 'right' },
         ],
         accordian: 'label',
       },
@@ -1224,18 +1216,6 @@ export const widgets = [
         accordian: 'field',
         visibility: false,
       },
-      // iconAlignment: {
-      //   type: 'switch',
-      //   displayName: '',
-      //   validation: { schema: { type: 'string' } },
-      //   showLabel: false,
-      //   isIcon: true,
-      //   options: [
-      //     { displayName: 'alignleftinspector', value: 'alignleftinspector' },
-      //     { displayName: 'alignrightinspector', value: 'alignrightinspector' },
-      //   ],
-      //   accordian: 'field',
-      // },
       borderRadius: {
         type: 'input',
         displayName: 'Border radius',
@@ -1305,7 +1285,6 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        labelEnabled: { value: '{{true}}' },
         value: { value: '' },
         label: { value: 'Label' },
         placeholder: { value: 'Enter your input' },
@@ -1321,13 +1300,13 @@ export const widgets = [
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
         iconColor: { value: '#DB4324' },
-        direction: { value: 'alignleftinspector' },
+        direction: { value: 'left' },
         width: { value: '33' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
         auto: { value: true },
         padding: { value: 'default' },
-        boxShadow: { value: '0px 0px 0px 0px #00000090' },
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
         icon: { value: 'IconHome2' },
         iconVisibility: { value: false },
       },

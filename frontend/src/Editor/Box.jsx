@@ -324,7 +324,7 @@ export const Box = memo(
                 exposedVariables={exposedVariables}
                 styles={{
                   ...validatedStyles,
-                  ...(!shouldAddBoxShadow.includes(component.component.component)
+                  ...(!shouldAddBoxShadow.includes(component.component)
                     ? { boxShadow: validatedGeneralStyles?.boxShadow }
                     : {}),
                 }}
