@@ -61,8 +61,8 @@ export default class MinioService implements QueryService {
   async getConnection(sourceOptions: SourceOptions, options?: object): Promise<any> {
     const credentials: ClientOptions = {
       endPoint: sourceOptions['host'],
-      port: sourceOptions['port'],
-      useSSL: sourceOptions['ssl_enabled'],
+      port: +sourceOptions['port'],
+      useSSL: !!sourceOptions['ssl_enabled'],
       accessKey: sourceOptions['access_key'],
       secretKey: sourceOptions['secret_key'],
     };

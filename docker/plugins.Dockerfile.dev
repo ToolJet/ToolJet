@@ -1,5 +1,5 @@
 # pull official base image
-FROM node:18.3.0-buster
+FROM node:18.18.2-buster
 
 RUN npm i -g npm@8.11.0
 
