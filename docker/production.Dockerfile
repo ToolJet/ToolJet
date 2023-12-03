@@ -1,4 +1,4 @@
-FROM node:18.3.0-buster AS builder
+FROM node:18.18.2-buster AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -42,12 +42,12 @@ RUN apt-get update -yq \
     && apt-get clean -y
 
 
-RUN curl -O https://nodejs.org/dist/v18.3.0/node-v18.3.0-linux-x64.tar.xz \
-    && tar -xf node-v18.3.0-linux-x64.tar.xz \
-    && mv node-v18.3.0-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
+    && tar -xf node-v18.18.2-linux-x64.tar.xz \
+    && mv node-v18.18.2-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v18.3.0-linux-x64.tar.xz
+    && rm node-v18.18.2-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
