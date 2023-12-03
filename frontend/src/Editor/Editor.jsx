@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   appService,
   authenticationService,
@@ -88,7 +88,6 @@ const EditorComponent = (props) => {
     updateAppVersion,
     setIsSaving,
     createAppVersionEventHandlers,
-    setAppPreviewLink,
     autoUpdateEventStore,
   } = useAppDataActions();
 
@@ -96,25 +95,21 @@ const EditorComponent = (props) => {
     useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
-  const { isVersionReleased, editingVersionId, editingVersionName, releasedVersionId } = useAppVersionState(
+  const { isVersionReleased, editingVersionId, releasedVersionId } = useAppVersionState(
     (state) => (
       {
         isVersionReleased: state?.isVersionReleased,
         editingVersionId: state?.editingVersion.id,
-        editingVersionName: state?.editingVersion.name,
         releasedVersionId: state?.releasedVersionId,
       },
       shallow
     )
   );
-
   const {
     appDefinition,
     currentLayout,
     canUndo,
     canRedo,
-    // isUpdatingEditorStateInProcess,
-    // saveError,
     isLoading,
     defaultComponentStateComputed,
     showComments,
@@ -122,15 +117,12 @@ const EditorComponent = (props) => {
     queryConfirmationList,
     currentPageId,
     currentSessionId,
-    // updateEditorState,
   } = useEditorStore(
     (state) => ({
       appDefinition: state.appDefinition,
       currentLayout: state.currentLayout,
       canUndo: state.canUndo,
       canRedo: state.canRedo,
-      // isUpdatingEditorStateInProcess: state.isUpdatingEditorStateInProcess,
-      // saveError: state.saveError,
       isLoading: state.isLoading,
       defaultComponentStateComputed: state.defaultComponentStateComputed,
       showComments: state.showComments,
@@ -1643,18 +1635,6 @@ const EditorComponent = (props) => {
       setSelectedComponents(EMPTY_ARRAY);
     }
   };
-
-  useEffect(() => {
-    const previewQuery = queryString.stringify({ version: editingVersionName });
-    const appVersionPreviewLink = editingVersionId
-      ? `/applications/${slug || appId}/${currentState.page.handle}${
-          !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
-        }`
-      : '';
-
-    setAppPreviewLink(appVersionPreviewLink);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, currentVersionId]);
 
   const deviceWindowWidth = 450;
 

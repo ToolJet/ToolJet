@@ -12,11 +12,13 @@ import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
-import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { redirectToDashboard } from '@/_helpers/routes';
+import queryString from 'query-string';
+import { isEmpty } from 'lodash';
 
 export default function EditorHeader({
   M,
@@ -35,8 +37,8 @@ export default function EditorHeader({
 }) {
   const currentUser = useCurrentUser();
 
-  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink } = useAppInfo();
-
+  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, currentVersionId } = useAppInfo();
+  const { setAppPreviewLink } = useAppDataActions();
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -74,10 +76,16 @@ export default function EditorHeader({
     redirectToDashboard();
   };
 
-  // const appVersionPreviewLink = editingVersion
-  //   ? `/applications/${app.id}/versions/${editingVersion.id}/${pageHandle}`
-  //   : '';
+  useEffect(() => {
+    const previewQuery = queryString.stringify({ version: editingVersion.name });
+    const appVersionPreviewLink = editingVersion.id
+      ? `/applications/${slug || appId}/${pageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
+      : '';
+    setAppPreviewLink(appVersionPreviewLink);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, currentVersionId, editingVersion]);
 
+  console.log({ appVersionPreviewLink }, 'appVersionPreviewLink');
   return (
     <div className="header" style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none">

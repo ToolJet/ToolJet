@@ -131,6 +131,6 @@ export const useAppDataStore = create(
 export const useEditingVersion = () => useAppDataStore((state) => state.editingVersion, shallow);
 export const useIsSaving = () => useAppDataStore((state) => state.isSaving, shallow);
 export const useUpdateEditingVersion = () => useAppDataStore((state) => state.actions, shallow);
-export const useCurrentUser = () => useAppDataStore((state) => state.currentUse, shallow);
-export const useAppInfo = () => useAppDataStore((state) => state, shallow);
+export const useCurrentUser = () => useAppDataStore((state) => state.currentUser, shallow);
+export const useAppInfo = () => useAppDataStore((state) => state);
 export const useAppDataActions = () => useAppDataStore((state) => state.actions, shallow);
