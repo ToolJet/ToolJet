@@ -4,6 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { authenticationService } from '@/_services';
+import { getWorkspaceId } from '../_helpers/utils';
 
 const LegalReasonsErrorModal = ({
   showModal: propShowModal,
@@ -17,6 +18,7 @@ const LegalReasonsErrorModal = ({
 }) => {
   const [isOpen, setShowModal] = useState(propShowModal);
   const currentUser = authenticationService.currentSessionValue;
+  const workspaceId = getWorkspaceId();
 
   const handleClose = () => {
     setShowModal(false);
@@ -55,13 +57,14 @@ const LegalReasonsErrorModal = ({
               Cancel
             </Button>
             {currentUser?.admin && (
-              <Button className="upgrade-btn" autoFocus onClick={() => {}}>
-                <a
-                  style={{ color: 'white', textDecoration: 'none' }}
-                  href={`https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=tooljet-cloud&workspace_id=${currentUser.current_organization_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+              <Button
+                onClick={() => {
+                  window.location.href = `/${workspaceId}/settings/subscription?currentTab=upgradePlan`;
+                }}
+                className="upgrade-btn"
+                autoFocus
+              >
+                <a style={{ color: 'white', textDecoration: 'none' }} target="_blank" rel="noopener noreferrer">
                   Upgrade
                 </a>
               </Button>

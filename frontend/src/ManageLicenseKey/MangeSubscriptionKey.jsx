@@ -85,7 +85,7 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
     searchParams.delete('payment');
     searchParams.delete('currentTab');
     setSearchParams(searchParams);
-  }, [selectedTab]);
+  }, [selectedTab, paymentStatus, currentTab]);
 
   const fetchFeatureAccess = () => {
     setIsLoading(true);

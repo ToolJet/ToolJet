@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import cx from 'classnames';
+import posthog from 'posthog-js';
 import { authenticationService, licenseService, userService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -54,6 +55,13 @@ export default function UpgradePlan({ current_organization_id }) {
   const upgradePlan = () => {
     setUpgradeLoading(true);
     const { viewersCount, editorsCount, subscriptionType, couponCode } = planForm;
+    posthog.capture('click_billing_pay', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      editors_count: parseInt(editorsCount),
+      viewers_count: parseInt(viewersCount),
+    });
     const planDetails = {
       workspaceId: current_organization_id,
       subsribtionType: subscriptionType,
