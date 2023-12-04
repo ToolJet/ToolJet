@@ -49,7 +49,7 @@ export const OptionsList = ({
     };
   };
 
-  const createNewOption = (newOptionIndex) => {
+  const createNewOption = () => {
     const columns = props.component.component.definition.properties.columns;
     const column = columns.value[index];
     const options = column.options || [];
@@ -131,6 +131,20 @@ export const OptionsList = ({
     );
   };
 
+  const defaultOptionsValues = (hasOptions = false, options) => {
+    if (hasOptions && Array.isArray(options)) {
+      return options;
+    }
+    return {
+      options: [
+        { name: 'Jane Cooper', value: 'Jane Copoper' },
+        { name: 'Cameron Williamson', value: 'Cameron Williamson' },
+        { name: 'Leslie Alexander', value: 'Leslie Alexander' },
+        { name: 'Brooklyn Simmons', value: 'Brooklyn Simmons' },
+      ],
+    };
+  };
+
   items.push({
     title: 'Options',
     children: (
@@ -142,14 +156,8 @@ export const OptionsList = ({
         >
           <Droppable droppableId="droppable">
             {({ innerRef, droppableProps, placeholder }) => {
-              if (!column.hasOwnProperty('options')) {
-                column.options = [
-                  { name: 'Jane Cooper', value: 'Jane Copoper' },
-                  { name: 'Cameron Williamson', value: 'Cameron Williamson' },
-                  { name: 'Leslie Alexander', value: 'Leslie Alexander' },
-                  { name: 'Brooklyn Simmons', value: 'Brooklyn Simmons' },
-                ];
-              }
+              const defaultOptions = defaultOptionsValues(column.hasOwnProperty('options'), column?.options);
+              Object.assign(column, defaultOptions);
               return (
                 <div className="w-100" {...droppableProps} ref={innerRef}>
                   {column?.options?.map((option, optionIndex) => {
@@ -200,7 +208,7 @@ export const OptionsList = ({
         <div>
           {column?.options?.length === 0 && <NoListItem text={'There are no columns'} dataCy={`-columns`} />}
           <div>
-            <AddNewButton dataCy={`button-add-column`} onClick={() => createNewOption(column?.options?.length ?? 0)}>
+            <AddNewButton dataCy={`button-add-column`} onClick={() => createNewOption()}>
               {/* {this.props.t('widget.Table.addNewColumn', ' Add new column')} */}
               Add new option
             </AddNewButton>
