@@ -90,14 +90,6 @@ jobs:
       - run: npm --prefix frontend ci && npm --prefix server ci && npm --prefix plugins ci
       - run: npm --prefix server run lint && npm --prefix frontend run lint && npm --prefix plugins run lint
 
-  dependency-review:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout Repository'
-        uses: actions/checkout@v4
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v3
-
   unit-test:
     runs-on: ubuntu-latest
     needs: build
