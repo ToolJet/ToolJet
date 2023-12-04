@@ -39,8 +39,6 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
       '&' +
       postgrestQueryBuilder.current.paginationQuery.url.toString();
 
-    //console.log('first', postgrestQueryBuilder.current.paginationQuery.url.toString());
-
     const { headers, data, error } = await tooljetDatabaseService.findOne(organizationId, selectedTable.id, query);
 
     if (error) {
@@ -63,12 +61,12 @@ export const usePostgrestQueryBuilder = ({ organizationId, selectedTable, setSel
         const { column, operator, value } = filters[key];
         if (!isEmpty(column) && !isEmpty(operator) && !isEmpty(value)) {
           postgrestQueryBuilder.current.filterQuery.filter(column, operator, value);
-          buildPaginationQuery(pageSize, 0);
+          //buildPaginationQuery(pageSize, 0);
         }
       }
     });
 
-    updateSelectedTableData();
+    buildPaginationQuery(pageSize, 0);
   };
 
   const buildPaginationQuery = (limit, offset) => {

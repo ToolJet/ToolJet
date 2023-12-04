@@ -46,7 +46,6 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
 
     const limit = pageSize;
     const offset = pageCount * pageSize;
-
     buildPaginationQuery(limit, offset);
   };
 
@@ -60,7 +59,6 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
 
     const limit = pageSize;
     const offset = (pageCount - 2) * pageSize;
-
     buildPaginationQuery(limit, offset);
   };
 
