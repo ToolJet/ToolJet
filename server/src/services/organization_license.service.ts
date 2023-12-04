@@ -618,8 +618,8 @@ export class OrganizationLicenseService {
     const STRIPE_PRICE_CODE_ITEM_MAPPING = this.STRIPE_PRICE_CODE_ITEM_MAPPING;
 
     function createItemsList(lineItem) {
-      const productType = STRIPE_PRICE_CODE_ITEM_MAPPING[lineItem.plan.interval]?.[lineItem.price.id];
-      if (productType) interval = lineItem.plan.interval;
+      const productType = STRIPE_PRICE_CODE_ITEM_MAPPING[lineItem?.plan?.interval]?.[lineItem?.price?.id];
+      if (productType) interval = lineItem?.plan?.interval;
       if (productType == 'reader') productList = { noOfReaders: parseInt(lineItem.quantity), ...productList };
       else if (productType == 'editor') {
         productList = { noOfEditors: parseInt(lineItem.quantity), ...productList };
@@ -627,6 +627,10 @@ export class OrganizationLicenseService {
     }
     const lineItems = invoiceObject.lines.data;
     lineItems.map(createItemsList);
+
+    if (!productList || !interval) {
+      throw new BadRequestException('Product list or interval missing');
+    }
     interval += 'ly';
 
     //Getting all invoice paid for given subscriptions id
