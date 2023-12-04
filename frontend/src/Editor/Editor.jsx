@@ -133,7 +133,6 @@ const EditorComponent = (props) => {
   );
 
   const dataQueries = useDataQueriesStore((state) => state.dataQueries, shallow);
-  console.log(isVersionReleased, editingVersionId, releasedVersionId, 'vvv');
   const {
     isMaintenanceOn,
     appId,
