@@ -128,11 +128,29 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   `sudo docker-compose up -d`
 
   iv. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
-  :::
+:::
 
-
-
-
-  </TabItem>
+</TabItem>
 </Tabs>
+
+## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+
+Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+
+If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+
+#### Prerequisites for Upgrading to the Latest Version:
+
+- It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+
+- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+
+For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
+
+
+
+
+
 
