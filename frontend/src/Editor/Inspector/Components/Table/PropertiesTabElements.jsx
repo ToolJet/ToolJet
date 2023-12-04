@@ -7,7 +7,7 @@ import { EventManager } from '../../EventManager';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import _ from 'lodash';
 import { OptionsList } from './SelectColumnTypeOptionsSection/OptionsList';
-
+import { newTableDrop } from '@/_helpers/appUtils';
 export const PropertiesTabElements = ({
   column,
   index,
@@ -22,16 +22,6 @@ export const PropertiesTabElements = ({
   timeZoneOptions,
 }) => {
   const { t } = useTranslation();
-
-  const newTableDrop = (columnType) => {
-    switch (columnType) {
-      case 'dropdown':
-        if (column.hasOwnProperty('values') || column.hasOwnProperty('labels')) return false;
-        return true;
-      default:
-        break;
-    }
-  };
 
   return (
     <>
@@ -125,7 +115,7 @@ export const PropertiesTabElements = ({
           />
         </div>
       )}
-      {column.columnType === 'dropdown' && newTableDrop(column.columnType) && (
+      {column.columnType === 'dropdown' && newTableDrop(column.columnType, column) && (
         <OptionsList
           column={column}
           props={props}
@@ -134,6 +124,8 @@ export const PropertiesTabElements = ({
           currentState={currentState}
           getPopoverFieldSource={getPopoverFieldSource}
           setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          component={component}
+          onColumnItemChange={onColumnItemChange}
         />
       )}
       {((column.columnType === 'dropdown' && (column.hasOwnProperty('values') || column.hasOwnProperty('values'))) ||

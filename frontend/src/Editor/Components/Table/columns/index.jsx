@@ -9,6 +9,7 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
+import { newTableDrop } from '@/_helpers/appUtils';
 
 export default function generateColumnsData({
   columnProperties,
@@ -36,13 +37,20 @@ export default function generateColumnsData({
     let sortType = 'alphanumeric';
 
     const columnOptions = {};
-    if (columnType === 'dropdown') {
+
+    if (columnType === 'dropdown' && newTableDrop(columnType, column)) {
       // add condition here to only come inside this block for newer tables
       columnOptions.selectOptions = [];
-      columnOptions.selectOptions = column?.options;
+      const useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
+      if (useDynamicOptions) {
+        columnOptions.selectOptions = resolveReferences(column?.dynamicOptions || '', currentState);
+      } else {
+        columnOptions.selectOptions = column?.options;
+      }
     }
+
     if (
-      // columnType === 'dropdown' ||
+      (columnType === 'dropdown' && !newTableDrop(columnType, column)) ||
       columnType === 'multiselect' ||
       columnType === 'badge' ||
       columnType === 'badges' ||

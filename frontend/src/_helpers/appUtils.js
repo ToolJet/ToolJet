@@ -1903,3 +1903,13 @@ export const removeFunctionObjects = (obj) => {
   }
   return obj;
 };
+
+export const newTableDrop = (columnType, column) => {
+  switch (columnType) {
+    case 'dropdown':
+      if (column.hasOwnProperty('values') || column.hasOwnProperty('labels')) return false;
+      return true;
+    default:
+      break;
+  }
+};
