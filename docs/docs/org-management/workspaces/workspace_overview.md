@@ -33,10 +33,9 @@ Please check the detailed doc on **[Permissions](/docs/org-management/permission
 - When the Multi-Workspace feature is enabled, users must log in with a username and password.
 - Administrators can configure authentication methods for their workspaces.
 - If password login is enabled, switching to the workspace will happen without any other authorization since the user is already authorized with password login.
-- If a user is logged into Tooljet and switches to a workspace that only uses Single Sign-On (SSO), the user will be sent to a login page to select an SSO option
+- If a user is logged into ToolJet and switches to a workspace that only uses Single Sign-On (SSO), the user will be sent to a login page to select an SSO option.
 - Users can directly login to a workspace using workspace login URL. Administrators can view the URL in the Workspace Settings under **SSO -> General Settings -> Login URL**.
 
-### When disabled (Super Admin)
+### Disabling Workspace Creation (Super Admin)
 - Only **[Super Admins](/docs/Enterprise/superadmin#restrict-creation-of-personal-workspace-of-users)** can disable the option for creating personal workspaces for a user.
 - If the option to make personal workspaces is turned off for a user, the user won't be able to create new workspaces.
-- No separate login page for workspace and SSO configured for the workspace will be reflected to the main login page/login.
