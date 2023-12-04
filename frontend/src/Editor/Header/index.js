@@ -85,7 +85,6 @@ export default function EditorHeader({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, currentVersionId, editingVersion]);
 
-  console.log({ appVersionPreviewLink }, 'appVersionPreviewLink');
   return (
     <div className="header" style={{ width: '100%' }}>
       <header className="navbar navbar-expand-md d-print-none">

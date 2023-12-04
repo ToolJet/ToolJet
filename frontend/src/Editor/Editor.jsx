@@ -95,15 +95,13 @@ const EditorComponent = (props) => {
     useEditorActions();
 
   const { setAppVersions } = useAppVersionActions();
-  const { isVersionReleased, editingVersionId, releasedVersionId } = useAppVersionState(
-    (state) => (
-      {
-        isVersionReleased: state?.isVersionReleased,
-        editingVersionId: state?.editingVersion.id,
-        releasedVersionId: state?.releasedVersionId,
-      },
-      shallow
-    )
+  const { isVersionReleased, editingVersionId, releasedVersionId } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state?.isVersionReleased,
+      editingVersionId: state?.editingVersion?.id,
+      releasedVersionId: state?.releasedVersionId,
+    }),
+    shallow
   );
   const {
     appDefinition,
@@ -135,7 +133,7 @@ const EditorComponent = (props) => {
   );
 
   const dataQueries = useDataQueriesStore((state) => state.dataQueries, shallow);
-
+  console.log(isVersionReleased, editingVersionId, releasedVersionId, 'vvv');
   const {
     isMaintenanceOn,
     appId,
@@ -1144,7 +1142,6 @@ const EditorComponent = (props) => {
       }
     }
   };
-  // console.log(isUpdatingEditorStateInProcess, 'isUpdatingEditorStateInProcess');
   const removeComponent = (componentId) => {
     if (!isVersionReleased) {
       let newDefinition = cloneDeep(appDefinition);
@@ -1663,7 +1660,6 @@ const EditorComponent = (props) => {
       </div>
     );
   }
-  console.log('render');
   return (
     <div className="editor wrapper">
       <Confirm
