@@ -230,6 +230,20 @@ export const commonSelectors = {
   modalHeader: '[data-cy="modal-header"]',
   modalDescription: '[data-cy="modal-description"]',
   backToHomeButton: '[data-cy="back-to-home-button"]',
+  createAppTitle: '[data-cy="create-app-title"]',
+  appNameLabel: '[data-cy="app-name-label"]',
+  appNameInput: '[data-cy="app-name-input"]',
+  appNameInfoLabel: '[data-cy="app-name-info-label"]',
+  createAppButton: '[data-cy="+-create-app"]',
+  renameApptitle: '[data-cy="rename-app-title"]',
+  renameAppButton: '[data-cy="rename-app"]',
+  cloneAppTitle: '[data-cy="clone-app-title"]',
+  cloneAppButton: '[data-cy="clone-app"]',
+  appNameErrorLabel: '[data-cy="app-name-error-label"]',
+  importAppTitle: '[data-cy="import-app-title"]',
+  importAppButton: '[data-cy="import-app"]',
+  chooseFromTemplateButton: '[data-cy="choose-from-template-button"]',
+  CreateAppFromTemplateButton: '[data-cy="create-new-app-from-template-title"]',
 };
 
 export const commonWidgetSelector = {
