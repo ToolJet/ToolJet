@@ -6,7 +6,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server, WebSocket } from 'ws';
+import { Server } from 'ws';
 import { AuthService } from 'src/services/auth.service';
 import { isEmpty } from 'lodash';
 import { maybeSetSubPath } from '../helpers/utils.helper';
