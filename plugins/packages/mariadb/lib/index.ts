@@ -2,6 +2,7 @@ import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@to
 import { SourceOptions, QueryOptions } from './types';
 const mariadb = require('mariadb');
 export default class Mariadb implements QueryService {
+  private defaultConnectionLimit = '5';
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     let result = {};
     const mariadbClient = await this.getConnection(sourceOptions);
@@ -30,11 +31,15 @@ export default class Mariadb implements QueryService {
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
+    const connectionLimit =
+      sourceOptions.connectionLimit && sourceOptions.connectionLimit !== ''
+        ? sourceOptions.connectionLimit
+        : this.defaultConnectionLimit;
     const poolConfig = {
       host: sourceOptions.host,
       user: sourceOptions.user,
       password: sourceOptions.password,
-      connectionLimit: sourceOptions.connectionLimit,
+      connectionLimit: connectionLimit,
       port: sourceOptions.port,
       database: sourceOptions.database,
     };
