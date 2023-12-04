@@ -46,7 +46,7 @@ export const TextInput = function TextInput({
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
   const computedStyles = {
-    height: height == 37 ? (padding == 'default' ? '32px' : '38px') : height,
+    height: height == 37 ? (padding == 'default' ? '32px' : '38px') : padding == 'default' ? height - 5 : height,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
