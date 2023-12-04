@@ -346,7 +346,6 @@ class TableComponent extends React.Component {
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
-    console.log('kavin :: second', { column, newColumns });
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
   };
 
@@ -374,7 +373,6 @@ class TableComponent extends React.Component {
 
   reorderColumns = (startIndex, endIndex) => {
     const result = this.props.component.component.definition.properties.columns.value;
-    console.log('arpit :: result', { result });
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
     this.props.paramUpdated({ name: 'columns' }, 'value', result, 'properties', true);
