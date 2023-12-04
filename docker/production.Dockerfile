@@ -3,7 +3,7 @@ FROM node:18.18.2-buster AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@8.11.0
+RUN npm i -g npm@9.8.1
 RUN mkdir -p /app
 
 WORKDIR /app
