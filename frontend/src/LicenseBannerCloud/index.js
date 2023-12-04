@@ -98,7 +98,7 @@ export function LicenseBannerCloud({
         return `Start your 14-day free trial!`;
       case isExpired && type === 'trial':
         return `Your trial has ended.`;
-      case isExpiringToday && licenseType === 'trial': {
+      case isExpiringToday && type === 'trial': {
         return `Your trial ends today!`;
       }
       case isLicenseValid && licenseType === 'trial' && !iscurrentDate && type === 'trial': {
@@ -107,7 +107,7 @@ export function LicenseBannerCloud({
       case isLicenseValid && licenseType === 'trial' && type === 'trial': {
         return `Your ${daysLeft}-day trial has started!`;
       }
-      case isExpiringToday && (licenseType === 'enterprise' || licenseType === 'business'): {
+      case isExpiringToday && (type === 'enterprise' || type === 'business'): {
         return `Your subscription expires today!`;
       }
       case isExpired && (type === 'enterprise' || type === 'business'):
