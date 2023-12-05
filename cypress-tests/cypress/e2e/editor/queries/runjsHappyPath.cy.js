@@ -71,7 +71,7 @@ describe("RunJS", () => {
     resizeQueryPanel("80");
   });
 
-  it.only("should verify basic runjs", () => {
+  it("should verify basic runjs", () => {
     const data = {};
     data.customText = randomString(12);
 
