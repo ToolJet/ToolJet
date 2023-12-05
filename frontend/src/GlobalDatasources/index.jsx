@@ -56,9 +56,24 @@ export const GlobalDatasources = (props) => {
     globalDatasourceService
       .getAll()
       .then((data) => {
-        const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
+        const orderedDataSources = data.data_sources
+          .map((ds) => {
+            // Check if connection_limit exists in the options and transform it
+            if (ds.options && ds.options.connection_limit) {
+              return {
+                ...ds,
+                options: {
+                  ...ds.options,
+                  connectionLimit: ds.options.connection_limit, // Assign the entire object
+                },
+              };
+            }
+            return ds;
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
+        console.log('dekho yahan', ds);
 
         if (!resetSelection && ds) {
           setEditing(true);
