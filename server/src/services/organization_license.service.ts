@@ -552,8 +552,8 @@ export class OrganizationLicenseService {
     const invoicePaidDate = new Date(paymentObject.created * 1000);
     const subscriptionType = metaData.subscriptionType;
     const mode = paymentObject.mode;
-    const noOfEditors = metaData.editors;
-    const noOfReaders = metaData.viewers;
+    const noOfEditors = metaData.editors || 1;
+    const noOfReaders = metaData.viewers || 1;
     const paymentStatus = paymentObject.payment_status == 'paid' ? 'success' : 'failed';
     const invoiceType = 'subscription';
 
@@ -675,8 +675,8 @@ export class OrganizationLicenseService {
             paymentStatus,
             subscriptionType: interval,
             mode: anyOrgPayment.mode,
-            noOfEditors: productList.noOfEditors,
-            noOfReaders: productList.noOfReaders,
+            noOfEditors: productList.noOfEditors || 1,
+            noOfReaders: productList.noOfReaders || 1,
             companyName: anyOrgPayment.companyName,
             email: anyOrgPayment.email,
           },
