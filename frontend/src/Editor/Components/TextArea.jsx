@@ -19,8 +19,8 @@ export const TextArea = function TextArea({
         setExposedVariable('value', text);
       },
       clear: async function (text) {
-        setValue(text);
-        setExposedVariable('value', text);
+        setValue('');
+        setExposedVariable('value', '');
       },
     };
     setExposedVariables(exposedVariables);
