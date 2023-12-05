@@ -346,6 +346,7 @@ class TableComponent extends React.Component {
     column[item] = value;
     const newColumns = columns.value;
     newColumns[index] = column;
+
     this.props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
   };
 
