@@ -774,9 +774,12 @@ const EditorComponent = (props) => {
     }
 
     const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
+    const isMultiEnvironmentActive = useEditorStore.getState().featureAccess?.multiEnvironment ?? false;
 
-    const currentAppVersionEnvId =
-      data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
+    const currentAppVersionEnvId = !isMultiEnvironmentActive
+      ? data['editing_version']['promoted_from'] || data['editing_version']['promotedFrom']
+      : data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
+
     setAppVersions(appVersions.appVersions);
 
     const currentOrgId = data?.organization_id || data?.organizationId;
