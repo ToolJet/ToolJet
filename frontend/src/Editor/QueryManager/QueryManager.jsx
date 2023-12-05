@@ -54,7 +54,13 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
         'd-none': loadingDataSources,
       })}
     >
-      <QueryManagerHeader darkMode={darkMode} options={options} editorRef={editorRef} appId={appId} />
+      <QueryManagerHeader
+        darkMode={darkMode}
+        options={options}
+        editorRef={editorRef}
+        appId={appId}
+        setOptions={setOptions}
+      />
       <CodeHinterContext.Provider
         value={{
           parameters: selectedQuery?.options?.parameters?.reduce(

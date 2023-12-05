@@ -21,13 +21,16 @@ import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
 
-export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, ref) => {
+import ParameterList from './ParameterList';
+
+export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setOptions }, ref) => {
   const { renameQuery } = useDataQueriesActions();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
-  const { queries } = useCurrentState((state) => ({ queries: state.queries }), shallow);
+  const currentState = useCurrentState((state) => ({ queries: state.queries }), shallow);
+  const { queries } = currentState;
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -133,6 +136,33 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
     );
   };
 
+  const handleAddParameter = (newParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
+      setOptions({
+        ...prevOptions,
+        parameters: [...(prevOptions?.parameters ?? []), newParameter],
+      });
+    }
+  };
+
+  const handleParameterChange = (index, updatedParameter) => {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
+      const updatedParameters = [...prevOptions.parameters];
+      updatedParameters[index] = updatedParameter;
+      setOptions({ ...prevOptions, parameters: updatedParameters });
+    }
+  };
+
+  const handleParameterRemove = (index) => {
+    const prevOptions = { ...options };
+    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
+    setOptions({ ...prevOptions, parameters: updatedParameters });
+  };
+
   return (
     <div className="row header">
       <div className="col font-weight-500">
@@ -142,6 +172,17 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
             value={queryName}
             darkMode={darkMode}
             isDiabled={isVersionReleased}
+          />
+        )}
+
+        {selectedQuery && (
+          <ParameterList
+            parameters={options.parameters}
+            handleAddParameter={handleAddParameter}
+            handleParameterChange={handleParameterChange}
+            handleParameterRemove={handleParameterRemove}
+            currentState={currentState}
+            darkMode={darkMode}
           />
         )}
       </div>
