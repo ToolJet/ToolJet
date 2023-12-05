@@ -2,7 +2,7 @@ name: Cypress Code-Coverage
 
 on:
   pull_request_target:
-    types: [labeled]
+    types: [labeled, unlabeled, closed]
 
   workflow_dispatch:
 
@@ -104,11 +104,11 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Run Cypress
+      - name: App Builder subpath
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:8082"
+          config: "baseUrl=http://localhost:80/apps/tooljet/"
           config-file: cypress.config.js
         
 
@@ -131,4 +131,4 @@ jobs:
     env:
       DYNAMIC_COVERAGE: $COVERAGE_PERCENTAGE
           
-    name: Cypress Code Coverage $env.DYNAMIC_COVERAGE %
+    name: Cypress Code Coverage $COVERAGE_PERCENTAGE%
