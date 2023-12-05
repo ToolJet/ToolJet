@@ -120,6 +120,17 @@ export function CodeHinter({
   const { variablesExposedForPreview } = useContext(EditorContext);
   const prevCountRef = useRef(false);
 
+  const checkTypeErrorInRunTime = (preview) => {
+    const propertyDefinition = getPropertyDefinition(paramName, component?.component);
+    const resolvedProperty = Object.keys(component?.component?.definition || {}).reduce((accumulator, currentKey) => {
+      if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
+        accumulator[`${paramName}`] = preview;
+      return accumulator;
+    }, {});
+    const [_valid, errorMessages] = validateProperty(resolvedProperty, propertyDefinition, paramName);
+    return [_valid, errorMessages];
+  };
+
   useEffect(() => {
     setCurrentValue(initialValue);
     const [_valid, errorMessages] = checkTypeErrorInRunTime(initialValue);
@@ -159,17 +170,6 @@ export function CodeHinter({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
-
-  const checkTypeErrorInRunTime = (preview) => {
-    const propertyDefinition = getPropertyDefinition(paramName, component?.component);
-    const resolvedProperty = Object.keys(component?.component?.definition || {}).reduce((accumulator, currentKey) => {
-      if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
-        accumulator[`${paramName}`] = preview;
-      return accumulator;
-    }, {});
-    const [_valid, errorMessages] = validateProperty(resolvedProperty, propertyDefinition, paramName);
-    return [_valid, errorMessages];
-  };
 
   useEffect(() => {
     let globalPreviewCopy = null;
