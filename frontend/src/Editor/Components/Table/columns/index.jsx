@@ -43,7 +43,7 @@ export default function generateColumnsData({
       columnOptions.selectOptions = [];
       const useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
       if (useDynamicOptions) {
-        columnOptions.selectOptions = resolveReferences(column?.dynamicOptions || '', currentState);
+        columnOptions.selectOptions = resolveReferences(column?.dynamicOptions || [], currentState);
       } else {
         columnOptions.selectOptions = column?.options;
       }
