@@ -159,6 +159,7 @@ export function Table({
       right: '0',
       bottom: '0',
       zIndex: '9999',
+      width: '60px',
     }),
     ...(!isDragging && { transform: 'translate(0,0)', width: '100%' }),
     ...(isDropAnimating && { transitionDuration: '0.001s' }),
