@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import ReleaseConfirmation from './ReleaseConfirmation';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import posthog from 'posthog-js';
 import '@/_styles/versions.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
@@ -25,7 +26,7 @@ export const ReleaseVersionButton = function DeployVersionButton({ appId, appNam
 
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
-
+    posthog.capture('click_release', { appId }); //posthog event
     appsService
       .saveApp(appId, {
         name: appName,

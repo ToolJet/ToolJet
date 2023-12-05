@@ -17,6 +17,7 @@ import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
+import posthog from 'posthog-js';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
@@ -287,6 +288,8 @@ export const EventManager = ({
   function addHandler() {
     let newEvents = events;
     const eventIndex = newEvents.length;
+
+    posthog.capture('click_add_event_handler', { widget: components[sourceId]['component']['component'] });
 
     createAppVersionEventHandlers({
       event: {
