@@ -535,6 +535,12 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         });
       }
 
+      case 'get-custom-variable': {
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customAppVariables = { ...getCurrentState().variables };
+        return customAppVariables[key];
+      }
+
       case 'unset-custom-variable': {
         const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
         const customAppVariables = { ...getCurrentState().variables };
@@ -557,6 +563,14 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
             variables: customPageVariables,
           },
         });
+      }
+
+      case 'get-page-variable': {
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customPageVariables = {
+          ...getCurrentState().page.variables,
+        };
+        return customPageVariables[key];
       }
 
       case 'unset-page-variable': {

@@ -623,6 +623,16 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     }
   };
 
+  const getVariable = (key = '') => {
+    if (key) {
+      const event = {
+        actionId: 'get-custom-variable',
+        key,
+      };
+      return executeAction(_ref, event, mode, {});
+    }
+  };
+
   const unSetVariable = (key = '') => {
     if (key) {
       const event = {
@@ -728,6 +738,14 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     return executeAction(_ref, event, mode, {});
   };
 
+  const getPageVariable = (key = '') => {
+    const event = {
+      actionId: 'get-page-variable',
+      key,
+    };
+    return executeAction(_ref, event, mode, {});
+  };
+
   const unsetPageVariable = (key = '') => {
     const event = {
       actionId: 'unset-page-variable',
@@ -766,6 +784,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   return {
     runQuery,
     setVariable,
+    getVariable,
     unSetVariable,
     showAlert,
     logout,
@@ -776,6 +795,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     goToApp,
     generateFile,
     setPageVariable,
+    getPageVariable,
     unsetPageVariable,
     switchPage,
   };
