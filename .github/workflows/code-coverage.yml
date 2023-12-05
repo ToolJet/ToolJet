@@ -60,6 +60,7 @@ jobs:
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
+          echo "NODE_ENV=developement" >> .env
 
       - name: Set up database
         run: |
