@@ -12,6 +12,7 @@ env:
 
 jobs:
   Cypress-Code-Coverage:
+    name: Code coverage
     runs-on: ubuntu-22.04
 
     if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'check-coverage') }}
