@@ -58,13 +58,12 @@ export const GlobalDatasources = (props) => {
       .then((data) => {
         const orderedDataSources = data.data_sources
           .map((ds) => {
-            // Check if connection_limit exists in the options and transform it
             if (ds.options && ds.options.connection_limit) {
               return {
                 ...ds,
                 options: {
                   ...ds.options,
-                  connectionLimit: ds.options.connection_limit, // Assign the entire object
+                  connectionLimit: ds.options.connection_limit,
                 },
               };
             }
