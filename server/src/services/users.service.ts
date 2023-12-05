@@ -124,14 +124,16 @@ export class UsersService {
     return await this.usersRepository.find({ userType: USER_TYPE.INSTANCE });
   }
 
-  async getCount(isOnlyActive?: boolean, manager?: EntityManager): Promise<number> {
+  async getCount(isOnlyActive?: boolean, manager?: EntityManager, organizationId?: string): Promise<number> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+      const organizationUsersCondition = this.createOrganizationUsersJoinCondition(organizationId);
       !isOnlyActive && statusList.push(USER_STATUS.ARCHIVED);
       return await manager
         .createQueryBuilder(User, 'users')
-        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+        .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
           statusList,
+          organizationId,
         })
         .select('users.id')
         .distinct()
@@ -332,14 +334,14 @@ export class UsersService {
     }, manager);
   }
 
-  async updateUser(userId: string, updatableParams: Partial<User>, manager?: EntityManager) {
+  async updateUser(userId: string, updatableParams: Partial<User>, manager?: EntityManager, organizationId?: string) {
     if (updatableParams.password) {
       updatableParams.password = bcrypt.hashSync(updatableParams.password, 10);
     }
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(User, userId, updatableParams);
       if (updatableParams.userType === USER_TYPE.INSTANCE) {
-        await this.validateLicense(manager);
+        await this.validateLicense(manager, organizationId);
       }
     }, manager);
   }
@@ -655,7 +657,7 @@ export class UsersService {
   async groupPermissions(user: User, manager?: EntityManager): Promise<GroupPermission[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let groupPermissions: GroupPermission[] = [];
-      const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+      const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, user?.organizationId);
       const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
       const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
 
@@ -687,7 +689,7 @@ export class UsersService {
   async appGroupPermissions(user: User, appId?: string, manager?: EntityManager): Promise<AppGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
-    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, user?.organizationId);
 
     if (!groupIds || groupIds.length === 0) {
       return [];
@@ -722,7 +724,7 @@ export class UsersService {
   ): Promise<DataSourceGroupPermission[]> {
     const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
     const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
-    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID);
+    const isLicenseValid = await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, user?.organizationId);
 
     if (!groupIds || groupIds.length === 0) {
       return [];
@@ -767,15 +769,33 @@ export class UsersService {
     }, manager);
   }
 
-  private async getUserIdWithEditPermission(manager: EntityManager) {
-    const statusList = ['invited', 'active'];
+  private createAppsJoinCondition(organizationId?: string): string {
+    return organizationId ? 'apps.organizationId = :organizationId' : '1=1';
+  }
+
+  private createGroupPermissionsJoinCondition(organizationId?: string): string {
+    return organizationId ? 'group_permissions.organizationId = :organizationId' : '1=1';
+  }
+
+  private createOrganizationUsersJoinCondition(organizationId?: string): string {
+    const statusCondition = 'organization_users.status IN (:...statusList)';
+    const organizationCondition = organizationId ? ' AND organization_users.organizationId = :organizationId' : '';
+    return `${statusCondition}${organizationCondition}`;
+  }
+
+  private async getUserIdWithEditPermission(manager: EntityManager, organizationId?: string) {
+    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+    const groupPermissionsCondition = this.createGroupPermissionsJoinCondition(organizationId);
+    const organizationUsersCondition = this.createOrganizationUsersJoinCondition(organizationId);
+    const appsCondition = this.createAppsJoinCondition(organizationId);
     const userIdsWithEditPermissions = (
       await manager
         .createQueryBuilder(User, 'users')
-        .innerJoin('users.groupPermissions', 'group_permissions')
+        .innerJoin('users.groupPermissions', 'group_permissions', groupPermissionsCondition, { organizationId })
         .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
-        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+        .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
           statusList,
+          organizationId,
         })
         .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
         .andWhere(
@@ -793,9 +813,10 @@ export class UsersService {
     const userIdsOfAppOwners = (
       await manager
         .createQueryBuilder(User, 'users')
-        .innerJoin('users.apps', 'apps')
-        .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+        .innerJoin('users.apps', 'apps', appsCondition, { organizationId })
+        .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
           statusList,
+          organizationId,
         })
         .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
         .select('users.id')
@@ -815,30 +836,35 @@ export class UsersService {
     return [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners, ...userIdsOfSuperAdmins])];
   }
 
-  async fetchTotalEditorCount(manager: EntityManager): Promise<number> {
-    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager);
+  async fetchTotalEditorCount(manager: EntityManager, organizationId?: string): Promise<number> {
+    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager, organizationId);
     return userIdsWithEditPermissions?.length || 0;
   }
 
-  async fetchTotalViewerEditorCount(manager: EntityManager): Promise<{ editor: number; viewer: number }> {
-    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager);
+  async fetchTotalViewerEditorCount(
+    manager: EntityManager,
+    organizationId?: string
+  ): Promise<{ editor: number; viewer: number }> {
+    const userIdsWithEditPermissions = await this.getUserIdWithEditPermission(manager, organizationId);
+    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
+    const groupPermissionsCondition = this.createGroupPermissionsJoinCondition(organizationId);
+    const organizationUsersCondition = this.createOrganizationUsersJoinCondition(organizationId);
 
     if (!userIdsWithEditPermissions?.length) {
       // No editors -> No viewers
       return { editor: 0, viewer: 0 };
     }
-
-    const statusList = [USER_STATUS.INVITED, USER_STATUS.ACTIVE];
     const viewer = await manager
       .createQueryBuilder(User, 'users')
-      .innerJoin('users.groupPermissions', 'group_permissions')
+      .innerJoin('users.groupPermissions', 'group_permissions', groupPermissionsCondition, { organizationId })
       .leftJoin(
         'group_permissions.appGroupPermission',
         'app_group_permissions',
         'app_group_permissions.read = true AND app_group_permissions.update = false'
       )
-      .innerJoin('users.organizationUsers', 'organization_users', 'organization_users.status IN (:...statusList)', {
+      .innerJoin('users.organizationUsers', 'organization_users', organizationUsersCondition, {
         statusList,
+        organizationId,
       })
       .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
       .andWhere('users.id NOT IN(:...userIdsWithEditPermissions)', { userIdsWithEditPermissions })
@@ -857,12 +883,12 @@ export class UsersService {
       .getCount();
   }
 
-  async validateLicense(manager: EntityManager): Promise<void> {
+  async validateLicense(manager: EntityManager, organizationId?: string): Promise<void> {
     let editor = -1,
       viewer = -1;
     const {
       allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
-    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER]);
+    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER], organizationId);
 
     if (superadminUsers !== LICENSE_LIMIT.UNLIMITED) {
       const superadmin = await this.fetchTotalSuperadminCount(manager);
@@ -871,16 +897,16 @@ export class UsersService {
       }
     }
 
-    if (users !== LICENSE_LIMIT.UNLIMITED && (await this.getCount(true, manager)) > users) {
+    if (users !== LICENSE_LIMIT.UNLIMITED && (await this.getCount(true, manager, organizationId)) > users) {
       throw new HttpException('You have reached your limit for number of users.', 451);
     }
 
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED && viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
-      ({ editor, viewer } = await this.fetchTotalViewerEditorCount(manager));
+      ({ editor, viewer } = await this.fetchTotalViewerEditorCount(manager, organizationId));
     }
     if (editorUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (editor === -1) {
-        editor = await this.fetchTotalEditorCount(manager);
+        editor = await this.fetchTotalEditorCount(manager, organizationId);
       }
       if (editor > editorUsers) {
         throw new HttpException('You have reached your limit for number of builders.', 451);
@@ -889,9 +915,9 @@ export class UsersService {
 
     if (viewerUsers !== LICENSE_LIMIT.UNLIMITED) {
       if (viewer === -1) {
-        ({ viewer } = await this.fetchTotalViewerEditorCount(manager));
+        ({ viewer } = await this.fetchTotalViewerEditorCount(manager, organizationId));
       }
-      const addedUsers = await this.getCount(true, manager);
+      const addedUsers = await this.getCount(true, manager, organizationId);
       const addableUsers = users - addedUsers;
 
       if (viewer > viewerUsers && addableUsers < 0) {
@@ -900,11 +926,11 @@ export class UsersService {
     }
   }
 
-  async getUserLimitsByType(type: LIMIT_TYPE) {
+  async getUserLimitsByType(type: LIMIT_TYPE, organizationId?: string) {
     const {
-      allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
+      allUsers: { total: users, editors: editorUsers, viewers: viewerUsers },
       status: licenseStatus,
-    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER, LICENSE_FIELD.STATUS]);
+    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER, LICENSE_FIELD.STATUS], organizationId);
 
     const manager = getManager();
 
@@ -913,28 +939,28 @@ export class UsersService {
         if (users === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const currentUsersCount = await this.getCount(true, manager);
+        const currentUsersCount = await this.getCount(true, manager, organizationId);
         return generatePayloadForLimits(currentUsersCount, users, licenseStatus);
       }
       case LIMIT_TYPE.EDITOR: {
         if (editorUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const currentEditorsCount = await this.fetchTotalEditorCount(manager);
+        const currentEditorsCount = await this.fetchTotalEditorCount(manager, organizationId);
         return generatePayloadForLimits(currentEditorsCount, editorUsers, licenseStatus);
       }
       case LIMIT_TYPE.VIEWER: {
         if (viewerUsers === LICENSE_LIMIT.UNLIMITED) {
           return;
         }
-        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager);
+        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager, organizationId);
         return generatePayloadForLimits(currentViewersCount, viewerUsers, licenseStatus);
       }
       case LIMIT_TYPE.ALL: {
-        const currentUsersCount = await this.getCount(true, manager);
-        const currentSuperadminsCount = await this.fetchTotalSuperadminCount(manager);
+        const currentUsersCount = await this.getCount(true, manager, organizationId);
         const { viewer: currentViewersCount, editor: currentEditorsCount } = await this.fetchTotalViewerEditorCount(
-          manager
+          manager,
+          organizationId
         );
 
         return {
@@ -950,12 +976,6 @@ export class UsersService {
             viewerUsers,
             licenseStatus,
             LICENSE_LIMITS_LABEL.END_USERS
-          ),
-          superadminsCount: generatePayloadForLimits(
-            currentSuperadminsCount,
-            superadminUsers,
-            licenseStatus,
-            LICENSE_LIMITS_LABEL.SUPERADMIN_USERS
           ),
         };
       }

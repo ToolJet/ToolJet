@@ -33,7 +33,12 @@ export class CaslAbilityFactory {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppAbility>);
 
     const isAdmin = await this.usersService.hasGroup(user, 'admin');
-    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.VALID, LICENSE_FIELD.AUDIT_LOGS]);
+    const organizationId = user?.organizationId;
+    //cloud-licensing specific, don't change
+    const licenseTerms = await this.licenseService.getLicenseTerms(
+      [LICENSE_FIELD.VALID, LICENSE_FIELD.AUDIT_LOGS],
+      organizationId
+    );
     const isLicenseValid = licenseTerms[LICENSE_FIELD.VALID];
 
     if (isAdmin) {

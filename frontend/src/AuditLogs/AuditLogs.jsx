@@ -12,7 +12,7 @@ import Pagination from '@/_ui/Pagination';
 import { CustomToggleSwitch } from '../Editor/QueryManager/Components/CustomToggleSwitch';
 import { Button } from '@/_ui/LeftSidebar';
 import { BreadCrumbContext } from '@/App/App';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
@@ -59,7 +59,7 @@ const AuditLogs = (props) => {
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const { super_admin, admin, current_organization_id, instance_id } = authenticationService.currentSessionValue;
-  const DEMO_LINK = `https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=onpremise&instance_id=${instance_id}`;
+  const DEMO_LINK = `https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=tooljet-cloud&workspace_id=${current_organization_id}`;
 
   const perPage = 7;
 
@@ -545,7 +545,7 @@ const AuditLogs = (props) => {
   if (super_admin || admin) {
     return (
       <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
-        <LicenseBanner
+        <LicenseBannerCloud
           classes="mt-3 m-auto"
           limits={featureAccess}
           type="Audit Log"
@@ -967,7 +967,7 @@ const AuditLogs = (props) => {
               gotoPreviousPage={goToPreviousPageAuditLogs}
             />
           </div>
-        </LicenseBanner>
+        </LicenseBannerCloud>
       </Layout>
     );
   } else {

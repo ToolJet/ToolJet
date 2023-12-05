@@ -73,7 +73,6 @@ const imports = [
           development: 'debug',
           test: 'error',
         };
-
         return logLevel[process.env.NODE_ENV] || 'info';
       })(),
       autoLogging: {
@@ -90,6 +89,7 @@ const imports = [
       redact: ['req.headers.authorization'],
     },
   }),
+
   TypeOrmModule.forRoot(ormconfig),
   RequestContextModule,
   AppConfigModule,

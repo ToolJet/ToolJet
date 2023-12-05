@@ -5252,6 +5252,17 @@ div#driver-page-overlay {
   font-size: 12px;
 }
 
+.issued-license {
+  background: var(--indigo9);
+  color: var(--indigo1);
+  border-radius: 17px;
+  padding: 5px;
+  font-size: 10px;
+  padding: 1px 8px;
+  margin-left: auto;
+  text-transform: capitalize;
+}
+
 
 .organization-list {
   margin-top: 4px;
@@ -8968,6 +8979,18 @@ tbody {
 
   }
 
+  .license-banner {
+    .heading {
+      margin: unset !important;
+      width: unset !important;
+
+      div {
+        margin: unset !important;
+        width: unset !important;
+      }
+    }
+  }
+
   .user-limits {
     column-gap: 8px;
     .limit {
@@ -10473,6 +10496,7 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-right: 5px;
   }
 }
 
@@ -10493,6 +10517,10 @@ tbody {
 
 .org-custom-select-header-wrap {
   border-bottom: 1px solid var(--slate5);
+
+  .issued-license {
+    display: none;
+  }
 }
 
 .btn-close:focus {
@@ -12921,3 +12949,24 @@ tbody {
     padding-bottom: 0px !important;
   }
 }
+
+.generic-loader {
+  width: 25px;
+  height: 25px;
+  border: 3px solid #FFEDD4;
+  border-bottom-color: #FFC371;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  }
+
+  @keyframes rotation {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+  }
+

@@ -3,6 +3,8 @@ import { User } from './user.entity';
 import { Organization } from './organization.entity';
 
 export enum ActionTypes {
+  TRIAL_GENERATION_FOR_WORKSPACE = 'TRIAL_GENERATION_FOR_WORKSPACE',
+
   USER_LOGIN = 'USER_LOGIN',
   USER_SIGNUP = 'USER_SIGNUP',
   USER_INVITE = 'USER_INVITE',

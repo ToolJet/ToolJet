@@ -156,7 +156,17 @@ function resendInvite(email) {
       return response;
     });
 }
-function onboarding({ companyName, companySize, role, token, organizationToken, source, password, phoneNumber }) {
+function onboarding({
+  companyName,
+  companySize,
+  role,
+  token,
+  organizationToken,
+  source,
+  password,
+  phoneNumber,
+  requestedTrial,
+}) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -170,6 +180,7 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
       ...(source?.length > 0 && { source }),
       ...(password?.length > 0 && { password }),
       ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
+      requestedTrial,
     }),
   };
 
@@ -279,7 +290,7 @@ function logout(avoidRedirection = false) {
     if (avoidRedirection) {
       window.location.href = loginPath;
     } else {
-      const pathname = getRedirectToWithParams();
+      const pathname = getRedirectToWithParams(true);
       window.location.href = loginPath + `?redirectTo=${`${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`}`;
     }
   };

@@ -10,7 +10,7 @@ import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { Loader } from '../ManageSSO/Loader';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import _ from 'lodash';
 class ManageGroupPermissionsComponent extends React.Component {
@@ -392,7 +392,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                     })}
                   </div>
                   {!_.isEmpty(featureAccess) && !isFeatureEnabled && (
-                    <LicenseBanner
+                    <LicenseBannerCloud
                       style={{ alignSelf: 'flex-end', margin: '0px !important' }}
                       limits={featureAccess}
                       classes="group-banner"

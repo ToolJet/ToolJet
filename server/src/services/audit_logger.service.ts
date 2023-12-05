@@ -3,7 +3,6 @@ import { EntityManager } from 'typeorm';
 import * as requestIp from 'request-ip';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { RequestContext } from 'src/models/request-context.model';
-
 interface AuditLogFields {
   userId: string;
   organizationId: string;
@@ -30,22 +29,22 @@ export class AuditLoggerService {
     return await dbTransactionWrap(async (manager) => {
       const request = RequestContext?.currentContext?.req;
       const clientIp = (request as any)?.clientIp;
-      return await manager.save(
-        manager.create(AuditLog, {
-          userId,
-          organizationId,
-          resourceId,
-          resourceType,
-          actionType,
-          resourceName,
-          ipAddress: clientIp || requestIp.getClientIp(request),
-          metadata: {
-            userAgent: request?.headers['user-agent'],
-            tooljetVersion: globalThis.TOOLJET_VERSION,
-            ...metadata,
-          },
-        })
-      );
+      const logData = {
+        userId,
+        organizationId,
+        resourceId,
+        resourceType,
+        actionType,
+        resourceName,
+        ipAddress: clientIp || requestIp.getClientIp(request),
+        metadata: {
+          userAgent: request?.headers['user-agent'],
+          tooljetVersion: globalThis.TOOLJET_VERSION,
+          ...metadata,
+        },
+      };
+
+      return await manager.save(manager.create(AuditLog, logData));
     }, manager);
   }
 }

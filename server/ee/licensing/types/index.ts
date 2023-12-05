@@ -3,6 +3,7 @@ import { LICENSE_TYPE } from 'src/helpers/license.helper';
 export interface Terms {
   expiry: string; // YYYY-MM-DD
   apps?: number | string;
+  workspaceId?: string;
   workspaces?: number | string;
   users?: {
     total?: number | string;
@@ -43,4 +44,5 @@ export interface CRMData {
   lastName?: string;
   role?: string;
   isTrialOpted?: boolean;
+  isCloudTrialOpted?: boolean;
 }

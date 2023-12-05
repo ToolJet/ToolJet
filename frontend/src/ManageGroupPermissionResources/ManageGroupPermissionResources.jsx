@@ -177,8 +177,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('Group permissions updated');
         this.fetchGroupPermission(groupPermissionId);
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, statusCode }) => {
+        statusCode !== 451 && toast.error(error);
       });
   };
 
@@ -1204,7 +1204,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             className="add-apps-btn"
                             leftIcon="plus"
                             onClick={() => this.addSelectedDataSourcesToGroup(groupPermission.id)}
-                            disabled={selectedDataSourceIds?.length == 0}
+                            disabled={
+                              getPermissionInputStatus(groupPermission.group) || selectedDataSourceIds?.length == 0
+                            }
                             iconWidth="16"
                             fill={
                               selectedDataSourceIds.length != 0
@@ -1280,7 +1282,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                                   'view'
                                                 );
                                               }}
-                                              disabled={groupPermission.group === 'admin'}
+                                              disabled={
+                                                groupPermission.group === 'admin' ||
+                                                getPermissionInputStatus(groupPermission.group)
+                                              }
                                               checked={this.canDataSourceGroupPermission(
                                                 dataSource,
                                                 groupPermission.id,
@@ -1303,7 +1308,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                                   'edit'
                                                 );
                                               }}
-                                              disabled={groupPermission.group === 'admin'}
+                                              disabled={
+                                                groupPermission.group === 'admin' ||
+                                                getPermissionInputStatus(groupPermission.group)
+                                              }
                                               checked={this.canDataSourceGroupPermission(
                                                 dataSource,
                                                 groupPermission.id,

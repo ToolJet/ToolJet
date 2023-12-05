@@ -151,6 +151,7 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import InformationPrimary from './InformationPrimary.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -274,6 +275,8 @@ const Icon = (props) => {
       return <Home {...props} />;
     case 'information':
       return <Information {...props} />;
+    case 'informationPrimary':
+      return <InformationPrimary {...props} />;
     case 'innerjoin':
       return <InnerJoinIcon {...props} />;
     case 'inrectangle':

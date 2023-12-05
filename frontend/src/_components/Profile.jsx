@@ -44,8 +44,8 @@ export const Profile = function Header({ darkMode, checkForUnsavedChanges }) {
       <div className={`profile-card card ${darkMode && 'dark-theme'}`}>
         <Link
           data-testid="settingsBtn"
-          onClick={(event) => checkForUnsavedChanges(getPrivateRoute('settings'), event)}
-          to={getPrivateRoute('settings')}
+          onClick={(event) => checkForUnsavedChanges(getPrivateRoute('account_settings'), event)}
+          to={getPrivateRoute('account_settings')}
           className="dropdown-item tj-text-xsm"
           data-cy="profile-link"
         >

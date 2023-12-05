@@ -10,6 +10,8 @@ import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 import posthog from 'posthog-js';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ManageOrgUsersDrawer from './ManageOrgUsersDrawer';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
+import { getDateDifferenceInDays } from '@/_helpers/utils';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -33,6 +35,10 @@ class ManageOrgUsersComponent extends React.Component {
       isInviteUsersDrawerOpen: false,
       userLimits: {},
     };
+  }
+
+  componentDidMount() {
+    this.fetchUserLimits();
   }
 
   validateEmail(email) {
@@ -84,7 +90,7 @@ class ManageOrgUsersComponent extends React.Component {
   };
 
   fetchUserLimits = () => {
-    userService.getUserLimits('total').then((data) => {
+    userService.getUserLimits('all').then((data) => {
       this.setState({
         userLimits: data,
       });
@@ -261,8 +267,26 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
+  generateBanner = () => {
+    const { usersCount, editorsCount, viewersCount } = this.state.userLimits;
+    const { licenseStatus } = this.state.userLimits?.usersCount ?? {};
+    const { isExpired, expiryDate } = licenseStatus ?? {};
+
+    const daysLeft = expiryDate && getDateDifferenceInDays(new Date(), new Date(expiryDate));
+    const isExpiring = daysLeft <= 14;
+
+    if (usersCount?.percentage >= 100 && !isExpired && !isExpiring) {
+      return <LicenseBannerCloud classes="my-3" limits={usersCount} type="users" />;
+    } else if (editorsCount?.percentage >= 100 && !isExpired && !isExpiring) {
+      return <LicenseBannerCloud classes="my-3" limits={editorsCount} type="builders" />;
+    } else if (viewersCount?.percentage >= 100 && !isExpired && !isExpiring) {
+      return <LicenseBannerCloud classes="my-3" limits={viewersCount} type="end users" />;
+    }
+  };
+
   render() {
     const { isLoading, uploadingUsers, users, archivingUser, unarchivingUser, meta, userLimits } = this.state;
+    const Banner = this.generateBanner();
     return (
       <ErrorBoundary showFallback={true}>
         <div className="org-wrapper org-users-page animation-fade">
@@ -307,6 +331,7 @@ class ManageOrgUsersComponent extends React.Component {
                     </ButtonSolid>
                   </div>
                 </div>
+                {Banner}
               </div>
 
               <div>

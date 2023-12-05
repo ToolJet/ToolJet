@@ -10,7 +10,6 @@ import { CreateTrialLicenseDto } from '@dto/create-trial-license.dto';
 @Controller('license')
 export class LicenseController {
   constructor(private licenseService: LicenseService) {}
-
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get()
   async index() {
@@ -50,11 +49,5 @@ export class LicenseController {
   async updateLicenseKey(@Body() licenseUpdateDto: LicenseUpdateDto) {
     await this.licenseService.updateLicense(licenseUpdateDto);
     return;
-  }
-
-  @Get('status')
-  async isBasicPlan() {
-    const isBasicPlan = await this.licenseService.isBasicPlan();
-    return { isBasicPlan };
   }
 }

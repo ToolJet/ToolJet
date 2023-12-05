@@ -5,7 +5,6 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import Skeleton from 'react-loading-skeleton';
-import { LicenseBanner } from '@/LicenseBanner';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import _ from 'lodash';
 
@@ -144,7 +143,6 @@ class ManageWhiteLabellingComponent extends React.Component {
                         'White labelling'
                       )}
                     </div>
-                    {disabled && <LicenseBanner isAvailable={false} showPaidFeatureBanner={true}></LicenseBanner>}
                   </div>
                 </div>
                 <div className="card-body">

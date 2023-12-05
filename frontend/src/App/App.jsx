@@ -16,7 +16,7 @@ import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
 import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { AuditLogsPage } from '@/AuditLogs';
-import { SettingsPage } from '../SettingsPage/SettingsPage';
+import { AccountSettings } from '../AccountSettings/AccountSettings';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
@@ -44,7 +44,9 @@ export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import LdapLoginPage from '../LdapLogin';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
+import { Settings } from '@/Settings';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
+import { ManageSubscriptionKey } from '@/ManageLicenseKey/MangeSubscriptionKey';
 
 const AppWrapper = (props) => {
   return (
@@ -321,13 +323,28 @@ class AppComponent extends React.Component {
               >
                 <Route
                   path="users"
-                  element={<ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <ManageOrgUsers switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
                 <Route
                   path="groups"
-                  element={<ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
-                <Route path="sso" element={<ManageSSO switchDarkMode={this.switchDarkMode} darkMode={darkMode} />} />
+                <Route
+                  path="sso"
+                  element={
+                    <AdminRoute>
+                      <ManageSSO switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
                 <Route
                   path="workspace-variables"
                   element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
@@ -344,7 +361,11 @@ class AppComponent extends React.Component {
                 />
                 <Route
                   path="custom-styles"
-                  element={<CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  element={
+                    <AdminRoute>
+                      <CustomStylesEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
                 />
               </Route>
               <Route
@@ -375,6 +396,24 @@ class AppComponent extends React.Component {
               </Route>
               <Route
                 exact
+                path="/:workspaceId/settings"
+                element={
+                  <AdminRoute>
+                    <Settings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </AdminRoute>
+                }
+              >
+                <Route
+                  path="subscription"
+                  element={
+                    <AdminRoute>
+                      <ManageSubscriptionKey switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+              </Route>
+              <Route
+                exact
                 path="/:workspaceId/audit-logs"
                 element={
                   <PrivateRoute>
@@ -384,10 +423,10 @@ class AppComponent extends React.Component {
               />
               <Route
                 exact
-                path="/:workspaceId/settings"
+                path="/:workspaceId/account-settings"
                 element={
                   <PrivateRoute>
-                    <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <AccountSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
               />

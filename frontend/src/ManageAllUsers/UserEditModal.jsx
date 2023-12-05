@@ -1,4 +1,4 @@
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 
@@ -86,15 +86,17 @@ const UserEditModal = ({
                 </span>
               </label>
               {disabled && !(current > 1 && updatingUser?.user_type === 'instance') ? (
-                <LicenseBanner
+                <LicenseBannerCloud
                   classes="mt-3"
                   customMessage="Edit user details with our paid plans. For more,"
                   size="xsmall"
-                ></LicenseBanner>
+                ></LicenseBannerCloud>
               ) : (
-                <LicenseBanner classes="mt-3 mb-3" limits={superadminsCount} type="super admins" size="xsmall" />
+                <LicenseBannerCloud classes="mt-3 mb-3" limits={superadminsCount} type="super admins" size="xsmall" />
               )}
             </div>
+
+            <LicenseBannerCloud classes="mt-3 mb-3" limits={superadminsCount} type="super admins" size="xsmall" />
 
             <div className="form-footer d-flex justify-content-end">
               <button type="button" onClick={hideModal} className="btn btn-light mr-2" data-cy="cancel-button">

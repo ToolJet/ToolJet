@@ -6,7 +6,6 @@ import { authenticationService } from '@/_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 import FolderList from '@/_ui/FolderList/FolderList';
-import { LicenseBanner } from '@/LicenseBanner';
 import { licenseService } from '@/_services';
 import Skeleton from 'react-loading-skeleton';
 
@@ -105,12 +104,6 @@ export function InstanceSettings(props) {
                   <Skeleton count={3} height={22} />
                 )}
               </div>
-              <LicenseBanner
-                limits={featureAccess}
-                classes="m-3 trial-banner"
-                size="xsmall"
-                type={featureAccess?.licenseStatus?.licenseType}
-              />
               <OrganizationList />
             </div>
 

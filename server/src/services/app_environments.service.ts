@@ -17,11 +17,25 @@ export class AppEnvironmentService {
     organizationId: string,
     id?: string,
     priorityCheck = false,
-    manager?: EntityManager
+    manager?: EntityManager,
+    licenseCheck = false
   ): Promise<AppEnvironment> {
+    const isMultiEnvironmentEnabled = licenseCheck
+      ? await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId)
+      : false;
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const condition: FindOneOptions<AppEnvironment> = {
-        where: { organizationId, ...(id ? { id } : !priorityCheck && { isDefault: true }) },
+        where: {
+          organizationId,
+          ...(id
+            ? { id }
+            : licenseCheck && !isMultiEnvironmentEnabled
+            ? { priority: 1 }
+            : !priorityCheck
+            ? { isDefault: true }
+            : {}),
+        },
         ...(priorityCheck && { order: { priority: 'ASC' } }),
       };
       return await manager.findOneOrFail(AppEnvironment, condition);
@@ -32,7 +46,7 @@ export class AppEnvironmentService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
-        envId = (await this.get(organizationId, null, false, manager)).id;
+        envId = (await this.get(organizationId, null, false, manager, true))?.id;
       }
       return await manager.findOneOrFail(DataSourceOptions, { where: { environmentId: envId, dataSourceId } });
     });
@@ -91,7 +105,10 @@ export class AppEnvironmentService {
         }
       }
 
-      const multiEnvironmentEnabled = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const multiEnvironmentEnabled = await this.licenseService.getLicenseTerms(
+        LICENSE_FIELD.MULTI_ENVIRONMENT,
+        organizationId
+      );
       for (const appEnvironment of appEnvironments) {
         appEnvironment.priority !== 1 && !multiEnvironmentEnabled
           ? (appEnvironment['enabled'] = false)
@@ -255,7 +272,7 @@ export class AppEnvironmentService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
-        envId = (await this.get(organizationId, environmentId, false, manager)).id;
+        envId = (await this.get(organizationId, environmentId, false, manager, true)).id;
       }
 
       const constantId = (await manager.findOne(OrganizationConstant, { where: { constantName, organizationId } })).id;
