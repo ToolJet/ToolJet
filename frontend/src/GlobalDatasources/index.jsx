@@ -73,8 +73,6 @@ export const GlobalDatasources = (props) => {
           .sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
-        console.log('dekho yahan', ds);
-
         if (!resetSelection && ds) {
           setEditing(true);
           setSelectedDataSource(ds);
