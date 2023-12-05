@@ -1787,15 +1787,14 @@ const EditorComponent = (props) => {
       ...(featureAccess?.multiEnvironment ? { env: currentAppEnvironment?.name } : {}),
     });
 
+    const pageHandle = getCurrentState().page.handle;
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${slug || appId}/${currentState.page.handle}${
-          !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
-        }`
+      ? `/applications/${slug || appId}/${pageHandle}${!_.isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
       : '';
 
     setAppPreviewLink(appVersionPreviewLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, currentVersionId, currentAppEnvironmentId]);
+  }, [slug, currentVersionId, currentAppEnvironmentId, currentState?.page?.handle]);
 
   const deviceWindowWidth = 450;
 
