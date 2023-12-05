@@ -33,7 +33,7 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/triggers/enable.png" alt="Triggers" />
   </div>
 
-- Once enabled, you can choose the **Environment** to used to for the workflow execution. For example, if you choose the **Production** environment, the workflow will be use the data sources configured in the **Production** environment.
+- Once enabled, you can choose the **Environment** to modify the webhook endpoint URL to be copied for that specific environment. For example, if you choose the **Production** environment, you can `Copy URL` or `Copy as cURL` which can then be used to trigger for **Production** environment accordingly.
 
   <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/triggers/env.png" alt="Triggers" />
@@ -75,6 +75,8 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
   }
   ```
 
+  These parameters can be accessed in the workflow using the `startTrigger.params`.
+
   <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/triggers/test.png" alt="Triggers" />
   </div>
@@ -92,8 +94,8 @@ For limiting parallel executions, the following environment variables can be use
 
 | Environment variable | Value | Description |
 | -------------------- | ----- | ----------- |
-| WORKFLOW_WEBHOOK_THROTTLE_TTL | 60000 | Time in milliseconds for which the throttling will be applied |
-| WORKFLOW_WEBHOOK_THROTTLE_LIMIT | 100 | Number of parallel executions allowed |
+| WEBHOOK_THROTTLE_TTL | 60000 | Time in milliseconds for the webhook requests to live |
+| WEBHOOK_THROTTLE_LIMIT | 100 | Maximum number of requests within the TTL that will be throttled |
 
 :::tip Whitelisting API endpoints
 For Virtual Private Clouds (VPCs), restrict access only to the `{TOOLJET_HOST}/api/v2/workflows/*` endpoint.
