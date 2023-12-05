@@ -110,6 +110,9 @@ jobs:
           config: "baseUrl=http://localhost:8082"
           config-file: cypress.config.js
 
+      - name: List files in the coverage directory
+        run: ls -R cypress-tests/coverage
+
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v3
         if: always()
