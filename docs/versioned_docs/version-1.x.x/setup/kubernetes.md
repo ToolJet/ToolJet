@@ -50,7 +50,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client Setup documentation **[here](/docs/setup/client)**.
 :::
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 

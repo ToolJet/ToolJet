@@ -227,7 +227,7 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 
 Update ToolJet deployment with the appropriate env variables [here](https://docs.tooljet.com/docs/setup/env-vars/#enable-tooljet-database--optional-) and apply the changes.
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 

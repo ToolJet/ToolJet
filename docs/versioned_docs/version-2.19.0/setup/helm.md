@@ -35,7 +35,7 @@ If you plan to use this feature, you need to set up and deploy the PostgREST ser
 
 To enable the ToolJet database, please set the environment variable `ENABLE_TOOLJET_DB` to true in the `values.yaml` file.
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 

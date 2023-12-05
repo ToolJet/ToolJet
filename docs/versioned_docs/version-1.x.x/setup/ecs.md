@@ -95,7 +95,7 @@ The setup above is just a template. Feel free to update the task definition and 
       - email: `dev@tooljet.io`
       - password: `password`
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 

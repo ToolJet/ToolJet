@@ -86,7 +86,7 @@ ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you
 
 You can learn more about this feature [here](/docs/tooljet-database).
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 

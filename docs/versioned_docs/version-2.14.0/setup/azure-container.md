@@ -66,7 +66,7 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 
 You can access ToolJet via the application URL provided in the overview tab.
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 

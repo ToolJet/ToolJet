@@ -131,7 +131,7 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 </TabItem>
 </Tabs>
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 

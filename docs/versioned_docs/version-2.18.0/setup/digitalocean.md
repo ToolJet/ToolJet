@@ -108,7 +108,7 @@ Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
 5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#enable-tooljet-database--optional-) required for PostgREST. 
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 

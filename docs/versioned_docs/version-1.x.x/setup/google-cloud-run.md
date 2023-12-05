@@ -143,7 +143,7 @@ The deployment will fail as it only runs a seed script. Check logs to see that d
 
 The default username of the admin is `dev@tooljet.io` and the password is `password`.
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 

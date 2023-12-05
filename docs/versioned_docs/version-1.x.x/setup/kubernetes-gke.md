@@ -75,7 +75,7 @@ This seeds the database with a default user with the following credentials:
 
 **password**: `password`
 
-## Upgrading to v2.24.3-ee2.10.2 (For Enterprise Users)
+## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
 
