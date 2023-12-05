@@ -104,22 +104,12 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Install Cypress
-        working-directory: ./cypress-tests
-        run: |
-          npm install
-        
-
-      - name: Run Cypress tests
-        working-directory: ./cypress-tests
-        run: |
-          npm run cy:run
-
-      - name: Debugging
-        run: |
-          ls -R cypress-tests
-          ls -R /home/runner/work/ToolJet/ToolJet/cypress-tests
-          cat /home/runner/work/ToolJet/ToolJet/cypress-tests/.nyc_output/out.json
+      - name: App Builder subpath
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:80/apps/tooljet/"
+          config-file: cypress.config.js
         
 
       - name: Upload Coverage Report
@@ -128,3 +118,17 @@ jobs:
         with:
           name: coverage
           path: cypress-tests/coverage
+      - name: Calculate Code Coverage Percentage
+        id: calculate-coverage
+        run: |
+            COVERAGE_PERCENTAGE=$(npx nyc report --reporter=text-summary | grep Lines | awk '{print $3}' | cut -d'%' -f1)
+            echo "COVERAGE_PERCENTAGE=${COVERAGE_PERCENTAGE}" >> $GITHUB_ENV
+  Dynamic-Job-Name:
+    needs: Cypress-Code-Coverage
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'check-coverage') }}
+          
+    env:
+      DYNAMIC_COVERAGE: $COVERAGE_PERCENTAGE
+          
+    name: Cypress Code Coverage $COVERAGE_PERCENTAGE%
