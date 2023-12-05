@@ -68,3 +68,19 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
 ```
 https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/postgrest.yaml
 ```
+
+## Upgrading to v2.24.3-ee2.10.2
+
+Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+
+If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+
+#### Prerequisites for Upgrading to the Latest Version:
+
+- It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+
+- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+
+For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.

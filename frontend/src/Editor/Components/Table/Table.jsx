@@ -337,7 +337,7 @@ export function Table({
 
   function onPageIndexChanged(page) {
     onComponentOptionChanged(component, 'pageIndex', page).then(() => {
-      onEvent('onPageChanged', { component, data: {} });
+      onEvent('onPageChanged', tableEvents, { component });
     });
   }
 
@@ -653,8 +653,10 @@ export function Table({
     if (!sortOptions) {
       setExposedVariable('sortApplied', []);
     }
-    if (mounted) setExposedVariable('sortApplied', sortOptions);
-    fireEvent('onSort');
+    if (mounted) {
+      setExposedVariable('sortApplied', sortOptions);
+      fireEvent('onSort');
+    }
   }, [JSON.stringify(sortOptions)]);
 
   useEffect(() => {
