@@ -112,7 +112,7 @@ jobs:
       - name: Run Cypress tests
         working-directory: ./cypress-tests
         run: |
-          npx cypress run --config baseUrl=http://localhost:8082 --config-file cypress.config.js
+          npm run cy:run
 
       - name: List files in the coverage directory
         run: ls -R cypress-tests/coverage
