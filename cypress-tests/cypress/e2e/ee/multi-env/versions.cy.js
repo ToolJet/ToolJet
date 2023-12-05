@@ -25,6 +25,8 @@ import {
     navigateToAppEditor,
 } from "Support/utils/common";
 import { commonEeSelectors, multiEnvSelector } from "Selectors/eeCommon";
+import { promoteApp, releaseApp } from "Support/utils/multiEnv";
+
 
 import {
     verifyComponent,
@@ -79,10 +81,7 @@ describe("App Version Functionality", () => {
         createNewVersion((newVersion = ["v3"]), (versionFrom = "v2"));
         verifyComponent("button1");
 
-        cy.get(commonEeSelectors.promoteButton).click();
-        cy.get(commonEeSelectors.promoteButton).eq(1).click();
-        cy.waitForAppLoad();
-        cy.wait(1500);
+        promoteApp();
 
         verifyComponent("button1");
         cy.get('[data-cy="list-current-env-name"]').click();
@@ -109,15 +108,12 @@ describe("App Version Functionality", () => {
         cy.get('[data-cy="list-current-env-name"]').click();
         cy.get(multiEnvSelector.envNameList).eq(1).click()
 
-        cy.get(commonEeSelectors.promoteButton).click();
-        cy.get(commonEeSelectors.promoteButton).eq(1).click();
-        cy.waitForAppLoad();
-        cy.wait(1500);
+        promoteApp();
 
         releasedVersionAndVerify((currentVersion = "v3"));
         cy.url().then((url) => {
             const parts = url.split('/');
-            const value = parts[parts.length - 1];
+            const value = parts[parts.length - 2];
             cy.log(`Extracted value: ${value}`);
             cy.get(commonSelectors.editorPageLogo).click();
             cy.wait(1000)

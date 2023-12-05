@@ -110,12 +110,15 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
 
   return (
     <>
-      <CreateVersion
-        {...props}
-        showCreateAppVersion={showCreateAppVersion}
-        setShowCreateAppVersion={setShowCreateAppVersion}
-        onSelectVersion={onSelectVersion}
-      />
+      {showCreateAppVersion && (
+        <CreateVersion
+          {...props}
+          showCreateAppVersion={showCreateAppVersion}
+          setShowCreateAppVersion={setShowCreateAppVersion}
+          onSelectVersion={onSelectVersion}
+        />
+      )}
+
       <EditVersion
         {...props}
         showEditAppVersion={showEditAppVersion}

@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from '../../entities/app.entity';
 import { File } from '../../entities/file.entity';
 import { AppsController } from '../../controllers/apps.controller';
+import { AppsControllerV2 } from '../../controllers/apps.controller.v2';
 import { AppsService } from '../../services/apps.service';
 import { WorkflowExecutionsController } from '../../controllers/workflow_executions_controller';
 import { AppVersion } from '../../../src/entities/app_version.entity';
@@ -44,6 +45,15 @@ import { BullModule } from '@nestjs/bull';
 import { DataQueriesService } from '@services/data_queries.service';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
+import { Component } from 'src/entities/component.entity';
+import { Page } from 'src/entities/page.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
+import { Layout } from 'src/entities/layout.entity';
+
+import { ComponentsService } from '@services/components.service';
+import { PageService } from '@services/page.service';
+import { EventsService } from '@services/events_handler.service';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -69,6 +79,10 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
       WorkflowExecutionNode,
       WorkflowExecutionEdge,
       OrgEnvironmentVariable,
+      Component,
+      Page,
+      EventHandler,
+      Layout,
     ]),
     CaslModule,
     BullModule.registerQueue({
@@ -91,7 +105,16 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
     AppEnvironmentService,
     WorkflowExecutionsService,
     DataQueriesService,
+    ComponentsService,
+    PageService,
+    EventsService,
   ],
-  controllers: [AppsController, AppUsersController, AppsImportExportController, WorkflowExecutionsController],
+  controllers: [
+    AppsController,
+    AppsControllerV2,
+    AppUsersController,
+    AppsImportExportController,
+    WorkflowExecutionsController,
+  ],
 })
 export class AppsModule {}
