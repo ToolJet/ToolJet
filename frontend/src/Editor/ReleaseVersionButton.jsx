@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import ReleaseConfirmation from './ReleaseConfirmation';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+// eslint-disable-next-line import/no-named-as-default
 import posthog from 'posthog-js';
 import '@/_styles/versions.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -13,11 +14,10 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 export const ReleaseVersionButton = function DeployVersionButton({ appId, appName, fetchApp, onVersionRelease }) {
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
+  const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
       editingVersion: state.editingVersion,
-      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );

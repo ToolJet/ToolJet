@@ -17,6 +17,7 @@ import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
+// eslint-disable-next-line import/no-named-as-default
 import posthog from 'posthog-js';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
