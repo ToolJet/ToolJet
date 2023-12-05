@@ -1092,7 +1092,7 @@ export function Table({
                 onDragStart={() => {
                   currentColOrder.current = allColumns?.map((o) => o.id);
                 }}
-                onDragUpdate={(dragUpdateObj) => {
+                onDragEnd={(dragUpdateObj) => {
                   const colOrder = [...currentColOrder.current];
                   const sIndex = dragUpdateObj.source.index;
                   const dIndex = dragUpdateObj.destination && dragUpdateObj.destination.index;
