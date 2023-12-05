@@ -114,8 +114,12 @@ jobs:
         run: |
           npm run cy:run
 
-      - name: List files in the coverage directory
-        run: ls -R cypress-tests/coverage
+      - name: Debugging
+        run: |
+          ls -R cypress-tests
+          ls -R /home/runner/work/ToolJet/ToolJet/cypress-tests
+          cat /home/runner/work/ToolJet/ToolJet/cypress-tests/.nyc_output/out.json
+        
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v3
