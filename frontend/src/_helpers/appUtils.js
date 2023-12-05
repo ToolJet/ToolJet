@@ -143,6 +143,18 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
         currentState.queries[key] = {
           ...currentState.queries[key],
           run: () => actions.runQuery(key),
+
+          getData: () => {
+            return getCurrentState().queries[key].data;
+          },
+
+          getRawData: () => {
+            return getCurrentState().queries[key].rawData;
+          },
+
+          getloadingState: () => {
+            return getCurrentState().queries[key].isLoading;
+          },
         };
       }
 

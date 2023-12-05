@@ -463,6 +463,18 @@ export async function executeMultilineJS(
         query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
         return actions.runQuery(key, processedParams);
       },
+
+      getData: () => {
+        return getCurrentState().queries[key].data;
+      },
+
+      getRawData: () => {
+        return getCurrentState().queries[key].rawData;
+      },
+
+      getloadingState: () => {
+        return getCurrentState().queries[key].isLoading;
+      },
     };
   }
 
@@ -598,9 +610,9 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
       );
     }
 
-    if (isPreview) {
-      return previewQuery(_ref, query, true, processedParams);
-    }
+    // if (isPreview) {
+    //   return previewQuery(_ref, query, true, processedParams);
+    // }
 
     const event = {
       actionId: 'run-query',
