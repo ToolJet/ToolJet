@@ -435,17 +435,13 @@ export class OauthService {
           organization.id
         );
       }
-      return await this.validateLicense(
-        await this.authService.generateLoginResultPayload(
-          response,
-          userDetails,
-          organizationDetails,
-          isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
-          false,
-          user
-        ),
-        manager,
-        organization.id
+      return await this.authService.generateLoginResultPayload(
+        response,
+        userDetails,
+        organizationDetails,
+        isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
+        false,
+        user
       );
     });
   }
