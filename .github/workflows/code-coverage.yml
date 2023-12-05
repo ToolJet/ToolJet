@@ -103,12 +103,16 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: App builder
-        uses: cypress-io/github-action@v5
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:8082"
-          config-file: cypress.config.js
+      - name: Install Cypress
+        working-directory: ./cypress-tests
+        run: |
+          npm install
+        
+
+      - name: Run Cypress tests
+        working-directory: ./cypress-tests
+        run: |
+          npx cypress run --config baseUrl=http://localhost:8082 --config-file cypress.config.js
 
       - name: List files in the coverage directory
         run: ls -R cypress-tests/coverage
