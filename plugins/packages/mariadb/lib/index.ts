@@ -19,15 +19,19 @@ export default class Mariadb implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    const conn = await this.getConnection(sourceOptions);
-    const rows = await conn.query('SELECT 1 as val');
+    try {
+      const conn = await this.getConnection(sourceOptions);
+      const rows = await conn.query('SELECT 1 as val');
 
-    if (!rows) {
-      throw new Error('Error');
+      if (!rows) {
+        throw new Error('Connection test returned no results');
+      }
+      return {
+        status: 'ok',
+      };
+    } catch (error) {
+      throw new QueryError('Connection test failed', error.message, {});
     }
-    return {
-      status: 'ok',
-    };
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
@@ -56,9 +60,17 @@ export default class Mariadb implements QueryService {
 
     if (sourceOptions.ssl_enabled) poolConfig['ssl'] = sslObject;
 
-    const mariadbPool = mariadb.createPool(poolConfig);
+    try {
+      const mariadbPool = await mariadb.createPool(poolConfig);
+      mariadbPool.on('error', (error) => {
+        console.error(error);
+      });
 
-    return mariadbPool.getConnection();
+      return mariadbPool.getConnection();
+    } catch (error) {
+      console.error('Error while establishing database connection:', error.message);
+      throw new QueryError('Database connection failed', error.message, {});
+    }
   }
 
   private toJson(data) {
