@@ -122,7 +122,8 @@ export function CodeHinter({
 
   useEffect(() => {
     setCurrentValue(initialValue);
-
+    const [_valid, errorMessages] = checkTypeErrorInRunTime(initialValue);
+    if (!_valid) setResolvingError(true);
     return () => {
       setPrevCurrentValue(null);
       setResolvedValue(null);
@@ -159,22 +160,26 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
+  const checkTypeErrorInRunTime = (preview) => {
+    const propertyDefinition = getPropertyDefinition(paramName, component?.component);
+    const resolvedProperty = Object.keys(component?.component?.definition || {}).reduce((accumulator, currentKey) => {
+      if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
+        accumulator[`${paramName}`] = preview;
+      return accumulator;
+    }, {});
+    const [_valid, errorMessages] = validateProperty(resolvedProperty, propertyDefinition, paramName);
+    return [_valid, errorMessages];
+  };
+
   useEffect(() => {
     let globalPreviewCopy = null;
     let globalErrorCopy = null;
-    // if (JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
     if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
       const customResolvables = getCustomResolvables();
       const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
 
       // checking type error if any in run time
-      const propertyDefinition = getPropertyDefinition(paramName, component?.component);
-      const resolvedProperty = Object.keys(component?.component?.definition || {}).reduce((accumulator, currentKey) => {
-        if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
-          accumulator[`${paramName}`] = preview;
-        return accumulator;
-      }, {});
-      const [_valid, errorMessages] = validateProperty(resolvedProperty, propertyDefinition, paramName);
+      const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
 
       setPrevCurrentValue(currentValue);
       if (error || !_valid) {
@@ -191,9 +196,11 @@ export function CodeHinter({
     }
 
     return () => {
-      setPrevCurrentValue(null);
-      setResolvedValue(globalPreviewCopy);
-      setResolvingError(globalErrorCopy);
+      if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+        setPrevCurrentValue(null);
+        setResolvedValue(globalPreviewCopy);
+        setResolvingError(globalErrorCopy);
+      }
     };
   }, [JSON.stringify({ currentValue, realState, isFocused })]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -430,7 +437,9 @@ export function CodeHinter({
             <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
-                className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
+                className={`${defaultClassName} ${className || 'codehinter-default-input'} ${
+                  resolvingError && 'border-danger'
+                }`}
                 key={componentName}
                 style={{
                   height: height || 'auto',
