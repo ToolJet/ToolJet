@@ -181,3 +181,26 @@ Cypress.Commands.add("logoutApi", () => {
     });
   });
 });
+
+Cypress.Commands.add("userInviteApi", (userName, userEmail) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "POST",
+        url: "http://localhost:3000/api/organization_users",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+        body: {
+          first_name: userName,
+          email: userEmail,
+          groups: [],
+        },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(201);
+    });
+  });
+});

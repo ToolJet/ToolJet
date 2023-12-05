@@ -47,6 +47,7 @@ describe("User permissions", () => {
 
   it("Should verify the View and Edit permission", () => {
     common.navigateToManageGroups();
+    cy.wait(1000);
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
     cy.get(groupsSelector.selectAddButton).click();
@@ -57,7 +58,7 @@ describe("User permissions", () => {
         cy.get("td input").first().should("be.checked");
       });
 
-    common.logout();
+    cy.logoutApi();
     cy.apiLogin(data.email, usersText.password);
     cy.visit("/my-workspace");
     cy.wait(500)
@@ -79,6 +80,7 @@ describe("User permissions", () => {
 
     cy.defaultWorkspaceLogin();
     common.navigateToManageGroups();
+    cy.wait(500)
     cy.contains("tr", data.appName)
       .parent()
       .within(() => {
@@ -89,7 +91,7 @@ describe("User permissions", () => {
       "App permissions updated"
     );
 
-    common.logout();
+    cy.logoutApi();
     cy.apiLogin(data.email, usersText.password);
     cy.visit("/my-workspace");
     cy.wait(500)
@@ -120,7 +122,7 @@ describe("User permissions", () => {
   it("Should verify the Create and Delete app permission", () => {
     data.appName = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName);
-    cy.visit('/my-workspace')
+    // cy.visit('/my-workspace')
     cy.wait(500);
 
     common.navigateToManageGroups();
