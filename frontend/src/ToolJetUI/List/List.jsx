@@ -22,6 +22,7 @@ function ListItem({
   onMenuOptionClick,
   isEditable,
   isDraggable,
+  deleteIconOutsideMenu = false,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -55,7 +56,7 @@ function ListItem({
               </span>
             )}
           </div>
-          <div className="col-auto">
+          <div className="col-auto d-flex align-items-center custom-gap-4">
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-end'}
@@ -110,6 +111,22 @@ function ListItem({
                 )}
               </span>
             </OverlayTrigger>
+            {deleteIconOutsideMenu && (
+              <ButtonSolid
+                variant="danger"
+                size="xs"
+                className={'delete-icon-btn'}
+                // data-cy={'page-menu'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMenuOptionClick(primaryText, 'Delete');
+                }}
+              >
+                <span className="d-flex">
+                  <Trash fill={'var(--tomato9)'} width={16} />
+                </span>
+              </ButtonSolid>
+            )}
           </div>
         </div>
       </ListGroup.Item>

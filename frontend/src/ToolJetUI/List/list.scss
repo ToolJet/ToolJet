@@ -75,8 +75,14 @@ button:focus:not(:focus-visible) {
   }
 }
 
-.list-menu-option-btn {
+.list-menu-option-btn{
   padding: 0px !important;
   background-color: var(--base);
   border: 1px solid transparent;
+}
+.delete-icon-btn{
+  padding: 2px !important;
+  display: flex;
+  border: 1px solid var(--tomato7);
+  background-color: var(--base);
 }

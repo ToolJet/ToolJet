@@ -35,6 +35,11 @@
     color: var(--indigo9);
     border-radius: 6px;
     padding: 4px;
+    svg{
+      path{
+        fill: var(--indigo9);
+      }
+    }
   }
 }
 .ToggleGroupItem:focus {
