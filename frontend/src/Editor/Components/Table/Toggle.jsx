@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export const Toggle = ({ readOnly, value, onChange, activeColor }) => {
+export const Toggle = ({ readOnly, value, onChange, activeColor, id }) => {
   const [on, setOn] = useState(() => value);
 
   const toggle = () => {
@@ -9,11 +9,11 @@ export const Toggle = ({ readOnly, value, onChange, activeColor }) => {
   };
 
   return (
-    <div className="radio row g-0">
-      <label className="form-check form-switch form-check-inline">
+    <div className="custom-toggle-switch d-flex col gap-2 align-items-center">
+      <label className="switch">
         <input
-          className="form-check-input"
           type="checkbox"
+          id={id}
           checked={on}
           style={on ? { backgroundColor: activeColor } : {}}
           onClick={() => {
@@ -21,6 +21,7 @@ export const Toggle = ({ readOnly, value, onChange, activeColor }) => {
           }}
           disabled={readOnly}
         />
+        <label htmlFor={id} className="slider round"></label>
       </label>
     </div>
   );

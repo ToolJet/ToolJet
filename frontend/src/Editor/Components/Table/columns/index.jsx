@@ -421,7 +421,7 @@ export default function generateColumnsData({
           }
           case 'toggle': {
             return (
-              <div className="h-100 d-flex align-items-center">
+              <div className="h-100 d-flex align-items-center table-column-type-string-input">
                 <Toggle
                   value={cellValue}
                   readOnly={!isEditable}
@@ -438,6 +438,7 @@ export default function generateColumnsData({
                       }
                     );
                   }}
+                  id={cell.row.id}
                 />
               </div>
             );

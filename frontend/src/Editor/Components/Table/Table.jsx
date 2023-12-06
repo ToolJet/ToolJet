@@ -1411,6 +1411,7 @@ export function Table({
                               'selector-column':
                                 cell.column.columnType === 'selector' && cell.column.id === 'selection',
                               'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,
+                              'has-toggle': cell.column.columnType === 'toggle',
                             }
                           )}
                           {...cellProps}

@@ -640,3 +640,28 @@
 .th:has(.resizer:hover){
   border-right:4px solid var(--slate5, #ECEEF0) !important; 
 }
+
+.jet-data-table{
+  .table{
+    .td.has-toggle{
+      &:hover{
+        border: 1px solid var(--slate8);
+        background-color: var(--slate4);
+      }
+      &:focus-within{
+        border: 1px solid var(--indigo9);
+        background-color: var(--indigo1) !important; 
+      }
+      .table-column-type-string-div-element,.table-column-type-string-input{
+        &:focus-visible{
+          border: none !important;
+          outline: none !important;
+        }
+      }
+      .table-column-type-string-input{
+        color: var(--slate12);
+      }
+    }
+
+  }
+}
