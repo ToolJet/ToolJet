@@ -175,6 +175,12 @@ export const commonText = {
     "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
   constantsValueError:
     "Value should be less than 10000 characters and cannot be empty",
+
+  createApp: "Create app",
+  appName: "App Name",
+  enterAppName: "Enter app name",
+  appNameInfoLabel: "App name must be unique and max 50 characters",
+  renameApp: "Rename app",
 };
 
 export const commonWidgetText = {
