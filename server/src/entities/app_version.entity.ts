@@ -9,6 +9,7 @@ import {
   BaseEntity,
   Unique,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { App } from './app.entity';
 import { DataQuery } from './data_query.entity';
@@ -18,6 +19,7 @@ import { EventHandler } from './event_handler.entity';
 
 @Entity({ name: 'app_versions' })
 @Unique(['name', 'appId'])
+@Index('idx_app_version_app_id', ['appId'])
 export class AppVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
