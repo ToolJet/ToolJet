@@ -17,6 +17,7 @@ export const PropertiesTabElements = ({
   props,
   columnEventChanged,
   timeZoneOptions,
+  handleEventManagerPopoverCallback,
 }) => {
   const { t } = useTranslation();
 
@@ -91,24 +92,19 @@ export const PropertiesTabElements = ({
       {column.columnType === 'toggle' && (
         <div>
           <EventManager
-            component={{
-              component: {
-                definition: {
-                  events: column.events ?? [],
-                },
-              },
-            }}
+            sourceId={props?.component?.id}
+            eventSourceType="table_column"
             hideEmptyEventsAlert={true}
-            componentMeta={{ events: { onChange: { displayName: 'On change' } } }}
+            eventMetaDefinition={{ events: { onChange: { displayName: 'On change' } } }}
             currentState={currentState}
-            dataQueries={props?.dataQueries}
-            components={props?.components}
+            dataQueries={props.dataQueries}
+            components={props.components}
             eventsChanged={(events) => columnEventChanged(column, events)}
-            apps={props?.apps}
+            apps={props.apps}
             popOverCallback={(showing) => {
-              setColumnPopoverRootCloseBlocker('event-manager', showing);
+              handleEventManagerPopoverCallback(showing);
             }}
-            pages={props?.pages}
+            pages={props.pages}
           />
         </div>
       )}

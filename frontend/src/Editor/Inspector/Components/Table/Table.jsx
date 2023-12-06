@@ -156,6 +156,7 @@ class TableComponent extends React.Component {
           component={this.state.component}
           props={this.props}
           columnEventChanged={this.columnEventChanged}
+          handleEventManagerPopoverCallback={this.handleEventManagerPopoverCallback}
         />
       </Popover>
     );
@@ -173,6 +174,10 @@ class TableComponent extends React.Component {
     );
   };
 
+  handleEventManagerPopoverCallback = (showing) => {
+    this.setState({ actionPopOverRootClose: !showing });
+    this.setState({ showPopOver: showing });
+  };
   actionPopOver = (action, index) => {
     const dummyComponentForActionButton = {
       component: {

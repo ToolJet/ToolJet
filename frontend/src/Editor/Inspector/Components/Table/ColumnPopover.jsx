@@ -14,6 +14,7 @@ export const ColumnPopoverContent = ({
   component,
   props,
   columnEventChanged,
+  handleEventManagerPopoverCallback,
 }) => {
   const [activeTab, setActiveTab] = useState('propertiesTab');
 
@@ -89,6 +90,7 @@ export const ColumnPopoverContent = ({
             props={props}
             columnEventChanged={columnEventChanged}
             timeZoneOptions={timeZoneOptions}
+            handleEventManagerPopoverCallback={handleEventManagerPopoverCallback}
           />
         ) : (
           <StylesTabElements
