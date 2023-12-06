@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   appService,
   appsService,
@@ -58,7 +58,7 @@ import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore'
 import { useAppVersionStore, useAppVersionActions, useAppVersionState } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
-import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
+import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
@@ -98,12 +98,10 @@ const EditorComponent = (props) => {
     setSelectedComponents,
     setCurrentPageId,
     setCurrentAppEnvironmentId,
-    updateFeatureAccess,
     setCurrentAppEnvironmentDetails,
   } = useEditorActions();
 
-  const { setAppVersions, setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } =
-    useAppVersionActions();
+  const { setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
   const { isVersionReleased, editingVersion, releasedVersionId, isEditorFreezed } = useAppVersionState();
 
   const {
@@ -174,10 +172,6 @@ const EditorComponent = (props) => {
 
   const prevAppDefinition = useRef(appDefinition);
   const prevEventsStoreRef = useRef(events);
-
-  useLayoutEffect(() => {
-    resetAllStores();
-  }, []);
 
   useEffect(() => {
     updateState({ isLoading: true });
@@ -459,7 +453,7 @@ const EditorComponent = (props) => {
 
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
-    await updateFeatureAccess();
+
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
@@ -773,7 +767,6 @@ const EditorComponent = (props) => {
       releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
     }
 
-    const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
     const isMultiEnvironmentActive = useEditorStore.getState().featureAccess?.multiEnvironment ?? false;
 
     const currentAppVersionEnvId =
@@ -781,12 +774,9 @@ const EditorComponent = (props) => {
         ? data['editing_version']['promoted_from'] || data['editing_version']['promotedFrom']
         : data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
 
-    setAppVersions(appVersions.appVersions);
-
     const currentOrgId = data?.organization_id || data?.organizationId;
 
     const currentEnvironmentId = !environmentSwitch ? currentAppVersionEnvId : selectedEnvironmentId;
-
     await fetchOrgEnvironmentConstants(currentEnvironmentId);
 
     let envDetails = useEditorStore.getState().currentAppEnvironment;
@@ -1992,7 +1982,7 @@ const EditorComponent = (props) => {
                       transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                     }}
                   >
-                    {config.ENABLE_MULTIPLAYER_EDITING && (
+                    {config.ENABLE_MULTIPLAYER_EDITING && featureAccess?.multiPlayerEdit && (
                       <RealtimeCursors editingVersionId={editingVersion?.id} editingPageId={currentPageId} />
                     )}
                     {isLoading && (
