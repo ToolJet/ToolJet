@@ -19,17 +19,22 @@ import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
-import { useCurrentState } from '@/_stores/currentStateStore';
 
-export const QueryManagerBody = ({ darkMode, options, allComponents, apps, appDefinition, setOptions }) => {
+export const QueryManagerBody = ({
+  darkMode,
+  options,
+  currentState,
+  allComponents,
+  apps,
+  appDefinition,
+  setOptions,
+}) => {
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const { changeDataQuery, updateDataQuery } = useDataQueriesActions();
-
-  const currentState = useCurrentState((state) => state);
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched

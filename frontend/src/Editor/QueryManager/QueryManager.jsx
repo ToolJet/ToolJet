@@ -15,7 +15,6 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
   const queryToBeRun = useQueryToBeRun();
   const selectedQuery = useSelectedQuery();
   const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
-
   const [options, setOptions] = useState({});
 
   useEffect(() => {

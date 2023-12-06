@@ -20,6 +20,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
+import { cloneDeep } from 'lodash';
 
 import ParameterList from './ParameterList';
 
@@ -38,6 +39,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
     }),
     shallow
   );
+
+  const { updateDataQuery } = useDataQueriesActions();
 
   useEffect(() => {
     if (selectedQuery?.name) {
@@ -136,14 +139,20 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
     );
   };
 
+  const optionsChanged = (newOptions) => {
+    setOptions(newOptions);
+    updateDataQuery(cloneDeep(newOptions));
+  };
+
   const handleAddParameter = (newParameter) => {
     const prevOptions = { ...options };
     //check if paramname already used
     if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
-      setOptions({
+      const newOptions = {
         ...prevOptions,
         parameters: [...(prevOptions?.parameters ?? []), newParameter],
-      });
+      };
+      optionsChanged(newOptions);
     }
   };
 
@@ -153,15 +162,17 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
     if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
       const updatedParameters = [...prevOptions.parameters];
       updatedParameters[index] = updatedParameter;
-      setOptions({ ...prevOptions, parameters: updatedParameters });
+      optionsChanged({ ...prevOptions, parameters: updatedParameters });
     }
   };
 
   const handleParameterRemove = (index) => {
     const prevOptions = { ...options };
     const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-    setOptions({ ...prevOptions, parameters: updatedParameters });
+    optionsChanged({ ...prevOptions, parameters: updatedParameters });
   };
+
+  const paramListContainerRef = useRef(null);
 
   return (
     <div className="row header">
@@ -175,16 +186,19 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
           />
         )}
 
-        {selectedQuery && (
-          <ParameterList
-            parameters={options.parameters}
-            handleAddParameter={handleAddParameter}
-            handleParameterChange={handleParameterChange}
-            handleParameterRemove={handleParameterRemove}
-            currentState={currentState}
-            darkMode={darkMode}
-          />
-        )}
+        <div className="col w-100 d-flex justify-content-center font-weight-500" ref={paramListContainerRef}>
+          {selectedQuery && (
+            <ParameterList
+              parameters={options.parameters}
+              handleAddParameter={handleAddParameter}
+              handleParameterChange={handleParameterChange}
+              handleParameterRemove={handleParameterRemove}
+              currentState={currentState}
+              darkMode={darkMode}
+              containerRef={paramListContainerRef}
+            />
+          )}
+        </div>
       </div>
       <div className="query-header-buttons me-3">{renderButtons()}</div>
     </div>

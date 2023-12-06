@@ -86,7 +86,6 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             <span className="m-0">
               <PlusRectangle fill={'#3E63DD'} width={15} />
             </span>
-            Add
           </ButtonSolid>
         )}
       </span>

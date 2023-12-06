@@ -10,11 +10,11 @@ const ParameterList = ({
   handleParameterRemove,
   currentState,
   darkMode,
+  containerRef,
 }) => {
   const [showMore, setShowMore] = useState(false);
   const [selectedParameter, setSelectedParameter] = useState();
   const [formattedParameters, setFormattedParameters] = useState([]);
-  const containerRef = useRef(null);
   const containerWidth = containerRef.current?.offsetWidth;
 
   useEffect(() => {
@@ -22,10 +22,10 @@ const ParameterList = ({
     const formattedParams = containerWidth
       ? parameters.map((param, index) => {
           const boxWidth = Math.min((param?.name || '').length * 6 + 63 + 8, 178);
-          totalWidth += boxWidth;
+          totalWidth = Math.min(totalWidth + boxWidth, containerWidth);
           return {
             ...param,
-            isVisible: totalWidth <= containerWidth - 57 - 125 - 85,
+            isVisible: totalWidth < containerWidth - 178,
             index,
           };
         })
@@ -54,7 +54,7 @@ const ParameterList = ({
   }, [showMore]);
 
   return (
-    <div className="card-header" ref={containerRef}>
+    <div className="card-header">
       Parameters
       {formattedParameters
         .filter((param) => param.isVisible)
