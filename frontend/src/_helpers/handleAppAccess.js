@@ -28,14 +28,9 @@ export const handleAppAccess = async (componentType, slug, version_id) => {
     /* Released app link [launch/sharable link] */
     try {
       return await appsService.validateReleasedApp(slug);
-    } catch (error) {
-      let editPermission = true;
-      try {
-        await appsService.validatePrivateApp(slug, queryParams);
-      } catch (err) {
-        editPermission = false;
-      }
-      handleError(componentType, error, redirectPath, editPermission);
+    } catch (errorResponse) {
+      const editPermission = errorResponse?.error?.editPermission;
+      handleError(componentType, errorResponse, redirectPath, editPermission, slug);
     }
   }
 };
@@ -53,7 +48,7 @@ const switchOrganization = (componentType, orgId, redirectPath) => {
   );
 };
 
-const handleError = (componentType, error, redirectPath, editPermission) => {
+const handleError = (componentType, error, redirectPath, editPermission, appSlug = null) => {
   try {
     if (error?.data) {
       const statusCode = error.data?.statusCode;
@@ -78,10 +73,7 @@ const handleError = (componentType, error, redirectPath, editPermission) => {
         }
         case 501: {
           /* Restrict the users from accessing the sharable app url if the app is not released */
-          if (editPermission) {
-            //redirectPath format {apps/appSlug/..}
-            const parts = redirectPath.split('/');
-            const appSlug = parts[2];
+          if (editPermission === true && appSlug) {
             redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, { appSlug });
           } else {
             redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});

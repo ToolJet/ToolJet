@@ -27,12 +27,11 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
   const { t } = useTranslation();
 
   // Redirect to edit app URL in a new tab
-  const openAppEditorInNewTab = (slug, pageHandle) => {
+  const openAppEditorInNewTab = () => {
     const subpath = getSubpath();
     const path = subpath
-      ? `${subpath}${getPrivateRoute('editor', { slug, pageHandle })}`
-      : getPrivateRoute('editor', { slug, pageHandle });
-    console.log(path, appSlug);
+      ? `${subpath}${getPrivateRoute('editor', { slug: appSlug })}`
+      : getPrivateRoute('editor', { slug: appSlug });
     window.open(path, '_blank');
   };
 
@@ -102,7 +101,7 @@ export const ErrorModal = ({ errorMsg, appSlug, ...props }) => {
           {appSlug && (
             <button
               className={'btn btn-primary action-btn'}
-              onClick={() => openAppEditorInNewTab(appSlug)}
+              onClick={() => openAppEditorInNewTab()}
               data-cy="open-app-button"
             >
               {t('globals.workspace-modal.continue-btn', 'Open app')}
