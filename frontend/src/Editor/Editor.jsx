@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   appService,
   appsService,
@@ -98,12 +98,10 @@ const EditorComponent = (props) => {
     setSelectedComponents,
     setCurrentPageId,
     setCurrentAppEnvironmentId,
-    updateFeatureAccess,
     setCurrentAppEnvironmentDetails,
   } = useEditorActions();
 
-  const { setAppVersions, setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } =
-    useAppVersionActions();
+  const { setAppVersionCurrentEnvironment, setAppVersionPromoted, onEditorFreeze } = useAppVersionActions();
   const { isVersionReleased, editingVersion, releasedVersionId, isEditorFreezed } = useAppVersionState();
 
   const {
@@ -174,10 +172,6 @@ const EditorComponent = (props) => {
 
   const prevAppDefinition = useRef(appDefinition);
   const prevEventsStoreRef = useRef(events);
-
-  useLayoutEffect(() => {
-    resetAllStores();
-  }, []);
 
   useEffect(() => {
     updateState({ isLoading: true });
@@ -459,7 +453,7 @@ const EditorComponent = (props) => {
 
   const $componentDidMount = async () => {
     window.addEventListener('message', handleMessage);
-    await updateFeatureAccess();
+
     await fetchApp(props.params.pageHandle, true);
     await fetchApps(0);
     await fetchOrgEnvironmentVariables();
@@ -773,11 +767,12 @@ const EditorComponent = (props) => {
       releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
     }
 
-    const appVersions = await appEnvironmentService.getVersionsByEnvironment(data?.id);
+    const isMultiEnvironmentActive = useEditorStore.getState().featureAccess?.multiEnvironment ?? false;
 
     const currentAppVersionEnvId =
-      data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
-    setAppVersions(appVersions.appVersions);
+      !isMultiEnvironmentActive && useAppVersionStore.getState().isVersionReleased
+        ? data['editing_version']['promoted_from'] || data['editing_version']['promotedFrom']
+        : data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
 
     const currentOrgId = data?.organization_id || data?.organizationId;
 
@@ -1787,15 +1782,14 @@ const EditorComponent = (props) => {
       ...(featureAccess?.multiEnvironment ? { env: currentAppEnvironment?.name } : {}),
     });
 
+    const pageHandle = getCurrentState().page.handle;
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${slug || appId}/${currentState.page.handle}${
-          !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
-        }`
+      ? `/applications/${slug || appId}/${pageHandle}${!_.isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
       : '';
 
     setAppPreviewLink(appVersionPreviewLink);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, currentVersionId, currentAppEnvironmentId]);
+  }, [slug, currentVersionId, currentAppEnvironmentId, currentState?.page?.handle]);
 
   const deviceWindowWidth = 450;
 
@@ -1988,7 +1982,7 @@ const EditorComponent = (props) => {
                       transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                     }}
                   >
-                    {config.ENABLE_MULTIPLAYER_EDITING && (
+                    {config.ENABLE_MULTIPLAYER_EDITING && featureAccess?.multiPlayerEdit && (
                       <RealtimeCursors editingVersionId={editingVersion?.id} editingPageId={currentPageId} />
                     )}
                     {isLoading && (
