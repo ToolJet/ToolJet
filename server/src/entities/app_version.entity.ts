@@ -20,6 +20,7 @@ import { EventHandler } from './event_handler.entity';
 @Entity({ name: 'app_versions' })
 @Unique(['name', 'appId'])
 @Index('idx_app_version_app_id', ['appId'])
+@Index('idx_app_version_created_at', ['createdAt'])
 export class AppVersion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
