@@ -230,7 +230,7 @@ export class AppImportExportService {
 
     const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
 
-    await this.setupImportedAppAssociations(
+    const appResourceMap = await this.setupImportedAppAssociations(
       this.entityManager,
       importedApp,
       schemaUnifiedAppParams,
@@ -239,6 +239,21 @@ export class AppImportExportService {
       isNormalizedAppDefinitionSchema
     );
     await this.createAdminGroupPermissions(this.entityManager, importedApp);
+
+    if (!isNormalizedAppDefinitionSchema) {
+      // when importing app with old schema, we need to update the event actions.
+      // Moving it outside setupImportedAppAssociations as events need to be updated after all the associations are done.
+
+      for (const appVersionId of Object.values(appResourceMap.appVersionMapping)) {
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          this.entityManager,
+          appVersionId,
+          appResourceMap.dataQueryMapping,
+          appResourceMap.componentsMapping,
+          appResourceMap.pagesMapping
+        );
+      }
+    }
 
     // NOTE: App slug updation callback doesn't work while wrapped in transaction
     // hence updating slug explicitly
@@ -532,15 +547,6 @@ export class AppImportExportService {
             definition: updatedDefinition,
             homePageId: updateHomepageId,
           }
-        );
-
-        await this.updateEventActionsForNewVersionWithNewMappingIds(
-          manager,
-          appResourceMappings.appVersionMapping[importingAppVersion.id],
-          appResourceMappings.dataQueryMapping,
-          appResourceMappings.componentsMapping,
-          appResourceMappings.pagesMapping,
-          isNormalizedAppDefinitionSchema
         );
       }
     }
@@ -846,8 +852,7 @@ export class AppImportExportService {
         appVersionId,
         appResourceMappings.dataQueryMapping,
         appResourceMappings.componentsMapping,
-        appResourceMappings.pagesMapping,
-        true
+        appResourceMappings.pagesMapping
       );
     }
 
@@ -1285,8 +1290,8 @@ export class AppImportExportService {
     dataQueryMapping: Record<string, string>
   ) {
     if (options && options.events) {
-      const replacedEvents = options.events.map((event: { queryId: string }) => {
-        if (event.queryId) {
+      const replacedEvents = options.events.map((event: { queryId: string; actionId: string }) => {
+        if (event.actionId === 'run-query' && event.queryId) {
           event.queryId = dataQueryMapping[event.queryId];
         }
         return event;
@@ -1513,8 +1518,7 @@ export class AppImportExportService {
     versionId: string,
     oldDataQueryToNewMapping: Record<string, unknown>,
     oldComponentToNewComponentMapping: Record<string, unknown>,
-    oldPageToNewPageMapping: Record<string, unknown>,
-    isNormalizedAppDefinitionSchema: boolean
+    oldPageToNewPageMapping: Record<string, unknown>
   ) {
     const allEvents = await manager.find(EventHandler, {
       where: { appVersionId: versionId },
@@ -1523,19 +1527,25 @@ export class AppImportExportService {
     for (const event of allEvents) {
       const eventDefinition = event.event;
 
-      if (isNormalizedAppDefinitionSchema && eventDefinition?.actionId === 'run-query') {
+      if (eventDefinition?.actionId === 'run-query' && oldDataQueryToNewMapping[eventDefinition.queryId]) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 
-      if (eventDefinition?.actionId === 'control-component') {
+      if (
+        eventDefinition?.actionId === 'control-component' &&
+        oldComponentToNewComponentMapping[eventDefinition.componentId]
+      ) {
         eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
       }
 
-      if (eventDefinition?.actionId === 'switch-page') {
+      if (eventDefinition?.actionId === 'switch-page' && oldPageToNewPageMapping[eventDefinition.pageId]) {
         eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
       }
 
-      if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'close-modal') {
+      if (
+        (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'close-modal') &&
+        oldComponentToNewComponentMapping[eventDefinition.modal]
+      ) {
         eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
       }
 
