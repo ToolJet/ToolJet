@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, EntityManager, Transaction, In } from 'typeorm';
+import { MigrationInterface, QueryRunner, EntityManager, Transaction } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
 import { Component } from 'src/entities/component.entity';
 import { Page } from 'src/entities/page.entity';
@@ -22,9 +22,9 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   @Transaction()
   private async migrateAppsDefinition(entityManager: EntityManager, queryRunner?: QueryRunner): Promise<void> {
     const appVersionRepository = entityManager.getRepository(AppVersion);
-    const appVersions = await appVersionRepository.find({
-      order: { createdAt: 'DESC' },
-    });
+    const appVersions = await appVersionRepository.query(
+      `SELECT id FROM app_versions WHERE definition->>'pages' IS NOT NULL`
+    );
     const totalVersions = appVersions.length;
 
     const startTime = new Date().getTime();
@@ -42,10 +42,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         if (ids.length === 0) {
           return [];
         }
-        return entityManager.find(AppVersion, {
-          where: { id: In(ids) },
-          order: { createdAt: 'ASC' },
-        });
+        return entityManager.query(`SELECT * FROM app_versions WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})`);
       },
       async (entityManager: EntityManager, versions: AppVersion[]) => {
         await this.processVersions(entityManager, versions, migrationProgress);
