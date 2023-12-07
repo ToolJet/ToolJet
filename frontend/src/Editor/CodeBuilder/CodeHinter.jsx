@@ -120,11 +120,26 @@ export function CodeHinter({
   const { variablesExposedForPreview } = useContext(EditorContext);
   const prevCountRef = useRef(false);
 
+  function getPropertyDefinition(paramName, component) {
+    if (component?.properties?.hasOwnProperty(`${paramName}`)) {
+      return component.properties?.[paramName];
+    } else if (component?.styles?.hasOwnProperty(`${paramName}`)) {
+      return component?.styles?.[paramName];
+    } else if (component?.general?.hasOwnProperty(`${paramName}`)) {
+      return component?.general?.[paramName];
+    } else if (component?.generalStyles?.hasOwnProperty(`${paramName}`)) {
+      return component?.generalStyles?.[paramName];
+    } else {
+      return {};
+    }
+  }
+
   const checkTypeErrorInRunTime = (preview) => {
     const propertyDefinition = getPropertyDefinition(paramName, component?.component);
     const resolvedProperty = Object.keys(component?.component?.definition || {}).reduce((accumulator, currentKey) => {
-      if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
-        accumulator[`${paramName}`] = preview;
+      if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName)) {
+        accumulator[`${paramName}`] = resolveReferences(preview, currentState);
+      }
       return accumulator;
     }, {});
     const [_valid, errorMessages] = validateProperty(resolvedProperty, propertyDefinition, paramName);
@@ -249,20 +264,6 @@ export function CodeHinter({
     }
     return {};
   };
-
-  function getPropertyDefinition(paramName, component) {
-    if (component?.properties?.hasOwnProperty(`${paramName}`)) {
-      return component.properties?.[paramName];
-    } else if (component?.styles?.hasOwnProperty(`${paramName}`)) {
-      return component?.styles?.[paramName];
-    } else if (component?.generalProperties?.hasOwnProperty(`${paramName}`)) {
-      return component?.generalProperties?.[paramName];
-    } else if (component?.generalStyles?.hasOwnProperty(`${paramName}`)) {
-      return component?.generalStyles?.[paramName];
-    } else {
-      return {};
-    }
-  }
 
   const getPreview = () => {
     if (!enablePreview) return;
