@@ -16,11 +16,10 @@ import {
   verifyInviteToken,
 } from '../../test.helper';
 import { getManager, Repository } from 'typeorm';
-import { mocked } from 'ts-jest/utils';
 import got from 'got';
 
 jest.mock('got');
-const mockedGot = mocked(got);
+const mockedGot = jest.mocked(got);
 
 describe.skip('Git Onboarding', () => {
   let app: INestApplication;
