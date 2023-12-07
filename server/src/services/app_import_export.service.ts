@@ -340,7 +340,7 @@ export class AppImportExportService {
       return;
     }
 
-    let appResourceMappings: AppResourceMappings = {
+    const appResourceMappings: AppResourceMappings = {
       defaultDataSourceIdMapping: {},
       dataQueryMapping: {},
       appVersionMapping: {},
@@ -372,7 +372,7 @@ export class AppImportExportService {
     appResourceMappings.appDefaultEnvironmentMapping = appDefaultEnvironmentMapping;
     appResourceMappings.appVersionMapping = appVersionMapping;
 
-    appResourceMappings = await this.setupAppVersionAssociations(
+    await this.setupAppVersionAssociations(
       manager,
       importingAppVersions,
       user,
@@ -386,7 +386,19 @@ export class AppImportExportService {
       importingPages,
       importingComponents,
       importingEvents
-    );
+    ).then(async (appResourceMappingsData) => {
+      const appVersionIds = Object.values(appResourceMappingsData.appVersionMapping);
+
+      for (const appVersionId of appVersionIds) {
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appVersionId,
+          appResourceMappings.dataQueryMapping,
+          appResourceMappings.componentsMapping,
+          appResourceMappings.pagesMapping
+        );
+      }
+    });
 
     if (!isNormalizedAppDefinitionSchema) {
       for (const importingAppVersion of importingAppVersions) {
@@ -844,19 +856,7 @@ export class AppImportExportService {
       );
     }
 
-    const appVersionIds = Object.values(appResourceMappings.appVersionMapping);
-
-    for (const appVersionId of appVersionIds) {
-      await this.updateEventActionsForNewVersionWithNewMappingIds(
-        manager,
-        appVersionId,
-        appResourceMappings.dataQueryMapping,
-        appResourceMappings.componentsMapping,
-        appResourceMappings.pagesMapping
-      );
-    }
-
-    return appResourceMappings;
+    return new Promise((resolve) => resolve(appResourceMappings));
   }
 
   async rejectMarketplacePluginsNotInstalled(
@@ -1523,7 +1523,7 @@ export class AppImportExportService {
     const allEvents = await manager
       .createQueryBuilder(EventHandler, 'event')
       .where('event.appVersionId = :versionId', { versionId })
-      .orderBy('event.index', 'ASC')
+      .orderBy('event.createdAt', 'ASC')
       .getMany();
 
     for (const event of allEvents) {
