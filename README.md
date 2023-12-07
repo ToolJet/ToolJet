@@ -53,6 +53,7 @@ You can deploy ToolJet on Heroku using one-click deployment.
 <p align="center">
   <a href="https://heroku.com/deploy?template=https://github.com/tooljet/tooljet/tree/main"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height=32></a>
   <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main"><img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DigitalOcean" height=32></a>
+  <a href="https://app.trydome.io/signup?package=tooljet"><img src="https://trydome.io/button.svg" alt="Deploy to Dome" height=32></a>
 </p>
 
 ### Try using Docker
