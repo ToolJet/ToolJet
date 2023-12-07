@@ -1,4 +1,4 @@
-import { In, MigrationInterface, QueryRunner, EntityManager } from 'typeorm';
+import { MigrationInterface, QueryRunner, EntityManager, Transaction, In } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
 import { Component } from 'src/entities/component.entity';
 import { Page } from 'src/entities/page.entity';
@@ -16,13 +16,18 @@ interface AppResourceMappings {
 
 export class MigrateAppsDefinitionSchemaTransition1697473340856 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const entityManager = queryRunner.manager;
+    await this.migrateAppsDefinition(queryRunner.manager);
+  }
+
+  @Transaction()
+  private async migrateAppsDefinition(entityManager: EntityManager, queryRunner?: QueryRunner): Promise<void> {
     const appVersionRepository = entityManager.getRepository(AppVersion);
-    const appVersions = await appVersionRepository.find();
+    const appVersions = await appVersionRepository.find({
+      order: { createdAt: 'DESC' },
+    });
     const totalVersions = appVersions.length;
 
     const startTime = new Date().getTime();
-
     const migrationProgress = new MigrationProgress(
       'MigrateAppsDefinitionSchemaTransition1697473340856',
       totalVersions
@@ -33,13 +38,13 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     await processDataInBatches(
       entityManager,
       async (entityManager: EntityManager, skip: number, take: number) => {
+        const ids = appVersions.slice(skip, skip + take).map((appVersion) => appVersion.id);
+        if (ids.length === 0) {
+          return [];
+        }
         return entityManager.find(AppVersion, {
-          where: { id: In(appVersions.map((appVersion) => appVersion.id)) },
-          order: {
-            createdAt: 'ASC',
-          },
-          take,
-          skip,
+          where: { id: In(ids) },
+          order: { createdAt: 'ASC' },
         });
       },
       async (entityManager: EntityManager, versions: AppVersion[]) => {
@@ -49,7 +54,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     );
 
     const endTime = new Date().getTime();
-
     console.log(`Migration time taken: ${(endTime - startTime) / 1000} seconds`);
   }
 
@@ -375,8 +379,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     await queryRunner.query('DELETE FROM layout');
     await queryRunner.query('DELETE FROM event_handler');
 
-    await queryRunner.query('ALTER TABLE app_version DROP COLUMN IF EXISTS homePageId');
-    await queryRunner.query('ALTER TABLE app_version DROP COLUMN IF EXISTS globalSettings');
-    await queryRunner.query('ALTER TABLE app_version DROP COLUMN IF EXISTS showViewerNavigation');
+    await queryRunner.query('ALTER TABLE app_versions DROP COLUMN IF EXISTS homePageId');
+    await queryRunner.query('ALTER TABLE app_versions DROP COLUMN IF EXISTS globalSettings');
+    await queryRunner.query('ALTER TABLE app_versions DROP COLUMN IF EXISTS showViewerNavigation');
   }
 }
