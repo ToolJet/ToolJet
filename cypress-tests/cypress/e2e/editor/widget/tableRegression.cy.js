@@ -351,7 +351,7 @@ describe("Table", () => {
     cy.get('[data-index="0"]>.select-search-option:eq(1)').realClick();
     verifyAndEnterColumnOptionInput("key", "name");
     verifyAndEnterColumnOptionInput("Text color", "red");
-    verifyAndEnterColumnOptionInput("Cell Background Color", "yellow");
+    verifyAndEnterColumnOptionInput("Cell Background color", "yellow");
     cy.get(
       '[data-cy="input-and-label-cell-background-color"] > .form-label'
     ).click();
