@@ -1520,9 +1520,11 @@ export class AppImportExportService {
     oldComponentToNewComponentMapping: Record<string, unknown>,
     oldPageToNewPageMapping: Record<string, unknown>
   ) {
-    const allEvents = await manager.find(EventHandler, {
-      where: { appVersionId: versionId },
-    });
+    const allEvents = await manager
+      .createQueryBuilder(EventHandler, 'event')
+      .where('event.appVersionId = :versionId', { versionId })
+      .orderBy('event.index', 'ASC')
+      .getMany();
 
     for (const event of allEvents) {
       const eventDefinition = event.event;

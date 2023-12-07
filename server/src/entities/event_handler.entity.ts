@@ -6,6 +6,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 
@@ -18,6 +19,9 @@ export enum Target {
 }
 
 @Entity({ name: 'event_handlers' })
+@Index('idx_event_handler_app_version_id', ['appVersionId'])
+@Index('idx_event_handler_source_id', ['sourceId'])
+@Index('idx_event_handler_created_at', ['createdAt'])
 export class EventHandler {
   @PrimaryGeneratedColumn('uuid')
   id: string;
