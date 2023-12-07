@@ -273,7 +273,7 @@ describe("Table", () => {
     );
     cy.get('[data-cy="label-action-button-position"]').verifyVisibleElement(
       "have.text",
-      "Button Position"
+      "Button position"
     ); // dropdown_type
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
