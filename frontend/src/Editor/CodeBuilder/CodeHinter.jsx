@@ -152,10 +152,17 @@ export function CodeHinter({
     return [_valid, errorMessages];
   };
 
+  const getPreviewAndErrorFromValue = (value) => {
+    const customResolvables = getCustomResolvables();
+    const [preview, error] = resolveReferences(value, realState, null, customResolvables, true, true);
+    return [preview, error];
+  };
+
   useEffect(() => {
     setCurrentValue(initialValue);
-    const [_valid, errorMessages] = checkTypeErrorInRunTime(initialValue);
-    if (!_valid) setResolvingError(true);
+    const [preview, error] = getPreviewAndErrorFromValue(initialValue);
+    const [_valid] = checkTypeErrorInRunTime(preview);
+    if (!_valid || error) setResolvingError(true);
     return () => {
       setPrevCurrentValue(null);
       setResolvedValue(null);
@@ -196,9 +203,7 @@ export function CodeHinter({
     let globalPreviewCopy = null;
     let globalErrorCopy = null;
     if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
-      const customResolvables = getCustomResolvables();
-      const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
-
+      const [preview, error] = getPreviewAndErrorFromValue(currentValue);
       // checking type error if any in run time
       const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
 
