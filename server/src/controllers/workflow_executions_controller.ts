@@ -10,6 +10,8 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { InjectRepository } from '@nestjs/typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { Repository } from 'typeorm';
+import { ValidateLicenseGuard } from '@ee/licensing/guards/validLicense.guard';
+import { WorkflowGuard } from '@ee/licensing/guards/workflow.guard';
 
 @Controller('workflow_executions')
 export class WorkflowExecutionsController {
@@ -27,15 +29,15 @@ export class WorkflowExecutionsController {
   @InjectRepository(WorkflowExecution)
   private workflowExecutionRepository: Repository<WorkflowExecution>;
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(ValidateLicenseGuard, WorkflowGuard)
   // !Removing auth guard for allowing workflow executions to be triggered for public apps
   @Post()
   async create(@User() user, @Body() createWorkflowExecutionDto: CreateWorkflowExecutionDto) {
-    const appVersion =
+    const appDetails =
       createWorkflowExecutionDto.executeUsing === 'version'
         ? await this.appVersionsRepository.findOne(createWorkflowExecutionDto.appVersionId, { relations: ['app'] })
         : undefined;
-    const app = appVersion ? appVersion.app : await this.appsRepository.findOne(createWorkflowExecutionDto.appId);
+    const app = appDetails ? appDetails.app : await this.appsRepository.findOne(createWorkflowExecutionDto.appId);
 
     let ability = null;
 
@@ -54,8 +56,18 @@ export class WorkflowExecutionsController {
       }
     }
 
+    let appEnvId = '';
+    if (createWorkflowExecutionDto.executeUsing === 'app' && createWorkflowExecutionDto?.appEnvId) {
+      appEnvId = createWorkflowExecutionDto.appEnvId;
+    }
+
     const workflowExecution = await this.workflowExecutionsService.create(createWorkflowExecutionDto);
-    const result = await this.workflowExecutionsService.execute(workflowExecution, createWorkflowExecutionDto.params);
+    const result = await this.workflowExecutionsService.execute(
+      workflowExecution,
+      createWorkflowExecutionDto.params,
+      appEnvId
+    );
+
     return { workflowExecution, result };
   }
 

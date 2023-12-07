@@ -123,6 +123,10 @@ export function LicenseBanner({
         return `You're reaching your limit for number of ${type} - ${current}/${total}`;
       case type == 'tables' && !canAddUnlimited && percentage >= 100:
         return `You've reached your limit for number of ${type} - ${current}/${total}`;
+      case type == 'workflow' && !canAddUnlimited && (100 > percentage >= 90 || current === total - 1):
+        return `You're reaching your limit for number of ${type} - ${current}/${total}`;
+      case type == 'workflow' && !canAddUnlimited && percentage >= 100:
+        return `You've reached your limit for number of ${type} - ${current}/${total}`;
       case !canAddUnlimited && percentage >= 100:
         return `You have reached your limit for number of ${type}.`;
       case !isExpired && (percentage >= 90 || (total <= 10 && current === total - 1)):

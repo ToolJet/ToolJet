@@ -77,6 +77,8 @@ class HomePageComponent extends React.Component {
       fileName: '',
       selectedTemplate: null,
       deploying: false,
+      workflowWorkspaceLevelLimit: {},
+      workflowInstanceLevelLimit: {},
     };
   }
 
@@ -86,6 +88,8 @@ class HomePageComponent extends React.Component {
       this.fetchFolders(),
       this.fetchFeatureAccesss(),
       this.fetchAppsLimit(),
+      this.fetchWorkflowsInstanceLimit(),
+      this.fetchWorkflowsWorkspaceLimit(),
     ]);
     document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
@@ -100,6 +104,18 @@ class HomePageComponent extends React.Component {
   fetchAppsLimit() {
     appsService.getAppsLimit().then((data) => {
       this.setState({ appsLimit: data?.appsCount });
+    });
+  }
+
+  fetchWorkflowsInstanceLimit() {
+    appsService.getWorkflowLimit('instance').then((data) => {
+      this.setState({ workflowInstanceLevelLimit: data?.appsCount });
+    });
+  }
+
+  fetchWorkflowsWorkspaceLimit() {
+    appsService.getWorkflowLimit('workspace').then((data) => {
+      this.setState({ workflowWorkspaceLevelLimit: data?.appsCount });
     });
   }
 
@@ -616,6 +632,8 @@ class HomePageComponent extends React.Component {
       fileName,
       showRenameAppModal,
       showCreateAppFromTemplateModal,
+      workflowWorkspaceLevelLimit,
+      workflowInstanceLevelLimit,
     } = this.state;
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
@@ -815,7 +833,13 @@ class HomePageComponent extends React.Component {
                     <div className="create-new-app-wrapper">
                       <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                         <Button
-                          disabled={appsLimit?.percentage >= 100}
+                          //disabled={appsLimit?.percentage >= 100}
+                          disabled={
+                            this.props.appType === 'front-end'
+                              ? appsLimit?.percentage >= 100
+                              : workflowInstanceLevelLimit.percentage >= 100 ||
+                                workflowWorkspaceLevelLimit.percentage >= 100
+                          }
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                           onClick={() => this.setState({ showCreateAppModal: true })}
                           data-cy="create-new-app-button"
@@ -865,7 +889,31 @@ class HomePageComponent extends React.Component {
                       </Dropdown>
                     </div>
                   </LicenseTooltip>
-                  <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
+                  {this.props.appType === 'front-end' && (
+                    <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
+                  )}
+                  {this.props.appType === 'workflow' &&
+                    (workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                      100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                      workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1 ||
+                      workflowWorkspaceLevelLimit.current >= workflowWorkspaceLevelLimit.total ||
+                      100 > workflowWorkspaceLevelLimit.percentage >= 90 ||
+                      workflowWorkspaceLevelLimit.current === workflowWorkspaceLevelLimit.total - 1) && (
+                      <>
+                        <LicenseBanner
+                          classes="mb-3 small"
+                          limits={
+                            workflowInstanceLevelLimit.current >= workflowInstanceLevelLimit.total ||
+                            100 > workflowInstanceLevelLimit.percentage >= 90 ||
+                            workflowInstanceLevelLimit.current === workflowInstanceLevelLimit.total - 1
+                              ? workflowInstanceLevelLimit
+                              : workflowWorkspaceLevelLimit
+                          }
+                          type="workflow"
+                          size="small"
+                        />
+                      </>
+                    )}
                 </div>
               )}
               <Folders

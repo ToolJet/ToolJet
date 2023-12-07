@@ -8,6 +8,7 @@ import { appsService } from '@/_services';
 import { ToolTip } from '@/_components/ToolTip';
 import Beta from '../../_ui/Beta';
 import { redirectToDashboard } from '@/_helpers/routes';
+import XenvSvg from '@assets/images/icons/x-env.svg';
 
 import './styles.scss';
 import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
@@ -53,8 +54,15 @@ const Header = (props) => {
             </div>
             <div className="run-button">
               <div className="button-container">
+                <div className={`d-inline-flex align-items-center env-header`}>
+                  <XenvSvg />
+                  <span className="tj-text-xsm env-switch-text">Env</span>
+                  <div style={{ fontSize: '12px' }} data-cy="list-current-env-name">
+                    Development
+                  </div>
+                </div>
                 <ToolTip message="Enable/Disable workflow in app." placement="bottom">
-                  <div className="d-flex px-2">
+                  <div className="d-flex px-3">
                     <span className="m-1 px-1 font-weight-600">Enable</span>
                     <CustomToggleSwitch
                       isChecked={value}

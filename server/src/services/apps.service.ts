@@ -36,6 +36,7 @@ import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { v4 as uuidv4 } from 'uuid';
 import { Page } from 'src/entities/page.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
@@ -137,6 +138,7 @@ export class AppsService {
             organizationId: user.organizationId,
             userId: user.id,
             isMaintenanceOn: type === 'workflow' ? true : false,
+            ...(type === 'workflow' && { workflowApiToken: uuidv4() }),
           })
         );
 
@@ -961,6 +963,69 @@ export class AppsService {
     }
   }
 
+  async updateWorflowVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
+    const { name, currentEnvironmentId, definition } = body;
+    let currentEnvironment: AppEnvironment;
+
+    if (version.id === version.app.currentVersionId && !body?.is_user_switched_version)
+      throw new BadRequestException('You cannot update a released version');
+
+    if (currentEnvironmentId || definition) {
+      currentEnvironment = await AppEnvironment.findOne({
+        where: { id: version.currentEnvironmentId },
+      });
+    }
+
+    const editableParams = {};
+    if (name) {
+      //means user is trying to update the name
+      const versionNameExists = await this.appVersionsRepository.findOne({
+        where: { name, appId: version.appId },
+      });
+
+      if (versionNameExists) {
+        throw new BadRequestException('Version name already exists.');
+      }
+      editableParams['name'] = name;
+    }
+
+    //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
+    if (currentEnvironmentId) {
+      if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        throw new BadRequestException('You do not have permissions to perform this action');
+      }
+
+      if (version.currentEnvironmentId !== currentEnvironmentId) {
+        throw new NotAcceptableException();
+      }
+      const nextEnvironment = await AppEnvironment.findOne({
+        select: ['id'],
+        where: {
+          priority: MoreThan(currentEnvironment.priority),
+          organizationId,
+        },
+        order: { priority: 'ASC' },
+      });
+      editableParams['currentEnvironmentId'] = nextEnvironment.id;
+    }
+
+    if (definition) {
+      const environments = await AppEnvironment.count({
+        where: {
+          organizationId,
+        },
+      });
+      if (environments > 1 && currentEnvironment.priority !== 1 && !body?.is_user_switched_version) {
+        throw new BadRequestException('You cannot update a promoted version');
+      }
+      editableParams['definition'] = definition;
+    }
+
+    editableParams['updatedAt'] = new Date();
+
+    return await this.appVersionsRepository.update(version.id, editableParams);
+  }
+
   async updateVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
     const { name, currentEnvironmentId } = body;
     let currentEnvironment: AppEnvironment;
@@ -1073,7 +1138,11 @@ export class AppsService {
   }
 
   async appsCount() {
-    return await this.appsRepository.count();
+    return await this.appsRepository.count({
+      where: {
+        type: 'front-end',
+      },
+    });
   }
 
   async getAppsLimit() {
@@ -1154,5 +1223,36 @@ export class AppsService {
         return { table_id };
       });
     });
+  }
+
+  async workflowsCount(workspaceId) {
+    return await this.appsRepository.count({
+      where: {
+        type: 'workflow',
+        ...(workspaceId && { organizationId: workspaceId }),
+      },
+    });
+  }
+
+  async getWorkflowLimit(params: { limitFor: string; workspaceId?: string }) {
+    if (params.limitFor === 'workspace' && !params.workspaceId)
+      throw new BadRequestException(`workspaceId is doesn't exist`);
+
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.WORKFLOWS, LICENSE_FIELD.STATUS]);
+    const totalCount =
+      params.limitFor === 'workspace'
+        ? licenseTerms[LICENSE_FIELD.WORKFLOWS].workspace.total
+        : licenseTerms[LICENSE_FIELD.WORKFLOWS].instance.total;
+
+    return {
+      appsCount: generatePayloadForLimits(
+        totalCount !== LICENSE_LIMIT.UNLIMITED
+          ? await this.workflowsCount(params.limitFor === 'workspace' ? params?.workspaceId ?? '' : '')
+          : 0,
+        totalCount,
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.WORKFLOWS
+      ),
+    };
   }
 }

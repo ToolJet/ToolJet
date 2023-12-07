@@ -9,7 +9,13 @@ function ResultNode() {
     <div className="result-node-container">
       <AddThunder />
       <span>Result</span>
-      <Handle type="target" position="left" isValidConnection={(_connection) => true} className="node-handle" />
+      <Handle
+        type="target"
+        position="left"
+        isValidConnection={(_connection) => true}
+        className="node-handle"
+        isConnectable={true}
+      />
     </div>
   );
 }

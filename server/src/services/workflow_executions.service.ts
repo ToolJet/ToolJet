@@ -14,6 +14,8 @@ import { User } from 'src/entities/user.entity';
 import { getQueryVariables, resolveCode } from '../../lib/utils';
 import { Graph, alg } from '@dagrejs/graphlib';
 import * as moment from 'moment';
+import { LicenseService } from '@services/license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Injectable()
 export class WorkflowExecutionsService {
@@ -33,7 +35,8 @@ export class WorkflowExecutionsService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    private dataQueriesService: DataQueriesService
+    private dataQueriesService: DataQueriesService,
+    private licenseService: LicenseService
   ) {}
 
   async create(createWorkflowExecutionDto: CreateWorkflowExecutionDto): Promise<WorkflowExecution> {
@@ -145,10 +148,15 @@ export class WorkflowExecutionsService {
     return workflowExecutions;
   }
 
-  async execute(workflowExecution: WorkflowExecution, params: object = {}): Promise<object> {
+  async execute(workflowExecution: WorkflowExecution, params: object = {}, envId = ''): Promise<object> {
     const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId, {
       relations: ['app'],
     });
+
+    const workflowsExecutionTimeOut =
+      (await this.licenseService.getLicenseTerms(LICENSE_FIELD.WORKFLOWS))?.execution_timeout ?? 30;
+
+    if (envId) appVersion.currentEnvironmentId = envId;
 
     workflowExecution = await this.workflowExecutionRepository.findOne({
       where: {
@@ -172,7 +180,7 @@ export class WorkflowExecutionsService {
     while (queue.length !== 0) {
       const currentTime = moment();
       const timeTaken = currentTime.diff(moment(workflowExecution.createdAt));
-      if (timeTaken / 1000 > 30) {
+      if (timeTaken / 1000 > workflowsExecutionTimeOut) {
         addLog('Execution stopped due to timeout');
         break;
       }
@@ -283,12 +291,12 @@ export class WorkflowExecutionsService {
     });
     user.organizationId = user.organization.id;
     try {
-      void getQueryVariables(query.options, state);
+      void getQueryVariables(query.options, state, addLog);
     } catch (e) {
       console.log({ e });
     }
 
-    const options = getQueryVariables(query.options, state);
+    const options = getQueryVariables(query.options, state, addLog);
     try {
       addLog(`${query.name}: Started execution`);
       const result =

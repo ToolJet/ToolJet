@@ -186,7 +186,7 @@ function FlowBuilder(_props) {
         onConnect={onConnect}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
-        // onEdgesDelete={onEdgesDelete}
+        //onEdgesDelete={onEdgesDelete}
         ref={flowElement}
         nodeTypes={nodeTypes}
         zoomOnPinch={false}
