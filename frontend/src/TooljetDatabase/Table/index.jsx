@@ -9,7 +9,7 @@ import { TablePopover } from './ActionsPopover';
 import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
-import EditColumnForm from '../Forms/ColumnForm';
+import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
@@ -200,6 +200,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  const closeMenu = () => {
+    document.body.click();
+  };
+
   return (
     <div>
       {Object.keys(selectedRowIds).length > 0 && (
@@ -246,6 +250,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                     onEdit={() => {
                       setSelectedColumn(column);
                       setIsEditColumnDrawerOpen(true);
+                      closeMenu();
                     }}
                     onDelete={() => handleDeleteColumn(column.Header)}
                     disabled={index === 0 || column.isPrimaryKey}
@@ -333,15 +338,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
-        <EditColumnForm
-          selectedColumn={selectedColumn}
-          onEdit={() => {
-            fetchTableMetadata();
-            setSelectedColumn();
-            setIsEditColumnDrawerOpen(false);
-          }}
-          onClose={() => setIsEditColumnDrawerOpen(false)}
-        />
+        <EditColumnForm selectedColumn={selectedColumn} onClose={() => setIsEditColumnDrawerOpen(false)} />
       </Drawer>
     </div>
   );

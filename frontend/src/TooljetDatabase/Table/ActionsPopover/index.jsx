@@ -3,6 +3,7 @@ import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import DeleteIcon from './Icons/Delete.svg';
+import EditIcon from '../ActionsPopover/Icons/Edit.svg';
 
 // eslint-disable-next-line no-unused-vars
 export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
@@ -10,15 +11,15 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
   const popover = (
     <Popover>
       <Popover.Body>
-        {/* <div className="w-min-100 row list-group-item-action cursor-pointer">
+        <div className="w-min-100 row list-group-item-action cursor-pointer p-1">
           <div className="col-auto">
             <EditIcon />
           </div>
           <div className="col text-truncate" onClick={onEdit}>
             Edit
           </div>
-        </div> */}
-        <div className="w-min-100 row list-group-item-action cursor-pointer" onClick={onDelete}>
+        </div>
+        <div className="w-min-100 row list-group-item-action cursor-pointer p-1 mt-2" onClick={onDelete}>
           <div className="col-auto">
             <DeleteIcon />
           </div>
