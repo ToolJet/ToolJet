@@ -91,8 +91,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           );
 
           const newPage = entityManager.create(Page, {
-            name: page.name,
-            handle: page.handle,
+            name: page.name || page.handle || pageId,
+            handle: page.handle || pageId,
             appVersionId: version.id,
             disabled: page.disabled || false,
             hidden: page.hidden || false,
@@ -333,7 +333,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
       if (!skipComponent) {
         transformedComponent.id = uuid();
-        transformedComponent.name = componentData.name;
+        transformedComponent.name = componentData.name || componentId;
         transformedComponent.type = componentData.component;
         transformedComponent.properties = componentData.definition.properties || {};
         transformedComponent.styles = componentData.definition.styles || {};
