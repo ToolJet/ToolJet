@@ -137,7 +137,13 @@ export function CodeHinter({
   const checkTypeErrorInRunTime = (preview) => {
     const propertyDefinition = getPropertyDefinition(paramName, component?.component);
     const resolvedProperty = Object.keys(component?.component?.definition || {}).reduce((accumulator, currentKey) => {
-      if (component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName)) {
+      if (
+        component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName) ||
+        (paramName === 'tooltip' &&
+          currentKey === 'general' &&
+          !component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
+        //added second condition because initilly general is empty object and hence it was not going inside if statement and thus codehinter was always receiving undefined for initial render and thus showing error message in the preview
+      ) {
         accumulator[`${paramName}`] = resolveReferences(preview, currentState);
       }
       return accumulator;
