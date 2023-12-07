@@ -4,7 +4,7 @@ import AppLogo from '@/_components/AppLogo';
 import { Modes } from '../reducer/reducer';
 import EditAppName from '../../Editor/Header/EditAppName';
 import { Toggle } from '../../Editor/CodeBuilder/Elements/Toggle';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { ToolTip } from '@/_components/ToolTip';
 import Beta from '../../_ui/Beta';
 import { redirectToDashboard } from '@/_helpers/routes';
@@ -17,7 +17,7 @@ const Header = (props) => {
   const value = editorSession.maintenance;
 
   const onEnableChange = () => {
-    appService.setMaintenance(editorSession.app.id, !value);
+    appsService.setMaintenance(editorSession.app.id, !value);
     editorSessionActions.setMaintenanceStatus(!value);
   };
 
