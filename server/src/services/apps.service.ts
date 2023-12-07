@@ -776,65 +776,71 @@ export class AppsService {
             newDataQueries.push(newQuery);
           }
         }
-      }
 
-      if (globalQueries?.length > 0) {
-        for (const globalQuery of globalQueries) {
-          const dataQueryParams = {
-            name: globalQuery.name,
-            options: globalQuery.options,
-            dataSourceId: globalQuery.dataSourceId,
-            appVersionId: appVersion.id,
-          };
+        if (globalQueries?.length > 0) {
+          for (const globalQuery of globalQueries) {
+            const dataQueryParams = {
+              name: globalQuery.name,
+              options: globalQuery.options,
+              dataSourceId: globalQuery.dataSourceId,
+              appVersionId: appVersion.id,
+            };
 
-          const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-          const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+            const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
 
-          dataQueryEvents.forEach(async (event, index) => {
-            const newEvent = new EventHandler();
+            dataQueryEvents.forEach(async (event, index) => {
+              const newEvent = new EventHandler();
 
-            newEvent.id = uuid.v4();
-            newEvent.name = event.name;
-            newEvent.sourceId = newQuery.id;
-            newEvent.target = event.target;
-            newEvent.event = event.event;
-            newEvent.index = event.index ?? index;
-            newEvent.appVersionId = appVersion.id;
+              newEvent.id = uuid.v4();
+              newEvent.name = event.name;
+              newEvent.sourceId = newQuery.id;
+              newEvent.target = event.target;
+              newEvent.event = event.event;
+              newEvent.index = event.index ?? index;
+              newEvent.appVersionId = appVersion.id;
 
-            await manager.save(newEvent);
-          });
-          oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
-          newDataQueries.push(newQuery);
+              await manager.save(newEvent);
+            });
+            oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
+            newDataQueries.push(newQuery);
+          }
         }
-      }
 
-      for (const newQuery of newDataQueries) {
-        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, oldDataQueryToNewMapping);
-        newQuery.options = newOptions;
-
-        await manager.save(newQuery);
-      }
-
-      appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
-      await manager.save(appVersion);
-
-      for (const appEnvironment of appEnvironments) {
-        for (const dataSource of dataSources) {
-          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
-            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
-          });
-
-          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
-          await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
-
-          await manager.save(
-            manager.create(DataSourceOptions, {
-              options: newOptions,
-              dataSourceId: dataSourceMapping[dataSource.id],
-              environmentId: appEnvironment.id,
-            })
+        for (const newQuery of newDataQueries) {
+          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+            newQuery.options,
+            oldDataQueryToNewMapping
           );
+          newQuery.options = newOptions;
+
+          await manager.save(newQuery);
+        }
+
+        appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
+          appVersion.definition,
+          oldDataQueryToNewMapping
+        );
+        await manager.save(appVersion);
+
+        for (const appEnvironment of appEnvironments) {
+          for (const dataSource of dataSources) {
+            const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
+              where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+            });
+
+            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+            const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
+            await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+
+            await manager.save(
+              manager.create(DataSourceOptions, {
+                options: newOptions,
+                dataSourceId: dataSourceMapping[dataSource.id],
+                environmentId: appEnvironment.id,
+              })
+            );
+          }
         }
       }
     }
