@@ -40,7 +40,9 @@ const Access = () => {
           ?.filter((feature) => Object.keys(FeatureLabels).indexOf(feature?.key) !== -1)
           .map((feature, index) => (
             <label key={index} className="form-switch d-flex align-items-center metric">
-              <span className="form-check-label">{feature?.label}</span>
+              <span className="form-check-label" data-cy={`${feature?.label.toLowerCase().replace(/\s+/g, '-')}-label`}>
+                {feature?.label}
+              </span>
               <SolidIcon name={!feature?.value ? 'circularToggleDisabled' : 'circularToggleEnabled'} />
             </label>
           ))}

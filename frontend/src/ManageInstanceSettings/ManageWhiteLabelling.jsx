@@ -160,7 +160,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                     {!isLoading && Object.keys(settings).length !== 0 ? (
                       <form noValidate>
                         <div key="App Logo" className="form-group mb-3">
-                          <label className="form-label" data-cy="name-label">
+                          <label className="form-label" data-cy="app-logo-label">
                             App Logo
                           </label>
                           <div className="tj-app-input">
@@ -171,14 +171,14 @@ class ManageWhiteLabellingComponent extends React.Component {
                                 onChange={(e) => this.optionsChanged('App Logo', e.target.value)}
                                 aria-describedby="emailHelp"
                                 value={settings['App Logo']}
-                                data-cy={`input-field-App Logo`}
+                                data-cy={`input-field-app-logo`}
                                 style={{ width: '516px' }}
                                 placeholder={'https://app.tooljet.com/logo.svg' || 'Enter App Logo'}
                                 disabled={disabled}
                               />
                               <div className="help-text">
                                 <div
-                                  data-cy="instance-settings-help-text"
+                                  data-cy="app-logo-help-text"
                                   style={{
                                     color: 'var(--slate-light-10, var(--slate-10, #7E868C))',
                                     fontFamily: 'IBM Plex Sans',
@@ -196,7 +196,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                         </div>
 
                         <div key="Page Title" className="form-group mb-3">
-                          <label className="form-label" data-cy="name-label">
+                          <label className="form-label" data-cy="page-title-label">
                             Page Title
                           </label>
                           <div className="tj-app-input">
@@ -207,14 +207,14 @@ class ManageWhiteLabellingComponent extends React.Component {
                                 onChange={(e) => this.optionsChanged('Page Title', e.target.value)}
                                 aria-describedby="emailHelp"
                                 value={settings['Page Title']}
-                                data-cy={`input-field-Page Title`}
+                                data-cy={`input-field-page-title`}
                                 style={{ width: '516px' }}
                                 placeholder={'ToolJet' || 'Enter app title'}
                                 disabled={disabled}
                               />
                               <div className="help-text">
                                 <div
-                                  data-cy="instance-settings-help-text"
+                                  data-cy="page-title-help-text"
                                   style={{
                                     color: 'var(--slate-light-10, var(--slate-10, #7E868C))',
                                     fontFamily: 'IBM Plex Sans',
@@ -231,7 +231,7 @@ class ManageWhiteLabellingComponent extends React.Component {
                         </div>
 
                         <div key="Favicon" className="form-group mb-3">
-                          <label className="form-label" data-cy="label-option-field">
+                          <label className="form-label" data-cy="fav-icon-label">
                             Favicon
                           </label>
                           <div className="tj-app-input">
@@ -242,14 +242,14 @@ class ManageWhiteLabellingComponent extends React.Component {
                                 onChange={(e) => this.optionsChanged('Favicon', e.target.value)}
                                 aria-describedby="emailHelp"
                                 value={settings['Favicon']}
-                                data-cy={`input-field-Favicon`}
+                                data-cy={`input-field-fav-icon`}
                                 style={{ width: '516px' }}
                                 placeholder={'https://app.tooljet.com/favico.png' || 'Enter favicon'}
                                 disabled={disabled}
                               />
                               <div className="help-text">
                                 <div
-                                  data-cy="instance-settings-help-text"
+                                  data-cy="fav-icon-help-text"
                                   style={{
                                     color: 'var(--slate-light-10, var(--slate-10, #7E868C))',
                                     fontFamily: 'IBM Plex Sans',

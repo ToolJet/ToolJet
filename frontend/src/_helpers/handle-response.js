@@ -14,10 +14,10 @@ export function handleResponse(response, avoidRedirection = false) {
   return response.text().then((text) => {
     let modalBody = (
       <>
-        <div>To upgrade your plan, please reach out to us at</div>
+        <div data-cy="info-text">To upgrade your plan, please reach out to us at</div>
         <div className="form-group my-3">
           <div className="d-flex justify-content-between form-control align-items-center">
-            <p className="m-0" id="support-email">
+            <p className="m-0" id="support-email" data-cy="support-email">
               hello@tooljet.com
             </p>
             <SolidIcon name="copy" width="16" onClick={() => copyFunction('support-email')} />
