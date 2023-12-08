@@ -571,11 +571,27 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'control-component': {
-        const component = Object.values(getCurrentState()?.components ?? {}).filter(
+        let component = Object.values(getCurrentState()?.components ?? {}).filter(
           (component) => component.id === event.componentId
         )[0];
-        const action = component?.[event.componentSpecificActionHandle];
-        const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
+        let action = '';
+        let actionArguments = '';
+        // check if component id not found then try to find if its available as child widget else continue
+        //  with normal flow finding action
+        if (component == undefined) {
+          component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
+          const parent = Object.values(getCurrentState()?.components ?? {}).find(
+            (item) => item.id === component.parent
+          );
+          const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
+          if (child) {
+            action = child[event.componentSpecificActionHandle];
+          }
+        } else {
+          //normal component outside a container ex : form
+          action = component?.[event.componentSpecificActionHandle];
+        }
+        actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
           value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
         }));
