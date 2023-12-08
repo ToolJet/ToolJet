@@ -74,7 +74,7 @@ export const baseComponentProperties = (
     Properties: [],
     Events: [],
     Validation: [],
-    General: ['Modal', 'TextInput'],
+    General: ['Modal', 'TextInput', 'NumberInput'],
     'Additional Actions': [],
     Layout: [],
   };
