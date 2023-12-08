@@ -8,6 +8,7 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { authenticationService, licenseService } from '@/_services';
 import moment from 'moment';
 import toast from 'react-hot-toast';
+import posthog from 'posthog-js';
 
 const TRIAL_DAYS_LIMIT = 14;
 
@@ -53,6 +54,22 @@ export function LicenseBannerCloud({
     'White labelling',
     'Custom styles',
   ];
+
+  const upgradeEventTrack = () => {
+    posthog.capture('click_upgrade_plan', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+    });
+  };
+
+  const renewEventTrack = () => {
+    posthog.capture('click_renew_plan', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+    });
+  };
 
   const applyBoldFormatting = (text) => {
     const boldRegex = new RegExp(`\\b(${boldWords.join('|')}|\\d+)\\b`, 'g');
@@ -166,6 +183,7 @@ export function LicenseBannerCloud({
         return {
           text: 'Paid feature',
           onClick: () => {
+            upgradeEventTrack();
             navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
           },
         };
@@ -207,6 +225,7 @@ export function LicenseBannerCloud({
         return {
           text: 'Upgrade',
           onClick: () => {
+            upgradeEventTrack();
             navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
           },
         };
@@ -214,6 +233,7 @@ export function LicenseBannerCloud({
         return {
           text: 'Upgrade',
           onClick: () => {
+            upgradeEventTrack();
             navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
           },
           replaceText: false,
@@ -222,6 +242,7 @@ export function LicenseBannerCloud({
         return {
           text: 'Renew',
           onClick: () => {
+            renewEventTrack();
             navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
           },
         };
@@ -229,6 +250,7 @@ export function LicenseBannerCloud({
         return {
           text: 'Upgrade',
           onClick: () => {
+            upgradeEventTrack();
             navigate(`/${workspaceId}/settings/subscription?currentTab=upgradePlan`);
           },
         };

@@ -13,6 +13,7 @@ import UpgradePlan from './UpgradePlan';
 import { authenticationService } from '@/_services';
 import toast from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App';
+import posthog from 'posthog-js';
 
 function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
   const { t } = useTranslation();
@@ -132,6 +133,13 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
                       className="workspace-settings-nav-items"
                       key={index}
                       onClick={() => {
+                        if (item === 'Upgrade plan') {
+                          posthog.capture('click_upgrade_plan_menu', {
+                            workspace_id:
+                              authenticationService?.currentUserValue?.organization_id ||
+                              authenticationService?.currentSessionValue?.current_organization_id,
+                          });
+                        }
                         setSelectedTab(defaultOrgName(item));
                       }}
                       selectedItem={selectedTab == defaultOrgName(item)}
