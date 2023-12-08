@@ -28,7 +28,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     borderColor,
     borderRadius,
   } = styles;
-  console.log(backgroundColor, 'styles');
+
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(properties.visibility);

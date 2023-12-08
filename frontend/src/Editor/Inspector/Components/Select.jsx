@@ -23,6 +23,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     pages,
   } = restProps;
 
+  const isMultiSelect = component?.component?.component === 'Multiselect';
+
   const constructOptions = () => {
     const labels = resolveReferences(component?.component?.definition?.properties?.display_values?.value, currentState);
     const values = resolveReferences(component?.component?.definition?.properties?.values?.value, currentState);
@@ -280,16 +282,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     isOpen: true,
     children: (
       <>
-        {renderElement(
-          component,
-          componentMeta,
-          paramUpdated,
-          dataQueries,
-          'advanced',
-          'properties',
-          currentState,
-          allComponents
-        )}
+        {!isMultiSelect &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'advanced',
+            'properties',
+            currentState,
+            allComponents
+          )}
         {isDynamicOptionsEnabled
           ? renderElement(
               component,

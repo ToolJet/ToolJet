@@ -648,6 +648,7 @@ const GetAccordion = React.memo(
         return <Form {...restProps} />;
 
       case 'DropDown':
+      case 'Multiselect':
         return <Select {...restProps} />;
 
       default: {
