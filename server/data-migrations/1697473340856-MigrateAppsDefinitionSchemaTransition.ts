@@ -328,6 +328,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       const component = data[componentId];
       const componentData = component['component'];
 
+      if (!componentData.component) return;
+
       let skipComponent = false;
       const transformedComponent: Component = new Component();
 
