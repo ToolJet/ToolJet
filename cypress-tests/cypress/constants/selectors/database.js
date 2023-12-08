@@ -23,6 +23,7 @@ export const databaseSelectors = {
 
   tableKebabIcon: '[data-cy="table-kebab-icon"]',
   tableEditOption: '[data-cy="edit-option"]',
+  tableExportOption: '[data-cy="export-table-option"]',
   tableDeleteOption: '[data-cy="delete-option"]',
 
   editTableHeader: '[data-cy="edit-table-header"]',
@@ -32,19 +33,25 @@ export const databaseSelectors = {
   deleteRecordButton: '[data-cy="delete-row-records-button"]',
 
   nameInputField: (value) => {
-    return `[data-cy="name-input-field-${value}"]`
+    return `[data-cy="name-input-field-${value}"]`;
   },
   currentTable: (tableName) => {
-    return `[data-cy="${String(tableName).toLowerCase().replace(/\s+/g, "-")}-table"]`;
+    return `[data-cy="${String(tableName)
+      .toLowerCase()
+      .replace(/\s+/g, "-")}-table"]`;
   },
   currentTableName: (tableName) => {
-    return `[data-cy="${String(tableName).toLowerCase().replace(/\s+/g, "-")}-table-name"]`;
+    return `[data-cy="${String(tableName)
+      .toLowerCase()
+      .replace(/\s+/g, "-")}-table-name"]`;
   },
   columnHeader: (columnName) => {
-    return `[data-cy="${String(columnName).toLowerCase().replace(/\s+/g, "-")}-column-header"]`;
+    return `[data-cy="${String(columnName)
+      .toLowerCase()
+      .replace(/\s+/g, "-")}-column-header"]`;
   },
   checkboxCell: (idColumn) => {
-    return `[data-cy="${idColumn}-checkbox-table-cell"]> div > input`
+    return `[data-cy="${idColumn}-checkbox-table-cell"]> div > input`;
   },
 };
 
@@ -66,12 +73,15 @@ export const createNewRowSelectors = {
   serialDataTypeLabel: '[data-cy="integer-data-type-label"]',
   idColumnInputField: '[data-cy="id-input-field"]',
 
-
   columnNameLabel: (columnName) => {
-    return `[data-cy="${String(columnName).toLowerCase().replace(/\s+/g, "-")}-column-name-label"]`;
+    return `[data-cy="${String(columnName)
+      .toLowerCase()
+      .replace(/\s+/g, "-")}-column-name-label"]`;
   },
   columnNameInputField: (columnName) => {
-    return `[data-cy="${String(columnName).toLowerCase().replace(/\s+/g, "-")}-input-field"]`;
+    return `[data-cy="${String(columnName)
+      .toLowerCase()
+      .replace(/\s+/g, "-")}-input-field"]`;
   },
 };
 
@@ -98,6 +108,20 @@ export const editRowSelectors = {
   idColumnNameLabel: '[data-cy="id-column-name-label"]',
   selectRowDropdown: '[data-cy="select-row-dropdown"]',
   getRowData: (rowNumber, columnName) => {
-    return `[data-cy="id-${String(rowNumber).toLowerCase().replace(/\s+/g, "-")}-column-${String(columnName).toLowerCase().replace(/\s+/g, "-")}-table-cell"]`
-  }
+    return `[data-cy="id-${String(rowNumber)
+      .toLowerCase()
+      .replace(/\s+/g, "-")}-column-${String(columnName)
+      .toLowerCase()
+      .replace(/\s+/g, "-")}-table-cell"]`;
+  },
+};
+
+export const bulkUploadDataSelectors = {
+  bulkUploadDataButton: '[data-cy="bulk-upload-data-button"]',
+  bulkUploadbuttonText: '[data-cy="bulk-upload-button-text"]',
+  bulkUploadDataHeaderText: '[data-cy="bulk-upload-data-header"]',
+  templateHelperText: '[data-cy="helper-text-bulk-upload"]',
+  templateDownloadButton: '[data-cy="button-download-template"]',
+  bulkUploadInputField: '[data-cy="input-field-bulk-upload"]',
+  uploadDataButton: '[data-cy="upload-data-button"]',
 };
