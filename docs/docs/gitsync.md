@@ -231,7 +231,7 @@ On clicking the **Import from git repository** option, a modal will open with th
 
 :::caution
 - The app imported from the git repository cannot be edited.
-- The app imported from the Git repository should have a unique name. If the app's name is the same as that of an existing app in the workspace, the user will need to either delete the existing app or rename the app being imported from the workspace that has write access to the repository.
+- The app imported from the Git repository should have a unique name. If the app's name is the same as that of an existing app in the workspace, the user will need to either rename the existing app or delete it to successfully import another app with the same name.
 :::
 
 <div style={{textAlign: 'center'}}>
