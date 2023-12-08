@@ -13,7 +13,7 @@ ToolJet uses this [NodeJS](https://github.com/TimonKK/clickhouse) client for Cli
 
 ## Connection
 
-To add a new ClickHouse datasource, Go to the **Datasource Manager** on the left sidebar of the app editor and click on `Add datasource` button. Select **ClickHouse** from the modal that pops up.
+To establish a connection with the Clickhouse data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your ClickHouse Database:
 
@@ -33,7 +33,7 @@ ToolJet requires the following to connect to your ClickHouse Database:
 
 ## Querying ClickHouse
 
-After setting up the ClickHouse datasource, you can click on the `+` button of the query manager and select the ClickHouse datasource that you added in the previous step to create a new query.
+After setting up the ClickHouse data source, you can click on the `+` button of the query manager and select the ClickHouse data source that you added in the previous step to create a new query.
 
 :::info
 For more details on clickhouse visit [Clickhouse docs](https://clickhouse.com/docs/en/quick-start).

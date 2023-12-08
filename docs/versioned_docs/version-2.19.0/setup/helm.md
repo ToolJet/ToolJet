@@ -13,7 +13,7 @@ This repository contains Helm charts for deploying [ToolJet](https://github.com/
 
 ### From Helm repo
 ```bash
-helm repo add tooljet https://github.com/ToolJet/helm-charts.git
+helm repo add tooljet https://tooljet.github.io/helm-charts
 helm install tooljet tooljet/tooljet
 ```
 
@@ -34,3 +34,19 @@ For more information about the ToolJet database, you can visit [here](/docs/tool
 If you plan to use this feature, you need to set up and deploy the PostgREST server, which facilitates querying the ToolJet Database.
 
 To enable the ToolJet database, please set the environment variable `ENABLE_TOOLJET_DB` to true in the `values.yaml` file.
+
+## Upgrading to v2.24.3-ee2.10.2
+
+Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+
+If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+
+#### Prerequisites for Upgrading to the Latest Version:
+
+- It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+
+- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+
+For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
