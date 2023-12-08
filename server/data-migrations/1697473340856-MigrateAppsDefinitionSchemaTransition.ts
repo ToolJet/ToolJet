@@ -113,6 +113,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
             const componentLayout = pageComponents[componentId]['layouts'];
 
             if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
+              // if top, left, width, height are not present in the layout, then we don't need to save it
+              if (!componentLayout.top && !componentLayout.left && !componentLayout.width && !componentLayout.height) {
+                continue;
+              }
+
               for (const type in componentLayout) {
                 const layout = componentLayout[type];
                 const newLayout = new Layout();
