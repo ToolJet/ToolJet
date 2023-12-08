@@ -1,14 +1,12 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl } from '../../test.helper';
-import { mocked } from 'ts-jest/utils';
-import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 
 jest.mock('got');
-const mockedGot = mocked(got);
+const mockedGot = jest.createMockFromModule('got');
 
 describe('oauth controller', () => {
   let app: INestApplication;
@@ -97,8 +95,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
             .send({ token })
@@ -131,8 +129,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
@@ -166,8 +164,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
@@ -209,8 +207,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
@@ -249,8 +247,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
@@ -288,8 +286,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
@@ -346,9 +344,9 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(gitGetUserEmailResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserEmailResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
@@ -395,8 +393,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
@@ -446,8 +444,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
@@ -502,8 +500,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
@@ -571,9 +569,9 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
-          mockedGot.mockImplementationOnce(gitGetUserEmailResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserEmailResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/' + sso_configs.id)
