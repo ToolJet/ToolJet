@@ -78,12 +78,13 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           const page = definition.pages[pageId];
           const pagePositionInTheList = Object.keys(definition?.pages).indexOf(pageId);
           const pageEvents = page.events || [];
-          const pageComponents = page.components;
+          const pageComponents = page.components || {};
 
           const isHomepage = (definition['homePageId'] as any) === pageId;
 
           const componentEvents = [];
           const componentLayouts = [];
+          let savedComponents = [];
           const transformedComponents = this.transformComponentData(
             pageComponents,
             componentEvents,
@@ -103,37 +104,44 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
           appResourceMappings.pagesMapping[pageId] = pageCreated.id;
 
-          transformedComponents.forEach((component) => {
-            component.page = pageCreated;
-          });
+          if (transformedComponents.length > 0) {
+            transformedComponents.forEach((component) => {
+              component.page = pageCreated;
+            });
 
-          const savedComponents = await entityManager.save(Component, transformedComponents);
+            savedComponents = await entityManager.save(Component, transformedComponents);
 
-          for (const componentId in pageComponents) {
-            const componentLayout = pageComponents[componentId]['layouts'];
+            for (const componentId in pageComponents) {
+              const componentLayout = pageComponents[componentId]['layouts'];
 
-            if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
-              // if top, left, width, height are not present in the layout, then we don't need to save it
-              if (!componentLayout.top && !componentLayout.left && !componentLayout.width && !componentLayout.height) {
-                continue;
-              }
+              if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
+                // if top, left, width, height are not present in the layout, then we don't need to save it
+                if (
+                  !componentLayout.top &&
+                  !componentLayout.left &&
+                  !componentLayout.width &&
+                  !componentLayout.height
+                ) {
+                  continue;
+                }
 
-              for (const type in componentLayout) {
-                const layout = componentLayout[type];
-                const newLayout = new Layout();
-                newLayout.type = type;
-                newLayout.top = layout.top;
-                newLayout.left = layout.left;
-                newLayout.width = layout.width;
-                newLayout.height = layout.height;
-                newLayout.componentId = appResourceMappings.componentsMapping[componentId];
+                for (const type in componentLayout) {
+                  const layout = componentLayout[type];
+                  const newLayout = new Layout();
+                  newLayout.type = type;
+                  newLayout.top = layout.top;
+                  newLayout.left = layout.left;
+                  newLayout.width = layout.width;
+                  newLayout.height = layout.height;
+                  newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
-                componentLayouts.push(newLayout);
+                  componentLayouts.push(newLayout);
+                }
               }
             }
-          }
 
-          await entityManager.save(Layout, componentLayouts);
+            await entityManager.save(Layout, componentLayouts);
+          }
 
           if (pageEvents.length > 0) {
             pageEvents.forEach(async (event, index) => {
@@ -167,46 +175,48 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
             });
           });
 
-          savedComponents.forEach(async (component) => {
-            if (component.type === 'Table') {
-              const tableActions = component.properties?.actions?.value || [];
-              const tableColumns = component.properties?.columns?.value || [];
-              const tableActionAndColumnEvents = [];
+          if (savedComponents.length > 0) {
+            savedComponents.forEach(async (component) => {
+              if (component.type === 'Table') {
+                const tableActions = component?.properties?.actions?.value || [];
+                const tableColumns = component?.properties?.columns?.value || [];
+                const tableActionAndColumnEvents = [];
 
-              tableActions.forEach((action) => {
-                const actionEvents = action.events || [];
+                tableActions.forEach((action) => {
+                  const actionEvents = action.events || [];
 
-                actionEvents.forEach((event, index) => {
-                  tableActionAndColumnEvents.push({
-                    name: event.eventId,
-                    sourceId: component.id,
-                    target: Target.tableAction,
-                    event: { ...event, ref: action.name },
-                    index: event.index ?? index,
-                    appVersionId: version.id,
+                  actionEvents.forEach((event, index) => {
+                    tableActionAndColumnEvents.push({
+                      name: event.eventId,
+                      sourceId: component.id,
+                      target: Target.tableAction,
+                      event: { ...event, ref: action.name },
+                      index: event.index ?? index,
+                      appVersionId: version.id,
+                    });
                   });
                 });
-              });
 
-              tableColumns.forEach((column) => {
-                if (column?.columnType !== 'toggle') return;
-                const columnEvents = column.events || [];
+                tableColumns.forEach((column) => {
+                  if (column?.columnType !== 'toggle') return;
+                  const columnEvents = column.events || [];
 
-                columnEvents.forEach((event, index) => {
-                  tableActionAndColumnEvents.push({
-                    name: event.eventId || `event ${index}`,
-                    sourceId: component.id,
-                    target: Target.tableColumn,
-                    event: { ...event, ref: column.name },
-                    index: event.index ?? index,
-                    appVersionId: version.id,
+                  columnEvents.forEach((event, index) => {
+                    tableActionAndColumnEvents.push({
+                      name: event.eventId || `event ${index}`,
+                      sourceId: component.id,
+                      target: Target.tableColumn,
+                      event: { ...event, ref: column.name },
+                      index: event.index ?? index,
+                      appVersionId: version.id,
+                    });
                   });
                 });
-              });
 
-              await entityManager.save(EventHandler, tableActionAndColumnEvents);
-            }
-          });
+                await entityManager.save(EventHandler, tableActionAndColumnEvents);
+              }
+            });
+          }
 
           if (isHomepage) {
             updateHomepageId = pageCreated.id;
@@ -303,6 +313,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     componentEvents: any[],
     componentsMapping: Record<string, string>
   ): Component[] {
+    if (!data) return [];
+
     const transformedComponents: Component[] = [];
 
     const allComponents = Object.keys(data).map((key) => {
@@ -340,19 +352,19 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         transformedComponent.id = uuid();
         transformedComponent.name = componentData.name || componentId;
         transformedComponent.type = componentData.component;
-        transformedComponent.properties = componentData.definition.properties || {};
-        transformedComponent.styles = componentData.definition.styles || {};
-        transformedComponent.validation = componentData.definition.validation || {};
-        transformedComponent.general = componentData.definition.general || {};
-        transformedComponent.generalStyles = componentData.definition.generalStyles || {};
-        transformedComponent.displayPreferences = componentData.definition.others || {};
-        transformedComponent.parent = component.parent ? parentId : null;
+        transformedComponent.properties = componentData?.definition?.properties || {};
+        transformedComponent.styles = componentData?.definition?.styles || {};
+        transformedComponent.validation = componentData?.definition?.validation || {};
+        transformedComponent.general = componentData?.definition?.general || {};
+        transformedComponent.generalStyles = componentData?.definition?.generalStyles || {};
+        transformedComponent.displayPreferences = componentData?.definition?.others || {};
+        transformedComponent.parent = component?.parent ? parentId : null;
 
         transformedComponents.push(transformedComponent);
 
         componentEvents.push({
           componentId: componentId,
-          event: componentData.definition.events,
+          event: componentData?.definition?.events || [],
         });
         componentsMapping[componentId] = transformedComponent.id;
       }
