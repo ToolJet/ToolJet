@@ -1505,6 +1505,9 @@ export const widgets = [
     exposedVariables: {
       value: 99,
     },
+    validation: {
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
+    },
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },

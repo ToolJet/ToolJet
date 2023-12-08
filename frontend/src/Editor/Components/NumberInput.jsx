@@ -37,7 +37,7 @@ export const NumberInput = function NumberInput({
   } = styles;
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
 
   const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
   const inputRef = useRef(null);
@@ -74,6 +74,27 @@ export const NumberInput = function NumberInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
   console.log('height:--', height);
+
+  //   isMandatory
+  // isLoading
+  // isVisibile
+  // isDisabled
+
+  useEffect(() => {
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory]);
+
+  useEffect(() => {
+    setExposedVariable('isLoading', loadingState);
+  }, [loadingState]);
+
+  useEffect(() => {
+    setExposedVariable('isVisibile', properties.visibility);
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', disable);
+  }, [disable]);
 
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '32px' : '38px') : padding == 'default' ? height - 5 : height,
@@ -161,7 +182,7 @@ export const NumberInput = function NumberInput({
               color: darkMode && color === '#11181C' ? '#fff' : color,
               width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
               maxWidth: auto && defaultAlignment === 'side' ? '200px' : '100%',
-              overflow: 'hidden',
+              // overflow: 'hidden',
               whiteSpace: 'nowrap',
               textOverflow: 'ellipsis',
               marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
