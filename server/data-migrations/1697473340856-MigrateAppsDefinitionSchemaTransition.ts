@@ -138,7 +138,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           if (pageEvents.length > 0) {
             pageEvents.forEach(async (event, index) => {
               const newEvent = {
-                name: event.eventId,
+                name: event.eventId || `${pageCreated.name} Page Event ${index}`,
                 sourceId: pageCreated.id,
                 target: Target.page,
                 event: event,
@@ -155,7 +155,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
             eventObj.event.forEach(async (event, index) => {
               const newEvent = {
-                name: event.eventId,
+                name: event.eventId || `event ${index}`,
                 sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                 target: Target.component,
                 event: event,
@@ -194,7 +194,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
                 columnEvents.forEach((event, index) => {
                   tableActionAndColumnEvents.push({
-                    name: event.eventId,
+                    name: event.eventId || `event ${index}`,
                     sourceId: component.id,
                     target: Target.tableColumn,
                     event: { ...event, ref: column.name },
@@ -220,7 +220,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         if (queryEvents.length > 0) {
           queryEvents.forEach(async (event, index) => {
             const newEvent = {
-              name: event.eventId,
+              name: event.eventId || `${dataQuery.name} Query Event ${index}`,
               sourceId: dataQuery.id,
               target: Target.dataQuery,
               event: event,
