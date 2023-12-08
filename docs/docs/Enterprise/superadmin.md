@@ -81,12 +81,12 @@ Super Admins have all the privileges that an Admin of a workspace have, Super Ad
 - **✅ Copilot**: Enabling or disabling Copilot
 - **✅ Custom Styles**: Adding or modifying custom styles
 
-## Instance Settings
+## Settings
 
-Only Super Admins can access the Instance Settings:
+Only Super Admins can access the Settings:
 
 - **All Users**
-- **Manage Instance Settings**
+- **Manage Settings**
 - **License**
 - **White labelling**
 
@@ -116,7 +116,7 @@ Super Admins can go to **All Users** page, Under the **Workspaces** column they'
 
 ### Make the user super admin
 
-Super Admins can make any user as Super Admin or remove any Super Admin from the **Manage All Users** in the Instance Settings page.
+Super Admins can make any user as Super Admin or remove any Super Admin from the **Manage All Users** in the Settings page.
 
 Click on the **Edit** button next to any user, **Enable** the **Make the user Super Admin** option, and then **Save** it.
 
@@ -128,7 +128,7 @@ The user will become Super Admin and the Type column will update from **`workspa
 
 </div>
 
-## Manage Instance Settings
+## Manage Settings
 
 <div style={{textAlign: 'center'}}>
 
@@ -140,15 +140,15 @@ The user will become Super Admin and the Type column will update from **`workspa
 
 When a user joins a workspace, they are provided with their own personal workspace and option to create new workspaces.
 
-Super Admins can **control** this behavior from the Manage Instance Settings page, they can **toggle off** the option to **Allow personal workspace**. Now whenever a user joins a workspace they won't be provided a personal workspace nor they will be able to create a new workspace in the instance.
+Super Admins can **control** this behavior from the Manage Settings page, they can **toggle off** the option to **Allow personal workspace**. Now whenever a user joins a workspace they won't be provided a personal workspace nor they will be able to create a new workspace in the instance.
 
 ### Enable multiplayer editing
 
-Super Admins can enable multiplayer editing from the Manage Instance Settings page. Once enabled, users will be able to edit the same app simultaneously resulting in real-time collaboration.
+Super Admins can enable multiplayer editing from the Manage Settings page. Once enabled, users will be able to edit the same app simultaneously resulting in real-time collaboration.
 
 ## License
 
-Manage the instance license via the **Instance Settings** page. Super Admins have the capability to update the instance's license key from this page.
+Manage the instance license via the **Settings** page. Super Admins have the capability to update the instance's license key from this page.
 
 Check out the [License](/docs/licensing) page for more details.
 
