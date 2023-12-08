@@ -290,7 +290,28 @@ export const EventManager = ({
     let newEvents = events;
     const eventIndex = newEvents.length;
 
-    posthog.capture('click_add_event_handler', { widget: components[sourceId]['component']['component'] });
+    //----------------- Posthog Analytics for event handlers -----------------//
+    let postHogEventType = 'Event Handler';
+
+    switch (eventSourceType) {
+      case 'component':
+        postHogEventType = components[sourceId]['component']['component'];
+        break;
+
+      case 'page':
+        postHogEventType = `Page - ${sourceId}`;
+        break;
+
+      case 'data_query':
+        postHogEventType = `Query - ${sourceId}`;
+        break;
+
+      default:
+        break;
+    }
+
+    posthog.capture('click_add_event_handler', { widget: postHogEventType });
+    //----------------- Posthog Analytics -----------------//
 
     createAppVersionEventHandlers({
       event: {
