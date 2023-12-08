@@ -335,6 +335,7 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
+
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div className={cx('d-flex align-items-center justify-content-between')}>

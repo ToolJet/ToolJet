@@ -173,6 +173,29 @@ function FlowBuilder(_props) {
     if (node.type !== 'input' && node.type !== 'output') setSelectedNode(node);
   }, []);
 
+  var maxTopValue = 300
+  const maxLeftValue = 105;
+  const minTopValue = 50; 
+
+  if (showBlockOptions?.y >= 250) {
+    maxTopValue = 250;
+  }
+
+  const topValue = Math.min(Math.max(showBlockOptions?.y, minTopValue), maxTopValue);
+
+
+  const blockOptionsStyle = { 
+    left: showBlockOptions?.x < maxLeftValue ? `${maxLeftValue}px` : showBlockOptions?.x,
+    top: `${topValue}px`,
+    position: 'absolute',
+    // overflow: 'scroll',
+  }
+
+  const handleMouseDownEvent = () => {
+    editorSessionActions.hideLeftDrawer()
+    setShowBlockOptions(null)
+  }
+  
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
@@ -196,7 +219,7 @@ function FlowBuilder(_props) {
         zoomActivationKeyCode={null}
         onMove={() => setShowBlockOptions(null)}
         onNodeClick={onNodeClick}
-        onMouseDownCapture={editorSessionActions.hideLeftDrawer}
+        onMouseDownCapture={handleMouseDownEvent}
         proOptions={{
           hideAttribution: true,
         }}
@@ -208,13 +231,13 @@ function FlowBuilder(_props) {
         <BlockOptions
           onNewNode={addNewNode}
           editorSession={editorSession}
-          onClose={() => setShowBlockOptions(null)}
           // give style so it renders on given clientx & client y
-          style={{ left: showBlockOptions?.x, top: showBlockOptions?.y, position: 'absolute' }}
+          style={blockOptionsStyle}
         />
       )}
       {
-        <Modal className="show-node-modal" show={selectedNode} onHide={() => setSelectedNode(null)}>
+        <Modal className="show-node-modal" show={selectedNode} onHide={() => setSelectedNode(null)}
+        >
           <ModalContent node={selectedNode} onClose={() => setSelectedNode(null)} />
         </Modal>
       }

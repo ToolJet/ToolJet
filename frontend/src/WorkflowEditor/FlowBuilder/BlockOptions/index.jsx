@@ -1,54 +1,41 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import get from 'lodash/get';
-import OptionLister from './OptionLister';
 import AddGrayIcon from '../../../../assets/images/icons/add-gray.svg';
 import './styles.scss';
+import { getWorkspaceId } from '@/_helpers/utils';
+import { useNavigate } from 'react-router-dom';
+import DataSourceSelect from '@/Editor/QueryManager/Components/DataSourceSelect';
 
 const BlockOptions = (props) => {
   const { onNewNode, editorSession, style, onClose } = props;
   const availableDataSources = get(editorSession, 'dataSources', []);
   const node = useRef(); // Create a ref to the node
+  const workspaceId = getWorkspaceId();
+  const navigate = useNavigate();
 
-  // this useEffect helps with closing of BlockOptions, when a click
-  // happens outside the list modal.
-  useEffect(() => {
-    // Define the click handler
-    const handleClickOutside = (e) => {
-      if (node.current.contains(e.target)) {
-        // Inside click
-        return;
-      }
-      // Outside click
-      onClose(); // or any other handler function
-    };
+  const defaultDataSources = availableDataSources.filter(item => item.kind === 'restapi' || item.kind === 'runjs');
+  const actualDataSources = availableDataSources.filter(item => item.kind !== 'restapi' && item.kind !== 'runjs');
 
-    // Add the event listener
-    document.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      // Cleanup the event listener on component unmount
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  defaultDataSources.push({kind:'If condition', id:'if', name:'If condition'})
 
   return (
     <div
       style={{
-        position: 'fixed',
+        //position: 'fixed',
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100%',
       }}
     >
-      <div className="block-option-container" style={style} ref={node}>
+      <div className="block-option-container" style={style} ref={node}> 
         <div className="add-new">
           <AddGrayIcon />
           <span>Add new block</span>
         </div>
-        <OptionLister sources={availableDataSources} onOptionClick={onNewNode} />
+
+        <DataSourceSelect workflowDataSources={actualDataSources} onNewNode={onNewNode} defaultDataSources={defaultDataSources} />
+
       </div>
+
     </div>
   );
 };
