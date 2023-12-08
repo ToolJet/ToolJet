@@ -16,11 +16,9 @@ import {
   verifyInviteToken,
 } from '../../test.helper';
 import { getManager, Repository } from 'typeorm';
-import { mocked } from 'ts-jest/utils';
-import got from 'got';
 
 jest.mock('got');
-const mockedGot = mocked(got);
+const mockedGot = jest.createMockFromModule('got');
 
 describe.skip('Git Onboarding', () => {
   let app: INestApplication;
@@ -83,8 +81,8 @@ describe.skip('Git Onboarding', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -287,8 +285,8 @@ describe.skip('Git Onboarding', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -333,8 +331,8 @@ describe.skip('Git Onboarding', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -430,8 +428,8 @@ describe.skip('Git Onboarding', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
