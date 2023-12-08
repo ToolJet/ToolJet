@@ -285,8 +285,8 @@ describe.skip('Git Onboarding', () => {
             };
           });
 
-          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
-          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -331,8 +331,8 @@ describe.skip('Git Onboarding', () => {
             };
           });
 
-          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
-          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -428,8 +428,8 @@ describe.skip('Git Onboarding', () => {
             };
           });
 
-          (mockedGot as jest.Mock).mockImplementationOnce(gitAuthResponse);
-          (mockedGot as jest.Mock).mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
