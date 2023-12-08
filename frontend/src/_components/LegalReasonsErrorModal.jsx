@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { authenticationService } from '@/_services';
 import { getWorkspaceId } from '../_helpers/utils';
+import posthog from 'posthog-js';
 
 const LegalReasonsErrorModal = ({
   showModal: propShowModal,
@@ -59,6 +60,11 @@ const LegalReasonsErrorModal = ({
             {currentUser?.admin && (
               <Button
                 onClick={() => {
+                  posthog.capture('click_upgrade_plan', {
+                    workspace_id:
+                      authenticationService?.currentUserValue?.organization_id ||
+                      authenticationService?.currentSessionValue?.current_organization_id,
+                  });
                   window.location.href = `/${workspaceId}/settings/subscription?currentTab=upgradePlan`;
                 }}
                 className="upgrade-btn"

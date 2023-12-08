@@ -25,6 +25,7 @@ import { PaymentRedirectDto } from 'src/dto/subscription-redirect.dto';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/decorators/user.decorator';
 import { getManager } from 'typeorm';
+import { User as UserEntity } from 'src/entities/user.entity';
 
 @Controller('license/organization')
 export class OrganizationLicenseController {
@@ -45,11 +46,20 @@ export class OrganizationLicenseController {
   @Post(':organizationId/trial')
   async generateCloudTrialLicense(
     @Body() createCloudTrialLicenseDto: CreateCloudTrialLicenseDto,
-    @Param('organizationId') organizationId: string
+    @Param('organizationId') organizationId: string,
+    @User() user: UserEntity
   ) {
     // Generate a cloud trial license and update the license details
     const licenseKey = await this.organizationLicenseService.generateCloudTrialLicense(createCloudTrialLicenseDto);
     await this.licenseService.updateLicense({ key: licenseKey }, organizationId);
+
+    this.licenseService.updateCRM({
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      isCloudTrialOpted: true,
+    });
   }
 
   @UseGuards(JwtAuthGuard, OrganizationLicenseAccessGuard)
