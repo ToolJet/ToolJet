@@ -15,7 +15,7 @@ export const Input = ({ value, onChange, cyLabel, staticText }) => {
         }}
       />
       <label for="youridhere" className="static-value tj-text-xsm">
-        {staticText?.length > 0 ? staticText : 'px'}
+        {staticText?.length > 0 ? staticText : staticText?.length == 0 ? '' : 'px'}
       </label>
     </div>
   );

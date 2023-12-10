@@ -38,11 +38,20 @@ export const NumberInput = function NumberInput({
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState) ?? false;
+  const [visibility, setVisibility] = useState(properties.visibility);
+  const [loading, setLoading] = useState(loadingState);
 
   const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
   const inputRef = useRef(null);
   const currentState = useCurrentState();
   const [disable, setDisable] = useState(disabledState || loadingState);
+  const labelStyles = {
+    width: '100%',
+    textOverflow: 'ellipsis',
+    maxWidth: '100%',
+    background: 'red',
+    overflow: 'hidden',
+  };
 
   useEffect(() => {
     if (alignment == 'top' && label?.length > 0) {
@@ -73,27 +82,53 @@ export const NumberInput = function NumberInput({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
-  console.log('height:--', height);
-
-  //   isMandatory
-  // isLoading
-  // isVisibile
-  // isDisabled
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMandatory]);
 
   useEffect(() => {
-    setExposedVariable('isLoading', loadingState);
-  }, [loadingState]);
+    setExposedVariable('isLoading', loading);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   useEffect(() => {
-    setExposedVariable('isVisibile', properties.visibility);
+    setExposedVariable('setLoading', async function (loading) {
+      setLoading(loading);
+      setExposedVariable('isLoading', loading);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.loadingState]);
+
+  useEffect(() => {
+    setExposedVariable('isVisibile', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariable('setVisibility', async function (state) {
+      setVisibility(state);
+      setExposedVariable('isVisibile', state);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
+    // console.log('visibility--', properties.visibility);
+  }, [visibility, properties.visibility]);
+
+  useEffect(() => {
+    setExposedVariable('setDisable', async function (disable) {
+      setDisable(disable);
+      setExposedVariable('isDisabled', disable);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.disabledState]);
+
+  useEffect(() => {
     setExposedVariable('isDisabled', disable);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
   const computedStyles = {
@@ -140,16 +175,24 @@ export const NumberInput = function NumberInput({
     disable !== disabledState && setDisable(disabledState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
+  useEffect(() => {
+    visibility !== properties.visibility && setVisibility(properties.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
+  useEffect(() => {
+    loading !== loadingState && setLoading(loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
 
-  const handleIncrement = () => {
-    const newValue = (value || 0) + 1;
-    handleChange(newValue);
-  };
+  // const handleIncrement = () => {
+  //   const newValue = (value || 0) + 1;
+  //   handleChange(newValue);
+  // };
 
-  const handleDecrement = () => {
-    const newValue = (value || 0) - 1;
-    handleChange(newValue);
-  };
+  // const handleDecrement = () => {
+  //   const newValue = (value || 0) - 1;
+  //   handleChange(newValue);
+  // };
 
   const renderInput = () => {
     const loaderStyle = {
@@ -160,7 +203,7 @@ export const NumberInput = function NumberInput({
 
     return (
       <div
-        data-disabled={disable || loadingState}
+        data-disabled={disable || loading}
         className={`text-input ${defaultAlignment === 'top' ? 'flex-column' : ''}  ${
           direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
         }
@@ -171,7 +214,7 @@ export const NumberInput = function NumberInput({
           padding: padding === 'default' ? '3px 2px' : '',
           position: 'relative',
           width: '100%',
-          display: !properties.visibility ? 'none' : 'flex',
+          display: !visibility ? 'none' : 'flex',
         }}
       >
         {label && width > 0 && (
@@ -181,7 +224,7 @@ export const NumberInput = function NumberInput({
               boxSizing: 'border-box',
               color: darkMode && color === '#11181C' ? '#fff' : color,
               width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
-              maxWidth: auto && defaultAlignment === 'side' ? '200px' : '100%',
+              maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
               // overflow: 'hidden',
               whiteSpace: 'nowrap',
               textOverflow: 'ellipsis',
@@ -190,7 +233,7 @@ export const NumberInput = function NumberInput({
               fontWeight: 500,
             }}
           >
-            {label}
+            <span style={{ ...labelStyles }}>{label}</span>
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         )}
@@ -212,7 +255,7 @@ export const NumberInput = function NumberInput({
         )}
         <input
           ref={inputRef}
-          disabled={disable || loadingState}
+          disabled={disable || loading}
           onChange={handleChange}
           onBlur={handleBlur}
           type="number"
@@ -224,7 +267,7 @@ export const NumberInput = function NumberInput({
           min={properties.minValue}
           max={properties.maxValue}
         />
-        {loadingState && <Loader style={{ ...loaderStyle }} width="16" />}
+        {loading && <Loader style={{ ...loaderStyle }} width="16" />}
       </div>
     );
   };

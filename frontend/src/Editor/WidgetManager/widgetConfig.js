@@ -1318,7 +1318,7 @@ export const widgets = [
     description: 'Numeric input field',
     component: 'NumberInput',
     defaultSize: {
-      width: 13,
+      width: 10,
       height: 40,
     },
     others: {
@@ -1502,9 +1502,27 @@ export const widgets = [
         accordian: 'container',
       },
     },
+    actions: [
+      {
+        handle: 'setVisibility',
+        displayName: 'setVisibility',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setDisable',
+        displayName: 'setDisable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setLoading',
+        displayName: 'setLoading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+    ],
     exposedVariables: {
       value: 99,
     },
+
     validation: {
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
