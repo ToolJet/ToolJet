@@ -184,6 +184,13 @@
             }
         }
     }
+
+    .empty-ds-container {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, 0);
+        top: 30%;
+    }
 }
 
 .datasources-info {

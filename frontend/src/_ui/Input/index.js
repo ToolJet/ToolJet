@@ -1,13 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import cx from 'classnames';
 import OrgConstantVariablesPreviewBox from '../../_components/OrgConstantsVariablesResolver';
+import SolidIcon from '../Icon/SolidIcons';
 
 const Input = ({ helpText, ...props }) => {
-  const { workspaceVariables, workspaceConstants, value } = props;
+  const { workspaceVariables, workspaceConstants, value, type, disabled } = props;
   const [isFocused, setIsFocused] = useState(false);
+  const [showPasswordProps, setShowPasswordProps] = useState({
+    inputType: type,
+    iconType: 'eyedisable',
+  });
+
+  const toggleShowPassword = () => {
+    if (inputType === 'password') {
+      setShowPasswordProps({ inputType: 'text', iconType: 'eye' });
+    } else {
+      setShowPasswordProps({ inputType: 'password', iconType: 'eyedisable' });
+    }
+  };
+
+  useEffect(() => {
+    if (disabled) setShowPasswordProps({ inputType: 'password', iconType: 'eyedisable' });
+  }, [disabled]);
+
+  const { inputType, iconType } = showPasswordProps;
 
   return (
     <div className="tj-app-input">
-      <input {...props} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} />
+      <div className={cx('', { 'tj-app-input-wrapper': type === 'password' })}>
+        <input {...props} type={inputType} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} />
+        {type === 'password' && (
+          <div onClick={!disabled && toggleShowPassword}>
+            {' '}
+            <SolidIcon className="eye-icon" name={iconType} />
+          </div>
+        )}
+      </div>
       <OrgConstantVariablesPreviewBox
         workspaceVariables={workspaceVariables}
         workspaceConstants={workspaceConstants}
