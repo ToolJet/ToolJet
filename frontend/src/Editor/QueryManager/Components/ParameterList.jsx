@@ -129,8 +129,9 @@ const ParameterList = ({
         <span>
           {formattedParameters.some((param) => !param.isVisible) && (
             <PillButton
-              name={`${formattedParameters.reduce((count, param) => count + (!param.isVisible ? 1 : 0), 0)} More`}
+              name={`+${formattedParameters.reduce((count, param) => count + (!param.isVisible ? 1 : 0), 0)}`}
               onClick={() => setShowMore(true)}
+              className="more-parameters-button"
             />
           )}
         </span>

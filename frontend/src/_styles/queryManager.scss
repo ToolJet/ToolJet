@@ -15,6 +15,50 @@ $border-radius: 4px;
     position: sticky;
     top: 0;
     padding: 8px 0;
+
+    .query-parameters-list {
+
+      .more-parameters-button {
+        background-color: var(--base) !important;
+        height: 20px;
+        padding: 0;
+
+        button {
+          height: inherit;
+        }
+      }
+
+      .card-header {
+        background-color: var(--slate3);
+        height: 30px;
+        border-radius: 5px;
+        color: var(--slate11);
+
+        .parameterItem {
+
+          height: 20px;
+
+          .parameterItemPillButton {
+            height: inherit;
+            background-color: var(--base) !important;
+
+            .query-param-text {
+              color: var(--slate12);
+            }
+
+            button {
+              padding: 0.3rem;
+              height: inherit;
+            }
+          }
+
+          button#runjs-param-add-btn {
+            padding: 0;
+            height: inherit;
+          }
+        }
+      }
+    }
   }
 
   .nav-header {

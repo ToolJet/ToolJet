@@ -71,12 +71,17 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         </Popover>
       }
     >
-      <span>
+      <span className="parameterItem">
         {isEdit ? (
-          <PillButton name={name} onClick={() => setShowModal(true)} onRemove={onRemove} />
+          <PillButton
+            className="parameterItemPillButton"
+            name={name}
+            onClick={() => setShowModal(true)}
+            onRemove={onRemove}
+          />
         ) : (
           <ButtonSolid
-            variant="ghostBlue"
+            variant="ghostBlack"
             size="sm"
             onClick={() => setShowModal((show) => !show)}
             className="ms-2"
@@ -84,7 +89,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             data-cy={`runjs-add-param-button`}
           >
             <span className="m-0">
-              <PlusRectangle fill={'#3E63DD'} width={15} />
+              <PlusRectangle fill={darkMode ? '#9BA1A6' : '#687076'} width={15} />
             </span>
           </ButtonSolid>
         )}
@@ -107,12 +112,11 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
         borderTopLeftRadius: '15px',
         borderBottomLeftRadius: '15px',
         textTransform: 'none',
-        padding: '0.8rem',
         fontWeight: 500,
         ...(!onRemove && { borderRadius: '15px' }),
       }}
     >
-      <span data-cy={`query-param-${String(name).toLowerCase()}`} className="text-truncate">
+      <span data-cy={`query-param-${String(name).toLowerCase()}`} className="text-truncate query-param-text">
         {name}
       </span>
     </Button>
@@ -126,10 +130,10 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
           borderTopRightRadius: '15px',
           borderBottomRightRadius: '15px',
           paddingLeft: 0,
-          paddingRight: '0.75rem',
+          paddingRight: '0.1rem',
         }}
       >
-        <Remove fill="var(--slate12)" />
+        <Remove fill="var(--slate12)" height={20} width={20} />
       </Button>
     )}
   </ButtonGroup>

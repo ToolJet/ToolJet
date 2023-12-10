@@ -186,7 +186,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
           />
         )}
 
-        <div className="col w-100 d-flex justify-content-center font-weight-500" ref={paramListContainerRef}>
+        <div
+          className="query-parameters-list col w-100 d-flex justify-content-center font-weight-500"
+          ref={paramListContainerRef}
+        >
           {selectedQuery && (
             <ParameterList
               parameters={options.parameters}

@@ -7,6 +7,7 @@ import { defaultSources } from './constants';
 import { useDataSources, useGlobalDataSources, useLoadingDataSources } from '@/_stores/dataSourcesStore';
 import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
+import { resolveReferences } from '../../_helpers/utils';
 
 const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinition, editorRef }) => {
   const loadingDataSources = useLoadingDataSources();
@@ -63,7 +64,10 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
       <CodeHinterContext.Provider
         value={{
           parameters: selectedQuery?.options?.parameters?.reduce(
-            (parameters, parameter) => ({ ...parameters, [parameter.name]: parameter.defaultValue }),
+            (parameters, parameter) => ({
+              ...parameters,
+              [parameter.name]: resolveReferences(parameter.defaultValue, {}, undefined),
+            }),
             {}
           ),
         }}
