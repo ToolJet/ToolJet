@@ -19,11 +19,14 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
-import _ from 'lodash';
+import _, { cloneDeep } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import DragContainer from './DragContainer';
+import { compact, correctBounds } from './gridUtils';
+// eslint-disable-next-line import/no-unresolved
 
-const NO_OF_GRIDS = 43;
+// const noOfGrids = 24;
 
 export const Container = ({
   canvasWidth,
@@ -50,6 +53,8 @@ export const Container = ({
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
+  const [noOfGrids, setNoOfGrids] = useState(24);
+  const [subContainerWidths, setSubContainerWidths] = useState({});
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
     (state) => ({
@@ -60,6 +65,7 @@ export const Container = ({
     shallow
   );
 
+  const gridWidth = canvasWidth / noOfGrids;
   const { appId } = useAppInfo();
 
   const currentState = useCurrentState();
@@ -72,7 +78,6 @@ export const Container = ({
     shallow
   );
 
-  const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     maxWidth: `${canvasWidth}px`,
@@ -92,6 +97,26 @@ export const Container = ({
   const [newThread, addNewThread] = useState({});
   const [isContainerFocused, setContainerFocus] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(null);
+
+  useEffect(() => {
+    if (currentLayout === 'mobile') {
+      setNoOfGrids(6);
+      const mobLayouts = Object.keys(boxes).map((key) => {
+        return { ...cloneDeep(boxes[key]?.layouts?.desktop), i: key };
+      });
+      const updatedBoxes = cloneDeep(boxes);
+      let newmMobLayouts = correctBounds(mobLayouts, { cols: 6 });
+      newmMobLayouts = compact(newmMobLayouts, 'vertical', 6);
+      Object.keys(boxes).forEach((id) => {
+        const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
+        updatedBoxes[id].layouts.mobile = mobLayout;
+      });
+      setBoxes({ ...updatedBoxes });
+      // console.log('currentLayout', data);
+    } else {
+      setNoOfGrids(24);
+    }
+  }, [currentLayout]);
 
   const paramUpdatesOptsRef = useRef({});
   const canvasRef = useRef(null);
@@ -354,6 +379,81 @@ export const Container = ({
     [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, selectedComponents, updateCanvasHeight]
   );
 
+  const onResizeStop2 = (boxList, id, height, width, x, y) => {
+    const newBoxes = boxList.reduce((newBoxList, { id, height, width, x, y }) => {
+      const newWidth = (width * noOfGrids) / canvasWidth;
+      return {
+        ...newBoxList,
+        [id]: {
+          ...boxes[id],
+          layouts: {
+            ...boxes[id]['layouts'],
+            [currentLayout]: {
+              ...boxes[id]['layouts'][currentLayout],
+              width: newWidth,
+              height,
+              top: y,
+              left: Math.round(x / gridWidth),
+            },
+          },
+        },
+      };
+    }, {});
+    let updatedBoxes = {
+      ...boxes,
+      ...newBoxes,
+    };
+
+    setBoxes(updatedBoxes);
+    updateCanvasHeight(updatedBoxes);
+  };
+
+  function onDragStop2(boxPositions) {
+    const updatedBoxes = boxPositions.reduce(
+      (boxesObj, { id, x, y, parent }) => ({
+        ...boxesObj,
+        [id]: {
+          ...boxes[id],
+          component: {
+            ...boxes[id]['component'],
+            parent: parent ? parent : boxes[id]['component']?.parent,
+          },
+          layouts: {
+            ...boxes[id]['layouts'],
+            [currentLayout]: {
+              ...boxes[id]['layouts'][currentLayout],
+              // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
+              width: parent
+                ? Math.round((boxes[id]['layouts'][currentLayout].width * gridWidth) / subContainerWidths[parent])
+                : boxes[id]['layouts'][currentLayout].width,
+              top: y,
+              left: Math.round(x / (parent ? subContainerWidths[parent] : gridWidth)),
+            },
+          },
+        },
+      }),
+      {}
+    );
+    let newBoxes = {
+      ...boxes,
+      ...updatedBoxes,
+      // [id]: {
+      //   ...boxes[id],
+      //   layouts: {
+      //     ...boxes[id]['layouts'],
+      //     [currentLayout]: {
+      //       ...boxes[id]['layouts'][currentLayout],
+      //       // ...{ top: layout.y, left: layout.x, height: layout.h, width: layout.w },
+      //       top: y,
+      //       left: Math.round(x / gridWidth),
+      //     },
+      //   },
+      //   parent: parent ? parent : boxes[id].parent,
+      // },
+    };
+    setBoxes(newBoxes);
+  }
+
   const onResizeStop = useCallback(
     (id, e, direction, ref, d, position) => {
       if (isVersionReleased) {
@@ -384,10 +484,10 @@ export const Container = ({
       const canvasWidth = boundingRect?.width;
 
       //round the width to nearest multiple of gridwidth before converting to %
-      const currentWidth = (canvasWidth * width) / NO_OF_GRIDS;
+      const currentWidth = (canvasWidth * width) / noOfGrids;
       let newWidth = currentWidth + deltaWidth;
       newWidth = Math.round(newWidth / gridWidth) * gridWidth;
-      width = (newWidth * NO_OF_GRIDS) / canvasWidth;
+      width = (newWidth * noOfGrids) / canvasWidth;
 
       height = height + deltaHeight;
 
@@ -611,6 +711,83 @@ export const Container = ({
     childComponents,
   ]);
 
+  const renderWidget = (key, height, setIsChildDragged) => {
+    const box = boxes[key];
+    if (!box) {
+      return '';
+    }
+    const canShowInCurrentLayout =
+      box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+    const addDefaultChildren = box.withDefaultChildren;
+    if (!box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+      return (
+        <DraggableBox
+          className={showComments && 'pointer-events-none'}
+          canvasWidth={canvasWidth}
+          onComponentClick={
+            config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
+          }
+          onEvent={onEvent}
+          height={height}
+          onComponentOptionChanged={onComponentOptionChanged}
+          onComponentOptionsChanged={onComponentOptionsChanged}
+          key={key}
+          onResizeStop={onResizeStop}
+          onDragStop={onDragStop}
+          paramUpdated={paramUpdated}
+          id={key}
+          {...boxes[key]}
+          mode={mode}
+          resizingStatusChanged={(status) => setIsResizing(status)}
+          draggingStatusChanged={(status) => setIsDragging(status)}
+          inCanvas={true}
+          zoomLevel={zoomLevel}
+          setSelectedComponent={setSelectedComponent}
+          removeComponent={removeComponent}
+          deviceWindowWidth={deviceWindowWidth}
+          isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
+          darkMode={darkMode}
+          // onComponentHover={onComponentHover}
+          // hoveredComponent={hoveredComponent}
+          sideBarDebugger={sideBarDebugger}
+          isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+          childComponents={childComponents[key]}
+          containerProps={{
+            mode,
+            snapToGrid,
+            onComponentClick,
+            onEvent,
+            appDefinition,
+            appDefinitionChanged,
+            currentState,
+            onComponentOptionChanged,
+            onComponentOptionsChanged,
+            appLoading,
+            zoomLevel,
+            setSelectedComponent,
+            removeComponent,
+            currentLayout,
+            deviceWindowWidth,
+            selectedComponents,
+            darkMode,
+            // onComponentHover,
+            // hoveredComponent,
+            sideBarDebugger,
+            addDefaultChildren,
+            currentPageId,
+            childComponents,
+            setIsChildDragged,
+            setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
+            parentGridWidth: gridWidth,
+            subContainerWidths,
+          }}
+          isVersionReleased={isVersionReleased}
+        />
+      );
+    }
+    return '';
+  };
+
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -619,7 +796,7 @@ export const Container = ({
         drop(el);
       }}
       style={{ ...styles, height: canvasHeight }}
-      className={cx('real-canvas', {
+      className={cx('real-canvas show-grid', {
         'show-grid': isDragging || isResizing,
       })}
       id="real-canvas"
@@ -651,7 +828,18 @@ export const Container = ({
           ))}
         </>
       )}
-      {Object.keys(boxes).map((key) => {
+      <DragContainer
+        boxes={Object.keys(boxes).map((key) => ({ ...boxes[key], id: key }))}
+        renderWidget={renderWidget}
+        canvasWidth={canvasWidth}
+        onResizeStop={onResizeStop2}
+        onDrag={onDragStop2}
+        gridWidth={gridWidth}
+        selectedComponents={selectedComponents}
+        setIsDragging={setIsDragging}
+        currentLayout={currentLayout}
+      />
+      {/* {Object.keys(boxes).map((key) => {
         const box = boxes[key];
         const canShowInCurrentLayout =
           box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
@@ -689,7 +877,7 @@ export const Container = ({
             />
           );
         }
-      })}
+      })} */}
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: '10%' }}>
           <div className="mx-auto w-50 p-5 bg-light no-components-box">

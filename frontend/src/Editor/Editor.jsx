@@ -1811,7 +1811,7 @@ const EditorComponent = (props) => {
             {!showComments && (
               <Selecto
                 dragContainer={'.canvas-container'}
-                selectableTargets={['.react-draggable']}
+                selectableTargets={['.moveable-box']}
                 hitRate={0}
                 selectByClick={true}
                 toggleContinueSelect={['shift']}
@@ -1843,7 +1843,7 @@ const EditorComponent = (props) => {
                   background: !props.darkMode ? '#EBEBEF' : '#2E3035',
                 }}
                 onMouseUp={(e) => {
-                  if (['real-canvas', 'modal'].includes(e.target.className)) {
+                  if (e.target.classList.contains('real-canvas') || e.target.classList.contains('modal')) {
                     updateEditorState({
                       currentSidebarTab: 2,
                       selectedComponents: [],

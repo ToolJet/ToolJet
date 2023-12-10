@@ -1673,7 +1673,10 @@ export const addNewWidgetToTheEditor = (
     [left, top] = snapToGrid(subContainerWidth, left, top);
   }
 
-  left = (left * 100) / subContainerWidth;
+  const gridWidth = subContainerWidth / 24;
+  left = Math.round(left / gridWidth);
+  console.log('Top calc', { top, initialClientOffset, delta, zoomLevel, offsetFromTopOfWindow, subContainerWidth });
+  // left = (left * 100) / subContainerWidth;
 
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = false;
