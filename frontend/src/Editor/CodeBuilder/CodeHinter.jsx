@@ -160,22 +160,26 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
+  const updatePreview = () => {
+    const customResolvables = getCustomResolvables();
+    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+    setPrevCurrentValue(currentValue);
+
+    if (error) {
+      setResolvingError(error);
+      setResolvedValue(null);
+    } else {
+      setResolvingError(null);
+      setResolvedValue(preview);
+    }
+  };
+
   useEffect(() => {
     if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
-      const customResolvables = getCustomResolvables();
-      const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
-      setPrevCurrentValue(currentValue);
-
-      if (error) {
-        setResolvingError(error);
-        setResolvedValue(null);
-      } else {
-        setResolvingError(null);
-        setResolvedValue(preview);
-      }
+      updatePreview();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ currentValue, realState, isFocused })]);
+  }, [JSON.stringify({ currentValue, realState, isFocused, context })]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
@@ -330,6 +334,11 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
+  const onFocusHandler = () => {
+    setFocused(true);
+    updatePreview();
+  };
+
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
@@ -436,7 +445,7 @@ export function CodeHinter({
                     realState={realState}
                     scrollbarStyle={null}
                     height={'100%'}
-                    onFocus={() => setFocused(true)}
+                    onFocus={onFocusHandler}
                     onBlur={(editor, e) => {
                       e.stopPropagation();
                       const value = editor.getValue()?.trimEnd();

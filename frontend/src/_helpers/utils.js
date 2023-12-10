@@ -453,6 +453,7 @@ export async function executeMultilineJS(
     //this will handle the preview case where you cannot find the queryDetails in state.
     formattedParams = { ...parameters };
   }
+
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],

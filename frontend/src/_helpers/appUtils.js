@@ -817,7 +817,10 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters, h
   setPreviewLoading(true);
   if (_.isUndefined(parameters)) {
     parameters = query.options?.parameters?.reduce(
-      (parameters, parameter) => ({ ...parameters, [parameter.name]: parameter.defaultValue }),
+      (parameters, parameter) => ({
+        ...parameters,
+        [parameter.name]: resolveReferences(parameter.defaultValue, {}, undefined),
+      }),
       {}
     );
   }
@@ -936,7 +939,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
   if (_.isUndefined(parameters)) {
     parameters = dataQuery.options?.parameters?.reduce(
-      (parameters, parameter) => ({ ...parameters, [parameter.name]: parameter.defaultValue }),
+      (parameters, parameter) => ({
+        ...parameters,
+        [parameter.name]: resolveReferences(parameter.defaultValue, {}, undefined),
+      }),
       {}
     );
   }
