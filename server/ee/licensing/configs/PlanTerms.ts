@@ -11,7 +11,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     superadmin: 1,
   },
   database: {
-    table: 5,
+    table: LICENSE_LIMIT.UNLIMITED,
   },
   features: {
     auditLogs: false,
