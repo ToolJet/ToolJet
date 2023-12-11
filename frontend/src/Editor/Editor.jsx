@@ -1695,7 +1695,10 @@ const EditorComponent = (props) => {
   };
 
   async function turnOffAutoLayout() {
-    const result = await confirm('Turn off Auto Layout ?', 'Turn off Auto Layout');
+    const result = await confirm(
+      'You have to disable auto alignment to manually adjust mobile components. Once disabled, the mobile layout won’t automatically align with desktop changes',
+      'Turn off Auto Layout'
+    );
     if (result) {
       turnOffAutoComputeLayout({ pageId: currentPageId, autoComputeLayout: false });
     }

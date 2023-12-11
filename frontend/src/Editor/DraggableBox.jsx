@@ -110,6 +110,7 @@ export const DraggableBox = React.memo(
       selectionInProgress,
       isSelectedComponent,
       isMultipleComponentsSelected,
+      autoComputeLayout,
     } = useEditorStore(
       (state) => ({
         currentLayout: state?.currentLayout,
@@ -119,6 +120,7 @@ export const DraggableBox = React.memo(
         isSelectedComponent:
           mode === 'edit' ? state?.selectedComponents?.some((component) => component?.id === id) : false,
         isMultipleComponentsSelected: state?.selectedComponents?.length > 1 ? true : false,
+        autoComputeLayout: state?.appDefinition?.pages?.[state?.currentPageId]?.autoComputeLayout,
       }),
       shallow
     );
@@ -136,12 +138,13 @@ export const DraggableBox = React.memo(
           layouts,
           canvasWidth,
           currentLayout,
+          autoComputeLayout,
         },
         collect: (monitor) => ({
           isDragging: monitor.isDragging(),
         }),
       }),
-      [id, title, component, index, currentLayout, zoomLevel, parent, layouts, canvasWidth]
+      [id, title, component, index, currentLayout, zoomLevel, parent, layouts, canvasWidth, autoComputeLayout]
     );
 
     useEffect(() => {

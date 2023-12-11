@@ -289,7 +289,7 @@ export const Container = ({
     () => ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
-        if (item.currentLayout === 'mobile' && appDefinition.pages[currentPageId]?.autoComputeLayout) {
+        if (item.currentLayout === 'mobile' && item.autoComputeLayout) {
           turnOffAutoLayout();
           return false;
         }
