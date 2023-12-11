@@ -7,11 +7,11 @@ title: MongoDB
 
 ToolJet can connect to MongoDB to read and write data.
 
-## Connection
+## Manual Connection
 
 Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
 
-To establish a connection with the MongoDB data source, click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a manual connection with the MongoDB data source, click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your MongoDB.
 
@@ -25,6 +25,20 @@ It is recommended to create a new MongoDB user so that you can control the acces
 <img className="screenshot-full" src="/img/datasource-reference/mo-connect.png" alt="ToolJet - Mongo connection" height="250"/>
 
 Click on 'Test connection' button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on 'Save' button to save the data source.
+
+## Connect Using Connecting String
+
+You can also use a **Connection String** by switching the method from the dropdown. You will be prompted to enter the details of your MongoDB connection. 
+
+The primary piece of information you need here is your MongoDB connection string. The connection string typically looks like this: 
+`mongodb+srv://${username}:${password}@${cluster}/{database}`. 
+
+For example: `mongodb+srv://tooljettest:fakepassword@cluster0.urul7.mongodb.net/hrms`
+
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/mongodb-connection-string.png" alt="ToolJet - Mongo connection" height="250"/>
+
+Make sure to replace username, password, cluster, and database with your actual MongoDB details. If your MongoDB instance requires additional connection options, you can usually append these options to the connection string.
+
 
 ## Querying MongoDB
 

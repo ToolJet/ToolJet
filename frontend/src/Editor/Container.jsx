@@ -51,11 +51,10 @@ export const Container = ({
   // redundant save on app definition load
   const firstUpdate = useRef(true);
 
-  const { showComments, currentLayout, selectedComponents } = useEditorStore(
+  const { showComments, currentLayout } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
-      selectedComponents: state?.selectedComponents,
     }),
     shallow
   );
@@ -280,7 +279,6 @@ export const Container = ({
         const componentMeta = _.cloneDeep(
           componentTypes.find((component) => component.component === item.component.component)
         );
-        console.log('adding new component');
         const newComponent = addNewWidgetToTheEditor(
           componentMeta,
           monitor,
@@ -336,7 +334,7 @@ export const Container = ({
 
       let newBoxes = { ...boxes };
 
-      for (const selectedComponent of selectedComponents) {
+      for (const selectedComponent of useEditorStore.getState().selectedComponents) {
         newBoxes = produce(newBoxes, (draft) => {
           if (draft[selectedComponent.id]) {
             const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
@@ -351,7 +349,7 @@ export const Container = ({
       setBoxes(newBoxes);
       updateCanvasHeight(newBoxes);
     },
-    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, selectedComponents, updateCanvasHeight]
+    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, updateCanvasHeight]
   );
 
   const onResizeStop = useCallback(
@@ -361,7 +359,7 @@ export const Container = ({
         return;
       }
 
-      const deltaWidth = Math.round(d.width / gridWidth) * gridWidth; //rounding of width of element to nearest mulitple of gridWidth
+      const deltaWidth = Math.round(d.width / gridWidth) * gridWidth; //rounding of width of element to nearest multiple of gridWidth
       const deltaHeight = d.height;
 
       if (deltaWidth === 0 && deltaHeight === 0) {
@@ -582,7 +580,6 @@ export const Container = ({
       removeComponent,
       currentLayout,
       deviceWindowWidth,
-      selectedComponents,
       darkMode,
       sideBarDebugger,
       currentPageId,
@@ -604,7 +601,6 @@ export const Container = ({
     removeComponent,
     currentLayout,
     deviceWindowWidth,
-    selectedComponents,
     darkMode,
     sideBarDebugger,
     currentPageId,
