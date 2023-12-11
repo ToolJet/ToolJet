@@ -437,10 +437,10 @@ export function CodeHinter({
                     height={'100%'}
                     onFocus={() => setFocused(true)}
                     onBlur={(editor, e) => {
-                      e.stopPropagation();
-                      const value = editor.getValue()?.trimEnd();
+                      e?.stopPropagation();
+                      const value = editor?.getValue()?.trimEnd();
                       onChange(value);
-                      if (!isPreviewFocused.current) {
+                      if (!isPreviewFocused?.current) {
                         setFocused(false);
                       }
                     }}
