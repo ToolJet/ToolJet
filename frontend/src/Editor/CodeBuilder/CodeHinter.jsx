@@ -208,7 +208,7 @@ export function CodeHinter({
       const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
 
       setPrevCurrentValue(currentValue);
-      if (error || !_valid) {
+      if (error || !_valid || typeof preview === 'function') {
         globalPreviewCopy = null;
         globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
         setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
@@ -234,7 +234,7 @@ export function CodeHinter({
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
-      handleChange(editor, onChange, ignoreBraces, realState, componentName);
+      handleChange(editor, onChange, ignoreBraces, realState, componentName, getCustomResolvables());
       setCurrentValue(editor.getValue()?.trim());
     }
   }
