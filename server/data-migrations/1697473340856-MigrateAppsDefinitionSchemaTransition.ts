@@ -23,7 +23,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   private async migrateAppsDefinition(entityManager: EntityManager, queryRunner?: QueryRunner): Promise<void> {
     const appVersionRepository = entityManager.getRepository(AppVersion);
     const appVersions = await appVersionRepository.query(
-      `SELECT id FROM app_versions WHERE definition->>'pages' IS NOT NULL AND migrated IS false`
+      `SELECT id FROM app_versions WHERE definition->>'pages' IS NOT NULL`
     );
     const totalVersions = appVersions.length;
 
@@ -269,7 +269,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           homePageId: updateHomepageId,
           showViewerNavigation: definition?.showViewerNavigation || true,
           globalSettings: globalSettings,
-          migrated: true,
         }
       );
 

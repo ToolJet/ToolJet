@@ -25,16 +25,6 @@ export class UpdateAppVersionEntity1691006886222 implements MigrationInterface {
     await queryRunner.addColumn(
       'app_versions',
       new TableColumn({
-        name: 'migrated',
-        type: 'boolean',
-        default: false,
-        isNullable: true,
-      })
-    );
-
-    await queryRunner.addColumn(
-      'app_versions',
-      new TableColumn({
         name: 'home_page_id',
         type: 'uuid',
         isNullable: true,
