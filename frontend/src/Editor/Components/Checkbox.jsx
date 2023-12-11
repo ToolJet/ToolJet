@@ -6,6 +6,7 @@ export const Checkbox = function Checkbox({
   styles,
   fireEvent,
   setExposedVariable,
+  setExposedVariables,
   darkMode,
   dataCy,
 }) {
@@ -36,11 +37,14 @@ export const Checkbox = function Checkbox({
       }
       setChecked(status);
     };
+    const exposedVariables = {
+      value: defaultValueFromProperties,
+      setChecked: setCheckedAndNotify,
+    };
 
-    setExposedVariable('value', defaultValueFromProperties);
     setDefaultvalue(defaultValueFromProperties);
     setChecked(defaultValueFromProperties);
-    setExposedVariable('setChecked', setCheckedAndNotify);
+    setExposedVariables(exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValueFromProperties, setChecked]);
