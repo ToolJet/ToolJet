@@ -10,7 +10,14 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
-    'getting-started',
+    {
+      'type': 'category',
+      'label': 'Getting Started',
+      'items': [
+        'getting-started/platform-overview',
+        'getting-started/quickstart-guide',
+      ],
+    },
     {
       'type': 'category',
       'label': 'ToolJet Concepts',
