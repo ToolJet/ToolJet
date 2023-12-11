@@ -324,7 +324,7 @@ export const SubContainer = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
-        if (item.currentLayout === 'mobile' && appDefinition.pages[currentPageId]?.autoComputeLayout) {
+        if (item.currentLayout === 'mobile' && item.autoComputeLayout) {
           turnOffAutoLayout();
           return false;
         }
