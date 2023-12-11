@@ -23,7 +23,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   private async migrateAppsDefinition(entityManager: EntityManager, queryRunner?: QueryRunner): Promise<void> {
     const appVersionRepository = entityManager.getRepository(AppVersion);
     const appVersions = await appVersionRepository.query(
-      `SELECT id FROM app_versions WHERE definition->>'pages' IS NOT NULL`
+      `SELECT id, definition FROM app_versions WHERE definition->>'pages' IS NOT NULL ORDER BY updated_at DESC`
     );
     const totalVersions = appVersions.length;
 
@@ -38,11 +38,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     await processDataInBatches(
       entityManager,
       async (entityManager: EntityManager, skip: number, take: number) => {
-        const ids = appVersions.slice(skip, skip + take).map((appVersion) => appVersion.id);
-        if (!ids || ids.length === 0) {
-          return [];
-        }
-        return entityManager.query(`SELECT * FROM app_versions WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})`);
+        // we aleady have the app versions in memory, so no need to query again
+        return appVersions.slice(skip, skip + take);
       },
       async (entityManager: EntityManager, versions: AppVersion[]) => {
         await this.processVersions(entityManager, versions, migrationProgress);
@@ -114,29 +111,20 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
             for (const componentId in pageComponents) {
               const componentLayout = pageComponents[componentId]['layouts'];
 
-              if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
-                // if top, left, width, height are not present in the layout, then we don't need to save it
-                if (
-                  !componentLayout.top &&
-                  !componentLayout.left &&
-                  !componentLayout.width &&
-                  !componentLayout.height
-                ) {
-                  continue;
-                }
+              if (!componentLayout) continue;
 
-                for (const type in componentLayout) {
-                  const layout = componentLayout[type];
-                  const newLayout = new Layout();
-                  newLayout.type = type;
-                  newLayout.top = layout.top;
-                  newLayout.left = layout.left;
-                  newLayout.width = layout.width;
-                  newLayout.height = layout.height;
-                  newLayout.componentId = appResourceMappings.componentsMapping[componentId];
+              for (const type in componentLayout) {
+                const layout = componentLayout[type];
 
-                  componentLayouts.push(newLayout);
-                }
+                const newLayout = new Layout();
+                newLayout.type = type;
+                newLayout.top = layout.top;
+                newLayout.left = layout.left;
+                newLayout.width = layout.width;
+                newLayout.height = layout.height;
+                newLayout.componentId = appResourceMappings.componentsMapping[componentId];
+
+                componentLayouts.push(newLayout);
               }
             }
 
@@ -185,7 +173,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
                 const tableActionAndColumnEvents = [];
 
                 tableActions.forEach((action) => {
-                  const actionEvents = action.events || [];
+                  const actionEvents = action?.events || [];
 
                   if (!actionEvents || !Array.isArray(actionEvents)) return;
 
@@ -203,7 +191,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
                 tableColumns.forEach((column) => {
                   if (column?.columnType !== 'toggle') return;
-                  const columnEvents = column.events || [];
+                  const columnEvents = column?.events || [];
 
                   if (!columnEvents || !Array.isArray(columnEvents)) return;
 
