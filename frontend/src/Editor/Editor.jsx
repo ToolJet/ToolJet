@@ -60,6 +60,7 @@ import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState, getCurrentState } from '@/_stores/currentStateStore';
 import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
+import GitSyncModal from './GitSyncModal';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
@@ -156,6 +157,7 @@ const EditorComponent = (props) => {
 
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
+  const [showGitSyncModal, setShowGitSyncModal] = useState(false);
 
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -169,13 +171,12 @@ const EditorComponent = (props) => {
   const dataSourceModalRef = useRef(null);
   const selectionDragRef = useRef(null);
   const selectionRef = useRef(null);
-
   const prevAppDefinition = useRef(appDefinition);
   const prevEventsStoreRef = useRef(events);
 
   useEffect(() => {
     updateState({ isLoading: true });
-
+    app.creation_mode === 'GIT' && useAppVersionStore.getState().actions.onEditorFreeze(true);
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = {
       ...currentSession?.current_user,
@@ -308,7 +309,6 @@ const EditorComponent = (props) => {
       setCookie('redirectPath', redirectCookie, 1);
     }
   };
-
   const getEditorRef = () => {
     const editorRef = {
       appDefinition: useEditorStore.getState().appDefinition,
@@ -789,7 +789,6 @@ const EditorComponent = (props) => {
       setCurrentAppEnvironmentDetails(environment);
       setAppVersionCurrentEnvironment(environment);
     }
-
     updateState({
       slug: data.slug,
       isMaintenanceOn: data?.is_maintenance_on,
@@ -830,7 +829,6 @@ const EditorComponent = (props) => {
         },
       },
     });
-
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
@@ -884,10 +882,9 @@ const EditorComponent = (props) => {
       updateEditorState({
         isLoading: true,
       });
-
       onEditorFreeze(false);
       setAppVersionPromoted(false);
-      callBack(appData, null, true);
+      callBack(appData, null, true, false, null);
       initComponentVersioning();
     }
   };
@@ -1775,6 +1772,9 @@ const EditorComponent = (props) => {
       }
     }
   };
+  const toggleGitSyncModal = () => {
+    setShowGitSyncModal(!showGitSyncModal);
+  };
 
   useEffect(() => {
     const previewQuery = queryString.stringify({
@@ -1833,6 +1833,15 @@ const EditorComponent = (props) => {
 
   return (
     <div className="editor wrapper">
+      <GitSyncModal
+        currentUser={currentUser}
+        showGitSyncModal={showGitSyncModal}
+        handleClose={toggleGitSyncModal}
+        app={app}
+        isVersionReleased={isVersionReleased}
+        featureAccess={featureAccess}
+        // fetchApp={fetchApp}
+      />
       <Confirm
         show={queryConfirmationList?.length > 0}
         message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
@@ -1851,8 +1860,11 @@ const EditorComponent = (props) => {
         onCancel={() => cancelDeletePageRequest()}
         darkMode={props.darkMode}
       />
+      {app?.creation_mode === 'GIT' && (
+        <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />
+      )}
       {isVersionReleased && <ReleasedVersionError />}
-      {!isVersionReleased && isEditorFreezed && <FreezeVersionInfo />}
+      {!isVersionReleased && isEditorFreezed && app?.creation_mode !== 'GIT' && <FreezeVersionInfo />}
       <EditorContextWrapper>
         <EditorHeader
           darkMode={props.darkMode}
@@ -1874,8 +1886,11 @@ const EditorComponent = (props) => {
           appName={appName}
           appId={appId}
           slug={slug}
+          toggleGitSyncModal={toggleGitSyncModal}
+          showGitSyncModal={showGitSyncModal}
           setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => setAppVersionPromoted(isCurrentVersionPromoted)}
           fetchEnvironments={fetchEnvironments}
+          isEditorFreezed={isEditorFreezed}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">

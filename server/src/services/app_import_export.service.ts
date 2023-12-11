@@ -201,6 +201,7 @@ export class AppImportExportService {
     appParamsObj: any,
     appName: string,
     externalResourceMappings = {},
+    isGitApp = false,
     tooljetVersion = '',
     cloning = false
   ): Promise<App> {
@@ -228,7 +229,7 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
+    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
 
     await this.setupImportedAppAssociations(
       this.entityManager,
@@ -249,7 +250,7 @@ export class AppImportExportService {
     return importedApp;
   }
 
-  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
+  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
@@ -257,6 +258,7 @@ export class AppImportExportService {
         userId: user.id,
         slug: null,
         icon: appParams.icon,
+        creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -1563,7 +1565,7 @@ export class AppImportExportService {
   }
 }
 
-function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
+export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   const appParamsWithMultipageSchema = {
     ...appParams,
     appVersions: appParams.appVersions?.map((appVersion: { definition: any }) => ({

@@ -42,6 +42,7 @@ const Header = (props) => {
               <EditAppName
                 appId={editorSession.app.id}
                 appName={editorSession.app.name}
+                appCreationMode={editorSession?.creation_mode}
                 onNameChanged={(name) => {
                   saveAppName(name);
                 }}

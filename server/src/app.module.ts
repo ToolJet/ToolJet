@@ -51,6 +51,7 @@ import { WorkerModule } from './modules/worker.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LicenseModule } from './modules/license/license.module';
 import { CustomStylesModule } from './modules/custom_styles/custom_styles.module';
+import { AppGitModule } from './modules/app_git/app_git.module';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
 import { logfileTransportConfig, logFormat } from './helpers/logger.helper';
 
@@ -130,6 +131,7 @@ const imports = [
   CopilotModule,
   CustomStylesModule,
   WorkerModule,
+  AppGitModule,
   OrganizationConstantModule,
 ];
 

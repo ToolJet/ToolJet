@@ -16,6 +16,10 @@ export function AppModal({
   title,
   actionButton,
   actionLoadingButton,
+  fetchingOrgGit,
+  orgGit,
+  commitEnabled,
+  handleCommitEnableChange,
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
@@ -132,56 +136,78 @@ export function AppModal({
         </>
       }
     >
-      <div className="row workspace-folder-modal mb-3">
-        <div className="col modal-main tj-app-input">
-          <label className="tj-input-label">{'App Name'}</label>
-          <input
-            type="text"
-            onChange={handleInputChange}
-            className={`form-control ${errorText ? 'input-error-border' : ''}`}
-            placeholder={'Enter app name'}
-            value={newAppName}
-            data-cy="app-name-input"
-            maxLength={50}
-            autoFocus
-            ref={inputRef}
-            style={{
-              borderColor: errorText ? '#DB4324 !important' : 'initial',
-            }}
-          />
-          {errorText ? (
-            <small
-              className="tj-input-error"
-              style={{
-                fontSize: '10px',
-                color: '#DB4324',
-              }}
-            >
-              {errorText}
-            </small>
-          ) : infoText || newAppName.length >= 50 ? (
-            <small
-              className="tj-input-error"
-              style={{
-                fontSize: '10px',
-                color: '#ED5F00',
-              }}
-            >
-              {infoText || 'Maximum length has been reached'}
-            </small>
-          ) : (
-            <small
-              className="tj-input-error"
-              style={{
-                fontSize: '10px',
-                color: '#7E868C',
-              }}
-            >
-              App name must be unique and max 50 characters
-            </small>
-          )}
+      {fetchingOrgGit ? (
+        <div className="loader-container">
+          <div className="primary-spin-loader"></div>
         </div>
-      </div>
+      ) : (
+        <div className="row workspace-folder-modal mb-3">
+          <div className="col modal-main tj-app-input">
+            <label className="tj-input-label">{'App Name'}</label>
+            <input
+              type="text"
+              onChange={handleInputChange}
+              className={`form-control ${errorText ? 'input-error-border' : ''}`}
+              placeholder={'Enter app name'}
+              value={newAppName}
+              data-cy="app-name-input"
+              maxLength={50}
+              autoFocus
+              ref={inputRef}
+              style={{
+                borderColor: errorText ? '#DB4324 !important' : 'initial',
+              }}
+            />
+            {errorText ? (
+              <small
+                className="tj-input-error"
+                style={{
+                  fontSize: '10px',
+                  color: '#DB4324',
+                }}
+              >
+                {errorText}
+              </small>
+            ) : infoText || newAppName.length >= 50 ? (
+              <small
+                className="tj-input-error"
+                style={{
+                  fontSize: '10px',
+                  color: '#ED5F00',
+                }}
+              >
+                {infoText || 'Maximum length has been reached'}
+              </small>
+            ) : (
+              <small
+                className="tj-input-error"
+                style={{
+                  fontSize: '10px',
+                  color: '#7E868C',
+                }}
+              >
+                App name must be unique and max 50 characters
+              </small>
+            )}
+            {orgGit?.is_enabled && (
+              <div className="commit-changes mt-3">
+                <div>
+                  <input
+                    class="form-check-input"
+                    checked={commitEnabled}
+                    type="checkbox"
+                    onChange={handleCommitEnableChange}
+                  />
+                </div>
+                <div>
+                  <div className="tj-text tj-text-xsm">Commit changes</div>
+                  <div className="tj-text-xxsm">This action commits the app&apos;s creation to the git repository</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </Modal>
   );
 }

@@ -28,6 +28,7 @@ export enum LICENSE_FIELD {
   DOMAINS = 'domains',
   STATUS = 'status',
   META = 'metadata',
+  GIT_SYNC = 'gitSyncEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
