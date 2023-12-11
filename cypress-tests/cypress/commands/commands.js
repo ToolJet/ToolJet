@@ -59,7 +59,7 @@ Cypress.Commands.add("createApp", (appName) => {
   cy.get("body").then(($title) => {
     cy.get(getAppButtonSelector($title)).click();
     cy.clearAndType('[data-cy="app-name-input"]', appName);
-    cy.get('[data-cy="+ Create app"]').click();
+    cy.get('[data-cy="+-create-app"]').click();
   });
   cy.waitForAppLoad();
   cy.skipEditorPopover();
@@ -363,3 +363,9 @@ Cypress.Commands.add("getPosition", (componentName) => {
     }
   );
 });
+
+Cypress.Commands.add("defaultWorkspaceLogin", () => {
+  cy.apiLogin();
+  cy.visit('/my-workspace');
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 })
+})
