@@ -104,7 +104,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
           appResourceMappings.pagesMapping[pageId] = pageCreated.id;
 
-          if (transformedComponents.length > 0) {
+          if (Array.isArray(transformedComponents) && transformedComponents.length > 0) {
             transformedComponents.forEach((component) => {
               component.page = pageCreated;
             });
@@ -143,14 +143,14 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
             await entityManager.save(Layout, componentLayouts);
           }
 
-          if (pageEvents.length > 0) {
+          if (Array.isArray(pageEvents) && pageEvents.length > 0) {
             pageEvents.forEach(async (event, index) => {
               const newEvent = {
                 name: event.eventId || `${pageCreated.name} Page Event ${index}`,
                 sourceId: pageCreated.id,
                 target: Target.page,
                 event: event,
-                index: pageEvents.index || index,
+                index: index,
                 appVersionId: version.id,
               };
 
@@ -161,18 +161,20 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           componentEvents.forEach((eventObj) => {
             if (eventObj.event?.length === 0) return;
 
-            eventObj.event.forEach(async (event, index) => {
-              const newEvent = {
-                name: event.eventId || `event ${index}`,
-                sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
-                target: Target.component,
-                event: event,
-                index: eventObj.index || index,
-                appVersionId: version.id,
-              };
+            if (Array.isArray(eventObj.event) && eventObj.event.length > 0) {
+              eventObj.event.forEach(async (event, index) => {
+                const newEvent = {
+                  name: event.eventId || `event ${index}`,
+                  sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
+                  target: Target.component,
+                  event: event,
+                  index: index,
+                  appVersionId: version.id,
+                };
 
-              await entityManager.save(EventHandler, newEvent);
-            });
+                await entityManager.save(EventHandler, newEvent);
+              });
+            }
           });
 
           if (savedComponents.length > 0) {
@@ -185,13 +187,15 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
                 tableActions.forEach((action) => {
                   const actionEvents = action.events || [];
 
+                  if (!actionEvents || !Array.isArray(actionEvents)) return;
+
                   actionEvents.forEach((event, index) => {
                     tableActionAndColumnEvents.push({
                       name: event.eventId,
                       sourceId: component.id,
                       target: Target.tableAction,
                       event: { ...event, ref: action.name },
-                      index: event.index ?? index,
+                      index: index,
                       appVersionId: version.id,
                     });
                   });
@@ -201,13 +205,15 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
                   if (column?.columnType !== 'toggle') return;
                   const columnEvents = column.events || [];
 
+                  if (!columnEvents || !Array.isArray(columnEvents)) return;
+
                   columnEvents.forEach((event, index) => {
                     tableActionAndColumnEvents.push({
                       name: event.eventId || `event ${index}`,
                       sourceId: component.id,
                       target: Target.tableColumn,
                       event: { ...event, ref: column.name },
-                      index: event.index ?? index,
+                      index: index,
                       appVersionId: version.id,
                     });
                   });
@@ -227,14 +233,14 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       for (const dataQuery of dataQueries) {
         const queryEvents = dataQuery?.options?.events || [];
 
-        if (!queryEvents && queryEvents.length > 0) {
+        if (Array.isArray(queryEvents) && queryEvents.length > 0) {
           queryEvents.forEach(async (event, index) => {
             const newEvent = {
               name: event.eventId || `${dataQuery.name} Query Event ${index}`,
               sourceId: dataQuery.id,
               target: Target.dataQuery,
               event: event,
-              index: queryEvents.index || index,
+              index: index,
               appVersionId: version.id,
             };
 
