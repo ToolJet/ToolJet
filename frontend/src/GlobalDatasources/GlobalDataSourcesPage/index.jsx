@@ -1,13 +1,14 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import cx from 'classnames';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import { Sidebar } from '../Sidebar';
 import { GlobalDataSourcesContext } from '..';
 import { DataSourceManager } from '@/Editor/DataSourceManager';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
-import { pluginsService, globalDatasourceService } from '@/_services';
+import { pluginsService, globalDatasourceService, authenticationService } from '@/_services';
 import { Card } from '@/_ui/Card';
 import { SegregatedList } from '../SegregatedList';
 import { SearchBox } from '@/_components';
@@ -23,6 +24,8 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   const [addingDataSource, setAddingDataSource] = useState(false);
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { admin } = authenticationService.currentSessionValue;
   const [modalProps, setModalProps] = useState({
     backdrop: false,
     dialogClassName: `datasource-edit-modal`,
@@ -205,7 +208,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             datasources.map((dataSource) => {
               {
                 return (
-                  dataSource.list.length > 0 && (
+                  (dataSource.list.length > 0 || dataSource.type === 'Plugins') && (
                     <>
                       <div id={dataSource.key} className="tj-text-md font-weight-500 tj-text">
                         {dataSource.type}
@@ -249,6 +252,26 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   };
 
   const renderCardGroup = (source, type) => {
+    if (type === 'Plugins' && source.length === 0) {
+      return (
+        <div className="add-plugins-container">
+          <div className="warning-container mb-2">
+            <SolidIcon name="warning" />
+          </div>
+          <div className="tj-text-sm font-weight-500 tj-text">No plugins added</div>
+          {admin && (
+            <>
+              <div className="tj-text-xsm font-weight-400 mt-2 mb-3">
+                Browse through plugins in marketplace to add them as a Data Source.{' '}
+              </div>
+              <ButtonSolid onClick={() => navigate('/integrations')} style={{ margin: 'auto' }} variant="secondary">
+                Add plugins
+              </ButtonSolid>
+            </>
+          )}
+        </div>
+      );
+    }
     const addDataSourceBtn = (item) => (
       <ButtonSolid
         disabled={addingDataSource}
