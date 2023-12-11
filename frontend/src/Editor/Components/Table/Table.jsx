@@ -392,8 +392,10 @@ export function Table({
 
   const tableRef = useRef();
 
+  const columnProperties = useDynamicColumn ? generatedColumn : component.definition.properties.columns.value;
+
   let columnData = generateColumnsData({
-    columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
+    columnProperties,
     columnSizes,
     currentState,
     handleCellValueChange: handleExistingRowCellValueChange,
@@ -420,6 +422,25 @@ export function Table({
       }),
     [columnData, currentState]
   );
+
+  const transformations = columnProperties
+    .filter((column) => column.transformation && column.transformation != '{{cellValue}}')
+    .map((column) => ({
+      key: column.key ? column.key : column.name,
+      transformation: column.transformation,
+    }));
+
+  tableData = useMemo(() => {
+    return tableData.map((row) => ({
+      ...row,
+      ...Object.fromEntries(
+        transformations.map((t) => [
+          t.key,
+          resolveReferences(t.transformation, currentState, row[t.key], { cellValue: row[t.key], rowData: row }),
+        ])
+      ),
+    }));
+  }, [JSON.stringify(transformations)]);
 
   const columnDataForAddNewRows = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
@@ -500,7 +521,11 @@ export function Table({
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
-  }, [tableData.length, component.definition.properties.data.value, JSON.stringify(properties.data)]);
+  }, [
+    tableData.length,
+    component.definition.properties.data.value,
+    JSON.stringify([properties.data, transformations]),
+  ]);
 
   useEffect(() => {
     if (

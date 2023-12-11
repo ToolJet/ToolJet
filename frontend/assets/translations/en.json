@@ -503,6 +503,7 @@
             "visibility": "Visibility",
             "disable": "Disable",
             "borderRadius": "Border Radius",
+            "transformation": "Transformation",
             "boxShadow": "Box Shadow",
             "tooltip": "Tooltip",
             "showOnDesktop": "Show on desktop",
