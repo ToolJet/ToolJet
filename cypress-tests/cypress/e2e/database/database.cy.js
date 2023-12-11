@@ -1,4 +1,8 @@
-import { filterSelectors, sortSelectors } from "Selectors/database";
+import {
+  databaseSelectors,
+  filterSelectors,
+  sortSelectors,
+} from "Selectors/database";
 import { databaseText, filterText, sortText } from "Texts/database";
 import { navigateToDatabase } from "Support/utils/common";
 import {
@@ -15,6 +19,8 @@ import {
   deleteRowAndVerify,
   editRowWithInvalidData,
   editRowAndVerify,
+  exportTableAndVerify,
+  bulkUploadDataTemplateDownloadAndVerify,
 } from "Support/utils/database";
 import { fake } from "Fixtures/fake";
 import { randomNumber } from "Support/utils/commonWidget";
@@ -75,7 +81,9 @@ describe("Database Functionality", () => {
     let column1 = columnDetails();
     let column2 = columnDetails();
     navigateToDatabase();
-    verifyAllElementsOfPage();
+    cy.get(databaseSelectors.allTablesSection).should("be.visible");
+    cy.get(databaseSelectors.allTableSubheader).should("be.visible");
+    cy.get(databaseSelectors.addTableButton).should("be.visible");
     createTableAndVerifyToastMessage(data.tableName1, false);
     createTableAndVerifyToastMessage(
       data.tableName2,
@@ -85,6 +93,7 @@ describe("Database Functionality", () => {
       true,
       [column1.defaultValueVarchar, column1.defaultValueInt]
     );
+    verifyAllElementsOfPage();
   });
   it("Verify all operations of table", () => {
     const data = {};
@@ -183,5 +192,15 @@ describe("Database Functionality", () => {
       [databaseText.idColumnName, column1.name, column2.name],
       [row4.varcharData, row4.intData]
     );
+    exportTableAndVerify(data.tableName, [
+      databaseText.idColumnName,
+      column1.name,
+      column2.name,
+    ]);
+    bulkUploadDataTemplateDownloadAndVerify(data.tableName, [
+      databaseText.idColumnName,
+      column1.name,
+      column2.name,
+    ]);
   });
 });

@@ -1,6 +1,6 @@
 ---
 id: restapi
-title: REST API 
+title: REST API
 ---
 
 ToolJet can establish a connection with any available REST API endpoint and create queries to interact with it.
@@ -74,9 +74,19 @@ Whenever a request is made to the REST API, a **tj-x-forwarded-for** header is a
 
 </div>
 
+## Request types
+
+The plugin will send a **JSON** formatted body by default. If a file object from a [`FilePicker` widget](/docs/widgets/file-picker) is set as a value, the body is automatically converted to be sent as a `multipart/form-data` request.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/multipart-form-data.png" alt="ToolJet - Data source - REST API" />
+
+</div>
+
 ## Response types
 
-REST APIs can return data in a variety of formats, including **JSON** and **Base64**. JSON is a common format used for data exchange in REST APIs, while Base64 is often used for encoding binary data, such as images or video, within a JSON response.  
+REST APIs can return data in a variety of formats, including **JSON** and **Base64**. JSON is a common format used for data exchange in REST APIs, while Base64 is often used for encoding binary data, such as images or video, within a JSON response.
 When the response `content-type` is **image**, the response will be a `base64` string.
 
 ### Example JSON response

@@ -1,4 +1,5 @@
 import {
+  createBucket,
   getObject,
   uploadObject,
   listBuckets,
@@ -23,6 +24,9 @@ export default class S3QueryService implements QueryService {
 
     try {
       switch (operation) {
+        case Operation.CreateBucket:
+          result = await createBucket(client, queryOptions);
+          break;
         case Operation.ListBuckets:
           result = await listBuckets(client, {});
           break;
