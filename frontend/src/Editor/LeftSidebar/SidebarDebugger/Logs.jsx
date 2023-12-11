@@ -13,10 +13,10 @@ function Logs({ logProps, idx }) {
     logProps?.type === 'navToDisablePage'
       ? logProps?.message
       : logProps?.isQuerySuccessLog
-      ? 'Completed'
-      : logProps?.type === 'component'
-      ? `Invalid property detected: ${logProps?.message}.`
-      : `${startCase(logProps?.type)} failed: ${logProps?.message ?? ''}`;
+        ? 'Completed'
+        : logProps?.type === 'component'
+          ? `Invalid property detected: ${logProps?.message}.`
+          : `${startCase(logProps?.type)} failed: ${logProps?.message ? logProps?.message : logProps?.error?.message}`;
 
   const defaultStyles = {
     transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
