@@ -262,7 +262,7 @@ describe("Table", () => {
 
     cy.get('[data-cy="label-action-button-text"]').verifyVisibleElement(
       "have.text",
-      "Button Text"
+      "Button text"
     );
     cy.get('[data-cy="action-button-text-input-field"]').type(
       "{selectAll}{backspace}FakeName1"
@@ -273,7 +273,7 @@ describe("Table", () => {
     );
     cy.get('[data-cy="label-action-button-position"]').verifyVisibleElement(
       "have.text",
-      "Button Position"
+      "Button position"
     ); // dropdown_type
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
@@ -351,7 +351,7 @@ describe("Table", () => {
     cy.get('[data-index="0"]>.select-search-option:eq(1)').realClick();
     verifyAndEnterColumnOptionInput("key", "name");
     verifyAndEnterColumnOptionInput("Text color", "red");
-    verifyAndEnterColumnOptionInput("Cell Background Color", "yellow");
+    verifyAndEnterColumnOptionInput("Cell Background color", "yellow");
     cy.get(
       '[data-cy="input-and-label-cell-background-color"] > .form-label'
     ).click();
@@ -647,7 +647,7 @@ describe("Table", () => {
 
     // cy.get("[data-cy='border-radius-fx-button']:eq(1)").click();
     verifyAndModifyParameter(
-      "Action Button Radius",
+      "Action button radius",
       commonWidgetText.borderRadiusInput
     );
 
@@ -668,7 +668,7 @@ describe("Table", () => {
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     verifyAndModifyParameter(
-      "Border Radius",
+      "Border radius",
       commonWidgetText.borderRadiusInput
     );
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
@@ -844,7 +844,7 @@ describe("Table", () => {
     // cy.get('[data-cy="show-search-box-toggle-button"]').click();
 
     // verifyAndModifyToggleFx("Server-side search", " ", true);
-    verifyAndModifyToggleFx("Loading State", "{{false}}", true);
+    verifyAndModifyToggleFx("Loading state", "{{false}}", true);
   });
 
   it("should verify download", () => {

@@ -66,8 +66,8 @@ describe("App Import Functionality", () => {
     cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
       force: true,
     });
-    cy.get('[data-cy="import-app-title"]').should("be.visible");
-    cy.get('[data-cy="Import app"]').click();
+    cy.get(importSelectors.importAppTitle).should("be.visible");
+    cy.get(importSelectors.importAppButton).click();
     cy.get(".go3958317564")
       .should("be.visible")
       .and("have.text", importText.appImportedToastMessage);
@@ -116,8 +116,8 @@ describe("App Import Functionality", () => {
         force: true,
       });
 
-      cy.get('[data-cy="import-app-title"]').should("be.visible");
-      cy.get('[data-cy="Import app"]').click();
+      cy.get(importSelectors.importAppTitle).should("be.visible");
+      cy.get(importSelectors.importAppButton).click();
       cy.get(".go3958317564")
         .should("be.visible")
         .and("have.text", importText.appImportedToastMessage);
@@ -188,8 +188,8 @@ describe("App Import Functionality", () => {
                   force: true,
                 }
               );
-              cy.get('[data-cy="import-app-title"]').should("be.visible");
-              cy.get('[data-cy="Import app"]').click();
+              cy.get(importSelectors.importAppTitle).should("be.visible");
+              cy.get(importSelectors.importAppButton).click();
               cy.get(".go3958317564")
                 .should("be.visible")
                 .and("have.text", importText.appImportedToastMessage);

@@ -22,6 +22,8 @@ const DropDownSelect = ({
   emptyError,
   shouldCenterAlignText = false,
   showPlaceHolder = false,
+  highlightSelected = true,
+  buttonClasses = '',
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -124,11 +126,12 @@ const DropDownSelect = ({
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
             emptyError={emptyError}
+            highlightSelected={highlightSelected}
           />
         </Popover>
       }
     >
-      <span className="col-auto" id={popoverBtnId.current}>
+      <div className={`col-auto ${buttonClasses}`} id={popoverBtnId.current}>
         <ButtonSolid
           size="sm"
           variant="tertiary"
@@ -198,7 +201,7 @@ const DropDownSelect = ({
             <CheveronDown width="15" height="15" />
           </div>
         </ButtonSolid>
-      </span>
+      </div>
     </OverlayTrigger>
   );
 };

@@ -64,9 +64,10 @@ function BulkUploadDrawer({
       <button
         onClick={() => setIsBulkUploadDrawerOpen(!isBulkUploadDrawerOpen)}
         className={`ghost-black-operation ${isBulkUploadDrawerOpen ? 'open' : ''}`}
+        data-cy={`bulk-upload-data-button`}
       >
         <SolidIcon name="fileupload" width="14" fill={isBulkUploadDrawerOpen ? '#3E63DD' : '#889096'} />
-        <span className=" tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }}>
+        <span className=" tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }} data-cy="bulk-upload-button-text">
           Bulk upload data
         </span>
       </button>
@@ -79,7 +80,7 @@ function BulkUploadDrawer({
       >
         <div className="drawer-card-wrapper">
           <div className="drawer-card-title ">
-            <h3 className="" data-cy="create-new-column-header">
+            <h3 className="" data-cy="bulk-upload-data-header">
               Bulk upload data
             </h3>
           </div>
@@ -127,7 +128,7 @@ function BulkUploadDrawer({
             </ButtonSolid>
             <ButtonSolid
               disabled={!bulkUploadFile || errors.client.length > 0 || errors.server.length > 0}
-              data-cy={`save-changes-button`}
+              data-cy={`upload-data-button`}
               onClick={handleBulkUpload}
               fill="#fff"
               leftIcon="floppydisk"
