@@ -49,7 +49,6 @@ export const NumberInput = function NumberInput({
     } else setValue(Number(parseFloat(e.target.value ? e.target.value : 0).toFixed(properties.decimalPlaces)));
   };
 
-
   useEffect(() => {
     if (!isNaN(value)) {
       setExposedVariable('value', value);
@@ -66,7 +65,6 @@ export const NumberInput = function NumberInput({
     backgroundColor: darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#000000' : backgroundColor,
     boxShadow,
   };
-
 
   return (
     <>

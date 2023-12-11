@@ -6,7 +6,6 @@ export const RenameInput = ({ page, updaterCallback, updatePageEditMode }) => {
       updaterCallback(page.id, pageName);
     }
     updatePageEditMode(false);
-
   };
 
   return (
