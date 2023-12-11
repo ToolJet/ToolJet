@@ -27,6 +27,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     verticalAlignment,
     borderColor,
     borderRadius,
+    isScrollRequired,
   } = styles;
   console.log(backgroundColor, 'styles');
   const { loadingState, textFormat, disabledState } = properties;
@@ -119,7 +120,6 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     borderColor: borderColor,
     borderRadius: borderRadius ? `${borderRadius}px` : '0px',
   };
-
   return (
     <div
       data-disabled={isDisabled}
@@ -136,7 +136,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
           <Markdown>{text}</Markdown>
         ) : (
           <div
-            style={{ width: '100%', fontSize: textSize }}
+            style={{ width: '100%', fontSize: textSize, overflowY: isScrollRequired == 'enabled' ? 'scroll' : 'unset' }}
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
           />
         ))}
