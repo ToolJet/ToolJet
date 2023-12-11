@@ -1264,11 +1264,11 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border Color',
+        displayName: 'Border color',
         validation: {
           schema: { type: 'string' },
         },

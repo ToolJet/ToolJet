@@ -13,6 +13,7 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
       <button
         onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
         className={`ghost-black-operation ${isCreateRowDrawerOpen ? 'open' : ''}`}
+        data-cy="edit-row-button-"
       >
         {/* <SolidIcon name="editrectangle" width="14" fill={isCreateRowDrawerOpen ? '#3E63DD' : '#889096'} /> */}
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="13" viewBox="0 0 12 13" fill="none">

@@ -132,14 +132,10 @@ export const manageUsersElements = () => {
 };
 
 export const inviteUser = (firstName, email) => {
-  fillUserInviteForm(firstName, email);
-  cy.get(usersSelector.buttonInviteUsers).click();
-  // cy.verifyToastMessage(
-  //   commonSelectors.toastMessage,
-  //   usersText.userCreatedToast
-  // );
-  cy.wait(1000);
+  cy.userInviteApi(firstName, email);
   fetchAndVisitInviteLink(email);
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(commonSelectors.acceptInviteButton).click();
 };
 
 export const confirmInviteElements = () => {
@@ -276,14 +272,16 @@ export const fillUserInviteForm = (firstName, email) => {
 };
 
 export const selectUserGroup = (groupName) => {
-  cy.wait(500);
+  cy.wait(1500);
   cy.get("body").then(($body) => {
     if (!$body.find(".search > input").length > 0) {
       cy.get(".dropdown-heading-value > .gray").click();
       cy.clearAndType(".search > input", groupName);
+      cy.wait(500);
       cy.get("li > .select-item > .item-renderer").last().click();
     } else {
       cy.clearAndType(".search > input", groupName);
+      cy.wait(500);
       cy.get("li > .select-item > .item-renderer").last().click();
     }
   });
@@ -321,7 +319,7 @@ export const fetchAndVisitInviteLink = (email) => {
           organizationToken = resp.rows[1].invitation_token;
 
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
-          common.logout();
+          cy.logoutApi();
           cy.wait(1000);
           cy.visit(url);
         });

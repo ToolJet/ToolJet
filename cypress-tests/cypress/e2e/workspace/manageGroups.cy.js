@@ -11,7 +11,7 @@ const newGroupname = `New ${groupName}`;
 
 describe("Manage Groups", () => {
   before(() => {
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
     permissions.reset();
   });
   it("Should verify the elements and functionalities on manage groups page", () => {

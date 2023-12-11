@@ -210,6 +210,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     setListRowsOptions((prev) => ({ ...prev, limit: value }));
   };
 
+  const offsetOptionChanged = (value) => {
+    setListRowsOptions((prev) => ({ ...prev, offset: value }));
+  };
+
   const deleteOperationLimitOptionChanged = (limit) => {
     setDeleteRowsOptions((prev) => ({ ...prev, limit: limit }));
   };
@@ -290,6 +294,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       listRowsOptions,
       setListRowsOptions,
       limitOptionChanged,
+      offsetOptionChanged,
       handleOptionsChange,
       deleteRowsOptions,
       handleDeleteRowsOptionsChange,
@@ -467,9 +472,10 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       {/* table name dropdown */}
       <div className={cx({ row: !isHorizontalLayout })}>
         <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
-          <label className={cx('form-label')}>Table name</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded')}>
+          <label className={cx('form-label', 'flex-shrink-0')}>Table name</label>
+          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
             <DropDownSelect
+              customBorder={false}
               showPlaceHolder
               options={generateListForDropdown(tables)}
               darkMode={darkMode}
@@ -490,8 +496,8 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
           /* className="my-2 col-4"  */
           className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
         >
-          <label className={cx('form-label')}>Operations</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded')}>
+          <label className={cx('form-label', 'flex-shrink-0')}>Operations</label>
+          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
             <DropDownSelect
               showPlaceHolder
               options={tooljetDbOperationList}
