@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import { withTranslation } from 'react-i18next';
 import { Editor } from '../Editor/Editor';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
@@ -7,6 +7,8 @@ import config from 'config';
 import { appService } from '@/_services';
 import { useAppDataActions } from '@/_stores/appDataStore';
 import _ from 'lodash';
+import { resetAllStores } from '@/_stores/utils';
+import { useEditorActions } from '@/_stores/editorStore';
 
 const AppLoaderComponent = (props) => {
   const { type: appType } = props;
@@ -18,6 +20,11 @@ const AppLoaderComponent = (props) => {
 const AppBuilder = React.memo((props) => {
   const [shouldLoadApp, setShouldLoadApp] = React.useState(false);
   const { updateState } = useAppDataActions();
+  const { updateFeatureAccess } = useEditorActions();
+
+  useLayoutEffect(() => {
+    resetAllStores();
+  }, []);
 
   useEffect(() => {
     props?.id && props?.slug && loadAppDetails(props?.id);
@@ -29,6 +36,7 @@ const AppBuilder = React.memo((props) => {
   }, []);
 
   const loadAppDetails = (appId) => {
+    updateFeatureAccess();
     appService.fetchApp(appId, 'edit').then((data) => {
       setShouldLoadApp(true);
       updateState({
