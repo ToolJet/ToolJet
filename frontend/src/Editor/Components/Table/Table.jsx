@@ -337,7 +337,7 @@ export function Table({
 
   function onPageIndexChanged(page) {
     onComponentOptionChanged(component, 'pageIndex', page).then(() => {
-      onEvent('onPageChanged', { component, data: {} });
+      onEvent('onPageChanged', tableEvents, { component });
     });
   }
 
@@ -707,9 +707,9 @@ export function Table({
   useEffect(() => {
     setExposedVariable('discardNewlyAddedRows', async function () {
       if (
-        tableDetails.addNewRowsDetails.addingNewRows &&
-        (Object.keys(tableDetails.addNewRowsDetails.newRowsChangeSet || {}).length > 0 ||
-          Object.keys(tableDetails.addNewRowsDetails.newRowsDataUpdates || {}).length > 0)
+        !_.isEmpty(exposedVariables.newRows) ||
+        !_.isEmpty(tableDetails.addNewRowsDetails.newRowsChangeSet) ||
+        !_.isEmpty(tableDetails.addNewRowsDetails.newRowsChangeSet)
       ) {
         setExposedVariables({
           newRows: [],

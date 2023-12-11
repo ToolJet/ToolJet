@@ -14,7 +14,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
-import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
@@ -41,12 +41,21 @@ export const EventManager = ({
     }
     return dataQueries;
   }, shallow);
-  const { apps, appId, events: allAppEvents } = useAppInfo();
+
+  const {
+    appId,
+    apps,
+    events: allAppEvents,
+  } = useAppDataStore((state) => ({
+    appId: state.appId,
+    apps: state.apps,
+    events: state.events,
+  }));
 
   const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
     useAppDataActions();
 
-  const currentEvents = allAppEvents.filter((event) => {
+  const currentEvents = allAppEvents?.filter((event) => {
     if (customEventRefs) {
       if (event.event.ref !== customEventRefs.ref) {
         return false;

@@ -15,6 +15,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
+import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
@@ -46,7 +47,6 @@ export const SubContainer = ({
   onComponentHover,
   hoveredComponent,
   sideBarDebugger,
-  selectedComponents,
   onOptionChange,
   exposedVariables,
   addDefaultChildren = false,
@@ -402,6 +402,7 @@ export const SubContainer = ({
     let newBoxes = { ...boxes };
 
     const subContainerHeight = canvasBounds.height - 30;
+    const selectedComponents = useEditorStore.getState().selectedComponents;
 
     if (selectedComponents) {
       for (const selectedComponent of selectedComponents) {
@@ -647,7 +648,6 @@ export const SubContainer = ({
                   removeComponent,
                   currentLayout,
                   deviceWindowWidth,
-                  selectedComponents,
                   darkMode,
                   readOnly,
                   onComponentHover,
