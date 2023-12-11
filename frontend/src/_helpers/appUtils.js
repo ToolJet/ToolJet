@@ -830,8 +830,14 @@ export function getQueryVariables(options, state) {
 export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}, hasParamSupport = false) {
   const options = getQueryVariables(query.options, getCurrentState());
 
-  const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  const queryPanelState = useQueryPanelStore.getState();
+  const { queryPreviewData } = queryPanelState;
+  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+
   setPreviewLoading(true);
+  if (queryPreviewData) {
+    setPreviewData('');
+  }
 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
@@ -945,6 +951,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
   let dataQuery = {};
 
+  // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  const queryPanelState = useQueryPanelStore.getState();
+  const { queryPreviewData } = queryPanelState;
+  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+  if (parameters?.shouldSetPreviewData) {
+    setPreviewLoading(true);
+    queryPreviewData && setPreviewData('');
+  }
+
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
@@ -1046,6 +1061,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               errorData = data;
               break;
           }
+          if (parameters?.shouldSetPreviewData) {
+            setPreviewLoading(false);
+            setPreviewData(errorData);
+          }
           // errorData = query.kind === 'runpy' ? data.data : data;
           useCurrentStateStore.getState().actions.setErrors({
             [queryName]: {
@@ -1084,6 +1103,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         } else {
           let rawData = data.data;
           let finalData = data.data;
+
+          if (parameters?.shouldSetPreviewData) {
+            setPreviewLoading(false);
+            setPreviewData(finalData);
+          }
 
           if (dataQuery.options.enableTransformation) {
             finalData = await runTransformation(
