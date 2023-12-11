@@ -337,9 +337,12 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
     for (const componentId in data) {
       const component = data[componentId];
+
+      if (!component) return;
+
       const componentData = component['component'];
 
-      if (!componentData.component) return;
+      if (!componentData?.component) return;
 
       let skipComponent = false;
       const transformedComponent: Component = new Component();
@@ -349,7 +352,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       const isParentTabOrCalendar = this.isChildOfTabsOrCalendar(component, allComponents, parentId);
 
       if (isParentTabOrCalendar) {
-        const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+        const childTabId = component?.parent.split('-')[component?.parent.split('-').length - 1];
         const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
         const mappedParentId = componentsMapping[_parentId];
 
@@ -387,7 +390,9 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   }
 
   isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-    if (componentParentId) {
+    if (allComponents.length === 0) return false;
+
+    if (componentParentId && component) {
       const parentId = component?.parent?.split('-').slice(0, -1).join('-');
 
       const parentComponent = allComponents.find((comp) => comp.id === parentId);
