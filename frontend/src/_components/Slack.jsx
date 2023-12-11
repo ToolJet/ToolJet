@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
-
+import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
 import { retrieveWhiteLabelText } from '../_helpers/utils';
 
@@ -27,20 +27,24 @@ const Slack = ({
       scope = `${scope},chat:write`;
     }
 
-    datasourceService.fetchOauth2BaseUrl(provider).then((data) => {
-      const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
-      if (selectedDataSource?.id) {
-        localStorage.setItem('sourceWaitingForOAuth', selectedDataSource.id);
-        localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
-      } else {
+    datasourceService
+      .fetchOauth2BaseUrl(provider)
+      .then((data) => {
+        const authUrl = `${data.url}&scope=${scope}&access_type=offline&prompt=select_account`;
+
         localStorage.setItem('sourceWaitingForOAuth', 'newSource');
-      }
-      optionchanged('provider', provider).then(() => {
-        optionchanged('oauth2', true);
+        localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+
+        optionchanged('provider', provider).then(() => {
+          optionchanged('oauth2', true);
+        });
+        setAuthStatus('waiting_for_token');
+        window.open(authUrl);
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+        setAuthStatus(null);
       });
-      setAuthStatus('waiting_for_token');
-      window.open(authUrl);
-    });
   }
 
   function saveDataSource() {

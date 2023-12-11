@@ -13,10 +13,10 @@ const BlockOptions = (props) => {
   const workspaceId = getWorkspaceId();
   const navigate = useNavigate();
 
-  const defaultDataSources = availableDataSources.filter(item => item.kind === 'restapi' || item.kind === 'runjs');
-  const actualDataSources = availableDataSources.filter(item => item.kind !== 'restapi' && item.kind !== 'runjs');
+  const defaultDataSources = availableDataSources.filter((item) => item.kind === 'restapi' || item.kind === 'runjs');
+  const actualDataSources = availableDataSources.filter((item) => item.kind !== 'restapi' && item.kind !== 'runjs');
 
-  defaultDataSources.push({kind:'If condition', id:'if', name:'If condition'})
+  defaultDataSources.push({ kind: 'If condition', id: 'if', name: 'If condition' });
 
   return (
     <div
@@ -26,16 +26,18 @@ const BlockOptions = (props) => {
         left: 0,
       }}
     >
-      <div className="block-option-container" style={style} ref={node}> 
+      <div className="block-option-container" style={style} ref={node}>
         <div className="add-new">
           <AddGrayIcon />
           <span>Add new block</span>
         </div>
 
-        <DataSourceSelect workflowDataSources={actualDataSources} onNewNode={onNewNode} defaultDataSources={defaultDataSources} />
-
+        <DataSourceSelect
+          workflowDataSources={actualDataSources}
+          onNewNode={onNewNode}
+          defaultDataSources={defaultDataSources}
+        />
       </div>
-
     </div>
   );
 };

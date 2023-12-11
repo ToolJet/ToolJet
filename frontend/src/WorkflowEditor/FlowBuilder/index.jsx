@@ -173,9 +173,9 @@ function FlowBuilder(_props) {
     if (node.type !== 'input' && node.type !== 'output') setSelectedNode(node);
   }, []);
 
-  var maxTopValue = 300
+  var maxTopValue = 300;
   const maxLeftValue = 105;
-  const minTopValue = 50; 
+  const minTopValue = 50;
 
   if (showBlockOptions?.y >= 250) {
     maxTopValue = 250;
@@ -183,19 +183,18 @@ function FlowBuilder(_props) {
 
   const topValue = Math.min(Math.max(showBlockOptions?.y, minTopValue), maxTopValue);
 
-
-  const blockOptionsStyle = { 
+  const blockOptionsStyle = {
     left: showBlockOptions?.x < maxLeftValue ? `${maxLeftValue}px` : showBlockOptions?.x,
     top: `${topValue}px`,
     position: 'absolute',
     // overflow: 'scroll',
-  }
+  };
 
   const handleMouseDownEvent = () => {
-    editorSessionActions.hideLeftDrawer()
-    setShowBlockOptions(null)
-  }
-  
+    editorSessionActions.hideLeftDrawer();
+    setShowBlockOptions(null);
+  };
+
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
@@ -236,8 +235,7 @@ function FlowBuilder(_props) {
         />
       )}
       {
-        <Modal className="show-node-modal" show={selectedNode} onHide={() => setSelectedNode(null)}
-        >
+        <Modal className="show-node-modal" show={selectedNode} onHide={() => setSelectedNode(null)}>
           <ModalContent node={selectedNode} onClose={() => setSelectedNode(null)} />
         </Modal>
       }

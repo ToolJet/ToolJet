@@ -302,10 +302,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                           cell.column.id === 'selection'
                             ? `${cell.row.values?.id}-checkbox`
                             : `id-${cell.row.values?.id}-column-${cell.column.id}`;
+                        const cellValue = cell.value === null ? '' : cell.value;
                         return (
                           <td
                             key={`cell.value-${index}`}
-                            title={cell.value || ''}
+                            title={cellValue || ''}
                             className="table-cell"
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}

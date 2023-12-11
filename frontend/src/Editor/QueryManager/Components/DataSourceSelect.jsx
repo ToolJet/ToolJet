@@ -51,7 +51,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources]);
 
-  const availableDataSources = workflowDataSources ? workflowDataSources : userDefinedSources
+  const availableDataSources = workflowDataSources ? workflowDataSources : userDefinedSources;
 
   useEffect(() => {
     setUserDefinedSourcesOpts(
@@ -114,26 +114,26 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
     {
       label: (
         <div>
-        <span className="color-slate9" style={{ fontWeight: 500 }}>
-          Defaults
-        </span>
-      </div>
+          <span className="color-slate9" style={{ fontWeight: 500 }}>
+            Defaults
+          </span>
+        </div>
       ),
       isDisabled: true,
-      options :defaultDataSources?.map((source) => ({
-          label: (
-            <div>
-              <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.kind}</span>
-            </div>
-          ),
-          value:source.name,
-          source,
-        })),
+      options: defaultDataSources?.map((source) => ({
+        label: (
+          <div>
+            <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.kind}</span>
+          </div>
+        ),
+        value: source.name,
+        source,
+      })),
     },
     ...userDefinedSourcesOpts,
   ];
 
-  const dataSourceList = workflowDataSources && workflowDataSources ? dataSourcesAvailable : DataSourceOptions
+  const dataSourceList = workflowDataSources && workflowDataSources ? dataSourcesAvailable : DataSourceOptions;
 
   const handleKeyDown = (event) => {
     if (event.key === 'Escape') {
@@ -144,9 +144,13 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
   return (
     <div>
       <Select
-        onChange={({ source } = {}) => source?.id !== 'if' && workflowDataSources ? onNewNode(source.kind, source.id, source.plugin_id) 
-        : source && source?.id === 'if' ? onNewNode('if')
-        : handleChangeDataSource(source)}
+        onChange={({ source } = {}) =>
+          source?.id !== 'if' && workflowDataSources
+            ? onNewNode(source.kind, source.id, source.plugin_id)
+            : source && source?.id === 'if'
+            ? onNewNode('if')
+            : handleChangeDataSource(source)
+        }
         classNames={{
           menu: () => 'tj-scrollbar',
         }}

@@ -525,7 +525,9 @@ export class DataSourcesService {
     for (const option of optionsWithOauth) {
       if (option['encrypted']) {
         const existingCredentialId =
-          dataSource.options[option['key']] && dataSource.options[option['key']]['credential_id'];
+          dataSource?.options &&
+          dataSource.options[option['key']] &&
+          dataSource.options[option['key']]['credential_id'];
 
         if (existingCredentialId) {
           (option['value'] || option['value'] === '') &&
