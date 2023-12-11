@@ -84,6 +84,10 @@ export const Code = ({
     onChange(param, 'value', value, paramType);
   }
 
+  function onVisibilityChange(value) {
+    onChange({ name: 'iconVisibility' }, 'value', value, 'styles');
+  }
+
   const options = paramMeta?.options || {};
 
   const getfieldName = React.useMemo(() => {
@@ -99,6 +103,7 @@ export const Code = ({
         lineWrapping={true}
         className={options.className}
         onChange={(value) => handleCodeChanged(value)}
+        onVisibilityChange={(value) => onVisibilityChange(value)}
         componentName={`component/${componentName}::${getfieldName}`}
         type={paramMeta?.type}
         paramName={param.name}

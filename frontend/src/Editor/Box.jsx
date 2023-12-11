@@ -149,6 +149,7 @@ export const Box = memo(
     sideBarDebugger,
     readOnly,
     childComponents,
+    isResizing,
   }) => {
     const { t } = useTranslation();
     const backgroundColor = yellow ? 'yellow' : '';
@@ -349,6 +350,7 @@ export const Box = memo(
                 resetComponent={() => setResetStatus(true)}
                 childComponents={childComponents}
                 dataCy={`draggable-widget-${String(component.name).toLowerCase()}`}
+                isResizing={isResizing}
               ></ComponentToRender>
             ) : (
               <></>

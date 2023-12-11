@@ -204,7 +204,10 @@ export const DraggableBox = React.memo(
       if (selectionInProgress) return;
       setHoveredComponent(id);
     };
-
+    function isVerticalResizingAllowed() {
+      // Return true if vertical resizing is allowed, false otherwise
+      return mode === 'edit' && component.component !== 'TextInput' && !readOnly;
+    }
     return (
       <div
         className={
@@ -261,7 +264,16 @@ export const DraggableBox = React.memo(
               }}
               resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
               resizeHandleStyles={resizerStyles}
-              enableResizing={mode === 'edit' && !readOnly}
+              enableResizing={{
+                top: isVerticalResizingAllowed(),
+                right: true,
+                bottom: isVerticalResizingAllowed(),
+                left: true,
+                topRight: isVerticalResizingAllowed(),
+                bottomRight: isVerticalResizingAllowed(),
+                bottomLeft: isVerticalResizingAllowed(),
+                topLeft: isVerticalResizingAllowed(),
+              }}
               disableDragging={mode !== 'edit' || readOnly}
               onDragStop={(e, direction) => {
                 setDragging(false);
@@ -316,6 +328,7 @@ export const DraggableBox = React.memo(
                     allComponents={allComponents}
                     sideBarDebugger={sideBarDebugger}
                     childComponents={childComponents}
+                    isResizing={isResizing}
                   />
                 </ErrorBoundary>
               </div>
