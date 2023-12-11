@@ -39,7 +39,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       entityManager,
       async (entityManager: EntityManager, skip: number, take: number) => {
         const ids = appVersions.slice(skip, skip + take).map((appVersion) => appVersion.id);
-        if (ids.length === 0) {
+        if (!ids || ids.length === 0) {
           return [];
         }
         return entityManager.query(`SELECT * FROM app_versions WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})`);
@@ -227,7 +227,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       for (const dataQuery of dataQueries) {
         const queryEvents = dataQuery?.options?.events || [];
 
-        if (queryEvents.length > 0) {
+        if (!queryEvents && queryEvents.length > 0) {
           queryEvents.forEach(async (event, index) => {
             const newEvent = {
               name: event.eventId || `${dataQuery.name} Query Event ${index}`,
@@ -287,6 +287,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       where: { appVersionId: versionId },
     });
 
+    if (!allEvents || allEvents.length === 0) return;
+
     for (const event of allEvents) {
       const eventDefinition = event.event;
 
@@ -323,6 +325,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         ...data[key],
       };
     });
+
+    if (!allComponents || allComponents.length === 0) return [];
 
     for (const componentId in data) {
       const component = data[componentId];
