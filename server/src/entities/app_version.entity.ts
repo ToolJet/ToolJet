@@ -49,6 +49,9 @@ export class AppVersion extends BaseEntity {
   @Column({ name: 'promoted_from' })
   promotedFrom: string;
 
+  @Column()
+  migrated: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
