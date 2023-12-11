@@ -132,7 +132,10 @@ export class ComponentsService {
     }, appVersionId);
   }
 
-  async componentLayoutChange(componenstLayoutDiff: Record<string, { layouts: LayoutData }>, appVersionId: string) {
+  async componentLayoutChange(
+    componenstLayoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
+    appVersionId: string
+  ) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
         const doesComponentExist = await manager.findAndCount(Component, { id: componentId });
@@ -145,7 +148,7 @@ export class ComponentsService {
           };
         }
 
-        const { layouts } = componenstLayoutDiff[componentId];
+        const { layouts, component } = componenstLayoutDiff[componentId];
 
         for (const type in layouts) {
           const componentLayout = await manager.findOne(Layout, { componentId, type });
@@ -156,6 +159,9 @@ export class ComponentsService {
             } as Partial<Layout>;
 
             await manager.update(Layout, { id: componentLayout.id }, layout);
+          }
+          if (component) {
+            await manager.update(Component, { id: componentId }, { parent: component.parent });
           }
         }
       }

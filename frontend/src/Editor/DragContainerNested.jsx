@@ -3,7 +3,7 @@ import Moveable, { makeAble } from 'react-moveable';
 import './DragContainer.css';
 import { isEmpty } from 'lodash';
 import { useActiveGrid } from '@/_stores/gridStore';
-const NO_OF_GRIDS = 24;
+const NO_OF_GRIDS = 43;
 
 const MouseEnterLeaveAble = makeAble('enterLeave', {
   mouseEnter(moveable) {
@@ -65,7 +65,7 @@ export default function DragContainerNested({
 
   return (
     <div className="root h-100">
-      <div className="container p-0 h-100">
+      <div className={`container p-0 h-100 drag-container-parent`} component-id={parent}>
         {/* <button onClick={() => setList((list) => [...list, { id: new Date().getTime() }])}>Add</button> */}
         {list.map((i) => (
           <div

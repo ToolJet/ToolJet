@@ -18,8 +18,9 @@ import { useMounted } from '@/_hooks/use-mount';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainerNested from './DragContainerNested';
+import { useNoOfGrid } from '@/_stores/gridStore';
 
-const NO_OF_GRIDS = 24;
+// const NO_OF_GRIDS = 43;
 
 export const SubContainer = ({
   mode,
@@ -60,6 +61,8 @@ export const SubContainer = ({
   setSubContainerWidths,
   parentGridWidth,
   subContainerWidths,
+  turnOffAutoLayout,
+  draggedSubContainer,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -76,8 +79,9 @@ export const SubContainer = ({
     }),
     shallow
   );
+  const [noOfGrids] = useNoOfGrid();
 
-  const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
+  const gridWidth = getContainerCanvasWidth() / noOfGrids;
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -127,7 +131,7 @@ export const SubContainer = ({
   const containerWidth = getContainerCanvasWidth();
 
   useEffect(() => {
-    setSubContainerWidths(parent, containerWidth / NO_OF_GRIDS);
+    setSubContainerWidths(parent, containerWidth / noOfGrids);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerWidth]);
 
@@ -155,7 +159,7 @@ export const SubContainer = ({
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
 
-          const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / NO_OF_GRIDS;
+          const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / noOfGrids;
           const height = layout.height ? layout.height : componentMeta.defaultSize.height;
           const newComponentDefinition = {
             ...componentData.definition.properties,
@@ -320,6 +324,10 @@ export const SubContainer = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
+        if (item.currentLayout === 'mobile' && appDefinition.pages[currentPageId]?.autoComputeLayout) {
+          turnOffAutoLayout();
+          return false;
+        }
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
         const parentComp =
@@ -470,7 +478,7 @@ export const SubContainer = ({
     }
 
     //round the width to nearest multiple of gridwidth before converting to %
-    let currentWidth = (_containerCanvasWidth * width) / NO_OF_GRIDS;
+    let currentWidth = (_containerCanvasWidth * width) / noOfGrids;
 
     if (currentWidth > _containerCanvasWidth) {
       currentWidth = _containerCanvasWidth;
@@ -478,7 +486,7 @@ export const SubContainer = ({
 
     let newWidth = currentWidth + deltaWidth;
     newWidth = Math.round(newWidth / gridWidth) * gridWidth;
-    width = (newWidth * NO_OF_GRIDS) / _containerCanvasWidth;
+    width = (newWidth * noOfGrids) / _containerCanvasWidth;
 
     height = height + deltaHeight;
 
@@ -503,7 +511,7 @@ export const SubContainer = ({
   }
 
   const onResizeStop2 = (id, height, width, x, y) => {
-    const newWidth = (width * NO_OF_GRIDS) / _containerCanvasWidth;
+    const newWidth = (width * noOfGrids) / _containerCanvasWidth;
     let newBoxes = {
       ...boxes,
       [id]: {
@@ -706,7 +714,9 @@ export const SubContainer = ({
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
-      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? 'show-grid' : ''}`}
+      className={`real-canvas ${
+        (isDragging || isResizing || draggedSubContainer === parent) && !readOnly ? 'show-grid' : ''
+      }`}
     >
       <DragContainerNested
         boxes={Object.keys(childWidgets).map((key) => ({ ...boxes[key], id: key }))}
