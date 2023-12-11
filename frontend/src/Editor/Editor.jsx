@@ -61,11 +61,13 @@ import { computeAppDiff, computeComponentPropertyDiff, isParamFromTableColumn, r
 import { setCookie } from '@/_helpers/cookie';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
+import { useNoOfGrid } from '@/_stores/gridStore';
 import { useMounted } from '@/_hooks/use-mount';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
+import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 
 setAutoFreeze(false);
 enablePatches();
@@ -94,6 +96,7 @@ const EditorComponent = (props) => {
 
   const { setAppVersions } = useAppVersionActions();
   const { isVersionReleased, editingVersion, releasedVersionId } = useAppVersionState();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const {
     appDefinition,
@@ -138,6 +141,7 @@ const EditorComponent = (props) => {
   const [selectionInProgress, setSelectionInProgress] = useState(false);
   const [hoveredComponent, setHoveredComponent] = useState(null);
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
+  const [noOfGrids] = useNoOfGrid();
 
   const [isDragging, setIsDragging] = useState(false);
 
@@ -604,6 +608,7 @@ const EditorComponent = (props) => {
   };
 
   const onAreaSelection = (e) => {
+    // console.log("Selected=>", e);
     e.added.forEach((el) => {
       el.classList.add('resizer-select');
     });
@@ -1237,7 +1242,12 @@ const EditorComponent = (props) => {
   };
 
   const moveComponents = (direction) => {
-    const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
+    const isAutoComputeOn = appDefinition.pages[currentPageId]?.autoComputeLayout && currentLayout === 'mobile';
+    if (isAutoComputeOn) {
+      turnOffAutoLayout();
+      return;
+    }
+    const gridWidth = (1 * 100) / noOfGrids; // width of the canvas grid in percentage
     const _appDefinition = _.cloneDeep(appDefinition);
     let newComponents = _appDefinition?.pages[currentPageId].components;
 
@@ -1247,10 +1257,10 @@ const EditorComponent = (props) => {
 
       switch (direction) {
         case 'ArrowLeft':
-          left = left - gridWidth;
+          left = left - 1;
           break;
         case 'ArrowRight':
-          left = left + gridWidth;
+          left = left + 1;
           break;
         case 'ArrowDown':
           top = top + 10;
@@ -1527,6 +1537,23 @@ const EditorComponent = (props) => {
     });
   };
 
+  const turnOffAutoComputeLayout = ({ pageId, autoComputeLayout }) => {
+    updateEditorState({
+      isUpdatingEditorStateInProcess: true,
+    });
+
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    newAppDefinition.pages[pageId].autoComputeLayout = autoComputeLayout ?? false;
+
+    switchPage(pageId);
+    appDefinitionChanged(newAppDefinition, {
+      pageDefinitionChanged: true,
+    });
+  };
+
   const hidePage = (pageId) => {
     updateEditorState({
       isUpdatingEditorStateInProcess: true,
@@ -1666,6 +1693,13 @@ const EditorComponent = (props) => {
       generalAppDefinitionChanged: true,
     });
   };
+
+  async function turnOffAutoLayout() {
+    const result = await confirm('Turn off Auto Layout ?', 'Turn off Auto Layout');
+    if (result) {
+      turnOffAutoComputeLayout({ pageId: currentPageId, autoComputeLayout: false });
+    }
+  }
 
   useEffect(() => {
     const previewQuery = queryString.stringify({ version: editingVersion?.name });
@@ -1897,6 +1931,7 @@ const EditorComponent = (props) => {
                     {defaultComponentStateComputed && (
                       <>
                         <Container
+                          turnOffAutoLayout={turnOffAutoLayout}
                           canvasWidth={getCanvasWidth()}
                           socket={socket}
                           appDefinition={appDefinition}
@@ -1979,6 +2014,7 @@ const EditorComponent = (props) => {
           </div>
         </DndProvider>
       </EditorContextWrapper>
+      <ConfirmDialog confirmButtonText="Turn off" darkMode={props.darkMode} />
     </div>
   );
 };

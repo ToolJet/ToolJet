@@ -35,6 +35,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { camelizeKeys } from 'humps';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useGridStore } from '@/_stores/gridStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1631,9 +1632,10 @@ export const addNewWidgetToTheEditor = (
 ) => {
   const componentMetaData = _.cloneDeep(componentMeta);
   const componentData = _.cloneDeep(componentMetaData);
+  const noOfGrid = useGridStore.getState().noOfGrid;
 
   const defaultWidth = isInSubContainer
-    ? (componentMetaData.defaultSize.width * 100) / 43
+    ? (componentMetaData.defaultSize.width * 100) / noOfGrid
     : componentMetaData.defaultSize.width;
   const defaultHeight = componentMetaData.defaultSize.height;
 
@@ -1673,7 +1675,7 @@ export const addNewWidgetToTheEditor = (
     [left, top] = snapToGrid(subContainerWidth, left, top);
   }
 
-  const gridWidth = subContainerWidth / 24;
+  const gridWidth = subContainerWidth / noOfGrid;
   left = Math.round(left / gridWidth);
   console.log('Top calc', { top, initialClientOffset, delta, zoomLevel, offsetFromTopOfWindow, subContainerWidth });
   // left = (left * 100) / subContainerWidth;
@@ -1711,7 +1713,7 @@ export const addNewWidgetToTheEditor = (
 };
 
 export function snapToGrid(canvasWidth, x, y) {
-  const gridX = canvasWidth / 43;
+  const gridX = canvasWidth / useGridStore.getState().noOfGrid;
 
   const snappedX = Math.round(x / gridX) * gridX;
   const snappedY = Math.round(y / 10) * 10;

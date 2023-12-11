@@ -15,6 +15,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import { useNoOfGrid } from '@/_stores/gridStore';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -42,6 +43,7 @@ export const GlobalSettings = ({
     }),
     shallow
   );
+  const [noOfGrids, setNoOfGrids] = useNoOfGrid();
 
   const { app, slug: oldSlug } = useAppInfo();
 
@@ -283,6 +285,32 @@ export const GlobalSettings = ({
                       </option>
                       <option value="px" selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}>
                         px
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex mb-3">
+                <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
+                  No. of Grids
+                </span>
+                <div className="position-relative">
+                  <div className="global-settings-width-input-container">
+                    <select
+                      data-cy={`dropdown-max-canvas-width-type`}
+                      className="dropdown-max-canvas-width-type"
+                      style={{ borderRadius: '6px' }}
+                      aria-label="Select canvas grid no"
+                      onChange={(event) => {
+                        setNoOfGrids(event.target.value);
+                      }}
+                    >
+                      <option value="43" selected={noOfGrids == 43}>
+                        43
+                      </option>
+                      <option value="24" selected={noOfGrids == 24}>
+                        24
                       </option>
                     </select>
                   </div>

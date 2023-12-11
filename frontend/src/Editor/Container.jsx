@@ -24,6 +24,8 @@ import _, { cloneDeep } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
+import { useNoOfGrid } from '@/_stores/gridStore';
+import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 // eslint-disable-next-line import/no-unresolved
 
 // const noOfGrids = 24;
@@ -49,12 +51,16 @@ export const Container = ({
   handleRedo,
   sideBarDebugger,
   currentPageId,
+  turnOffAutoLayout,
 }) => {
   // Dont update first time to skip
   // redundant save on app definition load
   const firstUpdate = useRef(true);
-  const [noOfGrids, setNoOfGrids] = useState(24);
+  const [noOfGrids, setNoOfGrids] = useNoOfGrid();
+  const { confirm, ConfirmDialog } = useConfirm();
+  // import { useActiveGrid } from '@/_stores/gridStore';
   const [subContainerWidths, setSubContainerWidths] = useState({});
+  const [draggedSubContainer, setDraggedSubContainer] = useState(false);
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
     (state) => ({
@@ -99,23 +105,26 @@ export const Container = ({
   const [canvasHeight, setCanvasHeight] = useState(null);
 
   useEffect(() => {
-    if (currentLayout === 'mobile') {
-      setNoOfGrids(6);
+    if (currentLayout === 'mobile' && appDefinition.pages[currentPageId]?.autoComputeLayout) {
       const mobLayouts = Object.keys(boxes).map((key) => {
         return { ...cloneDeep(boxes[key]?.layouts?.desktop), i: key };
       });
       const updatedBoxes = cloneDeep(boxes);
-      let newmMobLayouts = correctBounds(mobLayouts, { cols: 6 });
-      newmMobLayouts = compact(newmMobLayouts, 'vertical', 6);
+      let newmMobLayouts = correctBounds(mobLayouts, { cols: 12 });
+      newmMobLayouts = compact(newmMobLayouts, 'vertical', 12);
       Object.keys(boxes).forEach((id) => {
         const mobLayout = newmMobLayouts.find((layout) => layout.i === id);
-        updatedBoxes[id].layouts.mobile = mobLayout;
+        updatedBoxes[id].layouts.mobile = {
+          left: mobLayout.left,
+          height: mobLayout.height,
+          top: mobLayout.top,
+          width: mobLayout.width,
+        };
       });
       setBoxes({ ...updatedBoxes });
       // console.log('currentLayout', data);
-    } else {
-      setNoOfGrids(24);
     }
+    setNoOfGrids(currentLayout === 'mobile' ? 12 : 43);
   }, [currentLayout]);
 
   const paramUpdatesOptsRef = useRef({});
@@ -280,6 +289,11 @@ export const Container = ({
     () => ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
+        if (item.currentLayout === 'mobile' && appDefinition.pages[currentPageId]?.autoComputeLayout) {
+          turnOffAutoLayout();
+          return false;
+        }
+
         if (item.parent) {
           return;
         }
@@ -378,8 +392,10 @@ export const Container = ({
   );
 
   const onResizeStop2 = (boxList, id, height, width, x, y) => {
-    const newBoxes = boxList.reduce((newBoxList, { id, height, width, x, y }) => {
-      const newWidth = (width * noOfGrids) / canvasWidth;
+    const newBoxes = boxList.reduce((newBoxList, { id, height, width, x, y, gw }) => {
+      const _canvasWidth = gw ? gw * noOfGrids : canvasWidth;
+      const newWidth = (width * noOfGrids) / _canvasWidth;
+      gw = gw ? gw : gridWidth;
       return {
         ...newBoxList,
         [id]: {
@@ -391,7 +407,7 @@ export const Container = ({
               width: newWidth,
               height,
               top: y,
-              left: Math.round(x / gridWidth),
+              left: Math.round(x / gw),
             },
           },
         },
@@ -766,6 +782,7 @@ export const Container = ({
           isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
           childComponents={childComponents[key]}
           containerProps={{
+            turnOffAutoLayout,
             mode,
             snapToGrid,
             onComponentClick,
@@ -793,6 +810,7 @@ export const Container = ({
             setSubContainerWidths: (id, width) => setSubContainerWidths((widths) => ({ ...widths, [id]: width })),
             parentGridWidth: gridWidth,
             subContainerWidths,
+            draggedSubContainer,
           }}
           isVersionReleased={isVersionReleased}
         />
@@ -809,7 +827,7 @@ export const Container = ({
         drop(el);
       }}
       style={{ ...styles, height: canvasHeight }}
-      className={cx('real-canvas show-grid', {
+      className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
       })}
       id="real-canvas"
@@ -852,6 +870,11 @@ export const Container = ({
         setIsDragging={setIsDragging}
         currentLayout={currentLayout}
         subContainerWidths={subContainerWidths}
+        turnOffAutoLayout={turnOffAutoLayout}
+        currentPageId={currentPageId}
+        autoComputeLayout={appDefinition.pages[currentPageId]?.autoComputeLayout}
+        setDraggedSubContainer={setDraggedSubContainer}
+        draggedSubContainer={draggedSubContainer}
       />
       {/* {Object.keys(boxes).map((key) => {
         const box = boxes[key];

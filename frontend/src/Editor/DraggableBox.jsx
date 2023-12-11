@@ -12,8 +12,9 @@ import ErrorBoundary from './ErrorBoundary';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
+import { useNoOfGrid } from '@/_stores/gridStore';
 
-const NO_OF_GRIDS = 24;
+// const noOfGrid = 43;
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -101,6 +102,7 @@ export const DraggableBox = React.memo(
     const [isResizing, setResizing] = useState(false);
     const [isDragging2, setDragging] = useState(false);
     const [canDrag, setCanDrag] = useState(true);
+    const [noOfGrid] = useNoOfGrid();
     const {
       currentLayout,
       setHoveredComponent,
@@ -192,8 +194,8 @@ export const DraggableBox = React.memo(
     };
 
     const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
-    const gridWidth = canvasWidth / NO_OF_GRIDS;
-    const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
+    const gridWidth = canvasWidth / noOfGrid;
+    const width = (canvasWidth * layoutData.width) / noOfGrid;
 
     const configWidgetHandlerForModalComponent =
       !isSelectedComponent &&

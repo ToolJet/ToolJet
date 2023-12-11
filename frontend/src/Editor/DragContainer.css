@@ -6,13 +6,13 @@
 	left: 100px; */
 	/* line-height: 100px; */
 	text-align: center;
-	background: #ee8;
-	color: #333;
+	/* background: #ee8; */
+	/* color: #333; */
 	/* font-weight: bold; */
-	border: 1px solid #333;
 	box-sizing: border-box;
 	/* transition: transform 0.1s; */
 }
+
 .moveable-control-box>.moveable-control-box:not(.moveable-control-box-d-block, .moveable-dragging){
 	visibility: hidden !important;
 }
@@ -25,4 +25,48 @@
 
 .moveable-control-box {
 	background: red;
+}
+
+.moveable-e.moveable-control{
+	/* height: 24px !important;
+    top: -5px !important; */
+    border-radius: 2px !important;
+    border: 1px solid #3E63DD !important;
+    background: #fff !important;
+    width: 6px !important;
+    left: 4px !important;
+}
+
+.moveable-w.moveable-control{
+	/* height: 24px !important;
+    top: -5px !important; */
+    border-radius: 2px !important;
+    border: 1px solid #3E63DD !important;
+    background: #fff !important;
+    width: 6px !important;
+    left: 4px !important;
+}
+
+.moveable-n.moveable-control{
+	/* height: 24px !important; */
+    top: 4px !important;
+    border-radius: 2px !important;
+    border: 1px solid #3E63DD !important;
+    background: #fff !important;
+    height: 6px !important;
+    /* left: 3px !important; */
+}
+
+.moveable-s.moveable-control{
+	/* height: 24px !important; */
+    top: 4px !important;
+    border-radius: 2px !important;
+    border: 1px solid #3E63DD !important;
+    background: #fff !important;
+    height: 6px !important;
+    /* left: 3px !important; */
+}
+
+.grid-guide-lines {
+	background: #8DA4EF !important;
 }
