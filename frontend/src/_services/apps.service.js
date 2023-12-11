@@ -27,6 +27,7 @@ export const appsService = {
   getTables,
   getWorkflows,
   getAppsLimit,
+  getWorkflowLimit,
 };
 
 function getWorkflows(id) {
@@ -215,4 +216,9 @@ function cloneResource(body) {
 function getTables(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
+}
+
+function getWorkflowLimit(type) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/workflowlimit/${type}`, requestOptions).then(handleResponse);
 }

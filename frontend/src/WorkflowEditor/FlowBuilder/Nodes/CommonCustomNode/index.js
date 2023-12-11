@@ -19,7 +19,7 @@ function CommonCustomNode(props) {
       <Handle
         type="target"
         position="left"
-        isConnectable={false}
+        isConnectable={true}
         isValidConnection={(_connection) => true}
         className="node-handle left"
       />

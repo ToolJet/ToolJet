@@ -15,12 +15,22 @@ export class AppCountGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    // If it's not app creation flow - Don't execute further
+    if (request.body?.type !== 'front-end') return true;
+
     const appCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.APP_COUNT);
     if (appCount === LICENSE_LIMIT.UNLIMITED) {
       return true;
     }
 
-    if ((await this.appsRepository.count()) >= appCount) {
+    if (
+      (await this.appsRepository.count({
+        where: {
+          type: 'front-end',
+        },
+      })) >= appCount
+    ) {
       throw new HttpException('You have reached your maximum limit for apps.', 451);
     }
     return true;

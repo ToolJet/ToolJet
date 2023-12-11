@@ -13,6 +13,7 @@ import {
   UseInterceptors,
   NotFoundException,
   NotImplementedException,
+  Headers,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -33,6 +34,7 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
+import { WorkflowCountGuard } from '@ee/licensing/guards/workflowcount.guard';
 import { AppCloneDto } from '@dto/app-clone.dto';
 
 @Controller('apps')
@@ -50,7 +52,19 @@ export class AppsController {
     return await this.appsService.getAppsLimit();
   }
 
-  @UseGuards(JwtAuthGuard, AppCountGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('workflowlimit/:limitFor')
+  async getWorkflowLimit(@Headers() headers: any, @Param('limitFor') limitFor: string) {
+    // limitFor - instance | workspace
+    const params = {
+      limitFor: limitFor,
+      ...(headers['tj-workspace-id'] && { workspaceId: headers['tj-workspace-id'] }),
+    };
+
+    return await this.appsService.getWorkflowLimit(params);
+  }
+
+  @UseGuards(JwtAuthGuard, AppCountGuard, WorkflowCountGuard)
   @Post()
   async create(@User() user, @Body() appCreateDto: AppCreateDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
@@ -477,7 +491,10 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
+    app.type === 'workflow'
+      ? await this.appsService.updateWorflowVersion(version, versionEditDto, app.organizationId)
+      : await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
+
     return;
   }
 

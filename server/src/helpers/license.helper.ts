@@ -28,6 +28,7 @@ export enum LICENSE_FIELD {
   DOMAINS = 'domains',
   STATUS = 'status',
   META = 'metadata',
+  WORKFLOWS = 'workflows',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -40,6 +41,7 @@ export enum LICENSE_LIMITS_LABEL {
 
   //Apps
   APPS = 'Apps',
+  WORKFLOWS = 'Workflows',
 
   //Workspaces
   WORKSPACES = 'Workspaces',
