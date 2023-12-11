@@ -83,6 +83,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
 
     const commonItems = ['Table', 'Chart', 'Button', 'Text', 'Datepicker'];
     const formItems = [
+      'Form',
       'TextInput',
       'NumberInput',
       'PasswordInput',
@@ -96,7 +97,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       'Datepicker',
       'DateRangePicker',
       'FilePicker',
-      'StarRating',
+      'StarRating'
     ];
     const integrationItems = ['Map'];
     const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
