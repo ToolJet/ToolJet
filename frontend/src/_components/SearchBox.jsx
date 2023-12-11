@@ -81,7 +81,9 @@ export const SearchBox = forwardRef(
                 <SolidIcon name="remove" />
               </div>
             </span>
-          ) : ('')}
+          ) : (
+            ''
+          )}
         </div>
       </div>
     );
