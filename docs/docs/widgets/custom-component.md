@@ -31,7 +31,7 @@ The data needs to be an objects which needs to be passed as `data` props to the 
 
 ### Code
 
-This field is used to add a React code for your custom component. The packages for the custom component can be imported from [Skypack](https://www.skypack.dev/). For example, to import `React` package into the custom component it can be imported as `import React from 'https://cdn.skypack.dev/react'`.
+This field is used to add a React code for your custom component. The packages for the custom component can be imported from [Skypack](https://www.skypack.dev/) or [esm](https://esm.sh/). For example, to import `React` package into the custom component it can be imported as `import React from 'https://cdn.skypack.dev/react'`.
 
 Tooljet provides 3 props to interact with the app: `data`, `updateData` and `runQuery`.
 
