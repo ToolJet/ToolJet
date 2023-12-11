@@ -5,5 +5,5 @@ export const multiselectText = {
   noEventsMessage: "No event handlers",
   dropdwonOptionSelectAll: "Select All",
 
-  enableSelectAllOptions: "Enable select All option",
+  enableSelectAllOptions: "Enable select all option",
 };
