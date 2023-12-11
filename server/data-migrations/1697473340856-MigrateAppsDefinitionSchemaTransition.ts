@@ -280,6 +280,9 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       );
 
       migrationProgress.show();
+
+      //! Test purpose only: delete the app version if migrations are successful
+      await entityManager.delete(AppVersion, { id: version.id });
     }
   }
 
