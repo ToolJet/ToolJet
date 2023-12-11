@@ -17,6 +17,7 @@ export const Multiselect = function Multiselect({
   styles,
   exposedVariables,
   setExposedVariable,
+  setExposedVariables,
   onComponentClick,
   darkMode,
   fireEvent,
@@ -75,56 +76,56 @@ export const Multiselect = function Multiselect({
   };
 
   useEffect(() => {
-    setExposedVariable('selectOption', async function (value) {
-      if (
-        selectOptions.some((option) => option.value === value) &&
-        !selected.some((option) => option.value === value)
-      ) {
-        const newSelected = [
-          ...selected,
-          ...selectOptions.filter(
-            (option) =>
-              option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
-          ),
-        ];
-        setSelected(newSelected);
-        setExposedVariable(
-          'values',
-          newSelected.map((item) => item.value)
-        );
-        fireEvent('onSelect');
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, setSelected]);
+    const exposedVariables = {
+      selectOption: async function (value) {
+        if (
+          selectOptions.some((option) => option.value === value) &&
+          !selected.some((option) => option.value === value)
+        ) {
+          const newSelected = [
+            ...selected,
+            ...selectOptions.filter(
+              (option) =>
+                option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
+            ),
+          ];
+          setSelected(newSelected);
+          setExposedVariable(
+            'values',
+            newSelected.map((item) => item.value)
+          );
+          fireEvent('onSelect');
+        }
+      },
+      deselectOption: async function (value) {
+        if (
+          selectOptions.some((option) => option.value === value) &&
+          selected.some((option) => option.value === value)
+        ) {
+          const newSelected = [
+            ...selected.filter(function (item) {
+              return item.value !== value;
+            }),
+          ];
+          setSelected(newSelected);
+          setExposedVariable(
+            'values',
+            newSelected.map((item) => item.value)
+          );
+          fireEvent('onSelect');
+        }
+      },
+      clearSelections: async function () {
+        if (selected.length >= 1) {
+          setSelected([]);
+          setExposedVariable('values', []);
+          fireEvent('onSelect');
+        }
+      },
+    };
 
-  useEffect(() => {
-    setExposedVariable('deselectOption', async function (value) {
-      if (selectOptions.some((option) => option.value === value) && selected.some((option) => option.value === value)) {
-        const newSelected = [
-          ...selected.filter(function (item) {
-            return item.value !== value;
-          }),
-        ];
-        setSelected(newSelected);
-        setExposedVariable(
-          'values',
-          newSelected.map((item) => item.value)
-        );
-        fireEvent('onSelect');
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, setSelected]);
+    setExposedVariables(exposedVariables);
 
-  useEffect(() => {
-    setExposedVariable('clearSelections', async function () {
-      if (selected.length >= 1) {
-        setSelected([]);
-        setExposedVariable('values', []);
-        fireEvent('onSelect');
-      }
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, setSelected]);
 
