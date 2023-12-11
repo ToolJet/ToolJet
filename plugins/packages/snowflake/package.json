@@ -18,8 +18,8 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "@types/snowflake-sdk": "^1.6.12",
+    "@types/snowflake-sdk": "^1.6.17",
     "react": "^17.0.2",
-    "snowflake-sdk": "^1.7.0"
+    "snowflake-sdk": "^1.9.1"
   }
 }

@@ -110,7 +110,7 @@ describe.skip('Tooljet DB controller', () => {
         };
       });
 
-      mockedGot.mockImplementationOnce(postgrestResponse);
+      (mockedGot as unknown as jest.Mock).mockImplementationOnce(postgrestResponse);
 
       const response = await request(nestApp.getHttpServer())
         .get(
