@@ -59,15 +59,15 @@ describe("App share functionality", () => {
     cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
-    cy.wait(2000);
+    cy.wait(4000);
     cy.get(commonWidgetSelector.modalCloseButton).click();
     cy.forceClickOnCanvas();
     cy.get(commonSelectors.editorPageLogo).click();
 
     logout();
-    cy.wait(2500);
+    cy.wait(3000);
     cy.visit(`/applications/${slug}`);
-    cy.wait(2500);
+    cy.wait(3000);
 
     cy.get(commonSelectors.loginButton, { timeout: 10000 }).should(
       "be.visible"
@@ -88,9 +88,9 @@ describe("App share functionality", () => {
     cy.get(commonSelectors.editorPageLogo).click();
 
     logout();
-    cy.wait(2500);
+    cy.wait(3000);
     cy.visit(`/applications/${slug}`);
-    cy.wait(2500);
+    cy.wait(3000);
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
   });
 
