@@ -7,6 +7,7 @@ import Select from '@/_ui/Select';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useEditorActions, useEditorState } from '@/_stores/editorStore';
 
 export const CreateVersion = ({
   appId,
@@ -16,6 +17,7 @@ export const CreateVersion = ({
   showCreateAppVersion,
   setShowCreateAppVersion,
 }) => {
+  const { featureAccess } = useEditorState();
   const { current_organization_id } = authenticationService.currentSessionValue;
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -110,7 +112,7 @@ export const CreateVersion = ({
   const handleCommitEnableChange = (e) => setCommitEnabled(e.target.checked);
 
   useEffect(() => {
-    fetchOrgGit();
+    if (featureAccess?.gitSync) fetchOrgGit();
   }, []);
 
   return (
