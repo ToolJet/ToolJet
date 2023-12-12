@@ -69,7 +69,7 @@ describe("App share functionality", () => {
     cy.visit(`/applications/${slug}`);
     cy.wait(3000);
 
-    cy.get(commonSelectors.loginButton, { timeout: 10000 }).should(
+    cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
       "be.visible"
     );
 

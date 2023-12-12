@@ -17,7 +17,7 @@ describe("App slug", () => {
     before(() => {
         cy.apiLogin();
         cy.apiCreateApp(data.appName);
-        cy.wait(1000)
+        cy.wait(3000)
         cy.logoutApi()
     })
 
