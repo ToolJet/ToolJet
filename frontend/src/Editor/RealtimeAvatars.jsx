@@ -11,8 +11,10 @@ const RealtimeAvatars = ({ darkMode }) => {
   const others = useOthers();
   const othersOnSameVersionAndPage = others.filter(
     (other) =>
-      other?.presence?.editingVersionId === self?.presence.editingVersionId &&
-      other?.presence?.editingPageId === self?.presence.editingPageId
+      other?.presence &&
+      self?.presence &&
+      other?.presence?.editingVersionId === self?.presence?.editingVersionId &&
+      other?.presence?.editingPageId === self?.presence?.editingPageId
   );
 
   const getAvatarText = (presence) => presence.firstName?.charAt(0) + presence.lastName?.charAt(0);

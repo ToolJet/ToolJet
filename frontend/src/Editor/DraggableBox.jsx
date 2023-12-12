@@ -13,6 +13,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 import WidgetBox from './WidgetBox';
+import * as Sentry from '@sentry/react';
 
 const NO_OF_GRIDS = 43;
 
@@ -289,7 +290,13 @@ export const DraggableBox = React.memo(
                       configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
                     />
                   )}
-                <ErrorBoundary showFallback={mode === 'edit'}>
+                {/* Adding a sentry's error boundary to differentiate between our generic error boundary and one from editor's component  */}
+                <Sentry.ErrorBoundary
+                  fallback={<h2>Something went wrong.</h2>}
+                  beforeCapture={(scope) => {
+                    scope.setTag('errorType', 'component');
+                  }}
+                >
                   <Box
                     component={component}
                     id={id}
@@ -314,7 +321,7 @@ export const DraggableBox = React.memo(
                     sideBarDebugger={sideBarDebugger}
                     childComponents={childComponents}
                   />
-                </ErrorBoundary>
+                </Sentry.ErrorBoundary>
               </div>
             </Rnd>
           </div>
