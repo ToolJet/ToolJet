@@ -294,7 +294,7 @@ export const DraggableBox = React.memo(
                 <Sentry.ErrorBoundary
                   fallback={<h2>Something went wrong.</h2>}
                   beforeCapture={(scope) => {
-                    scope.setTag('location', 'editor');
+                    scope.setTag('errorType', 'component');
                   }}
                 >
                   <Box
