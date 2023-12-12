@@ -16,6 +16,7 @@ export const TextInput = function TextInput({
   darkMode,
   dataCy,
   isResizing,
+  adjustHeightBasedOnAlignment,
 }) {
   const textInputRef = useRef();
   const { loadingState, tooltip, disabledState, label, placeholder } = properties;
@@ -117,6 +118,12 @@ export const TextInput = function TextInput({
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
   // eslint-disable-next-line import/namespace
+
+  useEffect(() => {
+    if (alignment == 'top') adjustHeightBasedOnAlignment(true);
+    else adjustHeightBasedOnAlignment(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alignment]);
 
   const renderInput = () => (
     <>
