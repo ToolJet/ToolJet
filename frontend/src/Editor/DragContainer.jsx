@@ -133,9 +133,6 @@ export default function DragContainer({
 
   useEffect(() => {
     const groupedTargets = [...selectedComponents.map((component) => '.ele-' + component.id)];
-    // const newMovableTargets = groupedTargets.length
-    //   ? [groupedTargets.length == 1 ? groupedTargets[0] : groupedTargets]
-    //   : [];
     const newMovableTargets = groupedTargets.length ? [...groupedTargets] : [];
     if (hoveredComponent && groupedTargets?.length <= 1 && !groupedTargets.includes('.ele-' + hoveredComponent)) {
       newMovableTargets.push('.ele-' + hoveredComponent);
@@ -193,30 +190,7 @@ export default function DragContainer({
                 transform: `translate(332px, -134px)`,
                 ...getDimensions(i.id),
               }}
-              // onMouseEnter={(e) => {
-              //   try {
-              //     // console.log('onMouseEnter', e.target);
-              //     let compId;
-              //     if (e.target.classList.contains('widget-target')) {
-              //       compId = e.target.id;
-              //     } else {
-              //       compId = e.target.closest('.widget-target').id;
-              //     }
-              //     const targetComponents = Array.prototype.filter.call(
-              //       document.getElementsByClassName('rm-container')[0].children,
-              //       (child) => {
-              //         return child.classList.contains('widget-target');
-              //       }
-              //     );
-              //     const elemIndex = _.findIndex(targetComponents, ({ id }) => id === compId);
-              //     console.log('onMouseEnter =>', compId, targetComponents, elemIndex);
-              //   } catch (error) {
-              //     console.log('onMouseEnter error', error);
-              //   }
-              // }}
-              // onMouseLeave={(e) => {}}
             >
-              {/* Target {i.id} */}
               {renderWidget(i.id, undefined, (dragged) => {
                 console.log('====> dragged <=====', dragged);
                 setDraggedSubContainer(dragged);
@@ -231,16 +205,10 @@ export default function DragContainer({
             mouseTest: true,
           }}
           flushSync={flushSync}
-          // target={movableTargets}
-          // target={'.move-target'}
-          // target={draggedSubContainer ? 'nothing1' : groupedTargets.length ? [...groupedTargets] : ['.widget-target']}
           target={
             draggedSubContainer ? '.asdadadasdadad' : groupedTargets.length > 1 ? [...groupedTargets] : '.widget-target'
           }
-          // hideDefaultLines
           origin={false}
-          // hideChildMoveableDefaultLines={false}
-          // individualGroupable={true}
           individualGroupable={selectedComponents.length <= 1}
           draggable={true}
           resizable={{
@@ -248,7 +216,6 @@ export default function DragContainer({
             renderDirections: ['e', 'w', 'n', 's'],
           }}
           keepRatio={false}
-          //   rotatable={true}
           key={list.length}
           individualGroupableProps={(element) => {
             if (element?.classList.contains('target2')) {
@@ -453,12 +420,7 @@ export default function DragContainer({
               return;
             }
             setDraggedTarget(e.target.id);
-            // onDrag(e.target.id, e.translate[0], e.translate[1]);
-            // console.log(e.target.style);
             if (!draggedSubContainer) {
-              // e.target.style.transform = `translate(${Math.round(e.translate[0] / gridWidth) * gridWidth}px, ${
-              //   Math.round(e.translate[1] / 10) * 10
-              // }px)`;
               e.target.style.transform = `translate(${e.translate[0]}px, ${e.translate[1]}px)`;
               e.target.setAttribute(
                 'widget-pos2',
@@ -471,16 +433,6 @@ export default function DragContainer({
             let draggedOverElemId;
             if (document.elementFromPoint(e.clientX, e.clientY)) {
               const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-              // targetElems.forEach((e) => console.log('Element=>', { id: e.id, clist: e.classList, class: e.className }));
-              // console.log(
-              //   'draggedOverElem - list',
-              //   targetElems,
-              //   targetElems.filter(
-              //     (ele) =>
-              //       ele.id !== e.target.id &&
-              //       (ele.classList.contains('target') || ele.classList.contains('nested-target'))
-              //   )
-              // );
               const draggedOverElem = targetElems.find(
                 (ele) => ele.id !== e.target.id && ele.classList.contains('target')
               );
@@ -489,13 +441,8 @@ export default function DragContainer({
               draggedOverElemId = draggedOverElem?.id;
             }
             console.log('draggedOverElemId parent', draggedOverElemId, parent);
-            // onDrag([{ id: e.target.id, x: e.translate[0], y: e.translate[1], parent: draggedOverElemId }]);
           }}
           onDragGroup={({ events }) => {
-            events.forEach((ev) => {
-              console.log('Grouped data=>', ev);
-              //   ev.target.style.transform = ev.transform;
-            });
             onDrag(
               events.map((ev) => ({
                 id: ev.target.id,
@@ -512,7 +459,6 @@ export default function DragContainer({
           }}
           //snap settgins
           snappable={true}
-          // snapDirections={{ top: true, left: true, bottom: true, right: true }}
           snapDirections={{
             top: true,
             left: true,
@@ -533,10 +479,6 @@ export default function DragContainer({
           elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
           isDisplaySnapDigit={false}
           snapGridWidth={gridWidth}
-          // stopPropagation={true}
-          // snapGridHeight={10}
-          // verticalGuidelines={[50, 150, 250, 450, 550]}
-          // horizontalGuidelines={[0, 100, 200, 400, 500]}
         />
 
         {removeDuplicates(list)
@@ -631,13 +573,6 @@ export default function DragContainer({
                     console.log('Grouped data=>', ev);
                     ev.target.style.transform = ev.transform;
                   });
-                  // onDrag(
-                  //   events.map((ev) => ({
-                  //     id: ev.target.id,
-                  //     x: ev.translate[0],
-                  //     y: ev.translate[1],
-                  //   }))
-                  // );
                 }}
                 onResizeStart={(e) => {
                   if (currentLayout === 'mobile' && autoComputeLayout) {
@@ -646,7 +581,6 @@ export default function DragContainer({
                   }
                 }}
                 onResize={(e) => {
-                  console.log('onResize', e);
                   const gridWidth = subContainerWidths[i.parent];
                   const width = Math.round(e.width / gridWidth) * gridWidth;
 
@@ -654,15 +588,8 @@ export default function DragContainer({
                   const currentWidth = currentLayout.width * gridWidth;
                   const diffWidth = e.width - currentWidth;
                   const diffHeight = e.height - currentLayout.height;
-                  console.log('currentLayout width', currentWidth, e.width, diffWidth, e.direction);
                   const isLeftChanged = e.direction[0] === -1;
                   const isTopChanged = e.direction[1] === -1;
-
-                  console.log(
-                    'currentLayout transform',
-                    `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
-                    `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
-                  );
 
                   e.target.style.width = `${e.width}px`;
                   e.target.style.height = `${e.height}px`;
@@ -675,35 +602,10 @@ export default function DragContainer({
                     transformY = currentLayout.top - diffHeight;
                   }
                   e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
-
-                  // e.target.style.transform = e.drag.transform;
-                  // onResizeStop([
-                  //   {
-                  //     id: e.target.id,
-                  //     height: e.height,
-                  //     width: width,
-                  //     x: e.drag.translate[0],
-                  //     y: e.drag.translate[1],
-                  //   },
-                  // ]);
                 }}
                 onResizeEnd={(e) => {
                   try {
-                    console.log('onResizeEnd>>>>>>>>>>>>>>', e);
                     const gridWidth = subContainerWidths[i.parent];
-                    // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
-                    // e.target.style.width = `${width}px`;
-                    // e.target.style.height = `${e.lastEvent.height}px`;
-                    // e.target.style.transform = e.lastEvent.drag.transform;
-                    // onResizeStop([
-                    //   {
-                    //     id: e.target.id,
-                    //     height: e.lastEvent.height,
-                    //     width: width,
-                    //     x: e.lastEvent.drag.translate[0],
-                    //     y: e.lastEvent.drag.translate[1],
-                    //   },
-                    // ]);
 
                     const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
                     const height = Math.round(e.lastEvent.height / 10) * 10;
@@ -712,15 +614,8 @@ export default function DragContainer({
                     const currentWidth = currentLayout.width * gridWidth;
                     const diffWidth = e.lastEvent.width - currentWidth;
                     const diffHeight = e.lastEvent.height - currentLayout.height;
-                    console.log('onResizeEnd data', currentWidth, e.width, diffWidth, e.direction, diffHeight);
                     const isLeftChanged = e.lastEvent.direction[0] === -1;
                     const isTopChanged = e.lastEvent.direction[1] === -1;
-
-                    console.log(
-                      'onResizeEnd => currentLayout transform',
-                      `translate(${currentLayout.left * gridWidth}px, ${currentLayout.top}px)`,
-                      `translate(${currentLayout.left * gridWidth - diffWidth}px, ${currentLayout.top}px)`
-                    );
 
                     let transformX = currentLayout.left * gridWidth;
                     let transformY = currentLayout.top;
@@ -799,10 +694,6 @@ function getMouseDistanceFromParentDiv(event, id) {
   // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();
   const targetDivRect = event.target.getBoundingClientRect();
-
-  // Get the mouse position relative to the parent div.
-  // const mouseX = event.clientX - parentDivRect.left;
-  // const mouseY = event.clientYl- parentDivRect.top;
 
   const mouseX = targetDivRect.left - parentDivRect.left;
   const mouseY = targetDivRect.top - parentDivRect.top;

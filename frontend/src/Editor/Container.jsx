@@ -349,49 +349,7 @@ export const Container = ({
     [moveBox]
   );
 
-  const onDragStop = useCallback(
-    (e, componentId, direction, currentLayout) => {
-      if (isVersionReleased) {
-        enableReleasedVersionPopupState();
-        return;
-      }
-      // const id = componentId ? componentId : uuidv4();
-
-      // Get the width of the canvas
-      const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-      const canvasWidth = canvasBounds?.width;
-      const nodeBounds = direction.node.getBoundingClientRect();
-
-      // Computing the left offset
-      const leftOffset = nodeBounds.x - canvasBounds.x;
-      const currentLeftOffset = boxes[componentId]?.layouts?.[currentLayout]?.left;
-      const leftDiff = currentLeftOffset - convertXToPercentage(leftOffset, canvasWidth);
-
-      // Computing the top offset
-      // const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
-      const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
-
-      let newBoxes = { ...boxes };
-
-      for (const selectedComponent of selectedComponents) {
-        newBoxes = produce(newBoxes, (draft) => {
-          if (draft[selectedComponent.id]) {
-            const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
-            const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
-
-            draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
-            draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
-          }
-        });
-      }
-
-      setBoxes(newBoxes);
-      updateCanvasHeight(newBoxes);
-    },
-    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, selectedComponents, updateCanvasHeight]
-  );
-
-  const onResizeStop2 = (boxList, id, height, width, x, y) => {
+  const onResizeStop = (boxList, id, height, width, x, y) => {
     const newBoxes = boxList.reduce((newBoxList, { id, height, width, x, y, gw }) => {
       const _canvasWidth = gw ? gw * noOfGrids : canvasWidth;
       const newWidth = (width * noOfGrids) / _canvasWidth;
@@ -422,7 +380,7 @@ export const Container = ({
     updateCanvasHeight(updatedBoxes);
   };
 
-  function onDragStop2(boxPositions) {
+  function onDragStop(boxPositions) {
     const updatedBoxes = boxPositions.reduce((boxesObj, { id, x, y, parent }) => {
       let _width = boxes[id]['layouts'][currentLayout].width;
       const containerWidth = parent ? subContainerWidths[parent] : gridWidth;
@@ -482,69 +440,6 @@ export const Container = ({
     };
     setBoxes(newBoxes);
   }
-
-  const onResizeStop = useCallback(
-    (id, e, direction, ref, d, position) => {
-      if (isVersionReleased) {
-        enableReleasedVersionPopupState();
-        return;
-      }
-
-      const deltaWidth = Math.round(d.width / gridWidth) * gridWidth; //rounding of width of element to nearest mulitple of gridWidth
-      const deltaHeight = d.height;
-
-      if (deltaWidth === 0 && deltaHeight === 0) {
-        return;
-      }
-
-      let { x, y } = position;
-      x = Math.round(x / gridWidth) * gridWidth;
-
-      const defaultData = {
-        top: 100,
-        left: 0,
-        width: 445,
-        height: 500,
-      };
-
-      let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
-
-      const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-      const canvasWidth = boundingRect?.width;
-
-      //round the width to nearest multiple of gridwidth before converting to %
-      const currentWidth = (canvasWidth * width) / noOfGrids;
-      let newWidth = currentWidth + deltaWidth;
-      newWidth = Math.round(newWidth / gridWidth) * gridWidth;
-      width = (newWidth * noOfGrids) / canvasWidth;
-
-      height = height + deltaHeight;
-
-      top = y;
-      left = (x * 100) / canvasWidth;
-
-      let newBoxes = {
-        ...boxes,
-        [id]: {
-          ...boxes[id],
-          layouts: {
-            ...boxes[id]['layouts'],
-            [currentLayout]: {
-              ...boxes[id]['layouts'][currentLayout],
-              width,
-              height,
-              top,
-              left,
-            },
-          },
-        },
-      };
-
-      setBoxes(newBoxes);
-      updateCanvasHeight(newBoxes);
-    },
-    [setBoxes, currentLayout, boxes, enableReleasedVersionPopupState, isVersionReleased, updateCanvasHeight, gridWidth]
-  );
 
   const paramUpdated = useCallback(
     (id, param, value, opts = {}) => {
@@ -761,8 +656,6 @@ export const Container = ({
           onComponentOptionChanged={onComponentOptionChanged}
           onComponentOptionsChanged={onComponentOptionsChanged}
           key={key}
-          onResizeStop={onResizeStop}
-          onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
           {...boxes[key]}
@@ -863,8 +756,8 @@ export const Container = ({
         boxes={Object.keys(boxes).map((key) => ({ ...boxes[key], id: key }))}
         renderWidget={renderWidget}
         canvasWidth={canvasWidth}
-        onResizeStop={onResizeStop2}
-        onDrag={onDragStop2}
+        onResizeStop={onResizeStop}
+        onDrag={onDragStop}
         gridWidth={gridWidth}
         selectedComponents={selectedComponents}
         setIsDragging={setIsDragging}
@@ -876,45 +769,6 @@ export const Container = ({
         setDraggedSubContainer={setDraggedSubContainer}
         draggedSubContainer={draggedSubContainer}
       />
-      {/* {Object.keys(boxes).map((key) => {
-        const box = boxes[key];
-        const canShowInCurrentLayout =
-          box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-        const addDefaultChildren = box.withDefaultChildren;
-
-        if (!box.component.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
-          return (
-            <DraggableBox
-              className={showComments && 'pointer-events-none'}
-              canvasWidth={canvasWidth}
-              onComponentClick={
-                config.COMMENT_FEATURE_ENABLE && showComments ? handleAddThreadOnComponent : onComponentClick
-              }
-              onEvent={onEvent}
-              onComponentOptionChanged={onComponentOptionChanged}
-              onComponentOptionsChanged={onComponentOptionsChanged}
-              key={key}
-              onResizeStop={onResizeStop}
-              onDragStop={onDragStop}
-              paramUpdated={paramUpdated}
-              id={key}
-              {...boxes[key]}
-              mode={mode}
-              resizingStatusChanged={resizingStatusChanged}
-              draggingStatusChanged={draggingStatusChanged}
-              inCanvas={true}
-              zoomLevel={zoomLevel}
-              setSelectedComponent={setSelectedComponent}
-              removeComponent={removeComponent}
-              deviceWindowWidth={deviceWindowWidth}
-              darkMode={darkMode}
-              sideBarDebugger={sideBarDebugger}
-              childComponents={childComponents[key]}
-              containerProps={{ ...containerProps, addDefaultChildren }}
-            />
-          );
-        }
-      })} */}
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: '10%' }}>
           <div className="mx-auto w-50 p-5 bg-light no-components-box">
