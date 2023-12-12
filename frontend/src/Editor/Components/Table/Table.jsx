@@ -440,7 +440,7 @@ export function Table({
         ])
       ),
     }));
-  }, [JSON.stringify(transformations)]);
+  }, [JSON.stringify([transformations, currentState])]);
 
   const columnDataForAddNewRows = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
@@ -521,11 +521,7 @@ export function Table({
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
-  }, [
-    tableData.length,
-    component.definition.properties.data.value,
-    JSON.stringify([properties.data, transformations]),
-  ]);
+  }, [tableData.length, component.definition.properties.data.value, JSON.stringify([properties.data, tableData])]);
 
   useEffect(() => {
     if (
