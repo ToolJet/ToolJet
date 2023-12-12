@@ -1318,14 +1318,19 @@ export const widgets = [
     description: 'Numeric input field',
     component: 'NumberInput',
     defaultSize: {
-      width: 4,
-      height: 30,
+      width: 10,
+      height: 40,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: { schema: { type: 'string' } },
+      },
       value: {
         type: 'code',
         displayName: 'Default value',
@@ -1354,13 +1359,6 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
-      loadingState: {
-        type: 'toggle',
-        displayName: 'Loading state',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
       decimalPlaces: {
         type: 'code',
         displayName: 'Decimal places',
@@ -1368,73 +1366,206 @@ export const widgets = [
           schema: { type: 'number' },
         },
       },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      tooltip: {
+        type: 'input',
+        displayName: 'Tooltip',
+        validation: { schema: { type: 'string' } },
+        section: 'additionalActions',
+        staticText: '',
+      },
     },
     events: {
       onChange: { displayName: 'On change' },
     },
     styles: {
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
+      color: {
+        type: 'color',
+        displayName: 'Text color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'label',
+      },
+      alignment: {
+        type: 'switch',
+        displayName: 'Alignment',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Side', value: 'side' },
+          { displayName: 'Top', value: 'top' },
+        ],
+        accordian: 'label',
+      },
+      direction: {
+        type: 'switch',
+        displayName: '',
+        validation: { schema: { type: 'string' } },
+        showLabel: false,
+        isIcon: true,
+        options: [
+          { displayName: 'alignleftinspector', value: 'left' },
+          { displayName: 'alignrightinspector', value: 'right' },
+        ],
+        accordian: 'label',
+      },
+      width: {
+        type: 'slider',
+        displayName: 'Width',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'label',
+        conditionallyRender: {
+          key: 'alignment',
+          value: 'side',
         },
       },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
+      auto: {
+        type: 'checkbox',
+        displayName: 'auto',
+        showLabel: false,
+        validation: { schema: { type: 'boolean' } },
+        accordian: 'label',
+        conditionallyRender: {
+          key: 'alignment',
+          value: 'side',
         },
       },
-      borderRadius: {
-        type: 'code',
-        displayName: 'Border radius',
-        validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        },
-      },
+
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
       },
+
       borderColor: {
         type: 'color',
-        displayName: 'Border Color',
-        validation: {
-          schema: { type: 'string' },
-        },
+        displayName: 'Border color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
       },
       textColor: {
         type: 'color',
         displayName: 'Text Color',
         validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error text color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      icon: {
+        type: 'icon',
+        displayName: 'Icon',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+        visibility: false,
+      },
+      iconColor: {
+        type: 'color',
+        displayName: 'Icon color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+        visibility: false,
+      },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box Shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
+      padding: {
+        type: 'switch',
+        displayName: 'Padding',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        options: [
+          { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
+        ],
+        accordian: 'container',
       },
     },
+    actions: [
+      {
+        handle: 'setVisibility',
+        displayName: 'setVisibility',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setDisable',
+        displayName: 'setDisable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setLoading',
+        displayName: 'setLoading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+    ],
     exposedVariables: {
       value: 99,
+      isMandatory: false,
+      isVisibile: true,
+      isDisabled: false,
+      isLoading: false,
+    },
+    validation: {
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
       },
+      validation: {
+        mandatory: { value: false },
+      },
       properties: {
         value: { value: '99' },
+        label: { value: 'Label' },
         maxValue: { value: '' },
         minValue: { value: '' },
         placeholder: { value: '0' },
         decimalPlaces: { value: '{{2}}' },
         loadingState: { value: '{{false}}' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        tooltip: { value: '' },
       },
       events: [],
       styles: {
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
-        backgroundColor: { value: '#ffffffff' },
-        borderColor: { value: '#fff' },
+        borderRadius: { value: '{{6}}' },
+        backgroundColor: { value: '#fff' },
+        borderColor: { value: '#D7DBDF' },
+        errTextColor: { value: '#DB4324' },
         textColor: { value: '#232e3c' },
+        iconColor: { value: '#DB4324' },
+        direction: { value: 'left' },
+        width: { value: '33' },
+        alignment: { value: 'side' },
+        color: { value: '#11181C' },
+        auto: { value: true },
+        padding: { value: 'default' },
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        icon: { value: 'IconHome2' },
+        iconVisibility: { value: false },
       },
     },
   },

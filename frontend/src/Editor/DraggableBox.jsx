@@ -121,6 +121,7 @@ export const DraggableBox = React.memo(
       shallow
     );
     const currentState = useCurrentState();
+    const [calculatedHeight, setCalculatedHeight] = useState(layoutData?.height);
 
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({
@@ -206,8 +207,15 @@ export const DraggableBox = React.memo(
     };
     function isVerticalResizingAllowed() {
       // Return true if vertical resizing is allowed, false otherwise
-      return mode === 'edit' && component.component !== 'TextInput' && !readOnly;
+      return (
+        mode === 'edit' && component.component !== 'TextInput' && component.component !== 'NumberInput' && !readOnly
+      );
     }
+
+    const adjustHeightBasedOnAlignment = (increase) => {
+      if (increase) return setCalculatedHeight(layoutData?.height + 18);
+      else return setCalculatedHeight(layoutData?.height - 2);
+    };
     return (
       <div
         className={
@@ -244,7 +252,7 @@ export const DraggableBox = React.memo(
               dragGrid={[gridWidth, 10]}
               size={{
                 width: width,
-                height: layoutData.height,
+                height: calculatedHeight,
               }}
               position={{
                 x: layoutData ? (layoutData.left * canvasWidth) / 100 : 0,
@@ -329,6 +337,7 @@ export const DraggableBox = React.memo(
                     sideBarDebugger={sideBarDebugger}
                     childComponents={childComponents}
                     isResizing={isResizing}
+                    adjustHeightBasedOnAlignment={adjustHeightBasedOnAlignment}
                   />
                 </ErrorBoundary>
               </div>

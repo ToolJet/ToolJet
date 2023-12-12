@@ -286,7 +286,7 @@ button {
   font-weight: 500 !important;
   box-shadow: none !important;
   color: var(--slate12) !important;
-  padding: 20px 16px !important;
+  padding: 16px 16px !important;
 }
 
 .accordion-button::after {
@@ -302,7 +302,7 @@ button {
 }
 
 .accordion-body {
-  padding: 6px 16px 20px 16px !important;
+  padding: 8px 16px 16px 16px !important;
 
   .form-label {
     font-weight: 400;
@@ -330,7 +330,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary  !important;
+    outline: solid 1px $primary  !important;
 
     .top-right,
     .top-left,
@@ -743,7 +743,7 @@ button {
         margin: 0px auto;
 
         .resizer {
-          border: solid 1px transparent;
+          // border: solid 1px red;
         }
       }
     }
@@ -11900,7 +11900,7 @@ tbody {
   }
 
   &:active {
-    box-shadow: 0px 0px 0px 1px #DFE3E6 !important;
+    box-shadow: 0px 0px 0px 1px rgba(62, 99, 221, 0.30) !important;
     border: 1px solid var(--tj-text-input-widget-border-clicked) !important;
     outline: none !important;
   }
@@ -11920,4 +11920,8 @@ tbody {
   top: 50%;
   right: -5px;
   transform: translate(-50%, -50%);
+}
+
+.label-hinter-margin {
+  margin-bottom: 4px;
 }

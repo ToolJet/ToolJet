@@ -1,0 +1,66 @@
+.custom-number-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.arrow {
+    cursor: pointer;
+    user-select: none;
+    position: absolute;
+    font-size: 12px;
+    color: #555;
+    /* Customize arrow color */
+}
+
+.arrow.up {
+    top: 0;
+}
+
+.arrow.down {
+    bottom: 0;
+}
+
+.numberinput-label {
+    white-space: nowrap;
+    /* Prevent text from wrapping to the next line */
+    overflow: hidden;
+    /* Hide any content that overflows the box */
+    text-overflow: ellipsis;
+    /* Display an ellipsis (...) to represent clipped text */
+    max-width: 100%;
+    /* Set the maximum width of the container */
+}
+
+.input-number::-webkit-inner-spin-button,
+.input-number::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.input-number {
+    -moz-appearance: textfield;
+}
+
+.numberinput-down-arrow {
+    position: absolute;
+    // right: 2px;
+    // bottom: 3px;
+    // background: red;
+    // height: 16px;
+    width: 20px;
+    border-left: 1px solid #D7DBDF;
+    border-top: 1px solid #D7DBDF;
+}
+
+.numberinput-up-arrow {
+
+    position: absolute;
+    // right: 2px;
+    // top: 3px;
+    // background: red;
+    // height: 16px;
+    width: 20px;
+    border-left: 1px solid #D7DBDF;
+    border-bottom: 1px solid #D7DBDF;
+}
