@@ -15,8 +15,8 @@ export const ServerDataStates = {
 };
 
 const staticDataSources = [
-  { kind: 'restapi', id: 'null', name: 'REST API' },
-  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+  { kind: 'restapi', id: 'null', name: 'restapi' },
+  { kind: 'runjs', id: 'runjs', name: 'runjs' },
 ];
 
 export const initialState = ({ appId, appVersionId }) => ({

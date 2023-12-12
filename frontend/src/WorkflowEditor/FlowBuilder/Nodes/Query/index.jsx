@@ -73,14 +73,18 @@ export default function QueryNode(props) {
   };
 
   const dataSourceOptions = editorSession.dataSources.map((source) => ({
-    label: capitalize(source.kind),
-    value: source.kind,
+    label: source.name,
+    value: source.id,
+    kind: source.kind,
   }));
 
-  const selectedOption = find(dataSourceOptions, { value: queryData.kind });
+  const selectedOption =
+    queryData.kind === 'runjs' || queryData.kind === 'restapi'
+      ? find(dataSourceOptions, { kind: queryData.kind })
+      : find(dataSourceOptions, { value: queryData.data_source_id });
 
   const onQueryTypeChange = (option) => {
-    const dataSource = find(editorSession.dataSources, { kind: option.value });
+    const dataSource = find(editorSession.dataSources, { name: option.label });
     updateQuery(queryData.idOnDefinition, {
       dataSourceId: dataSource.id,
       kind: dataSource.kind,
