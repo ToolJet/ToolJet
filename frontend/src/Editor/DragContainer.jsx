@@ -175,7 +175,7 @@ export default function DragContainer({
 
   return (
     <div className="root">
-      <div className="container rm-container p-0">
+      <div className="container-fluid rm-container p-0">
         {/* <div className={movableTargets.length == 0 ? `move-target` : ''} style={{ width: '1px' }}></div> */}
         {list
           .filter((i) => isEmpty(i.parent))
