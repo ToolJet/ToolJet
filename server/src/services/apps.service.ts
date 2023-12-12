@@ -685,65 +685,71 @@ export class AppsService {
             newDataQueries.push(newQuery);
           }
         }
-      }
 
-      if (globalQueries?.length > 0) {
-        for (const globalQuery of globalQueries) {
-          const dataQueryParams = {
-            name: globalQuery.name,
-            options: globalQuery.options,
-            dataSourceId: globalQuery.dataSourceId,
-            appVersionId: appVersion.id,
-          };
+        if (globalQueries?.length > 0) {
+          for (const globalQuery of globalQueries) {
+            const dataQueryParams = {
+              name: globalQuery.name,
+              options: globalQuery.options,
+              dataSourceId: globalQuery.dataSourceId,
+              appVersionId: appVersion.id,
+            };
 
-          const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-          const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+            const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
 
-          dataQueryEvents.forEach(async (event, index) => {
-            const newEvent = new EventHandler();
+            dataQueryEvents.forEach(async (event, index) => {
+              const newEvent = new EventHandler();
 
-            newEvent.id = uuid.v4();
-            newEvent.name = event.name;
-            newEvent.sourceId = newQuery.id;
-            newEvent.target = event.target;
-            newEvent.event = event.event;
-            newEvent.index = event.index ?? index;
-            newEvent.appVersionId = appVersion.id;
+              newEvent.id = uuid.v4();
+              newEvent.name = event.name;
+              newEvent.sourceId = newQuery.id;
+              newEvent.target = event.target;
+              newEvent.event = event.event;
+              newEvent.index = event.index ?? index;
+              newEvent.appVersionId = appVersion.id;
 
-            await manager.save(newEvent);
-          });
-          oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
-          newDataQueries.push(newQuery);
+              await manager.save(newEvent);
+            });
+            oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
+            newDataQueries.push(newQuery);
+          }
         }
-      }
 
-      for (const newQuery of newDataQueries) {
-        const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(newQuery.options, oldDataQueryToNewMapping);
-        newQuery.options = newOptions;
-
-        await manager.save(newQuery);
-      }
-
-      appVersion.definition = this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
-      await manager.save(appVersion);
-
-      for (const appEnvironment of appEnvironments) {
-        for (const dataSource of dataSources) {
-          const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
-            where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
-          });
-
-          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
-          await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
-
-          await manager.save(
-            manager.create(DataSourceOptions, {
-              options: newOptions,
-              dataSourceId: dataSourceMapping[dataSource.id],
-              environmentId: appEnvironment.id,
-            })
+        for (const newQuery of newDataQueries) {
+          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+            newQuery.options,
+            oldDataQueryToNewMapping
           );
+          newQuery.options = newOptions;
+
+          await manager.save(newQuery);
+        }
+
+        appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
+          appVersion.definition,
+          oldDataQueryToNewMapping
+        );
+        await manager.save(appVersion);
+
+        for (const appEnvironment of appEnvironments) {
+          for (const dataSource of dataSources) {
+            const dataSourceOption = await manager.findOneOrFail(DataSourceOptions, {
+              where: { dataSourceId: dataSource.id, environmentId: appEnvironment.id },
+            });
+
+            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+            const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, false, manager);
+            await this.setNewCredentialValueFromOldValue(newOptions, convertedOptions, manager);
+
+            await manager.save(
+              manager.create(DataSourceOptions, {
+                options: newOptions,
+                dataSourceId: dataSourceMapping[dataSource.id],
+                environmentId: appEnvironment.id,
+              })
+            );
+          }
         }
       }
     }
@@ -977,9 +983,28 @@ export class AppsService {
         .andWhere('data_sources.kind = :kind', { kind: 'tooljetdb' })
         .getMany();
 
-      const uniqTableIds = [...new Set(tooljetDbDataQueries.map((dq) => dq.options['table_id']))];
+      const uniqTableIds = new Set();
+      tooljetDbDataQueries.forEach((dq) => {
+        if (dq.options?.operation === 'join_tables') {
+          const joinOptions = dq.options?.join_table?.joins ?? [];
+          (joinOptions || []).forEach((join) => {
+            const { table, conditions } = join;
+            if (table) uniqTableIds.add(table);
+            conditions?.conditionsList?.forEach((condition) => {
+              const { leftField, rightField } = condition;
+              if (leftField?.table) {
+                uniqTableIds.add(leftField?.table);
+              }
+              if (rightField?.table) {
+                uniqTableIds.add(rightField?.table);
+              }
+            });
+          });
+        }
+        if (dq.options.table_id) uniqTableIds.add(dq.options.table_id);
+      });
 
-      return uniqTableIds.map((table_id) => {
+      return [...uniqTableIds].map((table_id) => {
         return { table_id };
       });
     });

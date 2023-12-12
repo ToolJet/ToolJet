@@ -326,7 +326,7 @@ describe("Modal", () => {
     );
     cy.get("#inspector-tab-properties").click();
 
-    typeOnFx("Loading State", "{{components.toggleswitch3.value");
+    typeOnFx("Loading state", "{{components.toggleswitch3.value");
     cy.get("[data-cy='modal-header']").realClick();
 
     typeOnFx("Hide title bar", "{{components.toggleswitch4.value");

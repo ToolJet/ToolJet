@@ -1,5 +1,6 @@
 import { appVersionService } from '@/_services';
 import { create, zustandDevTools } from './utils';
+import { shallow } from 'zustand/shallow';
 
 const initialState = {
   editingVersion: null,
@@ -127,9 +128,9 @@ export const useAppDataStore = create(
   )
 );
 
-export const useEditingVersion = () => useAppDataStore((state) => state.editingVersion);
-export const useIsSaving = () => useAppDataStore((state) => state.isSaving);
-export const useUpdateEditingVersion = () => useAppDataStore((state) => state.actions);
-export const useCurrentUser = () => useAppDataStore((state) => state.currentUser);
+export const useEditingVersion = () => useAppDataStore((state) => state.editingVersion, shallow);
+export const useIsSaving = () => useAppDataStore((state) => state.isSaving, shallow);
+export const useUpdateEditingVersion = () => useAppDataStore((state) => state.actions, shallow);
+export const useCurrentUser = () => useAppDataStore((state) => state.currentUser, shallow);
 export const useAppInfo = () => useAppDataStore((state) => state);
-export const useAppDataActions = () => useAppDataStore((state) => state.actions);
+export const useAppDataActions = () => useAppDataStore((state) => state.actions, shallow);
