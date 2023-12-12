@@ -9,6 +9,7 @@ import { useAppDataActions } from '@/_stores/appDataStore';
 import _ from 'lodash';
 import { resetAllStores } from '@/_stores/utils';
 import { useEditorActions } from '@/_stores/editorStore';
+import { TJLoader } from '@/_ui/TJLoader';
 
 const AppLoaderComponent = (props) => {
   const { type: appType } = props;
@@ -46,7 +47,7 @@ const AppBuilder = React.memo((props) => {
     });
   };
 
-  if (!shouldLoadApp) return <></>;
+  if (!shouldLoadApp) return <TJLoader />;
 
   return config.ENABLE_MULTIPLAYER_EDITING ? (
     <RealtimeEditor {...props} shouldLoadApp={shouldLoadApp} />
