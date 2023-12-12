@@ -1521,8 +1521,11 @@ export const widgets = [
     ],
     exposedVariables: {
       value: 99,
+      isMandatory: false,
+      isVisibile: true,
+      isDisabled: false,
+      isLoading: false,
     },
-
     validation: {
       mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     },
@@ -1530,6 +1533,9 @@ export const widgets = [
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
+      },
+      validation: {
+        mandatory: { value: false },
       },
       properties: {
         value: { value: '99' },
@@ -1548,6 +1554,7 @@ export const widgets = [
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#fff' },
         borderColor: { value: '#D7DBDF' },
+        errTextColor: { value: '#DB4324' },
         textColor: { value: '#232e3c' },
         iconColor: { value: '#DB4324' },
         direction: { value: 'left' },
