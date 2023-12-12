@@ -121,6 +121,7 @@ export const CreateVersion = ({
         setShowCreateAppVersion(false);
       }}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
+      customClassName="git-sync-modal"
     >
       {fetchingOrgGit ? (
         <div className="loader-container">

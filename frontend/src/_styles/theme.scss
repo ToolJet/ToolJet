@@ -13384,7 +13384,7 @@ tbody {
       }
     }
   }
-
+ .git-sync-modal{
   .create-commit-container, .commit-info, .pull-container {
       .form-control {
         font-weight: 400;
@@ -13456,38 +13456,57 @@ tbody {
       }
   }
 
-  .modal-header {
-    border-bottom: 1px solid var(--slate5) !important;
+  
 
-    .modal-title {
-      color: var(--slate12);
-    }
+    .modal-footer {
+      border-top: 1px solid var(--slate5);
+      padding: 1rem;
 
-    svg > path {
-      fill: var(--slate12);
-    }
-  }
+      .tj-btn-left-icon {
+        svg {
+          width: 20px;
+          height: 20px;
 
-  .modal-footer {
-    border-top: 1px solid var(--slate5);
-    padding: 1rem;
-
-    .tj-btn-left-icon {
-      svg {
-        width: 20px;
-        height: 20px;
-
-        path {
-          fill: var(--indigo1);
+          path {
+            fill: var(--indigo1);
+          }
         }
       }
-    }
 
-    .tj-large-btn {
-      font-weight: 500;
-      font-size: 14px;
+      .tj-large-btn {
+        font-weight: 500;
+        font-size: 14px;
+      }
+    }
+    .modal-body {
+    .loader-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 180px;
+    }
+    }  
+    .modal-base {
+  .tj-text-xxsm {
+    color: var(--slate11);
+  }
+  }
+  .modal-header {
+      border-bottom: 1px solid var(--slate5) !important;
+
+      .modal-title {
+        color: var(--slate12);
+      }
+
+      svg > path {
+        fill: var(--slate12);
+      }
     }
   }
+
+  
+
+
 
   .primary-spin-loader {
       width: 43px;
@@ -13511,14 +13530,7 @@ tbody {
 
     }
 
-.modal-body {
-  .loader-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 180px;
-  }
-}    
+  
     
     
 .commit-changes {
@@ -13526,11 +13538,7 @@ tbody {
   gap: 6px;
 }
 
-.modal-base {
-  .tj-text-xxsm {
-    color: var(--slate11);
-  }
-}
+
 
 .disabled-action-tooltip {
   opacity: 0.4;
