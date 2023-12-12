@@ -16,6 +16,13 @@ interface AppResourceMappings {
 
 export class MigrateAppsDefinitionSchemaTransition1697473340856 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const totalAppVersions = await queryRunner.manager.count(AppVersion);
+
+    if (totalAppVersions === 0) {
+      console.log('No app versions found. Skipping migration.');
+      return;
+    }
+
     await this.migrateAppsDefinition(queryRunner.manager);
   }
 
