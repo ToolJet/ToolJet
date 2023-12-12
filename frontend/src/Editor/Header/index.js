@@ -217,11 +217,6 @@ export default function EditorHeader({
                     </ToolTip>
                   </LicenseTooltip>
                 </div>
-                {shouldEnableMultiplayer && (
-                  <div className="mx-2 p-2">
-                    <RealtimeAvatars />
-                  </div>
-                )}
               </div>
             </div>
             <div
