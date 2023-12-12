@@ -23,7 +23,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   private async migrateAppsDefinition(entityManager: EntityManager, queryRunner?: QueryRunner): Promise<void> {
     const appVersionRepository = entityManager.getRepository(AppVersion);
     const appVersions = await appVersionRepository.query(
-      `SELECT id, definition FROM app_versions WHERE definition->>'pages' IS NOT NULL ORDER BY updated_at DESC`
+      `SELECT id FROM app_versions WHERE definition->>'pages' IS NOT NULL ORDER BY updated_at DESC`
     );
     const totalVersions = appVersions.length;
 
@@ -38,8 +38,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     await processDataInBatches(
       entityManager,
       async (entityManager: EntityManager, skip: number, take: number) => {
-        // we aleady have the app versions in memory, so no need to query again
-        return appVersions.slice(skip, skip + take);
+        const ids = appVersions.slice(skip, skip + take).map((appVersion) => appVersion.id);
+        if (!ids || ids.length === 0) {
+          return [];
+        }
+        return entityManager.query(`SELECT * FROM app_versions WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})`);
       },
       async (entityManager: EntityManager, versions: AppVersion[]) => {
         await this.processVersions(entityManager, versions, migrationProgress);
@@ -111,20 +114,19 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
             for (const componentId in pageComponents) {
               const componentLayout = pageComponents[componentId]['layouts'];
 
-              if (!componentLayout) continue;
+              if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
+                for (const type in componentLayout) {
+                  const layout = componentLayout[type];
+                  const newLayout = new Layout();
+                  newLayout.type = type;
+                  newLayout.top = layout.top;
+                  newLayout.left = layout.left;
+                  newLayout.width = layout.width;
+                  newLayout.height = layout.height;
+                  newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
-              for (const type in componentLayout) {
-                const layout = componentLayout[type];
-
-                const newLayout = new Layout();
-                newLayout.type = type;
-                newLayout.top = layout.top;
-                newLayout.left = layout.left;
-                newLayout.width = layout.width;
-                newLayout.height = layout.height;
-                newLayout.componentId = appResourceMappings.componentsMapping[componentId];
-
-                componentLayouts.push(newLayout);
+                  componentLayouts.push(newLayout);
+                }
               }
             }
 
