@@ -721,53 +721,57 @@ export class AppsService {
         .where('data_query.appVersionId = :appVersionId', { appVersionId: versionFrom?.id })
         .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
         .getMany();
-      const dataSources = versionFrom?.dataSources;
+      const dataSources = versionFrom?.dataSources; //Local data sources
+      const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
+
       const dataSourceMapping = {};
       const newDataQueries = [];
       const allEvents = await manager.find(EventHandler, {
         where: { appVersionId: versionFrom?.id, target: 'data_query' },
       });
 
-      if (dataSources?.length > 0) {
-        for (const dataSource of dataSources) {
-          const dataSourceParams: Partial<DataSource> = {
-            name: dataSource.name,
-            kind: dataSource.kind,
-            type: dataSource.type,
-            appVersionId: appVersion.id,
-          };
-          const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
-          dataSourceMapping[dataSource.id] = newDataSource.id;
-
-          const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
-
-          for (const dataQuery of dataQueries) {
-            const dataQueryParams = {
-              name: dataQuery.name,
-              options: dataQuery.options,
-              dataSourceId: newDataSource.id,
+      if (dataSources?.length > 0 || globalDataSources?.length > 0) {
+        if (dataSources?.length > 0) {
+          for (const dataSource of dataSources) {
+            const dataSourceParams: Partial<DataSource> = {
+              name: dataSource.name,
+              kind: dataSource.kind,
+              type: dataSource.type,
               appVersionId: appVersion.id,
             };
-            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+            const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+            dataSourceMapping[dataSource.id] = newDataSource.id;
 
-            const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
+            const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
 
-            dataQueryEvents.forEach(async (event, index) => {
-              const newEvent = new EventHandler();
+            for (const dataQuery of dataQueries) {
+              const dataQueryParams = {
+                name: dataQuery.name,
+                options: dataQuery.options,
+                dataSourceId: newDataSource.id,
+                appVersionId: appVersion.id,
+              };
+              const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
 
-              newEvent.id = uuid.v4();
-              newEvent.name = event.name;
-              newEvent.sourceId = newQuery.id;
-              newEvent.target = event.target;
-              newEvent.event = event.event;
-              newEvent.index = event.index ?? index;
-              newEvent.appVersionId = appVersion.id;
+              const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
 
-              await manager.save(newEvent);
-            });
+              dataQueryEvents.forEach(async (event, index) => {
+                const newEvent = new EventHandler();
 
-            oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
-            newDataQueries.push(newQuery);
+                newEvent.id = uuid.v4();
+                newEvent.name = event.name;
+                newEvent.sourceId = newQuery.id;
+                newEvent.target = event.target;
+                newEvent.event = event.event;
+                newEvent.index = event.index ?? index;
+                newEvent.appVersionId = appVersion.id;
+
+                await manager.save(newEvent);
+              });
+
+              oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
+              newDataQueries.push(newQuery);
+            }
           }
         }
 
