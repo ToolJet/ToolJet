@@ -29,7 +29,7 @@ describe("App share functionality", () => {
   });
 
   it("Verify private and public app share funtionality", () => {
-    cy.openApp(data.appName);
+    cy.openApp();
     cy.dragAndDropWidget("Table", 250, 250);
 
     verifyTooltip(
@@ -81,7 +81,7 @@ describe("App share functionality", () => {
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
     cy.get(commonSelectors.viewerPageLogo).click();
 
-    cy.openApp(Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
+    cy.openApp('my-workspace', Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.makePublicAppToggle).check();
     cy.get(commonWidgetSelector.modalCloseButton).click();
@@ -95,7 +95,7 @@ describe("App share functionality", () => {
   });
 
   it("Verify app private and public app visibility for the same workspace user", () => {
-    cy.openApp(Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
+    cy.openApp('my-workspace', Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
     cy.wait(2000);
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get("body").then(($el) => {
@@ -113,7 +113,7 @@ describe("App share functionality", () => {
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
 
     cy.defaultWorkspaceLogin();
-    cy.openApp(Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
+    cy.openApp('my-workspace', Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
     cy.wait(2000);
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.makePublicAppToggle).uncheck();
@@ -153,7 +153,7 @@ describe("App share functionality", () => {
     logout();
     cy.defaultWorkspaceLogin();
 
-    cy.openApp(Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
+    cy.openApp('my-workspace', Cypress.env("appId"), '[data-cy="draggable-widget-table1"]');
     cy.wait(2000);
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.makePublicAppToggle).check();

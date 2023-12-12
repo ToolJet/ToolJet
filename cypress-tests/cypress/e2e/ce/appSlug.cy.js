@@ -17,13 +17,12 @@ describe("App slug", () => {
     before(() => {
         cy.apiLogin();
         cy.apiCreateApp(data.appName);
-        cy.wait(2000)
+        cy.wait(1000)
         cy.logoutApi()
     })
 
     it("Verify app slug cases in global settings", () => {
-        cy.wait(2000)
-        navigateToAppEditor(data.appName);
+        cy.openApp('my-workspace');
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appSlugLabel).verifyVisibleElement("have.text", "Unique app slug");
@@ -66,7 +65,7 @@ describe("App slug", () => {
         cy.wait(500);
 
         cy.apiCreateApp(data.slug);
-        cy.openApp(data.slug);
+        cy.openApp('my-workspace');
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appSlugInput).clear()
@@ -125,7 +124,7 @@ describe("App slug", () => {
         cy.wait(500);
 
         cy.apiCreateApp(data.slug);
-        cy.openApp(data.slug);
+        cy.openApp('my-workspace');
         releaseApp();
         cy.get(commonWidgetSelector.shareAppButton).click()
         cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
