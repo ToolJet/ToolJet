@@ -15,6 +15,7 @@ export default class AirtableQueryService implements QueryService {
     const baseId = queryOptions.base_id;
     const tableName = queryOptions.table_name;
 
+    // Below condition for API Key is kept for Backward compatibility and needs migration to be removed later on.
     if (sourceOptions.api_key) apiToken = sourceOptions.api_key;
     if (sourceOptions.personal_access_token) apiToken = sourceOptions.personal_access_token;
 
