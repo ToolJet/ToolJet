@@ -1290,7 +1290,7 @@ export const widgets = [
         placeholder: { value: 'Enter your input' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        toolltip: { value: '' },
+        tooltip: { value: '' },
       },
       events: [],
       styles: {
@@ -1575,20 +1575,49 @@ export const widgets = [
     description: 'Secure text input',
     component: 'PasswordInput',
     defaultSize: {
-      width: 4,
-      height: 30,
+      width: 21,
+      height: 41,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     properties: {
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: { schema: { type: 'string' } },
+      },
       placeholder: {
         type: 'code',
         displayName: 'Placeholder',
         validation: {
           schema: { type: 'string' },
         },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      tooltip: {
+        type: 'code',
+        displayName: 'Tooltip',
+        validation: { schema: { type: 'string' } },
+        section: 'additionalActions',
       },
     },
     validation: {
@@ -1601,26 +1630,13 @@ export const widgets = [
       onChange: { displayName: 'On change' },
     },
     styles: {
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
       borderRadius: {
-        type: 'code',
+        type: 'input',
         displayName: 'Border radius',
         validation: {
           schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
+        accordian: 'field',
       },
       backgroundColor: {
         type: 'color',
@@ -1628,6 +1644,78 @@ export const widgets = [
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'field',
+      },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box Shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
+      color: {
+        type: 'color',
+        displayName: 'Text color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'label',
+      },
+      alignment: {
+        type: 'switch',
+        displayName: 'Alignment',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Side', value: 'side' },
+          { displayName: 'Top', value: 'top' },
+        ],
+        accordian: 'label',
+      },
+      direction: {
+        type: 'switch',
+        displayName: '',
+        validation: { schema: { type: 'string' } },
+        showLabel: false,
+        isIcon: true,
+        options: [
+          { displayName: 'alignleftinspector', value: 'alignleftinspector' },
+          { displayName: 'alignrightinspector', value: 'alignrightinspector' },
+        ],
+        accordian: 'label',
+      },
+      width: {
+        type: 'slider',
+        displayName: 'Width',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'label',
+        conditionallyRender: {
+          key: 'alignment',
+          value: 'side',
+        },
+      },
+      auto: {
+        type: 'checkbox',
+        displayName: 'auto',
+        showLabel: false,
+        validation: { schema: { type: 'boolean' } },
+        accordian: 'label',
+        conditionallyRender: {
+          key: 'alignment',
+          value: 'side',
+        },
+      },
+      padding: {
+        type: 'switch',
+        displayName: 'Padding',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        options: [
+          { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
+        ],
+        accordian: 'container',
+      },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error text color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
       },
     },
     exposedVariables: {
@@ -1640,6 +1728,10 @@ export const widgets = [
       },
       properties: {
         placeholder: { value: 'password' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        toolltip: { value: '' },
+        label: { value: 'Label' },
       },
       validation: {
         regex: { value: '' },
@@ -1651,8 +1743,16 @@ export const widgets = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#ffffff' },
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        direction: { value: 'alignleftinspector' },
+        width: { value: '33' },
+        alignment: { value: 'side' },
+        color: { value: '#11181C' },
+        auto: { value: '{{false}}' },
+        padding: { value: 'default' },
+        errTextColor: { value: '#DB4324' },
       },
     },
   },

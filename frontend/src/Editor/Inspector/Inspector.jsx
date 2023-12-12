@@ -77,7 +77,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
   // const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const shouldAddBoxShadow = ['TextInput', 'NumberInput'];
+  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput'];
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -307,7 +307,11 @@ export const Inspector = ({
 
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${isVersionReleased && 'disabled'}`}>
-      <div className={!styleGroupedComponentTypes.includes(component.component.component) && 'p-3'}>
+      <div
+        className={
+          component.component.component !== 'TextInput' && component.component.component !== 'PasswordInput' && 'p-3'
+        }
+      >
         <Inspector.RenderStyleOptions
           componentMeta={componentMeta}
           component={component}
@@ -456,7 +460,7 @@ const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput']
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
-  if (styleGroupedComponentTypes.includes(component.component.component)) {
+  if (component.component.component === 'TextInput' || component.component.component === 'PasswordInput') {
     // Iterate over the properties in componentMeta.styles
     for (const key in componentMeta.styles) {
       const property = componentMeta.styles[key];
@@ -473,7 +477,9 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   }
 
   return Object.keys(
-    styleGroupedComponentTypes.includes(component.component.component) ? groupedProperties : componentMeta.styles
+    component.component.component === 'TextInput' || component.component.component === 'PasswordInput'
+      ? groupedProperties
+      : componentMeta.styles
   ).map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
@@ -497,7 +503,7 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
 
     const items = [];
 
-    if (styleGroupedComponentTypes.includes(component.component.component)) {
+    if (component.component.component === 'TextInput' || component.component.component === 'PasswordInput') {
       items.push({
         title: `${style}`,
         children: Object.entries(groupedProperties[style]).map(([key, value]) => ({

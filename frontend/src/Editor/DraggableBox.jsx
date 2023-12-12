@@ -208,7 +208,11 @@ export const DraggableBox = React.memo(
     function isVerticalResizingAllowed() {
       // Return true if vertical resizing is allowed, false otherwise
       return (
-        mode === 'edit' && component.component !== 'TextInput' && component.component !== 'NumberInput' && !readOnly
+        mode === 'edit' &&
+        component.component !== 'TextInput' &&
+        component.component !== 'PasswordInput' &&
+        component.component !== 'NumberInput' &&
+        !readOnly
       );
     }
 
