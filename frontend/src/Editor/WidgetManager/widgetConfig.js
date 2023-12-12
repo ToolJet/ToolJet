@@ -2903,7 +2903,7 @@ export const widgets = [
     displayName: 'Multiselect',
     description: 'Multiple item selector',
     defaultSize: {
-      width: 12,
+      width: 15,
       height: 30,
     },
     component: 'Multiselect',
@@ -2960,6 +2960,14 @@ export const widgets = [
         },
         accordian: 'Data',
       },
+      advanced: {
+        type: 'toggle',
+        displayName: 'Dynamic options',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+        accordian: 'Options',
+      },
       value: {
         type: 'code',
         displayName: 'Default value',
@@ -3007,12 +3015,22 @@ export const widgets = [
         },
         accordian: 'Options',
       },
+      schema: {
+        type: 'code',
+        displayName: 'Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
+        },
+        accordian: 'Options',
+      },
       showAllOption: {
         type: 'toggle',
-        displayName: 'Enable select All option',
+        displayName: 'Enable select all option',
         validation: {
           schema: { type: 'boolean' },
         },
+        accordian: 'Options',
       },
       loadingState: {
         type: 'toggle',
@@ -3143,7 +3161,7 @@ export const widgets = [
         accordian: 'field',
         visibility: false,
       },
-      fieldBorderRadius: {
+      borderRadius: {
         type: 'input',
         displayName: 'Border radius',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
@@ -3182,7 +3200,8 @@ export const widgets = [
       },
       properties: {
         label: { value: 'Select' },
-        value: { value: '{{"2"}}' },
+        value: { value: '{{["1","2"]}}' },
+        advanced: { value: `{{false}}` },
         values: { value: '{{["1","2","3"]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         showAllOption: { value: '{{false}}' },
@@ -3191,13 +3210,17 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         dropdownLoadingState: { value: '{{false}}' },
+        schema: {
+          value:
+            "{{[\t{label: 'One',value: 1,disable: false,visible: true,default: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+        },
       },
       events: [],
       styles: {
         labelColor: { value: '#11181C' },
         labelWidth: { value: '33' },
         labelAutoWidth: { value: '{{false}}' },
-        fieldBorderRadius: { value: '6' },
+        borderRadius: { value: '6' },
         justifyContent: { value: 'left' },
         selectedTextColor: { value: '#11181C' },
         fieldBorderColor: { value: '#D7DBDF' },

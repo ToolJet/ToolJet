@@ -282,17 +282,16 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     isOpen: true,
     children: (
       <>
-        {!isMultiSelect &&
-          renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'advanced',
-            'properties',
-            currentState,
-            allComponents
-          )}
+        {renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'advanced',
+          'properties',
+          currentState,
+          allComponents
+        )}
         {isDynamicOptionsEnabled
           ? renderElement(
               component,
@@ -312,6 +311,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             paramUpdated,
             dataQueries,
             'loadingState',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isMultiSelect &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'showAllOption',
             'properties',
             currentState,
             allComponents

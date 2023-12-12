@@ -278,7 +278,7 @@ export const Box = memo(
         ...{ validationObject: component.definition.validation, currentState },
         customResolveObjects: customResolvables,
       });
-    const shouldAddBoxShadow = ['TextInput', 'Text', 'DropDown'];
+    const shouldAddBoxShadow = ['TextInput', 'Text', 'DropDown', 'Multiselect'];
 
     const calculateHeight = useCallback(() => {
       // 2px needs to be added since we are removing 1px each from top bottom padding when padding selected to none

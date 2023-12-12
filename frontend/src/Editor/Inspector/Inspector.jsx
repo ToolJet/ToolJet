@@ -78,7 +78,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
   // const [selectedTab, setSelectedTab] = useState('properties');
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const newRevampedWidgets = ['TextInput', 'Text', 'DropDown'];
+  const newRevampedWidgets = ['TextInput', 'Text', 'DropDown', 'Multiselect'];
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
