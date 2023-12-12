@@ -29,6 +29,7 @@ describe("App share functionality", () => {
   });
 
   it("Verify private and public app share funtionality", () => {
+    cy.wait(2000)
     cy.openApp();
     cy.dragAndDropWidget("Table", 250, 250);
 

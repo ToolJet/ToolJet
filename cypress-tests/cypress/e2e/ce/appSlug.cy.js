@@ -17,11 +17,12 @@ describe("App slug", () => {
     before(() => {
         cy.apiLogin();
         cy.apiCreateApp(data.appName);
-        cy.wait(3000)
+        cy.wait(1000)
         cy.logoutApi()
     })
 
     it("Verify app slug cases in global settings", () => {
+        cy.wait(2000)
         cy.openApp('my-workspace');
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
