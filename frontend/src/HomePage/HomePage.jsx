@@ -77,7 +77,7 @@ class HomePageComponent extends React.Component {
       appsLimit: {},
       featureAccess: {},
       newAppName: '',
-      commitEnabled: true,
+      commitEnabled: false,
       fetchingOrgGit: false,
       orgGit: null,
       showGitRepositoryImportModal: false,

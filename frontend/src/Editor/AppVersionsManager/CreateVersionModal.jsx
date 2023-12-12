@@ -23,7 +23,7 @@ export const CreateVersion = ({
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const [fetchingOrgGit, setFetchingOrgGit] = useState(false);
-  const [cancommit, setCommitEnabled] = useState(true);
+  const [cancommit, setCommitEnabled] = useState(false);
   const [orgGit, setOrgGit] = useState(null);
   const { t } = useTranslation();
   const { editingVersion } = useAppVersionStore(
@@ -57,7 +57,6 @@ export const CreateVersion = ({
       .create(appId, versionName, selectedVersion.id)
       .then((data) => {
         toast.success('Version Created');
-        cancommit && navigate(pathname, { replace: true, state: { commitEnabled: cancommit, type: 'version' } });
         appVersionService.getAll(appId).then((data) => {
           setVersionName('');
           setIsCreatingVersion(false);
@@ -68,7 +67,23 @@ export const CreateVersion = ({
         appVersionService
           .getAppVersionData(appId, data.id)
           .then((data) => {
-            setAppDefinitionFromVersion(data, cancommit);
+            setAppDefinitionFromVersion(data);
+            if (cancommit) {
+              const body = {
+                gitAppName: orgGit?.git_app_name,
+                versionId: data?.editing_version?.id,
+                lastCommitMessage: 'Version Creation',
+                gitVersionName: data?.editing_version?.name,
+              };
+              gitSyncService
+                .gitPush(body, orgGit?.id, data?.editing_version?.id)
+                .then((data) => {
+                  toast.success('Changes commited successfully');
+                })
+                .catch((error) => {
+                  toast.error(error?.error);
+                });
+            }
           })
           .catch((error) => {
             toast.error(error);
@@ -83,9 +98,9 @@ export const CreateVersion = ({
   const fetchOrgGit = () => {
     setFetchingOrgGit(true);
     gitSyncService
-      .getGitConfig(current_organization_id)
+      .getAppConfig(current_organization_id, editingVersion?.id)
       .then((data) => {
-        setOrgGit(data?.organization_git);
+        setOrgGit(data?.app_git);
       })
       .finally(() => {
         setFetchingOrgGit(false);
@@ -157,7 +172,7 @@ export const CreateVersion = ({
               />
             </div>
           </div>
-          {orgGit?.is_enabled && (
+          {orgGit?.org_git?.is_enabled && (
             <div className="commit-changes" style={{ marginTop: '-1rem', marginBottom: '2rem' }}>
               <div>
                 <input

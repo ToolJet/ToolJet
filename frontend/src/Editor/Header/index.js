@@ -44,7 +44,7 @@ export default function EditorHeader({
   isEditorFreezed,
 }) {
   const currentUser = useCurrentUser();
-  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, environments } = useAppInfo();
+  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, environments, creationMode } = useAppInfo();
   const { featureAccess, currentAppEnvironment, currentAppEnvironmentId } = useEditorState();
   const { currentAppVersionEnvironment } = useAppVersionState();
   const { setCurrentAppEnvironmentId } = useEditorActions();
@@ -124,7 +124,7 @@ export default function EditorHeader({
                     appId={appId}
                     appName={appName}
                     onNameChanged={onNameChanged}
-                    appCreationMode={app?.creation_mode}
+                    appCreationMode={creationMode}
                   />
                 </div>
                 <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
@@ -185,7 +185,7 @@ export default function EditorHeader({
                       currentEnvironment={currentAppEnvironment}
                       setCurrentEnvironment={setCurrentAppEnvironmentId}
                       isPublic={isPublic ?? false}
-                      appCreationMode={app?.creation_mode}
+                      appCreationMode={creationMode}
                     />
                   )}
                 </div>
@@ -193,13 +193,13 @@ export default function EditorHeader({
                   onClick={
                     featureAccess?.gitSync &&
                     currentAppEnvironment?.priority === 1 &&
-                    (app.creation_mode === 'GIT' || !isEditorFreezed) &&
+                    (creationMode === 'GIT' || !isEditorFreezed) &&
                     toggleGitSyncModal
                   }
                   className={
                     featureAccess?.gitSync &&
                     currentAppEnvironment?.priority === 1 &&
-                    (app.creation_mode === 'GIT' || !isEditorFreezed)
+                    (creationMode === 'GIT' || !isEditorFreezed)
                       ? 'git-sync-btn'
                       : 'git-sync-btn disabled-action-tooltip'
                   }

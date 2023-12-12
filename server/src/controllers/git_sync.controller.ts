@@ -115,6 +115,7 @@ export class GitSyncController {
       where: { id: versionId },
       relations: ['app'],
     });
+
     versionId = versionId == version.app.editingVersion.id ? versionId : version.app.editingVersion.id;
     version = await this.appVersionsRepository.findOne({
       where: { id: versionId },
@@ -189,8 +190,7 @@ export class GitSyncController {
 
     if (!ability.can('editApp', App))
       throw new ForbiddenException('You do not have permissions to perform this action');
-    const app = this.gitSyncServices.pullGitAppChanges(user, appData, appId);
+    const app = await this.gitSyncServices.pullGitAppChanges(user, appData, appId);
     return decamelizeKeys({ app });
-    return;
   }
 }

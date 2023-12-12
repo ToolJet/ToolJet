@@ -142,6 +142,7 @@ const EditorComponent = (props) => {
     events,
     areOthersOnSameVersionAndPage,
     environments,
+    creationMode,
   } = useAppInfo();
 
   const currentState = useCurrentState();
@@ -176,7 +177,7 @@ const EditorComponent = (props) => {
 
   useEffect(() => {
     updateState({ isLoading: true });
-    app.creation_mode === 'GIT' && useAppVersionStore.getState().actions.onEditorFreeze(true);
+    (app.creation_mode === 'GIT' || app.creationMode === 'GIT') && onEditorFreeze(true);
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = {
       ...currentSession?.current_user,
@@ -326,7 +327,14 @@ const EditorComponent = (props) => {
   const fetchApps = async (page) => {
     const { apps } = await appsService.getAll(page, '', '', 'front-end');
 
-    updateState({ apps: apps.map((app) => ({ id: app.id, name: app.name, slug: app.slug })) });
+    updateState({
+      apps: apps.map((app) => ({
+        id: app.id,
+        name: app.name,
+        slug: app.slug,
+        creationMode: app?.creationMode || app?.creation_mode,
+      })),
+    });
   };
 
   const fetchOrgEnvironmentVariables = () => {
@@ -799,6 +807,7 @@ const EditorComponent = (props) => {
       appId: data?.id,
       events: data.events,
       currentVersionId: data?.editing_version?.id,
+      creationMode: data?.creationMode || data?.creation_mode,
       app: data,
     });
 
@@ -829,12 +838,15 @@ const EditorComponent = (props) => {
         },
       },
     });
+
+    if (data.creationMode === 'GIT') {
+      onEditorFreeze(true);
+    }
     updateEditorState({
       isLoading: false,
       appDefinition: appJson,
       isUpdatingEditorStateInProcess: false,
     });
-
     if (versionSwitched) {
       props?.navigate(`/${getWorkspaceId()}/apps/${data.slug ?? appId}/${appJson.pages[homePageId]?.handle}`, {
         state: {
@@ -878,7 +890,6 @@ const EditorComponent = (props) => {
           canRedo: false,
         });
       }
-
       updateEditorState({
         isLoading: true,
       });
@@ -1840,7 +1851,8 @@ const EditorComponent = (props) => {
         app={app}
         isVersionReleased={isVersionReleased}
         featureAccess={featureAccess}
-        // fetchApp={fetchApp}
+        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+        creationMode={creationMode}
       />
       <Confirm
         show={queryConfirmationList?.length > 0}
@@ -1860,11 +1872,9 @@ const EditorComponent = (props) => {
         onCancel={() => cancelDeletePageRequest()}
         darkMode={props.darkMode}
       />
-      {app?.creation_mode === 'GIT' && (
-        <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />
-      )}
+      {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {isVersionReleased && <ReleasedVersionError />}
-      {!isVersionReleased && isEditorFreezed && app?.creation_mode !== 'GIT' && <FreezeVersionInfo />}
+      {!isVersionReleased && isEditorFreezed && creationMode !== 'GIT' && <FreezeVersionInfo />}
       <EditorContextWrapper>
         <EditorHeader
           darkMode={props.darkMode}

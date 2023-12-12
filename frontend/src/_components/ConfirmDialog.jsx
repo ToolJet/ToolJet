@@ -14,7 +14,7 @@ export function ConfirmDialog({
   confirmButtonText,
   confirmButtonType = 'dangerPrimary',
   cancelButtonType = 'secondary',
-  cancelButtonText = 'cancel',
+  cancelButtonText = 'Cancel',
   backdropClassName,
   onCloseIconClick,
   footerStyle,

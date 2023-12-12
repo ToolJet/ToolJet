@@ -5,7 +5,7 @@ import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { authenticationService, gitSyncService } from '@/_services';
+import { authenticationService, gitSyncService, appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
 import { getSubpath } from '@/_helpers/routes';
 import ModalBase from '@/_ui/Modal';
@@ -24,7 +24,15 @@ const UPDATE_STATUS = {
   NONE: 'NONE',
 };
 
-export default function GitSyncModal({ showGitSyncModal, handleClose, app, isVersionReleased, featureAccess }) {
+export default function GitSyncModal({
+  showGitSyncModal,
+  handleClose,
+  app,
+  isVersionReleased,
+  featureAccess,
+  setAppDefinitionFromVersion,
+  creationMode,
+}) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const editingVersion = useAppVersionStore.getState().editingVersion;
   const { state, pathname } = useLocation();
@@ -55,7 +63,7 @@ export default function GitSyncModal({ showGitSyncModal, handleClose, app, isVer
     gitSyncService
       .getAppConfig(current_organization_id, editingVersion?.id)
       .then((data) => {
-        app?.creation_mode === 'GIT' ? setModalToShow(MODAL_TYPE.PULL) : setModalToShow(MODAL_TYPE.COMMIT);
+        creationMode === 'GIT' ? setModalToShow(MODAL_TYPE.PULL) : setModalToShow(MODAL_TYPE.COMMIT);
         setAppGitLoading(false);
         setAppGitData({ ...data?.app_git });
       })
@@ -126,13 +134,19 @@ export default function GitSyncModal({ showGitSyncModal, handleClose, app, isVer
       .confirmPullChanges(body, appGitData?.app_id)
       .then((data) => {
         handleClose();
-        toast.success('App changes pulled successfully');
+        const appData = data?.app;
+        appVersionService
+          .getAppVersionData(appData.id, appData.editing_version.id)
+          .then((appV2) => {
+            setAppDefinitionFromVersion(appV2);
+            toast.success('App changes pulled successfully');
+          })
+          .catch((error) => {
+            toast.error(error);
+          });
       })
       .catch((error) => {
         toast.error(error?.error);
-      })
-      .finally(() => {
-        window.location.reload(true);
       });
   };
 
@@ -207,7 +221,7 @@ export default function GitSyncModal({ showGitSyncModal, handleClose, app, isVer
       case MODAL_TYPE.PULL:
         return (
           <Modal.Footer>
-            <ButtonSolid isLoading={appPushLoading} variant={'tertiary'} onClick={insideHandleClose}>
+            <ButtonSolid disabled={appPushLoading} variant={'tertiary'} onClick={insideHandleClose}>
               Cancel
             </ButtonSolid>
             <ButtonSolid

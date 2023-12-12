@@ -389,14 +389,14 @@ export class GitSyncService {
     remoteName = 'origin'
   ) {
     const appGit = await this.findAppGitByAppId(appId);
-
+    if (!appGit) return;
+    if (appGit.orgGit.isEnabled == false) return;
     const version = await this.appVersionsRepository.findOne({
       where: { id: appGit.versionId },
       relations: ['app'],
     });
-    if (!version) throw new BadRequestException('Wrong version Id');
+    if (!version) return;
 
-    if (!appGit) return;
     const appGitPushBody: AppGitPushDto = {
       gitAppName: appGit.gitAppName,
       lastCommitMessage: `${renameVersionFlag ? 'Version' : 'App'} is renamed`,
@@ -663,6 +663,7 @@ export class GitSyncService {
         isNormalizedAppDefinitionSchema
       );
       await app.reload();
+
       const appGitBody = {
         gitAppName: appMetaBody?.gitAppName,
         lastCommitUser: appMetaBody?.lastCommitUser,
