@@ -81,8 +81,6 @@ export const DraggableBox = React.memo(
     onComponentClick,
     onComponentOptionChanged,
     onComponentOptionsChanged,
-    onResizeStop,
-    onDragStop,
     paramUpdated,
     resizingStatusChanged,
     zoomLevel,
@@ -239,46 +237,6 @@ export const DraggableBox = React.memo(
             }}
             style={getStyles(isDragging, isSelectedComponent)}
           >
-            {/* <Rnd
-              style={{ ...style }}
-              resizeGrid={[gridWidth, 10]}
-              dragGrid={[gridWidth, 10]}
-              size={{
-                width: width,
-                height: layoutData.height,
-              }}
-              position={{
-                x: layoutData ? (layoutData.left * canvasWidth) / 100 : 0,
-                y: layoutData ? layoutData.top : 0,
-              }}
-              defaultSize={{}}
-              className={`resizer ${
-                mouseOver || isResizing || isDragging2 || isSelectedComponent ? 'resizer-active' : ''
-              } `}
-              onResize={() => setResizing(true)}
-              onDrag={(e) => {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                if (!isDragging2) {
-                  setDragging(true);
-                }
-              }}
-              resizeHandleClasses={isSelectedComponent || mouseOver ? resizerClasses : {}}
-              resizeHandleStyles={resizerStyles}
-              enableResizing={mode === 'edit' && !readOnly}
-              disableDragging={mode !== 'edit' || readOnly}
-              onDragStop={(e, direction) => {
-                setDragging(false);
-                onDragStop(e, id, direction, currentLayout, layoutData);
-              }}
-              cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider, .kanban-container, div.real-canvas`}
-              onResizeStop={(e, direction, ref, d, position) => {
-                setResizing(false);
-                onResizeStop(id, e, direction, ref, d, position);
-              }}
-              bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
-              widgetId={id}
-            > */}
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
               {mode === 'edit' &&
                 !readOnly &&

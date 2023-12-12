@@ -79,7 +79,8 @@ export const SubContainer = ({
     }),
     shallow
   );
-  const [noOfGrids] = useNoOfGrid();
+  // const [noOfGrids] = useNoOfGrid();
+  const noOfGrids = 43;
 
   const gridWidth = getContainerCanvasWidth() / noOfGrids;
 
@@ -399,118 +400,7 @@ export const SubContainer = ({
     return width;
   }
 
-  function onDragStop(e, componentId, direction, currentLayout) {
-    if (isVersionReleased) {
-      enableReleasedVersionPopupState();
-      return;
-    }
-
-    const canvasWidth = getContainerCanvasWidth();
-    const nodeBounds = direction.node.getBoundingClientRect();
-
-    const canvasBounds = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-
-    // Computing the left offset
-    const leftOffset = nodeBounds.x - canvasBounds.x;
-    const currentLeftOffset = boxes[componentId].layouts[currentLayout].left;
-    const leftDiff = currentLeftOffset - convertXToPercentage(leftOffset, canvasWidth);
-
-    const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
-
-    let newBoxes = { ...boxes };
-
-    const subContainerHeight = canvasBounds.height - 30;
-
-    if (selectedComponents) {
-      for (const selectedComponent of selectedComponents) {
-        newBoxes = produce(newBoxes, (draft) => {
-          const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
-          const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
-
-          draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
-          draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
-        });
-
-        const componentBottom =
-          newBoxes[selectedComponent.id].layouts[currentLayout].top +
-          newBoxes[selectedComponent.id].layouts[currentLayout].height;
-
-        if (isParentModal && subContainerHeight <= componentBottom) {
-          subContainerHeightRef.current = subContainerHeight + 100;
-        }
-      }
-    }
-
-    setChildWidgets(() => getChildWidgets(newBoxes));
-    setBoxes(newBoxes);
-  }
-
-  function onResizeStop(id, e, direction, ref, d, position) {
-    if (isVersionReleased) {
-      enableReleasedVersionPopupState();
-      return;
-    }
-
-    const deltaWidth = Math.round(d.width / gridWidth) * gridWidth; //rounding of width of element to nearest mulitple of gridWidth
-    const deltaHeight = d.height;
-
-    if (deltaWidth === 0 && deltaHeight === 0) {
-      return;
-    }
-
-    let { x, y } = position;
-    x = Math.round(x / gridWidth) * gridWidth;
-
-    const defaultData = {
-      top: 100,
-      left: 0,
-      width: 445,
-      height: 500,
-    };
-
-    let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
-
-    top = y;
-    if (deltaWidth !== 0) {
-      // onResizeStop is triggered for a single click on the border, therefore this conditional logic
-      // should not be removed.
-      left = (x * 100) / _containerCanvasWidth;
-    }
-
-    //round the width to nearest multiple of gridwidth before converting to %
-    let currentWidth = (_containerCanvasWidth * width) / noOfGrids;
-
-    if (currentWidth > _containerCanvasWidth) {
-      currentWidth = _containerCanvasWidth;
-    }
-
-    let newWidth = currentWidth + deltaWidth;
-    newWidth = Math.round(newWidth / gridWidth) * gridWidth;
-    width = (newWidth * noOfGrids) / _containerCanvasWidth;
-
-    height = height + deltaHeight;
-
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            width,
-            height,
-            top,
-            left,
-          },
-        },
-      },
-    };
-
-    setBoxes(newBoxes);
-  }
-
-  const onResizeStop2 = (id, height, width, x, y) => {
+  const onResizeStop = (id, height, width, x, y) => {
     const newWidth = (width * noOfGrids) / _containerCanvasWidth;
     let newBoxes = {
       ...boxes,
@@ -533,7 +423,7 @@ export const SubContainer = ({
     // updateCanvasHeight(newBoxes);
   };
 
-  function onDragStop2(id, x, y, parent) {
+  function onDragStop(id, x, y, parent) {
     // const parentGridWidth = parentGridWidth;
     const subContainerGridWidth = parent ? subContainerWidths[parent] || gridWidth : parentGridWidth;
     let newBoxes = {
@@ -650,8 +540,6 @@ export const SubContainer = ({
           onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
           onComponentOptionsChanged={onComponentOptionsChanged}
           key={key}
-          onResizeStop={onResizeStop}
-          onDragStop={onDragStop}
           paramUpdated={paramUpdated}
           id={key}
           allComponents={allComponents}
@@ -722,14 +610,9 @@ export const SubContainer = ({
         boxes={Object.keys(childWidgets).map((key) => ({ ...boxes[key], id: key }))}
         renderWidget={renderWidget}
         canvasWidth={_containerCanvasWidth}
-        onResizeStop={onResizeStop2}
-        onDrag={onDragStop2}
         gridWidth={gridWidth}
-        setIsChildDragged={setIsChildDragged}
         parent={parent}
-        parentLayout={appDefinition.pages[currentPageId]?.components[parent]?.layouts?.[currentLayout]}
-        parentGridWidth={parentGridWidth}
-        allComponents={allComponents}
+        currentLayout={currentLayout}
       />
       {/* {checkParentVisibility() &&
         Object.keys(childWidgets).map((key) => {
