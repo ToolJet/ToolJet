@@ -1055,8 +1055,8 @@ export const widgets = [
     description: 'User text input field',
     component: 'TextInput',
     defaultSize: {
-      width: 21,
-      height: 41,
+      width: 10,
+      height: 40,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -1241,6 +1241,10 @@ export const widgets = [
     },
     exposedVariables: {
       value: '',
+      isMandatory: false,
+      isVisibile: true,
+      isDisabled: false,
+      isLoading: false,
     },
     actions: [
       {
@@ -1270,6 +1274,21 @@ export const widgets = [
         displayName: 'Visibility',
         params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
+      {
+        handle: 'setVisibility',
+        displayName: 'setVisibility',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setDisable',
+        displayName: 'setDisable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setLoading',
+        displayName: 'setLoading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
     ],
     definition: {
       validation: {
@@ -1290,6 +1309,7 @@ export const widgets = [
         placeholder: { value: 'Enter your input' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        loadingState: { value: '{{false}}' },
         tooltip: { value: '' },
       },
       events: [],
@@ -1544,10 +1564,10 @@ export const widgets = [
         minValue: { value: '' },
         placeholder: { value: '0' },
         decimalPlaces: { value: '{{2}}' },
-        loadingState: { value: '{{false}}' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         tooltip: { value: '' },
+        visibility: { value: '{{true}}' },
+        loadingState: { value: '{{false}}' },
+        disabledState: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -1575,8 +1595,8 @@ export const widgets = [
     description: 'Secure text input',
     component: 'PasswordInput',
     defaultSize: {
-      width: 21,
-      height: 41,
+      width: 10,
+      height: 40,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -1675,8 +1695,8 @@ export const widgets = [
         showLabel: false,
         isIcon: true,
         options: [
-          { displayName: 'alignleftinspector', value: 'alignleftinspector' },
-          { displayName: 'alignrightinspector', value: 'alignrightinspector' },
+          { displayName: 'alignleftinspector', value: 'right' },
+          { displayName: 'alignrightinspector', value: 'left' },
         ],
         accordian: 'label',
       },
@@ -1720,7 +1740,28 @@ export const widgets = [
     },
     exposedVariables: {
       value: '',
+      isMandatory: false,
+      isVisibile: true,
+      isDisabled: false,
+      isLoading: false,
     },
+    actions: [
+      {
+        handle: 'setVisibility',
+        displayName: 'setVisibility',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setDisable',
+        displayName: 'setDisable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setLoading',
+        displayName: 'setLoading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
@@ -1730,10 +1771,12 @@ export const widgets = [
         placeholder: { value: 'password' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
+        loadingState: { value: '{{false}}' },
         toolltip: { value: '' },
         label: { value: 'Label' },
       },
       validation: {
+        mandatory: { value: false },
         regex: { value: '' },
         minLength: { value: null },
         maxLength: { value: null },
@@ -1741,16 +1784,14 @@ export const widgets = [
       },
       events: [],
       styles: {
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
         borderRadius: { value: '{{6}}' },
         backgroundColor: { value: '#ffffff' },
         boxShadow: { value: '0px 0px 0px 0px #00000040' },
-        direction: { value: 'alignleftinspector' },
+        direction: { value: 'left' },
         width: { value: '33' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: '{{false}}' },
+        auto: { value: '{{true}}' },
         padding: { value: 'default' },
         errTextColor: { value: '#DB4324' },
       },

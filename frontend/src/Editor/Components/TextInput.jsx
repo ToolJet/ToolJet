@@ -45,6 +45,7 @@ export const TextInput = function TextInput({
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const [elementWidth, setElementWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
+  const [loading, setLoading] = useState(loadingState);
 
   const computedStyles = {
     height: height == 37 ? (padding == 'default' ? '32px' : '38px') : padding == 'default' ? height - 5 : height,
@@ -125,10 +126,59 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alignment]);
 
+  useEffect(() => {
+    setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMandatory]);
+
+  useEffect(() => {
+    setExposedVariable('isLoading', loading);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  useEffect(() => {
+    setExposedVariable('setLoading', async function (loading) {
+      setLoading(loading);
+      setExposedVariable('isLoading', loading);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.loadingState]);
+
+  useEffect(() => {
+    setExposedVariable('isVisibile', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariable('setVisibility', async function (state) {
+      setVisibility(state);
+      setExposedVariable('isVisibile', state);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    setExposedVariable('setDisable', async function (disable) {
+      setDisable(disable);
+      setExposedVariable('isDisabled', disable);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', disable);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disable]);
+
+  useEffect(() => {
+    loading !== loadingState && setLoading(loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
   const renderInput = () => (
     <>
       <div
-        data-disabled={disable || loadingState}
+        data-disabled={disable || loading}
         className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : ''}  ${
           direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
         }
@@ -203,9 +253,9 @@ export const TextInput = function TextInput({
           style={computedStyles}
           value={value}
           data-cy={dataCy}
-          disabled={loadingState}
+          disabled={disable || loading}
         />
-        {loadingState && <Loader style={{ ...loaderStyle }} width="16" />}
+        {loading && <Loader style={{ ...loaderStyle }} width="16" />}
       </div>
       {showValidationError && visibility && (
         <div

@@ -294,6 +294,7 @@ export const NumberInput = function NumberInput({
           <div onClick={(e) => handleIncrement(e)}>
             <SolidIcon
               style={{
+                backgroundColor: darkMode ? 'black' : 'white',
                 top:
                   defaultAlignment === 'top'
                     ? padding == 'default'
@@ -310,6 +311,9 @@ export const NumberInput = function NumberInput({
                     : undefined,
                 right: padding == 'default' ? '3px' : '1px',
                 height: padding == 'default' ? '16px' : '19px',
+                borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
+                borderBottom: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
+                borderTopRightRadius: borderRadius,
               }}
               className="numberinput-up-arrow arrow"
               name="cheveronup"
@@ -332,6 +336,7 @@ export const NumberInput = function NumberInput({
           <div onClick={(e) => handleDecrement(e)}>
             <SolidIcon
               style={{
+                backgroundColor: darkMode ? 'black' : 'white',
                 left:
                   alignment == 'side' && direction === 'right'
                     ? padding == 'default'
@@ -341,6 +346,9 @@ export const NumberInput = function NumberInput({
                 right: padding == 'default' ? '3px' : '1px',
                 height: padding == 'default' ? '16px' : '19px',
                 bottom: padding == 'default' ? '4px' : '1px',
+                borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
+                borderTop: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
+                borderBottomRightRadius: borderRadius,
               }}
               className="numberinput-down-arrow arrow"
               name="cheverondown"
