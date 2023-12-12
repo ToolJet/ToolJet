@@ -79,7 +79,7 @@ Simplifies the automation of complex manual business processes, reducing the eng
 <!-- This feature is particularly useful for streamlining enterprise workflows and improving operational efficiency. -->
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0'}} className="screenshot-full" src="/img/platform-overview/workflows-v2.png" alt="Workflows" />
+    <img style={{ border:'0'}} className="screenshot-full" src="/img/platform-overview/workflows.png" alt="Workflows" />
 </div>
 
 </div>

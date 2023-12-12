@@ -62,10 +62,9 @@
   background: var(--ifm-menu-link-sublist-icon) 50% / 1rem 1rem !important;
 }
 
-/* h1 {
-  padding-left: 10%;
-  padding-right: 10%;
-} */
+.badge--primary {
+  margin-bottom: 1rem;
+}
 
 article {
   padding-left: 7%;

@@ -47,7 +47,6 @@ Once you have created an account with ToolJet, go to the dashboard and click on 
     </iframe>
 </div>
 
-
 Click and drag a **[Table](/docs/widgets/table)** component to the canvas and style it. 
 
 <div style={{marginBottom:'15px', height:'397px', }}>
@@ -62,6 +61,8 @@ Click and drag a **[Table](/docs/widgets/table)** component to the canvas and st
         allowfullscreen>
     </iframe>
 </div>
+
+
 
 Optionally, you can create a header by placing **[Text](/docs/widgets/text)** components over a **[Container](/docs/widgets/container)** component and styling them. 
 
