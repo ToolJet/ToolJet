@@ -40,6 +40,7 @@ describe("Basic components", () => {
     cy.openApp();
     cy.modifyCanvasSize(900, 900);
     cy.intercept("GET", "/api/comments/*").as("loadComments");
+    resizeQueryPanel(0);
   });
   afterEach(() => {
     cy.apiDeleteApp();
@@ -409,6 +410,7 @@ describe("Basic components", () => {
     verifyComponent("form2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("form2");
   });
 

@@ -44,7 +44,11 @@ Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
       },
       { log: false }
     ).then((response) => {
+      {
+        log: false;
+      }
       expect(response.status).to.equal(201);
+      Cypress.env(`${name}-id`, response.body.id);
 
       Cypress.log({
         name: "Create Data Source",
@@ -79,6 +83,9 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
         user_id: "",
       },
     }).then((response) => {
+      {
+        log: false;
+      }
       expect(response.status).to.equal(201);
       Cypress.env("appId", response.allRequestResponses[0]["Response Body"].id);
       Cypress.log({

@@ -4,6 +4,7 @@ import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
 
 import { verifyControlComponentAction } from "Support/utils/button";
+import { resizeQueryPanel } from "Support/utils/dataSource";
 
 import {
   openAccordion,
@@ -39,6 +40,44 @@ describe("Editor- Test Button widget", () => {
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
   });
 
+  it("should verify position of component after dragging", () => {
+    const data = {};
+    data.widgetName = buttonText.defaultWidgetName;
+    resizeQueryPanel(0);
+
+    cy.getPosition(data.widgetName).then((position) => {
+      const [clientX, clientY] = position;
+      expect(clientX).not.to.be.closeTo(100, 10);
+      expect(clientY).not.to.be.closeTo(100, 10);
+    });
+
+    cy.moveComponent(data.widgetName, 100, 100);
+    cy.waitForAutoSave();
+    cy.getPosition(data.widgetName).then((position) => {
+      const [clientX, clientY] = position;
+      expect(clientX).to.be.closeTo(100, 20);
+      expect(clientY).to.be.closeTo(100, 10);
+    });
+    cy.reload();
+    resizeQueryPanel(0);
+    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+      "be.visible"
+    );
+    cy.getPosition(data.widgetName).then((position) => {
+      const [clientX, clientY] = position;
+      expect(clientX).to.be.closeTo(100, 20);
+      expect(clientY).to.be.closeTo(100, 10);
+    });
+
+    cy.moveComponent(data.widgetName, 750, 750);
+    cy.getPosition(data.widgetName).then((position) => {
+      const [clientX, clientY] = position;
+      expect(clientX).to.be.closeTo(750, 20);
+      expect(clientY).to.be.closeTo(750, 10);
+    });
+
+    cy.apiDeleteApp(data.appName);
+  });
   it("should verify the properties of the button widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
@@ -101,7 +140,7 @@ describe("Editor- Test Button widget", () => {
     cy.apiDeleteApp(data.appName);
   });
 
-  it("should verify the styles of the button widget", () => {
+  it("should verify the styles of the button component", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.backgroundColor = fake.randomRgba;
