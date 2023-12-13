@@ -1650,28 +1650,6 @@ export const widgets = [
       onChange: { displayName: 'On change' },
     },
     styles: {
-      borderRadius: {
-        type: 'input',
-        displayName: 'Border radius',
-        validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        },
-        accordian: 'field',
-      },
-      backgroundColor: {
-        type: 'color',
-        displayName: 'Background color',
-        validation: {
-          schema: { type: 'string' },
-        },
-        accordian: 'field',
-      },
-      boxShadow: {
-        type: 'boxShadow',
-        displayName: 'Box Shadow',
-        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
-        accordian: 'field',
-      },
       color: {
         type: 'color',
         displayName: 'Text color',
@@ -1695,8 +1673,8 @@ export const widgets = [
         showLabel: false,
         isIcon: true,
         options: [
-          { displayName: 'alignleftinspector', value: 'right' },
-          { displayName: 'alignrightinspector', value: 'left' },
+          { displayName: 'alignleftinspector', value: 'left' },
+          { displayName: 'alignrightinspector', value: 'right' },
         ],
         accordian: 'label',
       },
@@ -1721,6 +1699,52 @@ export const widgets = [
           value: 'side',
         },
       },
+
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      textColor: {
+        type: 'color',
+        displayName: 'Text Color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      errTextColor: {
+        type: 'color',
+        displayName: 'Error text color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+      },
+      icon: {
+        type: 'icon',
+        displayName: 'Icon',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+        visibility: false,
+      },
+      iconColor: {
+        type: 'color',
+        displayName: 'Icon color',
+        validation: { schema: { type: 'string' } },
+        accordian: 'field',
+        visibility: false,
+      },
+      boxShadow: {
+        type: 'boxShadow',
+        displayName: 'Box Shadow',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
       padding: {
         type: 'switch',
         displayName: 'Padding',
@@ -1730,12 +1754,6 @@ export const widgets = [
           { displayName: 'None', value: 'none' },
         ],
         accordian: 'container',
-      },
-      errTextColor: {
-        type: 'color',
-        displayName: 'Error text color',
-        validation: { schema: { type: 'string' } },
-        accordian: 'field',
       },
     },
     exposedVariables: {
@@ -1785,15 +1803,20 @@ export const widgets = [
       events: [],
       styles: {
         borderRadius: { value: '{{6}}' },
-        backgroundColor: { value: '#ffffff' },
-        boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        backgroundColor: { value: '#fff' },
+        borderColor: { value: '#D7DBDF' },
+        errTextColor: { value: '#DB4324' },
+        textColor: { value: '#232e3c' },
+        iconColor: { value: '#DB4324' },
         direction: { value: 'left' },
         width: { value: '33' },
         alignment: { value: 'side' },
         color: { value: '#11181C' },
-        auto: { value: '{{true}}' },
+        auto: { value: true },
         padding: { value: 'default' },
-        errTextColor: { value: '#DB4324' },
+        boxShadow: { value: '0px 0px 0px 0px #00000040' },
+        icon: { value: 'IconHome2' },
+        iconVisibility: { value: false },
       },
     },
   },

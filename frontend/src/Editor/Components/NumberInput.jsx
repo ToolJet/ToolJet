@@ -325,7 +325,9 @@ export const NumberInput = function NumberInput({
             onChange={handleChange}
             onBlur={handleBlur}
             type="number"
-            className="input-number tj-text-input-widget form-control"
+            className={`${
+              !isValid && showValidationError ? 'is-invalid' : ''
+            } input-number tj-text-input-widget form-control`}
             placeholder={placeholder}
             style={computedStyles}
             value={value}

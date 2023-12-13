@@ -241,9 +241,9 @@ export const PasswordInput = function PasswordInput({
           </div>
         )}
         <input
-          className={`tj-text-input-widget ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-            darkMode && 'dark-theme-placeholder'
-          }`}
+          className={`tj-text-input-widget ${
+            !isValid && showValidationError ? 'is-invalid' : ''
+          } validation-without-icon ${darkMode && 'dark-theme-placeholder'}`}
           ref={textInputRef}
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
