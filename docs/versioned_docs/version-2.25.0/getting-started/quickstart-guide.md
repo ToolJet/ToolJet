@@ -229,7 +229,7 @@ The preview, release and share buttons are on the top-right of the App-Builder.
 
 Congratulations! You've successfully built an employee directory application and, in the process, covered the fundamentals of ToolJet. 
 
-To learn more about how ToolJet works, explore the subjects covered in **[ToolJet Concepts](/docs/tooljet-concepts/what-are-components.md)**.
+To learn more about how ToolJet works, explore the subjects covered in **[ToolJet Concepts](/docs/tooljet-concepts/what-are-components)**.
 
 </div>
 
