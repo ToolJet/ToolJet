@@ -90,9 +90,9 @@ export const BlankPage = function BlankPage({
       </div>
       <div className="m-auto text-center mt-4">
         <button
-          disabled={appCreationDisabled}
+          disabled={appCreationDisabled && appType !== 'workflow'}
           className={cx('see-all-temlplates-link tj-text-sm font-weight-600 bg-transparent border-0', {
-            disabled: appCreationDisabled,
+            disabled: appCreationDisabled && appType !== 'workflow',
           })}
           onClick={() => {
             posthog.capture('click_import_from_template', {
@@ -145,7 +145,7 @@ export const BlankPage = function BlankPage({
                     </p>
                     <div className="row mt-4">
                       <ButtonSolid
-                        disabled={appCreationDisabled}
+                        disabled={appCreationDisabled && appType !== 'workflow'}
                         leftIcon="plus"
                         onClick={() => openCreateAppModal('blank_page')}
                         isLoading={creatingApp}

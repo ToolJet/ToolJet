@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Toggle from '@/_ui/Toggle/index';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import { ssoConfMessages } from '@/_helpers';
 import { getHostURL } from '@/_helpers/routes';
 
@@ -99,7 +99,12 @@ export function OpenId({ settings, updateData }) {
   };
 
   return (
-    <LicenseBanner classes="mt-3 mx-3" limits={featureAccess} isAvailable={featureAccess?.oidc} type="Open ID Connect">
+    <LicenseBannerCloud
+      classes="mt-3 mx-3"
+      limits={featureAccess}
+      isAvailable={featureAccess?.oidc}
+      type="Open ID Connect"
+    >
       <div className="sso-card-wrapper">
         <div className="card-header">
           <div className="d-flex justify-content-between title-with-toggle">
@@ -217,6 +222,6 @@ export function OpenId({ settings, updateData }) {
           </ButtonSolid>
         </div>
       </div>
-    </LicenseBanner>
+    </LicenseBannerCloud>
   );
 }

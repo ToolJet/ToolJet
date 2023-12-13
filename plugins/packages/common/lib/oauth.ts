@@ -124,9 +124,12 @@ function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): Query
 
 export function getAuthUrl(sourceOptions: any): string {
   const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
-  const tooljetHost = process.env.TOOLJET_HOST;
+  const host = process.env.TOOLJET_HOST;
+  const subpath = process.env.SUB_PATH;
+  const fullUrl = `${host}${subpath ? subpath : '/'}`;
+
   const authUrl = new URL(
-    `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+    `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${fullUrl}oauth2/authorize&scope=${sourceOptions['scopes']}`
   );
   Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
   return authUrl.toString();

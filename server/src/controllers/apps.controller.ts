@@ -12,6 +12,7 @@ import {
   BadRequestException,
   UseInterceptors,
   NotFoundException,
+  NotImplementedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -43,10 +44,12 @@ export class AppsController {
     private auditLoggerService: AuditLoggerService
   ) {}
 
+  //cloud-licensing specific, don't change
   @UseGuards(JwtAuthGuard)
   @Get('limits')
-  async getAppsLimit() {
-    return await this.appsService.getAppsLimit();
+  async getAppsLimit(@User() user) {
+    const organizationId = user.organizationId;
+    return await this.appsService.getAppsLimit(organizationId);
   }
 
   @UseGuards(JwtAuthGuard, AppCountGuard)
@@ -66,7 +69,7 @@ export class AppsController {
       appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
-      await this.appsService.update(app.id, appUpdateDto, manager);
+      await this.appsService.update(app, appUpdateDto, null, manager);
 
       await this.auditLoggerService.perform({
         userId: user.id,
@@ -88,7 +91,9 @@ export class AppsController {
     @Param('slug') appSlug: string,
     @Query('access_type') accessType: string,
     @Query('version_name') versionName: string,
-    @Query('environment_name') environmentName: string
+    @Query('environment_name') environmentName: string,
+    @Query('version_id') versionId: string,
+    @Query('environment_id') envId: string
   ) {
     const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
 
@@ -116,7 +121,7 @@ export class AppsController {
       type,
     };
     /* If the request comes from preview which needs version id */
-    if (versionName && environmentName) {
+    if (versionName || environmentName || (versionId && envId)) {
       if (!ability.can('fetchVersions', app)) {
         throw new ForbiddenException(
           JSON.stringify({
@@ -125,17 +130,23 @@ export class AppsController {
         );
       }
 
-      const version = await this.appsService.findVersionFromName(versionName, id);
+      /* Adding backward compatibility for old URLs */
+      const version = versionId
+        ? await this.appsService.findVersion(versionId)
+        : await this.appsService.findVersionFromName(versionName, id);
       if (!version) {
         throw new NotFoundException("Couldn't found app version. Please check the version name");
       }
-      const environmentId = await this.appsService.validateVersionEnvironment(
+      const environment = await this.appsService.validateVersionEnvironment(
         environmentName,
+        envId,
         version.currentEnvironmentId,
         user.organizationId
       );
+      if (versionId) response['versionName'] = version.name;
+      if (envId) response['environmentName'] = environment.name;
       response['versionId'] = version.id;
-      response['environmentId'] = environmentId;
+      response['environmentId'] = environment.id;
     }
     return response;
   }
@@ -194,6 +205,10 @@ export class AppsController {
       }
     }
 
+    if (!app.currentVersionId) {
+      throw new NotImplementedException('App is not released yet');
+    }
+
     const { id, slug } = app;
     return {
       slug: slug,
@@ -246,17 +261,18 @@ export class AppsController {
   @UseInterceptors(ValidAppInterceptor)
   @Put(':id')
   async update(@User() user, @AppDecorator() app: App, @Body('app') appUpdateDto: AppUpdateDto) {
+    const { id: userId, organizationId } = user;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('updateParams', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(app.id, appUpdateDto);
+    const result = await this.appsService.update(app, appUpdateDto, organizationId);
 
     await this.auditLoggerService.perform({
-      userId: user.id,
-      organizationId: user.organizationId,
+      userId,
+      organizationId,
       resourceId: app.id,
       resourceType: ResourceTypes.APP,
       resourceName: app.name,
@@ -504,7 +520,7 @@ export class AppsController {
 
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
-    const appUser = await this.appsService.update(app.id, appUpdateDto);
+    const appUser = await this.appsService.update(app, appUpdateDto);
     return decamelizeKeys(appUser);
   }
 

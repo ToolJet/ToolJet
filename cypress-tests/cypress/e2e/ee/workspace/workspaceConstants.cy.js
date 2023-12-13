@@ -5,7 +5,7 @@ import { workspaceConstantsText } from "Texts/workspaceConstants";
 import { commonText, commonWidgetText } from "Texts/common";
 import * as common from "Support/utils/common";
 import { multiEnvSelector, commonEeSelectors } from "Selectors/eeCommon";
-import { promoteApp, releaseApp, launchApp } from "Support/utils/multiEnv"
+import { promoteApp, releaseApp, launchApp } from "Support/utils/multiEnv";
 import {
     contantsNameValidation,
     AddNewconstants,
@@ -23,7 +23,6 @@ import {
     addInputOnQueryField,
 } from "Support/utils/queries";
 
-
 const data = {};
 data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.newConstvalue = `New ${data.constName}`;
@@ -35,26 +34,26 @@ data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 describe("Workspace constants", () => {
     const envVar = Cypress.env("environment");
     beforeEach(() => {
-        cy.appUILogin();
+        cy.apiLogin();
+        cy.visit("/my-workspace");
         cy.intercept("GET", "/api/library_apps").as("homePage");
+        cy.wait(2000);
     });
 
     it("Verify workspace constants UI and CRUD operations on development", () => {
         cy.get(commonSelectors.workspaceSettingsIcon).click();
-        cy.get(commonSelectors.workspaceConstantsOption)
-            .should(($el) => {
-                expect($el.contents().first().text().trim()).to.eq(
-                    "Workspace constants"
-                );
-            })
-            .click();
+        cy.get(commonSelectors.workspaceConstantsOption).should(($el) => {
+            expect($el.contents().first().text().trim()).to.eq("Workspace constants");
+        });
+        cy.wait(1000);
+        cy.get(commonSelectors.workspaceConstantsOption).click();
 
         cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
             expect($el.contents().first().text().trim()).to.eq("Workspace settings");
         });
         cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
             "have.text",
-            " Workspace constants"
+            "Workspace constants"
         );
 
         cy.get(
@@ -69,7 +68,7 @@ describe("Workspace constants", () => {
             commonText.documentationLink
         );
 
-        cy.wait(1000)
+        cy.wait(1000);
         cy.get("body").then(($body) => {
             if ($body.find(workspaceConstantsSelectors.emptyStateImage).length > 0) {
                 cy.get(workspaceConstantsSelectors.emptyStateImage).should(
@@ -96,7 +95,7 @@ describe("Workspace constants", () => {
         cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
         cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
             "have.text",
-            'Add new constant in development '
+            "Add new constant in development "
         );
         cy.get(commonSelectors.nameLabel).verifyVisibleElement("have.text", "Name");
         cy.get(commonSelectors.nameInputField)
@@ -272,14 +271,12 @@ describe("Workspace constants", () => {
 
     it("Verify workspace constants UI and CRUD operations on staging", () => {
         cy.get(commonSelectors.workspaceSettingsIcon).click();
-        cy.get(commonSelectors.workspaceConstantsOption)
-            .should(($el) => {
-                expect($el.contents().first().text().trim()).to.eq(
-                    "Workspace constants"
-                );
-            })
-            .click();
-        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click()
+        cy.get(commonSelectors.workspaceConstantsOption).should(($el) => {
+            expect($el.contents().first().text().trim()).to.eq("Workspace constants");
+        });
+        cy.wait(1000);
+        cy.get(commonSelectors.workspaceConstantsOption).click();
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click();
 
         cy.get(
             workspaceConstantsSelectors.workspaceConstantsHelperText
@@ -293,7 +290,7 @@ describe("Workspace constants", () => {
             commonText.documentationLink
         );
 
-        cy.wait(1000)
+        cy.wait(1000);
         cy.get("body").then(($body) => {
             if ($body.find(workspaceConstantsSelectors.emptyStateImage).length > 0) {
                 cy.get(workspaceConstantsSelectors.emptyStateImage).should(
@@ -320,7 +317,7 @@ describe("Workspace constants", () => {
         cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
         cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
             "have.text",
-            'Add new constant in staging '
+            "Add new constant in staging "
         );
         cy.get(commonSelectors.nameLabel).verifyVisibleElement("have.text", "Name");
         cy.get(commonSelectors.nameInputField)
@@ -496,14 +493,12 @@ describe("Workspace constants", () => {
 
     it("Verify workspace constants UI and CRUD operations on production", () => {
         cy.get(commonSelectors.workspaceSettingsIcon).click();
-        cy.get(commonSelectors.workspaceConstantsOption)
-            .should(($el) => {
-                expect($el.contents().first().text().trim()).to.eq(
-                    "Workspace constants"
-                );
-            })
-            .click();
-        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click()
+        cy.get(commonSelectors.workspaceConstantsOption).should(($el) => {
+            expect($el.contents().first().text().trim()).to.eq("Workspace constants");
+        });
+        cy.wait(1000);
+        cy.get(commonSelectors.workspaceConstantsOption).click();
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click();
 
         cy.get(
             workspaceConstantsSelectors.workspaceConstantsHelperText
@@ -718,18 +713,21 @@ describe("Workspace constants", () => {
     });
 
     it("should verify the constants resolving value on components and query", () => {
-        data.constantsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+        data.constantsName = fake.firstName
+            .toLowerCase()
+            .replaceAll("[^A-Za-z]", "");
 
         common.navigateToworkspaceConstants();
-        AddNewconstants(data.constantsName, 'Development');
-        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click()
-        AddNewconstants(data.constantsName, 'Staging');
-        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click()
-        AddNewconstants(data.constantsName, 'Production');
+        AddNewconstants(data.constantsName, "Development");
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(2)').click();
+        AddNewconstants(data.constantsName, "Staging");
+        cy.get('[data-cy="left-menu-items tj-text-xsm"] > :nth-child(3)').click();
+        AddNewconstants(data.constantsName, "Production");
 
         cy.get(commonSelectors.homePageLogo).click();
         cy.wait("@homePage");
-        cy.createApp(data.appName);
+        cy.apiCreateApp(data.appName);
+        cy.openApp();
 
         selectQueryFromLandingPage("runjs", "JavaScript");
         addInputOnQueryField("runjs", `return constants.${data.constantsName}`);
@@ -770,13 +768,13 @@ describe("Workspace constants", () => {
             commonWidgetSelector.draggableWidget(data.constantsName)
         ).verifyVisibleElement("have.text", "Development");
 
-        cy.go('back')
+        cy.go("back");
         cy.waitForAppLoad();
-        cy.wait(1500);
+        cy.wait(3000);
 
         promoteApp();
 
-        cy.wait(1500)
+        cy.wait(1500);
         query("preview");
         verifypreview("raw", "Staging");
 
@@ -805,13 +803,13 @@ describe("Workspace constants", () => {
             commonWidgetSelector.draggableWidget(data.constantsName)
         ).verifyVisibleElement("have.text", "Staging");
 
-        cy.go('back')
+        cy.go("back");
         cy.waitForAppLoad();
-        cy.wait(1500);
+        cy.wait(3000);
 
         promoteApp();
 
-        cy.wait(1500)
+        cy.wait(1500);
         query("preview");
         verifypreview("raw", "Production");
 
@@ -840,9 +838,9 @@ describe("Workspace constants", () => {
             commonWidgetSelector.draggableWidget(data.constantsName)
         ).verifyVisibleElement("have.text", "Production");
 
-        cy.go('back')
+        cy.go("back");
         cy.waitForAppLoad();
-        cy.wait(2000);
+        cy.wait(3000);
 
         releaseApp();
         launchApp();

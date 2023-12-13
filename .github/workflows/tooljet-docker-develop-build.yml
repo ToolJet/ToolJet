@@ -9,10 +9,10 @@ on:
     inputs:
       job-to-run:
         description: Enter the job name (tooljet-develop-image)
-        options: ['tooljet-develop-image']
+        options: ["tooljet-develop-image"]
         required: true
 
-jobs:  
+jobs:
   tooljet-develop-image:
     runs-on: ubuntu-latest
     if: |

@@ -9,7 +9,9 @@ export class UserCountGuard implements CanActivate {
   constructor(private usersService: UsersService, private licenseService: LicenseService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const totalUsers = await this.licenseService.getLicenseTerms(LICENSE_FIELD.TOTAL_USERS);
+    const request = context.switchToHttp().getRequest();
+    const organizationId = request.headers['tj-workspace-id'];
+    const totalUsers = await this.licenseService.getLicenseTerms(LICENSE_FIELD.TOTAL_USERS, organizationId);
     if (totalUsers !== LICENSE_LIMIT.UNLIMITED && (await this.usersService.getCount(true)) >= totalUsers) {
       throw new HttpException('License violation - Maximum user limit reached', 451);
     }

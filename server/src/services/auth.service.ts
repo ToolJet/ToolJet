@@ -54,6 +54,7 @@ import { LICENSE_TRIAL_API } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 import { INSTANCE_USER_SETTINGS } from 'src/helpers/instance_settings.constants';
+import { OrganizationLicenseService } from './organization_license.service';
 
 @Injectable()
 export class AuthService {
@@ -74,7 +75,8 @@ export class AuthService {
     private metadataService: MetadataService,
     private configService: ConfigService,
     private sessionService: SessionService,
-    private licenseService: LicenseService
+    private licenseService: LicenseService,
+    private organizationLicenseService: OrganizationLicenseService
   ) {}
 
   verifyToken(token: string) {
@@ -331,6 +333,7 @@ export class AuthService {
         null,
         manager
       );
+      await this.organizationsService.updateOwner(organization.id, user.id, manager);
       await this.organizationUsersService.create(user, organization, true, manager);
 
       void this.licenseService.createCRMUser({
@@ -426,8 +429,12 @@ export class AuthService {
         null,
         manager
       );
+      await this.organizationsService.updateOwner(organization.id, user.id, manager);
       await this.organizationUsersService.create(user, organization, false, manager);
-      if (requestedTrial) await this.activateTrial(new TelemetryDataDto(userCreateDto));
+      //setup for cloud-licensing: should start with a workspace license trial key, don't change
+      if (requestedTrial) {
+        await this.activateCloudTrial(new TelemetryDataDto(userCreateDto), organization.id, manager);
+      }
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
@@ -468,6 +475,27 @@ export class AuthService {
     }
   }
 
+  async activateCloudTrial(userCreateDto: TelemetryDataDto, organizationId: string, manager?: EntityManager) {
+    const { companyName, name, email, id } = userCreateDto;
+
+    try {
+      const licenseKey = await this.organizationLicenseService.generateCloudTrialLicense(
+        {
+          email,
+          customerId: id,
+          companyName,
+          organizationId,
+          ...this.splitName(name),
+        },
+        manager
+      );
+      await this.licenseService.updateLicense({ key: licenseKey }, organizationId, manager);
+    } catch (error) {
+      console.log({ error });
+      throw new HttpException(error?.error || 'Trial could not be activated. Please try again!', error?.status || 500);
+    }
+  }
+
   async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
     const {
       companyName,
@@ -478,6 +506,7 @@ export class AuthService {
       password: userPassword,
       source,
       phoneNumber,
+      requestedTrial,
     } = userCreateDto;
     let password = userPassword;
 
@@ -526,6 +555,13 @@ export class AuthService {
 
           // Activate default workspace
           await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
+          if (requestedTrial) {
+            await this.activateCloudTrial(
+              new TelemetryDataDto({ ...userCreateDto, id: user.id }),
+              user.defaultOrganizationId,
+              manager
+            );
+          }
         }
 
         isSSOVerify =
@@ -596,6 +632,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        isCloudTrialOpted: requestedTrial,
       });
       return this.generateLoginResultPayload(response, user, organization, isInstanceSSOLogin, !isSSOVerify);
     });
@@ -752,7 +789,7 @@ export class AuthService {
       const clientIp = (request as any)?.clientIp;
       const session: UserSessions = await this.sessionService.createSession(
         user.id,
-        `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+        `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
           request?.headers['user-agent'] || 'unknown'
         }`,
         manager

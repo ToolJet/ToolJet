@@ -47,9 +47,10 @@ export class FoldersService {
   }
 
   async allFolders(user: User, searchKey?: string, type = 'front-end'): Promise<Folder[]> {
+    const organizationId = user?.organizationId;
     const allViewableApps = await viewableAppsQuery(
       user,
-      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, organizationId),
       searchKey,
       ['id'],
       type
@@ -99,10 +100,10 @@ export class FoldersService {
     if (folderAppIds.length == 0) {
       return 0;
     }
-
+    const organizationId = user?.organizationId;
     const viewableAppsQb = viewableAppsQuery(
       user,
-      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, organizationId),
       searchKey,
       undefined,
       type
@@ -140,10 +141,10 @@ export class FoldersService {
     if (folderAppIds.length == 0) {
       return [];
     }
-
+    const organizationId = user?.organizationId;
     const viewableAppsQb = viewableAppsQuery(
       user,
-      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID),
+      await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID, organizationId),
       searchKey,
       undefined,
       type

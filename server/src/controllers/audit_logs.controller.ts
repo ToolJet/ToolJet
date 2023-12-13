@@ -5,15 +5,17 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { AuditLogsQueryService } from '@services/audit_logs_query.service';
+import { LicenseService } from '@services/license.service';
 import { decamelizeKeys } from 'humps';
-import { AuditLogGuard } from '@ee/licensing/guards/auditLog.guard';
+import { AuditLogsEnabledGuard, AuditLogsDurationGuard } from '@ee/licensing/guards/auditLog.guard';
 import { User } from 'src/decorators/user.decorator';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Controller('audit_logs')
 export class AuditLogsController {
-  constructor(private auditLogsQueryService: AuditLogsQueryService) {}
+  constructor(private auditLogsQueryService: AuditLogsQueryService, private licenseService: LicenseService) {}
 
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard, AuditLogsDurationGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessAuditLogs', UserEntity))
   @Get()
   async index(@User() user, @Query() query): Promise<object> {
@@ -32,9 +34,19 @@ export class AuditLogsController {
     return decamelizeKeys({ auditLogs, meta });
   }
 
-  @UseGuards(JwtAuthGuard, AuditLogGuard)
+  @UseGuards(JwtAuthGuard, AuditLogsEnabledGuard)
   @Get('license_terms')
   async getAuditLog() {
     return;
+  }
+
+  //cloud-licensing specific, don't change
+  @UseGuards(JwtAuthGuard, AuditLogsEnabledGuard)
+  @Get('max_duration')
+  @CheckPolicies((ability: AppAbility) => ability.can('accessAuditLogs', UserEntity))
+  async getMaxDuration(@User() user) {
+    const organizationId = user.organizationId;
+    const data = await this.licenseService.getLicenseTerms(LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS, organizationId);
+    return data;
   }
 }

@@ -4,11 +4,12 @@ import SolidIcon from '../_ui/Icon/SolidIcons';
 import { LoadingScreen } from './LoadingScreen';
 
 const FeatureLabels = {
-  auditLogs: 'Audit Logs',
+  auditLogs: 'Audit logs',
   openid: 'Open ID Connect',
   ldap: 'LDAP',
+  saml: 'SAML',
   customStyling: 'Custom styles',
-  multiEnvironment: 'Multi-Environment',
+  multiEnvironment: 'Multi-environment',
 };
 
 const Access = () => {

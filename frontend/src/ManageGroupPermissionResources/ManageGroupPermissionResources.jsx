@@ -177,8 +177,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('Group permissions updated');
         this.fetchGroupPermission(groupPermissionId);
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, statusCode }) => {
+        statusCode !== 451 && toast.error(error);
       });
   };
 
@@ -589,51 +589,59 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
                   {this.props.t('header.organization.menus.manageGroups.permissionResources.users', 'Users')}
                 </a>
-                <LicenseTooltip
-                  limits={featureAccess}
-                  feature={'Permissions'}
-                  isAvailable={true}
-                  noTooltipIfValid={true}
+                <a
+                  onClick={() => this.setState({ currentTab: 'permissions' })}
+                  className={cx('nav-item nav-link', {
+                    active: currentTab === 'permissions' && !(isExpired || !isLicenseValid),
+                    'expired-gradient-border': currentTab === 'permissions' && (isExpired || !isLicenseValid),
+                  })}
+                  data-cy="permissions-link"
                 >
-                  <a
-                    onClick={() => !isExpired && isLicenseValid && this.setState({ currentTab: 'permissions' })}
-                    className={cx('nav-item nav-link', { active: currentTab === 'permissions' })}
-                    data-cy="permissions-link"
-                  >
+                  {(isExpired || !isLicenseValid) && currentTab === 'permissions' ? (
+                    <SolidIcon className="manage-group-tab-icons" name="lockGradient" />
+                  ) : (
                     <SolidIcon
                       className="manage-group-tab-icons"
                       fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
                       name="lock"
                       width="16"
-                    ></SolidIcon>
+                    />
+                  )}
 
+                  <span
+                    className={(isExpired || !isLicenseValid) && currentTab === 'permissions' ? 'paid-feature' : ''}
+                  >
                     {this.props.t(
                       'header.organization.menus.manageGroups.permissionResources.permissions',
                       'Permissions'
                     )}
-                  </a>
-                </LicenseTooltip>
+                  </span>
+                </a>
                 {groupPermission?.group !== 'admin' && (
-                  <LicenseTooltip
-                    limits={featureAccess}
-                    feature={'Datasources'}
-                    isAvailable={true}
-                    noTooltipIfValid={true}
+                  <a
+                    onClick={() => this.setState({ currentTab: 'datasources' })}
+                    className={cx('nav-item nav-link', {
+                      active: currentTab === 'datasources' && !(isExpired || !isLicenseValid),
+                      'expired-gradient-border': currentTab === 'datasources' && (isExpired || !isLicenseValid),
+                    })}
+                    data-cy="datasource-link"
                   >
-                    <a
-                      onClick={() => !isExpired && isLicenseValid && this.setState({ currentTab: 'datasources' })}
-                      className={cx('nav-item nav-link', { active: currentTab === 'datasources' })}
-                      data-cy="datasource-link"
-                    >
+                    {(isExpired || !isLicenseValid) && currentTab === 'datasources' ? (
+                      <SolidIcon className="manage-group-tab-icons" name="datasourceGradient" />
+                    ) : (
                       <SolidIcon
                         className="manage-group-tab-icons"
                         fill={currentTab === 'datasources' ? '#3E63DD' : '#C1C8CD'}
                         name="datasource"
                         width="16"
                       ></SolidIcon>
+                    )}
+                    <span
+                      className={(isExpired || !isLicenseValid) && currentTab === 'datasources' ? 'paid-feature' : ''}
+                    >
                       Datasources
-                    </a>
-                  </LicenseTooltip>
+                    </span>
+                  </a>
                 )}
               </nav>
 
@@ -903,8 +911,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       {groupPermission.group == 'all_users' && (
                         <div className="manage-group-users-info" data-cy="helper-text-all-user-included">
                           <p className="tj-text-xsm">
-                            <SolidIcon name="information" fill="#3E63DD" /> All users include every users in the app.
-                            This list is not editable
+                            <SolidIcon name="information" fill="#3E63DD" /> All users within the workspace are included
+                            in this list. This list cannot be edited.
                           </p>
                         </div>
                       )}
@@ -1196,7 +1204,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             className="add-apps-btn"
                             leftIcon="plus"
                             onClick={() => this.addSelectedDataSourcesToGroup(groupPermission.id)}
-                            disabled={selectedDataSourceIds?.length == 0}
+                            disabled={
+                              getPermissionInputStatus(groupPermission.group) || selectedDataSourceIds?.length == 0
+                            }
                             iconWidth="16"
                             fill={
                               selectedDataSourceIds.length != 0
@@ -1217,23 +1227,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     <div>
                       <div className="table-responsive">
                         <table className="table table-vcenter">
-                          {/* <thead>
-                            <tr>
-                              <th data-cy="name-header">
-                                {this.props.t(
-                                  'header.organization.menus.manageGroups.permissionResources.name',
-                                  'Name'
-                                )}
-                              </th>
-                              <th data-cy="permissions-header">
-                                {this.props.t(
-                                  'header.organization.menus.manageGroups.permissionResources.permissions',
-                                  'Permissions'
-                                )}
-                              </th>
-                              <th></th>
-                            </tr>
-                          </thead> */}
                           <div className="groups-datasource-body-header d-flex">
                             <p className="font-weight-500 tj-text-xsm" data-cy="datasource-name-header">
                               Datasource name
@@ -1259,97 +1252,134 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 </td>
                               </tr>
                             ) : (
-                              dataSourcesInGroup.map((dataSource) => (
-                                <tr key={dataSource.id} className="datasources-table-row">
-                                  <td
-                                    className="font-weight-500"
-                                    data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-datasource`}
-                                  >
-                                    {dataSource.name}
-                                  </td>
-                                  <td
-                                    className="text-secondary d-flex"
-                                    data-cy={`${String(dataSource.name)
-                                      .toLowerCase()
-                                      .replace(/\s+/g, '-')}-datasource-view-edit-wrap`}
-                                  >
-                                    <div className="datasources-view-edit-wrap">
-                                      <label className="form-check form-check-inline" data-cy="view-label">
-                                        <input
-                                          className="form-check-input"
-                                          type="radio"
-                                          onChange={() => {
-                                            this.updateDataSourceGroupPermission(
-                                              dataSource,
-                                              groupPermission.id,
-                                              'view'
-                                            );
-                                          }}
-                                          disabled={groupPermission.group === 'admin'}
-                                          checked={this.canDataSourceGroupPermission(
-                                            dataSource,
-                                            groupPermission.id,
-                                            'view'
-                                          )}
-                                          data-cy="view-radio-button"
-                                        />
-                                        <span className="form-check-label">{this.props.t('globals.view', 'view')}</span>
-                                      </label>
-                                      <label className="form-check form-check-inline" data-cy="edit-label">
-                                        <input
-                                          className="form-check-input"
-                                          type="radio"
-                                          onChange={() => {
-                                            this.updateDataSourceGroupPermission(
-                                              dataSource,
-                                              groupPermission.id,
-                                              'edit'
-                                            );
-                                          }}
-                                          disabled={groupPermission.group === 'admin'}
-                                          checked={this.canDataSourceGroupPermission(
-                                            dataSource,
-                                            groupPermission.id,
-                                            'edit'
-                                          )}
-                                          data-cy="edit-radio-button"
-                                        />
-                                        <span className="form-check-label">{this.props.t('globals.edit', 'Edit')}</span>
-                                      </label>
-                                    </div>
-                                  </td>
-                                  <td
-                                    data-cy={`${String(dataSource.name)
-                                      .toLowerCase()
-                                      .replace(/\s+/g, '-')}-datasource-remove-button-wrap`}
-                                  >
-                                    {groupPermission.group !== 'admin' && (
-                                      <Link
-                                        to="#"
-                                        onClick={() => {
-                                          this.removeDataSourcesFromGroup(
-                                            groupPermission.id,
-                                            dataSource.id,
-                                            dataSource.name
-                                          );
-                                        }}
-                                        className="delete-link"
+                              <>
+                                {dataSourcesInGroup?.length ? (
+                                  dataSourcesInGroup.map((dataSource) => (
+                                    <tr key={dataSource.id} className="datasources-table-row">
+                                      <td
+                                        className="font-weight-500"
+                                        data-cy={`${String(dataSource.name)
+                                          .toLowerCase()
+                                          .replace(/\s+/g, '-')}-datasource`}
                                       >
-                                        <ButtonSolid
-                                          className="tj-text-xsm font-weight-600 remove-decoration  datasources-remove-btn"
-                                          variant="dangerSecondary"
-                                          leftIcon="trash"
-                                          iconWidth="14"
-                                          fill={'#E54D2E'}
-                                          data-cy="remove-button"
-                                        >
-                                          Remove
-                                        </ButtonSolid>
-                                      </Link>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))
+                                        {dataSource.name}
+                                      </td>
+                                      <td
+                                        className="text-secondary d-flex"
+                                        data-cy={`${String(dataSource.name)
+                                          .toLowerCase()
+                                          .replace(/\s+/g, '-')}-datasource-view-edit-wrap`}
+                                      >
+                                        <div className="datasources-view-edit-wrap">
+                                          <label className="form-check form-check-inline" data-cy="view-label">
+                                            <input
+                                              className="form-check-input"
+                                              type="radio"
+                                              onChange={() => {
+                                                this.updateDataSourceGroupPermission(
+                                                  dataSource,
+                                                  groupPermission.id,
+                                                  'view'
+                                                );
+                                              }}
+                                              disabled={
+                                                groupPermission.group === 'admin' ||
+                                                getPermissionInputStatus(groupPermission.group)
+                                              }
+                                              checked={this.canDataSourceGroupPermission(
+                                                dataSource,
+                                                groupPermission.id,
+                                                'view'
+                                              )}
+                                              data-cy="view-radio-button"
+                                            />
+                                            <span className="form-check-label">
+                                              {this.props.t('globals.view', 'view')}
+                                            </span>
+                                          </label>
+                                          <label className="form-check form-check-inline" data-cy="edit-label">
+                                            <input
+                                              className="form-check-input"
+                                              type="radio"
+                                              onChange={() => {
+                                                this.updateDataSourceGroupPermission(
+                                                  dataSource,
+                                                  groupPermission.id,
+                                                  'edit'
+                                                );
+                                              }}
+                                              disabled={
+                                                groupPermission.group === 'admin' ||
+                                                getPermissionInputStatus(groupPermission.group)
+                                              }
+                                              checked={this.canDataSourceGroupPermission(
+                                                dataSource,
+                                                groupPermission.id,
+                                                'edit'
+                                              )}
+                                              data-cy="edit-radio-button"
+                                            />
+                                            <span className="form-check-label">
+                                              {this.props.t('globals.edit', 'Edit')}
+                                            </span>
+                                          </label>
+                                        </div>
+                                      </td>
+                                      <td
+                                        data-cy={`${String(dataSource.name)
+                                          .toLowerCase()
+                                          .replace(/\s+/g, '-')}-datasource-remove-button-wrap`}
+                                      >
+                                        {groupPermission.group !== 'admin' && (
+                                          <Link
+                                            to="#"
+                                            onClick={() => {
+                                              this.removeDataSourcesFromGroup(
+                                                groupPermission.id,
+                                                dataSource.id,
+                                                dataSource.name
+                                              );
+                                            }}
+                                            className="delete-link"
+                                          >
+                                            <ButtonSolid
+                                              className="tj-text-xsm font-weight-600 remove-decoration  datasources-remove-btn"
+                                              variant="dangerSecondary"
+                                              leftIcon="trash"
+                                              iconWidth="14"
+                                              fill={'#E54D2E'}
+                                              data-cy="remove-button"
+                                            >
+                                              Remove
+                                            </ButtonSolid>
+                                          </Link>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <div className="manage-groups-no-apps-wrap">
+                                    <div className="manage-groups-no-apps-icon">
+                                      <SolidIcon name="datasource" fill="#3E63DD" width="28" />
+                                    </div>
+                                    <p
+                                      className="tj-text-md font-weight-500"
+                                      style={{ padding: '0px' }}
+                                      data-cy="helper-text-no-apps-added"
+                                    >
+                                      No data sources are added to the group
+                                    </p>
+                                    <span
+                                      className="tj-text-sm text-center"
+                                      style={{ padding: '0px' }}
+                                      data-cy="helper-text-user-groups-permissions"
+                                    >
+                                      Add a data source to the group to control permissions
+                                      <br /> for users in this group
+                                    </span>
+                                  </div>
+                                )}
+                              </>
                             )}
                           </tbody>
                         </table>

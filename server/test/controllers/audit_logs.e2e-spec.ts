@@ -56,10 +56,23 @@ describe('audit logs controller', () => {
         })
       );
 
+      // Define the start date as today with time set to 00:00:00
+      const startDate = new Date();
+      startDate.setHours(0, 0, 0, 0);
+
+      // Define the end date as four days from now with time set to 23:59:59
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 4);
+      endDate.setHours(23, 59, 59, 999);
+
       for (const userData of [superAdminUserData, adminUserData]) {
         // all audit logs
         let response = await request(app.getHttpServer())
           .get('/api/audit_logs')
+          .query({
+            timeFrom: startDate.toISOString(),
+            timeTo: endDate.toISOString(),
+          })
           .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie'])
           .expect(200);
@@ -70,7 +83,12 @@ describe('audit logs controller', () => {
         // paginated audit logs
         response = await request(app.getHttpServer())
           .get('/api/audit_logs')
-          .query({ perPage: 3, page: 1 })
+          .query({
+            perPage: 3,
+            page: 1,
+            timeFrom: startDate.toISOString(),
+            timeTo: endDate.toISOString(),
+          })
           .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie'])
           .expect(200);
@@ -84,7 +102,12 @@ describe('audit logs controller', () => {
 
         response = await request(app.getHttpServer())
           .get('/api/audit_logs')
-          .query({ perPage: 3, page: 2 })
+          .query({
+            perPage: 3,
+            page: 2,
+            timeFrom: startDate.toISOString(),
+            timeTo: endDate.toISOString(),
+          })
           .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie'])
           .expect(200);

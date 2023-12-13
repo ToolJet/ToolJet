@@ -252,12 +252,18 @@ export class TooljetDbService {
     return result;
   }
 
-  async getTablesLimit() {
-    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS]);
+  async getTablesLimit(organizationId?: string) {
+    const licenseTerms = await this.licenseService.getLicenseTerms(
+      [LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS],
+      organizationId
+    );
     return {
       tablesCount: generatePayloadForLimits(
         licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
-          ? await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount()
+          ? await this.manager
+              .createQueryBuilder(InternalTable, 'internal_table')
+              .where('internal_table.organizationId = :organizationId', { organizationId })
+              .getCount()
           : 0,
         licenseTerms[LICENSE_FIELD.TABLE_COUNT],
         licenseTerms[LICENSE_FIELD.STATUS],

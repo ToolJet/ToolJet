@@ -46,6 +46,7 @@ function replaceSubpathPlaceHoldersInStaticAssets() {
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: false,
     bufferLogs: true,
     abortOnError: false,
   });
@@ -122,10 +123,14 @@ async function bootstrap() {
       },
     })
   );
-
+  const rawBodyBuffer = (req, res, buf, encoding) => {
+    if (buf && buf.length) {
+      req.rawBody = buf.toString(encoding || 'utf8');
+    }
+  };
   app.use(cookieParser());
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
+  app.use(json({ verify: rawBodyBuffer, limit: '50mb' }));
+  app.use(urlencoded({ verify: rawBodyBuffer, extended: true, limit: '50mb', parameterLimit: 1000000 }));
   app.useStaticAssets(join(__dirname, 'assets'), { prefix: (UrlPrefix ? UrlPrefix : '/') + 'assets' });
   app.enableVersioning({
     type: VersioningType.URI,

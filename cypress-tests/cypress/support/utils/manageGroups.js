@@ -62,12 +62,12 @@ export const manageGroupsElements = () => {
   );
 
   cy.get("body").then(($title) => {
-    if ($title.text().includes(groupsText.helperTextNoAppsAdded)) {
-      cy.get(groupsSelector.helperTextNoAppsAdded).verifyVisibleElement(
+    if ($title.find(groupsSelector.helperTextNoAppsAdded).length > 0) {
+      cy.get(groupsSelector.helperTextNoAppsAdded).eq(0).verifyVisibleElement(
         "have.text",
         groupsText.helperTextNoAppsAdded
       );
-      cy.get(groupsSelector.helperTextPermissions).verifyVisibleElement(
+      cy.get(groupsSelector.helperTextPermissions).eq(0).verifyVisibleElement(
         "have.text",
         groupsText.helperTextPermissions
       );
@@ -182,12 +182,12 @@ export const manageGroupsElements = () => {
   );
 
   cy.get("body").then(($title) => {
-    if ($title.text().includes(groupsText.helperTextNoAppsAdded)) {
-      cy.get(groupsSelector.helperTextNoAppsAdded).verifyVisibleElement(
+    if ($title.find(groupsSelector.helperTextNoAppsAdded).length > 0) {
+      cy.get(groupsSelector.helperTextNoAppsAdded).eq(0).verifyVisibleElement(
         "have.text",
         groupsText.helperTextNoAppsAdded
       );
-      cy.get(groupsSelector.helperTextPermissions).verifyVisibleElement(
+      cy.get(groupsSelector.helperTextPermissions).eq(0).verifyVisibleElement(
         "have.text",
         groupsText.helperTextPermissions
       );

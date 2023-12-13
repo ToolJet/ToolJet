@@ -5,12 +5,12 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import Skeleton from 'react-loading-skeleton';
-import { LicenseBanner } from '@/LicenseBanner';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import _ from 'lodash';
 
 class ManageInstanceSettingsComponent extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = {
       currentUser: authenticationService.currentUserValue,
       isSaving: false,
@@ -18,18 +18,27 @@ class ManageInstanceSettingsComponent extends React.Component {
       errors: {},
       settings: [],
       options: {},
-      featureAccess: {},
+      hasChanges: false,
+      disabled: false,
+      initialOptions: {},
     };
   }
 
   componentDidMount() {
+    this.fetchFeatureAccess();
     this.fetchSettings();
-    this.fetchFeatureAccesss();
   }
 
-  fetchFeatureAccesss = () => {
+  setDisabledStatus = (licenseStatus) => {
+    const disabled = licenseStatus?.isExpired || !licenseStatus?.isLicenseValid;
+    this.setState({ disabled });
+  };
+
+  fetchFeatureAccess = () => {
+    this.setState({ isLoading: true });
     licenseService.getFeatureAccess().then((data) => {
-      this.setState({ featureAccess: data });
+      this.setDisabledStatus(data?.licenseStatus);
+      this.setState({ isLoading: false });
     });
   };
 
@@ -39,7 +48,7 @@ class ManageInstanceSettingsComponent extends React.Component {
       .fetchSettings()
       .then((data) => {
         this.setInitialValues(data);
-        this.setState({ isLoading: false });
+        this.setState({ isLoading: false, hasChanges: false });
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -50,12 +59,13 @@ class ManageInstanceSettingsComponent extends React.Component {
   setInitialValues = (data) => {
     this.setState({
       settings: data,
-      options: data.settings,
+      options: _.cloneDeep(data?.settings),
+      initialOptions: _.cloneDeep(data?.settings),
     });
   };
 
   reset = () => {
-    this.setInitialValues(this.state.settings);
+    this.setState({ options: this.state.initialOptions }, () => this.checkForChanges());
   };
 
   saveSettings = () => {
@@ -66,7 +76,7 @@ class ManageInstanceSettingsComponent extends React.Component {
         toast.success('Instance settings have been updated', {
           position: 'top-center',
         });
-        this.setState({ isSaving: false });
+        this.setState({ isSaving: false, hasChanges: false });
         this.fetchSettings();
       })
       .catch(({ error }) => {
@@ -77,18 +87,26 @@ class ManageInstanceSettingsComponent extends React.Component {
 
   returnBooleanValue = (value) => (value === 'true' ? true : false);
 
+  checkForChanges = () => {
+    const hasChanges = !_.isEqual(this.state.options, this.state.initialOptions);
+    this.setState({ hasChanges });
+  };
+
   optionsChanged = (key) => {
     const index = this.state.options.findIndex((option) => option.key === key);
-    const newOptions = [...this.state.options];
+    const newOptions = _.cloneDeep(this.state.options);
     const newValue = !this.returnBooleanValue(newOptions[index]?.value);
     newOptions[index].value = newValue.toString();
-    this.setState({
-      options: [...newOptions],
-    });
+    this.setState(
+      {
+        options: [...newOptions],
+      },
+      () => this.checkForChanges()
+    );
   };
 
   render() {
-    const { options, isSaving, featureAccess } = this.state;
+    const { options, isSaving, disabled, isLoading, hasChanges } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper instance-settings-page animation-fade">
@@ -96,21 +114,31 @@ class ManageInstanceSettingsComponent extends React.Component {
 
           <div className="page-wrapper">
             <div className="container-xl">
-              <LicenseBanner classes="mt-3" limits={featureAccess} type="Instance Settings" isAvailable={true}>
-                <div className="card">
-                  <div className="card-header">
-                    <div className="card-title" data-cy="card-title">
-                      {this.props.t(
-                        'header.organization.menus.manageInstanceSettings.instanceSettings',
-                        'Instance Settings'
-                      )}
-                    </div>
+              <div className="card">
+                <div className="card-header">
+                  <div className="card-title" data-cy="card-title">
+                    {this.props.t(
+                      'header.organization.menus.manageInstanceSettings.instanceSettings',
+                      'Manage instance settings'
+                    )}
                   </div>
-                  <div className="card-body">
-                    {Object.entries(options) != 0 ? (
-                      <form noValidate>
-                        {options.map((option) => (
-                          <div key={option?.key} className="form-group mb-3">
+                </div>
+              </div>
+              <div className="card-body">
+                <div
+                  className="card-content"
+                  style={{
+                    display: 'flex',
+                    width: '370px',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  {!isLoading && Object.entries(options) != 0 ? (
+                    <form noValidate>
+                      {options.map((option) => (
+                        <div key={option?.key} className="form-group mb-3">
+                          {option && (
                             <label className="form-check form-switch">
                               <input
                                 className="form-check-input"
@@ -118,58 +146,56 @@ class ManageInstanceSettingsComponent extends React.Component {
                                 onChange={() => this.optionsChanged(option?.key)}
                                 checked={option.value === 'true'}
                                 data-cy="form-check-input"
+                                disabled={disabled}
                               />
                               <span className="form-check-label" data-cy="form-check-label">
                                 {this.props.t(option?.label_key, option?.label)}
                               </span>
-                            </label>
-                            <div className="help-text">
-                              <div data-cy="instance-settings-help-text">
-                                {this.props.t(option?.helper_text_key, option?.helper_text)}
+                              <div className="help-text">
+                                <div data-cy="instance-settings-help-text">
+                                  {this.props.t(option?.helper_text_key, option?.helper_text)}
+                                </div>
                               </div>
-                            </div>
-                          </div>
-                        ))}
-
-                        <div className="form-footer">
-                          <button
-                            type="button"
-                            className="btn btn-light mr-2"
-                            onClick={this.reset}
-                            data-cy="cancel-button"
-                          >
-                            {this.props.t('globals.cancel', 'Cancel')}
-                          </button>
-                          <button
-                            type="button"
-                            className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
-                            disabled={isSaving}
-                            onClick={this.saveSettings}
-                            data-cy="save-button"
-                          >
-                            {this.props.t('globals.save', 'Save')}
-                          </button>
+                            </label>
+                          )}
                         </div>
-                      </form>
-                    ) : (
-                      <>
-                        <div>
-                          <Skeleton className="mb-2" />
+                      ))}
+                    </form>
+                  ) : (
+                    <>
+                      <div>
+                        <Skeleton className="mb-2" />
+                        <Skeleton />
+                      </div>
+                      <div className="row mt-4">
+                        <div className=" col-1">
                           <Skeleton />
                         </div>
-                        <div className="row mt-4">
-                          <div className=" col-1">
-                            <Skeleton />
-                          </div>
-                          <div className="col-1">
-                            <Skeleton />
-                          </div>
+                        <div className="col-1">
+                          <Skeleton />
                         </div>
-                      </>
-                    )}
-                  </div>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </LicenseBanner>
+              </div>
+              <div className="card-footer">
+                <button type="button" className="btn btn-light mr-2" onClick={this.reset} data-cy="cancel-button">
+                  {this.props.t('globals.cancel', 'Cancel')}
+                </button>
+                <ButtonSolid
+                  onClick={this.saveSettings}
+                  disabled={isSaving || disabled || !hasChanges}
+                  data-cy="save-button"
+                  variant="primary"
+                  className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
+                  leftIcon="floppydisk"
+                  fill="#fff"
+                  iconWidth="20"
+                >
+                  {this.props.t('globals.savechanges', 'Save')}
+                </ButtonSolid>
+              </div>
             </div>
           </div>
         </div>

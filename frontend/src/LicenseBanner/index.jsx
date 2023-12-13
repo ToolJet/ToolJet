@@ -5,6 +5,8 @@ import { ProgressBar } from '../_ui/ProgressBar';
 import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { authenticationService } from '@/_services';
+import { TrialErrorModal } from '@/OnBoardingForm/OnbboardingFromSH';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const TRIAL_DAYS_LIMIT = 14;
 
@@ -17,19 +19,67 @@ export function LicenseBanner({
   children,
   isAvailable,
   style = {},
+  showPaidFeatureBanner = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const currentUser = authenticationService.currentSessionValue;
   const { percentage = '', total, current, licenseStatus, canAddUnlimited } = limits ?? {};
   const { isExpired, isLicenseValid, licenseType, expiryDate } = licenseStatus ?? {};
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
+  const [showTrialErrorModal, setShowTrialErrorModal] = useState(false);
+  const [trialErrorMessage, setTrialErrorMessage] = useState('');
   const isWorkspaceAdmin = !currentUser.super_admin && currentUser.admin;
   const isEndUser = !currentUser.admin;
   const DEMO_LINK = `https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=onpremise&instance_id=${currentUser?.instance_id}`;
 
   const features = ['Instance Settings', 'Audit Log', 'Open ID Connect'];
+  const boldWords = [
+    'Edit user details',
+    'number of super admins',
+    'paid plans',
+    'expired',
+    'days',
+    'tables',
+    'permissions',
+    'data source permissions',
+    'Custom groups & permissions',
+    'Instance settings',
+    'White labelling',
+    'Custom styles',
+  ];
+
+  const applyBoldFormatting = (text) => {
+    const boldRegex = new RegExp(`\\b(${boldWords.join('|')}|\\d+)\\b`, 'g');
+    return text.split(boldRegex).map((word, index) => {
+      if (boldWords.includes(word) || /^\d+$/.test(word)) {
+        return (
+          <span key={index} className="bold-text">
+            {word}
+          </span>
+        );
+      }
+      return word;
+    });
+  };
 
   const daysLeft = expiryDate && getDateDifferenceInDays(new Date(), new Date(expiryDate));
+
+  const activateTrial = () => {
+    setIsActivating(true);
+    setShowTrialErrorModal(false);
+    authenticationService
+      .activateTrial()
+      .then(() => {
+        setIsActivating(false);
+        window.location.reload();
+      })
+      .catch(({ error }) => {
+        setShowTrialErrorModal(true);
+        setTrialErrorMessage(error);
+        setIsActivating(false);
+      });
+  };
 
   const generateWarningText = () => {
     switch (true) {
@@ -75,6 +125,8 @@ export function LicenseBanner({
         return `You've reached your limit for number of ${type} - ${current}/${total}`;
       case !canAddUnlimited && percentage >= 100:
         return `You have reached your limit for number of ${type}.`;
+      case !isExpired && (percentage >= 90 || (total <= 10 && current === total - 1)):
+        return `You're reaching your limit for number of ${type} - ${current}/${total}.`;
       case !canAddUnlimited && (percentage >= 90 || (total <= 10 && current === total - 1)):
         return `You're reaching your limit for number of ${type} - ${current}/${total}`;
       case (!isLicenseValid || isExpired) && features.includes(type) && !isAvailable:
@@ -105,6 +157,13 @@ export function LicenseBanner({
 
   const generateButtonTextAndLink = () => {
     switch (true) {
+      case showPaidFeatureBanner === true:
+        return {
+          text: 'Paid feature',
+          onClick: () => {
+            window.open(DEMO_LINK, '_blank');
+          },
+        };
       case (size === 'xsmall' || size === 'small') &&
         (type === 'trial' || type === 'basic' || type === 'enterprise' || type === 'apps' || type === 'workspaces') &&
         (isEndUser || isWorkspaceAdmin):
@@ -119,6 +178,14 @@ export function LicenseBanner({
           text: 'Contact superadmin to keep leveraging ToolJet to the fullest!',
           className: 'sub-heading',
           replaceText: true,
+        };
+      case !isLicenseValid && !expiryDate && currentUser.super_admin && size === 'large':
+        return {
+          text: 'Start free trial',
+          className: 'start-trial-btn',
+          onClick: () => {
+            activateTrial();
+          },
         };
       case isExpired && (type === 'basic' || type === 'trial'):
         return {
@@ -158,6 +225,23 @@ export function LicenseBanner({
     copyToClipboard(text);
   };
 
+  if (showPaidFeatureBanner) {
+    const buttonTextAndClick = generateButtonTextAndLink();
+    const { onClick: handleClick, text: buttonText } = buttonTextAndClick;
+    return (
+      <div className={`paid-feature-banner d-flex`}>
+        {!warningText && currentUser.admin && <SolidIcon {...iconSize} fill={'None'} name="enterpriseGradient" />}
+        <span
+          onClick={currentUser?.super_admin && handleClick}
+          className={`upgrade-link ${currentUser?.super_admin ? 'cursor-pointer' : ''}`}
+          style={{ fontWeight: '500' }}
+        >
+          {buttonText}
+        </span>
+      </div>
+    );
+  }
+
   const warningText = generateWarningText();
   const message = customMessage || generateMessage();
   const buttonTextAndnClick = generateButtonTextAndLink();
@@ -192,32 +276,36 @@ export function LicenseBanner({
       <div className="message-wrapper">
         <div className={`heading ${warningText?.parentClassName}`}>
           {warningText && <div className={warningText?.className}>{warningText?.text}</div>}
-          {message}{' '}
-          {size === 'small' && (
-            <div className={`cursor-pointer ${className}`}>
-              {!replaceText ? (
-                <>
-                  {!replaceText && 'For more, '}
-                  <span
-                    onClick={handleClick}
-                    className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
-                  >
-                    {buttonText}
-                  </span>
-                </>
-              ) : (
-                <span onClick={handleClick}>{buttonText}</span>
-              )}
-            </div>
-          )}
-          {size === 'xsmall' && (
-            <span
-              onClick={handleClick}
-              className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
-            >
-              {buttonText}
-            </span>
-          )}
+          <div style={{ fontWeight: size === 'large' ? 500 : 400 }}>
+            {applyBoldFormatting(message)}{' '}
+            {size === 'small' && (
+              <div className={`cursor-pointer ${className}`}>
+                {!replaceText ? (
+                  <>
+                    {!replaceText && 'For more, '}
+                    <span
+                      onClick={handleClick}
+                      className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
+                      style={{ fontWeight: '500' }}
+                    >
+                      {buttonText}
+                    </span>
+                  </>
+                ) : (
+                  <span onClick={handleClick}>{buttonText}</span>
+                )}
+              </div>
+            )}
+            {size === 'xsmall' && (
+              <span
+                onClick={handleClick}
+                className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
+                style={{ fontWeight: '500' }}
+              >
+                {buttonText}
+              </span>
+            )}
+          </div>
         </div>
         {size === 'large' && <span>{generateInfo() || commonMessage}</span>}
         {type === licenseType && daysLeft <= 14 && !isExpired && (
@@ -230,9 +318,13 @@ export function LicenseBanner({
         )}
       </div>
       {size === 'large' && currentUser.super_admin && (
-        <button onClick={handleClick} className="tj-base-btn upgrade-btn">
+        <ButtonSolid
+          isLoading={isActivating}
+          onClick={handleClick}
+          className={`${'tj-base-btn upgrade-btn'} ${className}`}
+        >
           {buttonText}
-        </button>
+        </ButtonSolid>
       )}
       {isModalOpen && (
         <LegalReasonsErrorModal
@@ -245,6 +337,13 @@ export function LicenseBanner({
           toggleModal={toggleModal}
         />
       )}
+      <TrialErrorModal
+        showErrorModal={showTrialErrorModal}
+        handleRetry={activateTrial}
+        message={trialErrorMessage}
+        handleClose={() => setShowTrialErrorModal(false)}
+        darkMode={darkMode}
+      />
     </div>
   ) : (
     <>{children}</>

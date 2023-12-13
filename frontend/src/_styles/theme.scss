@@ -900,7 +900,7 @@ button {
 }
 
 .app-icon-skeleton {
-  background-color: #91a4f6;
+  background-color: #ECEEF0 !important;
   border-radius: 4px;
   margin-bottom: 20px;
   height: 40px;
@@ -4336,11 +4336,24 @@ input[type="text"] {
 }
 
 .app-name {
-  width: 190px;
+  width: 200px;
   margin-left: 12px;
 
   .form-control-plaintext {
-    background-color: var(--base)
+    background-color: var(--base);
+    border: none !important;
+  }
+
+  .form-control-plaintext:hover {
+    outline: none;
+    border: 1px solid var(--slate6) !important;
+    background: var(--slate2);
+  }
+
+  .form-control-plaintext:focus {
+    outline: none;
+    border: 1px solid var(--indigo9) !important;
+    background: var(--slate2);
   }
 
 }
@@ -5237,6 +5250,17 @@ div#driver-page-overlay {
 .org-name {
   color: var(--slate12) !important;
   font-size: 12px;
+}
+
+.issued-license {
+  background: var(--indigo9);
+  color: var(--indigo1);
+  border-radius: 17px;
+  padding: 5px;
+  font-size: 10px;
+  padding: 1px 8px;
+  margin-left: auto;
+  text-transform: capitalize;
 }
 
 
@@ -6372,6 +6396,10 @@ input.hide-input-arrows {
       background-color: #232e3c;
       border-bottom: 1px solid #324156;
     }
+    .popover-body {
+      background-color: #232e3c;
+      border-radius: 6px;
+    }
   }
 
   .popover-header {
@@ -7325,9 +7353,10 @@ tbody {
     position: absolute;
     bottom: 50px;
     max-height: 130px;
+    min-width: 255px;
 
     svg {
-      width: 70px;
+      width: 48px;
     }
   }
 }
@@ -8950,6 +8979,18 @@ tbody {
 
   }
 
+  .license-banner {
+    .heading {
+      margin: unset !important;
+      width: unset !important;
+
+      div {
+        margin: unset !important;
+        width: unset !important;
+      }
+    }
+  }
+
   .user-limits {
     column-gap: 8px;
     .limit {
@@ -10455,6 +10496,7 @@ tbody {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-right: 5px;
   }
 }
 
@@ -10475,6 +10517,10 @@ tbody {
 
 .org-custom-select-header-wrap {
   border-bottom: 1px solid var(--slate5);
+
+  .issued-license {
+    display: none;
+  }
 }
 
 .btn-close:focus {
@@ -11594,7 +11640,7 @@ tbody {
   }
 }
 
-.instance-settings-page, .audit-log {
+.audit-log {
   width: 880px;
   margin: 0 auto;
 
@@ -11623,6 +11669,69 @@ tbody {
 .break-all {
   word-break: break-all;
 }
+
+.instance-settings-page {
+  width: 880px;
+  margin: 0 auto;
+  background: var(--base);
+
+  .card {
+    background: var(--base);
+    border: 1px solid var(--slate7) !important;
+    box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05) !important;
+    width: 880px;
+
+    .card-header {
+      padding: 24px 24px;
+      gap: 12px;
+      height: 72px;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+
+      .title-banner-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 878px;
+      }
+
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 500px;
+      margin-bottom: 4px !important;
+      color: var(--slate12);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 24px 32px;
+      gap: 8px;
+      border-top: 1px solid var(--slate5) !important;
+      background: var(--base);
+      margin-top: 0px !important;
+      align-Self: 'stretch';
+      height: 88px;
+    }
+    .card-body {
+      height: 467px;
+      padding: 24px;
+      .form-group{
+        .tj-app-input{
+          .form-control{
+            &:disabled{
+              background: var(--slate3) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 
 .workspace-folder-modal{
   .tj-text-input.dark {
@@ -12493,6 +12602,10 @@ tbody {
   }
 }
 
+.share-disabled {
+  opacity: 0.4;
+}
+
 // Editor revamp styles
 .main-wrapper {
   .editor {
@@ -12819,6 +12932,9 @@ tbody {
     }
   }
 }
+.bold-text {
+  font-weight: 500;
+}
 
 .saml-sso-conf {
   .saml-footer {
@@ -12833,3 +12949,24 @@ tbody {
     padding-bottom: 0px !important;
   }
 }
+
+.generic-loader {
+  width: 25px;
+  height: 25px;
+  border: 3px solid #FFEDD4;
+  border-bottom-color: #FFC371;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  }
+
+  @keyframes rotation {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+  }
+

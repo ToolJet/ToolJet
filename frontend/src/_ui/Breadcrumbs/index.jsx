@@ -16,11 +16,8 @@ export const Breadcrumbs = ({ darkMode, dataCy }) => {
             <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
               <p className=" tj-text-xsm ">{breadcrumb}</p>
               {sidebarNav?.length > 0 && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
-              <li className="breadcrumb-item font-weight-500">
-                <Link to={breadcrumb.key} data-cy="breadcrumb-page-title">
-                  {' '}
-                  {sidebarNav}
-                </Link>
+              <li className="breadcrumb-item font-weight-500" data-cy="breadcrumb-page-title">
+                {sidebarNav}
               </li>
               {beta && <span className="badge bg-color-primary mx-3">beta</span>}
             </div>
@@ -38,7 +35,12 @@ const routes = [
   { path: '/data-sources', breadcrumb: 'Data sources' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
   { path: '/license', breadcrumb: 'Enterprise Edition' },
-  { path: '/instance-settings', breadcrumb: 'Instance settings' },
+  { path: '/instance-settings/all-users', breadcrumb: 'Settings' },
+  { path: '/instance-settings/manage-instance-settings', breadcrumb: 'Settings' },
+  { path: '/instance-settings/white-labelling', breadcrumb: 'Settings' },
+  { path: '/instance-settings/license', breadcrumb: 'Settings' },
   { path: '/audit-logs', breadcrumb: 'Audit logs' },
+  { path: '/settings', breadcrumb: 'Settings' },
+  { path: '/account-settings', breadcrumb: 'Account settings' },
   { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
 ];

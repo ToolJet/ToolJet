@@ -145,7 +145,6 @@ export class GroupPermissionsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('updateGroupDataSourcePermission', UserEntity))
   @Get(':id/addable_data_sources')
   async addableDataSources(@User() user, @Param('id') id) {
     const dataSources = await this.groupPermissionsService.findAddableDataSources(user, id);

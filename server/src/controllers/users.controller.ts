@@ -10,6 +10,7 @@ import {
   Query,
   BadRequestException,
   Param,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
@@ -68,9 +69,11 @@ export class UsersController {
     };
   }
 
+  //cloud-licensing specific, don't change
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Patch('/user-type')
-  async updateUserTypr(@Body() body) {
+  async updateUserTypr(@Body() body, @Req() request) {
+    const organizationId = request.headers['tj-workspace-id'];
     const { userType, userId } = body;
 
     if (!userType || !userId) {
@@ -82,7 +85,7 @@ export class UsersController {
         throw new Error('At least one super admin is required');
       }
     }
-    await this.usersService.updateUser(userId, { userType });
+    await this.usersService.updateUser(userId, { userType }, organizationId);
   }
 
   @UseGuards(JwtAuthGuard, UserCountGuard)
@@ -122,9 +125,11 @@ export class UsersController {
     });
   }
 
+  //cloud-licensing specific, don't change
   @UseGuards(JwtAuthGuard)
   @Get('limits/:type')
-  async getUserLimits(@Param('type') type: LIMIT_TYPE) {
-    return await this.usersService.getUserLimitsByType(type);
+  async getUserLimits(@Param('type') type: LIMIT_TYPE, @User() user) {
+    const organizationId = user.organizationId;
+    return await this.usersService.getUserLimitsByType(type, organizationId);
   }
 }

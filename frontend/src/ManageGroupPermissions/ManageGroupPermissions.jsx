@@ -10,7 +10,7 @@ import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { Loader } from '../ManageSSO/Loader';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 import { LicenseTooltip } from '@/LicenseTooltip';
 import _ from 'lodash';
 class ManageGroupPermissionsComponent extends React.Component {
@@ -233,29 +233,38 @@ class ManageGroupPermissionsComponent extends React.Component {
                 {groups?.length} Groups
               </p>
               {!showNewGroupForm && !showGroupNameUpdateForm && (
-                <ButtonSolid
-                  className="btn btn-primary create-new-group-button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    posthog.capture('create_new_group', {
-                      workspace_id:
-                        authenticationService?.currentUserValue?.organization_id ||
-                        authenticationService?.currentSessionValue?.current_organization_id,
-                    });
-                    this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
-                  }}
-                  data-cy="create-new-group-button"
-                  leftIcon="plus"
-                  isLoading={isLoading}
-                  iconWidth="16"
-                  fill={'#FDFDFE'}
-                  disabled={!isFeatureEnabled}
+                <LicenseTooltip
+                  limits={featureAccess}
+                  feature={'Custom groups'}
+                  noTooltipIfValid={true}
+                  isAvailable={isFeatureEnabled}
+                  placement={'bottom'}
+                  customMessage={'Custom groups can only be created in paid plans'}
                 >
-                  {this.props.t(
-                    'header.organization.menus.manageGroups.permissions.createNewGroup',
-                    'Create new group'
-                  )}
-                </ButtonSolid>
+                  <ButtonSolid
+                    className="btn btn-primary create-new-group-button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      posthog.capture('create_new_group', {
+                        workspace_id:
+                          authenticationService?.currentUserValue?.organization_id ||
+                          authenticationService?.currentSessionValue?.current_organization_id,
+                      });
+                      this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
+                    }}
+                    data-cy="create-new-group-button"
+                    leftIcon="plus"
+                    isLoading={isLoading}
+                    iconWidth="16"
+                    fill={'#FDFDFE'}
+                    disabled={!isFeatureEnabled}
+                  >
+                    {this.props.t(
+                      'header.organization.menus.manageGroups.permissions.createNewGroup',
+                      'Create new group'
+                    )}
+                  </ButtonSolid>
+                </LicenseTooltip>
               )}
             </div>
 
@@ -348,8 +357,9 @@ class ManageGroupPermissionsComponent extends React.Component {
                           <LicenseTooltip
                             limits={featureAccess}
                             feature={'Custom groups'}
-                            isAvailable={true}
+                            isAvailable={false}
                             noTooltipIfValid={true}
+                            customMessage={'Custom groups are available only in paid plans'}
                           >
                             {children}
                           </LicenseTooltip>
@@ -382,13 +392,13 @@ class ManageGroupPermissionsComponent extends React.Component {
                     })}
                   </div>
                   {!_.isEmpty(featureAccess) && !isFeatureEnabled && (
-                    <LicenseBanner
+                    <LicenseBannerCloud
                       style={{ alignSelf: 'flex-end', margin: '0px !important' }}
                       limits={featureAccess}
                       classes="group-banner"
                       size="xsmall"
                       type={featureAccess?.licenseStatus?.licenseType}
-                      customMessage={'You can only create new groups in our paid plans.'}
+                      customMessage={'Custom groups & permissions are available in our paid plans.'}
                     />
                   )}
                 </div>

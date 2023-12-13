@@ -132,7 +132,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
   const handleInteractOutside = (ev) => {
     const isBtnClicked = Object.values(sideBarBtnRefs.current).some((btnRef) => {
-      return btnRef.contains(ev.target);
+      return btnRef?.contains(ev.target);
     });
 
     if (!isBtnClicked && !pinned) {
@@ -317,11 +317,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
               window.fcWidget.open();
             }}
           >
-            <img 
-              src="/assets/images/icons/editor/chat.svg" 
-              width="24" 
-              height="24" 
-              className="svg-icon" 
+            <img
+              src="/assets/images/icons/editor/chat.svg"
+              width="24"
+              height="24"
+              className="svg-icon"
               style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}
             />
           </a>

@@ -21,6 +21,8 @@ import CheveronRight from './CheveronRight.jsx';
 import CheveronUp from './CheveronUp.jsx';
 import ClearRectangle from './ClearRectangle.jsx';
 import Clock from './Clock.jsx';
+import LockGradient from './LockGradient.jsx';
+import DatasourceGradient from './DatasourceGradient.jsx';
 import Column from './Column.jsx';
 import Columns from './Columns.jsx';
 import Compass from './Compass.jsx';
@@ -149,6 +151,7 @@ import Check from './Check.jsx';
 import Editable from './Editable.jsx';
 import Save from './Save.jsx';
 import Cross from './Cross.jsx';
+import InformationPrimary from './InformationPrimary.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -234,6 +237,10 @@ const Icon = (props) => {
       return <Enterprise {...props} />;
     case 'enterpriseGradient':
       return <EnterpriseGradient {...props} />;
+    case 'lockGradient':
+      return <LockGradient {...props} />;
+    case 'datasourceGradient':
+      return <DatasourceGradient {...props} />;
     case 'eye':
       return <Eye {...props} />;
     case 'eye1':
@@ -268,6 +275,8 @@ const Icon = (props) => {
       return <Home {...props} />;
     case 'information':
       return <Information {...props} />;
+    case 'informationPrimary':
+      return <InformationPrimary {...props} />;
     case 'innerjoin':
       return <InnerJoinIcon {...props} />;
     case 'inrectangle':

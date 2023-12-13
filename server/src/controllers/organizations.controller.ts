@@ -23,7 +23,6 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 import { Response } from 'express';
-
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private organizationsService: OrganizationsService, private authService: AuthService) {}
@@ -72,11 +71,12 @@ export class OrganizationsController {
     return decamelizeKeys(response);
   }
 
+  //license type required for cloud-licensing, don't change
   @UseGuards(JwtAuthGuard)
   @Get()
   async get(@User() user) {
-    const result = await this.organizationsService.fetchOrganizations(user);
-    return decamelizeKeys({ organizations: result });
+    const organizationsWithLicenseType = await this.organizationsService.fetchOrganizations(user);
+    return decamelizeKeys({ organizations: organizationsWithLicenseType });
   }
 
   @UseGuards(JwtAuthGuard, AllowPersonalWorkspaceGuard)
@@ -118,7 +118,7 @@ export class OrganizationsController {
     const result = await this.organizationsService.fetchOrganizationDetails(user.organizationId);
     return decamelizeKeys({
       organizationDetails: result,
-      instanceConfigs: await this.organizationsService.constructSSOConfigs(),
+      instanceConfigs: await this.organizationsService.constructSSOConfigs(user?.organizationId),
     });
   }
 

@@ -5,9 +5,10 @@ import {
   getWorkspaceIdOrSlugFromURL,
   getPathname,
   getRedirectToWithParams,
-  redirectToDashboard,
+  redirectToErrorPage,
 } from './routes';
 import toast from 'react-hot-toast';
+import { ERROR_TYPES } from './constants';
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
@@ -28,10 +29,10 @@ export const authorizeWorkspace = () => {
     /* CASE-1 */
     authenticationService
       .validateSession(appId, workspaceIdOrSlug)
-      .then(({ current_organization_id, current_organization_slug, app_data }) => {
+      .then(({ current_organization_id, current_organization_slug }) => {
         if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
           /*CASE-2*/
-          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug, app_data);
+          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
         } else {
           updateCurrentSession({
             current_organization_id,
@@ -40,15 +41,13 @@ export const authorizeWorkspace = () => {
       })
       .catch((error) => {
         if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
-          const subpath = getSubpath();
           if (appId) {
             /* If the user is trying to load the app viewer and the app id / slug not found */
-            toast.error("Couldn't find the app. \n Please verify the app URL again.");
-            setTimeout(() => {
-              window.location.href = subpath ? `${subpath}` : '/';
-            }, 3000);
-            return;
+            redirectToErrorPage(ERROR_TYPES.INVALID);
+          } else if (error?.data?.statusCode == 422) {
+            redirectToErrorPage(ERROR_TYPES.UNKNOWN);
           } else {
+            const subpath = getSubpath();
             window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
           }
         }
@@ -115,7 +114,7 @@ export const updateCurrentSession = (newSession) => {
     CASE-3: If CASE-2 fails (indicating the need to log in to the workspace or having an invalid session), the user is directed to the workspace login page.
     CASE-4: During the execution of CASE-2, if the user has a valid session but encounters errors such as an incorrect workspace ID or non-existent workspace, they will be directed to the switch-workspace page.
 */
-export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, appData = null) => {
+export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
   const subpath = getSubpath();
   //initial session details
   updateCurrentSession({
@@ -125,19 +124,6 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, appDa
   authenticationService
     .authorize()
     .then((data) => {
-      /* License check */
-      if (appData) {
-        if (appData.is_released) {
-          licenseService.getLicenseStatus().then((data) => {
-            const { isBasicPlan } = data;
-            if (isBasicPlan) {
-              /* License expired for the users. now they can't access released apps */
-              redirectToDashboard();
-            }
-          });
-        }
-      }
-
       /* CASE-1 */
       const { current_organization_id } = data;
       fetchOrganizations(current_organization_id, ({ organizations, current_organization }) => {

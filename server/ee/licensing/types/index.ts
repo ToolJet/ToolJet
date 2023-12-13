@@ -3,6 +3,7 @@ import { LICENSE_TYPE } from 'src/helpers/license.helper';
 export interface Terms {
   expiry: string; // YYYY-MM-DD
   apps?: number | string;
+  workspaceId?: string;
   workspaces?: number | string;
   users?: {
     total?: number | string;
@@ -23,8 +24,12 @@ export interface Terms {
     whiteLabelling?: boolean;
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
+    comments?: boolean;
   };
   type?: LICENSE_TYPE;
+  auditLogs?: {
+    maximumDays?: number | string;
+  };
   meta?: {
     customerName?: string;
     generatedFrom?: 'API';
@@ -39,4 +44,5 @@ export interface CRMData {
   lastName?: string;
   role?: string;
   isTrialOpted?: boolean;
+  isCloudTrialOpted?: boolean;
 }

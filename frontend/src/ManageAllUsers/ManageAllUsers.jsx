@@ -8,7 +8,7 @@ import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 import OrganizationsModal from './OrganizationsModal';
 import UserEditModal from './UserEditModal';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 
 class ManageAllUsersComponent extends React.Component {
   constructor(props) {
@@ -33,14 +33,26 @@ class ManageAllUsersComponent extends React.Component {
       isUpdatingUser: false,
       updatingUser: null,
       userLimits: {},
-      featureAccess: {},
+      disabled: false,
     };
   }
-
   componentDidMount() {
+    this.fetchFeatureAccess();
     this.fetchAllUserLimits();
-    this.fetchFeatureAccesss();
   }
+
+  setDisabledStatus = (licenseStatus) => {
+    const disabled = licenseStatus?.isExpired || !licenseStatus?.isLicenseValid;
+    this.setState({ disabled });
+  };
+
+  fetchFeatureAccess = () => {
+    this.setState({ isLoading: true });
+    licenseService.getFeatureAccess().then((data) => {
+      this.setDisabledStatus(data?.licenseStatus);
+      this.setState({ isLoading: false });
+    });
+  };
 
   fetchUsers = (page = 1, options = {}) => {
     this.setState({
@@ -56,12 +68,6 @@ class ManageAllUsersComponent extends React.Component {
         isLoading: false,
       });
       this.updateSelectedUser();
-    });
-  };
-
-  fetchFeatureAccesss = () => {
-    licenseService.getFeatureAccess().then((data) => {
-      this.setState({ featureAccess: data });
     });
   };
 
@@ -174,26 +180,26 @@ class ManageAllUsersComponent extends React.Component {
     const { usersCount, editorsCount, viewersCount } = this.state.userLimits;
 
     if (usersCount?.percentage >= 100) {
-      return <LicenseBanner classes="mb-3" limits={usersCount} type="users" />;
+      return <LicenseBannerCloud classes="mb-3" limits={usersCount} type="users" />;
     } else if (editorsCount?.percentage >= 100) {
-      return <LicenseBanner classes="mb-3" limits={editorsCount} type="builders" />;
+      return <LicenseBannerCloud classes="mb-3" limits={editorsCount} type="builders" />;
     } else if (viewersCount?.percentage >= 100) {
-      return <LicenseBanner classes="mb-3" limits={viewersCount} type="end users" />;
+      return <LicenseBannerCloud classes="mb-3" limits={viewersCount} type="end users" />;
     } else if (
       usersCount?.percentage >= 90 ||
       (usersCount?.total <= 10 && usersCount.current === usersCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mb-3" limits={usersCount} type="users" />;
+      return <LicenseBannerCloud classes="mb-3" limits={usersCount} type="users" />;
     } else if (
       editorsCount?.percentage >= 90 ||
       (editorsCount?.total <= 10 && editorsCount.current === editorsCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mb-3" limits={editorsCount} type="builders" />;
+      return <LicenseBannerCloud classes="mb-3" limits={editorsCount} type="builders" />;
     } else if (
       viewersCount?.percentage >= 90 ||
       (viewersCount?.total <= 10 && viewersCount.current === viewersCount?.total - 1)
     ) {
-      return <LicenseBanner classes="mb-3" limits={viewersCount} type="end users" />;
+      return <LicenseBannerCloud classes="mb-3" limits={viewersCount} type="end users" />;
     }
   }
 
@@ -208,10 +214,11 @@ class ManageAllUsersComponent extends React.Component {
       updatingUser,
       isUpdatingUser,
       userLimits,
-      featureAccess,
     } = this.state;
 
     const { superadminsCount } = this.state.userLimits;
+
+    const { isLicenseExpired, isLicenseValid } = this.props;
 
     const usersTableCustomStyle = { height: 'calc(100vh - 400px)' };
 
@@ -233,6 +240,7 @@ class ManageAllUsersComponent extends React.Component {
             archiveAll={this.archiveAll}
             archivingFromAllOrgs={this.state.archivingFromAllOrgs}
             openEditModal={this.openEditModal}
+            disabled={this.state.disabled}
           />
 
           <UserEditModal
@@ -243,74 +251,73 @@ class ManageAllUsersComponent extends React.Component {
             darkMode={this.props.darkMode}
             isUpdatingUser={isUpdatingUser}
             updateUser={this.updateUser}
+            disabled={this.state.disabled}
             superadminsCount={superadminsCount}
           />
 
-          <LicenseBanner classes="mt-3" limits={featureAccess} type="Instance Settings" isAvailable={true}>
-            <div className="page-wrapper mt-1">
-              <div className="page-header workspace-page-header">
-                <div className="align-items-center d-flex">
-                  <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
-                    Manage All Users
-                  </div>
-                  <div className="user-limits d-flex mb-3">
-                    {!userLimits?.usersCount?.canAddUnlimited && userLimits?.usersCount && (
-                      <div className="limit">
-                        <div>TOTAL USERS</div>
-                        <div className="count">
-                          {userLimits?.usersCount?.current}/{userLimits?.usersCount?.total}
-                        </div>
+          <div className="page-wrapper mt-1">
+            <div className="page-header workspace-page-header">
+              <div className="align-items-center d-flex">
+                <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
+                  Manage All Users
+                </div>
+                <div className="user-limits d-flex">
+                  {!userLimits?.usersCount?.canAddUnlimited && userLimits?.usersCount && (
+                    <div className="limit">
+                      <div>TOTAL USERS</div>
+                      <div className="count">
+                        {userLimits?.usersCount?.current}/{userLimits?.usersCount?.total}
                       </div>
-                    )}
-                    {!userLimits?.editorsCount?.canAddUnlimited && userLimits?.editorsCount && (
-                      <div className="limit">
-                        <div>BUILDERS</div>
-                        <div className="count">
-                          {userLimits?.editorsCount?.current}/{userLimits?.editorsCount?.total}
-                        </div>
+                    </div>
+                  )}
+                  {!userLimits?.editorsCount?.canAddUnlimited && userLimits?.editorsCount && (
+                    <div className="limit">
+                      <div>BUILDERS</div>
+                      <div className="count">
+                        {userLimits?.editorsCount?.current}/{userLimits?.editorsCount?.total}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
-              {this.generateBanner()}
-              <div>
-                <UsersFilter
-                  filterList={this.filterList}
-                  darkMode={this.props.darkMode}
-                  clearIconPressed={() => this.fetchUsers()}
-                />
-
-                {users?.length === 0 && (
-                  <div className="d-flex justify-content-center flex-column">
-                    <span className="text-center pt-5 font-weight-bold">No result found</span>
-                    <small className="text-center text-muted">Try changing the filters</small>
-                  </div>
-                )}
-
-                {users?.length !== 0 && (
-                  <UsersTable
-                    customStyles={usersTableCustomStyle}
-                    isLoading={isLoading}
-                    users={users}
-                    unarchivingUser={unarchivingUser}
-                    archivingUser={archivingUser}
-                    meta={meta}
-                    generateInvitationURL={this.generateInvitationURL}
-                    invitationLinkCopyHandler={this.invitationLinkCopyHandler}
-                    unarchiveOrgUser={this.unarchiveOrgUser}
-                    archiveOrgUser={this.archiveOrgUser}
-                    pageChanged={this.pageChanged}
-                    darkMode={this.props.darkMode}
-                    translator={this.props.t}
-                    isLoadingAllUsers={true}
-                    openOrganizationModal={this.openOrganizationModal}
-                    openEditModal={this.openEditModal}
-                  />
-                )}
-              </div>
             </div>
-          </LicenseBanner>
+            {this.generateBanner()}
+            <div>
+              <UsersFilter
+                filterList={this.filterList}
+                darkMode={this.props.darkMode}
+                clearIconPressed={() => this.fetchUsers()}
+              />
+
+              {users?.length === 0 && (
+                <div className="d-flex justify-content-center flex-column">
+                  <span className="text-center pt-5 font-weight-bold">No result found</span>
+                  <small className="text-center text-muted">Try changing the filters</small>
+                </div>
+              )}
+
+              {users?.length !== 0 && (
+                <UsersTable
+                  customStyles={usersTableCustomStyle}
+                  isLoading={isLoading}
+                  users={users}
+                  unarchivingUser={unarchivingUser}
+                  archivingUser={archivingUser}
+                  meta={meta}
+                  generateInvitationURL={this.generateInvitationURL}
+                  invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                  unarchiveOrgUser={this.unarchiveOrgUser}
+                  archiveOrgUser={this.archiveOrgUser}
+                  pageChanged={this.pageChanged}
+                  darkMode={this.props.darkMode}
+                  translator={this.props.t}
+                  isLoadingAllUsers={true}
+                  openOrganizationModal={this.openOrganizationModal}
+                  openEditModal={this.openEditModal}
+                />
+              )}
+            </div>
+          </div>
         </div>
       </ErrorBoundary>
     );

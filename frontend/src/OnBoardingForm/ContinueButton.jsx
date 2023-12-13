@@ -2,7 +2,17 @@ import React, { useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import Spinner from '@/_ui/Spinner';
 
-function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setIsLoading, darkMode }) {
+function ContinueButton({
+  setPage,
+  formData,
+  page,
+  setCompleted,
+  isLoading,
+  setIsLoading,
+  darkMode,
+  setFormData,
+  buttonName = 'Continue',
+}) {
   const activeCondition =
     isLoading ||
     (page == 0 && !formData.companyName) ||
@@ -13,7 +23,7 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
   useEffect(() => {
     const keyDownHandler = (event) => {
       if (event.key === 'Enter' && !activeCondition) {
-        if (page < 3) setPage((currPage) => currPage + 1);
+        if (page < 4) setPage((currPage) => currPage + 1);
       }
     };
     document.addEventListener('keydown', keyDownHandler);
@@ -29,8 +39,9 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
       disabled={activeCondition}
       onClick={(e) => {
         e.preventDefault();
-        if (page < 3) setPage((currPage) => currPage + 1);
-        if (page == 3) {
+        if (page < 4) setPage((currPage) => currPage + 1);
+        if (page == 4) {
+          setFormData({ ...formData, requestedTrial: true });
           setIsLoading(true);
           setCompleted(true);
         }
@@ -39,11 +50,11 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
     >
       {isLoading ? (
         <div className="spinner-center">
-          <Spinner />
+          <Spinner darkMode={darkMode} />
         </div>
       ) : (
         <>
-          <p className="mb-0">Continue</p>
+          <p className="mb-0">{buttonName}</p>
           <EnterIcon
             className="enter-icon-onboard"
             fill={

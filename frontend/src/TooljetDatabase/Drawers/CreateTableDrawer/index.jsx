@@ -7,7 +7,7 @@ import { tooljetDatabaseService, authenticationService } from '@/_services';
 import posthog from 'posthog-js';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 
 export default function CreateTableDrawer({ bannerVisible, setBannerVisible }) {
   const { organizationId, setSelectedTable, setTables, tables } = useContext(TooljetDatabaseContext);
@@ -51,7 +51,7 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible }) {
           Create new table
         </ButtonSolid>
       </div>
-      <LicenseBanner
+      <LicenseBannerCloud
         classes="mb-3 small"
         limits={tablesLimit}
         type="tables"

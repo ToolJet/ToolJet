@@ -11,13 +11,17 @@ export enum LICENSE_FIELD {
   TOTAL_USERS = 'usersCount',
   EDITORS = 'editorsCount',
   VIEWERS = 'viewersCount',
+  SUPERADMINS = 'superadmins',
   OIDC = 'oidcEnabled',
   LDAP = 'ldapEnabled',
   SAML = 'samlEnabled',
   CUSTOM_STYLE = 'customStylingEnabled',
   WHITE_LABEL = 'whitelabellingEnabled',
   AUDIT_LOGS = 'auditLogsEnabled',
+  MAX_DURATION_FOR_AUDIT_LOGS = 'maxDaysForAuditLogs',
   MULTI_ENVIRONMENT = 'multiEnvironmentEnabled',
+  MULTI_PLAYER_EDIT = 'multiPlayerEnabled',
+  COMMENTS = 'commentsEnabled',
   UPDATED_AT = 'updatedAt',
   ALL = 'all',
   USER = 'allUsers',
@@ -31,20 +35,20 @@ export enum LICENSE_FIELD {
 
 export enum LICENSE_LIMITS_LABEL {
   //Users
-  USERS = 'Total Users',
-  SUPERADMINS = 'Superadmins',
-  EDIT_USERS = 'Builders',
-  END_USERS = 'End Users',
-  SUPERADMIN_USERS = 'Super Admins',
+  USERS = 'total users',
+  SUPERADMINS = 'superadmins',
+  EDIT_USERS = 'builders',
+  END_USERS = 'end users',
+  SUPERADMIN_USERS = 'super admins',
 
   //Apps
-  APPS = 'Apps',
+  APPS = 'apps',
 
   //Workspaces
-  WORKSPACES = 'Workspaces',
+  WORKSPACES = 'workspaces',
 
   //Tables
-  TABLES = 'Tables',
+  TABLES = 'tables',
 }
 
 export enum LICENSE_TYPE {

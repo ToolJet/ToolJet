@@ -108,6 +108,7 @@ export class OauthService {
       defaultOrganization?.id,
       manager
     );
+    await this.organizationService.updateOwner(organization.id, user.id, manager);
 
     /* Create avatar if profilePhoto available */
     if (profilePhoto) {
@@ -225,7 +226,7 @@ export class OauthService {
         break;
 
       case 'openid':
-        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC))) {
+        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC, organizationId))) {
           throw new UnauthorizedException('OIDC login disabled');
         }
         userResponse = await this.oidcOAuthService.signIn(token, {
@@ -236,7 +237,7 @@ export class OauthService {
         break;
 
       case 'ldap':
-        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.LDAP))) {
+        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.LDAP, organizationId))) {
           throw new UnauthorizedException('Ldap login disabled');
         }
         userResponse = await this.ldapService.signIn({ username, password }, configs);
@@ -307,6 +308,8 @@ export class OauthService {
             null,
             manager
           );
+
+          await this.organizationService.updateOwner(organization.id, userDetails.id, manager);
 
           void this.licenseService.createCRMUser({
             email: userDetails.email,
@@ -406,7 +409,8 @@ export class OauthService {
                 URL_SSO_SOURCE
               ),
             }),
-            manager
+            manager,
+            organization.id
           );
         }
       }
@@ -427,24 +431,22 @@ export class OauthService {
           decamelizeKeys({
             redirectUrl: generateInviteURL(userDetails.invitationToken, null, null, URL_SSO_SOURCE),
           }),
-          manager
+          manager,
+          organization.id
         );
       }
-      return await this.validateLicense(
-        await this.authService.generateLoginResultPayload(
-          response,
-          userDetails,
-          organizationDetails,
-          isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
-          false,
-          user
-        ),
-        manager
+      return await this.authService.generateLoginResultPayload(
+        response,
+        userDetails,
+        organizationDetails,
+        isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
+        false,
+        user
       );
     });
   }
-  private async validateLicense(response: any, manager: EntityManager) {
-    await this.usersService.validateLicense(manager);
+  private async validateLicense(response: any, manager: EntityManager, organizationId?: string) {
+    await this.usersService.validateLicense(manager, organizationId);
     return response;
   }
 }

@@ -51,6 +51,9 @@ export const OrganizationList = function () {
             {org.name}
           </div>
         </ToolTip>
+        {org?.license_type !== 'basic' && !org?.is_license_expired && (
+          <div className="issued-license">{org?.license_type}</div>
+        )}
       </div>
     ),
   }));

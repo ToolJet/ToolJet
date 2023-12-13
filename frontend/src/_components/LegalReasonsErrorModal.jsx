@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { authenticationService } from '@/_services';
+import { getWorkspaceId } from '../_helpers/utils';
+import posthog from 'posthog-js';
 
 const LegalReasonsErrorModal = ({
-  showModal,
+  showModal: propShowModal,
   message,
   feature,
   darkMode,
@@ -15,26 +17,27 @@ const LegalReasonsErrorModal = ({
   showFooter = true,
   toggleModal,
 }) => {
-  const [isModalOpen, setShowModal] = React.useState(showModal);
+  const [isOpen, setShowModal] = useState(propShowModal);
   const currentUser = authenticationService.currentSessionValue;
+  const workspaceId = getWorkspaceId();
 
-  React.useEffect(() => {
-    if (!isModalOpen) {
-      const element = document.getElementById('legal-reason-modal');
-      const parentNode = element?.parentNode;
-      parentNode && ReactDOM.unmountComponentAtNode(parentNode?.child[0]);
-      toggleModal && toggleModal();
-    }
-  }, [isModalOpen]);
+  const handleClose = () => {
+    setShowModal(false);
+    toggleModal && toggleModal();
+    document.querySelector('.legal-reason-backdrop').remove();
+  };
 
-  const handleClose = () => setShowModal(false);
+  useEffect(() => {
+    setShowModal(propShowModal);
+  }, [propShowModal]);
 
-  return (
+  const modalContent = (
     <>
       <Modal
         id="legal-reason-modal"
-        show={showModal}
-        onHide={handleClose}
+        show={isOpen}
+        onHide={toggleModal ?? handleClose}
+        backdropClassName="legal-reason-backdrop"
         size="sm"
         centered={true}
         contentClassName={`${darkMode ? 'theme-dark dark-theme license-error-modal' : 'license-error-modal'}`}
@@ -47,14 +50,6 @@ const LegalReasonsErrorModal = ({
         </Modal.Header>
         <Modal.Body data-cy="modal-message">
           {message}
-          {(message?.includes('builders') || message?.includes('workspaces')) && (
-            <div className="info">
-              <div>
-                <SolidIcon name="idea" />
-              </div>
-              <span>To add more users, please disable the personal workspace in instance settings and retry.</span>
-            </div>
-          )}
           {body}
         </Modal.Body>
         {showFooter && (
@@ -62,14 +57,20 @@ const LegalReasonsErrorModal = ({
             <Button className="cancel-btn" onClick={handleClose}>
               Cancel
             </Button>
-            {currentUser?.super_admin && (
-              <Button className="upgrade-btn" autoFocus onClick={() => {}}>
-                <a
-                  style={{ color: 'white', textDecoration: 'none' }}
-                  href={`https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none&payment=onpremise&instance_id=${currentUser?.instance_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+            {currentUser?.admin && (
+              <Button
+                onClick={() => {
+                  posthog.capture('click_upgrade_plan', {
+                    workspace_id:
+                      authenticationService?.currentUserValue?.organization_id ||
+                      authenticationService?.currentSessionValue?.current_organization_id,
+                  });
+                  window.location.href = `/${workspaceId}/settings/subscription?currentTab=upgradePlan`;
+                }}
+                className="upgrade-btn"
+                autoFocus
+              >
+                <a style={{ color: 'white', textDecoration: 'none' }} target="_blank" rel="noopener noreferrer">
                   Upgrade
                 </a>
               </Button>
@@ -79,6 +80,7 @@ const LegalReasonsErrorModal = ({
       </Modal>
     </>
   );
+  return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default LegalReasonsErrorModal;
