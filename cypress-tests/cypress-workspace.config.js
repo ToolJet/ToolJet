@@ -78,7 +78,7 @@ module.exports = defineConfig({
     specPattern: [
       "cypress/e2e/ce/**/*.cy.js",
       "cypress/e2e/workspace/*.cy.js",
-      "cypress/e2e/editor/app-version/version.cy.js"
+      "cypress/e2e/editor/app-version/version.cy.js",
       "cypress/e2e/selfHost/*.cy.js",
       "cypress/e2e/authentication/*.cy.js",
     ],
