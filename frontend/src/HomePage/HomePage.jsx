@@ -744,6 +744,7 @@ class HomePageComponent extends React.Component {
               orgGit={orgGit}
               commitEnabled={commitEnabled}
               handleCommitEnableChange={this.handleCommitEnableChange}
+              appType={this.props.appType}
             />
           )}
           {showCloneAppModal && (

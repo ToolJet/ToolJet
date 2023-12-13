@@ -20,6 +20,7 @@ export function AppModal({
   orgGit,
   commitEnabled,
   handleCommitEnableChange,
+  appType,
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
@@ -189,7 +190,7 @@ export function AppModal({
                 App name must be unique and max 50 characters
               </small>
             )}
-            {orgGit?.is_enabled && (
+            {orgGit?.is_enabled && appType != 'workflow' && (
               <div className="commit-changes mt-3">
                 <div>
                   <input
