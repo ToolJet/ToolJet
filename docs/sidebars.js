@@ -10,7 +10,26 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
-    'getting-started',
+    {
+      'type': 'category',
+      'label': 'Getting Started',
+      'items': [
+        'getting-started/platform-overview',
+        'getting-started/quickstart-guide',
+      ],
+    },
+    {
+      'type': 'category',
+      'label': 'ToolJet Concepts',
+      'items': [
+        'tooljet-concepts/what-are-components',
+        'tooljet-concepts/what-are-datasources',
+        'tooljet-concepts/what-are-queries',
+        'tooljet-concepts/what-are-events',
+        'tooljet-concepts/how-to-access-values',
+        'tooljet-concepts/permissions',
+      ],
+    },
     {
       'type': 'category',
       'label': 'Setup',
@@ -212,6 +231,7 @@ const sidebars = {
         'tutorial/keyboard-shortcuts',
       ],
     },
+
     {
       'type': 'category',
       'label': 'Workflows',
