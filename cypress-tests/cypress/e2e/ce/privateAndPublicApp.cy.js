@@ -67,7 +67,7 @@ describe("App share functionality", () => {
 
     logout();
     cy.wait(3000);
-    cy.visit(`/applications/${slug}`);
+    cy.visit(`http://localhost:8082/applications/${slug}`);
     cy.wait(3000);
 
     cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
@@ -90,7 +90,7 @@ describe("App share functionality", () => {
 
     logout();
     cy.wait(3000);
-    cy.visit(`/applications/${slug}`);
+    cy.visit(`http://localhost:8082/applications/${slug}`);
     cy.wait(3000);
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
   });

@@ -55,12 +55,12 @@ describe("App slug", () => {
         releaseApp();
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
-        cy.wait(1000);
+        cy.wait(2000);
         cy.url().should('eq', `http://localhost:8082/applications/${data.slug}/home?version=v1`);
         cy.visit('/my-workspace');
         cy.wait(500);
 
-        cy.visit(`/applications/${data.slug}`);
+        cy.visit(`http://localhost:8082/applications/${data.slug}`);
         cy.url().should('eq', `http://localhost:8082/applications/${data.slug}`);
         cy.visit('/my-workspace');
         cy.wait(500);
@@ -79,8 +79,7 @@ describe("App slug", () => {
         data.appName = `${fake.companyName} App`;
 
         cy.apiCreateApp(data.appName);
-        cy.visit('/')
-        navigateToAppEditor(data.appName);
+        cy.openApp('my-workspace');
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appSlugInput).clear()
