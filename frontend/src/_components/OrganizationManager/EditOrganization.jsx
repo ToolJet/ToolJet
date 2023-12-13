@@ -40,9 +40,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
         index === 0
           ? setName({
               ...name,
-              error: {
-                error: `Workspace name can't be empty`,
-              },
+              error: `Workspace name can't be empty`,
             })
           : setSlug({ ...slug, error: `Workspace slug can't be empty` });
         emptyError = true;
