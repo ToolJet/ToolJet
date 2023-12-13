@@ -133,6 +133,16 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 </TabItem>
 </Tabs>
 
+## Docker Backup
+The is a Docker-specific feature that assists in backing up the database during an upgrade process. If you plan to utilize this feature, uncomment the backup service in the docker-compose file. Additionally, you need to set an environment variable: `DATABASE_BACKUP=true`. This enables the creation of a `pg_dump` file, which will be stored in the backup folder.
+
+To restore the database from this dump, execute the following command:
+
+```
+cat your_dump.sql | docker exec -i --user postgres <postgres-db-container-name> psql -U postgres
+```
+
+
 ## Upgrading to v2.24.3-ee2.10.2
 
 Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
