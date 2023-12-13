@@ -322,6 +322,7 @@ const sidebars = {
         'tutorial/versioning-and-release',
       ],
     },
+    'gitsync',
     {
       'type': 'category',
       'label': 'Marketplace',
