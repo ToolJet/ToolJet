@@ -248,7 +248,7 @@ export default function generateColumnsData({
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
-                    className={`table-column-type-string-input ${!isValid ? 'is-invalid' : ''}`}
+                    className={`table-column-type-input  ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
                   <div className="invalid-feedback">{validationError}</div>
