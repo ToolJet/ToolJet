@@ -10,6 +10,7 @@ const FeatureLabels = {
   saml: 'SAML',
   customStyling: 'Custom styles',
   multiEnvironment: 'Multi-Environment',
+  gitSync: 'GitSync',
 };
 
 const Access = () => {

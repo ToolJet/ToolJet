@@ -23,6 +23,7 @@ export interface Terms {
     whiteLabelling?: boolean;
     multiEnvironment?: boolean;
     multiPlayerEdit?: boolean;
+    gitSync?: boolean;
     comments?: boolean;
   };
   type?: LICENSE_TYPE;
