@@ -16,7 +16,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { redirectToDashboard } from '@/_helpers/routes';
+import { getDashboardRedirectURL, redirectToDashboard } from '@/_helpers/routes';
 
 export default function EditorHeader({
   M,
@@ -75,7 +75,7 @@ export default function EditorHeader({
         <div className="container-xl header-container">
           <div className="d-flex w-100">
             <h1 className="navbar-brand d-none-navbar-horizontal p-0">
-              <Link data-cy="editor-page-logo" onClick={handleLogoClick}>
+              <Link to={getDashboardRedirectURL()} data-cy="editor-page-logo" onClick={handleLogoClick}>
                 <AppLogo isLoadingFromHeader={true} />
               </Link>
             </h1>
