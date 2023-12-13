@@ -5,6 +5,7 @@ import {
   openEditorSidebar,
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
+import { resizeQueryPanel } from "Support/utils/dataSource";
 
 export const verifyComponent = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("be.visible");
@@ -46,5 +47,6 @@ export const verifyComponentWithOutLabel = (
   verifyComponent(fakeName);
 
   cy.go("back");
+  resizeQueryPanel(0);
   deleteComponentAndVerify(fakeName);
 };
