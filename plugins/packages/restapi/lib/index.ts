@@ -102,7 +102,7 @@ export default class RestapiQueryService implements QueryService {
         searchParams.append(key, String(value));
       }
     }
-    for (const [key, value] of Object.entries(sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource))) {
+    for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource)) {
       searchParams.append(key, String(value));
     }
 
