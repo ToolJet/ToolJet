@@ -148,11 +148,18 @@ export function Table({
     top: 'auto',
     borderRadius: '4px',
     ...(isDragging && {
-      marginLeft: '-280px', // hack changing marginLeft to -280px to bring the draggable header to the correct position at the start of drag
+      // marginLeft: '-280px', // hack changing marginLeft to -280px to bring the draggable header to the correct position at the start of drag
       display: 'flex',
       alignItems: 'center',
       paddingLeft: '10px',
       height: '30px',
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      right: '0',
+      bottom: '0',
+      zIndex: '9999',
+      width: '60px',
     }),
     ...(!isDragging && { transform: 'translate(0,0)', width: '100%' }),
     ...(isDropAnimating && { transitionDuration: '0.001s' }),
@@ -337,7 +344,7 @@ export function Table({
 
   function onPageIndexChanged(page) {
     onComponentOptionChanged(component, 'pageIndex', page).then(() => {
-      onEvent('onPageChanged', { component, data: {} });
+      onEvent('onPageChanged', tableEvents, { component });
     });
   }
 
@@ -653,8 +660,10 @@ export function Table({
     if (!sortOptions) {
       setExposedVariable('sortApplied', []);
     }
-    if (mounted) setExposedVariable('sortApplied', sortOptions);
-    fireEvent('onSort');
+    if (mounted) {
+      setExposedVariable('sortApplied', sortOptions);
+      fireEvent('onSort');
+    }
   }, [JSON.stringify(sortOptions)]);
 
   useEffect(() => {
@@ -705,9 +714,9 @@ export function Table({
   useEffect(() => {
     setExposedVariable('discardNewlyAddedRows', async function () {
       if (
-        tableDetails.addNewRowsDetails.addingNewRows &&
-        (Object.keys(tableDetails.addNewRowsDetails.newRowsChangeSet || {}).length > 0 ||
-          Object.keys(tableDetails.addNewRowsDetails.newRowsDataUpdates || {}).length > 0)
+        !_.isEmpty(exposedVariables.newRows) ||
+        !_.isEmpty(tableDetails.addNewRowsDetails.newRowsChangeSet) ||
+        !_.isEmpty(tableDetails.addNewRowsDetails.newRowsChangeSet)
       ) {
         setExposedVariables({
           newRows: [],
@@ -733,8 +742,9 @@ export function Table({
       mergeToTableDetails({ selectedRowsDetails });
     }
     if (
-      (!showBulkSelector && !highlightSelectedRow) ||
-      (showBulkSelector && !highlightSelectedRow && preSelectRow.current)
+      allowSelection &&
+      ((!showBulkSelector && !highlightSelectedRow) ||
+        (showBulkSelector && !highlightSelectedRow && preSelectRow.current))
     ) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
@@ -779,12 +789,11 @@ export function Table({
         ['currentData', data],
         ['selectedRow', []],
         ['selectedRowId', null],
-      ]).then(() => {
-        if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
-          toggleAllRowsSelected(false);
-          mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
-        }
-      });
+      ]);
+      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+        toggleAllRowsSelected(false);
+        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+      }
     }
   }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
@@ -1055,7 +1064,6 @@ export function Table({
             {displaySearchBox && !loadingState && (
               <GlobalFilter
                 globalFilter={state.globalFilter}
-                useAsyncDebounce={useAsyncDebounce}
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
@@ -1086,7 +1094,7 @@ export function Table({
                 onDragStart={() => {
                   currentColOrder.current = allColumns?.map((o) => o.id);
                 }}
-                onDragUpdate={(dragUpdateObj) => {
+                onDragEnd={(dragUpdateObj) => {
                   const colOrder = [...currentColOrder.current];
                   const sIndex = dragUpdateObj.source.index;
                   const dIndex = dragUpdateObj.destination && dragUpdateObj.destination.index;

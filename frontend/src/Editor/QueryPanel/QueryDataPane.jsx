@@ -202,7 +202,7 @@ const EmptyDataSource = () => (
         <FolderEmpty style={{ height: '16px' }} />
       </span>
     </div>
-    <span>No queries have been added. </span>
+    <span data-cy="label-no-queries">No queries have been added. </span>
   </div>
 );
 

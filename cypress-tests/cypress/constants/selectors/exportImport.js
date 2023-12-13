@@ -39,4 +39,6 @@ export const importSelectors = {
   importAnApplication: '[data-cy="import-an-application"]',
   importOptionLabel: '[data-cy="import-option-label"]',
   importOptionInput: '[data-cy="import-option-input"]',
+  importAppTitle: '[data-cy="import-app-title"]',
+  importAppButton: '[data-cy="import-app"]',
 };

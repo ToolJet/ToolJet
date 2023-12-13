@@ -12,7 +12,7 @@ import { commonText } from "Texts/common";
 import { inviteUser } from "Support/utils/manageUsers";
 import { userSignUp } from "Support/utils/onboarding";
 
-describe("App share functionality", () => {
+describe("Redirection error pages", () => {
     const data = {};
     data.appName = `${fake.companyName} App`;
     data.firstName = fake.firstName;
@@ -25,7 +25,6 @@ describe("App share functionality", () => {
     before(() => {
         cy.apiLogin();
         inviteUser(data.firstName, data.email);
-
         logout();
     });
 
