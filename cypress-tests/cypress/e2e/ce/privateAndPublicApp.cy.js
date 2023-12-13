@@ -67,7 +67,7 @@ describe("App share functionality", () => {
 
     logout();
     cy.wait(3000);
-    cy.visit(`http://localhost:8082/applications/${slug}`);
+    cy.visitSlug({ actualUrl: `http://localhost:8082/applications/${slug}` });
     cy.wait(3000);
 
     cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
@@ -90,7 +90,7 @@ describe("App share functionality", () => {
 
     logout();
     cy.wait(3000);
-    cy.visit(`http://localhost:8082/applications/${slug}`);
+    cy.visitSlug({ actualUrl: `http://localhost:8082/applications/${slug}` });
     cy.wait(3000);
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
   });
@@ -110,7 +110,7 @@ describe("App share functionality", () => {
     addNewUserMW(data.firstName, data.email);
     logout();
 
-    cy.visit(`/applications/${slug}`);
+    cy.visitSlug({ actualUrl: `/applications/${slug}` });
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
 
     cy.defaultWorkspaceLogin();
@@ -122,7 +122,7 @@ describe("App share functionality", () => {
     cy.get(commonSelectors.editorPageLogo).click();
 
     logout();
-    cy.visit(`/applications/${slug}`);
+    cy.visitSlug({ actualUrl: `/applications/${slug}` });
 
     cy.login(data.email, "password");
     cy.get(commonSelectors.allApplicationLink).verifyVisibleElement(
@@ -137,7 +137,7 @@ describe("App share functionality", () => {
 
     cy.logoutApi();
     userSignUp(data.firstName, data.email, "Test");
-    cy.visit(`/applications/${slug}`);
+    cy.visitSlug({ actualUrl: `/applications/${slug}` });
     cy.wait(1000);
 
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
@@ -162,7 +162,7 @@ describe("App share functionality", () => {
     cy.get(commonSelectors.editorPageLogo).click();
 
     logout();
-    cy.visit(`/applications/${slug}`);
+    cy.visitSlug({ actualUrl: `/applications/${slug}` });
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
     cy.get(commonSelectors.viewerPageLogo).click();
   });

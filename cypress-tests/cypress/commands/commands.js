@@ -371,3 +371,13 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 })
   cy.wait("@library_apps")
 })
+
+Cypress.Commands.add('visitSlug', ({ actualUrl, currentUrl = 'http://localhost:8082/error/unknown' }) => {
+  cy.visit(actualUrl);
+
+  cy.url().then((url) => {
+    if (url === currentUrl) {
+      cy.visit(actualUrl);
+    }
+  });
+});

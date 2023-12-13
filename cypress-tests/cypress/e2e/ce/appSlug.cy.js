@@ -60,7 +60,7 @@ describe("App slug", () => {
         cy.visit('/my-workspace');
         cy.wait(500);
 
-        cy.visit(`http://localhost:8082/applications/${data.slug}`);
+        cy.visitSlug({ actualUrl: `http://localhost:8082/applications/${data.slug}` });
         cy.url().should('eq', `http://localhost:8082/applications/${data.slug}`);
         cy.visit('/my-workspace');
         cy.wait(500);
@@ -118,7 +118,7 @@ describe("App slug", () => {
         cy.visit('/my-workspace');
         cy.wait(500);
 
-        cy.visit(`/applications/${data.slug}`);
+        cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
         cy.url().should('eq', `http://localhost:8082/applications/${data.slug}`);
         cy.visit('/my-workspace');
         cy.wait(500);
