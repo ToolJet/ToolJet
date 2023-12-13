@@ -253,17 +253,18 @@ export const NumberInput = function NumberInput({
         >
           {label && width > 0 && (
             <label
-              className={defaultAlignment === 'side' && `d-flex align-items-center`}
+              // className={defaultAlignment === 'side' && ``}
               style={{
-                boxSizing: 'border-box',
                 color: darkMode && color === '#11181C' ? '#fff' : color,
                 width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
                 maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
-                // overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
+                // overflowWrap: 'break-word',
                 marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
                 marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
+                display: 'block',
+                overflow: 'hidden', // Hide any content that overflows the box
+                textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+                // whiteSpace: 'nowrap',
                 fontWeight: 500,
               }}
             >
@@ -284,7 +285,7 @@ export const NumberInput = function NumberInput({
                     ? '6px'
                     : '',
                 position: 'absolute',
-                top: defaultAlignment === 'side' ? '18px' : label?.length > 0 && width > 0 ? '38.5px' : '18px',
+                top: defaultAlignment === 'side' ? '18px' : label?.length > 0 && width > 0 ? '42px' : '18px',
                 transform: ' translateY(-50%)',
                 color: iconColor,
               }}

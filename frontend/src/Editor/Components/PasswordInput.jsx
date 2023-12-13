@@ -57,6 +57,7 @@ export const PasswordInput = function PasswordInput({
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
     boxShadow: boxShadow,
     padding: styles.iconVisibility ? '3px 28px' : '3px 5px',
+    // width: '205px',
   };
   const loaderStyle = {
     left: direction === 'right' && defaultAlignment === 'side' ? `${elementWidth - 19}px` : undefined,
@@ -66,9 +67,21 @@ export const PasswordInput = function PasswordInput({
   useEffect(() => {
     if (textInputRef.current) {
       const width = textInputRef.current.getBoundingClientRect().width;
+      console.log('test---', width);
       setElementWidth(width);
     }
-  }, [isResizing, width, auto, defaultAlignment, component?.definition?.styles?.iconVisibility?.value, label?.length]);
+  }, [
+    isResizing,
+    width,
+    auto,
+    defaultAlignment,
+    component?.definition?.styles?.iconVisibility?.value,
+    label?.length,
+    isMandatory,
+    padding,
+    direction,
+    alignment,
+  ]);
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
@@ -191,14 +204,19 @@ export const PasswordInput = function PasswordInput({
       >
         {label && width > 0 && (
           <label
-            className={defaultAlignment === 'side' && `d-flex align-items-center`}
+            // className={defaultAlignment === 'side' && ``}
             style={{
               color: darkMode && color === '#11181C' ? '#fff' : color,
               width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
               maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
-              overflowWrap: 'break-word',
+              // overflowWrap: 'break-word',
               marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
               marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
+              display: 'block',
+              overflow: 'hidden', // Hide any content that overflows the box
+              textOverflow: 'ellipsis', // Display ellipsis for overflowed content
+              // whiteSpace: 'nowrap',
+              fontWeight: 500,
             }}
           >
             {label}
@@ -232,7 +250,7 @@ export const PasswordInput = function PasswordInput({
               right: alignment == 'top' ? `6px` : direction == 'left' && alignment == 'side' && `6px`,
               left: direction == 'right' && alignment == 'side' && `${elementWidth - 21}px`,
               position: 'absolute',
-              top: alignment == 'side' ? '19px' : '38.5px',
+              top: alignment == 'side' ? '18px' : '38.5px',
               transform: ' translateY(-50%)',
             }}
             stroke={1.5}

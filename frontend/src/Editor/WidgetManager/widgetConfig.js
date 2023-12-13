@@ -1266,12 +1266,12 @@ export const widgets = [
       },
       {
         handle: 'disable',
-        displayName: 'Disable',
+        displayName: 'Disable(deprecated)',
         params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'visibility',
-        displayName: 'Visibility',
+        displayName: 'Visibility(deprecated)',
         params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {

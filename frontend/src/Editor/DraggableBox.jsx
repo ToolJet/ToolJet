@@ -217,7 +217,7 @@ export const DraggableBox = React.memo(
     }
 
     const adjustHeightBasedOnAlignment = (increase) => {
-      if (increase) return setCalculatedHeight(layoutData?.height + 18);
+      if (increase) return setCalculatedHeight(layoutData?.height + 20);
       else return setCalculatedHeight(layoutData?.height);
     };
     return (
