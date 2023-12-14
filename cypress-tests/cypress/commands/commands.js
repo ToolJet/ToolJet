@@ -374,6 +374,7 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
 
 Cypress.Commands.add('visitSlug', ({ actualUrl, currentUrl = 'http://localhost:8082/error/unknown' }) => {
   cy.visit(actualUrl);
+  cy.wait(3000);
 
   cy.url().then((url) => {
     if (url === currentUrl) {
