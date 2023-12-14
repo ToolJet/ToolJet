@@ -115,6 +115,16 @@ export class OrganizationLicenseController {
   @UseGuards(JwtAuthGuard)
   @Post('payment/redirect')
   async getRedirectURL(@User() user, @Body() paymentRedirectDto: PaymentRedirectDto) {
+    // Updating CRM
+    const { email, firstName, lastName, role } = user;
+    this.licenseService.updateCRM({
+      email,
+      firstName,
+      lastName,
+      role,
+      paymentTry: true,
+    });
+
     const stripeAPIKey = this.configService.get<string>('STRIPE_API_KEY');
     const stripe = new Stripe(stripeAPIKey);
     const checkParam = {

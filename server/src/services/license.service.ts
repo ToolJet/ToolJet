@@ -382,6 +382,8 @@ export class LicenseService {
               job_title: user.role,
               ...(user.isTrialOpted && { cf_has_started_on_prem_trial: 1 }),
               ...(user.isCloudTrialOpted && { cf_has_started_cloud_trial: 1 }),
+              ...(user.isCloudTrialOpted && { cf_cloud_trial_start_on: new Date().toISOString() }),
+              ...(user.paymentTry && { cf_tried_self_pay_on: new Date().toISOString() }),
             },
           },
         },
