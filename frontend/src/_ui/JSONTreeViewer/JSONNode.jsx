@@ -274,7 +274,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             'selected-node': applySelectedNodeStyles,
           })}
         >
-          {$NODEInfoIcon && <div>{$NODEInfoIcon}</div>}
+          {$NODEInfoIcon && $NODEInfoIcon}
           <JSONNodeIndicator
             toExpand={expandable}
             toShowNodeIndicator={toShowNodeIndicator}

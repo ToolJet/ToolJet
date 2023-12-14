@@ -127,7 +127,7 @@ export class JSONTreeViewer extends React.Component {
         if (icon?.tooltipMessage) {
           return (
             <ToolTip message={icon?.tooltipMessage}>
-              <div>{icon.jsx()}</div>
+              <div className="d-flex">{icon.jsx()}</div>
             </ToolTip>
           );
         }
