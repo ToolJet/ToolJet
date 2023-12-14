@@ -72,7 +72,10 @@ describe(
       cy.get(commonSelectors.editorPageLogo).click();
 
       logout();
-      cy.wait(3000);
+      cy.wait(4000);
+      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+        "be.visible"
+      );
       cy.visitSlug({ actualUrl: `http://localhost:8082/applications/${slug}` });
       cy.wait(3000);
 
@@ -99,7 +102,10 @@ describe(
       cy.get(commonSelectors.editorPageLogo).click();
 
       logout();
-      cy.wait(3000);
+      cy.wait(4000);
+      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+        "be.visible"
+      );
       cy.visitSlug({ actualUrl: `http://localhost:8082/applications/${slug}` });
       cy.wait(3000);
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
@@ -123,6 +129,10 @@ describe(
 
       addNewUserMW(data.firstName, data.email);
       logout();
+      cy.wait(4000);
+      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+        "be.visible"
+      );
 
       cy.visitSlug({ actualUrl: `/applications/${slug}` });
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
@@ -140,6 +150,11 @@ describe(
       cy.get(commonSelectors.editorPageLogo).click();
 
       logout();
+      cy.wait(4000);
+      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+        "be.visible"
+      );
+
       cy.visitSlug({ actualUrl: `/applications/${slug}` });
 
       cy.login(data.email, "password");
@@ -155,6 +170,8 @@ describe(
 
       cy.logoutApi();
       userSignUp(data.firstName, data.email, "Test");
+      cy.wait(3000);
+
       cy.visitSlug({ actualUrl: `/applications/${slug}` });
       cy.wait(1000);
 
@@ -184,6 +201,10 @@ describe(
       cy.get(commonSelectors.editorPageLogo).click();
 
       logout();
+      cy.wait(4000);
+      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+        "be.visible"
+      );
       cy.visitSlug({ actualUrl: `/applications/${slug}` });
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
       cy.get(commonSelectors.viewerPageLogo).click();
