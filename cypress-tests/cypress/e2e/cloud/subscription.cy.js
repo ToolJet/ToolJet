@@ -1,12 +1,12 @@
 describe("Subscription key", () => {
-    before("", () => {
-        cy.apiLogin();
-    });
-    it("Should update subscription key", () => {
-        cy.apiLogin();
-        cy.task("updateId", {
-            dbconfig: Cypress.env("app_db"),
-            sql: `
+  before("", () => {
+    cy.apiLogin();
+  });
+  it("Should update subscription key", () => {
+    cy.apiLogin();
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `
                 INSERT INTO public.organization_license (
                     id, organization_id, license_type, expiry_date, license_key, terms
                 )
@@ -17,7 +17,7 @@ describe("Subscription key", () => {
                     '2933-11-29',
                     '',
                     '{
-                        "expiry": "2023-12-13",
+                        "expiry": "2025-12-13",
                         "type": "trial",
                         "workspaceId": "${Cypress.env("workspaceId")}",
                         "users": {
@@ -42,6 +42,6 @@ describe("Subscription key", () => {
                       }'
                 );
             `,
-        });
     });
+  });
 });
