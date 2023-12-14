@@ -798,7 +798,7 @@ const EditorComponent = (props) => {
       setAppVersionCurrentEnvironment(environment);
     }
     updateState({
-      slug: data.slug,
+      slug: environmentSwitch ? slug : data.slug,
       isMaintenanceOn: data?.is_maintenance_on,
       organizationId: currentOrgId,
       isPublic: data?.is_public || data?.isPublic,
