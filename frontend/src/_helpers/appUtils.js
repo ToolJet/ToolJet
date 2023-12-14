@@ -1207,8 +1207,7 @@ export function computeComponentState(components = {}) {
       if (!components[key]) return;
 
       const { component } = components[key];
-      const componentMeta = componentTypes.find((comp) => component.component === comp.component);
-
+      const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component === comp.component));
       const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
       const existingValues = currentComponents[existingComponentName];
 
