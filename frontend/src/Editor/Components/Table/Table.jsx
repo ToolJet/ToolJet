@@ -392,7 +392,11 @@ export function Table({
     dynamicColumn = useDynamicColumn
       ? resolveReferences(component.definition.properties?.columnData?.value, currentState, []) ?? []
       : [];
-    if (!Array.isArray(tableData)) tableData = [];
+    if (!Array.isArray(tableData)) {
+      tableData = [];
+    } else {
+      tableData = tableData.filter((data) => data !== null && data !== undefined);
+    }
   }
 
   tableData = tableData || [];
