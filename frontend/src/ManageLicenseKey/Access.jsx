@@ -36,7 +36,7 @@ const Access = () => {
     <LoadingScreen />
   ) : (
     <div className="metrics-wrapper">
-      <div className="access-content">
+      <div className="access-content" data-cy="access-content">
         {features
           ?.filter((feature) => Object.keys(FeatureLabels).indexOf(feature?.key) !== -1)
           .map((feature, index) => (
