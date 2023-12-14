@@ -43,6 +43,9 @@ import { WorkflowExecutionEdge } from 'src/entities/workflow_execution_edge.enti
 import { BullModule } from '@nestjs/bull';
 import { DataQueriesService } from '@services/data_queries.service';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { GitSyncService } from '@services/git_sync.service';
+import { AppGitSync } from 'src/entities/app_git_sync.entity';
+import { OrganizationGitSync } from 'src/entities/organization_git_sync.entity';
 
 import { Component } from 'src/entities/component.entity';
 import { Page } from 'src/entities/page.entity';
@@ -53,6 +56,9 @@ import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { WorkflowExecutionsController } from '@controllers/workflow_executions_controller';
+import { ImportExportResourcesService } from '@services/import_export_resources.service';
+import { TooljetDbImportExportService } from '@services/tooljet_db_import_export_service';
+import { TooljetDbService } from '@services/tooljet_db.service';
 
 @Module({
   imports: [
@@ -79,6 +85,8 @@ import { WorkflowExecutionsController } from '@controllers/workflow_executions_c
       WorkflowExecutionNode,
       WorkflowExecutionEdge,
       OrgEnvironmentVariable,
+      AppGitSync,
+      OrganizationGitSync,
       Component,
       Page,
       EventHandler,
@@ -106,8 +114,12 @@ import { WorkflowExecutionsController } from '@controllers/workflow_executions_c
     WorkflowExecutionsService,
     DataQueriesService,
     ComponentsService,
+    GitSyncService,
     PageService,
     EventsService,
+    TooljetDbService,
+    ImportExportResourcesService,
+    TooljetDbImportExportService,
   ],
   controllers: [
     AppsController,

@@ -39,7 +39,7 @@ const LegalReasonsErrorModal = ({
       >
         <Modal.Header data-cy="modal-header">
           <Modal.Title>{type} Your Plan</Modal.Title>
-          <div onClick={toggleModal ?? handleClose} className="cursor-pointer">
+          <div onClick={toggleModal ?? handleClose} className="cursor-pointer" data-cy="modal-close">
             <SolidIcon name="remove" width="20" />
           </div>
         </Modal.Header>

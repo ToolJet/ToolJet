@@ -26,6 +26,7 @@ export default class License {
   private _workspacesCount: number | string;
   private _domainsList: Array<{ hostname?: string; subpath?: string }>;
   private _type: string;
+  private _isGitSync: boolean;
   private _metaData: object;
   private _workflows: object;
 
@@ -69,6 +70,7 @@ export default class License {
         this._domainsList = licenseData?.domains;
         this._metaData = licenseData?.meta;
         this._workflows = licenseData?.workflows;
+        this._isGitSync = licenseData?.features?.gitSync === false ? false : true;
       } catch (err) {
         console.error('Invalid License Key:Parse error', err);
         this._isLicenseValid = false;
@@ -82,6 +84,7 @@ export default class License {
       this._isAuditLogs = true;
       this._isOidc = true;
       this._isLdap = true;
+      this._isGitSync = true;
       this._isCustomStyling = true;
       this._isWhiteLabelling = true;
       this._isLicenseValid = true;
@@ -194,6 +197,13 @@ export default class License {
     return this._isLdap;
   }
 
+  public get gitSync(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.gitSync;
+    }
+    return this._isGitSync;
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!BASIC_PLAN_TERMS.features?.saml;
@@ -254,6 +264,7 @@ export default class License {
       whiteLabelling: this.whiteLabelling,
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
+      gitSync: this.gitSync,
       comments: this.comments,
     };
   }

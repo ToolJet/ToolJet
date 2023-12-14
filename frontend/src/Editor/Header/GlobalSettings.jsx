@@ -83,8 +83,11 @@ export const GlobalSettings = ({
           setSlugProgress(false);
           setSlugUpdatedState(true);
           replaceEditorURL(value, realState?.page?.handle);
+          //   Updating slug value for existing app data which is not called again
+          app.slug = value;
           updateState({
             slug: value,
+            app: app,
           });
         })
         .catch(({ error }) => {

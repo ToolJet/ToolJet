@@ -29,6 +29,7 @@ export enum LICENSE_FIELD {
   STATUS = 'status',
   META = 'metadata',
   WORKFLOWS = 'workflows',
+  GIT_SYNC = 'gitSyncEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

@@ -27,4 +27,5 @@ export * from './app_environment.service';
 export * from './license.service';
 export * from './copilot.service';
 export * from './workflow_executions.service';
+export * from './git_sync.service';
 export * from './organization_constants.service';

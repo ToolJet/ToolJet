@@ -76,6 +76,12 @@ export class AppsService {
     });
   }
 
+  async findByAppName(name: string, organizationId: string): Promise<App> {
+    return this.appsRepository.findOne({
+      where: { name, organizationId },
+    });
+  }
+
   async findVersion(id: string): Promise<AppVersion> {
     const appVersion = await this.appVersionsRepository.findOneOrFail({
       where: { id },

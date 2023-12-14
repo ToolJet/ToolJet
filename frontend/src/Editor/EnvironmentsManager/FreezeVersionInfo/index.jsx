@@ -4,7 +4,9 @@ import Branch from '@assets/images/icons/branch.svg';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
-export const FreezeVersionInfo = () => {
+export const FreezeVersionInfo = ({
+  info = 'App cannot be edited after promotion. Please create a new version from Development to make any changes.',
+}) => {
   const { isUserEditingTheVersion, disableReleasedVersionPopupState } = useAppVersionStore(
     (state) => ({
       isUserEditingTheVersion: state.isUserEditingTheVersion,
@@ -38,7 +40,7 @@ export const FreezeVersionInfo = () => {
             <Branch />
           </div>
           <p style={{ marginBottom: '0' }} data-cy="warning-text">
-            App cannot be edited after promotion. Please create a new version from Development to make any changes.
+            {info}
           </p>
         </div>
       </div>

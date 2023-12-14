@@ -35,6 +35,7 @@ import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
 import { WorkflowCountGuard } from '@ee/licensing/guards/workflowcount.guard';
+import { GitSyncService } from '@services/git_sync.service';
 import { AppCloneDto } from '@dto/app-clone.dto';
 
 @Controller('apps')
@@ -43,7 +44,8 @@ export class AppsController {
     private appsService: AppsService,
     private foldersService: FoldersService,
     private appsAbilityFactory: AppsAbilityFactory,
-    private auditLoggerService: AuditLoggerService
+    private auditLoggerService: AuditLoggerService,
+    private gitSyncService: GitSyncService
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -275,12 +277,13 @@ export class AppsController {
   async update(@User() user, @AppDecorator() app: App, @Body('app') appUpdateDto: AppUpdateDto) {
     const { id: userId, organizationId } = user;
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-
+    const { name } = appUpdateDto;
     if (!ability.can('updateParams', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     const result = await this.appsService.update(app, appUpdateDto, organizationId);
+    if (name && app.creationMode != 'GIT' && name != app.name) this.gitSyncService.renameAppOrVersion(user, app.id);
 
     await this.auditLoggerService.perform({
       userId,
@@ -491,9 +494,15 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    app.type === 'workflow'
-      ? await this.appsService.updateWorflowVersion(version, versionEditDto, app.organizationId)
-      : await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
+    if (app.type === 'workflow') {
+      await this.appsService.updateWorflowVersion(version, versionEditDto, app.organizationId);
+    } else {
+      await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
+      const { name } = versionEditDto;
+      console.log(`Rename is goign to work for ${name} and to change ${version.name} `);
+      if (name && app.creationMode != 'GIT' && name != version.name)
+        this.gitSyncService.renameAppOrVersion(user, app.id, true);
+    }
 
     return;
   }
