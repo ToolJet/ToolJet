@@ -101,7 +101,7 @@ export const Icon = ({ value, onChange, onVisibilityChange, component }) => {
                       style={{ width: '20px', height: '20px' }}
                     />
                   </div>
-                  <div className="text-truncate tj-text-xsm" style={{ width: '112px' }}>
+                  <div className="text-truncate tj-text-xsm" style={{ width: '100px' }}>
                     {value}
                   </div>
                   <Visibility
