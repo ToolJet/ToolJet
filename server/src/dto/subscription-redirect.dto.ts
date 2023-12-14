@@ -19,7 +19,7 @@ export class PaymentRedirectDto {
   workspaceId: string;
 
   @IsEnum(SubscriptionType)
-  subsribtionType: string;
+  subscriptionType: string;
 
   @IsEnum(SubscriptionMode)
   mode: Stripe.Checkout.SessionCreateParams.Mode;

@@ -45,4 +45,5 @@ export interface CRMData {
   role?: string;
   isTrialOpted?: boolean;
   isCloudTrialOpted?: boolean;
+  paymentTry?: boolean;
 }

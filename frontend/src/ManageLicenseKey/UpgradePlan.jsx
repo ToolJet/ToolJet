@@ -65,7 +65,7 @@ export default function UpgradePlan({ current_organization_id }) {
     });
     const planDetails = {
       workspaceId: current_organization_id,
-      subsribtionType: subscriptionType,
+      subscriptionType: subscriptionType,
       mode: 'subscription',
       customer_email: current_user?.email,
       NumberOfEditor: parseInt(editorsCount),

@@ -140,7 +140,7 @@ export class OrganizationLicenseController {
     if (!validUpgrade) throw new BadRequestException('This is not valid license upgrade request');
 
     const line_items = [];
-    if (paymentRedirectDto.subsribtionType == 'monthly') {
+    if (paymentRedirectDto.subscriptionType == 'monthly') {
       line_items.push({
         price: this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_VIEWER'),
         quantity: paymentRedirectDto.NumberOfViewers,
@@ -159,24 +159,10 @@ export class OrganizationLicenseController {
         quantity: paymentRedirectDto.NumberOfEditor,
       });
     }
-    let promotionId = '';
-    if(paymentRedirectDto.promo_code) {
-      const promotionCodes = await stripe.promotionCodes.list({
-        limit: 3,
-        active: true,
-        code: paymentRedirectDto.promo_code,
-      });
-      const promotionList = promotionCodes.data;
-      if(promotionList){
-        promotionId = promotionList[0].id;
-      }
-    }
-    
+
+    const discounts: Array<Stripe.Checkout.SessionCreateParams.Discount> = [];
+
     if (paymentRedirectDto.coupon_code || paymentRedirectDto.promo_code) {
-      
-      
-      const discounts: Array<Stripe.Checkout.SessionCreateParams.Discount> = [];
-    
       // Add the coupon to discounts array
       const couponDiscount: Stripe.Checkout.SessionCreateParams.Discount = {};
 
@@ -184,8 +170,17 @@ export class OrganizationLicenseController {
         couponDiscount.coupon = paymentRedirectDto.coupon_code;
       }
 
-      if (promotionId) {
-        couponDiscount.promotion_code = promotionId;
+      if (paymentRedirectDto.promo_code) {
+        const promotionCodes = await stripe.promotionCodes.list({
+          limit: 3,
+          active: true,
+          code: paymentRedirectDto.promo_code,
+        });
+        const promotionList = promotionCodes?.data;
+        if (!promotionList || promotionList.length === 0) {
+          throw new BadRequestException(`Invalid promotion code '${paymentRedirectDto.promo_code}'`);
+        }
+        couponDiscount.promotion_code = promotionList[0].id;
       }
 
       discounts.push(couponDiscount);
@@ -199,7 +194,7 @@ export class OrganizationLicenseController {
       discounts: discounts,
       metadata: {
         organizationId: paymentRedirectDto.workspaceId,
-        subscriptionType: paymentRedirectDto.subsribtionType,
+        subscriptionType: paymentRedirectDto.subscriptionType,
         editors: paymentRedirectDto.NumberOfEditor,
         viewers: paymentRedirectDto.NumberOfViewers,
         email: user.email,
