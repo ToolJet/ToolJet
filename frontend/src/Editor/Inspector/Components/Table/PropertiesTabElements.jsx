@@ -259,6 +259,22 @@ export const PropertiesTabElements = ({
           />
         </div>
       )}
+      {column.columnType === 'number' && (
+        <CodeHinter
+          currentState={currentState}
+          initialValue={column?.decimalPlaces}
+          theme={darkMode ? 'monokai' : 'default'}
+          mode="javascript"
+          lineNumbers={false}
+          placeholder={'{{2}}'}
+          onChange={(value) => onColumnItemChange(index, 'decimalPlaces', value)}
+          componentName={getPopoverFieldSource(column.columnType, 'decimalPlaces')}
+          popOverCallback={(showing) => {
+            console.log('arpit ::', { showing });
+            setColumnPopoverRootCloseBlocker('decimalPlaces', showing);
+          }}
+        />
+      )}
       {!['image', 'link'].includes(column.columnType) && (
         <ProgramaticallyHandleProperties
           label="make editable"
