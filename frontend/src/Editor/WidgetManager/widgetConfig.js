@@ -2167,7 +2167,7 @@ export const widgets = [
     },
     defaultSize: {
       width: 6,
-      height: 30,
+      height: 40,
     },
     events: {
       onClick: { displayName: 'On click' },
@@ -2253,8 +2253,6 @@ export const widgets = [
           { displayName: 'underline', value: 'underline', iconName: 'underline' },
           { displayName: 'overline', value: 'overline', iconName: 'overline' },
           { displayName: 'line-through', value: 'line-through', iconName: 'linethrough' },
-          // Change below icon
-          // { displayName: 'overline underline', value: 'overline underline', iconName: 'linethrough' },
         ],
         accordian: 'Text',
       },
@@ -2352,7 +2350,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '#F2F2F5' },
+        backgroundColor: { value: '#EDEFF5' },
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
