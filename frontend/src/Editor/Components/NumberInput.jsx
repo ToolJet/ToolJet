@@ -48,13 +48,8 @@ export const NumberInput = function NumberInput({
   const inputRef = useRef(null);
   const currentState = useCurrentState();
   const [disable, setDisable] = useState(disabledState || loadingState);
-  const labelStyles = {
-    width: '100%',
-    textOverflow: 'ellipsis',
-    maxWidth: '100%',
-    background: 'red',
-    overflow: 'hidden',
-  };
+  const labelRef = useRef();
+  const [inputHeight, setinputHeight] = useState(height);
 
   useEffect(() => {
     if (alignment == 'top' && label?.length > 0) {
@@ -132,15 +127,41 @@ export const NumberInput = function NumberInput({
     setExposedVariable('isDisabled', disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
+  useEffect(() => {
+    if (labelRef.current) {
+      const width = labelRef.current.offsetWidth;
+      setinputHeight(labelRef.current.offsetHeight);
+
+      padding == 'default' ? setElementWidth(width + 17) : setElementWidth(width + 15);
+    } else setElementWidth(5);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isResizing,
+    width,
+    auto,
+    defaultAlignment,
+    component?.definition?.styles?.iconVisibility?.value,
+    label?.length,
+    isMandatory,
+    padding,
+    direction,
+    alignment,
+    elementWidth,
+  ]);
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '32px' : '38px') : padding == 'default' ? height - 5 : height,
+    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
     backgroundColor: darkMode && ['#fff'].includes(backgroundColor) ? '#313538' : backgroundColor,
     boxShadow: boxShadow,
-    padding: styles.iconVisibility ? '3px px 3px 28px' : '3px 12px 3px 5px',
+    padding: styles.iconVisibility
+      ? padding == 'default'
+        ? '3px 5px 3px 23px'
+        : '3px 5px 3px 22px'
+      : '3px 5px 3px 5px',
   };
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -229,23 +250,21 @@ export const NumberInput = function NumberInput({
 
   const renderInput = () => {
     const loaderStyle = {
-      left: direction === 'right' && defaultAlignment === 'side' ? `${elementWidth - 43}px` : undefined,
-      top: label?.length > 0 && width > 0 && defaultAlignment === 'top' && '30px',
-      right: '25px',
+      right: direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : undefined,
+      top: `${defaultAlignment === 'top' ? (padding == 'none' ? '50%' : `calc(50% + 2px)`) : ''}`,
     };
 
     return (
       <>
         <div
           data-disabled={disable || loading}
-          className={`text-input ${defaultAlignment === 'top' ? 'flex-column' : ''}  ${
+          className={`text-input d-flex ${defaultAlignment === 'top' ? 'flex-column' : 'align-items-center '}  ${
             direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''
           }
-        ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
-        `}
+         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
+         ${visibility || 'invisible'}`}
           style={{
-            // height: height === 37 ? 37 : height,
-            padding: padding === 'default' ? '3px 2px' : '',
+            padding: padding === 'default' ? '2px' : '',
             position: 'relative',
             width: '100%',
             display: !visibility ? 'none' : 'flex',
@@ -253,22 +272,20 @@ export const NumberInput = function NumberInput({
         >
           {label && width > 0 && (
             <label
-              // className={defaultAlignment === 'side' && ``}
+              ref={labelRef}
               style={{
                 color: darkMode && color === '#11181C' ? '#fff' : color,
                 width: label?.length === 0 ? '0%' : auto ? 'auto' : defaultAlignment === 'side' ? `${width}%` : '100%',
                 maxWidth: auto && defaultAlignment === 'side' ? '70%' : '100%',
-                // overflowWrap: 'break-word',
                 marginRight: label?.length > 0 && direction === 'left' && defaultAlignment === 'side' ? '9px' : '',
                 marginLeft: label?.length > 0 && direction === 'right' && defaultAlignment === 'side' ? '9px' : '',
                 display: 'block',
-                overflow: 'hidden', // Hide any content that overflows the box
+                overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
                 textOverflow: 'ellipsis', // Display ellipsis for overflowed content
-                // whiteSpace: 'nowrap',
                 fontWeight: 500,
               }}
             >
-              <span style={{ ...labelStyles }}>{label}</span>
+              {label}
               <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
             </label>
           )}
@@ -277,21 +294,43 @@ export const NumberInput = function NumberInput({
               style={{
                 width: '16px',
                 height: '16px',
-                right: direction === 'left' && defaultAlignment === 'side' ? `${elementWidth - 19}px` : '',
                 left:
-                  direction === 'right' && defaultAlignment === 'side'
-                    ? '6px'
+                  direction === 'right'
+                    ? padding == 'default'
+                      ? '8px'
+                      : '5px'
                     : defaultAlignment === 'top'
-                    ? '6px'
-                    : '',
+                    ? padding == 'default'
+                      ? '8px'
+                      : '5px'
+                    : `${elementWidth}px`,
                 position: 'absolute',
-                top: defaultAlignment === 'side' ? '18px' : label?.length > 0 && width > 0 ? '42px' : '18px',
+                top: `${
+                  defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
+                }`,
                 transform: ' translateY(-50%)',
                 color: iconColor,
+                //backgroundColor: 'red',
               }}
               stroke={1.5}
             />
           )}
+          <input
+            ref={inputRef}
+            disabled={disable || loading}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            type="number"
+            className={`${
+              !isValid && showValidationError ? 'is-invalid' : ''
+            } input-number tj-text-input-widget form-control`}
+            placeholder={placeholder}
+            style={computedStyles}
+            value={value}
+            data-cy={dataCy}
+            min={properties.minValue}
+            max={properties.maxValue}
+          />
           <div onClick={(e) => handleIncrement(e)}>
             <SolidIcon
               style={{
@@ -311,7 +350,7 @@ export const NumberInput = function NumberInput({
                       : `${elementWidth - 24}px`
                     : undefined,
                 right: padding == 'default' ? '3px' : '1px',
-                height: padding == 'default' ? '16px' : '19px',
+                height: `${inputHeight}`,
                 borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
                 borderBottom: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
                 borderTopRightRadius: borderRadius,
@@ -320,22 +359,6 @@ export const NumberInput = function NumberInput({
               name="cheveronup"
             ></SolidIcon>
           </div>
-          <input
-            ref={inputRef}
-            disabled={disable || loading}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            type="number"
-            className={`${
-              !isValid && showValidationError ? 'is-invalid' : ''
-            } input-number tj-text-input-widget form-control`}
-            placeholder={placeholder}
-            style={computedStyles}
-            value={value}
-            data-cy={dataCy}
-            min={properties.minValue}
-            max={properties.maxValue}
-          />
           <div onClick={(e) => handleDecrement(e)}>
             <SolidIcon
               style={{
@@ -347,7 +370,7 @@ export const NumberInput = function NumberInput({
                       : `${elementWidth - 24}px`
                     : undefined,
                 right: padding == 'default' ? '3px' : '1px',
-                height: padding == 'default' ? '16px' : '19px',
+                height: `${inputHeight}`,
                 bottom: padding == 'default' ? '4px' : '1px',
                 borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
                 borderTop: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',

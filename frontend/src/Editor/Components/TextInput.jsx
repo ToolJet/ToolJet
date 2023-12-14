@@ -47,10 +47,9 @@ export const TextInput = function TextInput({
   const [elementWidth, setElementWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [loading, setLoading] = useState(loadingState);
-  console.log('height---', height);
 
   const computedStyles = {
-    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : height,
+    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     color: darkMode && textColor === '#11181C' ? '#ECEDEE' : textColor,
     borderColor: ['#D7DBDF'].includes(borderColor) ? (darkMode ? '#4C5155' : '#D7DBDF') : borderColor,
@@ -96,6 +95,11 @@ export const TextInput = function TextInput({
     visibility !== properties.visibility && setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
+
+  useEffect(() => {
+    loading !== loadingState && setLoading(loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -190,11 +194,6 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
-  useEffect(() => {
-    loading !== loadingState && setLoading(loadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingState]);
-
   const renderInput = () => (
     <>
       <div
@@ -205,7 +204,6 @@ export const TextInput = function TextInput({
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
-          // height: height === 37 ? 37 : height,
           padding: padding === 'default' ? '2px' : '',
           position: 'relative',
         }}
