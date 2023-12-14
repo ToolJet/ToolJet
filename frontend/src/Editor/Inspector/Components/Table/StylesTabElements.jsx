@@ -42,7 +42,7 @@ export const StylesTabElements = ({
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
+      {['string', 'default', 'number', undefined].includes(column.columnType) && (
         <div className="d-flex flex-column custom-gap-16">
           <div data-cy={`input-overflow`} className="field  d-flex custom-gap-12 align-items-center align-self-stretch">
             <label data-cy={`label-overflow`} className="d-flex align-items-center" style={{ flex: '1 1 0' }}>
@@ -63,7 +63,7 @@ export const StylesTabElements = ({
               param={{ name: 'Text color' }}
               paramType="properties"
               componentMeta={{ properties: { color: { displayName: 'Text color' } } }}
-              definition={{ value: column.textColor || '#11181C' }}
+              definition={{ value: column?.textColor || '#11181C' }}
               onChange={(name, value, color) => onColumnItemChange(index, 'textColor', color)}
               shouldFlexDirectionBeRow={true}
             />
@@ -73,7 +73,7 @@ export const StylesTabElements = ({
               param={{ name: 'Cell BG' }}
               paramType="properties"
               componentMeta={{ properties: { color: { displayName: 'Cell Background Color' } } }}
-              definition={{ value: column.cellBackgroundColor }}
+              definition={{ value: column?.cellBackgroundColor }}
               onChange={(name, value, color) => onColumnItemChange(index, 'cellBackgroundColor', color)}
               shouldFlexDirectionBeRow={true}
             />
