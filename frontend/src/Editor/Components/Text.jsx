@@ -140,7 +140,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
               width: '100%',
               height: '100%',
               fontSize: textSize,
-              overflowY: isScrollRequired == 'enabled' ? 'scroll' : 'unset',
+              overflowY: isScrollRequired == 'enabled' ? 'auto' : 'unset',
             }}
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
           />
