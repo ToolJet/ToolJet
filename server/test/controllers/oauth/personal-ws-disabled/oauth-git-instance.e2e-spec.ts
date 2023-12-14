@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock } from '../../../test.helper';
-import { mocked } from 'ts-jest/utils';
+import { mocked } from 'jest-mock';
 import got from 'got';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
