@@ -206,7 +206,11 @@ export default function DragContainer({
           }}
           flushSync={flushSync}
           target={
-            draggedSubContainer ? '.asdadadasdadad' : groupedTargets.length > 1 ? [...groupedTargets] : '.widget-target'
+            draggedSubContainer || (groupedTargets.length < 2 && selectedComponents.length > 1)
+              ? '.asdadadasdadad'
+              : groupedTargets.length > 1
+              ? [...groupedTargets]
+              : '.widget-target'
           }
           origin={false}
           individualGroupable={selectedComponents.length <= 1}
