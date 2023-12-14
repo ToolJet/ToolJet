@@ -97,7 +97,7 @@ export const CustomDragLayer = ({ canvasWidth, onDragging }) => {
   }
 
   return (
-    <div style={layerStyles}>
+    <div style={{ ...layerStyles, ...(isDragging ? { zIndex: 1061 } : {}) }}>
       <div
         style={getItemStyles(
           delta,
