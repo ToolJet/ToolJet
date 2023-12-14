@@ -150,11 +150,18 @@ export class OrganizationLicenseController {
       });
     }
     const discounts: Array<Stripe.Checkout.SessionCreateParams.Discount> = [];
-    if (paymentRedirectDto.coupon_code) {
+    if (paymentRedirectDto.coupon_code || paymentRedirectDto.promo_code) {
       // Add the coupon to discounts array
-      const couponDiscount: Stripe.Checkout.SessionCreateParams.Discount = {
-        coupon: paymentRedirectDto.coupon_code,
-      };
+      const couponDiscount: Stripe.Checkout.SessionCreateParams.Discount = {};
+
+      if (paymentRedirectDto.coupon_code) {
+        couponDiscount.coupon = paymentRedirectDto.coupon_code;
+      }
+
+      if (paymentRedirectDto.promo_code) {
+        couponDiscount.promotion_code = paymentRedirectDto.promo_code;
+      }
+
       discounts.push(couponDiscount);
     }
     const session = await stripe.checkout.sessions.create({

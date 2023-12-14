@@ -31,6 +31,7 @@ export default function UpgradePlan({ current_organization_id }) {
     editorsCount: '',
     subscriptionType: 'yearly',
     couponCode: '',
+    promoCode: '',
   });
 
   const { current_user } = authenticationService.currentSessionValue;
@@ -54,7 +55,7 @@ export default function UpgradePlan({ current_organization_id }) {
 
   const upgradePlan = () => {
     setUpgradeLoading(true);
-    const { viewersCount, editorsCount, subscriptionType, couponCode } = planForm;
+    const { viewersCount, editorsCount, subscriptionType, couponCode, promoCode } = planForm;
     posthog.capture('click_billing_pay', {
       workspace_id:
         authenticationService?.currentUserValue?.organization_id ||
@@ -72,6 +73,7 @@ export default function UpgradePlan({ current_organization_id }) {
       success_url: `${REDIRECT_URL}?payment=success`,
       cancel_url: `${REDIRECT_URL}?payment=failure`,
       coupon_code: couponCode,
+      promo_code: promoCode,
     };
     licenseService
       .upgradePlan(planDetails)
@@ -112,7 +114,7 @@ export default function UpgradePlan({ current_organization_id }) {
     setCosting({ valueOff, totalValue, viewerValue, builderValue });
   }, [planForm]);
 
-  const { viewersCount, editorsCount, subscriptionType, couponCode } = planForm;
+  const { viewersCount, editorsCount, subscriptionType, couponCode, promoCode } = planForm;
 
   const isUpgradeDisabled = () => {
     const { licenseStatus: { expiryDate, isExpired } = {} } = currentPlan?.viewersCount ?? {};
@@ -165,6 +167,21 @@ export default function UpgradePlan({ current_organization_id }) {
                 onChange={(e) => updatePlanDetailsForm('couponCode', e.target.value)}
                 type="text"
                 value={couponCode}
+                className="form-control"
+              />
+            </div>
+          </div>
+          <div className="input-container">
+            <div className="label-container">
+              <label className="tj-text-xsm tj-text font-weight-500">Promo code</label>
+            </div>
+            <div className="input-wrapper">
+              <input
+                readOnly={isUpgradeDisabled()}
+                placeholder="Enter promo code"
+                onChange={(e) => updatePlanDetailsForm('promoCode', e.target.value)}
+                type="text"
+                value={promoCode}
                 className="form-control"
               />
             </div>
