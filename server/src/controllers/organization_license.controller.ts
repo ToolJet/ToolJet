@@ -159,8 +159,24 @@ export class OrganizationLicenseController {
         quantity: paymentRedirectDto.NumberOfEditor,
       });
     }
-    const discounts: Array<Stripe.Checkout.SessionCreateParams.Discount> = [];
+    let promotionId = '';
+    if(paymentRedirectDto.promo_code) {
+      const promotionCodes = await stripe.promotionCodes.list({
+        limit: 3,
+        active: true,
+        code: paymentRedirectDto.promo_code,
+      });
+      const promotionList = promotionCodes.data;
+      if(promotionList){
+        promotionId = promotionList[0].id;
+      }
+    }
+    
     if (paymentRedirectDto.coupon_code || paymentRedirectDto.promo_code) {
+      
+      
+      const discounts: Array<Stripe.Checkout.SessionCreateParams.Discount> = [];
+    
       // Add the coupon to discounts array
       const couponDiscount: Stripe.Checkout.SessionCreateParams.Discount = {};
 
@@ -168,8 +184,8 @@ export class OrganizationLicenseController {
         couponDiscount.coupon = paymentRedirectDto.coupon_code;
       }
 
-      if (paymentRedirectDto.promo_code) {
-        couponDiscount.promotion_code = paymentRedirectDto.promo_code;
+      if (promotionId) {
+        couponDiscount.promotion_code = promotionId;
       }
 
       discounts.push(couponDiscount);
