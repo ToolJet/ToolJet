@@ -97,6 +97,7 @@ export const DropDown = function DropDown({
     icon,
     iconVisibility,
     errTextColor,
+    labelAutoWidth,
   } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
@@ -326,7 +327,7 @@ export const DropDown = function DropDown({
       </div>
     );
   }
-
+  console.log(labelWidth, 'labelWidth');
   return (
     <>
       <div
@@ -342,15 +343,19 @@ export const DropDown = function DropDown({
         data-cy={dataCy}
       >
         <div
-          className="col-auto my-auto"
-          style={{ alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start', width: labelWidth }}
+          className="my-auto"
+          style={{
+            alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+            width: alignment === 'side' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
+            maxWidth: alignment === 'side' || labelAutoWidth ? '100%' : `${labelWidth}%`,
+          }}
         >
           <label style={labelStyles} className="form-label py-0 my-0">
             {label}
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         </div>
-        <div className="col px-0 h-100" ref={ref}>
+        <div className="w-100 px-0 h-100" ref={ref}>
           <Select
             isDisabled={disabledState}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}

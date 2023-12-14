@@ -2594,8 +2594,8 @@ export const widgets = [
     displayName: 'Dropdown',
     description: 'Single item selector',
     defaultSize: {
-      width: 15,
-      height: 30,
+      width: 10,
+      height: 40,
     },
     component: 'DropDown',
     others: {
@@ -2886,7 +2886,7 @@ export const widgets = [
       styles: {
         labelColor: { value: '#11181C' },
         labelWidth: { value: '33' },
-        labelAutoWidth: { value: '{{false}}' },
+        labelAutoWidth: { value: '{{true}}' },
         fieldBorderRadius: { value: '6' },
         justifyContent: { value: 'left' },
         selectedTextColor: { value: '#11181C' },
