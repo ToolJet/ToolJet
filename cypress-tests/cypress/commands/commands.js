@@ -193,9 +193,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -366,6 +366,19 @@ Cypress.Commands.add("getPosition", (componentName) => {
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
   cy.apiLogin();
+  cy.intercept('GET', "http://localhost:3000/api/library_apps/").as("library_apps")
   cy.visit('/my-workspace');
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 })
+  cy.wait("@library_apps")
 })
+
+Cypress.Commands.add('visitSlug', ({ actualUrl, currentUrl = 'http://localhost:8082/error/unknown' }) => {
+  cy.visit(actualUrl);
+  cy.wait(3000);
+
+  cy.url().then((url) => {
+    if (url === currentUrl) {
+      cy.visit(actualUrl);
+    }
+  });
+});

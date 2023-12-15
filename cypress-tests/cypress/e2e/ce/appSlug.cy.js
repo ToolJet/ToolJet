@@ -17,11 +17,13 @@ describe("App slug", () => {
     before(() => {
         cy.apiLogin();
         cy.apiCreateApp(data.appName);
+        cy.wait(1000)
         cy.logoutApi()
     })
 
     it("Verify app slug cases in global settings", () => {
-        navigateToAppEditor(data.appName);
+        cy.wait(2000)
+        cy.openApp('my-workspace');
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appSlugLabel).verifyVisibleElement("have.text", "Unique app slug");
@@ -53,18 +55,18 @@ describe("App slug", () => {
         releaseApp();
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
-        cy.wait(1000);
+        cy.wait(2000);
         cy.url().should('eq', `http://localhost:8082/applications/${data.slug}/home?version=v1`);
         cy.visit('/my-workspace');
         cy.wait(500);
 
-        cy.visit(`/applications/${data.slug}`);
+        cy.visitSlug({ actualUrl: `http://localhost:8082/applications/${data.slug}` });
         cy.url().should('eq', `http://localhost:8082/applications/${data.slug}`);
         cy.visit('/my-workspace');
         cy.wait(500);
 
         cy.apiCreateApp(data.slug);
-        cy.openApp(data.slug);
+        cy.openApp('my-workspace');
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appSlugInput).clear()
@@ -77,8 +79,7 @@ describe("App slug", () => {
         data.appName = `${fake.companyName} App`;
 
         cy.apiCreateApp(data.appName);
-        cy.visit('/')
-        navigateToAppEditor(data.appName);
+        cy.openApp('my-workspace');
 
         cy.get(commonSelectors.leftSideBarSettingsButton).click();
         cy.get(commonWidgetSelector.appSlugInput).clear()
@@ -117,13 +118,13 @@ describe("App slug", () => {
         cy.visit('/my-workspace');
         cy.wait(500);
 
-        cy.visit(`/applications/${data.slug}`);
+        cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
         cy.url().should('eq', `http://localhost:8082/applications/${data.slug}`);
         cy.visit('/my-workspace');
         cy.wait(500);
 
         cy.apiCreateApp(data.slug);
-        cy.openApp(data.slug);
+        cy.openApp('my-workspace');
         releaseApp();
         cy.get(commonWidgetSelector.shareAppButton).click()
         cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
