@@ -165,6 +165,8 @@ export default function DragContainer({
     };
   };
 
+  console.log('selectedComponents =>', [...selectedComponents]);
+
   const groupedTargets = [
     ...selectedComponents
       .filter((component) => !component?.component?.parent)
@@ -172,6 +174,14 @@ export default function DragContainer({
   ];
 
   console.log('groupedTargets-->', selectedComponents, groupedTargets);
+  console.log(
+    'groupedTargets-->target',
+    draggedSubContainer || (groupedTargets.length < 2 && selectedComponents.length > 1)
+      ? '.empty-widget'
+      : groupedTargets.length > 1
+      ? [...groupedTargets]
+      : '.widget-target'
+  );
 
   return (
     <div className="root">
@@ -207,7 +217,7 @@ export default function DragContainer({
           flushSync={flushSync}
           target={
             draggedSubContainer || (groupedTargets.length < 2 && selectedComponents.length > 1)
-              ? '.asdadadasdadad'
+              ? '.empty-widget'
               : groupedTargets.length > 1
               ? [...groupedTargets]
               : '.widget-target'
@@ -488,12 +498,16 @@ export default function DragContainer({
         {removeDuplicates(list)
           .filter((i) => !isEmpty(i.parent))
           .map((i) => {
-            const groupedTargets1 = [
+            let groupedTargets1 = [
               ...selectedComponents
                 .filter((component) => component?.component?.parent === i.parent)
                 .map((component) => '.ele-' + component.id),
             ];
-            console.log('groupedTargets1', groupedTargets1);
+            groupedTargets1 = [...new Set(groupedTargets1)];
+            console.log(
+              'groupedTargets-->target ' + i.parent,
+              groupedTargets1.length ? groupedTargets1 : `.target-${i.parent}`
+            );
             return (
               <Moveable
                 key={i.parent}

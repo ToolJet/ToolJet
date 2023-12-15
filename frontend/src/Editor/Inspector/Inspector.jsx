@@ -87,7 +87,9 @@ export const Inspector = ({
 
   useHotkeys('backspace', () => {
     if (isVersionReleased) return;
-    setWidgetDeleteConfirmation(true);
+    // setWidgetDeleteConfirmation(true);
+    switchSidebarTab(2);
+    removeComponent(component.id);
   });
   useHotkeys('escape', () => switchSidebarTab(2));
 

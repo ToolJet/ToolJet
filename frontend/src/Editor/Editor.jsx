@@ -634,6 +634,7 @@ const EditorComponent = (props) => {
   };
 
   const onAreaSelectionEnd = (e) => {
+    console.log('selectedComponents =>onAreaSelectionEnd--->', e);
     setSelectionInProgress(false);
     e.selected.forEach((el, index) => {
       const id = el.getAttribute('widgetid');
@@ -2021,5 +2022,7 @@ const EditorComponent = (props) => {
     </div>
   );
 };
+
+const getHighestParent = () => {};
 
 export const Editor = withTranslation()(withRouter(EditorComponent));
