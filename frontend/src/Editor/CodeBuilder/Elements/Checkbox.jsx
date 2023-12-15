@@ -5,7 +5,6 @@ function Checkbox({ value, onChange }) {
 
   return (
     <div className="d-flex" style={{ width: '142px' }}>
-      {isChecked}
       <input
         type="checkbox"
         checked={isChecked}
@@ -13,6 +12,7 @@ function Checkbox({ value, onChange }) {
           setIsChecked(!isChecked); // Toggle the checkbox state
           onChange(!isChecked);
         }}
+        value={isChecked}
       />
       <span className="tj-text-xsm" style={{ marginLeft: '4px' }}>
         Auto width

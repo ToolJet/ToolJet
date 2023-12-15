@@ -27,6 +27,7 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     verticalAlignment,
     borderColor,
     borderRadius,
+    isScrollRequired,
   } = styles;
 
   const { loadingState, textFormat, disabledState } = properties;
@@ -62,9 +63,9 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     setExposedVariable('isLoading', loadingState);
     setExposedVariable('isDisabled', disabledState);
 
-    // setExposedVariable('visibility', async function (value) {
-    //   setVisibility(value);
-    // });
+    setExposedVariable('visibility', async function (value) {
+      setVisibility(value);
+    });
 
     setExposedVariable('setVisibility', async function (value) {
       setVisibility(value);
@@ -119,7 +120,6 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     borderColor: borderColor,
     borderRadius: borderRadius ? `${borderRadius}px` : '0px',
   };
-
   return (
     <div
       data-disabled={isDisabled}
@@ -136,7 +136,12 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
           <Markdown>{text}</Markdown>
         ) : (
           <div
-            style={{ width: '100%', fontSize: textSize }}
+            style={{
+              width: '100%',
+              height: '100%',
+              fontSize: textSize,
+              overflowY: isScrollRequired == 'enabled' ? 'auto' : 'unset',
+            }}
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
           />
         ))}

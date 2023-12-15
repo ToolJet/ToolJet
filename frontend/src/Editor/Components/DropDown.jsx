@@ -1,7 +1,7 @@
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import _ from 'lodash';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import { CustomMenuList } from './Table/SelectComponent';
 import * as Icons from '@tabler/icons-react';
@@ -80,8 +80,9 @@ export const DropDown = function DropDown({
     display_values,
     values,
     dropdownLoadingState,
-    visibility,
     disabledState,
+    optionVisibility,
+    optionDisable,
   } = properties;
   const {
     selectedTextColor,
@@ -97,6 +98,7 @@ export const DropDown = function DropDown({
     icon,
     iconVisibility,
     errTextColor,
+    labelAutoWidth,
   } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
@@ -106,24 +108,25 @@ export const DropDown = function DropDown({
   const { isValid, validationError } = validationData;
   const ref = React.useRef(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [visibility, setVisibility] = useState(properties.visibility);
+  const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
+  const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
+
+  useEffect(() => {
+    if (visibility !== properties.visibility) setVisibility(properties.visibility);
+    if (isDropdownLoading !== dropdownLoadingState) setIsDropdownLoading(dropdownLoadingState);
+    if (isDropdownDisabled !== disabledState) setIsDropdownDisabled(disabledState);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility, dropdownLoadingState, disabledState]);
 
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
   }
 
-  if (advanced) {
-    values = schema?.map((item) => item?.value);
-    display_values = schema?.map((item) => item?.label);
-    value = findDefaultItem(schema);
-  } else if (!_.isArray(values)) {
-    values = [];
-  }
-
-  let selectOptions = [];
-
-  try {
-    selectOptions = advanced
+  const selectOptions = useMemo(() => {
+    let _selectOptions = advanced
       ? [
           ...schema
             .filter((data) => data.visible)
@@ -133,13 +136,17 @@ export const DropDown = function DropDown({
             })),
         ]
       : [
-          ...values.map((value, index) => {
-            return { label: display_values[index], value: value };
-          }),
+          ...values
+            .map((value, index) => {
+              if (optionVisibility[index]) {
+                return { label: display_values[index], value: value, isDisabled: optionDisable[index] };
+              }
+            })
+            .filter((option) => option),
         ];
-  } catch (err) {
-    console.log(err);
-  }
+
+    return _selectOptions;
+  }, [advanced, schema, display_values, values, optionDisable, optionVisibility]);
 
   const setExposedItem = (value, index, onSelectFired = false) => {
     setCurrentValue(value);
@@ -220,6 +227,29 @@ export const DropDown = function DropDown({
     } else setExposedVariable('optionLabels', display_values);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
+
+  useEffect(() => {
+    setExposedVariable('options', selectOptions);
+    setExposedVariable('isVisible', properties.visibility);
+    setExposedVariable('isLoading', dropdownLoadingState);
+    setExposedVariable('isDisabled', disabledState);
+    setExposedVariable('isMandatory', isMandatory);
+
+    setExposedVariable('clear', async function () {
+      setCurrentValue(null);
+    });
+    setExposedVariable('setVisibility', async function (value) {
+      setVisibility(value);
+    });
+    setExposedVariable('setLoading', async function (value) {
+      setIsDropdownLoading(value);
+    });
+    setExposedVariable('setDisabled', async function (value) {
+      setIsDropdownDisabled(value);
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory]);
 
   function hasVisibleFalse(value) {
     for (let i = 0; i < schema?.length; i++) {
@@ -317,7 +347,7 @@ export const DropDown = function DropDown({
     alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
   };
 
-  if (dropdownLoadingState) {
+  if (isDropdownLoading) {
     return (
       <div className="d-flex align-items-center justify-content-center" style={{ width: '100%', height }}>
         <center>
@@ -326,7 +356,6 @@ export const DropDown = function DropDown({
       </div>
     );
   }
-
   return (
     <>
       <div
@@ -342,17 +371,21 @@ export const DropDown = function DropDown({
         data-cy={dataCy}
       >
         <div
-          className="col-auto my-auto"
-          style={{ alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start', width: labelWidth }}
+          className="my-auto"
+          style={{
+            alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+            width: alignment === 'side' || labelAutoWidth ? 'auto' : `${labelWidth}%`,
+            maxWidth: alignment === 'side' || labelAutoWidth ? '100%' : `${labelWidth}%`,
+          }}
         >
           <label style={labelStyles} className="form-label py-0 my-0">
             {label}
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         </div>
-        <div className="col px-0 h-100" ref={ref}>
+        <div className="w-100 px-0 h-100" ref={ref}>
           <Select
-            isDisabled={disabledState}
+            isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
@@ -372,10 +405,14 @@ export const DropDown = function DropDown({
             isLoading={advanced && properties.loadingState}
             onInputChange={onSearchTextChange}
             onFocus={(event) => {
+              fireEvent('onFocus');
               onComponentClick(event, component, id);
             }}
             menuIsOpen={dropdownOpen}
-            onBlur={() => setDropdownOpen(false)}
+            onBlur={() => {
+              setDropdownOpen(false);
+              fireEvent('onBlur');
+            }}
             menuPortalTarget={document.body}
             placeholder={placeholder}
             components={{

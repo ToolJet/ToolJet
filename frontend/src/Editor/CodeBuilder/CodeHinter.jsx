@@ -381,7 +381,7 @@ export function CodeHinter({
     }
     if (component.component.component === 'DropDown') {
       return {
-        disabled: component?.component?.definition?.styles?.autoWidth?.value,
+        disabled: component?.component?.definition?.styles?.labelAutoWidth?.value,
       };
     }
   };
