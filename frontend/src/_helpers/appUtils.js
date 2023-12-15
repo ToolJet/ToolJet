@@ -1900,8 +1900,15 @@ export const buildComponentMetaDefinition = (components = {}) => {
 
     const mergedDefinition = {
       ...componentMeta.definition,
-
-      properties: _.merge(componentMeta.definition.properties, currentComponentData?.component.definition.properties),
+      properties: _.mergeWith(
+        componentMeta.definition.properties,
+        currentComponentData?.component?.definition?.properties,
+        (objValue, srcValue) => {
+          if (currentComponentData?.component?.component === 'Table' && _.isArray(objValue)) {
+            return srcValue;
+          }
+        }
+      ),
       styles: _.merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
       generalStyles: _.merge(
         componentMeta.definition.generalStyles,
