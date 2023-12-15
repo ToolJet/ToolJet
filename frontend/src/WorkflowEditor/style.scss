@@ -125,6 +125,31 @@
               stroke-width: 2px;
             }
           }
+
+          .icon-trigger {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 5px;
+            
+            svg {
+              width: 20px;
+              height: 20px;
+            }
+
+          }
+
+          .icon-trigger-active {
+            background-color: #d9e2fc;
+          }
+
+          .icon-trigger:hover {
+        background-color: #d9e2fc;
+          }
   
           .icon:hover {
             background-color: rgb(239, 239, 239);
@@ -176,6 +201,10 @@
               .text {
                 margin-left: 10px;
               }
+            }
+
+            .dropdown-icon{
+              font-size: 10px;
             }
 
             .run-item:hover {

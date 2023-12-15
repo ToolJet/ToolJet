@@ -60,7 +60,7 @@ function OnboardingTrialPage(props) {
       paid: true,
     },
     {
-      title: 'GitSync (coming soon)',
+      title: 'GitSync',
       free: false,
       paid: true,
     },

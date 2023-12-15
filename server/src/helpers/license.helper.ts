@@ -31,6 +31,8 @@ export enum LICENSE_FIELD {
   DOMAINS = 'domains',
   STATUS = 'status',
   META = 'metadata',
+  WORKFLOWS = 'workflows',
+  GIT_SYNC = 'gitSyncEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {
@@ -42,7 +44,8 @@ export enum LICENSE_LIMITS_LABEL {
   SUPERADMIN_USERS = 'super admins',
 
   //Apps
-  APPS = 'apps',
+  APPS = 'Apps',
+  WORKFLOWS = 'Workflows',
 
   //Workspaces
   WORKSPACES = 'workspaces',

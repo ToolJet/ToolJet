@@ -27,6 +27,7 @@ export const appsService = {
   getTables,
   getWorkflows,
   getAppsLimit,
+  getWorkflowLimit,
 };
 
 function getWorkflows(id) {
@@ -54,7 +55,8 @@ function validatePrivateApp(slug, queryParams) {
   ).then(handleResponse);
 }
 
-function getAll(page, folder, searchKey, type) {
+//use default value for type of apps i.e.'front-end'
+function getAll(page, folder, searchKey, type = 'front-end') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}`, requestOptions).then(handleResponse);
   else
@@ -215,4 +217,9 @@ function cloneResource(body) {
 function getTables(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
+}
+
+function getWorkflowLimit(type) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/workflowlimit/${type}`, requestOptions).then(handleResponse);
 }

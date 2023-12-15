@@ -44,7 +44,7 @@ const LegalReasonsErrorModal = ({
       >
         <Modal.Header data-cy="modal-header">
           <Modal.Title>{type} Your Plan</Modal.Title>
-          <div onClick={toggleModal ?? handleClose} className="cursor-pointer">
+          <div onClick={toggleModal ?? handleClose} className="cursor-pointer" data-cy="modal-close">
             <SolidIcon name="remove" width="20" />
           </div>
         </Modal.Header>
@@ -54,7 +54,7 @@ const LegalReasonsErrorModal = ({
         </Modal.Body>
         {showFooter && (
           <Modal.Footer>
-            <Button className="cancel-btn" onClick={handleClose}>
+            <Button className="cancel-btn" onClick={handleClose} data-cy="cancel-button">
               Cancel
             </Button>
             {currentUser?.admin && (

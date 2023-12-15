@@ -54,7 +54,7 @@ export function LicenseBanner({
     return text.split(boldRegex).map((word, index) => {
       if (boldWords.includes(word) || /^\d+$/.test(word)) {
         return (
-          <span key={index} className="bold-text">
+          <span key={index} className="bold-text" data-cy="bold-text">
             {word}
           </span>
         );
@@ -122,6 +122,10 @@ export function LicenseBanner({
       case type == 'tables' && !canAddUnlimited && (100 > percentage >= 90 || (total <= 10 && current === total - 1)):
         return `You're reaching your limit for number of ${type} - ${current}/${total}`;
       case type == 'tables' && !canAddUnlimited && percentage >= 100:
+        return `You've reached your limit for number of ${type} - ${current}/${total}`;
+      case type == 'workflow' && !canAddUnlimited && (100 > percentage >= 90 || current === total - 1):
+        return `You're reaching your limit for number of ${type} - ${current}/${total}`;
+      case type == 'workflow' && !canAddUnlimited && percentage >= 100:
         return `You've reached your limit for number of ${type} - ${current}/${total}`;
       case !canAddUnlimited && percentage >= 100:
         return `You have reached your limit for number of ${type}.`;
@@ -235,6 +239,7 @@ export function LicenseBanner({
           onClick={currentUser?.super_admin && handleClick}
           className={`upgrade-link ${currentUser?.super_admin ? 'cursor-pointer' : ''}`}
           style={{ fontWeight: '500' }}
+          data-cy={`${buttonText.toLowerCase().replace(/\s+/g, '-')}-button`}
         >
           {buttonText}
         </span>
@@ -253,7 +258,7 @@ export function LicenseBanner({
   const modalBody = (
     <div className="form-group my-3">
       <div className="d-flex justify-content-between form-control align-items-center">
-        <p className="m-0" id="support-email">
+        <p className="m-0" id="support-email" data-cy="support-email">
           hello@tooljet.com
         </p>
         <SolidIcon name="copy" width="16" onClick={() => copyFunction('support-email')} />
@@ -274,7 +279,7 @@ export function LicenseBanner({
         <SolidIcon {...iconSize} fill={darkMode ? '#3F2200' : '#FFEDD4'} name="enterpriseGradient" />
       )}
       <div className="message-wrapper">
-        <div className={`heading ${warningText?.parentClassName}`}>
+        <div className={`heading ${warningText?.parentClassName}`} data-cy="warning-text-header">
           {warningText && <div className={warningText?.className}>{warningText?.text}</div>}
           <div style={{ fontWeight: size === 'large' ? 500 : 400 }}>
             {applyBoldFormatting(message)}{' '}
@@ -287,6 +292,7 @@ export function LicenseBanner({
                       onClick={handleClick}
                       className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
                       style={{ fontWeight: '500' }}
+                      data-cy={`${buttonText.toLowerCase().replace(/\s+/g, '-')}-button`}
                     >
                       {buttonText}
                     </span>
@@ -301,13 +307,14 @@ export function LicenseBanner({
                 onClick={handleClick}
                 className={`${currentUser?.super_admin && 'upgrade-link'} cursor-pointer ${className} `}
                 style={{ fontWeight: '500' }}
+                data-cy={`${buttonText.toLowerCase().replace(/\s+/g, '-')}-button`}
               >
                 {buttonText}
               </span>
             )}
           </div>
         </div>
-        {size === 'large' && <span>{generateInfo() || commonMessage}</span>}
+        {size === 'large' && <span data-cy="warning-info-text">{generateInfo() || commonMessage}</span>}
         {type === licenseType && daysLeft <= 14 && !isExpired && (
           <ProgressBar
             parentStyles={{ width: size === 'xsmall' ? '100%' : '50%' }}
@@ -322,6 +329,7 @@ export function LicenseBanner({
           isLoading={isActivating}
           onClick={handleClick}
           className={`${'tj-base-btn upgrade-btn'} ${className}`}
+          data-cy={`${buttonText.toLowerCase().replace(/\s+/g, '-')}-button`}
         >
           {buttonText}
         </ButtonSolid>

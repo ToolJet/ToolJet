@@ -75,6 +75,9 @@ export class LicenseService {
       case LICENSE_FIELD.SAML:
         return licenseInstance.saml;
 
+      case LICENSE_FIELD.GIT_SYNC:
+        return License.Instance().gitSync;
+
       case LICENSE_FIELD.CUSTOM_STYLE:
         return licenseInstance.customStyling;
 
@@ -122,6 +125,9 @@ export class LicenseService {
 
       case LICENSE_FIELD.META:
         return licenseInstance.metaData;
+
+      case LICENSE_FIELD.WORKFLOWS:
+        return License.Instance().workflows;
 
       default:
         return licenseInstance.terms;

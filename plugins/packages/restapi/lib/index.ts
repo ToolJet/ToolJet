@@ -12,15 +12,32 @@ import {
   OAuthUnauthorizedClientError,
   getRefreshedToken,
   checkIfContentTypeIsURLenc,
+  checkIfContentTypeIsMultipartFormData,
   isEmpty,
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
   sanitizeSearchParams,
   getAuthUrl,
 } from '@tooljet-plugins/common';
+const FormData = require('form-data');
 const JSON5 = require('json5');
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import { SourceOptions } from './types';
+
+function isFileObject(value) {
+  const keys = Object.keys(value);
+
+  return (
+    typeof value === 'object' &&
+    keys.length > 0 &&
+    keys.includes('name') && // example.zip
+    keys.includes('type') && // application/zip
+    keys.includes('content') && // raw'ish bytes (contains new lines - \n)
+    keys.includes('dataURL') && // data url representation
+    keys.includes('base64Data') && // data in base64
+    keys.includes('filePath')
+  );
+}
 
 interface RestAPIResult extends QueryResult {
   request?: Array<object> | object;
@@ -86,6 +103,7 @@ export default class RestapiQueryService implements QueryService {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
     const isUrlEncoded = checkIfContentTypeIsURLenc(queryOptions['headers']);
+    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(queryOptions['headers']);
 
     /* Prefixing the base url of datasource if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
@@ -102,8 +120,35 @@ export default class RestapiQueryService implements QueryService {
         ...paramsFromUrl,
         ...sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource),
       },
-      ...(isUrlEncoded ? { form: json } : { json }),
     };
+
+    const hasFiles = (json) => {
+      return Object.values(json || {}).some((item) => {
+        return isFileObject(item);
+      });
+    };
+
+    if (isUrlEncoded) {
+      _requestOptions.form = json;
+    } else if (isMultipartFormData && hasFiles(json)) {
+      const form = new FormData();
+      for (const key in json) {
+        const value = json[key];
+        if (isFileObject(value)) {
+          const fileBuffer = Buffer.from(value?.base64Data || '', 'base64');
+          form.append(key, fileBuffer, {
+            filename: value?.name || '',
+            contentType: value?.type || '',
+            knownLength: fileBuffer.length,
+          });
+        } else if (value !== undefined && value !== null) {
+          form.append(key, value);
+        }
+      }
+      _requestOptions.body = form;
+    } else {
+      _requestOptions.json = json;
+    }
 
     const authValidatedRequestOptions = validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,

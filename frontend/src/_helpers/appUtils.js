@@ -853,7 +853,8 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
         _ref,
         query.options.workflowId,
         query.options.blocking,
-        query.options?.params
+        query.options?.params,
+        _ref?.currentAppEnvironmentId
       );
     } else {
       queryExecutionPromise = dataqueryService.preview(
@@ -942,6 +943,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters = {}) {
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
+
   const queryEvents = useAppDataStore
     .getState()
     .events.filter((event) => event.target === 'data_query' && event.sourceId === queryId);
@@ -1008,7 +1010,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         _self,
         query.options.workflowId,
         query.options.blocking,
-        query.options?.params
+        query.options?.params,
+        _ref?.currentAppEnvironmentId
       );
     } else {
       queryExecutionPromise = dataqueryService.run(

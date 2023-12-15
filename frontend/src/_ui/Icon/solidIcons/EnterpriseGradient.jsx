@@ -1,7 +1,14 @@
 import React from 'react';
 
 const EnterpriseGradient = ({ fill = '#FFEDD4', width = '25', className = '', viewBox = '0 0 25 25' }) => (
-  <svg width={width} height={width} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    width={width}
+    height={width}
+    viewBox="0 0 48 48"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    data-cy="enterprise-gradient-icon"
+  >
     <rect width="48" height="48" rx="4" transform="matrix(-1 0 0 1 48 0)" fill={fill} />
     <path
       d="M19.8908 25.4869C24.3744 27.0451 25.8524 28.7802 26.9454 33.1017C28.0383 28.7802 29.5164 27.0451 34 25.4869C29.5164 23.9287 28.0383 22.1936 26.9454 17.8721C25.8524 22.1936 24.3744 23.9287 19.8908 25.4869Z"
