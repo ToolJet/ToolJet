@@ -207,10 +207,16 @@ export default function generateColumnsData({
               const validationData = validateWidget({
                 validationObject: {
                   minValue: {
-                    value: column.minValue,
+                    value: column?.minValue,
                   },
                   maxValue: {
-                    value: column.maxValue,
+                    value: column?.maxValue,
+                  },
+                  regex: {
+                    value: column?.regex,
+                  },
+                  customRule: {
+                    value: column?.customRule,
                   },
                 },
                 widgetValue: cellValue,

@@ -295,7 +295,7 @@ export const PropertiesTabElements = ({
             <div data-cy={`header-validation`} className="validation-text tj-text tj-text-xsm font-weight-500">
               {t('widget.Table.validation', 'Validation')}
             </div>
-            {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
+            {['string', 'number', undefined, 'default'].includes(column.columnType) && (
               <div className="d-flex flex-column custom-gap-8">
                 <div data-cy={`input-and-label-regex`} className="field">
                   <label className="form-label">{t('widget.Table.regex', 'Regex')}</label>
@@ -313,40 +313,77 @@ export const PropertiesTabElements = ({
                     }}
                   />
                 </div>
-                <div className="d-flex align-item-start align-self-stretch custom-gap-3">
-                  <div data-cy={`input-and-label-min-length`} className="field" style={{ flex: '1 0 0 ' }}>
-                    <label className="form-label">{t('widget.Table.minLength', 'Min length')}</label>
-                    <CodeHinter
-                      currentState={currentState}
-                      initialValue={column.minLength}
-                      theme={darkMode ? 'monokai' : 'default'}
-                      mode="javascript"
-                      lineNumbers={false}
-                      placeholder={'Enter min length'}
-                      onChange={(value) => onColumnItemChange(index, 'minLength', value)}
-                      componentName={getPopoverFieldSource(column.columnType, 'minLength')}
-                      popOverCallback={(showing) => {
-                        setColumnPopoverRootCloseBlocker('minLength', showing);
-                      }}
-                    />
+                {column.columnType === 'number' ? (
+                  <div className="d-flex align-item-start align-self-stretch custom-gap-3">
+                    <div data-cy={`input-and-label-min-value`} className="field flex-fill">
+                      <label className="form-label">{t('widget.Table.minValue', 'Min value')}</label>
+                      <CodeHinter
+                        currentState={currentState}
+                        initialValue={column.minValue}
+                        theme={darkMode ? 'monokai' : 'default'}
+                        mode="javascript"
+                        lineNumbers={false}
+                        placeholder={'Enter min length'}
+                        onChange={(value) => onColumnItemChange(index, 'minValue', value)}
+                        componentName={getPopoverFieldSource(column.columnType, 'minValue')}
+                        popOverCallback={(showing) => {
+                          setColumnPopoverRootCloseBlocker('minValue', showing);
+                        }}
+                      />
+                    </div>
+                    <div data-cy={`input-and-label-max-value`} className="field flex-fill">
+                      <label className="form-label">{t('widget.Table.maxValue', 'Max value')}</label>
+                      <CodeHinter
+                        currentState={currentState}
+                        initialValue={column.maxValue}
+                        theme={darkMode ? 'monokai' : 'default'}
+                        mode="javascript"
+                        lineNumbers={false}
+                        placeholder={'Enter max length'}
+                        onChange={(value) => onColumnItemChange(index, 'maxValue', value)}
+                        componentName={getPopoverFieldSource(column.columnType, 'maxValue')}
+                        popOverCallback={(showing) => {
+                          setColumnPopoverRootCloseBlocker('maxValue', showing);
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div data-cy={`input-and-label-max-length`} className="field " style={{ flex: '1 0 0 ' }}>
-                    <label className="form-label">{t('widget.Table.maxLength', 'Max length')}</label>
-                    <CodeHinter
-                      currentState={currentState}
-                      initialValue={column.maxLength}
-                      theme={darkMode ? 'monokai' : 'default'}
-                      mode="javascript"
-                      lineNumbers={false}
-                      placeholder={'Enter max length'}
-                      onChange={(value) => onColumnItemChange(index, 'maxLength', value)}
-                      componentName={getPopoverFieldSource(column.columnType, 'maxLength')}
-                      popOverCallback={(showing) => {
-                        setColumnPopoverRootCloseBlocker('maxLength', showing);
-                      }}
-                    />
+                ) : (
+                  <div className="d-flex align-item-start align-self-stretch custom-gap-3">
+                    <div data-cy={`input-and-label-min-length`} className="field" style={{ flex: '1 0 0 ' }}>
+                      <label className="form-label">{t('widget.Table.minLength', 'Min length')}</label>
+                      <CodeHinter
+                        currentState={currentState}
+                        initialValue={column.minLength}
+                        theme={darkMode ? 'monokai' : 'default'}
+                        mode="javascript"
+                        lineNumbers={false}
+                        placeholder={'Enter min length'}
+                        onChange={(value) => onColumnItemChange(index, 'minLength', value)}
+                        componentName={getPopoverFieldSource(column.columnType, 'minLength')}
+                        popOverCallback={(showing) => {
+                          setColumnPopoverRootCloseBlocker('minLength', showing);
+                        }}
+                      />
+                    </div>
+                    <div data-cy={`input-and-label-max-length`} className="field " style={{ flex: '1 0 0 ' }}>
+                      <label className="form-label">{t('widget.Table.maxLength', 'Max length')}</label>
+                      <CodeHinter
+                        currentState={currentState}
+                        initialValue={column.maxLength}
+                        theme={darkMode ? 'monokai' : 'default'}
+                        mode="javascript"
+                        lineNumbers={false}
+                        placeholder={'Enter max length'}
+                        onChange={(value) => onColumnItemChange(index, 'maxLength', value)}
+                        componentName={getPopoverFieldSource(column.columnType, 'maxLength')}
+                        popOverCallback={(showing) => {
+                          setColumnPopoverRootCloseBlocker('maxLength', showing);
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
                 <div data-cy={`input-and-label-custom-rule`} className="field">
                   <label className="form-label">{t('widget.Table.customRule', 'Custom rule')}</label>
                   <CodeHinter
@@ -360,42 +397,6 @@ export const PropertiesTabElements = ({
                     componentName={getPopoverFieldSource(column.columnType, 'customRule')}
                     popOverCallback={(showing) => {
                       setColumnPopoverRootCloseBlocker('customRule', showing);
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-            {column.columnType === 'number' && (
-              <div className="d-flex align-item-start align-self-stretch custom-gap-3">
-                <div data-cy={`input-and-label-min-value`} className="field flex-fill">
-                  <label className="form-label">{t('widget.Table.minValue', 'Min value')}</label>
-                  <CodeHinter
-                    currentState={currentState}
-                    initialValue={column.minLength}
-                    theme={darkMode ? 'monokai' : 'default'}
-                    mode="javascript"
-                    lineNumbers={false}
-                    placeholder={'Enter min length'}
-                    onChange={(value) => onColumnItemChange(index, 'minValue', value)}
-                    componentName={getPopoverFieldSource(column.columnType, 'minValue')}
-                    popOverCallback={(showing) => {
-                      setColumnPopoverRootCloseBlocker('minValue', showing);
-                    }}
-                  />
-                </div>
-                <div data-cy={`input-and-label-max-value`} className="field flex-fill">
-                  <label className="form-label">{t('widget.Table.maxValue', 'Max value')}</label>
-                  <CodeHinter
-                    currentState={currentState}
-                    initialValue={column.maxLength}
-                    theme={darkMode ? 'monokai' : 'default'}
-                    mode="javascript"
-                    lineNumbers={false}
-                    placeholder={'Enter max length'}
-                    onChange={(value) => onColumnItemChange(index, 'maxValue', value)}
-                    componentName={getPopoverFieldSource(column.columnType, 'maxValue')}
-                    popOverCallback={(showing) => {
-                      setColumnPopoverRootCloseBlocker('maxValue', showing);
                     }}
                   />
                 </div>
