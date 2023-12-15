@@ -36,7 +36,14 @@ import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { Page } from 'src/entities/page.entity';
+import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
+import { Layout } from 'src/entities/layout.entity';
 
+import { Component } from 'src/entities/component.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
+
+const uuid = require('uuid');
 @Injectable()
 export class AppsService {
   constructor(
@@ -134,7 +141,30 @@ export class AppsService {
         );
 
         //create default app version
-        await this.createVersion(user, app, 'v1', null, null, manager);
+        const appVersion = await this.createVersion(user, app, 'v1', null, null, manager);
+
+        const defaultHomePage = await manager.save(
+          manager.create(Page, {
+            name: 'Home',
+            handle: 'home',
+            appVersionId: appVersion.id,
+            index: 1,
+          })
+        );
+
+        // Set default values for app version
+        appVersion.showViewerNavigation = true;
+        appVersion.homePageId = defaultHomePage.id;
+        appVersion.globalSettings = {
+          hideHeader: false,
+          appInMaintenance: false,
+          canvasMaxWidth: 100,
+          canvasMaxWidthType: '%',
+          canvasMaxHeight: 2400,
+          canvasBackgroundColor: '#edeff5',
+          backgroundFxQuery: '',
+        };
+        await manager.save(appVersion);
 
         await manager.save(
           manager.create(AppUser, {
@@ -275,6 +305,7 @@ export class AppsService {
             currentVersionId,
           })
           .getOne();
+
         const isMultiEnvironmentEnabled = await this.licenseService.getLicenseTerms(
           LICENSE_FIELD.MULTI_ENVIRONMENT,
           organizationId
@@ -285,9 +316,11 @@ export class AppsService {
         production with a valid license or 
         expired license and development environment (priority no.1) (CE rollback) 
         */
+
         if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
           throw new BadRequestException('You can only release when the version is promoted to production');
         }
+
         let promotedFromQuery: string;
         if (!isMultiEnvironmentEnabled) {
           if (!currentEnvironment.isDefault) {
@@ -433,9 +466,219 @@ export class AppsService {
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId, app.type);
+      if (versionFrom) {
+        (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+          (appVersion.globalSettings = versionFrom.globalSettings),
+          await manager.save(appVersion);
+
+        const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
+          manager,
+          appVersion,
+          versionFrom,
+          organizationId
+        );
+
+        const { oldComponentToNewComponentMapping, oldPageToNewPageMapping } =
+          await this.createNewPagesAndComponentsForVersion(manager, appVersion, versionFrom.id, versionFrom.homePageId);
+
+        await this.updateEventActionsForNewVersionWithNewMappingIds(
+          manager,
+          appVersion.id,
+          oldDataQueryToNewMapping,
+          oldComponentToNewComponentMapping,
+          oldPageToNewPageMapping
+        );
+      }
+
       return appVersion;
     }, manager);
+  }
+
+  async updateEventActionsForNewVersionWithNewMappingIds(
+    manager: EntityManager,
+    versionId: string,
+    oldDataQueryToNewMapping: Record<string, unknown>,
+    oldComponentToNewComponentMapping: Record<string, unknown>,
+    oldPageToNewPageMapping: Record<string, unknown>
+  ) {
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionId },
+    });
+
+    for (const event of allEvents) {
+      const eventDefinition = event.event;
+
+      if (eventDefinition?.actionId === 'run-query') {
+        eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
+      }
+
+      if (eventDefinition?.actionId === 'control-component') {
+        eventDefinition.componentId = oldComponentToNewComponentMapping[eventDefinition.componentId];
+      }
+
+      if (eventDefinition?.actionId === 'switch-page') {
+        eventDefinition.pageId = oldPageToNewPageMapping[eventDefinition.pageId];
+      }
+
+      if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'close-modal') {
+        eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
+      }
+
+      event.event = eventDefinition;
+
+      await manager.save(event);
+    }
+  }
+
+  async createNewPagesAndComponentsForVersion(
+    manager: EntityManager,
+    appVersion: AppVersion,
+    versionFromId: string,
+    prevHomePagePage: string
+  ) {
+    const pages = await manager
+      .createQueryBuilder(Page, 'page')
+      .leftJoinAndSelect('page.components', 'component')
+      .leftJoinAndSelect('component.layouts', 'layout')
+      .where('page.appVersionId = :appVersionId', { appVersionId: versionFromId })
+      .getMany();
+
+    const allEvents = await manager.find(EventHandler, {
+      where: { appVersionId: versionFromId },
+    });
+
+    let homePageId = prevHomePagePage;
+
+    const newComponents = [];
+    const newComponentLayouts = [];
+    const oldComponentToNewComponentMapping = {};
+    const oldPageToNewPageMapping = {};
+
+    const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+      if (componentParentId) {
+        const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+
+        const parentComponent = allComponents.find((comp) => comp.id === parentId);
+
+        if (parentComponent) {
+          return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+        }
+      }
+
+      return false;
+    };
+
+    for (const page of pages) {
+      const savedPage = await manager.save(
+        manager.create(Page, {
+          name: page.name,
+          handle: page.handle,
+          index: page.index,
+          disabled: page.disabled,
+          hidden: page.hidden,
+          appVersionId: appVersion.id,
+        })
+      );
+      oldPageToNewPageMapping[page.id] = savedPage.id;
+      if (page.id === prevHomePagePage) {
+        homePageId = savedPage.id;
+      }
+
+      const pageEvents = allEvents.filter((event) => event.sourceId === page.id);
+
+      pageEvents.forEach(async (event, index) => {
+        const newEvent = new EventHandler();
+
+        newEvent.id = uuid.v4();
+        newEvent.name = event.name;
+        newEvent.sourceId = savedPage.id;
+        newEvent.target = event.target;
+        newEvent.event = event.event;
+        newEvent.index = event.index ?? index;
+        newEvent.appVersionId = appVersion.id;
+
+        await manager.save(newEvent);
+      });
+
+      page.components.forEach(async (component) => {
+        const newComponent = new Component();
+        const componentEvents = allEvents.filter((event) => event.sourceId === component.id);
+
+        newComponent.id = uuid.v4();
+
+        oldComponentToNewComponentMapping[component.id] = newComponent.id;
+
+        newComponent.name = component.name;
+        newComponent.type = component.type;
+        newComponent.pageId = savedPage.id;
+        newComponent.properties = component.properties;
+        newComponent.styles = component.styles;
+        newComponent.validation = component.validation;
+        newComponent.general = component.general;
+        newComponent.generalStyles = component.generalStyles;
+        newComponent.displayPreferences = component.displayPreferences;
+        newComponent.parent = component.parent;
+        newComponent.page = savedPage;
+
+        newComponents.push(newComponent);
+
+        component.layouts.forEach((layout) => {
+          const newLayout = new Layout();
+          newLayout.id = uuid.v4();
+          newLayout.type = layout.type;
+          newLayout.top = layout.top;
+          newLayout.left = layout.left;
+          newLayout.width = layout.width;
+          newLayout.height = layout.height;
+          newLayout.componentId = layout.componentId;
+
+          newLayout.component = newComponent;
+
+          newComponentLayouts.push(newLayout);
+        });
+
+        componentEvents.forEach(async (event, index) => {
+          const newEvent = new EventHandler();
+
+          newEvent.id = uuid.v4();
+          newEvent.name = event.name;
+          newEvent.sourceId = newComponent.id;
+          newEvent.target = event.target;
+          newEvent.event = event.event;
+          newEvent.index = event.index ?? index;
+          newEvent.appVersionId = appVersion.id;
+
+          await manager.save(newEvent);
+        });
+      });
+
+      newComponents.forEach((component) => {
+        let parentId = component.parent ? component.parent : null;
+
+        if (!parentId) return;
+
+        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
+
+        if (isParentTabOrCalendar) {
+          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
+          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const mappedParentId = oldComponentToNewComponentMapping[_parentId];
+
+          parentId = `${mappedParentId}-${childTabId}`;
+        } else {
+          parentId = oldComponentToNewComponentMapping[parentId];
+        }
+
+        component.parent = parentId;
+      });
+
+      await manager.save(newComponents);
+      await manager.save(newComponentLayouts);
+    }
+
+    await manager.update(AppVersion, { id: appVersion.id }, { homePageId });
+
+    return { oldComponentToNewComponentMapping, oldPageToNewPageMapping };
   }
 
   async deleteVersion(app: App, version: AppVersion): Promise<void> {
@@ -455,8 +698,7 @@ export class AppsService {
     manager: EntityManager,
     appVersion: AppVersion,
     versionFrom: AppVersion,
-    organizationId: string,
-    appType: string
+    organizationId: string
   ) {
     const oldDataQueryToNewMapping = {};
 
@@ -485,38 +727,61 @@ export class AppsService {
         .where('data_query.appVersionId = :appVersionId', { appVersionId: versionFrom?.id })
         .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
         .getMany();
-      const dataSources = versionFrom?.dataSources;
+      const dataSources = versionFrom?.dataSources; //Local data sources
+      const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
+
       const dataSourceMapping = {};
       const newDataQueries = [];
+      const allEvents = await manager.find(EventHandler, {
+        where: { appVersionId: versionFrom?.id, target: 'data_query' },
+      });
 
-      if (dataSources?.length) {
-        for (const dataSource of dataSources) {
-          const dataSourceParams: Partial<DataSource> = {
-            name: dataSource.name,
-            kind: dataSource.kind,
-            type: dataSource.type,
-            appVersionId: appVersion.id,
-          };
-          const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
-          dataSourceMapping[dataSource.id] = newDataSource.id;
-
-          const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
-
-          for (const dataQuery of dataQueries) {
-            const dataQueryParams = {
-              name: dataQuery.name,
-              options: dataQuery.options,
-              dataSourceId: newDataSource.id,
+      if (dataSources?.length > 0 || globalDataSources?.length > 0) {
+        if (dataSources?.length > 0) {
+          for (const dataSource of dataSources) {
+            const dataSourceParams: Partial<DataSource> = {
+              name: dataSource.name,
+              kind: dataSource.kind,
+              type: dataSource.type,
               appVersionId: appVersion.id,
             };
+            const newDataSource = await manager.save(manager.create(DataSource, dataSourceParams));
+            dataSourceMapping[dataSource.id] = newDataSource.id;
 
-            const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
-            oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
-            newDataQueries.push(newQuery);
+            const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
+
+            for (const dataQuery of dataQueries) {
+              const dataQueryParams = {
+                name: dataQuery.name,
+                options: dataQuery.options,
+                dataSourceId: newDataSource.id,
+                appVersionId: appVersion.id,
+              };
+              const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+
+              const dataQueryEvents = allEvents.filter((event) => event.sourceId === dataQuery.id);
+
+              dataQueryEvents.forEach(async (event, index) => {
+                const newEvent = new EventHandler();
+
+                newEvent.id = uuid.v4();
+                newEvent.name = event.name;
+                newEvent.sourceId = newQuery.id;
+                newEvent.target = event.target;
+                newEvent.event = event.event;
+                newEvent.index = event.index ?? index;
+                newEvent.appVersionId = appVersion.id;
+
+                await manager.save(newEvent);
+              });
+
+              oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
+              newDataQueries.push(newQuery);
+            }
           }
         }
 
-        if (globalQueries?.length) {
+        if (globalQueries?.length > 0) {
           for (const globalQuery of globalQueries) {
             const dataQueryParams = {
               name: globalQuery.name,
@@ -526,6 +791,21 @@ export class AppsService {
             };
 
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
+            const dataQueryEvents = allEvents.filter((event) => event.sourceId === globalQuery.id);
+
+            dataQueryEvents.forEach(async (event, index) => {
+              const newEvent = new EventHandler();
+
+              newEvent.id = uuid.v4();
+              newEvent.name = event.name;
+              newEvent.sourceId = newQuery.id;
+              newEvent.target = event.target;
+              newEvent.event = event.event;
+              newEvent.index = event.index ?? index;
+              newEvent.appVersionId = appVersion.id;
+
+              await manager.save(newEvent);
+            });
             oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
@@ -537,6 +817,7 @@ export class AppsService {
             oldDataQueryToNewMapping
           );
           newQuery.options = newOptions;
+
           await manager.save(newQuery);
         }
 
@@ -567,6 +848,8 @@ export class AppsService {
         }
       }
     }
+
+    return oldDataQueryToNewMapping;
   }
 
   async createNewQueriesForWorkflowVersion(
@@ -695,13 +978,13 @@ export class AppsService {
   }
 
   async updateVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
-    const { name, currentEnvironmentId, definition } = body;
+    const { name, currentEnvironmentId } = body;
     let currentEnvironment: AppEnvironment;
 
     if (version.id === version.app.currentVersionId && !body?.is_user_switched_version)
       throw new BadRequestException('You cannot update a released version');
 
-    if (currentEnvironmentId || definition) {
+    if (currentEnvironmentId) {
       currentEnvironment = await AppEnvironment.findOne({
         where: { id: version.currentEnvironmentId },
       });
@@ -737,31 +1020,58 @@ export class AppsService {
         },
         order: { priority: 'ASC' },
       });
-      editableParams['currentEnvironmentId'] = nextEnvironment.id;
 
-      if (version.promotedFrom) {
-        /* 
-        should make this field null. 
-        otherwise unreleased versions will demote back to promoted_from when the user go back to base plan again. 
-        (this query will only run one time after the user buys a paid plan)
-        */
-        editableParams['promotedFrom'] = null;
-      }
-    }
-
-    if (definition) {
       const environments = await AppEnvironment.count({
         where: {
           organizationId,
         },
       });
-      if (environments > 1 && currentEnvironment.priority !== 1 && !body?.is_user_switched_version) {
+      if (
+        environments > 1 &&
+        currentEnvironment.priority < nextEnvironment.priority &&
+        !body?.is_user_switched_version
+      ) {
         throw new BadRequestException('You cannot update a promoted version');
       }
-      editableParams['definition'] = definition;
+
+      editableParams['currentEnvironmentId'] = nextEnvironment.id;
     }
 
     editableParams['updatedAt'] = new Date();
+
+    if (version.promotedFrom) {
+      /* 
+      should make this field null. 
+      otherwise unreleased versions will demote back to promoted_from when the user go back to base plan again. 
+      (this query will only run one time after the user buys a paid plan)
+      */
+      editableParams['promotedFrom'] = null;
+    }
+
+    return await this.appVersionsRepository.update(version.id, editableParams);
+  }
+
+  async updateAppVersion(version: AppVersion, body: AppVersionUpdateDto) {
+    const editableParams = {};
+
+    const { globalSettings, homePageId } = await this.appVersionsRepository.findOne({
+      where: { id: version.id },
+    });
+
+    if (body?.homePageId && homePageId !== body.homePageId) {
+      editableParams['homePageId'] = body.homePageId;
+    }
+
+    if (body?.globalSettings) {
+      editableParams['globalSettings'] = {
+        ...globalSettings,
+        ...body.globalSettings,
+      };
+    }
+
+    if (typeof body?.showViewerNavigation === 'boolean') {
+      editableParams['showViewerNavigation'] = body.showViewerNavigation;
+    }
 
     return await this.appVersionsRepository.update(version.id, editableParams);
   }
@@ -834,6 +1144,7 @@ export class AppsService {
       : !isMultiEnvironmentEnabled
       ? 'development'
       : null;
+
     const environment: AppEnvironment = environmentId
       ? await this.appEnvironmentService.get(organizationId, environmentId)
       : await this.appEnvironmentService.getEnvironmentByName(processEnvironmentName, organizationId);

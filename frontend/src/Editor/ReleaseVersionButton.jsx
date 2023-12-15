@@ -2,28 +2,22 @@ import React, { useState } from 'react';
 import cx from 'classnames';
 import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import posthog from 'posthog-js';
 import { useTranslation } from 'react-i18next';
 import ReleaseConfirmation from './ReleaseConfirmation';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+// eslint-disable-next-line import/no-named-as-default
+import posthog from 'posthog-js';
 import '@/_styles/versions.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const ReleaseVersionButton = function DeployVersionButton({
-  appId,
-  appName,
-  fetchApp,
-  onVersionRelease,
-  saveEditingVersion,
-}) {
+export const ReleaseVersionButton = function DeployVersionButton({ appId, appName, fetchApp, onVersionRelease }) {
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
+  const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
       editingVersion: state.editingVersion,
-      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -32,7 +26,6 @@ export const ReleaseVersionButton = function DeployVersionButton({
 
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
-    saveEditingVersion();
     posthog.capture('click_release', { appId }); //posthog event
     appsService
       .saveApp(appId, {
@@ -51,6 +44,9 @@ export const ReleaseVersionButton = function DeployVersionButton({
       .catch((_error) => {
         toast.error('Oops, something went wrong');
         setIsReleasing(false);
+      })
+      .finally(() => {
+        useAppVersionStore.getState().actions.updateReleasedVersionId(editingVersion.id);
       });
   };
 

@@ -11,32 +11,30 @@ import _ from 'lodash';
 import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
-import posthog from 'posthog-js';
 import { useTranslation } from 'react-i18next';
-import useRouter from '@/_hooks/use-router';
-
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
-import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import ManageEventButton from './ManageEventButton';
+// eslint-disable-next-line import/no-named-as-default
+import posthog from 'posthog-js';
+import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
-import { useAppDataStore } from '@/_stores/appDataStore';
+import ManageEventButton from './ManageEventButton';
 
 export const EventManager = ({
-  component,
-  componentMeta,
-  currentState = {},
+  sourceId,
+  eventSourceType,
+  eventMetaDefinition,
   components,
-  eventsChanged,
-  apps,
   excludeEvents,
   popOverCallback,
   popoverPlacement,
   pages,
   hideEmptyEventsAlert,
   callerQueryId,
+  customEventRefs = undefined,
 }) => {
   const dataQueries = useDataQueriesStore(({ dataQueries = [] }) => {
     if (callerQueryId) {
@@ -45,19 +43,35 @@ export const EventManager = ({
     }
     return dataQueries;
   }, shallow);
-  const [events, setEvents] = useState(() => component.component.definition.events || []);
+  const { apps, appId, events: allAppEvents } = useAppInfo();
+
+  const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
+    useAppDataActions();
+
+  const currentEvents = allAppEvents.filter((event) => {
+    if (customEventRefs) {
+      if (event.event.ref !== customEventRefs.ref) {
+        return false;
+      }
+    }
+
+    return event.sourceId === sourceId && event.target === eventSourceType;
+  });
+
+  const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
-  const { appId } = useAppDataStore(
-    (state) => ({
-      appId: state?.appId,
-    }),
-    shallow
-  );
 
   useEffect(() => {
-    setEvents(component.component.definition.events || []);
-  }, [component?.component?.definition?.events]);
+    if (_.isEqual(currentEvents, events)) return;
+
+    const sortedEvents = currentEvents.sort((a, b) => {
+      return a.index - b.index;
+    });
+
+    setEvents(sortedEvents || []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(currentEvents)]);
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
@@ -110,11 +124,11 @@ export const EventManager = ({
   excludeEvents = excludeEvents || [];
 
   /* Filter events based on excludesEvents ( a list of event ids to exclude ) */
-  let possibleEvents = Object.keys(componentMeta.events)
+  let possibleEvents = Object.keys(eventMetaDefinition.events)
     .filter((eventId) => !excludeEvents.includes(eventId))
     .map((eventId) => {
       return {
-        name: componentMeta.events[eventId].displayName,
+        name: eventMetaDefinition?.events[eventId]?.displayName,
         value: eventId,
       };
     });
@@ -161,7 +175,7 @@ export const EventManager = ({
     const actions = targetComponentMeta.actions;
 
     const options = actions.map((action) => ({
-      name: action.displayName,
+      name: action?.displayName,
       value: action.handle,
     }));
 
@@ -182,7 +196,7 @@ export const EventManager = ({
 
   function getComponentActionDefaultParams(componentId, actionHandle) {
     const action = getAction(componentId, actionHandle);
-    const defaultParams = (action.params ?? []).map((param) => ({
+    const defaultParams = (action?.params ?? []).map((param) => ({
       handle: param.handle,
       value: param.defaultValue,
     }));
@@ -192,7 +206,7 @@ export const EventManager = ({
   function getAllApps() {
     let appsOptionsList = [];
     apps
-      .filter((item) => item.slug !== undefined)
+      .filter((item) => item.slug !== undefined && item.id !== appId)
       .forEach((item) => {
         appsOptionsList.push({
           name: item.name,
@@ -218,52 +232,128 @@ export const EventManager = ({
       }));
   }
 
-  function handlerChanged(index, param, value) {
-    let newEvents = [...events];
-
+  function handleQueryChange(index, updates) {
+    let newEvents = _.cloneDeep(events);
     let updatedEvent = newEvents[index];
-    updatedEvent[param] = value;
+
+    updatedEvent.event = {
+      ...updatedEvent.event,
+      ...updates,
+    };
 
     newEvents[index] = updatedEvent;
 
-    setEvents(newEvents);
-    eventsChanged(newEvents);
+    updateAppVersionEventHandlers(
+      [
+        {
+          event_id: updatedEvent.id,
+          diff: updatedEvent,
+        },
+      ],
+      'update'
+    );
+  }
+
+  function handlerChanged(index, param, value) {
+    let newEvents = _.cloneDeep(events);
+
+    let updatedEvent = newEvents[index];
+    updatedEvent.event[param] = value;
+
+    if (param === 'componentSpecificActionHandle') {
+      const getDefault = getComponentActionDefaultParams(updatedEvent.event?.componentId, value);
+      updatedEvent.event['componentSpecificActionParams'] = getDefault;
+    }
+
+    newEvents[index] = updatedEvent;
+
+    updateAppVersionEventHandlers(
+      [
+        {
+          event_id: updatedEvent.id,
+          diff: updatedEvent,
+        },
+      ],
+      'update'
+    );
   }
 
   function removeHandler(index) {
-    let newEvents = component.component.definition.events;
-    newEvents.splice(index, 1);
-    setEvents(newEvents);
-    eventsChanged(newEvents);
+    const eventsHandler = _.cloneDeep(events);
+
+    const eventId = eventsHandler[index].id;
+
+    deleteAppVersionEventHandler(eventId);
   }
 
   function addHandler() {
-    let newEvents = component.component.definition.events;
-    newEvents.push({
-      eventId: Object.keys(componentMeta.events)[0],
-      actionId: 'show-alert',
-      message: 'Hello world!',
-      alertType: 'info',
+    let newEvents = events;
+    const eventIndex = newEvents.length;
+
+    //----------------- Posthog Analytics for event handlers -----------------//
+    let postHogEventType = 'Event Handler';
+
+    switch (eventSourceType) {
+      case 'component':
+        postHogEventType = components[sourceId]['component']['component'];
+        break;
+
+      case 'page':
+        postHogEventType = `Page - ${sourceId}`;
+        break;
+
+      case 'data_query':
+        postHogEventType = `Query - ${sourceId}`;
+        break;
+
+      default:
+        break;
+    }
+
+    posthog.capture('click_add_event_handler', { widget: postHogEventType });
+    //----------------- Posthog Analytics -----------------//
+
+    createAppVersionEventHandlers({
+      event: {
+        eventId: Object.keys(eventMetaDefinition?.events)[0],
+        actionId: 'show-alert',
+        message: 'Hello world!',
+        alertType: 'info',
+        ...customEventRefs,
+      },
+      eventType: eventSourceType,
+      attachedTo: sourceId,
+      index: eventIndex,
     });
-    setEvents(newEvents);
-    eventsChanged(newEvents);
-    posthog.capture('click_add_event_handler', { widget: component.component.component, appId });
   }
 
   //following two are functions responsible for on change and value for the control specific actions
   const onChangeHandlerForComponentSpecificActionHandle = (value, index, param, event) => {
     const newParam = { ...param, value: value };
     const params = event?.componentSpecificActionParams ?? [];
-    const newParams = params.map((paramOfParamList) =>
-      paramOfParamList.handle === param.handle ? newParam : paramOfParamList
-    );
+
+    const newParams =
+      params.length > 0
+        ? params.map((paramOfParamList) => {
+            return paramOfParamList.handle === param.handle ? newParam : paramOfParamList;
+          })
+        : [newParam];
+
     return handlerChanged(index, 'componentSpecificActionParams', newParams);
   };
   const valueForComponentSpecificActionHandle = (event, param) => {
-    return (
-      event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)?.value ??
-      param.defaultValue
-    );
+    const componentSpecificActionParamsExits = Array.isArray(event?.componentSpecificActionParams);
+    const defaultValue = param.defaultValue ?? '';
+
+    if (componentSpecificActionParamsExits) {
+      const paramValue =
+        event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)?.value ??
+        defaultValue;
+
+      return paramValue;
+    }
+
+    return defaultValue;
   };
 
   function eventPopover(event, index) {
@@ -271,10 +361,14 @@ export const EventManager = ({
       <Popover
         id="popover-basic"
         style={{ width: '350px', maxWidth: '350px' }}
-        className={`${darkMode && ' dark-theme'} shadow event-manager-popover`}
+        className={`${darkMode && 'dark-theme'} shadow`}
         data-cy="popover-card"
       >
-        <Popover.Body>
+        <Popover.Body
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <div className="row">
             <div className="col-3 p-2">
               <span data-cy="event-label">{t('editor.inspector.eventManager.event', 'Event')}</span>
@@ -454,10 +548,11 @@ export const EventManager = ({
                       options={dataQueries
                         .filter((qry) => isQueryRunnable(qry))
                         .map((qry) => ({ name: qry.name, value: qry.id }))}
-                      value={event.queryId}
+                      value={event?.queryId}
                       search={true}
                       onChange={(value) => {
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
+
                         const parameters = (query?.options?.parameters ?? []).reduce(
                           (paramObj, param) => ({
                             ...paramObj,
@@ -465,9 +560,12 @@ export const EventManager = ({
                           }),
                           {}
                         );
-                        handlerChanged(index, 'queryId', query.id);
-                        handlerChanged(index, 'queryName', query.name);
-                        handlerChanged(index, 'parameters', parameters);
+
+                        handleQueryChange(index, {
+                          queryId: query.id,
+                          queryName: query.name,
+                          parameters: parameters,
+                        });
                       }}
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
@@ -699,7 +797,6 @@ export const EventManager = ({
                       value={event?.componentId}
                       search={true}
                       onChange={(value) => {
-                        handlerChanged(index, 'componentSpecificActionHandle', '');
                         handlerChanged(index, 'componentId', value);
                       }}
                       placeholder={t('globals.select', 'Select') + '...'}
@@ -721,11 +818,6 @@ export const EventManager = ({
                       search={true}
                       onChange={(value) => {
                         handlerChanged(index, 'componentSpecificActionHandle', value);
-                        handlerChanged(
-                          index,
-                          'componentSpecificActionParams',
-                          getComponentActionDefaultParams(event?.componentId, value)
-                        );
                       }}
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
@@ -736,10 +828,10 @@ export const EventManager = ({
                 </div>
                 {event?.componentId &&
                   event?.componentSpecificActionHandle &&
-                  (getAction(event?.componentId, event?.componentSpecificActionHandle).params ?? []).map((param) => (
+                  (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => (
                     <div className="row mt-2" key={param.handle}>
-                      <div className="col-3 p-1" data-cy={`action-options-${param.displayName}-field-label`}>
-                        {param.displayName}
+                      <div className="col-3 p-1" data-cy={`action-options-${param?.displayName}-field-label`}>
+                        {param?.displayName}
                       </div>
                       {param.type === 'select' ? (
                         <div className="col-9" data-cy="action-options-action-selection-field">
@@ -774,7 +866,7 @@ export const EventManager = ({
                             enablePreview={true}
                             type={param?.type}
                             fieldMeta={{ options: param?.options }}
-                            cyLabel={param.displayName}
+                            cyLabel={param?.displayName}
                           />
                         </div>
                       )}
@@ -800,11 +892,24 @@ export const EventManager = ({
   }
 
   const reorderEvents = (startIndex, endIndex) => {
-    const result = [...component.component.definition.events];
+    const result = _.cloneDeep(events);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    setEvents(result);
-    eventsChanged(result, true);
+
+    const reorderedEvents = result.map((event, index) => {
+      return {
+        ...event,
+        index: index,
+      };
+    });
+
+    updateAppVersionEventHandlers(
+      reorderedEvents.map((event) => ({
+        event_id: event.id,
+        diff: event,
+      })),
+      'reorder'
+    );
   };
 
   const onDragEnd = ({ source, destination }) => {
@@ -828,8 +933,8 @@ export const EventManager = ({
           {({ innerRef, droppableProps, placeholder }) => (
             <div {...droppableProps} ref={innerRef}>
               {events.map((event, index) => {
-                const actionMeta = ActionTypes.find((action) => action.id === event.actionId);
-                const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
+                const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
+                // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                 return (
                   <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
                     {renderDraggable((provided, snapshot) => {
@@ -842,14 +947,13 @@ export const EventManager = ({
                           trigger="click"
                           placement={popoverPlacement || 'left'}
                           rootClose={true}
-                          overlay={eventPopover(event, index)}
+                          overlay={eventPopover(event.event, index)}
                           onHide={() => setFocusedEventIndex(null)}
                           onToggle={(showing) => {
                             if (showing) {
                               setFocusedEventIndex(index);
                             } else {
                               setFocusedEventIndex(null);
-                              eventsChanged(events);
                             }
                             if (typeof popOverCallback === 'function') popOverCallback(showing);
                           }}
@@ -861,7 +965,7 @@ export const EventManager = ({
                             {...provided.dragHandleProps}
                           >
                             <ManageEventButton
-                              eventDisplayName={componentMeta.events[event.eventId]['displayName']}
+                              eventDisplayName={eventMetaDefinition?.events[event.event.eventId]?.displayName}
                               actionName={actionMeta.name}
                               removeHandler={removeHandler}
                               index={index}
@@ -899,12 +1003,33 @@ export const EventManager = ({
     );
   }
 
+  const componentName = eventMetaDefinition?.name ? eventMetaDefinition.name : 'query';
+
+  if (events.length === 0) {
+    return (
+      <>
+        {renderAddHandlerBtn()}
+        {!hideEmptyEventsAlert ? (
+          <div className="text-left">
+            <small className="color-disabled" data-cy="no-event-handler-message">
+              {t(
+                'editor.inspector.eventManager.emptyMessage',
+                "This {{componentName}} doesn't have any event handlers",
+                {
+                  componentName: componentName.toLowerCase(),
+                }
+              )}
+            </small>
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
   return (
     <>
-      <div className="mb-3">
-        {renderHandlers(events)}
-        {renderAddHandlerBtn()}
-      </div>
+      {renderHandlers(events)}
+      {renderAddHandlerBtn()}
     </>
   );
 };

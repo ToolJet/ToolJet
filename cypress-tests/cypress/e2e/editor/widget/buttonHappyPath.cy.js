@@ -34,7 +34,7 @@ import {
 describe("Editor- Test Button widget", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
   });
@@ -76,6 +76,8 @@ describe("Editor- Test Button widget", () => {
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionEvents);
     addDefaultEventHandler(data.alertMessage);
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
 
@@ -341,6 +343,7 @@ describe("Editor- Test Button widget", () => {
   });
 
   it("Should verify csa", () => {
+    cy.get('[data-tooltip-content="Hide query panel"]').click();
     // cy.dragAndDropWidget(buttonText.defaultWidgetText);
     selectEvent("On click", "Show alert");
 
@@ -359,7 +362,8 @@ describe("Editor- Test Button widget", () => {
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 150);
     selectEvent("On click", "Control Component");
     selectCSA("button1", "Disable");
-    cy.get('[data-cy="Value-toggle-button"]').click();
+    cy.get('[data-cy="Value-fx-button"]').realClick();
+    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror(`{{true`);
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
@@ -370,7 +374,9 @@ describe("Editor- Test Button widget", () => {
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 250);
     selectEvent("On click", "Control Component");
     selectCSA("button1", "Loading");
-    cy.get('[data-cy="Value-toggle-button"]').click();
+    cy.wait(500);
+    cy.get('[data-cy="Value-fx-button"]').realClick();
+    cy.get('[data-cy="Value-input-field"]').clearAndTypeOnCodeMirror(`{{true`);
 
     cy.get(commonWidgetSelector.draggableWidget("textinput1")).type("testBtn");
     cy.wait(500);
