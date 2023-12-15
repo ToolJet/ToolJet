@@ -54,6 +54,12 @@ export class App extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: string;
 
+  @Column({ name: 'workflow_api_token' })
+  workflowApiToken: string;
+
+  @Column({ name: 'workflow_enabled', default: false })
+  workflowEnabled: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

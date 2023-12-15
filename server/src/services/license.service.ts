@@ -105,6 +105,9 @@ export class LicenseService {
       case LICENSE_FIELD.META:
         return License.Instance().metaData;
 
+      case LICENSE_FIELD.WORKFLOWS:
+        return License.Instance().workflows;
+
       default:
         return License.Instance().terms;
     }

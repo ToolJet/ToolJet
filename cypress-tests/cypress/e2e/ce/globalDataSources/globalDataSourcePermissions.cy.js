@@ -34,9 +34,8 @@ data.appName = `${fake.companyName}-App`;
 
 describe("Global Datasource Manager", () => {
     beforeEach(() => {
-        cy.apiLogin();
+        cy.defaultWorkspaceLogin();
         cy.viewport(1200, 1300);
-        cy.visit('/')
     });
     before(() => {
         cy.apiLogin();
@@ -204,7 +203,6 @@ describe("Global Datasource Manager", () => {
         navigateToAppEditor(data.appName);
 
         pinInspector();
-        // cy.get(".tooltip-inner").invoke("hide");
 
         addQuery(
             "table_preview",
@@ -267,7 +265,7 @@ describe("Global Datasource Manager", () => {
     it("Should validate the user's global data source permissions on apps created by admin", () => {
         logout();
         cy.apiLogin(data.email, "password");
-        cy.visit('/')
+        cy.visit('/my-workspace')
 
         cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
 
@@ -279,7 +277,6 @@ describe("Global Datasource Manager", () => {
         );
 
         pinInspector();
-        // cy.get(".tooltip-inner").invoke("hide");
 
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         verifyValueOnInspector("table_preview", "7 items ");
@@ -302,7 +299,7 @@ describe("Global Datasource Manager", () => {
         data.appName = `${fake.companyName}-App`;
         logout();
         cy.apiLogin(data.email, "password");
-        cy.visit('/')
+        cy.visit('/my-workspace')
         cy.apiCreateApp(data.appName);
         cy.openApp();
         cy.dragAndDropWidget("Table", 250, 250);
@@ -319,7 +316,6 @@ describe("Global Datasource Manager", () => {
         );
 
         pinInspector();
-        // cy.get(".tooltip-inner").invoke("hide");
 
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         verifyValueOnInspector("table_preview", "7 items ");

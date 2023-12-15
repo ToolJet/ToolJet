@@ -28,6 +28,7 @@ export default class License {
   private _type: string;
   private _isGitSync: boolean;
   private _metaData: object;
+  private _workflows: object;
 
   private constructor(key: string, updatedDate: Date) {
     if (process.env.NODE_ENV !== 'test') {
@@ -68,6 +69,7 @@ export default class License {
         this._type = licenseData?.type;
         this._domainsList = licenseData?.domains;
         this._metaData = licenseData?.meta;
+        this._workflows = licenseData?.workflows;
         this._isGitSync = licenseData?.features?.gitSync === false ? false : true;
       } catch (err) {
         console.error('Invalid License Key:Parse error', err);
@@ -295,6 +297,7 @@ export default class License {
       editorUsers: this.editorUsers,
       viewerUsers: this.viewerUsers,
       workspacesCount: this.workspaces,
+      workflows: this.workflows,
     };
   }
 
@@ -308,5 +311,12 @@ export default class License {
 
   public static Reload(key: string, updatedDate: Date): License {
     return (this._instance = new this(key, updatedDate));
+  }
+
+  public get workflows(): object {
+    if (this.IsBasicPlan) {
+      return BASIC_PLAN_TERMS.workflows;
+    }
+    return this._workflows ?? BASIC_PLAN_TERMS.workflows;
   }
 }

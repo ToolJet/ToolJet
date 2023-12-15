@@ -131,7 +131,11 @@ export function AppModal({
           <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button" className="modal-footer-divider">
             Cancel
           </ButtonSolid>
-          <ButtonSolid onClick={(e) => handleAction(e)} data-cy={actionButton} disabled={createBtnDisableState}>
+          <ButtonSolid
+            onClick={(e) => handleAction(e)}
+            data-cy={actionButton.toLowerCase().replace(/\s+/g, '-')}
+            disabled={createBtnDisableState}
+          >
             {isLoading ? actionLoadingButton : actionButton}
           </ButtonSolid>
         </>

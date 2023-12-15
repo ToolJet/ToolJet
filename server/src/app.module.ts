@@ -1,5 +1,6 @@
 import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Connection } from 'typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
@@ -53,9 +54,18 @@ import { LicenseModule } from './modules/license/license.module';
 import { CustomStylesModule } from './modules/custom_styles/custom_styles.module';
 import { AppGitModule } from './modules/app_git/app_git.module';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { logfileTransportConfig, logFormat } from './helpers/logger.helper';
 
 const imports = [
+  EventEmitterModule.forRoot({
+    wildcard: false,
+    newListener: false,
+    removeListener: false,
+    maxListeners: 5,
+    verboseMemoryLeak: true,
+    ignoreErrors: false,
+  }),
   ScheduleModule.forRoot(),
   BullModule.forRoot({
     redis: {
@@ -162,6 +172,10 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
 if (process.env.ENABLE_TOOLJET_DB === 'true') {
   imports.unshift(TooljetDbModule);
   imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
+}
+
+if (process.env.DISABLE_WEBHOOKS !== 'true') {
+  imports.unshift(WebhooksModule);
 }
 
 @Module({

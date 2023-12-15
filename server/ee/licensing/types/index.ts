@@ -36,4 +36,17 @@ export interface Terms {
     customerId?: string;
     createdBy?: string;
   };
+  workflows?: {
+    execution_timeout?: number;
+    workspace: {
+      total?: number;
+      daily_executions?: number;
+      monthly_executions?: number;
+    };
+    instance: {
+      total?: number;
+      daily_executions?: number;
+      monthly_executions?: number;
+    };
+  };
 }
