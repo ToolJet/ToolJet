@@ -115,6 +115,16 @@ export class OrganizationLicenseController {
   @UseGuards(JwtAuthGuard)
   @Post('payment/redirect')
   async getRedirectURL(@User() user, @Body() paymentRedirectDto: PaymentRedirectDto) {
+    // Updating CRM
+    const { email, firstName, lastName, role } = user;
+    this.licenseService.updateCRM({
+      email,
+      firstName,
+      lastName,
+      role,
+      paymentTry: true,
+    });
+
     const stripeAPIKey = this.configService.get<string>('STRIPE_API_KEY');
     const stripe = new Stripe(stripeAPIKey);
     const checkParam = {
@@ -130,7 +140,7 @@ export class OrganizationLicenseController {
     if (!validUpgrade) throw new BadRequestException('This is not valid license upgrade request');
 
     const line_items = [];
-    if (paymentRedirectDto.subsribtionType == 'monthly') {
+    if (paymentRedirectDto.subscriptionType == 'monthly') {
       line_items.push({
         price: this.configService.get<string>('STRIPE_PRICE_ID_MONTHLY_VIEWER'),
         quantity: paymentRedirectDto.NumberOfViewers,
@@ -149,12 +159,30 @@ export class OrganizationLicenseController {
         quantity: paymentRedirectDto.NumberOfEditor,
       });
     }
+
     const discounts: Array<Stripe.Checkout.SessionCreateParams.Discount> = [];
-    if (paymentRedirectDto.coupon_code) {
+
+    if (paymentRedirectDto.coupon_code || paymentRedirectDto.promo_code) {
       // Add the coupon to discounts array
-      const couponDiscount: Stripe.Checkout.SessionCreateParams.Discount = {
-        coupon: paymentRedirectDto.coupon_code,
-      };
+      const couponDiscount: Stripe.Checkout.SessionCreateParams.Discount = {};
+
+      if (paymentRedirectDto.coupon_code) {
+        couponDiscount.coupon = paymentRedirectDto.coupon_code;
+      }
+
+      if (paymentRedirectDto.promo_code) {
+        const promotionCodes = await stripe.promotionCodes.list({
+          limit: 3,
+          active: true,
+          code: paymentRedirectDto.promo_code,
+        });
+        const promotionList = promotionCodes?.data;
+        if (!promotionList || promotionList.length === 0) {
+          throw new BadRequestException(`Invalid promotion code '${paymentRedirectDto.promo_code}'`);
+        }
+        couponDiscount.promotion_code = promotionList[0].id;
+      }
+
       discounts.push(couponDiscount);
     }
     const session = await stripe.checkout.sessions.create({
@@ -166,7 +194,7 @@ export class OrganizationLicenseController {
       discounts: discounts,
       metadata: {
         organizationId: paymentRedirectDto.workspaceId,
-        subscriptionType: paymentRedirectDto.subsribtionType,
+        subscriptionType: paymentRedirectDto.subscriptionType,
         editors: paymentRedirectDto.NumberOfEditor,
         viewers: paymentRedirectDto.NumberOfViewers,
         email: user.email,

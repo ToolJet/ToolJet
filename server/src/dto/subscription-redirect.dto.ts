@@ -19,7 +19,7 @@ export class PaymentRedirectDto {
   workspaceId: string;
 
   @IsEnum(SubscriptionType)
-  subsribtionType: string;
+  subscriptionType: string;
 
   @IsEnum(SubscriptionMode)
   mode: Stripe.Checkout.SessionCreateParams.Mode;
@@ -33,6 +33,10 @@ export class PaymentRedirectDto {
   @IsOptional()
   @IsString()
   coupon_code: string;
+
+  @IsOptional()
+  @IsString()
+  promo_code: string;
 
   @IsEmail()
   customer_email: string;
