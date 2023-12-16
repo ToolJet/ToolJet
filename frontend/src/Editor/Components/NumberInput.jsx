@@ -42,14 +42,13 @@ export const NumberInput = function NumberInput({
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
   const [showValidationError, setShowValidationError] = useState(false);
+  const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
   const { isValid, validationError } = validate(value);
 
-  const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
   const inputRef = useRef(null);
   const currentState = useCurrentState();
   const [disable, setDisable] = useState(disabledState || loadingState);
   const labelRef = useRef();
-  const [inputHeight, setinputHeight] = useState(height);
 
   useEffect(() => {
     if (alignment == 'top' && label?.length > 0) {
@@ -130,10 +129,8 @@ export const NumberInput = function NumberInput({
   useEffect(() => {
     if (labelRef.current) {
       const width = labelRef.current.offsetWidth;
-      setinputHeight(labelRef.current.offsetHeight);
-
-      padding == 'default' ? setElementWidth(width + 17) : setElementWidth(width + 15);
-    } else setElementWidth(5);
+      padding == 'default' ? setLabelWidth(width + 10) : setLabelWidth(width + 8);
+    } else setLabelWidth(0);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -147,7 +144,6 @@ export const NumberInput = function NumberInput({
     padding,
     direction,
     alignment,
-    elementWidth,
   ]);
 
   const computedStyles = {
@@ -165,24 +161,8 @@ export const NumberInput = function NumberInput({
   };
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
-  const [elementWidth, setElementWidth] = useState(0);
-  useEffect(() => {
-    if (inputRef.current) {
-      const width = inputRef.current.getBoundingClientRect().width;
-      setElementWidth(width);
-    }
-  }, [
-    isResizing,
-    width,
-    auto,
-    defaultAlignment,
-    component?.definition?.styles?.iconVisibility?.value,
-    label?.length,
-    isMandatory,
-    padding,
-    direction,
-    alignment,
-  ]);
+  const [labelWidth, setLabelWidth] = useState(0);
+
   const iconName = styles.icon; // Replace with the name of the icon you want
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
@@ -250,8 +230,8 @@ export const NumberInput = function NumberInput({
 
   const renderInput = () => {
     const loaderStyle = {
-      right: direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : undefined,
-      top: `${defaultAlignment === 'top' ? (padding == 'none' ? '50%' : `calc(50% + 2px)`) : ''}`,
+      right: alignment == 'top' ? `26px` : direction == 'left' ? `26px` : `${labelWidth + 23}px`,
+      top: alignment == 'side' ? '' : `50%`,
     };
 
     return (
@@ -294,6 +274,7 @@ export const NumberInput = function NumberInput({
               style={{
                 width: '16px',
                 height: '16px',
+
                 left:
                   direction === 'right'
                     ? padding == 'default'
@@ -303,7 +284,7 @@ export const NumberInput = function NumberInput({
                     ? padding == 'default'
                       ? '8px'
                       : '5px'
-                    : `${elementWidth}px`,
+                    : `${labelWidth + 7}px`,
                 position: 'absolute',
                 top: `${
                   defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
@@ -333,49 +314,60 @@ export const NumberInput = function NumberInput({
           />
           <div onClick={(e) => handleIncrement(e)}>
             <SolidIcon
+              width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
               style={{
-                backgroundColor: darkMode ? 'black' : 'white',
                 top:
-                  defaultAlignment === 'top'
+                  defaultAlignment === 'top' && label?.length > 0 && width > 0
                     ? padding == 'default'
-                      ? '24px'
+                      ? '23px'
                       : '21px'
                     : padding == 'default'
-                    ? '4px'
+                    ? '3px'
                     : '1px',
-                left:
-                  alignment == 'side' && direction === 'right'
+                right:
+                  labelWidth == 0
                     ? padding == 'default'
-                      ? `${elementWidth - 22}px`
-                      : `${elementWidth - 24}px`
-                    : undefined,
-                right: padding == 'default' ? '3px' : '1px',
-                height: `${inputHeight}`,
+                      ? '2px'
+                      : '0px'
+                    : alignment == 'side' && direction === 'right'
+                    ? padding == 'default'
+                      ? `${labelWidth - 2}px`
+                      : `${labelWidth}px`
+                    : padding == 'default'
+                    ? '3px'
+                    : '1px',
                 borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                borderBottom: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                borderTopRightRadius: borderRadius,
+                borderBottom: darkMode ? '1px solid #313538' : '0.5px solid #D7D7D7',
+                borderTopRightRadius: borderRadius - 1,
+                backgroundColor: 'red',
               }}
               className="numberinput-up-arrow arrow"
               name="cheveronup"
             ></SolidIcon>
           </div>
+
           <div onClick={(e) => handleDecrement(e)}>
             <SolidIcon
               style={{
-                backgroundColor: darkMode ? 'black' : 'white',
-                left:
-                  alignment == 'side' && direction === 'right'
+                right:
+                  labelWidth == 0
                     ? padding == 'default'
-                      ? `${elementWidth - 22}px`
-                      : `${elementWidth - 24}px`
-                    : undefined,
-                right: padding == 'default' ? '3px' : '1px',
-                height: `${inputHeight}`,
-                bottom: padding == 'default' ? '4px' : '1px',
+                      ? '2px'
+                      : '0px'
+                    : alignment == 'side' && direction === 'right'
+                    ? padding == 'default'
+                      ? `${labelWidth - 2}px`
+                      : `${labelWidth}px`
+                    : padding == 'default'
+                    ? '3px'
+                    : '1px',
+                bottom: padding == 'default' ? '3px' : '1px',
                 borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                borderTop: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                borderBottomRightRadius: borderRadius,
+                borderTop: darkMode ? '1px solid #313538' : '0.5px solid #D7D7D7',
+                borderBottomRightRadius: borderRadius - 1,
+                backgroundColor: 'red',
               }}
+              width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
               className="numberinput-down-arrow arrow"
               name="cheverondown"
             ></SolidIcon>

@@ -83,7 +83,6 @@ export const TextInput = function TextInput({
     padding,
     direction,
     alignment,
-    elementWidth,
   ]);
 
   useEffect(() => {

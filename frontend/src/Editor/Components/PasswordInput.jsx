@@ -87,7 +87,7 @@ export const PasswordInput = function PasswordInput({
     padding,
     direction,
     alignment,
-    elementWidth,
+    isMandatory,
   ]);
 
   useEffect(() => {
@@ -150,10 +150,10 @@ export const PasswordInput = function PasswordInput({
   // eslint-disable-next-line import/namespace
 
   useEffect(() => {
-    if (alignment === 'top') adjustHeightBasedOnAlignment(true);
+    if (alignment == 'top' && label?.length > 0) adjustHeightBasedOnAlignment(true);
     else adjustHeightBasedOnAlignment(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alignment]);
+  }, [alignment, label?.length]);
 
   useEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
@@ -265,9 +265,18 @@ export const PasswordInput = function PasswordInput({
             style={{
               width: '7',
               height: '7',
-              right: alignment == 'top' ? `6px` : direction == 'left' ? `6px` : `${elementWidth}px`,
               position: 'absolute',
-              top: alignment == 'side' ? '50%' : `calc(50% + 10px)`,
+              right:
+                alignment == 'top'
+                  ? padding == 'none'
+                    ? `6px`
+                    : '8px'
+                  : direction == 'left'
+                  ? padding == 'none'
+                    ? `6px`
+                    : '8px'
+                  : `${elementWidth}px`,
+              top: alignment == 'side' ? '50%' : label?.length > 0 && width > 0 ? `calc(50% + 10px)` : '50%',
               transform: ' translateY(-50%)',
             }}
             stroke={1.5}
