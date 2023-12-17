@@ -11,6 +11,7 @@ describe("Manage SSO for multi workspace", () => {
   const envVar = Cypress.env("environment");
   beforeEach(() => {
     cy.appUILogin();
+    cy.visit('/my-workspace');
   });
   it("Should verify General settings page elements", () => {
     common.navigateToManageSSO();

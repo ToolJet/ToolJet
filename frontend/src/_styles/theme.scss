@@ -8786,7 +8786,7 @@ tbody {
   flex-direction: row !important;
   justify-content: center !important;
   align-items: center !important;
-  padding: 4px 16px !important;
+  //padding: 4px 16px !important;
   width: 100% !important;
   height: 28px !important;
   background: var(--grass2) !important;
@@ -8799,7 +8799,7 @@ tbody {
   flex-direction: row !important;
   justify-content: center !important;
   align-items: center !important;
-  padding: 4px 16px !important;
+  //padding: 4px 16px !important;
   width: 100% !important;
   height: 28px !important;
   border-radius: 6px !important;
@@ -11824,7 +11824,6 @@ tbody {
 }
 
 #popover-basic-2 {
-  // z-index: 10 !important;
 
   .sketch-picker {
     left: 7px;
@@ -11928,10 +11927,4 @@ tbody {
 
 .label-hinter-margin {
   margin-bottom: 4px;
-}
-
-.password-component-eye {
-  // position: absolute;
-  // right: 5px;
-  // top: 4px;
 }

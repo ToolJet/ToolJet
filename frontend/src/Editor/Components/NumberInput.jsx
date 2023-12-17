@@ -70,7 +70,7 @@ export const NumberInput = function NumberInput({
   const handleBlur = (e) => {
     if (!isNaN(parseFloat(properties.minValue)) && parseFloat(e.target.value) < parseFloat(properties.minValue)) {
       setValue(Number(parseFloat(properties.minValue)));
-    } else setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
+    } else setValue(Number(parseFloat(e.target.value ? e.target.value : 0).toFixed(properties.decimalPlaces)));
     setShowValidationError(true);
     e.stopPropagation();
     // fireEvent('onBlur');
@@ -335,7 +335,7 @@ export const NumberInput = function NumberInput({
                     ? '3px'
                     : '1px',
                 borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                borderBottom: darkMode ? '1px solid #313538' : '0.5px solid #D7D7D7',
+                borderBottom: darkMode ? '.5px solid #313538' : '0.5px solid #D7D7D7',
                 borderTopRightRadius: borderRadius - 1,
                 backgroundColor: !darkMode ? 'white' : 'black',
               }}
@@ -361,7 +361,7 @@ export const NumberInput = function NumberInput({
                     : '1px',
                 bottom: padding == 'default' ? '3px' : '1px',
                 borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                borderTop: darkMode ? '1px solid #313538' : '0.5px solid #D7D7D7',
+                borderTop: darkMode ? '0.5px solid #313538' : '0.5px solid #D7D7D7',
                 borderBottomRightRadius: borderRadius - 1,
                 backgroundColor: !darkMode ? 'white' : 'black',
               }}
