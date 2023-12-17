@@ -191,7 +191,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const handleMarkedAsDefaultChange = (value, index) => {
-    const _value = options[index]?.value;
+    let _value = options[index]?.value;
+    if (isMultiSelect) {
+      _value = [...options.map((option) => option.value), _value];
+    }
     setMarkedAsDefault(_value);
     paramUpdated({ name: 'value' }, 'value', _value, 'properties');
   };
@@ -276,7 +279,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={markedAsDefault === item.value}
+              initialValue={isMultiSelect ? markedAsDefault.includes(item.value) : markedAsDefault === item.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -319,7 +322,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const _renderOptions = () => {
     return (
-      <List>
+      <List style={{ marginBottom: '20px' }}>
         <DragDropContext
           onDragEnd={(result) => {
             onDragEnd(result);

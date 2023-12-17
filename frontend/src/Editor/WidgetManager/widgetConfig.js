@@ -2912,8 +2912,8 @@ export const widgets = [
     displayName: 'Multiselect',
     description: 'Multiple item selector',
     defaultSize: {
-      width: 15,
-      height: 30,
+      width: 10,
+      height: 40,
     },
     component: 'Multiselect',
     others: {
@@ -3085,6 +3085,8 @@ export const widgets = [
     events: {
       onSelect: { displayName: 'On select' },
       onSearchTextChanged: { displayName: 'On search text changed' },
+      onFocus: { displayName: 'On focus' },
+      onBlur: { displayName: 'On blur' },
     },
 
     styles: {
