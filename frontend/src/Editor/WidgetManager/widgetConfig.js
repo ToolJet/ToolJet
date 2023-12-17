@@ -2735,6 +2735,8 @@ export const widgets = [
     events: {
       onSelect: { displayName: 'On select' },
       onSearchTextChanged: { displayName: 'On search text changed' },
+      onFocus: { displayName: 'On focus' },
+      onBlur: { displayName: 'On blur' },
     },
     styles: {
       labelColor: {
@@ -2874,12 +2876,15 @@ export const widgets = [
         label: { value: 'Select' },
         value: { value: '{{"2"}}' },
         values: { value: '{{["1","2","3"]}}' },
-        display_values: { value: '{{["one", "two", "three"]}}' },
+        display_values: { value: '{{["option1", "option2", "option3"]}}' },
         loadingState: { value: '{{false}}' },
         placeholder: { value: '-Select' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         dropdownLoadingState: { value: '{{false}}' },
+        // This two following properties are
+        optionVisibility: { value: '{{[true, true, true]}}' },
+        optionDisable: { value: '{{[false, false, false]}}' },
       },
       events: [],
 

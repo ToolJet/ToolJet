@@ -8,6 +8,7 @@ import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
+import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -26,7 +27,20 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const constructOptions = () => {
     const labels = resolveReferences(component?.component?.definition?.properties?.display_values?.value, currentState);
     const values = resolveReferences(component?.component?.definition?.properties?.values?.value, currentState);
-    const _options = values?.map((value, index) => ({ value, label: labels?.[index] }));
+    const disabledOptions = resolveReferences(
+      component?.component?.definition?.properties?.optionDisable?.value,
+      currentState
+    );
+    const visibleOptions = resolveReferences(
+      component?.component?.definition?.properties?.optionVisibility?.value,
+      currentState
+    );
+    const _options = values?.map((value, index) => ({
+      value,
+      label: labels?.[index],
+      visible: visibleOptions?.[index],
+      isDisabled: disabledOptions?.[index],
+    }));
     return _options;
   };
 
@@ -52,14 +66,73 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       properties.push(key);
     }
   }
+
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
     ...draggableStyle,
   });
 
-  const handleDeleteOption = (item) => {
-    const _items = options.filter((option) => option.value !== item.value);
+  const updateAllOptionsParams = (items) => {
+    paramsUpdated([
+      {
+        param: { name: 'values' },
+        attr: 'value',
+        value: items.map((option) => option.value),
+        paramType: 'properties',
+      },
+      {
+        param: { name: 'display_values' },
+        attr: 'value',
+        value: items.map((option) => option.label),
+        paramType: 'properties',
+      },
+      {
+        param: { name: 'optionVisibility' },
+        attr: 'value',
+        value: items.map((option) => option.visible),
+        paramType: 'properties',
+      },
+      {
+        param: { name: 'optionDisable' },
+        attr: 'value',
+        value: items.map((option) => option.isDisabled),
+        paramType: 'properties',
+      },
+    ]);
+  };
+
+  const generateNewOptions = () => {
+    let found = false;
+    let label = '';
+    let currentNumber = options.length + 1;
+    let value = currentNumber;
+    while (!found) {
+      label = `option${currentNumber}`;
+      value = currentNumber.toString();
+      if (options.find((option) => option.label === label) === undefined) {
+        found = true;
+      }
+      currentNumber += 1;
+    }
+    return {
+      value,
+      label,
+      visible: true,
+      isDisabled: false,
+    };
+  };
+
+  const handleAddOption = () => {
+    let _option = generateNewOptions();
+    const _items = [...options, _option];
     setOptions(_items);
+    updateAllOptionsParams(_items);
+  };
+
+  const handleDeleteOption = (index) => {
+    const _items = options.filter((option, i) => i !== index);
+    setOptions(_items);
+    updateAllOptionsParams(_items);
   };
 
   const handleLabelChange = (label, index) => {
@@ -100,31 +173,12 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     );
   };
 
-  const handleMarkedAsDefaultChange = (value, index) => {
-    const _value = options[index]?.value;
-    setMarkedAsDefault(_value);
-    paramUpdated({ name: 'value' }, 'value', _value, 'properties');
-  };
-
   const reorderOptions = async (startIndex, endIndex) => {
     const result = [...options];
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
     setOptions(result);
-    paramsUpdated([
-      {
-        param: { name: 'values' },
-        attr: 'value',
-        value: result.map((option) => option.value),
-        paramType: 'properties',
-      },
-      {
-        param: { name: 'display_values' },
-        attr: 'value',
-        value: result.map((option) => option.label),
-        paramType: 'properties',
-      },
-    ]);
+    updateAllOptionsParams(result);
   };
 
   const onDragEnd = ({ source, destination }) => {
@@ -132,6 +186,53 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       return;
     }
     reorderOptions(source.index, destination.index);
+  };
+
+  const handleMarkedAsDefaultChange = (value, index) => {
+    const _value = options[index]?.value;
+    setMarkedAsDefault(_value);
+    paramUpdated({ name: 'value' }, 'value', _value, 'properties');
+  };
+
+  const handleVisibilityChange = (value, index) => {
+    const _value = resolveReferences(value, currentState);
+    const _options = options.map((option, i) => {
+      if (i === index) {
+        return {
+          ...option,
+          visible: _value,
+        };
+      }
+      return option;
+    });
+    setOptions(_options);
+
+    paramUpdated(
+      { name: 'optionVisibility' },
+      'value',
+      _options.map((option) => option.visible),
+      'properties'
+    );
+  };
+
+  const handleDisableChange = (value, index) => {
+    const _value = resolveReferences(value, currentState);
+    const _options = options.map((option, i) => {
+      if (i === index) {
+        return {
+          ...option,
+          isDisabled: _value,
+        };
+      }
+      return option;
+    });
+    setOptions(_options);
+    paramUpdated(
+      { name: 'optionDisable' },
+      'value',
+      _options.map((option) => option.isDisabled),
+      'properties'
+    );
   };
 
   useEffect(() => {
@@ -152,11 +253,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
-              //   placeholder={column.name}
+              placeholder={'Option label'}
               onChange={(value) => handleLabelChange(value, index)}
-              //   popOverCallback={(showing) => {
-              //     this.setColumnPopoverRootCloseBlocker('name', showing);
-              //   }}
             />
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
@@ -169,7 +267,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
-              //   placeholder={column.name}handleValueChange
+              placeholder={'Option value'}
               onChange={(value) => handleValueChange(value, index)}
             />
           </div>
@@ -183,8 +281,33 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               component={component}
               type={'toggle'}
               paramLabel={'Mark this as default option'}
-              //   placeholder={column.name}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
+            />
+          </div>
+          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={item.visible}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              component={component}
+              type={'toggle'}
+              paramLabel={'Visibility'}
+              onChange={(value) => handleVisibilityChange(value, index)}
+            />
+          </div>
+          <div className="field mb-2" data-cy={`input-and-label-column-name`}>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={item.isDisabled}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              component={component}
+              type={'toggle'}
+              paramLabel={'Disable'}
+              onChange={(value) => handleDisableChange(value, index)}
             />
           </div>
         </Popover.Body>
@@ -227,7 +350,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                 //   data-cy={`column-${resolvedItemName}`}
                                 enableActionsMenu
                                 onMenuOptionClick={(listItem, menuOptionLabel) => {
-                                  if (menuOptionLabel === 'Delete') handleDeleteOption(item);
+                                  if (menuOptionLabel === 'Delete') handleDeleteOption(index);
                                 }}
                                 darkMode={darkMode}
                                 menuActions={[
@@ -249,6 +372,9 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             )}
           </Droppable>
         </DragDropContext>
+        <AddNewButton onClick={handleAddOption} dataCy="add-new-dropdown-option" className="mt-0">
+          Add new option
+        </AddNewButton>
       </List>
     );
   };
