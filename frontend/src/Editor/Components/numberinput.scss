@@ -1,35 +1,15 @@
-.custom-number-input {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
 .arrow {
     cursor: pointer;
     user-select: none;
     position: absolute;
     font-size: 12px;
-    color: #555;
-    /* Customize arrow color */
-}
-
-.arrow.up {
-    top: 0;
-}
-
-.arrow.down {
-    bottom: 0;
 }
 
 .numberinput-label {
     white-space: nowrap;
-    /* Prevent text from wrapping to the next line */
     overflow: hidden;
-    /* Hide any content that overflows the box */
     text-overflow: ellipsis;
-    /* Display an ellipsis (...) to represent clipped text */
     max-width: 100%;
-    /* Set the maximum width of the container */
 }
 
 .input-number::-webkit-inner-spin-button,
@@ -39,7 +19,13 @@
 }
 
 .input-number {
-    -moz-appearance: textfield;
+    align-items: center;
+    -webkit-appearance: none !important;
+    /* Remove clear button on Safari */
+    -moz-appearance: textfield !important;
+    /* Remove clear button on Firefox */
+    appearance: none !important;
+    /* Remove clear button on modern browsers */
 }
 
 .numberinput-down-arrow {
