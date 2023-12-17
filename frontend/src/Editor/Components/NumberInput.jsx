@@ -230,8 +230,9 @@ export const NumberInput = function NumberInput({
 
   const renderInput = () => {
     const loaderStyle = {
-      right: alignment == 'top' ? `26px` : direction == 'left' ? `26px` : `${labelWidth + 23}px`,
+      right: alignment == 'top' ? `26px` : direction == 'left' ? `26px` : `${labelWidth + 26}px`,
       top: alignment == 'side' ? '' : `50%`,
+      transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
     };
 
     return (
@@ -278,11 +279,11 @@ export const NumberInput = function NumberInput({
                 left:
                   direction === 'right'
                     ? padding == 'default'
-                      ? '8px'
+                      ? '7px'
                       : '5px'
                     : defaultAlignment === 'top'
                     ? padding == 'default'
-                      ? '8px'
+                      ? '7px'
                       : '5px'
                     : `${labelWidth + 7}px`,
                 position: 'absolute',
@@ -291,7 +292,6 @@ export const NumberInput = function NumberInput({
                 }`,
                 transform: ' translateY(-50%)',
                 color: iconColor,
-                //backgroundColor: 'red',
               }}
               stroke={1.5}
             />
@@ -339,7 +339,7 @@ export const NumberInput = function NumberInput({
                 borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
                 borderBottom: darkMode ? '1px solid #313538' : '0.5px solid #D7D7D7',
                 borderTopRightRadius: borderRadius - 1,
-                backgroundColor: 'red',
+                backgroundColor: !darkMode ? 'white' : 'black',
               }}
               className="numberinput-up-arrow arrow"
               name="cheveronup"
@@ -365,7 +365,7 @@ export const NumberInput = function NumberInput({
                 borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
                 borderTop: darkMode ? '1px solid #313538' : '0.5px solid #D7D7D7',
                 borderBottomRightRadius: borderRadius - 1,
-                backgroundColor: 'red',
+                backgroundColor: !darkMode ? 'white' : 'black',
               }}
               width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
               className="numberinput-down-arrow arrow"

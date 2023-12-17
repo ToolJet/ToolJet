@@ -9,13 +9,13 @@ function index({ value, disabled, staticText, onInputChange }) {
         className="tj-input-element tj-text-xsm"
         value={value}
         placeholder="width"
-        id="youridhere"
+        id="labelId"
         disabled={disabled}
         onChange={(e) => {
           onInputChange(e);
         }}
       />
-      <label for="youridhere" className="static-value tj-text-xsm">
+      <label for="labelId" className="static-value tj-text-xsm">
         {staticText}
       </label>
     </div>

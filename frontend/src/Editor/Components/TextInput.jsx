@@ -62,14 +62,16 @@ export const TextInput = function TextInput({
       : '3px 5px 3px 5px',
   };
   const loaderStyle = {
-    right: direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : undefined,
-    top: `${defaultAlignment === 'top' ? (padding == 'none' ? '50%' : `calc(50% + 2px)`) : ''}`,
+    right:
+      direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : padding == 'default' ? '7px' : '5px',
+    top: `${defaultAlignment === 'top' ? '50%' : ''}`,
+    transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
   };
   useEffect(() => {
     if (labelRef.current) {
       const width = labelRef.current.offsetWidth;
       padding == 'default' ? setElementWidth(width + 17) : setElementWidth(width + 15);
-    } else setElementWidth(5);
+    } else padding == 'default' ? setElementWidth(7) : setElementWidth(5);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -234,11 +236,11 @@ export const TextInput = function TextInput({
               left:
                 direction === 'right'
                   ? padding == 'default'
-                    ? '8px'
+                    ? '7px'
                     : '5px'
                   : defaultAlignment === 'top'
                   ? padding == 'default'
-                    ? '8px'
+                    ? '7px'
                     : '5px'
                   : `${elementWidth}px`,
               position: 'absolute',
@@ -247,7 +249,6 @@ export const TextInput = function TextInput({
               }`,
               transform: ' translateY(-50%)',
               color: iconColor,
-              //backgroundColor: 'red',
             }}
             stroke={1.5}
           />

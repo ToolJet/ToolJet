@@ -142,7 +142,6 @@ import Cross from './Cross.jsx';
 import AlignRightinspector from './AlignRightinspector.jsx';
 import AlignLeftinspector from './AlignLeftinspector.jsx';
 const Icon = (props) => {
-  console.log('props--', props);
   switch (props.name) {
     case 'addrectangle':
       return <AddRectangle {...props} />;

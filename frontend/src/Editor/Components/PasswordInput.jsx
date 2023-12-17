@@ -65,15 +65,17 @@ export const PasswordInput = function PasswordInput({
       : '3px 24px 3px 5px',
   };
   const loaderStyle = {
-    right: direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : undefined,
-    top: `${defaultAlignment === 'top' ? `calc(50% + 2px)` : ''}`,
+    right:
+      direction === 'right' && defaultAlignment === 'side' ? `${elementWidth}px` : padding == 'default' ? '7px' : '5px',
+    top: `${defaultAlignment === 'top' ? `50%` : ''}`,
+    transform: alignment == 'top' && label?.length == 0 && 'translateY(-50%)',
   };
 
   useEffect(() => {
     if (labelRef.current) {
       const width = labelRef.current.offsetWidth;
       padding == 'default' ? setElementWidth(width + 17) : setElementWidth(width + 15);
-    } else setElementWidth(5);
+    } else padding == 'default' ? setElementWidth(7) : setElementWidth(5);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

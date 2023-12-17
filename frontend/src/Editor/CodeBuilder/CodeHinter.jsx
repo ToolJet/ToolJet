@@ -418,7 +418,6 @@ export function CodeHinter({
       >
         <div className={`col code-hinter-col`}>
           <div className="d-flex">
-            {/* <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div> */}
             <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
               <div
                 className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
