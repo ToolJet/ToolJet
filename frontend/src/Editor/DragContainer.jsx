@@ -408,8 +408,10 @@ export default function DragContainer({
                   let left = e.lastEvent.translate[0];
                   let top = e.lastEvent.translate[1];
                   const currentWidget = boxes.find(({ id }) => id === e.target.id)?.component?.component;
-                  const parentWidget = boxes.find(({ id }) => id === parentElem.id)?.component?.component;
-                  const restrictedWidgets = restrictedWidgetsObj[parentWidget];
+                  const parentWidget = parentElem
+                    ? boxes.find(({ id }) => id === parentElem.id)?.component?.component
+                    : undefined;
+                  const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
                   const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
                   if (parentElem && isParentChangeAllowed) {
                     left = left - parentElem.left * gridWidth;
@@ -497,6 +499,7 @@ export default function DragContainer({
               elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
               isDisplaySnapDigit={false}
               snapGridWidth={gridWidth}
+              bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
             />
 
             {removeDuplicates(list)
