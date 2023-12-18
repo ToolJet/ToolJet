@@ -8,8 +8,10 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
-import { isEmpty, throttle } from 'lodash';
+import _, { isEmpty, throttle } from 'lodash';
 import { useEditorStore } from './editorStore';
+import { shallow } from 'zustand/shallow';
+import { useCurrentStateStore } from './currentStateStore';
 
 const initialState = {
   dataQueries: [],
@@ -41,7 +43,11 @@ export const useDataQueriesStore = create(
 
           if (data.data_queries.length !== 0) {
             const queryConfirmationList = [];
+            const updatedQueries = {};
+            const currentQueries = useCurrentStateStore.getState().queries;
+
             data.data_queries.forEach(({ id, name, options }) => {
+              updatedQueries[name] = _.merge(currentQueries[name], { id: id });
               if (options && options?.requestConfirmation && options?.runOnPageLoad) {
                 queryConfirmationList.push({ queryId: id, queryName: name });
               }
@@ -50,6 +56,11 @@ export const useDataQueriesStore = create(
             if (queryConfirmationList.length !== 0) {
               useEditorStore.getState().actions.updateQueryConfirmationList(queryConfirmationList);
             }
+
+            useCurrentStateStore.getState().actions.setCurrentState({
+              ...useCurrentStateStore.getState(),
+              queries: updatedQueries,
+            });
           }
 
           // Compute query state to be added in the current state
@@ -349,7 +360,7 @@ const sortByAttribute = (data, sortBy, order) => {
   }
 };
 
-export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries);
+export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries, shallow);
 export const useDataQueriesActions = () => useDataQueriesStore((state) => state.actions);
-export const useQueryCreationLoading = () => useDataQueriesStore((state) => !!state.creatingQueryInProcessId);
-export const useQueryUpdationLoading = () => useDataQueriesStore((state) => state.isUpdatingQueryInProcess);
+export const useQueryCreationLoading = () => useDataQueriesStore((state) => !!state.creatingQueryInProcessId, shallow);
+export const useQueryUpdationLoading = () => useDataQueriesStore((state) => state.isUpdatingQueryInProcess, shallow);

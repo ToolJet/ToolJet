@@ -246,7 +246,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
                 </div>
               )}
             </div>
-            <label className="label label-success label-updated" data-cy="slug-error-label">
+            <label className="label label-success label-updated" data-cy="slug-success-label">
               {!slugProgress &&
               fields['slug'].value &&
               !fields['slug'].error &&

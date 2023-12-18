@@ -38,15 +38,16 @@ describe("Basic components", () => {
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
     cy.openApp();
-    cy.modifyCanvasSize(900, 900);
+    cy.modifyCanvasSize(1200, 900);
     cy.intercept("GET", "/api/comments/*").as("loadComments");
+    resizeQueryPanel(0);
   });
   afterEach(() => {
     cy.apiDeleteApp();
   });
 
   it("Should verify Toggle switch", () => {
-    cy.dragAndDropWidget("Toggle Switch", 200, 200);
+    cy.dragAndDropWidget("Toggle Switch", 300, 300);
     verifyComponent("toggleswitch1");
 
     cy.resizeWidget("toggleswitch1", 650, 400, false);
@@ -62,6 +63,7 @@ describe("Basic components", () => {
     ).should("have.text", "label");
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(1500);
     verifyComponent("toggleswitch2");
     cy.get(
       '[data-cy="draggable-widget-toggleswitch2"] > .form-check-label'
@@ -69,12 +71,13 @@ describe("Basic components", () => {
 
     cy.go("back");
     cy.waitForAppLoad();
+    resizeQueryPanel(0);
     deleteComponentAndVerify("toggleswitch2");
   });
 
   it("Should verify Checkbox", () => {
     resizeQueryPanel("0");
-    cy.dragAndDropWidget("Checkbox", 200, 200);
+    cy.dragAndDropWidget("Checkbox", 300, 300);
     // cy.resizeWidget("checkbox1", 50, 200,false);
     cy.forceClickOnCanvas();
     verifyComponent("checkbox1");
@@ -95,11 +98,12 @@ describe("Basic components", () => {
     verifyComponent("checkbox2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("checkbox2");
   });
 
   it("Should verify Radio Button", () => {
-    cy.dragAndDropWidget("Radio Button", 200, 200);
+    cy.dragAndDropWidget("Radio Button", 300, 300);
     // cy.resizeWidget("radiobutton1", 100, 200,false);
     cy.forceClickOnCanvas();
     verifyComponent("radiobutton1");
@@ -121,11 +125,12 @@ describe("Basic components", () => {
     verifyComponent("radiobutton2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("radiobutton2");
   });
   it("Should verify Dropdown", () => {
     resizeQueryPanel("0");
-    cy.dragAndDropWidget("Dropdown", 200, 200);
+    cy.dragAndDropWidget("Dropdown", 300, 300);
     cy.resizeWidget("dropdown1", 400, 500, false);
     cy.forceClickOnCanvas();
     verifyComponent("dropdown1");
@@ -146,11 +151,12 @@ describe("Basic components", () => {
     verifyComponent("dropdown2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("dropdown2");
   });
   //pending
   it("Should verify Rating", () => {
-    cy.dragAndDropWidget("Rating", 200, 200);
+    cy.dragAndDropWidget("Rating", 300, 300);
     cy.get('[data-cy="draggable-widget-starrating1"]').click({ force: true });
     cy.resizeWidget("starrating1", 400, 500, false);
     cy.forceClickOnCanvas();
@@ -172,6 +178,7 @@ describe("Basic components", () => {
     verifyComponent("starrating2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("starrating2");
   });
 
@@ -196,11 +203,12 @@ describe("Basic components", () => {
     verifyComponent("buttongroup2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("buttongroup2");
   });
 
   it("Should verify Calendar", () => {
-    cy.dragAndDropWidget("Calendar", 200, 200);
+    cy.dragAndDropWidget("Calendar", 300, 300);
     cy.get('[data-cy="draggable-widget-calendar1"]').click({ force: true });
     cy.forceClickOnCanvas();
     verifyComponent("calendar1");
@@ -215,11 +223,12 @@ describe("Basic components", () => {
     verifyComponent("calendar2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("calendar2");
   });
 
   it("Should verify Chart", () => {
-    cy.dragAndDropWidget("Chart", 200, 200);
+    cy.dragAndDropWidget("Chart", 300, 300);
     cy.get('[data-cy="draggable-widget-chart1"]').click({ force: true });
     verifyComponent("chart1");
 
@@ -240,6 +249,7 @@ describe("Basic components", () => {
     verifyComponent("chart2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("chart2");
   });
 
@@ -260,6 +270,7 @@ describe("Basic components", () => {
     verifyComponent("circularprogressbar2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("circularprogressbar2");
   });
 
@@ -280,6 +291,7 @@ describe("Basic components", () => {
     verifyComponent("codeeditor2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("codeeditor2");
   });
 
@@ -301,10 +313,11 @@ describe("Basic components", () => {
     verifyComponent("colorpicker2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("colorpicker2");
   });
   it("Should verify Custom Component", () => {
-    cy.dragAndDropWidget("Custom Component", 200, 200);
+    cy.dragAndDropWidget("Custom Component", 300, 300);
     // cy.get('[data-cy="draggable-widget-customcomponent1"]').click({
     //   force: true,
     // });
@@ -333,11 +346,12 @@ describe("Basic components", () => {
     verifyComponent("customcomponent2", ["Code"]);
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("customcomponent2");
   });
 
   it("Should verify Container", () => {
-    cy.dragAndDropWidget("Container", 200, 200);
+    cy.dragAndDropWidget("Container", 300, 300);
     cy.forceClickOnCanvas();
     verifyComponent("container1");
 
@@ -352,6 +366,7 @@ describe("Basic components", () => {
     verifyComponent("container2", ["Layout"]);
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("container2");
   });
 
@@ -373,6 +388,7 @@ describe("Basic components", () => {
     verifyComponent("daterangepicker2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("daterangepicker2");
   });
   // visible issue
@@ -395,7 +411,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Form", () => {
-    cy.dragAndDropWidget("Form", 200, 200);
+    cy.dragAndDropWidget("Form", 300, 300);
     verifyComponent("form1");
 
     cy.resizeWidget("form1", 650, 400, false);
@@ -409,11 +425,14 @@ describe("Basic components", () => {
     verifyComponent("form2");
 
     cy.go("back");
+    cy.waitForAppLoad();
+    cy.wait(1500);
+    resizeQueryPanel(0);
     deleteComponentAndVerify("form2");
   });
 
   it("Should verify HTML", () => {
-    cy.dragAndDropWidget("HTML Viewe", 200, 200, "HTML Viewer"); // search logic WIP
+    cy.dragAndDropWidget("HTML Viewe", 300, 300, "HTML Viewer"); // search logic WIP
     verifyComponent("html1");
 
     cy.resizeWidget("html1", 650, 400, false);
@@ -427,6 +446,7 @@ describe("Basic components", () => {
     verifyComponent("html2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("html2");
   });
 
@@ -447,7 +467,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Map", () => {
-    cy.dragAndDropWidget("Map", 200, 200);
+    cy.dragAndDropWidget("Map", 300, 300);
     cy.get("body").then(($body) => {
       if ($body.find(".dismissButton").length > 0) {
         cy.get(".dismissButton").click();
@@ -467,6 +487,7 @@ describe("Basic components", () => {
     verifyComponent("map2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("map2");
   });
 
@@ -475,7 +496,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify PDF", () => {
-    cy.dragAndDropWidget("PDF", 200, 200);
+    cy.dragAndDropWidget("PDF", 300, 300);
     verifyComponent("pdf1");
 
     cy.resizeWidget("pdf1", 650, 400, false);
@@ -489,6 +510,7 @@ describe("Basic components", () => {
     verifyComponent("pdf2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("pdf2");
   });
 
@@ -560,11 +582,10 @@ describe("Basic components", () => {
   });
 
   it("Should verify Tabs", () => {
-    cy.viewport(1200, 1300);
     resizeQueryPanel("0");
-    cy.dragAndDropWidget("Tabs", 200, 200);
+    cy.dragAndDropWidget("Tabs", 300, 300);
     verifyComponent("tabs1");
-    deleteComponentAndVerify("image1");
+    // deleteComponentAndVerify("image1");
 
     cy.resizeWidget("tabs1", 650, 400, false);
 
@@ -577,6 +598,7 @@ describe("Basic components", () => {
     verifyComponent("tabs2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("tabs2");
   });
 
