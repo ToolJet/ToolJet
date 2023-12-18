@@ -1863,36 +1863,22 @@ export const buildComponentMetaDefinition = (components = {}) => {
   for (const componentId in components) {
     const currentComponentData = components[componentId];
 
-    const componentMeta = componentTypes.find((comp) => currentComponentData.component.component === comp.component);
+    const componentMeta = _.cloneDeep(
+      componentTypes.find((comp) => currentComponentData.component.component === comp.component)
+    );
 
     const mergedDefinition = {
       ...componentMeta.definition,
 
-      properties: {
-        ...componentMeta.definition.properties,
-        ...currentComponentData?.component.definition.properties,
-      },
-
-      styles: {
-        ...componentMeta.definition.styles,
-        ...currentComponentData?.component.definition.styles,
-      },
-      generalStyles: {
-        ...componentMeta.definition.generalStyles,
-        ...currentComponentData?.component.definition.generalStyles,
-      },
-      validation: {
-        ...componentMeta.definition.validation,
-        ...currentComponentData?.component.definition.validation,
-      },
-      others: {
-        ...componentMeta.definition.others,
-        ...currentComponentData?.component.definition.others,
-      },
-      general: {
-        ...componentMeta.definition.general,
-        ...currentComponentData?.component.definition.general,
-      },
+      properties: _.merge(componentMeta.definition.properties, currentComponentData?.component.definition.properties),
+      styles: _.merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
+      generalStyles: _.merge(
+        componentMeta.definition.generalStyles,
+        currentComponentData?.component.definition.generalStyles
+      ),
+      validation: _.merge(componentMeta.definition.validation, currentComponentData?.component.definition.validation),
+      others: _.merge(componentMeta.definition.others, currentComponentData?.component.definition.others),
+      general: _.merge(componentMeta.definition.general, currentComponentData?.component.definition.general),
     };
 
     const mergedComponent = {
