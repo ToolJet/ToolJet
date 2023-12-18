@@ -24,9 +24,9 @@ Let's look into three types of licenses:
 If you are an existing user and wish to update your trial license key, follow these steps:
 
 1. Set up the instance and log in as a **[Super Admin](/docs/Enterprise/superadmin)**.
-2. Navigate to the instance settings page.
+2. Navigate to the Settings page.
 3. In the license key tab, make the necessary updates to the provided license key.
-4. Within the license tab of the instance settings page, you can access the limit tab, which displays the current status of available super admins, builders, and end users.
+4. Within the license tab of the Settings page, you can access the limit tab, which displays the current status of available super admins, builders, and end users.
 
 :::caution Note 
 The trial license key will be valid for 14 days. To fully enjoy ToolJet, we recommend upgrading to premium plans within this period. If you wish to upgrade from the trial to the business or enterprise edition, you can click the **Upgrade or Renew** button or contact our team via **[Slack](https://tooljet.com/slack)**. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still upgrade to any of our premium plans and enjoy the benefits of ToolJet.
@@ -65,9 +65,9 @@ The business license key will be valid for 3 months only. You can renew it to co
 
 **To update the license key, follow these steps:**
 1. Log in as a **[Super Admin](/docs/Enterprise/superadmin)**, ensuring that you are on the correct instance URL.
-2. Go to the Instance settings page.
+2. Go to the Settings page.
 3. In the license key tab, update the provided license key.
-4. Within the license tab of the instance settings page, you can access the limit tab, which provides details about available super admins, builders, and end users.
+4. Within the license tab of the Settings page, you can access the limit tab, which provides details about available super admins, builders, and end users.
 
 :::info Note
 As a super admin, you can conveniently view the remaining days of your enterprise edition period on the dashboard. (Refer to screenshots below)
@@ -101,7 +101,7 @@ If your business or enterprise edition license key is nearing expiration, please
 **Ref: Screenshot addressing upgrade/renew CTAs. Note that there are a couple of other pages which will display banners or CTAs, from where you can upgrade/renew.**
 
 ### 2) What is the duration of my license's validity?
-If you have an active license, you can find its validity period in the instance settings. Generally, the duration of your license varies based on the type:
+If you have an active license, you can find its validity period in the Settings. Generally, the duration of your license varies based on the type:
 - Trial licenses are valid for 14 days.
 - Business licenses are valid for 3 months.
 - Enterprise licenses can be customized to suit your needs.

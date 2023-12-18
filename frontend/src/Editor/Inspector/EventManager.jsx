@@ -14,7 +14,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
-import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
@@ -33,6 +33,7 @@ export const EventManager = ({
   hideEmptyEventsAlert,
   callerQueryId,
   customEventRefs = undefined,
+  component,
 }) => {
   const dataQueries = useDataQueriesStore(({ dataQueries = [] }) => {
     if (callerQueryId) {
@@ -41,12 +42,21 @@ export const EventManager = ({
     }
     return dataQueries;
   }, shallow);
-  const { apps, appId, events: allAppEvents } = useAppInfo();
+
+  const {
+    appId,
+    apps,
+    events: allAppEvents,
+  } = useAppDataStore((state) => ({
+    appId: state.appId,
+    apps: state.apps,
+    events: state.events,
+  }));
 
   const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
     useAppDataActions();
 
-  const currentEvents = allAppEvents.filter((event) => {
+  const currentEvents = allAppEvents?.filter((event) => {
     if (customEventRefs) {
       if (event.event.ref !== customEventRefs.ref) {
         return false;
@@ -396,6 +406,7 @@ export const EventManager = ({
                 initialValue={event.runOnlyIf}
                 onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
                 usePortalEditor={false}
+                component={component}
               />
             </div>
           </div>
@@ -418,6 +429,7 @@ export const EventManager = ({
                       initialValue={event.message}
                       onChange={(value) => handlerChanged(index, 'message', value)}
                       usePortalEditor={false}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -450,6 +462,7 @@ export const EventManager = ({
                   initialValue={event.url}
                   onChange={(value) => handlerChanged(index, 'url', value)}
                   usePortalEditor={false}
+                  component={component}
                 />
               </div>
             )}
@@ -514,6 +527,7 @@ export const EventManager = ({
                   initialValue={event.contentToCopy}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
                   usePortalEditor={false}
+                  component={component}
                 />
               </div>
             )}
@@ -569,6 +583,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
                       usePortalEditor={false}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -581,6 +596,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
                       usePortalEditor={false}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -618,6 +634,7 @@ export const EventManager = ({
                       initialValue={event.fileName}
                       onChange={(value) => handlerChanged(index, 'fileName', value)}
                       enablePreview={true}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -629,6 +646,7 @@ export const EventManager = ({
                       initialValue={event.data}
                       onChange={(value) => handlerChanged(index, 'data', value)}
                       enablePreview={true}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -663,6 +681,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'pageIndex', value)}
                       enablePreview={true}
                       usePortalEditor={false}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -679,6 +698,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
                       cyLabel={`key`}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -691,6 +711,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
                       cyLabel={`variable`}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -706,6 +727,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -722,6 +744,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
                       cyLabel={`key`}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -734,6 +757,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
                       cyLabel={`variable`}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -750,6 +774,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
                       cyLabel={`key`}
+                      component={component}
                     />
                   </div>
                 </div>
@@ -846,7 +871,8 @@ export const EventManager = ({
                             enablePreview={true}
                             type={param?.type}
                             fieldMeta={{ options: param?.options }}
-                            cyLabel={param?.displayName}
+                            cyLabel={param.displayName}
+                            component={component}
                           />
                         </div>
                       )}
@@ -862,6 +888,7 @@ export const EventManager = ({
                   initialValue={event.debounce}
                   onChange={(value) => handlerChanged(index, 'debounce', value)}
                   usePortalEditor={false}
+                  component={component}
                 />
               </div>
             </div>
