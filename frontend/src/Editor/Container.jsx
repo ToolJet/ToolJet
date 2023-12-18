@@ -439,6 +439,7 @@ export const Container = ({
       // },
     };
     setBoxes(newBoxes);
+    updateCanvasHeight(newBoxes);
   }
 
   const paramUpdated = useCallback(
