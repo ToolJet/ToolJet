@@ -380,6 +380,7 @@ export default function DragContainer({
                 setDraggedTarget(e.target.id);
                 setIsDragging(true);
               }}
+              // linePadding={10}
               onDragEnd={(e) => {
                 console.log('onDragEnd', e);
                 try {
@@ -559,13 +560,16 @@ export default function DragContainer({
                       let draggedOverElemId = i.parent;
                       if (document.elementFromPoint(e.clientX, e.clientY)) {
                         const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                        const draggedOverElem = targetElems.find(
-                          (ele) =>
+                        const draggedOverElem = targetElems.find((ele) => {
+                          const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
+                          if (isOwnChild) return false;
+                          return (
                             ele.id !== e.target.id &&
                             (ele.classList.contains('target') ||
                               ele.classList.contains('nested-target') ||
                               ele.classList.contains('drag-container-parent'))
-                        );
+                          );
+                        });
                         setDragTarget(draggedOverElem?.id);
                         draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
                         console.log('draggedOverElem', draggedOverElem, draggedOverElemId);
