@@ -4,21 +4,90 @@ import _, { isEmpty } from 'lodash';
 import React, { useState, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import * as Icons from '@tabler/icons-react';
-import { CustomMenuList } from './Table/SelectComponent';
-import { Checkbox } from '@/_ui/CheckBox';
-import { FormCheck } from 'react-bootstrap';
-import { useMeasure } from 'react-use';
-const { ValueContainer, SingleValue, Placeholder, MultiValue } = components;
+import { FormCheck, OverlayTrigger, Popover } from 'react-bootstrap';
+const { ValueContainer, Placeholder, MenuList, Option } = components;
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import './multiselect.scss';
+import RemoveCircle from '@/_ui/Icon/bulkIcons/RemoveCircle';
 
-const CustomValueContainer = ({ children, ...props }) => {
+const SHOW_MORE_WIDTH = 40;
+const ICON_WIDTH = 16;
+
+const CustomMenuList = ({ selectProps, ...props }) => {
+  const {
+    onInputChange,
+    inputValue,
+    onMenuInputFocus,
+    showAllOption,
+    isSelectAllSelected,
+    setIsSelectAllSelected,
+    setSelected,
+  } = selectProps;
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelected(props.options);
+    } else {
+      setSelected([]);
+    }
+    setIsSelectAllSelected(e.target.checked);
+  };
+  return (
+    <div className="multiselect-custom-menu-list" onClick={(e) => e.stopPropagation()}>
+      <div className="table-select-column-type-search-box-wrapper ">
+        {!inputValue && (
+          <span className="">
+            <SolidIcon name="search" width="14" />
+          </span>
+        )}
+        <input
+          autoCorrect="off"
+          autoComplete="off"
+          spellCheck="false"
+          type="text"
+          value={inputValue}
+          onChange={(e) =>
+            onInputChange(e.currentTarget.value, {
+              action: 'input-change',
+            })
+          }
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.target.focus();
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+            e.target.focus();
+          }}
+          onFocus={onMenuInputFocus}
+          placeholder="Search..."
+          className="table-select-column-type-search-box"
+        />
+      </div>
+      {showAllOption && (
+        <div className="multiselect-custom-menulist-select-all">
+          <FormCheck checked={isSelectAllSelected} onChange={handleSelectAll} />
+          <span style={{ marginLeft: '4px' }}>Select all</span>
+        </div>
+      )}
+      <MenuList {...props} selectProps={selectProps} />
+    </div>
+  );
+};
+
+const CustomValueContainer = ({ ...props }) => {
   const selectProps = props.selectProps;
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[selectProps?.icon] == undefined ? Icons['IconHome2'] : Icons[selectProps?.icon];
   const showNoRemainingOpt = props.getValue().length - selectProps.visibleValues.length;
+  const remainingOptions = props.getValue().slice(-showNoRemainingOpt);
+  const removeOption = (option, index) => {
+    const _val = props.getValue().filter((opt, i) => opt.label !== option.label && i !== index);
+    selectProps.setSelected(_val);
+  };
   return (
     <ValueContainer {...props}>
-      <span ref={selectProps.containerRef} className="d-flex w-full">
+      <span ref={selectProps.containerRef} className="d-flex w-full align-items-center">
         {selectProps?.doShowIcon && (
           <IconElement
             style={{
@@ -33,15 +102,53 @@ const CustomValueContainer = ({ children, ...props }) => {
             {selectProps.placeholder}
           </Placeholder>
         ) : (
-          <span className="d-flex">
+          // <MultiValueContainer {...props} selectProps={selectProps} />
+          <span className="d-flex" {...props}>
             {selectProps?.visibleValues.map((element, index) => (
               <div className="value-container-selected-option" key={index}>
                 {element.label}
+                <span
+                  className="value-container-selected-option-delete-icon"
+                  onClick={() => removeOption(element, index)}
+                >
+                  <RemoveCircle width="20" />
+                </span>
               </div>
             ))}
-            {showNoRemainingOpt !== 0 && (
-              <div className="value-container-selected-option">{`+${showNoRemainingOpt}`}</div>
-            )}
+            <OverlayTrigger
+              trigger={'click'}
+              placement={'bottom-start'}
+              // defaultShow
+              rootClose={true}
+              // show={showActionsMenu}
+              // onToggle={(show) => setShowActionsMenu(show)}
+              overlay={
+                <Popover id="l" className={''}>
+                  <Popover.Body
+                    bsPrefix="list-item-popover-body"
+                    className={`list-item-popover-body value-container-selected-option-popover`}
+                  >
+                    {remainingOptions.map((option) => (
+                      <div className="value-container-selected-option" key={option.label}>
+                        {option.label}
+                        <span
+                          className="value-container-selected-option-delete-icon"
+                          // onClick={() => removeOption(element, index)}
+                        >
+                          <RemoveCircle width="20" />
+                        </span>
+                      </div>
+                    ))}
+                  </Popover.Body>
+                </Popover>
+              }
+            >
+              <div>
+                {showNoRemainingOpt !== 0 && (
+                  <div className="value-container-selected-option">{`+${showNoRemainingOpt}`}</div>
+                )}
+              </div>
+            </OverlayTrigger>
           </span>
         )}
       </span>
@@ -49,14 +156,14 @@ const CustomValueContainer = ({ children, ...props }) => {
   );
 };
 
-const Option = (props) => {
+const CustomOption = (props) => {
   return (
-    <components.Option {...props}>
+    <Option {...props}>
       <div className="d-flex">
         <FormCheck checked={props.isSelected} />
         <span style={{ marginLeft: '4px' }}>{props.label}</span>
       </div>
-    </components.Option>
+    </Option>
   );
 };
 
@@ -103,19 +210,19 @@ export const Multiselect = function Multiselect({
     errTextColor,
   } = styles;
   const [selected, setSelected] = useState([]);
-  const [searched, setSearched] = useState('');
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
-  const ref1 = React.useRef(null);
+  const multiselectRef = React.useRef(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const validationData = validate(selected);
   const { isValid, validationError } = validationData;
-  const ref = React.useRef(null);
+  const valueContainerRef = React.useRef(null);
   const [visibleElements, setVisibleElements] = useState([]);
   const [showMore, setShowMore] = useState(false);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
+  const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -127,11 +234,11 @@ export const Multiselect = function Multiselect({
 
   useEffect(() => {
     const updateVisibleElements = () => {
-      if (!isEmpty(ref.current)) {
-        const containerWidth = ref.current.clientWidth;
+      if (!isEmpty(valueContainerRef.current)) {
+        const containerWidth =
+          valueContainerRef.current.clientWidth - (iconVisibility ? ICON_WIDTH + SHOW_MORE_WIDTH : SHOW_MORE_WIDTH);
         const elementWidth = 54;
         const maxVisibleElements = Math.floor(containerWidth / elementWidth);
-        // console.log(containerWidth, 'containerWidth', maxVisibleElements);
         setVisibleElements(selected.slice(0, maxVisibleElements));
         setShowMore(selected.length > maxVisibleElements);
       }
@@ -270,7 +377,10 @@ export const Multiselect = function Multiselect({
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (ref1.current && !ref1.current.contains(event.target)) {
+      if (multiselectRef.current && !multiselectRef.current.contains(event.target)) {
+        if (dropdownOpen) {
+          fireEvent('onBlur');
+        }
         setDropdownOpen(false);
       }
     };
@@ -278,7 +388,16 @@ export const Multiselect = function Multiselect({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [dropdownOpen]);
+
+  // Handle Select all logic
+  useEffect(() => {
+    if (selectOptions.length === selected.length) {
+      setIsSelectAllSelected(true);
+    } else {
+      setIsSelectAllSelected(false);
+    }
+  }, [selectOptions, selected]);
 
   const customStyles = {
     control: (provided, state) => {
@@ -394,7 +513,7 @@ export const Multiselect = function Multiselect({
             <span style={{ color: '#DB4324', marginLeft: '1px' }}>{isMandatory && '*'}</span>
           </label>
         </div>
-        <div className="col px-0 h-100" ref={ref1}>
+        <div className="col px-0 h-100" ref={multiselectRef}>
           <Select
             isDisabled={isDropdownDisabled}
             value={selected}
@@ -408,26 +527,32 @@ export const Multiselect = function Multiselect({
               onComponentClick(event, component, id);
             }}
             menuIsOpen={dropdownOpen}
-            onBlur={() => setDropdownOpen(false)}
             menuPortalTarget={document.body}
             placeholder={placeholder}
             components={{
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
-              Option,
-              Input: () => null,
+              Option: CustomOption,
             }}
             isClearable
             isMulti
             hideSelectedOptions={false}
             closeMenuOnSelect={false}
+            onMenuOpen={() => {
+              fireEvent('onFocus');
+              setDropdownOpen(true);
+            }}
+            // select props
             icon={icon}
             doShowIcon={iconVisibility}
-            onMenuOpen={() => setDropdownOpen(true)}
-            containerRef={ref}
+            containerRef={valueContainerRef}
             visibleValues={visibleElements}
             showMore={showMore}
             setShowMore={setShowMore}
+            showAllOption={showAllOption}
+            isSelectAllSelected={isSelectAllSelected}
+            setIsSelectAllSelected={setIsSelectAllSelected}
+            setSelected={setSelected}
           />
         </div>
       </div>
