@@ -43,13 +43,19 @@ const CustomValueContainer = ({ children, ...props }) => {
 };
 
 const Option = (props) => {
+  // Hack around https://github.com/JedWatson/react-select/pull/3705
+  const firstOption = props.options[0];
+  const isFirstOption = props.label === firstOption.label;
   return (
     <components.Option {...props}>
       <div className="d-flex justify-content-between">
-        <span>{props.label}</span>
+        <span style={{ color: props.isDisabled ? '#889096' : 'unset' }}>{props.label}</span>
         {props.isSelected && (
           <span>
-            <CheckMark width={'20'} fill={props.isFocused ? '#FFFFFF' : '#3E63DD'} />
+            <CheckMark
+              width={'20'}
+              fill={isFirstOption && props.isFocused ? '#3E63DD' : props.isFocused ? '#FFFFFF' : '#3E63DD'}
+            />
           </span>
         )}
       </div>
@@ -107,6 +113,7 @@ export const DropDown = function DropDown({
   const validationData = validate(currentValue);
   const { isValid, validationError } = validationData;
   const ref = React.useRef(null);
+  const selectref = React.useRef(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
@@ -229,7 +236,6 @@ export const DropDown = function DropDown({
   }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
 
   useEffect(() => {
-    setExposedVariable('options', selectOptions);
     setExposedVariable('isVisible', properties.visibility);
     setExposedVariable('isLoading', dropdownLoadingState);
     setExposedVariable('isDisabled', disabledState);
@@ -250,6 +256,11 @@ export const DropDown = function DropDown({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory]);
+
+  useEffect(() => {
+    // console.log('Yes');
+    // setExposedVariable('options', selectOptions);
+  }, [selectOptions]);
 
   function hasVisibleFalse(value) {
     for (let i = 0; i < schema?.length; i++) {
@@ -321,6 +332,7 @@ export const DropDown = function DropDown({
     option: (provided, state) => ({
       ...provided,
       backgroundColor: 'white',
+      // backgroundColor: state.isFocused && !state.isSelected ? 'transparent' : 'white',
       color: '#11181C',
       '&:hover': {
         backgroundColor: '#3E63DD',
@@ -385,6 +397,7 @@ export const DropDown = function DropDown({
         </div>
         <div className="w-100 px-0 h-100" ref={ref}>
           <Select
+            ref={selectref}
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {

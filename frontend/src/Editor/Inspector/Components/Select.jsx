@@ -9,6 +9,10 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { resolveReferences } from '@/_helpers/utils';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
+import ListGroup from 'react-bootstrap/ListGroup';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SortableList from '@/_components/SortableList';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -52,6 +56,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const [options, setOptions] = useState([]);
   const [markedAsDefault, setMarkedAsDefault] = useState(_markedAsDefault);
+  const [hoveredOption, setHoveredOption] = useState(false);
   const validations = Object.keys(componentMeta.validation || {});
   let properties = [];
   let additionalActions = [];
@@ -72,30 +77,30 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     ...draggableStyle,
   });
 
-  const updateAllOptionsParams = (items) => {
+  const updateAllOptionsParams = (options) => {
     paramsUpdated([
       {
         param: { name: 'values' },
         attr: 'value',
-        value: items.map((option) => option.value),
+        value: options.map((option) => option.value),
         paramType: 'properties',
       },
       {
         param: { name: 'display_values' },
         attr: 'value',
-        value: items.map((option) => option.label),
+        value: options.map((option) => option.label),
         paramType: 'properties',
       },
       {
         param: { name: 'optionVisibility' },
         attr: 'value',
-        value: items.map((option) => option.visible),
+        value: options.map((option) => option.visible),
         paramType: 'properties',
       },
       {
         param: { name: 'optionDisable' },
         attr: 'value',
-        value: items.map((option) => option.isDisabled),
+        value: options.map((option) => option.isDisabled),
         paramType: 'properties',
       },
     ]);
@@ -189,7 +194,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const handleMarkedAsDefaultChange = (value, index) => {
-    const _value = options[index]?.value;
+    const isMarkedAsDefault = resolveReferences(value, currentState);
+    const _value = isMarkedAsDefault ? options[index]?.value : '';
     setMarkedAsDefault(_value);
     paramUpdated({ name: 'value' }, 'value', _value, 'properties');
   };
@@ -344,22 +350,36 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             overlay={_renderOverlay(item, index)}
                           >
                             <div key={item.value}>
-                              <List.Item
-                                isDraggable={true}
-                                primaryText={item.label}
-                                //   data-cy={`column-${resolvedItemName}`}
-                                enableActionsMenu
-                                onMenuOptionClick={(listItem, menuOptionLabel) => {
-                                  if (menuOptionLabel === 'Delete') handleDeleteOption(index);
-                                }}
-                                darkMode={darkMode}
-                                menuActions={[
-                                  {
-                                    label: 'Delete',
-                                    icon: '',
-                                  },
-                                ]}
-                              />
+                              <ListGroup.Item
+                                style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
+                                onMouseEnter={() => setHoveredOption(item.value)}
+                                onMouseLeave={() => setHoveredOption('')}
+                                {...restProps}
+                              >
+                                <div className="row">
+                                  <div className="col-auto d-flex align-items-center">
+                                    <SortableList.DragHandle show />
+                                  </div>
+                                  <div className="col text-truncate cursor-pointer" style={{ paddingLeft: '8px' }}>
+                                    {item.label}
+                                  </div>
+                                  <div className="col-auto">
+                                    <span
+                                      onClick={() => {
+                                        handleDeleteOption(index);
+                                      }}
+                                    >
+                                      {item.value === hoveredOption && (
+                                        <ButtonSolid variant="tertiary" size="xs" className={'list-menu-option-btn'}>
+                                          <span style={{ border: '1px solid #E54D2E' }}>
+                                            <Trash fill={'#E54D2E'} width={'16'} />
+                                          </span>
+                                        </ButtonSolid>
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+                              </ListGroup.Item>
                             </div>
                           </OverlayTrigger>
                         </div>
