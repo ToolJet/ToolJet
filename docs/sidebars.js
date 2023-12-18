@@ -218,6 +218,7 @@ const sidebars = {
       'items': [
         'workflows/overview',
         'workflows/nodes',
+        'workflows/workflow-triggers',
         'workflows/permissions',
         'workflows/logs',
       ],
