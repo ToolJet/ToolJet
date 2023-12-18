@@ -5,6 +5,8 @@ import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
+import { AllComponents } from '@/Editor/Box';
+const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'DropDown', 'NumberInput', 'PasswordInput'];
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -74,8 +76,10 @@ export const baseComponentProperties = (
     Properties: [],
     Events: [],
     Validation: [],
+    'Additional Actions': Object.keys(AllComponents).filter(
+      (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
+    ),
     General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput'],
-    'Additional Actions': [],
     Layout: [],
   };
   if (component.component.component === 'Listview') {

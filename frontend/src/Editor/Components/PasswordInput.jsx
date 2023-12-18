@@ -228,6 +228,7 @@ export const PasswordInput = function PasswordInput({
               overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
               textOverflow: 'ellipsis', // Display ellipsis for overflowed content
               fontWeight: 500,
+              textAlign: direction == 'right' ? 'right' : 'left',
             }}
           >
             {label}

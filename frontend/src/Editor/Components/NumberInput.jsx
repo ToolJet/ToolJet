@@ -264,6 +264,7 @@ export const NumberInput = function NumberInput({
                 overflow: label?.length > 18 && 'hidden', // Hide any content that overflows the box
                 textOverflow: 'ellipsis', // Display ellipsis for overflowed content
                 fontWeight: 500,
+                textAlign: direction == 'right' ? 'right' : 'left',
               }}
             >
               {label}
@@ -328,9 +329,7 @@ export const NumberInput = function NumberInput({
                       ? '2px'
                       : '0px'
                     : alignment == 'side' && direction === 'right'
-                    ? padding == 'default'
-                      ? `${labelWidth - 2}px`
-                      : `${labelWidth}px`
+                    ? `${labelWidth + 2}px`
                     : padding == 'default'
                     ? '3px'
                     : '1px',
@@ -353,9 +352,7 @@ export const NumberInput = function NumberInput({
                       ? '2px'
                       : '0px'
                     : alignment == 'side' && direction === 'right'
-                    ? padding == 'default'
-                      ? `${labelWidth - 2}px`
-                      : `${labelWidth}px`
+                    ? `${labelWidth + 2}px`
                     : padding == 'default'
                     ? '3px'
                     : '1px',

@@ -1314,7 +1314,7 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'code',
+        type: 'input',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',
@@ -1845,7 +1845,7 @@ export const widgets = [
         section: 'additionalActions',
       },
       tooltip: {
-        type: 'code',
+        type: 'input',
         displayName: 'Tooltip',
         validation: { schema: { type: 'string' } },
         section: 'additionalActions',

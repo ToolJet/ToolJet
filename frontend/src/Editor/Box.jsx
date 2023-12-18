@@ -68,9 +68,8 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import WidgetIcon from '@/../assets/images/icons/widgets';
 
-const AllComponents = {
+export const AllComponents = {
   Button,
   Image,
   Text,
