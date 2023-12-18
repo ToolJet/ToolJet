@@ -29,7 +29,7 @@ export const BoxDragPreview = memo(function BoxDragPreview({ item, canvasWidth }
   return (
     <div
       className="resizer-active draggable-box"
-      style={{ height, width: (width * canvasWidth) / 24, border: 'solid 1px rgb(70, 165, 253)', padding: '2px' }}
+      style={{ height, width: (width * canvasWidth) / 43, border: 'solid 1px rgb(70, 165, 253)', padding: '2px' }}
     >
       <div
         style={{

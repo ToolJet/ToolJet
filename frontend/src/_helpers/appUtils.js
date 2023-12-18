@@ -1634,9 +1634,7 @@ export const addNewWidgetToTheEditor = (
   const componentData = _.cloneDeep(componentMetaData);
   const noOfGrid = useGridStore.getState().noOfGrid;
 
-  const defaultWidth = isInSubContainer
-    ? (componentMetaData.defaultSize.width * 100) / noOfGrid
-    : componentMetaData.defaultSize.width;
+  const defaultWidth = componentMetaData.defaultSize.width;
   const defaultHeight = componentMetaData.defaultSize.height;
 
   componentData.name = computeComponentName(componentData.component, currentComponents);
