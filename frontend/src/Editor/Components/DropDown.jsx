@@ -1,11 +1,11 @@
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import _ from 'lodash';
 import React, { useState, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
-import { CustomMenuList } from './Table/SelectComponent';
 import * as Icons from '@tabler/icons-react';
 import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
+import { CustomMenuList } from './Table/SelectComponent';
+
 const { ValueContainer, SingleValue, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
@@ -43,13 +43,19 @@ const CustomValueContainer = ({ children, ...props }) => {
 };
 
 const Option = (props) => {
+  // Hack around https://github.com/JedWatson/react-select/pull/3705
+  const firstOption = props.options[0];
+  const isFirstOption = props.label === firstOption.label;
   return (
     <components.Option {...props}>
       <div className="d-flex justify-content-between">
-        <span>{props.label}</span>
+        <span style={{ color: props.isDisabled ? '#889096' : 'unset' }}>{props.label}</span>
         {props.isSelected && (
           <span>
-            <CheckMark width={'20'} fill={props.isFocused ? '#FFFFFF' : '#3E63DD'} />
+            <CheckMark
+              width={'20'}
+              fill={isFirstOption && props.isFocused ? '#3E63DD' : props.isFocused ? '#FFFFFF' : '#3E63DD'}
+            />
           </span>
         )}
       </div>
@@ -70,6 +76,7 @@ export const DropDown = function DropDown({
   component,
   exposedVariables,
   dataCy,
+  adjustHeightBasedOnAlignment,
 }) {
   let {
     label,
@@ -107,10 +114,12 @@ export const DropDown = function DropDown({
   const validationData = validate(currentValue);
   const { isValid, validationError } = validationData;
   const ref = React.useRef(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const selectref = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
+  const [isFocused, setIsFocused] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -229,7 +238,6 @@ export const DropDown = function DropDown({
   }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
 
   useEffect(() => {
-    setExposedVariable('options', selectOptions);
     setExposedVariable('isVisible', properties.visibility);
     setExposedVariable('isLoading', dropdownLoadingState);
     setExposedVariable('isDisabled', disabledState);
@@ -251,6 +259,12 @@ export const DropDown = function DropDown({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory]);
 
+  useEffect(() => {
+    if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
+    else adjustHeightBasedOnAlignment(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alignment, label]);
+
   function hasVisibleFalse(value) {
     for (let i = 0; i < schema?.length; i++) {
       if (schema[i].value === value && schema[i].visible === false) {
@@ -262,6 +276,7 @@ export const DropDown = function DropDown({
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
+      setInputValue(searchText);
       setExposedVariable('searchText', searchText);
       fireEvent('onSearchTextChanged');
     }
@@ -321,23 +336,37 @@ export const DropDown = function DropDown({
     option: (provided, state) => ({
       ...provided,
       backgroundColor: 'white',
+      // backgroundColor: state.isFocused && !state.isSelected ? 'transparent' : 'white',
       color: '#11181C',
       '&:hover': {
         backgroundColor: '#3E63DD',
         color: 'white',
       },
     }),
+    menuList: (provided, state) => ({
+      ...provided,
+      padding: '2px',
+      // this is needed otherwise :active state doesn't look nice, gap is required
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px !important',
+      backgroundColor: 'var(--base) !important',
+      overflowY: 'auto',
+    }),
+  };
+
+  const onDomClick = (e) => {
+    let menu = ref.current.querySelector('.select__menu');
+    if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
+      setIsFocused(false);
+      setInputValue('');
+    }
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', onDomClick);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', onDomClick);
     };
   }, []);
 
@@ -385,6 +414,7 @@ export const DropDown = function DropDown({
         </div>
         <div className="w-100 px-0 h-100" ref={ref}>
           <Select
+            ref={selectref}
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
@@ -397,7 +427,7 @@ export const DropDown = function DropDown({
                 fireEvent('onSelect');
                 setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
-              setDropdownOpen(false);
+              setIsFocused(false);
             }}
             options={selectOptions}
             styles={customStyles}
@@ -408,9 +438,8 @@ export const DropDown = function DropDown({
               fireEvent('onFocus');
               onComponentClick(event, component, id);
             }}
-            menuIsOpen={dropdownOpen}
+            onMenuInputFocus={() => setIsFocused(true)}
             onBlur={() => {
-              setDropdownOpen(false);
               fireEvent('onBlur');
             }}
             menuPortalTarget={document.body}
@@ -419,12 +448,16 @@ export const DropDown = function DropDown({
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
               Option,
-              Input: () => null,
             }}
             isClearable
             icon={icon}
             doShowIcon={iconVisibility}
-            onMenuOpen={() => setDropdownOpen(true)}
+            isSearchable={false}
+            {...{
+              menuIsOpen: isFocused || undefined,
+              isFocused: isFocused || undefined,
+            }}
+            inputValue={inputValue}
           />
         </div>
       </div>
