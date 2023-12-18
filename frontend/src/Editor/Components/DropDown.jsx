@@ -8,47 +8,6 @@ import { CustomMenuList } from './Table/SelectComponent';
 
 const { ValueContainer, SingleValue, Placeholder } = components;
 
-// const CustomMenuList = ({ selectProps, ...props }) => {
-//   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
-
-//   return (
-//     <div onClick={(e) => console.log(e)}>
-//       <div className="table-select-column-type-search-box-wrapper">
-//         {!inputValue && (
-//           <span className="">
-//             <SolidIcon name="search" width="14" />
-//           </span>
-//         )}
-//         <input
-//           autoCorrect="off"
-//           autoComplete="off"
-//           spellCheck="false"
-//           type="text"
-//           value={inputValue}
-//           onChange={(e) =>
-//             onInputChange(e.currentTarget.value, {
-//               action: 'input-change',
-//             })
-//           }
-//           onClick={(e) => console.log(e)}
-//           onMouseDown={(e) => {
-//             e.stopPropagation();
-//             e.target.focus();
-//           }}
-//           onTouchEnd={(e) => {
-//             e.stopPropagation();
-//             e.target.focus();
-//           }}
-//           onFocus={onMenuInputFocus}
-//           placeholder="Search..."
-//           className="table-select-column-type-search-box"
-//         />
-//       </div>
-//       <MenuList {...props} selectProps={selectProps} />
-//     </div>
-//   );
-// };
-
 const CustomValueContainer = ({ children, ...props }) => {
   const selectProps = props.selectProps;
   // eslint-disable-next-line import/namespace
