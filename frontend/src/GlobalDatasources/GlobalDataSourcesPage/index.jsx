@@ -26,6 +26,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { admin } = authenticationService.currentSessionValue;
+  const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
   const [modalProps, setModalProps] = useState({
     backdrop: false,
     dialogClassName: `datasource-edit-modal`,
@@ -208,7 +209,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             datasources.map((dataSource) => {
               {
                 return (
-                  (dataSource.list.length > 0 || dataSource.type === 'Plugins') && (
+                  (dataSource.list.length > 0 || (!queryString && dataSource.type === 'Plugins')) && (
                     <>
                       <div id={dataSource.key} className="tj-text-md font-weight-500 tj-text">
                         {dataSource.type}
@@ -264,7 +265,15 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               <div className="tj-text-xsm font-weight-400 mt-2 mb-3">
                 Browse through plugins in marketplace to add them as a Data Source.{' '}
               </div>
-              <ButtonSolid onClick={() => navigate('/integrations')} style={{ margin: 'auto' }} variant="secondary">
+              <ButtonSolid
+                onClick={() => {
+                  marketplaceEnabled
+                    ? navigate('/integrations')
+                    : toast.error('Please enable marketplace to add plugins');
+                }}
+                style={{ margin: 'auto' }}
+                variant="secondary"
+              >
                 Add plugins
               </ButtonSolid>
             </>

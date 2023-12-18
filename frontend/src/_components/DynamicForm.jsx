@@ -204,6 +204,7 @@ const DynamicForm = ({
           isGDS,
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
+          encrypted: options?.[key]?.encrypted,
         };
       case 'toggle':
         return {
@@ -221,6 +222,7 @@ const DynamicForm = ({
           useMenuPortal: queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
+          encrypted: options?.[key]?.encrypted,
         };
 
       case 'checkbox-group':
@@ -248,6 +250,7 @@ const DynamicForm = ({
           currentState,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
+          encrypted: options?.[key]?.encrypted,
         };
       }
       case 'react-component-oauth-authentication':
@@ -275,6 +278,9 @@ const DynamicForm = ({
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           optionchanged,
           workspaceConstants: currentOrgEnvironmentConstants,
+          options,
+          optionsChanged,
+          selectedDataSource,
         };
       case 'react-component-google-sheets':
       case 'react-component-slack':
@@ -286,6 +292,7 @@ const DynamicForm = ({
           isSaving,
           selectedDataSource,
           workspaceConstants: currentOrgEnvironmentConstants,
+          optionsChanged,
         };
       case 'tooljetdb-operations':
         return {
