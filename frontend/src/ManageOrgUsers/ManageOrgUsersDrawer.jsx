@@ -7,7 +7,7 @@ import { authenticationService } from '../_services/authentication.service';
 const ManageOrgUsersDrawer = ({
   isInviteUsersDrawerOpen,
   setIsInviteUsersDrawerOpen,
-  createUser,
+  manageUser,
   changeNewUserOption,
   errors,
   fields,
@@ -15,6 +15,10 @@ const ManageOrgUsersDrawer = ({
   uploadingUsers,
   onCancel,
   inviteBulkUsers,
+  currentEditingUser,
+  userDrawerMode,
+  setUserValues,
+  creatingUser,
 }) => {
   const [groups, setGroups] = useState([]);
 
@@ -60,11 +64,14 @@ const ManageOrgUsersDrawer = ({
     <Drawer
       disableFocus={true}
       isOpen={isInviteUsersDrawerOpen}
-      onClose={() => setIsInviteUsersDrawerOpen(false)}
+      onClose={() => {
+        onCancel();
+        setIsInviteUsersDrawerOpen(false);
+      }}
       position="right"
     >
       <InviteUsersForm
-        createUser={createUser}
+        manageUser={manageUser}
         changeNewUserOption={changeNewUserOption}
         errors={errors}
         fields={fields}
@@ -74,6 +81,10 @@ const ManageOrgUsersDrawer = ({
         inviteBulkUsers={inviteBulkUsers}
         onClose={() => setIsInviteUsersDrawerOpen(false)}
         groups={groups}
+        currentEditingUser={currentEditingUser}
+        userDrawerMode={userDrawerMode}
+        setUserValues={setUserValues}
+        creatingUser={creatingUser}
       />
     </Drawer>
   );
