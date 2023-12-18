@@ -76,6 +76,7 @@ export const DropDown = function DropDown({
   component,
   exposedVariables,
   dataCy,
+  adjustHeightBasedOnAlignment,
 }) {
   let {
     label,
@@ -261,6 +262,12 @@ export const DropDown = function DropDown({
     // console.log('Yes');
     // setExposedVariable('options', selectOptions);
   }, [selectOptions]);
+
+  useEffect(() => {
+    if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
+    else adjustHeightBasedOnAlignment(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alignment, label]);
 
   function hasVisibleFalse(value) {
     for (let i = 0; i < schema?.length; i++) {
