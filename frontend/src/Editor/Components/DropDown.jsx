@@ -1,12 +1,53 @@
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import _ from 'lodash';
 import React, { useState, useEffect, useMemo } from 'react';
 import Select, { components } from 'react-select';
-import { CustomMenuList } from './Table/SelectComponent';
 import * as Icons from '@tabler/icons-react';
 import CheckMark from '@/_ui/Icon/solidIcons/CheckMark';
+import { CustomMenuList } from './Table/SelectComponent';
+
 const { ValueContainer, SingleValue, Placeholder } = components;
+
+// const CustomMenuList = ({ selectProps, ...props }) => {
+//   const { onInputChange, inputValue, onMenuInputFocus } = selectProps;
+
+//   return (
+//     <div onClick={(e) => console.log(e)}>
+//       <div className="table-select-column-type-search-box-wrapper">
+//         {!inputValue && (
+//           <span className="">
+//             <SolidIcon name="search" width="14" />
+//           </span>
+//         )}
+//         <input
+//           autoCorrect="off"
+//           autoComplete="off"
+//           spellCheck="false"
+//           type="text"
+//           value={inputValue}
+//           onChange={(e) =>
+//             onInputChange(e.currentTarget.value, {
+//               action: 'input-change',
+//             })
+//           }
+//           onClick={(e) => console.log(e)}
+//           onMouseDown={(e) => {
+//             e.stopPropagation();
+//             e.target.focus();
+//           }}
+//           onTouchEnd={(e) => {
+//             e.stopPropagation();
+//             e.target.focus();
+//           }}
+//           onFocus={onMenuInputFocus}
+//           placeholder="Search..."
+//           className="table-select-column-type-search-box"
+//         />
+//       </div>
+//       <MenuList {...props} selectProps={selectProps} />
+//     </div>
+//   );
+// };
 
 const CustomValueContainer = ({ children, ...props }) => {
   const selectProps = props.selectProps;
@@ -115,10 +156,11 @@ export const DropDown = function DropDown({
   const { isValid, validationError } = validationData;
   const ref = React.useRef(null);
   const selectref = React.useRef(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
+  const [isFocused, setIsFocused] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -259,11 +301,6 @@ export const DropDown = function DropDown({
   }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory]);
 
   useEffect(() => {
-    // console.log('Yes');
-    // setExposedVariable('options', selectOptions);
-  }, [selectOptions]);
-
-  useEffect(() => {
     if (alignment == 'top' && label) adjustHeightBasedOnAlignment(true);
     else adjustHeightBasedOnAlignment(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -280,6 +317,7 @@ export const DropDown = function DropDown({
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
+      setInputValue(searchText);
       setExposedVariable('searchText', searchText);
       fireEvent('onSearchTextChanged');
     }
@@ -346,17 +384,30 @@ export const DropDown = function DropDown({
         color: 'white',
       },
     }),
+    menuList: (provided, state) => ({
+      ...provided,
+      padding: '2px',
+      // this is needed otherwise :active state doesn't look nice, gap is required
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px !important',
+      backgroundColor: 'var(--base) !important',
+      overflowY: 'auto',
+    }),
+  };
+
+  const onDomClick = (e) => {
+    let menu = ref.current.querySelector('.select__menu');
+    if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
+      setIsFocused(false);
+      setInputValue('');
+    }
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', onDomClick);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', onDomClick);
     };
   }, []);
 
@@ -417,7 +468,7 @@ export const DropDown = function DropDown({
                 fireEvent('onSelect');
                 setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
-              setDropdownOpen(false);
+              setIsFocused(false);
             }}
             options={selectOptions}
             styles={customStyles}
@@ -428,9 +479,8 @@ export const DropDown = function DropDown({
               fireEvent('onFocus');
               onComponentClick(event, component, id);
             }}
-            menuIsOpen={dropdownOpen}
+            onMenuInputFocus={() => setIsFocused(true)}
             onBlur={() => {
-              setDropdownOpen(false);
               fireEvent('onBlur');
             }}
             menuPortalTarget={document.body}
@@ -439,12 +489,16 @@ export const DropDown = function DropDown({
               MenuList: CustomMenuList,
               ValueContainer: CustomValueContainer,
               Option,
-              Input: () => null,
             }}
             isClearable
             icon={icon}
             doShowIcon={iconVisibility}
-            onMenuOpen={() => setDropdownOpen(true)}
+            isSearchable={false}
+            {...{
+              menuIsOpen: isFocused || undefined,
+              isFocused: isFocused || undefined,
+            }}
+            inputValue={inputValue}
           />
         </div>
       </div>
