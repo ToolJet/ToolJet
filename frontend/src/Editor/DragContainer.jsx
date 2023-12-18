@@ -6,6 +6,7 @@ import './DragContainer.css';
 import DragContainerNested from './DragContainerNested';
 import _, { isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
+import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 const NO_OF_GRIDS = 43;
 
 const MouseCustomAble = {
@@ -388,14 +389,6 @@ export default function DragContainer({
               let draggedOverElemId;
               if (document.elementFromPoint(e.clientX, e.clientY)) {
                 const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                console.log(
-                  'draggedOverElem - list',
-                  targetElems.find(
-                    (ele) =>
-                      ele.id !== e.target.id &&
-                      (ele.classList.contains('target') || ele.classList.contains('nested-target'))
-                  )
-                );
                 const draggedOverElem = targetElems.find(
                   (ele) =>
                     ele.id !== e.target.id &&
@@ -408,7 +401,11 @@ export default function DragContainer({
               const parentElem = list.find(({ id }) => id === draggedOverElemId);
               let left = e.lastEvent.translate[0];
               let top = e.lastEvent.translate[1];
-              if (parentElem) {
+              const currentWidget = boxes.find(({ id }) => id === e.target.id)?.component?.component;
+              const parentWidget = boxes.find(({ id }) => id === parentElem.id)?.component?.component;
+              const restrictedWidgets = restrictedWidgetsObj[parentWidget];
+              const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
+              if (parentElem && isParentChangeAllowed) {
                 left = left - parentElem.left * gridWidth;
                 top = top - parentElem.top;
               } else {
@@ -416,12 +413,13 @@ export default function DragContainer({
                   Math.round(top / 10) * 10
                 }px)`;
               }
+
               onDrag([
                 {
                   id: e.target.id,
                   x: left,
                   y: Math.round(top / 10) * 10,
-                  parent: draggedOverElemId,
+                  parent: isParentChangeAllowed ? draggedOverElemId : undefined,
                 },
               ]);
             } catch (error) {
