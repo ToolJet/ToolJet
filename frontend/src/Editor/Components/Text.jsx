@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({ height, properties, styles, darkMode, setExposedVariable, dataCy }) {
+export const Text = function Text({
+  height,
+  properties,
+  styles,
+  darkMode,
+  setExposedVariable,
+  setExposedVariables,
+  dataCy,
+}) {
   let {
     textSize,
     textColor,
@@ -29,20 +37,22 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.visibility]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const text = computeText();
     setText(text);
     setExposedVariable('text', text);
 
-    setExposedVariable('setText', async function (text) {
-      setText(text);
-      setExposedVariable('text', text);
-    });
-
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
+    const exposedVariables = {
+      text: text,
+      setText: async function (text) {
+        setText(text);
+        setExposedVariable('text', text);
+      },
+      visibility: async function (value) {
+        setVisibility(value);
+      },
+    };
+    setExposedVariables(exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text, setText, setVisibility]);
@@ -75,7 +85,7 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
       {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text || '0') }}
         />
       )}
       {loadingState === true && (

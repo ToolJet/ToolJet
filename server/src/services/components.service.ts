@@ -70,7 +70,7 @@ export class ComponentsService {
       for (const componentId in componentDiff) {
         const { component } = componentDiff[componentId];
 
-        const componentData = await manager.findOne(Component, componentId);
+        const componentData: Component = await manager.findOne(Component, componentId);
 
         if (!componentData) {
           return {
@@ -87,9 +87,14 @@ export class ComponentsService {
           const columnsUpdated = Object.keys(updatedDefinition);
 
           const newComponentsData = columnsUpdated.reduce((acc, column) => {
-            const newColumnData = _.merge(
+            const newColumnData = _.mergeWith(
               componentData[column === 'others' ? 'displayPreferences' : column],
-              updatedDefinition[column]
+              updatedDefinition[column],
+              (objValue, srcValue) => {
+                if (componentData.type === 'Table' && _.isArray(objValue)) {
+                  return srcValue;
+                }
+              }
             );
 
             if (column === 'others') {
