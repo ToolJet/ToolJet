@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
 import _, { isEmpty, throttle } from 'lodash';
 import { useEditorStore } from './editorStore';
+import { shallow } from 'zustand/shallow';
 import { useCurrentStateStore } from './currentStateStore';
 
 const initialState = {
@@ -364,7 +365,7 @@ const sortByAttribute = (data, sortBy, order) => {
   }
 };
 
-export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries);
+export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries, shallow);
 export const useDataQueriesActions = () => useDataQueriesStore((state) => state.actions);
-export const useQueryCreationLoading = () => useDataQueriesStore((state) => !!state.creatingQueryInProcessId);
-export const useQueryUpdationLoading = () => useDataQueriesStore((state) => state.isUpdatingQueryInProcess);
+export const useQueryCreationLoading = () => useDataQueriesStore((state) => !!state.creatingQueryInProcessId, shallow);
+export const useQueryUpdationLoading = () => useDataQueriesStore((state) => state.isUpdatingQueryInProcess, shallow);
