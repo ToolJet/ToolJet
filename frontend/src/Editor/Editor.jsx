@@ -1405,6 +1405,7 @@ const EditorComponent = (props) => {
       variables: copyOfAppDefinition.pages[pageId]?.variables ?? {},
     };
 
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const globals = {
       ...currentState.globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
