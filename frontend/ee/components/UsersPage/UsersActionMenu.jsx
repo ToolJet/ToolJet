@@ -32,7 +32,7 @@ export default function UsersActionMenu({
                   closeMenu();
                   toggleEditUserDrawer();
                 }}
-                className="tj-text-xsm"
+                className="tj-text-xsm edit-user-btn"
                 variant="tertiary"
                 leftIcon="editable"
                 iconWidth="12"
@@ -50,7 +50,7 @@ export default function UsersActionMenu({
                   user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
                 }}
               >
-                {user.status === 'archived' ? 'Unarchive' : 'Archive'}
+                {user.status === 'archived' ? 'Unarchive user' : 'Archive user'}
               </ButtonSolid>
             </div>
           </Popover.Body>

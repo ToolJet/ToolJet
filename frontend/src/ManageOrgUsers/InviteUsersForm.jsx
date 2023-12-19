@@ -185,7 +185,9 @@ function InviteUsersForm({
                     data-cy="user-group-select"
                   >
                     <label className="form-label" data-cy="label-group-input-field">
-                      {t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
+                      {isEditing
+                        ? 'User groups'
+                        : t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
                     </label>
                     <Multiselect
                       value={selectedGroups}

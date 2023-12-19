@@ -11963,11 +11963,27 @@ tbody {
 }
 
 #popover-user-menu {
+
+  .popover-body {
+    padding: 0rem 0.8rem;
+    min-width: 160px;
+  }
+
   button {
     color: var(--slate12);
     border: none !important;
     &:hover {
       background: none !important;
+    }
+  }
+
+  .edit-user-btn {
+    svg {
+      fill: var(--slate9);
+
+      path {
+        fill: var(--slate9);
+      }
     }
   }
 
