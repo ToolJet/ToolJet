@@ -56,10 +56,22 @@ export const GlobalDatasources = (props) => {
     globalDatasourceService
       .getAll()
       .then((data) => {
-        const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
+        const orderedDataSources = data.data_sources
+          .map((ds) => {
+            if (ds.options && ds.options.connection_limit) {
+              return {
+                ...ds,
+                options: {
+                  ...ds.options,
+                  connectionLimit: ds.options.connection_limit,
+                },
+              };
+            }
+            return ds;
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
-
         if (!resetSelection && ds) {
           setEditing(true);
           setSelectedDataSource(ds);
