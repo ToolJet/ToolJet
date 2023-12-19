@@ -28,7 +28,6 @@ const MyCustomComponent = ({data, updateData, runQuery}) => {
 const Plot = createPlotlyComponent(Plotly);
 
     const barOnClick = ({points}) => {
-      	console.log('here--- ', points[0].label, points.length)
         if(points[0].label === "Pub ABC"){
             runQuery('switchTablePage')
         }
@@ -84,7 +83,6 @@ const MyCustomComponent = ({data, updateData, runQuery}) => { // function compon
 const Plot = createPlotlyComponent(Plotly); // create Plotly component
 
     const barOnClick = ({points}) => { // function to handle click event
-      	console.log('here--- ', points[0].label, points.length) // log the label of the bar
         if(points[0].label === "Pub ABC"){ // if the label is Pub ABC
             runQuery('switchTablePage') // call the runQuery function to trigger the switchTablePage query (you can pass any query)
         }
