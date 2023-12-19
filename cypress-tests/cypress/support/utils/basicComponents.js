@@ -28,7 +28,7 @@ export const deleteComponentAndVerify = (widgetName) => {
     });
   cy.verifyToastMessage(
     `[class=go3958317564]`,
-    "Component deleted! (⌘ + Z to undo)"
+    "Component deleted! (ctrl + Z to undo)"
   );
   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };

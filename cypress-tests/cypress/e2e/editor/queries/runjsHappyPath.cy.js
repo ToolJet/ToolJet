@@ -199,8 +199,10 @@ describe("RunJS", () => {
     addInputOnQueryField("runjs", "actions.logout()");
     query("run");
     cy.get('[data-cy="sign-in-header"]').should("be.visible");
+    cy.wait(500);
     cy.apiLogin();
     cy.openApp(
+      Cypress.env("workspaceId"),
       Cypress.env("appId"),
       '[data-cy="draggable-widget-modal1-launch-button"]'
     );
