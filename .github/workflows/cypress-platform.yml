@@ -47,10 +47,6 @@ jobs:
       - name: Install Krb5
         run: sudo apt-get install libkrb5-dev -y
 
-      - name: Install Node Dependencies
-        run: |
-          npm install --unsafe-perm
-
       - name: Set up Docker
         run: |
           sudo apt-get update
