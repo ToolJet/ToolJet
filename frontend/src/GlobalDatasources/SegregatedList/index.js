@@ -4,11 +4,11 @@ import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsav
 
 export const SegregatedList = ({ dataSources, activeDatasourceList, handleOnSelect }) => {
   const { handleActions } = useGlobalDatasourceUnsavedChanges();
-  const totalDataSources = dataSources.reduce((acc, filteredGroup) => [...acc, ...filteredGroup.list], []);
+  const totalDataSources = dataSources.reduce((acc, filteredGroup) => [...acc, ...filteredGroup.list], []).length;
   return (
     <>
       <div className="datasources-info tj-text-xsm datasource-list-header" data-cy="datasource-list-header">
-        All data sources {totalDataSources.length > 0 && `(${totalDataSources.length})`}
+        All data sources {totalDataSources > 0 && `(${totalDataSources})`}
       </div>
       {dataSources
         .filter((ds) => ds.list.length > 0 || ds.type === 'Plugins')

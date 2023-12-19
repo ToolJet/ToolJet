@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import OrgConstantVariablesPreviewBox from '../../_components/OrgConstantsVariablesResolver';
+import OrgConstantVariablesPreviewBox from '@/_components/OrgConstantsVariablesResolver';
 import SolidIcon from '../Icon/SolidIcons';
 
 const Input = ({ helpText, ...props }) => {
-  const { workspaceVariables, workspaceConstants, value, type, disabled, encrypted, placeholder } = props;
+  const { workspaceVariables, workspaceConstants, value, type, disabled, encrypted } = props;
   const [isFocused, setIsFocused] = useState(false);
   const [showPasswordProps, setShowPasswordProps] = useState({
     inputType: type,
