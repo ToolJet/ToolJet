@@ -76,7 +76,7 @@ export class LicenseService {
         return licenseInstance.saml;
 
       case LICENSE_FIELD.GIT_SYNC:
-        return License.Instance().gitSync;
+        return licenseInstance.gitSync;
 
       case LICENSE_FIELD.CUSTOM_STYLE:
         return licenseInstance.customStyling;

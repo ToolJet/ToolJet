@@ -17,6 +17,7 @@ export default class OrganizationLicense {
   private _isMultiEnvironment: boolean;
   private _isMultiPlayerEdit: boolean;
   private _isComments: boolean;
+  private _isGitSync: boolean;
   private _startDate: Date;
   private _expiryDate: Date;
   private _updatedDate: Date;
@@ -59,6 +60,7 @@ export default class OrganizationLicense {
         this._isMultiEnvironment = licenseData?.features?.multiEnvironment === false ? false : true;
         this._isMultiPlayerEdit = licenseData?.features?.multiPlayerEdit === false ? false : true;
         this._isComments = licenseData?.features?.comments === false ? false : true;
+        this._isGitSync = licenseData?.features?.gitSync === false ? false : true;
         this._startDate = licenseStartDate;
         this._expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
         this._workspaceId = licenseData?.workspaceId;
@@ -85,6 +87,7 @@ export default class OrganizationLicense {
       this._isWhiteLabelling = true;
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
+      this._isGitSync = true;
     }
   }
 
@@ -135,6 +138,13 @@ export default class OrganizationLicense {
       return BASIC_PLAN_TERMS.users?.total || this._usersCount || LICENSE_LIMIT.UNLIMITED;
     }
     return this._usersCount || LICENSE_LIMIT.UNLIMITED;
+  }
+
+  public get gitSync(): boolean {
+    if (this.IsBasicPlan) {
+      return !!BASIC_PLAN_TERMS.features?.gitSync;
+    }
+    return this._isGitSync;
   }
 
   public get editorUsers(): number | string {
@@ -258,6 +268,7 @@ export default class OrganizationLicense {
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
       comments: this.comments,
+      gitSync: this.gitSync,
     };
   }
 

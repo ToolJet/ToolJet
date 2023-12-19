@@ -49,7 +49,7 @@ export class GitSyncController {
   @Get('workspace/:id')
   async getOrgGitByOrgId(@User() user, @Param('id') organizationId: string) {
     let organizationGit = await this.gitSyncServices.findOrgGitByOrganizationId(organizationId);
-    if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.GIT_SYNC))) {
+    if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.GIT_SYNC, organizationId))) {
       organizationGit = await this.gitSyncServices.setFinalizeConfig(user.id, organizationGit.id, {
         isFinalized: organizationGit.isFinalized,
         isEnabled: false,

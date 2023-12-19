@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 import { licenseService } from '@/_services/license.service';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { ConfirmDialog } from '@/_components';
-import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseBannerCloud } from '@/LicenseBannerCloud';
 class GitSyncConfigComponent extends Component {
   constructor(props) {
     super(props);
@@ -355,7 +355,7 @@ class GitSyncConfigComponent extends Component {
                   <div className="git-header-text">Configure git</div>
                 </div>
                 <div className="col-md-2">
-                  <LicenseBanner
+                  <LicenseBannerCloud
                     classes="mb-3 small"
                     isAvailable={false}
                     showPaidFeatureBanner={!isGitSyncFeatureEnabled}

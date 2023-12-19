@@ -7,7 +7,9 @@ export class GitSyncGuard implements CanActivate {
   constructor(private licenseService: LicenseService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.GIT_SYNC))) {
+    const request = context.switchToHttp().getRequest();
+    const organizationId = request.headers['tj-workspace-id'];
+    if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.GIT_SYNC, organizationId))) {
       throw new HttpException('Git sync not enabled', 451);
     }
     return true;

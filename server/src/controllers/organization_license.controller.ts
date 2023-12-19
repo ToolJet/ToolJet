@@ -162,26 +162,19 @@ export class OrganizationLicenseController {
 
     const discounts: Array<Stripe.Checkout.SessionCreateParams.Discount> = [];
 
-    if (paymentRedirectDto.coupon_code || paymentRedirectDto.promo_code) {
+    if (paymentRedirectDto.promo_code) {
       // Add the coupon to discounts array
       const couponDiscount: Stripe.Checkout.SessionCreateParams.Discount = {};
-
-      if (paymentRedirectDto.coupon_code) {
-        couponDiscount.coupon = paymentRedirectDto.coupon_code;
+      const promotionCodes = await stripe.promotionCodes.list({
+        limit: 3,
+        active: true,
+        code: paymentRedirectDto.promo_code,
+      });
+      const promotionList = promotionCodes?.data;
+      if (!promotionList || promotionList.length === 0) {
+        throw new BadRequestException(`Invalid promotion code '${paymentRedirectDto.promo_code}'`);
       }
-
-      if (paymentRedirectDto.promo_code) {
-        const promotionCodes = await stripe.promotionCodes.list({
-          limit: 3,
-          active: true,
-          code: paymentRedirectDto.promo_code,
-        });
-        const promotionList = promotionCodes?.data;
-        if (!promotionList || promotionList.length === 0) {
-          throw new BadRequestException(`Invalid promotion code '${paymentRedirectDto.promo_code}'`);
-        }
-        couponDiscount.promotion_code = promotionList[0].id;
-      }
+      couponDiscount.promotion_code = promotionList[0].id;
 
       discounts.push(couponDiscount);
     }
