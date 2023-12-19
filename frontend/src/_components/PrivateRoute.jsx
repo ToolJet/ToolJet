@@ -95,7 +95,7 @@ export const PrivateRoute = ({ children }) => {
         <Navigate
           to={{
             pathname: `/login${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`,
-            search: `?redirectTo=${excludeWorkspaceIdFromURL(location.pathname)}`,
+            search: `?redirectTo=${excludeWorkspaceIdFromURL(location.pathname)}${location.search}`,
             state: { from: location },
           }}
           replace

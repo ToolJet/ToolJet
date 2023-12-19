@@ -66,6 +66,7 @@ import EditorSelecto from './EditorSelecto';
 import { diff } from 'deep-object-diff';
 
 import useDebouncedArrowKeyPress from '@/_hooks/useDebouncedArrowKeyPress';
+import { getQueryParams } from '@/_helpers/routes';
 import RightSidebarTabManager from './RightSidebarTabManager';
 import { shallow } from 'zustand/shallow';
 
@@ -1367,11 +1368,21 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
 
+  const navigateToPage = (queryParams = [], handle) => {
+    const appId = useAppDataStore.getState()?.appId;
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+
+    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
+  };
+
   const switchPage = (pageId, queryParams = []) => {
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
     const appDefinition = useEditorStore.getState().appDefinition;
-    const appId = useAppDataStore.getState()?.appId;
     const pageHandle = getCurrentState().pageHandle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
@@ -1381,13 +1392,7 @@ const EditorComponent = (props) => {
 
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-
-    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    navigateToPage(queryParams, handle);
 
     const page = {
       id: pageId,
@@ -1590,6 +1595,9 @@ const EditorComponent = (props) => {
     appDefinitionChanged(newDefinition, {
       pageDefinitionChanged: true,
     });
+
+    const queryParams = getQueryParams();
+    navigateToPage(Object.entries(queryParams), newHandle);
   };
 
   const updateOnSortingPages = (newSortedPages) => {
