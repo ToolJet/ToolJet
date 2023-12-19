@@ -355,7 +355,7 @@ export const DropDown = function DropDown({
     }),
   };
 
-  const onDomClick = (e) => {
+  const handleOutsideClick = (e) => {
     let menu = ref.current.querySelector('.select__menu');
     if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
       setIsFocused(false);
@@ -364,9 +364,9 @@ export const DropDown = function DropDown({
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', onDomClick);
+    document.addEventListener('mousedown', handleOutsideClick);
     return () => {
-      document.removeEventListener('mousedown', onDomClick);
+      document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, []);
 
@@ -436,7 +436,6 @@ export const DropDown = function DropDown({
             onInputChange={onSearchTextChange}
             onFocus={(event) => {
               fireEvent('onFocus');
-              onComponentClick(event, component, id);
             }}
             onMenuInputFocus={() => setIsFocused(true)}
             onBlur={() => {
@@ -465,7 +464,7 @@ export const DropDown = function DropDown({
         className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
         style={{
           color: errTextColor,
-          justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+          justifyContent: direction === 'alignRight' ? 'flex-start' : 'flex-end',
           marginTop: alignment === 'top' ? '1.25rem' : '0.25rem',
         }}
       >
