@@ -230,6 +230,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     const dataSourceList = datasourcesGroups().splice(0, 5);
     const handleOnSelect = (activekey, type) => {
       setQueryString('');
+      setSuggestingDataSource(false);
       toggleDataSourceManagerModal(false);
       setActiveDatasourceList(activekey);
       updateSidebarNAV(type);

@@ -20,7 +20,7 @@ const Input = ({ helpText, ...props }) => {
   };
 
   useEffect(() => {
-    if (disabled) setShowPasswordProps({ inputType: 'password', iconType: 'eyedisable' });
+    if (disabled && encrypted) setShowPasswordProps({ inputType: 'password', iconType: 'eyedisable' });
   }, [disabled]);
 
   const { inputType, iconType } = showPasswordProps;

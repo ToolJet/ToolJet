@@ -182,6 +182,7 @@ const DynamicForm = ({
     ignoreBraces = false,
     className,
     controller,
+    encrypted,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -191,10 +192,11 @@ const DynamicForm = ({
     switch (type) {
       case 'password':
       case 'text':
-      case 'textarea':
+      case 'textarea': {
+        const useEncrypted = options?.key?.encrypted !== undefined ? options.key.encrypted : encrypted;
         return {
           type,
-          placeholder: options?.[key]?.encrypted ? '**************' : description,
+          placeholder: useEncrypted ? '**************' : description,
           className: `form-control${handleToggle(controller)}`,
           value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
@@ -204,8 +206,9 @@ const DynamicForm = ({
           isGDS,
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
-          encrypted: options?.[key]?.encrypted,
+          encrypted: useEncrypted,
         };
+      }
       case 'toggle':
         return {
           defaultChecked: options?.[key],
