@@ -62,6 +62,3 @@ Now if the value in the price column is lesser than 100, the cell background col
 </div>
 
 You can use the above methods to change the text and background colors of a cell dynamically.
-
-
-
