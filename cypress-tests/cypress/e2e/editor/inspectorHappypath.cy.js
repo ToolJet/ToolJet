@@ -3,7 +3,7 @@ import {
   verifyMultipleComponentValuesFromInspector,
   verifyComponentValueFromInspector,
 } from "Support/utils/commonWidget";
-import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
+import { verifyNodeData, openNode, verifyValue, deleteComponentFromInspector } from "Support/utils/inspector";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { addNewPage } from "Support/utils/multipage";
 import {
@@ -169,5 +169,11 @@ describe("Editor- Inspector", () => {
     cy.get('[style="height: 13px; width: 13px;"] > img').click();
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
     cy.apiDeleteApp();
+  });
+  it("should verify deletion of component from inspector", () => {
+    cy.dragAndDropWidget("button", 500, 500);
+    cy.get(commonWidgetSelector.sidebarinspector).click();
+    deleteComponentFromInspector("button1");
+
   });
 });
