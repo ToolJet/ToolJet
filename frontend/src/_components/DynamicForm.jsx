@@ -193,7 +193,8 @@ const DynamicForm = ({
       case 'password':
       case 'text':
       case 'textarea': {
-        const useEncrypted = options?.[key]?.encrypted !== undefined ? options?.[key].encrypted : encrypted;
+        const useEncrypted =
+          (options?.[key]?.encrypted !== undefined ? options?.[key].encrypted : encrypted) || type === 'password';
         return {
           type,
           placeholder: useEncrypted ? '**************' : description,
