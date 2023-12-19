@@ -24,6 +24,7 @@ describe("App share functionality", () => {
     data.email = fake.email.toLowerCase();
     const slug = data.appName.toLowerCase().replace(/\s+/g, "-");
     const firstUserEmail = data.email;
+    const envVar = Cypress.env("environment");
 
     beforeEach(() => {
         cy.appUILogin();
@@ -151,7 +152,10 @@ describe("App share functionality", () => {
     });
 
     it("Verify app private and public app visibility for the same instance user", () => {
-        resetAllowPersonalWorkspace();
+        if (envVar === "Enterprise") {
+            resetAllowPersonalWorkspace();
+
+        }
         data.firstName = fake.firstName;
         data.email = fake.email.toLowerCase();
 

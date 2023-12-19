@@ -39,16 +39,14 @@ data.appName = `${fake.companyName}-App`;
 
 describe("Global Datasource Manager", () => {
     beforeEach(() => {
-        cy.apiLogin();
-        cy.visit('/my-workspace')
+        cy.defaultWorkspaceLogin();
         cy.viewport(1200, 1300);
         cy.wait(1000)
     });
 
     before(() => {
-        cy.apiLogin();
+        cy.defaultWorkspaceLogin();
         cy.apiCreateApp(data.appName);
-        cy.visit('/my-workspace')
         addNewUserMW(data.userName1, data.userEmail1);
         cy.logoutApi();
     });

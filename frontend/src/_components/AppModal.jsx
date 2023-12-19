@@ -148,7 +148,9 @@ export function AppModal({
       ) : (
         <div className="row workspace-folder-modal mb-3">
           <div className="col modal-main tj-app-input">
-            <label className="tj-input-label">{'App Name'}</label>
+            <label className="tj-input-label" data-cy="app-name-label">
+              {'App Name'}
+            </label>
             <input
               type="text"
               onChange={handleInputChange}
@@ -170,6 +172,7 @@ export function AppModal({
                   fontSize: '10px',
                   color: '#DB4324',
                 }}
+                data-cy="app-name-error-label"
               >
                 {errorText}
               </small>
@@ -180,6 +183,7 @@ export function AppModal({
                   fontSize: '10px',
                   color: '#ED5F00',
                 }}
+                data-cy="app-name-error-label"
               >
                 {infoText || 'Maximum length has been reached'}
               </small>
@@ -190,6 +194,7 @@ export function AppModal({
                   fontSize: '10px',
                   color: '#7E868C',
                 }}
+                data-cy="app-name-info-label"
               >
                 App name must be unique and max 50 characters
               </small>

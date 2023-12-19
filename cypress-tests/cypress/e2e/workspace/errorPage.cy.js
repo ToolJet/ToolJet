@@ -58,6 +58,7 @@ describe("Redirection error pages", () => {
         data.appName = `${fake.companyName} App`;
         cy.apiCreateApp(data.appName);
         cy.openApp();
+        cy.wait(1000);
         releaseApp();
 
         cy.get(commonWidgetSelector.shareAppButton).click();
@@ -138,9 +139,9 @@ describe("Redirection error pages", () => {
 
         cy.defaultWorkspaceLogin();
         navigateToManageGroups();
-        cy.wait(1000);
+        cy.wait(2000);
         cy.get(groupsSelector.appSearchBox).click();
-        cy.wait(500);
+        cy.wait(1000);
         cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
         cy.get(groupsSelector.selectAddButton).click();
         cy.get("table").contains("td", data.appName);
