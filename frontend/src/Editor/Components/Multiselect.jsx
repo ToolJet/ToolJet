@@ -102,11 +102,10 @@ const CustomValueContainer = ({ ...props }) => {
             {selectProps.placeholder}
           </Placeholder>
         ) : (
-          // <MultiValueContainer {...props} selectProps={selectProps} />
-          <span className="d-flex" {...props}>
+          <span className="d-flex" {...props} id="options">
             {selectProps?.visibleValues.map((element, index) => (
               <div className="value-container-selected-option" key={index}>
-                {element.label}
+                <span>{element.label}</span>
                 <span
                   className="value-container-selected-option-delete-icon"
                   onClick={() => removeOption(element, index)}
@@ -118,10 +117,7 @@ const CustomValueContainer = ({ ...props }) => {
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-start'}
-              // defaultShow
               rootClose={true}
-              // show={showActionsMenu}
-              // onToggle={(show) => setShowActionsMenu(show)}
               overlay={
                 <Popover id="l" className={''}>
                   <Popover.Body
@@ -145,7 +141,10 @@ const CustomValueContainer = ({ ...props }) => {
             >
               <div>
                 {showNoRemainingOpt !== 0 && (
-                  <div className="value-container-selected-option">{`+${showNoRemainingOpt}`}</div>
+                  <div
+                    className="value-container-selected-option"
+                    style={{ paddingRight: '10px' }}
+                  >{`+${showNoRemainingOpt}`}</div>
                 )}
               </div>
             </OverlayTrigger>
@@ -236,15 +235,29 @@ export const Multiselect = function Multiselect({
     const updateVisibleElements = () => {
       if (!isEmpty(valueContainerRef.current)) {
         const containerWidth =
-          valueContainerRef.current.clientWidth - (iconVisibility ? ICON_WIDTH + SHOW_MORE_WIDTH : SHOW_MORE_WIDTH);
-        const elementWidth = 54;
-        const maxVisibleElements = Math.floor(containerWidth / elementWidth);
-        setVisibleElements(selected.slice(0, maxVisibleElements));
-        setShowMore(selected.length > maxVisibleElements);
+          valueContainerRef.current.offsetWidth - (iconVisibility ? ICON_WIDTH + SHOW_MORE_WIDTH : SHOW_MORE_WIDTH);
+        const children = document.getElementById('options')?.children;
+        if (children) {
+          let totalWidth = 0;
+          let maxVisibleOptions = 0;
+
+          for (let i = 0; i < children.length; i++) {
+            totalWidth += children[i].offsetWidth;
+
+            if (totalWidth <= containerWidth) {
+              maxVisibleOptions++;
+            } else {
+              break;
+            }
+          }
+          setVisibleElements(selected.slice(0, maxVisibleOptions));
+          setShowMore(selected.length > maxVisibleOptions);
+        }
       }
     };
     updateVisibleElements();
-  }, [selected, width]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, width, selected, iconVisibility]);
 
   const selectOptions = useMemo(() => {
     let _selectOptions = advanced
@@ -560,7 +573,7 @@ export const Multiselect = function Multiselect({
         className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
         style={{
           color: errTextColor,
-          justifyContent: direction === 'alignRight' ? 'flex-end' : 'flex-start',
+          justifyContent: direction === 'alignRight' ? 'flex-start' : 'flex-end',
           marginTop: alignment === 'top' ? '1.25rem' : '0.25rem',
         }}
       >
