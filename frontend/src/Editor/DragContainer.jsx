@@ -77,14 +77,20 @@ export default function DragContainer({
   const moveableRef = useRef();
   const childMoveableRefs = useRef([]);
   const [movableTargets, setMovableTargets] = useState({});
-  const boxList = boxes.map((box) => ({
-    id: box.id,
-    height: box?.layouts?.[currentLayout]?.height,
-    left: box?.layouts?.[currentLayout]?.left,
-    top: box?.layouts?.[currentLayout]?.top,
-    width: box?.layouts?.[currentLayout]?.width,
-    parent: box?.component?.parent,
-  }));
+  const boxList = boxes
+    .filter(
+      (box) =>
+        box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value ===
+        '{{true}}'
+    )
+    .map((box) => ({
+      id: box.id,
+      height: box?.layouts?.[currentLayout]?.height,
+      left: box?.layouts?.[currentLayout]?.left,
+      top: box?.layouts?.[currentLayout]?.top,
+      width: box?.layouts?.[currentLayout]?.width,
+      parent: box?.component?.parent,
+    }));
   const [list, setList] = useState(boxList);
 
   console.log('draggedSubContainer => ', draggedSubContainer);
