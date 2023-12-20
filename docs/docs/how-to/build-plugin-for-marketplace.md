@@ -8,8 +8,8 @@ title: Build a new plugin for marketplace
 ToolJet marketplace is a place where you can find custom plugins and install them in your ToolJet instance. This document will help you to build a new plugin for ToolJet marketplace.
 
 ## Prerequisites
-- [Node.js](https://nodejs.org/en/download/) (v18.3.0)
-- [npm](https://www.npmjs.com/get-npm) (v8.11.0)
+- [Node.js](https://nodejs.org/en/download/) (v18.18.2)
+- [npm](https://www.npmjs.com/get-npm) (v9.8.1)
 
 ## Getting started
 ### 1. Enabling the marketplace for your instance

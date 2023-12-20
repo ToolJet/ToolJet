@@ -6,8 +6,8 @@ title: 'Marketplace: Development Setup'
 The Marketplace offers custom plugins that can be installed in your ToolJet instance. This guide aims to assist you in creating a new plugin for the ToolJet marketplace.
 
 ## Requirements
-- [Node.js](https://nodejs.org/en/download/) **(v18.3.0)**
-- [npm](https://www.npmjs.com/get-npm) **(v8.11.0)**
+- [Node.js](https://nodejs.org/en/download/) **(v18.18.2)**
+- [npm](https://www.npmjs.com/get-npm) **(v9.8.1)**
 
 ## Getting started
 
