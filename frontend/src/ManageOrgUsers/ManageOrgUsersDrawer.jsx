@@ -3,6 +3,7 @@ import Drawer from '@/_ui/Drawer';
 import InviteUsersForm from './InviteUsersForm';
 import { groupPermissionService } from '@/_services';
 import { authenticationService } from '../_services/authentication.service';
+import { USER_DRAWER_MODES } from '@/_helpers/utils';
 
 const ManageOrgUsersDrawer = ({
   isInviteUsersDrawerOpen,
@@ -21,6 +22,8 @@ const ManageOrgUsersDrawer = ({
   creatingUser,
 }) => {
   const [groups, setGroups] = useState([]);
+
+  const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
 
   const humanizeifDefaultGroupName = (groupName) => {
     switch (groupName) {
@@ -44,8 +47,13 @@ const ManageOrgUsersDrawer = ({
         const orgGroups = group_permissions
           .filter((group) => group.organization_id === current_organization_id)
           .map(({ group }) => ({
+            label:
+              group === 'all_users' && isEditing
+                ? `${humanizeifDefaultGroupName(group)} (Default group)`
+                : humanizeifDefaultGroupName(group),
             name: humanizeifDefaultGroupName(group),
             value: group,
+            ...(group === 'all_users' && isEditing && { isDisabled: true, isFixed: true }),
           }));
         setGroups(orgGroups);
       })

@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
-import Multiselect from '@/_ui/Multiselect/Multiselect';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
+import { UserGroupsSelect } from './UserGroupsSelect';
 
 function InviteUsersForm({
   onClose,
@@ -180,23 +180,13 @@ function InviteUsersForm({
                       </div>
                     </ToolTip>
                   </div>
-                  <div
-                    className="form-group mb-3 manage-groups-invite-form manage-groups-app-dropdown"
-                    data-cy="user-group-select"
-                  >
+                  <div className="form-group mb-3 manage-groups-invite-form" data-cy="user-group-select">
                     <label className="form-label" data-cy="label-group-input-field">
                       {isEditing
                         ? 'User groups'
                         : t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
                     </label>
-                    <Multiselect
-                      value={selectedGroups}
-                      onChange={onChangeHandler}
-                      options={groups}
-                      overrideStrings={{
-                        selectSomeItems: 'Select groups to add for this user',
-                      }}
-                    />
+                    <UserGroupsSelect value={selectedGroups} onChange={onChangeHandler} options={groups} />
                   </div>
                 </form>
               </div>
