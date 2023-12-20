@@ -1,15 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
+import { ToolTip } from '@/_components/ToolTip';
+import * as Icons from '@tabler/icons-react';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
-  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
-
+  const {
+    backgroundColor,
+    textColor,
+    borderRadius,
+    loaderColor,
+    borderColor,
+    boxShadow,
+    iconColor,
+    padding,
+    direction,
+    iconVisibility,
+  } = styles;
+  const { loadingState, tooltip, disabledState } = properties;
   const [label, setLabel] = useState(properties.text);
   const [disable, setDisable] = useState(disabledState);
-  const [visibility, setVisibility] = useState(styles.visibility);
-  const [loading, setLoading] = useState(properties.loadingState);
+  const [visibility, setVisibility] = useState(properties.visibility);
+  const [loading, setLoading] = useState(loadingState);
+  const iconName = styles.icon; // Replace with the name of the icon you want
+
+  // eslint-disable-next-line import/namespace
+  const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
 
   useEffect(() => {
     setLabel(properties.text);
@@ -23,9 +40,9 @@ export const Button = function Button(props) {
   }, [disabledState]);
 
   useEffect(() => {
-    visibility !== styles.visibility && setVisibility(styles.visibility);
+    visibility !== properties.visibility && setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [styles.visibility]);
+  }, [properties.visibility]);
 
   useEffect(() => {
     loading !== properties.loadingState && setLoading(properties.loadingState);
@@ -43,6 +60,7 @@ export const Button = function Button(props) {
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
     borderColor: borderColor,
     boxShadow: boxShadow,
+    padding: '2px 4px',
   };
 
   useEffect(() => {
@@ -82,12 +100,17 @@ export const Button = function Button(props) {
     document.dispatchEvent(event1);
     fireEvent('onClick');
   };
-
-  return (
-    <div className="widget-button">
+  const renderInput = () => (
+    <div
+      className="widget-button"
+      style={{
+        padding: padding === 'default' ? '2px' : '',
+        position: 'relative',
+      }}
+    >
       <button
         disabled={disable}
-        className={cx('jet-button btn btn-primary p-1 overflow-hidden', {
+        className={cx('jet-button overflow-hidden', {
           'btn-loading': loading,
           'btn-custom': hasCustomBackground,
         })}
@@ -99,8 +122,56 @@ export const Button = function Button(props) {
         data-cy={dataCy}
         type="default"
       >
-        {label}
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            flexDirection: direction == 'right' ? 'row-reverse' : 'row',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              maxHeight: '100%',
+              overflow: 'hidden',
+              marginLeft: direction == 'right' && iconVisibility && '3px',
+              marginRight: direction == 'left' && iconVisibility && '3px',
+            }}
+          >
+            <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
+              <p className="tj-text-xsm" style={{ fontWeight: '500', margin: '0px', padding: '0px' }}>
+                {label}
+              </p>
+            </span>
+          </div>
+          <div className="d-flex">
+            {props.component?.definition?.styles?.iconVisibility?.value && !props.isResizing && (
+              <IconElement
+                style={{
+                  width: '14px',
+                  height: '14px',
+                  color: iconColor,
+                }}
+                stroke={1.5}
+              />
+            )}
+          </div>
+        </div>
       </button>
     </div>
+  );
+
+  return (
+    <>
+      {tooltip?.length > 0 ? (
+        <ToolTip message={tooltip}>
+          <div>{renderInput()}</div>
+        </ToolTip>
+      ) : (
+        <div>{renderInput()}</div>
+      )}
+    </>
   );
 };
