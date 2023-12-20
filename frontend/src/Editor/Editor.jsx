@@ -1874,6 +1874,7 @@ const EditorComponent = (props) => {
                       allComponents={appDefinition?.pages[currentPageId]?.components}
                       darkMode={props.darkMode}
                       pages={getPagesWithIds()}
+                      cloneComponents={cloningComponents}
                     />
                   </div>
                 }
