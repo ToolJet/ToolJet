@@ -170,7 +170,7 @@ export const baseComponentProperties = (
   items.push({
     title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
     isOpen: true,
-    children: additionalActions.map((property) => {
+    children: additionalActions?.map((property) => {
       const paramType = property === 'Tooltip' ? 'general' : 'properties';
       return renderElement(
         component,

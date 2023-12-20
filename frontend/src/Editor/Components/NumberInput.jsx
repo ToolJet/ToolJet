@@ -129,7 +129,7 @@ export const NumberInput = function NumberInput({
   useEffect(() => {
     if (labelRef.current) {
       const width = labelRef.current.offsetWidth;
-      padding == 'default' ? setLabelWidth(width + 10) : setLabelWidth(width + 8);
+      padding == 'default' ? setLabelWidth(width + 7) : setLabelWidth(width + 5);
     } else setLabelWidth(0);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -311,62 +311,66 @@ export const NumberInput = function NumberInput({
             min={properties.minValue}
             max={properties.maxValue}
           />
-          <div onClick={(e) => handleIncrement(e)}>
-            <SolidIcon
-              width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-              style={{
-                top:
-                  defaultAlignment === 'top' && label?.length > 0 && width > 0
-                    ? padding == 'default'
-                      ? '23px'
-                      : '21px'
-                    : padding == 'default'
-                    ? '3px'
-                    : '1px',
-                right:
-                  labelWidth == 0
-                    ? padding == 'default'
-                      ? '2px'
-                      : '0px'
-                    : alignment == 'side' && direction === 'right'
-                    ? `${labelWidth + 2}px`
-                    : padding == 'default'
-                    ? '3px'
-                    : '1px',
-                borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                borderBottom: darkMode ? '.5px solid #313538' : '0.5px solid #D7D7D7',
-                borderTopRightRadius: borderRadius - 1,
-                backgroundColor: !darkMode ? 'white' : 'black',
-              }}
-              className="numberinput-up-arrow arrow"
-              name="cheveronup"
-            ></SolidIcon>
-          </div>
+          {!isResizing && (
+            <>
+              <div onClick={(e) => handleIncrement(e)}>
+                <SolidIcon
+                  width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  style={{
+                    top:
+                      defaultAlignment === 'top' && label?.length > 0 && width > 0
+                        ? padding == 'default'
+                          ? '23px'
+                          : '21px'
+                        : padding == 'default'
+                        ? '3px'
+                        : '1px',
+                    right:
+                      labelWidth == 0
+                        ? padding == 'default'
+                          ? '2px'
+                          : '0px'
+                        : alignment == 'side' && direction === 'right'
+                        ? `${labelWidth + 5}px`
+                        : padding == 'default'
+                        ? '3px'
+                        : '1px',
+                    borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
+                    borderBottom: darkMode ? '.5px solid #313538' : '0.5px solid #D7D7D7',
+                    borderTopRightRadius: borderRadius - 1,
+                    backgroundColor: !darkMode ? 'white' : 'black',
+                  }}
+                  className="numberinput-up-arrow arrow"
+                  name="cheveronup"
+                ></SolidIcon>
+              </div>
 
-          <div onClick={(e) => handleDecrement(e)}>
-            <SolidIcon
-              style={{
-                right:
-                  labelWidth == 0
-                    ? padding == 'default'
-                      ? '2px'
-                      : '0px'
-                    : alignment == 'side' && direction === 'right'
-                    ? `${labelWidth + 2}px`
-                    : padding == 'default'
-                    ? '3px'
-                    : '1px',
-                bottom: padding == 'default' ? '3px' : '1px',
-                borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
-                borderTop: darkMode ? '0.5px solid #313538' : '0.5px solid #D7D7D7',
-                borderBottomRightRadius: borderRadius - 1,
-                backgroundColor: !darkMode ? 'white' : 'black',
-              }}
-              width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
-              className="numberinput-down-arrow arrow"
-              name="cheverondown"
-            ></SolidIcon>
-          </div>
+              <div onClick={(e) => handleDecrement(e)}>
+                <SolidIcon
+                  style={{
+                    right:
+                      labelWidth == 0
+                        ? padding == 'default'
+                          ? '2px'
+                          : '0px'
+                        : alignment == 'side' && direction === 'right'
+                        ? `${labelWidth + 5}px`
+                        : padding == 'default'
+                        ? '3px'
+                        : '1px',
+                    bottom: padding == 'default' ? '3px' : '1px',
+                    borderLeft: darkMode ? '1px solid #313538' : '1px solid #D7D7D7',
+                    borderTop: darkMode ? '0.5px solid #313538' : '0.5px solid #D7D7D7',
+                    borderBottomRightRadius: borderRadius - 1,
+                    backgroundColor: !darkMode ? 'white' : 'black',
+                  }}
+                  width={padding == 'default' ? `${height / 2 - 1}px` : `${height / 2 + 1}px`}
+                  className="numberinput-down-arrow arrow"
+                  name="cheverondown"
+                ></SolidIcon>
+              </div>
+            </>
+          )}
 
           {loading && <Loader style={{ ...loaderStyle }} width="16" />}
         </div>
