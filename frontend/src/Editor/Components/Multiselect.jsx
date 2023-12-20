@@ -81,8 +81,10 @@ const CustomValueContainer = ({ ...props }) => {
   const IconElement = Icons[selectProps?.icon] == undefined ? Icons['IconHome2'] : Icons[selectProps?.icon];
   const showNoRemainingOpt = props.getValue().length - selectProps.visibleValues.length;
   const remainingOptions = props.getValue().slice(-showNoRemainingOpt);
-  const removeOption = (option, index) => {
-    const _val = props.getValue().filter((opt, i) => opt.label !== option.label && i !== index);
+  const [showOverlay, setShowOverlay] = React.useState(false);
+  // Checking on index as well as label in case if two labels are same
+  const removeOption = (label) => {
+    const _val = props.getValue().filter((opt, i) => opt.label !== label);
     selectProps.setSelected(_val);
   };
   return (
@@ -108,15 +110,19 @@ const CustomValueContainer = ({ ...props }) => {
                 <span>{element.label}</span>
                 <span
                   className="value-container-selected-option-delete-icon"
-                  onClick={() => removeOption(element, index)}
+                  onClick={() => removeOption(element.label)}
                 >
-                  <RemoveCircle width="20" />
+                  <RemoveCircle fill="#C1C8CD" width="20" fill2={'white'} />
                 </span>
               </div>
             ))}
             <OverlayTrigger
               trigger={'click'}
               placement={'bottom-start'}
+              onToggle={(showOverlay) => {
+                setShowOverlay(showOverlay);
+              }}
+              show={showOverlay}
               rootClose={true}
               overlay={
                 <Popover id="l" className={''}>
@@ -124,14 +130,17 @@ const CustomValueContainer = ({ ...props }) => {
                     bsPrefix="list-item-popover-body"
                     className={`list-item-popover-body value-container-selected-option-popover`}
                   >
-                    {remainingOptions.map((option) => (
+                    {remainingOptions.map((option, index) => (
                       <div className="value-container-selected-option" key={option.label}>
                         {option.label}
                         <span
                           className="value-container-selected-option-delete-icon"
-                          // onClick={() => removeOption(element, index)}
+                          onClick={() => {
+                            removeOption(option.label);
+                            setShowOverlay(false);
+                          }}
                         >
-                          <RemoveCircle width="20" />
+                          <RemoveCircle fill="#C1C8CD" width="20" fill2={'white'} />
                         </span>
                       </div>
                     ))}
@@ -269,9 +278,9 @@ export const Multiselect = function Multiselect({
           }))
       : values
           .map((value, index) => {
-            if (true) {
-              return { label: display_values[index], value: value, isDisabled: false };
-            }
+            // if (true) {
+            return { label: display_values[index], value: value, isDisabled: false };
+            // }
           })
           .filter((option) => option);
 
@@ -519,7 +528,7 @@ export const Multiselect = function Multiselect({
         <div className="col-auto my-auto" style={{ alignSelf: direction === 'alignRight' ? 'flex-end' : 'flex-start' }}>
           <label
             style={labelStyles}
-            className="form-label py-0 my-0"
+            className="font-size-12 font-weight-500 py-0 my-0"
             data-cy={`multiselect-label-${component.name.toLowerCase()}`}
           >
             {label}
