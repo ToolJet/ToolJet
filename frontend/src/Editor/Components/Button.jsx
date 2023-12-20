@@ -20,7 +20,7 @@ export const Button = function Button(props) {
   } = styles;
   const { loadingState, tooltip, disabledState } = properties;
   const [label, setLabel] = useState(properties.text);
-  const [disable, setDisable] = useState(disabledState);
+  const [disable, setDisable] = useState(disabledState || loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
   const iconName = styles.icon; // Replace with the name of the icon you want
@@ -83,6 +83,18 @@ export const Button = function Button(props) {
       loading: async function (value) {
         setLoading(value);
       },
+      setDisable: async function (value) {
+        setDisable(value);
+        setExposedVariable('isDisabled', value);
+      },
+      setVisibility: async function (value) {
+        setVisibility(value);
+        setExposedVariable('isVisible', value);
+      },
+      setLoading: async function (value) {
+        setLoading(value);
+        setExposedVariable('isLoading', value);
+      },
     };
 
     setExposedVariables(exposedVariables);
@@ -109,8 +121,8 @@ export const Button = function Button(props) {
       }}
     >
       <button
-        disabled={disable}
-        className={cx('jet-button overflow-hidden', {
+        disabled={disable || loading}
+        className={cx('jet-button overflow-hidden btn', {
           'btn-loading': loading,
           'btn-custom': hasCustomBackground,
         })}
@@ -147,7 +159,7 @@ export const Button = function Button(props) {
             </span>
           </div>
           <div className="d-flex">
-            {props.component?.definition?.styles?.iconVisibility?.value && !props.isResizing && (
+            {props.component?.definition?.styles?.iconVisibility?.value && !props.isResizing && !loading && (
               <IconElement
                 style={{
                   width: '14px',
