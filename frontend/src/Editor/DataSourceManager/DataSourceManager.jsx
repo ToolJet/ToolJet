@@ -169,7 +169,7 @@ class DataSourceManagerComponent extends React.Component {
       connectionTestError: null,
       options: {
         ...this.state.options,
-        [option]: { value: value },
+        [option]: { ...this.state.options[option], value: value },
       },
     };
 
@@ -191,7 +191,8 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   createDataSource = () => {
-    const { appId, options, selectedDataSource, selectedDataSourcePluginId } = this.state;
+    const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
+      this.state;
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
@@ -200,7 +201,7 @@ class DataSourceManagerComponent extends React.Component {
     const scope = this.state?.scope || selectedDataSource?.scope;
 
     const parsedOptions = Object?.keys(options)?.map((key) => {
-      const keyMeta = selectedDataSource.options[key];
+      const keyMeta = dataSourceMeta.options[key];
       return {
         key: key,
         value: options[key].value,

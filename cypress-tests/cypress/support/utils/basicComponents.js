@@ -5,20 +5,30 @@ import {
   openEditorSidebar,
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
+import { resizeQueryPanel } from "Support/utils/dataSource";
 
 export const verifyComponent = (widgetName) => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("be.visible");
+  cy.get(commonWidgetSelector.draggableWidget(widgetName), {
+    timeout: 10000,
+  }).should("be.visible");
 };
 
 export const deleteComponentAndVerify = (widgetName) => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).click().realHover();
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .realHover()
+    .realHover();
 
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).realHover();
-
-  cy.get(`[data-cy="${widgetName}-delete-button"]`).last().realClick();
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .realHover()
+    .then(() => {
+      cy.get(`[data-cy="${widgetName}-delete-button"]`)
+        .realHover({ position: "topRight" })
+        .last()
+        .realClick();
+    });
   cy.verifyToastMessage(
     `[class=go3958317564]`,
-    "Component deleted! (ctrl + Z to undo)"
+    "Component deleted! (⌘ + Z to undo)"
   );
   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };
@@ -30,11 +40,11 @@ export const verifyComponentWithOutLabel = (
   appName,
   properties = []
 ) => {
-  cy.dragAndDropWidget(component, 200, 200);
+  cy.dragAndDropWidget(component, 300, 300);
   cy.get(`[data-cy="draggable-widget-${defaultName}"]`).click({ force: true });
   verifyComponent(defaultName);
 
-  cy.resizeWidget(defaultName, 650, 400, false);
+  cy.resizeWidget(defaultName, 650, 600, false);
 
   openEditorSidebar(defaultName);
   editAndVerifyWidgetName(fakeName, properties);
@@ -46,5 +56,6 @@ export const verifyComponentWithOutLabel = (
   verifyComponent(fakeName);
 
   cy.go("back");
+  resizeQueryPanel(0);
   deleteComponentAndVerify(fakeName);
 };

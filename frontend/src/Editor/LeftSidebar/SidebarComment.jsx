@@ -43,7 +43,7 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
       selectedSidebarItem={selectedSidebarItem}
       title={appVersionsId ? 'Toggle comments' : 'Comments section will be available once you save this application'}
       icon={'comments'}
-      className={cx(`left-sidebar-item left-sidebar-layout`, {
+      className={cx(`left-sidebar-item sidebar-comments left-sidebar-layout`, {
         disabled: !appVersionsId,
         active: isActive,
       })}

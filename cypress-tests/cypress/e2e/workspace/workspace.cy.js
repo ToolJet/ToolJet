@@ -9,7 +9,7 @@ data.workspaceName = `${fake.firstName}-workspace`;
 data.workspaceSlug = `${data.workspaceName.toLowerCase()}-slug`;
 describe("Workspace", () => {
     before(() => {
-        cy.appUILogin();
+        cy.defaultWorkspaceLogin();
     });
 
     it("Should verify create and edit workspace modal and flow", () => {

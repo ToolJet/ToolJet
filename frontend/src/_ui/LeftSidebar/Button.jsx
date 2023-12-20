@@ -91,7 +91,7 @@ const UnstyledButton = ({ children, onClick, classNames = '', styles = {}, disab
       type="button"
       style={{ ...styles, ...(disabled ? defaultDisabledStyles : {}), ...cursorNotPointer }}
       className={`unstyled-button ${classNames} ${disabled && 'disabled'} ${darkMode && 'dark'}`}
-      onClick={onClick}
+      onMouseDown={onClick}
     >
       {children}
     </div>

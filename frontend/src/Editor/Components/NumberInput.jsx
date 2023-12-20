@@ -46,7 +46,7 @@ export const NumberInput = function NumberInput({
   const handleBlur = (e) => {
     if (!isNaN(parseFloat(properties.minValue)) && parseFloat(e.target.value) < parseFloat(properties.minValue)) {
       setValue(Number(parseFloat(properties.minValue)));
-    } else setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
+    } else setValue(Number(parseFloat(e.target.value ? e.target.value : 0).toFixed(properties.decimalPlaces)));
   };
 
   useEffect(() => {

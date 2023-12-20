@@ -90,7 +90,7 @@ export const PrivateRoute = ({ children }) => {
       (session?.authentication_status === false || session?.authentication_failed) &&
       !location.pathname.startsWith('/applications/')
     ) {
-      const redirectTo = excludeWorkspaceIdFromURL(location.pathname);
+      const redirectTo = `${excludeWorkspaceIdFromURL(location.pathname)}${location.search}`;
       const workspaceId = getWorkspaceId();
       return navigate(
         {
