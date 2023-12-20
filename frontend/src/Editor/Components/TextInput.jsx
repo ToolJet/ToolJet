@@ -178,14 +178,14 @@ export const TextInput = function TextInput({
   }, [properties.loadingState]);
 
   useEffect(() => {
-    setExposedVariable('isVisibile', visibility);
+    setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
   useEffect(() => {
     setExposedVariable('setVisibility', async function (state) {
       setVisibility(state);
-      setExposedVariable('isVisibile', state);
+      setExposedVariable('isVisible', state);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);

@@ -1453,7 +1453,7 @@ export const widgets = [
     exposedVariables: {
       value: '',
       isMandatory: false,
-      isVisibile: true,
+      isVisible: true,
       isDisabled: false,
       isLoading: false,
     },
@@ -1759,7 +1759,7 @@ export const widgets = [
     exposedVariables: {
       value: 99,
       isMandatory: false,
-      isVisibile: true,
+      isVisible: true,
       isDisabled: false,
       isLoading: false,
     },
@@ -1983,7 +1983,7 @@ export const widgets = [
     exposedVariables: {
       value: '',
       isMandatory: false,
-      isVisibile: true,
+      isVisible: true,
       isDisabled: false,
       isLoading: false,
     },
