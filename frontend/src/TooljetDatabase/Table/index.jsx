@@ -57,7 +57,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   };
 
   const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
-    const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}`;
+    const defaultQueryParams = `limit=${pagesize}&offset=${(pagecount - 1) * pagesize}&order=id.desc`;
     let params = queryParams ? queryParams : defaultQueryParams;
     setLoading(true);
 
@@ -109,6 +109,8 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     switch (type) {
       case 'integer':
         return 'int';
+      case 'bigint':
+        return 'bigint';
       case 'character varying':
         return 'varchar';
       case 'boolean':
@@ -300,10 +302,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                           cell.column.id === 'selection'
                             ? `${cell.row.values?.id}-checkbox`
                             : `id-${cell.row.values?.id}-column-${cell.column.id}`;
+                        const cellValue = cell.value === null ? '' : cell.value;
                         return (
                           <td
                             key={`cell.value-${index}`}
-                            title={cell.value || ''}
+                            title={cellValue || ''}
                             className="table-cell"
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}

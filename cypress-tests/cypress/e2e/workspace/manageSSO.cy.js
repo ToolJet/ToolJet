@@ -10,7 +10,7 @@ describe("Manage SSO for multi workspace", () => {
   const data = {};
   const envVar = Cypress.env("environment");
   beforeEach(() => {
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
   });
   it("Should verify General settings page elements", () => {
     common.navigateToManageSSO();
@@ -160,9 +160,11 @@ describe("Manage SSO for multi workspace", () => {
 
   if (envVar === "Community") {
     it("Should verify the workspace login page", () => {
-      data.workspaceName = fake.companyName;
-
-      common.createWorkspace(data.workspaceName);
+      data.workspaceName = fake.companyName.toLowerCase();
+      cy.apiLogin()
+      cy.apiCreateWorkspace(data.workspaceName, data.workspaceName)
+      cy.visit(data.workspaceName)
+      cy.wait(500)
       common.navigateToManageSSO();
       SSO.visitWorkspaceLoginPage();
       SSO.workspaceLoginPageElements(data.workspaceName);
@@ -243,10 +245,11 @@ describe("Manage SSO for multi workspace", () => {
       cy.notVisible(commonSelectors.passwordInputField);
       cy.notVisible(commonSelectors.loginButton);
 
-      data.workspaceName = fake.companyName;
-      cy.appUILogin();
-      common.createWorkspace(data.workspaceName);
-      cy.wait(300);
+      data.workspaceName = fake.companyName.toLowerCase();
+      cy.apiLogin()
+      cy.apiCreateWorkspace(data.workspaceName, data.workspaceName)
+      cy.visit(data.workspaceName)
+      cy.wait(500)
       SSO.disableDefaultSSO();
       cy.get(ssoSelector.passwordEnableToggle).uncheck();
       cy.get(commonSelectors.buttonSelector("Yes")).click();

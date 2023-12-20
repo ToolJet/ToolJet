@@ -54,6 +54,86 @@ This **[list](/docs/widgets/form#custom-schema-examples)** provides examples of 
 }}
 ```
 
+Here's an example using the custom schema of **Text Input**, **Number Input** and **Dropdown** components:
+
+```js
+{{{
+   "title":"Event Registration",
+   "properties":{
+      "textinput1":{
+         "type":"textinput",
+         "value":"",
+         "placeholder":"Enter Full Name",
+         "label":"Full Name",
+         "validation":{
+            "maxLength":30,
+            "minLength":5
+         },
+         "styles":{
+            "backgroundColor":"#00000000",
+            "borderRadius":5,
+            "borderColor":"#4299e1",
+            "errorTextColor":"#4299e1",
+            "disabled":false,
+            "visibility":"true",
+            "textColor":"#4299e1"
+         }
+      },
+      "numberInput1":{
+         "type":"number",
+         "styles":{
+            "backgroundColor":"#f6f5ff",
+            "borderRadius":5,
+            "textColor":"#4299e1",
+            "borderColor":"#4299e1",
+            "disabled":false,
+            "visibility":"true"
+         },
+         "value":22,
+         "maxValue":100,
+         "minValue":14,
+         "placeholder":"Enter your age",
+         "label":"Age"
+      },
+      "dropdown1":{
+         "type":"dropdown",
+         "values":[
+            1,
+            2,
+            3
+         ],
+         "displayValues":[
+            "Male",
+            "Female",
+            "Perfer not to Answer"
+         ],
+         "loading":false,
+         "value":3,
+         "label":"Gender",
+         "styles":{
+            "disabled":false,
+            "visibility":"true",
+            "borderRadius":5,
+            "borderColor":"#4299e1",
+            "justifyContent":"center"
+         }
+      }
+   },
+   "submitButton":{
+      "value":"Submit",
+      "styles":{
+         "backgroundColor":"#3A433B",
+         "borderColor":"#595959"
+      }
+   }
+}
+}}
+```
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/widgets/form/customform.png" alt="Example form schema" />
+</div>
+
 ## Events
 
 To add an event to the **Form** component, go to the **Events** section and click on **Add handler**.
@@ -147,20 +227,34 @@ Following actions of form component can be controlled using the Component Specif
 Properties that can be used in Datepicker schema are:
 
 ```js
-datepicker1: {    // component name
-    type: 'datepicker', // define the type of component
+datepicker1: {
+    type: 'datepicker',
     styles: {
-        borderRadius: 5, // define the border radius as a numeric value
-        disabled: false,  // set true to disable the component or false to enable it
-        visibility: 'true' // set 'true' to show the component or 'false' to hide it
+        borderRadius: 5, 
+        disabled: false, 
+        visibility: 'true'
     },
-    value: '09/09/2023',  // set the default date for the datepicker
-    disabledDates: ['08/09/2023'], // provide the dates in an array that you want to disable 
-    enableTime: true, // set true to enable time or false to disable it
-    format: 'DD/MM/YYYY', // set the format of the date
-    label: 'Select a date' // set the label of the component
+    value: '09/09/2023',
+    disabledDates: ['08/09/2023'],
+    enableTime: true,
+    format: 'DD/MM/YYYY',
+    label: 'Select a date' 
 }
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'datepicker' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `borderRadius`, `disabled`, `visibility` etc. |
+| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5, 10, 20 etc. |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **value** | Specifies the default date of the datepicker. | Any date in the format specified in the `format` key |
+| **disabledDates** | Specifies the dates that you want to disable. | Provide the dates in an array that you want to disable |
+| **enableTime** | Specifies whether to enable time or not. | set `true` to enable time or `false` to disable it |
+| **format** | Specifies the format of the date. | 'DD/MM/YYYY' |
+| **label** | Specifies the label of the component. | Any string value |
+
 
 <div style={{textAlign:'center'}}>
   <img className="screenshot-full" src="/img/widgets/form/datepickerschema.png" alt="Form custom schema" />
@@ -171,23 +265,39 @@ datepicker1: {    // component name
 **Properties**
 
 ```js
-numberInput:{ // component name
-  type: 'number', // define the type of component
-  styles: {
-        backgroundColor: '#f6f5ff', // set the background color of the component by providing a hex color code
-        borderRadius: 20, // provide a numeric value to set the border radius
-        textColor: 'red', // set the text color of the component by providing a hex color code
-        borderColor: 'blue', // set the border color of the component by providing a hex color code
-        disabled: false, // set true to disable the component or false to enable it
-        visibility: 'true' // set 'true' to show the component or 'false' to hide it
- },
-    value: 10, // set the default value of the number input
-    maxValue: 12, // set the maximum value of the number input
-    minValue: 6, // set the minimum value of the number input
-    placeholder: 'test', // set the placeholder text of the number input
-    label: 'Number Input' // set the label of the component
-},
+numberInput1: {
+    type: 'number',
+    styles: {
+        backgroundColor: '#f6f5ff',
+        borderRadius: 20,
+        textColor: 'red',
+        borderColor: 'blue',
+        disabled: false,
+        visibility: 'true'
+    },
+    value: 10,
+    maxValue: 12,
+    minValue: 6,
+    placeholder: 'test',
+    label: 'Number Input'
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'number' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `borderRadius`, `textColor`, `borderColor`, `disabled`, `visibility` etc. |
+| **backgroundColor** | Specifies the background color of the component. | Color name or Hex color code '#f6f5ff' |
+| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5, 10, 20 etc. |
+| **textColor** | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff'|
+| **borderColor** | Specifies the border color of the component. | Color name or Hex color code '#f6f5ff'|
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **value** | Specifies the default value of the number input. | Numeric value |
+| **maxValue** | Specifies the maximum value of the number input. | Numeric value |
+| **minValue** | Specifies the minimum value of the number input. | Numeric value |
+| **placeholder** | Specifies the placeholder text of the number input. | Any string value |
+| **label** | Specifies the label of the component. | Any string value |
 
 <div style={{textAlign:'center'}}>
 
@@ -200,23 +310,39 @@ numberInput:{ // component name
 **Properties**
 
 ```js
-passwordInput1:{ // component name
-  type:"password", // define the type of component
-  styles:{
-      backgroundColor: '#f6f5ff', // set the background color of the component by providing a hex color code
-      borderRadius: 10, // provide a numeric value to set the border radius
-      disabled: false, // set true to disable the component or false to enable it
-      visibility: 'true' // set 'true' to show the component or 'false' to hide it
-   },
-   validation:{
-      maxLength: 9, // set the maximum length of the password
-      minLength: 5, // set the minimum length of the password
-      regex: '^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$' // set the regex for the password
-},
-   placeholder:"Enter a password", // set the placeholder text of the password input
-   label: '' // set the label of the component
-},
+passwordInput1: {
+    type: 'password',
+    styles: {
+        backgroundColor: '#f6f5ff',
+        borderRadius: 10,
+        disabled: false,
+        visibility: 'true'
+    },
+    validation: {
+        maxLength: 9,
+        minLength: 5,
+        regex: '^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$'
+    },
+    placeholder: 'Enter a password',
+    label: ''
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'password' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `borderRadius`, `disabled`, `visibility` etc. |
+| **backgroundColor** | Specifies the background color of the component. | Color name or Hex color code '#f6f5ff' |
+| **borderRadius** | Specifies the border radius of the component. | Numeric value like 10 |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **validation** | Specifies validation rules for the password. | Object containing `maxLength`, `minLength`, and `regex` properties |
+| **maxLength** | Specifies the maximum length of the password. | Numeric value like 9 |
+| **minLength** | Specifies the minimum length of the password. | Numeric value like 5 |
+| **regex** | Specifies the regular expression for password validation. | Regular expression pattern like '^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$' |
+| **placeholder** | Specifies the placeholder text of the password input. | Any string value like 'Enter a password' |
+| **label** | Specifies the label of the component. | Any string value (in this case, it's an empty string), to hide the label you can use whitespace within quotes `' '` |
+
 
 <div style={{textAlign:'center'}}>
 
@@ -224,24 +350,35 @@ passwordInput1:{ // component name
 
 </div>
 
-
 ### Checkbox
 
 **Properties**
 
 ```js
-checkbox1:{ // component name
-  type: 'checkbox', // define the type of component
-  styles: {
-    checkboxColor: 'red', // set the color of the checkbox by providing a hex color code
-    disabled: false, // set true to disable the component or false to enable it
-    textColor: 'red', // set the text color of the component by providing a hex color code
-    visibility: 'true' // set 'true' to show the component or 'false' to hide it
-  },
-  value: false, // set the default value of the checkbox
-  label: 'Checkbox' // set the label of the component
-},
+checkbox1: {
+    type: 'checkbox',
+    styles: {
+        checkboxColor: 'red',
+        disabled: false,
+        textColor: 'red',
+        visibility: 'true'
+    },
+    value: false,
+    label: 'Checkbox'
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'checkbox' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `checkboxColor`, `disabled`, `textColor`, `visibility` etc. |
+| **checkboxColor** | Specifies the color of the checkbox. | Color name or Hex color code '#f6f5ff' |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **textColor** | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff' |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **value** | Specifies the default value of the checkbox. | Boolean value (true or false) |
+| **label** | Specifies the label of the component. | Any string value like 'Checkbox' |
+
 
 <div style={{textAlign:'center'}}>
 
@@ -254,18 +391,30 @@ checkbox1:{ // component name
 **Properties**
 
 ```js
-toggleswitch1:{ // component name
-  type: 'toggle',  // define the type of component
-  styles: {
-    textColor: 'blue', // set the text color of the component by providing a hex color code
-    disabled: false, // set true to disable the component or false to enable it
-    visibility: 'true', // set 'true' to show the component or 'false' to hide it
-    toggleSwitchColor: 'red' // set the color of the toggle switch by providing a hex color code
-  },
-  value: true, // set the default value of the toggle switch
-  label: 'Toggle switch' // set the label of the component
- },
+toggleswitch1: {
+    type: 'toggle',
+    styles: {
+        textColor: 'blue',
+        disabled: false,
+        visibility: 'true',
+        toggleSwitchColor: 'red'
+    },
+    value: true,
+    label: 'Toggle switch'
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'toggle' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `textColor`, `disabled`, `visibility`, `toggleSwitchColor` etc. |
+| **textColor** | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff' |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **toggleSwitchColor** | Specifies the color of the toggle switch. | Color name or Hex color code '#f6f5ff' |
+| **value** | Specifies the default value of the toggle switch. | Boolean value (true or false) |
+| **label** | Specifies the label of the component. | Any string value like 'Toggle switch' |
+
 
 <div style={{textAlign:'center'}}>
 
@@ -278,18 +427,30 @@ toggleswitch1:{ // component name
 **Properties**
 
 ```js
-textArea1:{ // component name
-  type: 'textarea', // define the type of component
-  styles: {
-    disabled: false, // set true to disable the component or false to enable it
-    visibility: 'true', // set 'true' to show the component or 'false' to hide it
-    borderRadius: 20 // provide a numeric value to set the border radius
-  },
-  value: 'This is a text area', // set the default value of the text area
-  placeholder: 'Enter text here',   // set the placeholder text of the text area
-  label: 'Text Area' // set the label of the component
- },
+textArea1: {
+    type: 'textarea',
+    styles: {
+        disabled: false,
+        visibility: 'true',
+        borderRadius: 20
+    },
+    value: 'This is a text area',
+    placeholder: 'Enter text here',
+    label: 'Text Area'
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'textarea' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius` etc. |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **borderRadius** | Specifies the border radius of the component. | Numeric value like 20 |
+| **value** | Specifies the default value of the text area. | Any string value like 'This is a text area' |
+| **placeholder** | Specifies the placeholder text of the text area. | Any string value like 'Enter text here' |
+| **label** | Specifies the label of the component. | Any string value like 'Text Area' |
+
 
 <div style={{textAlign:'center'}}>
 
@@ -302,19 +463,31 @@ textArea1:{ // component name
 **Properties**
 
 ```js
-daterangepicker1: { // component name
-  type: 'daterangepicker', // define the type of component
-  styles: {
-    disabled: true, // set true to disable the component or false to enable it  
-    visibility: 'true', // set 'true' to show the component or 'false' to hide it
-    borderRadius: 5 // provide a numeric value to set the border radius
-  },
-  defaultEndDate: '12/04/2022', // set the default end date of the date range picker
-  defaultStartDate: '1/04/2022', // set the default start date of the date range picker
-  format: 'DD/MM/YYYY', // set the format of the date
-  label: 'Select a date range' // set the label of the component
-},
+daterangepicker1: {
+    type: 'daterangepicker',
+    styles: {
+        disabled: true,
+        visibility: 'true',
+        borderRadius: 5
+    },
+    defaultEndDate: '12/04/2022',
+    defaultStartDate: '1/04/2022',
+    format: 'DD/MM/YYYY',
+    label: 'Select a date range'
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'daterangepicker' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius` etc. |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5 |
+| **defaultEndDate** | Specifies the default end date of the date range picker. | Date in the format specified in the `format` key, e.g., '12/04/2022' |
+| **defaultStartDate** | Specifies the default start date of the date range picker. | Date in the format specified in the `format` key, e.g., '1/04/2022' |
+| **format** | Specifies the format of the date. | 'DD/MM/YYYY' |
+| **label** | Specifies the label of the component. | Any string value like 'Select a date range' |
 
 <div style={{textAlign:'center'}}>
 
@@ -327,21 +500,34 @@ daterangepicker1: { // component name
 **Properties**
 
 ```js
-multiselect1: { // component name
-  type: 'multiselect', // define the type of component
-  styles: {
-    disabled: false, // set true to disable the component or false to enable it
-    visibility: 'true', // set 'true' to show the component or 'false' to hide it
-    borderRadius: 5 // provide a numeric value to set the border radius
-  },
-  displayValues: ["one","two","three"], // set the value for option labels in an array format
-  label: 'Select options', // set the label of the component
-  value: [2,3], // set the default value(s) in an array
-  values: [1,2,3], // set the values in an array
-  showAllOption: true, // set true to show the 'All' option in the multiselect or false to hide it
-  label: 'Select options of your choice' // set the label of the component
-},
+multiselect1: {
+    type: 'multiselect',
+    styles: {
+        disabled: false,
+        visibility: 'true',
+        borderRadius: 5
+    },
+    displayValues: ["one", "two", "three"],
+    label: 'Select options of your choice',
+    value: [2, 3],
+    values: [1, 2, 3],
+    showAllOption: true
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'multiselect' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius` etc. |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5 |
+| **displayValues** | Specifies the value for option labels in an array format. | Array of strings like `["one", "two", "three"]` |
+| **label** | Specifies the label of the component. | Any string value like 'Select options of your choice' |
+| **value** | Specifies the default value(s) in an array. | Array of values like `[2, 3]` |
+| **values** | Specifies the values in an array. | Array of values like `[1, 2, 3]` |
+| **showAllOption** | Specifies whether to show the 'All' option in the multiselect or not. | set `true` to show the 'All' option or `false` to hide it |
+
 
 <div style={{textAlign:'center'}}>
 
@@ -354,21 +540,36 @@ multiselect1: { // component name
 **Properties**
 
 ```js
-starRating1: { // component name
-  type: 'starrating', // define the type of component
-  styles: {
-    disabled: false, // set true to disable the component or false to enable it
-    visibility: 'true', // set 'true' to show the component or 'false' to hide it
-    textColor: 'yellow', // set the color of the stars by providing a hex color code
-    labelColor: 'red' // set the color of the label by providing a hex color code
-  },
-  allowHalfStar: true, // set true to allow selection of half star rating or false to disable it
-  defaultSelected: 4.5, // set the default value of the star rating
-  maxRating: 10, // set the maximum rating 
-  tooltips: ['one','two','three','four'], // set the tooltips for each star in an array
-  label: 'Select a rating' // set the label of the component
-},
+starRating1: {
+    type: 'starrating',
+    styles: {
+        disabled: false,
+        visibility: 'true',
+        textColor: 'yellow',
+        labelColor: 'red'
+    },
+    allowHalfStar: true,
+    defaultSelected: 4.5,
+    maxRating: 10,
+    tooltips: ['one', 'two', 'three', 'four'],
+    label: 'Select a rating'
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'starrating' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `textColor`, `labelColor` etc. |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **textColor** | Specifies the color of the stars. | Color name or Hex color code '#f6f5ff' |
+| **labelColor** | Specifies the color of the label. | Color name or Hex color code '#f6f5ff' |
+| **allowHalfStar** | Specifies whether to allow selection of half star rating or not. | set `true` to allow half-star ratings or `false` to disable it |
+| **defaultSelected** | Specifies the default value of the star rating. | Numeric value like 4.5 |
+| **maxRating** | Specifies the maximum rating. | Numeric value like 10 |
+| **tooltips** | Specifies the tooltips for each star in an array. | Array of strings like `['one', 'two', 'three', 'four']` |
+| **label** | Specifies the label of the component. | Any string value like 'Select a rating' |
+
 
 <div style={{textAlign:'center'}}>
 
@@ -381,24 +582,39 @@ starRating1: { // component name
 **Properties**
 
 ```js
-filepicker1: { // component name
-  type: 'filepicker', // define the type of component
-  styles: {
-    visibility: 'true', // set 'true' to show the component or 'false' to hide it
-    borderRadius: 10 // provide a numeric value to set the border radius
-  },
-  enableMultiple: true, // set true to enable multiple file selection or false to disable it
-  fileType: '*/*', // set the mime file type
-  instructionText: 'Click here to select files', // set the instruction text of the file picker
-  maxFileCount: 5, // set the maximum number of files that can be selected
-  maxSize: 6000000, // set the maximum size of the file in bytes
-  minSize: 25, // set the minimum size of the file in bytes
-  parseContent: true, // set true to parse the content of the file or false to disable it
-  parseFileType: 'csv', // set the file type to parse e.g. csv, text, xlsx
-  label: 'Select a file' // set the label of the component
-},
+filepicker1: {
+    type: 'filepicker',
+    styles: {
+        visibility: 'true',
+        borderRadius: 10
+    },
+    enableMultiple: true,
+    fileType: '*/*',
+    instructionText: 'Click here to select files',
+    maxFileCount: 5,
+    maxSize: 6000000,
+    minSize: 25,
+    parseContent: true,
+    parseFileType: 'csv',
+    label: 'Select a file'
+}
 ```
 
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'filepicker' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `visibility`, `borderRadius` etc. |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **borderRadius** | Specifies the border radius of the component. | Numeric value like 10 |
+| **enableMultiple** | Specifies whether to enable multiple file selection or not. | set `true` to enable multiple file selection or `false` to disable it |
+| **fileType** | Specifies the mime file type. | Mime types like '*/*' (accepts all file types) |
+| **instructionText** | Specifies the instruction text of the file picker. | Any string value like 'Click here to select files' |
+| **maxFileCount** | Specifies the maximum number of files that can be selected. | Numeric value like 5 |
+| **maxSize** | Specifies the maximum size of the file in bytes. | Numeric value like 6000000 (6MB) |
+| **minSize** | Specifies the minimum size of the file in bytes. | Numeric value like 25 |
+| **parseContent** | Specifies whether to parse the content of the file or not. | set `true` to parse the content or `false` to disable it |
+| **parseFileType** | Specifies the file type to parse (e.g., csv, text, xlsx). | File type like 'csv' |
+| **label** | Specifies the label of the component. | Any string value like 'Select a file' |
 
 <div style={{textAlign:'center'}}>
 
@@ -411,24 +627,40 @@ filepicker1: { // component name
 **Properties**
 
 ```js
-textinput1: { // component name
-    type: 'textinput', // define the type of component
-    value: 'Random text', // set the default value of the text input 
-    placeholder: 'enter first name here', // set the placeholder text of the text input
-    label: 'First name', // set the label of the component
+textinput1: {
+    type: 'textinput',
+    value: 'Random text',
+    placeholder: 'enter first name here',
+    label: 'First name',
     validation: {
-      maxLength: 6, // set the maximum length validation of the text input
+        maxLength: 6
     },
     styles: {
-      backgroundColor: 'red', // set the background color of the component by providing a hex color code
-      borderRadius: 20, // provide a numeric value to set the border radius
-      errorTextColor: 'green', // set the color of the error text by providing a hex color code
-      disabled: false, // set true to disable the component or false to enable it
-      visibility: false, // set 'true' to show the component or 'false' to hide it
-      textColor: 'yellow' // set the text color by providing a hex color code
-    },
-    },
+        backgroundColor: 'red',
+        borderRadius: 20,
+        errorTextColor: 'green',
+        disabled: false,
+        visibility: false,
+        textColor: 'yellow'
+    }
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'textinput' |
+| **value** | Specifies the default value of the text input. | Any string value like 'Random text' |
+| **placeholder** | Specifies the placeholder text of the text input. | Any string value like 'enter first name here' |
+| **label** | Specifies the label of the component. | Any string value like 'First name' |
+| **validation** | Specifies validation rules for the text input. | Object containing `maxLength` property |
+| **maxLength** | Specifies the maximum length validation of the text input. | Numeric value like 6 |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `borderRadius`, `errorTextColor`, `disabled`, `visibility`, `textColor` etc. |
+| **backgroundColor** | Specifies the background color of the component. | Color name or Hex color code '#f6f5ff' |
+| **borderRadius** | Specifies the border radius of the component. | Numeric value like 20 |
+| **errorTextColor** | Specifies the color of the error text. | Color name or Hex color code '#f6f5ff' |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `false` to hide the component or `true` to show it |
+| **textColor** | Specifies the text color of the component. | Color name or Hex color code '#f6f5ff' |
 
 <div style={{textAlign:'center'}}>
 
@@ -441,21 +673,36 @@ textinput1: { // component name
 **Properties**
 
 ```js
-dropdown1: { // component name
-  type: 'dropdown', // define the type of component
-  displayValues: [1, 2, 3], // set the value for option labels in an array format
-  values: ['one', 'two', 'three'], // set the option labels in an array
-  loading: false, // set true to show the loading state or false to hide it
-  value: 'two', // set the default selected value of the dropdown
-  label: 'Select a number', // set the label of the component
-  styles: {
-    disabled: false, // set true to disable the component or false to enable it
-    visibility: 'true', // set 'true' to show the component or 'false' to hide it
-    borderRadius: 5, // provide a numeric value to set the border radius
-    justifyContent: 'end' // set the alignment of the dropdown options to start, center or end
-  }
-},
+dropdown1: {
+    type: 'dropdown',
+    displayValues: [1, 2, 3],
+    values: ['one', 'two', 'three'],
+    loading: false,
+    value: 'two',
+    label: 'Select a number',
+    styles: {
+        disabled: false,
+        visibility: 'true',
+        borderRadius: 5,
+        justifyContent: 'end'
+    }
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'dropdown' |
+| **displayValues** | Specifies the value for option labels in an array format. | Array of values like `[1, 2, 3]` |
+| **values** | Specifies the option labels in an array. | Array of strings like `['one', 'two', 'three']` |
+| **loading** | Specifies whether to show the loading state or not. | set `true` to show the loading state or `false` to hide it |
+| **value** | Specifies the default selected value of the dropdown. | Any value from the `values` array, like 'two' |
+| **label** | Specifies the label of the component. | Any string value like 'Select a number' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `disabled`, `visibility`, `borderRadius`, `justifyContent` etc. |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **borderRadius** | Specifies the border radius of the component. | Numeric value like 5 |
+| **justifyContent** | Specifies the alignment of the dropdown options. | 'start', 'center', or 'end' |
+
 
 <div style={{textAlign:'center'}}>
 
@@ -468,21 +715,35 @@ dropdown1: { // component name
 **Properties**
 
 ```js
-button1: { // component name
-  type:'button', // define the type of component
-  value: 'Submit', // set the button text
-  label: '', // set the label of the component, set the value null i.e '' to hide the label
-  styles: {
-      backgroundColor: 'blue', // set the background color of the button by providing a hex color code
-      textColor: 'white', // set the text color of the button by providing a hex color code
-      borderRadius: 5, // provide a numeric value to set the border radius
-      borderColor: 'black', // set the border color of the button by providing a hex color code
-      loaderColor: 'gray', // set the color of the loader on the button by providing a hex color code
-      visibility: 'true', // set 'true' to show the component or 'false' to hide it
-      disabled: true // set true to disable the component or false to enable it
+button1: {
+    type: 'button',
+    value: 'Submit',
+    label: '',
+    styles: {
+        backgroundColor: 'blue',
+        textColor: 'white',
+        borderRadius: 5,
+        borderColor: 'black',
+        loaderColor: 'gray',
+        visibility: 'true',
+        disabled: true
     }
-    },
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'button' |
+| **value** | Specifies the button text. | Any string value like 'Submit' |
+| **label** | Specifies the label of the component. | Set to `''` (empty string) to hide the label |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `textColor`, `borderRadius`, `borderColor`, `loaderColor`, `visibility`, `disabled` etc. |
+| **backgroundColor** | Specifies the background color of the button. | Color name or Hex color code '#f6f5ff' |
+| **textColor** | Specifies the text color of the button. | Color name or Hex color code '#f6f5ff' |
+| **borderRadius** | Specifies the border radius of the button. | Numeric value like 5 |
+| **borderColor** | Specifies the border color of the button. | Color name or Hex color code '#f6f5ff' |
+| **loaderColor** | Specifies the color of the loader on the button. | Color name or Hex color code '#f6f5ff' |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
 
 <div style={{textAlign:'center'}}>
 
@@ -495,18 +756,29 @@ button1: { // component name
 **Properties**
 
 ```js
-text1: { // component name
-  type: 'text', // define the type of component
-  value: 'This is a text component', // set the value of the text component
-  label: '', // set the label of the component, set the value null i.e '' to hide the label
-  styles: {
-    backgroundColor: '#f6f5ff', // set the background color of the text by providing a hex color code
-    textColor: 'red', // set the text color by providing a hex color code
-    fontSize: 24, // set the font size of the text
-    fontWeight: 30 // set the font weight of the text
-  }
-},
+text1: {
+    type: 'text',
+    value: 'This is a text component',
+    label: '',
+    styles: {
+        backgroundColor: '#f6f5ff',
+        textColor: 'red',
+        fontSize: 24,
+        fontWeight: 30
+    }
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'text' |
+| **value** | Specifies the value of the text component. | Any string value like 'This is a text component' |
+| **label** | Specifies the label of the component. | Set to `''` (empty string) to hide the label |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `backgroundColor`, `textColor`, `fontSize`, `fontWeight` etc. |
+| **backgroundColor** | Specifies the background color of the text. | Color name or Hex color code '#f6f5ff' |
+| **textColor** | Specifies the text color of the text. | Color name or Hex color code '#f6f5ff' |
+| **fontSize** | Specifies the font size of the text. | Numeric value like 24 |
+| **fontWeight** | Specifies the font weight of the text. | Numeric value like 30 |
 
 <div style={{textAlign:'center'}}>
 
@@ -519,19 +791,31 @@ text1: { // component name
 **Properties**
 
 ```js
-radioButton1: { // component name
-  type: 'radio', // define the type of component
-  styles: {
-    textColor: 'black', // set the text color of the radio option by providing a hex color code
-    disabled: false, // set true to disable the component or false to enable it
-    visibility: 'true' // set 'true' to show the component or 'false' to hide it 
-  },
-  displayValues: ['option 1', 'option 2', 'option 3'], // set the value for labels in an array format
-  label: 'Radio Buttons', // set the label of the component
-  value: 2, // set the default selected value of the radio button
-  values: [1,2,3], // set the valuees in an array
-},
+radioButton1: {
+    type: 'radio',
+    styles: {
+        textColor: 'black',
+        disabled: false,
+        visibility: 'true'
+    },
+    displayValues: ['option 1', 'option 2', 'option 3'],
+    label: 'Radio Buttons',
+    value: 2,
+    values: [1, 2, 3]
+}
 ```
+
+| Key | Description | Expected Value |
+| :----------- | :----------- | :-----------|
+| **type** | Specifies the type of component. | 'radio' |
+| **styles** | Specifies the styles of the component. | Object that will contain the styles of the component like `textColor`, `disabled`, `visibility` etc. |
+| **textColor** | Specifies the text color of the radio options. | Color name or Hex color code '#f6f5ff' |
+| **disabled** | Specifies whether to disable the component or not. | set `true` to disable the component or `false` to enable it |
+| **visibility** | Specifies whether to show the component or not. | set `'true'` to show the component or `'false'` to hide it |
+| **displayValues** | Specifies the value for labels in an array format. | Array of strings like `['option 1', 'option 2', 'option 3']` |
+| **label** | Specifies the label of the component. | Any string value like 'Radio Buttons' |
+| **value** | Specifies the default selected value of the radio button. | Any value from the `values` array, like 2 |
+| **values** | Specifies the values in an array. | Array of values like `[1, 2, 3]` |
 
 <div style={{textAlign:'center'}}>
 

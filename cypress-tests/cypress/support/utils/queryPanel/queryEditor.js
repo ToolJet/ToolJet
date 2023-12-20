@@ -1,11 +1,11 @@
 export const verifyElemtsNoGds = (option) => {
   cy.get('[data-cy="label-select-datasource"]').verifyVisibleElement(
     "have.text",
-    "Connect to a datasource"
+    "Connect to a Data Source"
   );
   cy.get('[data-cy="querymanager-description"]').verifyVisibleElement(
     "contain.text",
-    "Select a datasource to start creating a new query. To know more about queries in ToolJet, you can read our"
+    "Select a Data Source to start creating a new query. To know more about queries in ToolJet, you can read our"
   );
   cy.get('[data-cy="querymanager-doc-link"]').verifyVisibleElement(
     "have.text",
@@ -18,33 +18,33 @@ export const verifyElemtsNoGds = (option) => {
   );
   cy.get('[data-cy="restapi-add-query-card"]').verifyVisibleElement(
     "have.text",
-    "REST API"
+    " REST API"
   );
   cy.get('[data-cy="runjs-add-query-card"]').verifyVisibleElement(
     "have.text",
-    "JavaScript"
+    " JavaScript"
   );
   cy.get('[data-cy="runpy-add-query-card"]').verifyVisibleElement(
-    "have.text",
-    "Python"
+    "contain.text",
+    " Python"
   );
   cy.get('[data-cy="tooljetdb-add-query-card"]').verifyVisibleElement(
     "have.text",
-    "ToolJet DB"
+    " ToolJet DB"
   );
 
   cy.get('[data-cy="label-avilable-ds"]').verifyVisibleElement(
     "have.text",
-    "Available Datasources 0"
+    "Available data sources 0"
   );
   cy.get('[data-cy="landing-page-add-new-ds-button"]').verifyVisibleElement(
     "have.text",
     "Add new"
   );
-  cy.get('[data-cy="empty-banner-queryManager"]').verifyVisibleElement(
+  cy.get('[data-cy="label-no-ds-added"]').verifyVisibleElement(
     "have.text",
-    "No global datasources have been added yet. Add new datasources to connect to your app! 🚀"
+    "No global data sources have been added yet."
   );
 };
 
-export const verifyElemtsWithGds = (option) => {};
+export const verifyElemtsWithGds = (option) => { };

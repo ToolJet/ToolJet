@@ -12,7 +12,6 @@
         "setup/try-tooljet",
         "setup/digitalocean",
         "setup/docker",
-        "setup/heroku",
         "setup/ec2",
         "setup/ecs",
         "setup/openshift",
@@ -373,6 +372,7 @@
           "type": "category",
           "label": "Setup",
           "items": [
+            "contributing-guide/setup/codespaces",
             "contributing-guide/setup/macos",
             "contributing-guide/setup/docker",
             "contributing-guide/setup/ubuntu",

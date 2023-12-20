@@ -14,7 +14,6 @@ const Preview = ({ darkMode }) => {
   const previewLoading = usePreviewLoading();
   const { setPreviewData } = useQueryPanelActions();
   const previewPanelRef = useRef();
-
   useEffect(() => {
     setTheme(() => getTheme(darkMode));
   }, [darkMode]);
@@ -39,10 +38,11 @@ const Preview = ({ darkMode }) => {
   }, [queryPreviewData]);
 
   const renderRawData = () => {
-    if (queryPreviewData) {
+    if (!queryPreviewData) {
+      return queryPreviewData === null ? '' : `${queryPreviewData}`;
+    } else {
       return isJson ? JSON.stringify(queryPreviewData).toString() : queryPreviewData.toString();
     }
-    return '';
   };
 
   return (
@@ -83,8 +83,8 @@ const Preview = ({ darkMode }) => {
                 </ListGroup>
               </Col>
               <Col className="text-right d-flex align-items-center justify-content-end">
-                {queryPreviewData && (
-                  <ButtonSolid variant="ghostBlack" size="sm" onClick={() => setPreviewData()}>
+                {queryPreviewData !== '' && (
+                  <ButtonSolid variant="ghostBlack" size="sm" onClick={() => setPreviewData('')}>
                     <RemoveRectangle width={17} viewBox="0 0 28 28" fill="var(--slate8)" /> Clear
                   </ButtonSolid>
                 )}

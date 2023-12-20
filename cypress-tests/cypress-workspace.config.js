@@ -76,21 +76,17 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
-      "cypress/e2e/selfHost/*.cy.js",
-      "cypress/e2e/authentication/*.cy.js",
+      "cypress/e2e/ce/**/*.cy.js",
+      "cypress/e2e/editor/app-version/version.cy.js",
       "cypress/e2e/workspace/*.cy.js",
-      "cypress/e2e/globalDataSources/*.cy.js",
-      "cypress/e2e/editor/app-version/version.cy.js"
+      "cypress/e2e/authentication/*.cy.js",
+      "cypress/e2e/selfHost/*.cy.js",
     ],
     numTestsKeptInMemory: 1,
-    redirectionLimit: 7,
+    redirectionLimit: 15,
     experimentalRunAllSpecs: true,
     experimentalMemoryManagement: true,
     video: false,
     videoUploadOnPasses: false,
-    retries: {
-      runMode: 2,
-      openMode: 0,
-    },
   },
 });

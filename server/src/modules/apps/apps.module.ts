@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from '../../entities/app.entity';
 import { File } from '../../entities/file.entity';
 import { AppsController } from '../../controllers/apps.controller';
+import { AppsControllerV2 } from '../../controllers/apps.controller.v2';
 import { AppsService } from '../../services/apps.service';
 import { AppVersion } from '../../../src/entities/app_version.entity';
 import { DataQuery } from '../../../src/entities/data_query.entity';
@@ -33,6 +34,15 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
 
+import { Component } from 'src/entities/component.entity';
+import { Page } from 'src/entities/page.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
+import { Layout } from 'src/entities/layout.entity';
+
+import { ComponentsService } from '@services/components.service';
+import { PageService } from '@services/page.service';
+import { EventsService } from '@services/events_handler.service';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -52,6 +62,10 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       Credential,
       File,
       Plugin,
+      Component,
+      Page,
+      EventHandler,
+      Layout,
     ]),
     CaslModule,
   ],
@@ -68,7 +82,10 @@ import { AppEnvironmentService } from '@services/app_environments.service';
     PluginsService,
     PluginsHelper,
     AppEnvironmentService,
+    ComponentsService,
+    PageService,
+    EventsService,
   ],
-  controllers: [AppsController, AppUsersController, AppsImportExportController],
+  controllers: [AppsController, AppsControllerV2, AppUsersController, AppsImportExportController],
 })
 export class AppsModule {}
