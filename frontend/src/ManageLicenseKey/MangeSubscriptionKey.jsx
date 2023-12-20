@@ -14,8 +14,9 @@ import { authenticationService } from '@/_services';
 import toast from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App';
 import posthog from 'posthog-js';
+import ChatwootIntegration from '@/_components/ChatwootIntegration';
 
-function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
+function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings, darkMode }) {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState('subscriptionKey');
   const [sidebarNavs, setSidebarNavs] = useState(['Subscription key']);
@@ -27,6 +28,10 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
   const paymentStatus = searchParams.get('payment');
   const currentTab = searchParams.get('currentTab');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  useEffect(() => {
+    return () => window.$chatwoot.toggleBubbleVisibility('hide');
+  }, []);
 
   const defaultOrgName = (groupName) => {
     switch (groupName) {
@@ -182,6 +187,11 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings }) {
           </div>
         </div>
       </div>
+      <ChatwootIntegration
+        token="oN4XrHrWTqwPTgj66JuzVrje"
+        darkMode={darkMode}
+        currentUser={authenticationService.currentSessionValue?.current_user}
+      />
     </div>
   );
 }
