@@ -65,7 +65,9 @@
     "@tooljet-plugins/zendesk": "file:packages/zendesk"
   },
   "peerDependencies": {
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    /* temporary fix: somehow docker were skipping to install this package cuased not found module issue */
+    "form-data": "^4.0.0"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",
