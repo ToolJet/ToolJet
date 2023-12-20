@@ -28,32 +28,96 @@ const MyCustomComponent = ({data, updateData, runQuery}) => {
 const Plot = createPlotlyComponent(Plotly);
 
     const barOnClick = ({points}) => {
-        if(points[0].label === "Pub ABC"){
-            runQuery('switchTablePage')
-        }
+            alert('A bar is clicked')
     }
   return (
   <Container>
       <Plot data={[ 
-        {   
-            "name": "Pub ABC",
-            "x": [ "Pub ABC" ],
-            "y": [ 60 ],
-            "marker": { "color": "blue" },
-            "type": "bar" 
-            },  
-            {   
-            "name": "Pub XYZ",
-            "x": [ "Pub XYZ" ],
-            "y": [ 40 ], 
-            "marker": { "color": "red" },
-            "type": "bar" 
-            }
+        {
+            "name": "Inbound",
+            "type": "bar",
+            "x": [
+                20,
+                14,
+                23,
+                22,
+                30,
+                12,
+                15,
+                26,
+                31,
+                16,
+                18,
+                29
+            ],
+            "y": [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec"
+            ],
+            "marker": {
+                "line": {
+                    "color": "rgba(55, 128, 191, 1.0)",
+                    "width": 1
+                },
+                "color": "rgba(55, 128, 191, 0.6)"
+            },
+            "orientation": "h"
+        },
+        {
+            "name": "Outbound",
+            "type": "bar",
+            "x": [
+                12,
+                18,
+                29,
+                22,
+                14,
+                23,
+                15,
+                23,
+                26,
+                13,
+                27,
+                12              
+            ],
+            "y": [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec"
+            ],
+            "marker": {
+                "line": {
+                    "color": "rgba(255, 153, 51, 1.0)",
+                    "width": 1
+                },
+                "color": "rgba(255, 153, 51, 0.6)"
+            },
+            "orientation": "h"
+        }
         ]}
         layout={{
-            width: 640,
-            height: 480,
-            title: "Views by Publisher",
+            width: 840,
+            height: 800,
+            title: "Tickets Resolved: Inbound & Outbound",
             showlegend: false,
         }}
         onClick={barOnClick}
@@ -62,7 +126,6 @@ const Plot = createPlotlyComponent(Plotly);
 )}
 const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
 ReactDOM.render(<ConnectedComponent />, document.body);
-
 ```
 
 Let's understand the code above in detail. First, we imported the required libraries. 
@@ -76,44 +139,113 @@ import createPlotlyComponent from 'https://cdn.skypack.dev/react-plotly.js/facto
 ```
 
 
-Then, we created a function component called `MyCustomComponent`. This component will render the chart. We use the `createPlotlyComponent` function to create a Plotly component. Then, we create a function called `barOnClick` that will be called when the user clicks on the bar. This function will log the label of the bar in the console. If the label is `Pub ABC`, we will call the `runQuery` function to switch the page to the table page. 
+Then, we created a function component called `MyCustomComponent`. This component will render the chart. We use the `createPlotlyComponent` function to create a Plotly component. Then, we create a function called `barOnClick` that will be called when the user clicks on the bar. This function will display an alert message. 
 
 ```js
 const MyCustomComponent = ({data, updateData, runQuery}) => { // function component
-const Plot = createPlotlyComponent(Plotly); // create Plotly component
+const Plot = createPlotlyComponent(Plotly); // create a Plotly component
 
-    const barOnClick = ({points}) => { // function to handle click event
-        if(points[0].label === "Pub ABC"){ // if the label is Pub ABC
-            runQuery('switchTablePage') // call the runQuery function to trigger the switchTablePage query (you can pass any query)
-        }
+    const barOnClick = ({points}) => { // function that will be called when the user clicks on the bar
+            alert('A bar is clicked')   // display an alert message
     }
-  return ( // return the Plotly component
+```
+
+Next, we render the chart using the `Plot` component. We pass the data and layout to the `Plot` component. We also pass the `barOnClick` function to the `onClick` prop of the `Plot` component. 
+
+```js
+  return ( // return the Plot component
   <Container> // Material UI Container component
-      <Plot data={[  // Plotly component
-        {   
-            "name": "Pub ABC", // bar name
-            "x": [ "Pub ABC" ], // bar label
-            "y": [ 60 ], // bar value
-            "marker": { "color": "blue" }, // bar color
-            "type": "bar"  // bar type
-            },  
-            {   
-            "name": "Pub XYZ",
-            "x": [ "Pub XYZ" ],
-            "y": [ 40 ], 
-            "marker": { "color": "red" },
-            "type": "bar" 
-            }
+      <Plot data={[  // Plot component
+        { // data for the first bar
+            "name": "Inbound", 
+            "type": "bar",
+            "x": [
+                20,
+                14,
+                23,
+                22,
+                30,
+                12,
+                15,
+                26,
+                31,
+                16,
+                18,
+                29
+            ],
+            "y": [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec"
+            ],
+            "marker": { 
+                "line": { 
+                    "color": "rgba(55, 128, 191, 1.0)",
+                    "width": 1
+                },
+                "color": "rgba(55, 128, 191, 0.6)"
+            },
+            "orientation": "h"
+        },
+        { // data for the second bar
+            "name": "Outbound",
+            "type": "bar",
+            "x": [
+                12,
+                18,
+                29,
+                22,
+                14,
+                23,
+                15,
+                23,
+                26,
+                13,
+                27,
+                12              
+            ],
+            "y": [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec"
+            ],
+            "marker": {
+                "line": {
+                    "color": "rgba(255, 153, 51, 1.0)",
+                    "width": 1
+                },
+                "color": "rgba(255, 153, 51, 0.6)"
+            },
+            "orientation": "h"
+        }
         ]}
-        layout={{ // Plotly layout
-            width: 640, // chart width
-            height: 480, // chart height
-            title: "Views by Publisher", // chart title
-            showlegend: false, // hide the legend
+        layout={{ // layout for the chart
+            width: 840,
+            height: 800,
+            title: "Tickets Resolved: Inbound & Outbound",
+            showlegend: false,
         }}
-        onClick={barOnClick} // add the onClick event handler
+        onClick={barOnClick} // pass the barOnClick function to the onClick prop
         />
-    </Container>
+    </Container> 
 )}
 ```
 
@@ -124,14 +256,22 @@ const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent); // conne
 ReactDOM.render(<ConnectedComponent />, document.body); // render the component
 ```
 
-## Step 3: Create the query
+## Step 3: Using events from the Custom Component
 
-Now, we need to create a query that will switch the page. Let's create a new javascript query from the query manager and call it `switchTablePage`. Then, add the following code to the query.
+In the code above, we created a function called `barOnClick` that will be called when the user clicks on the bar. This function holds the code that will be executed when the user clicks on the bar. 
 
 ```js
-actions.switchPage('tablepage')
+const barOnClick = ({points}) => {
+        alert('A bar is clicked')
+}
 ```
 
-**Note**: `runQuery` is a function which accepts a query name as a string used to run the query from the custom component. Learn more about the custom component [here](/docs/widgets/custom-component/).
+Instead of displaying an alert message, you can use the `runQuery` function to run a query. 
 
-Once the query is created, you can click on the bar of the custom component to trigger the query.
+```js
+const barOnClick = ({points}) => {
+        runQuery('queryName')
+}
+```
+
+`runQuery` is a function which accepts a query name as a string used to run the query from the custom component. Learn more about the custom component [here](/docs/widgets/custom-component/).
