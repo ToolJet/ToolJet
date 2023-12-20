@@ -1533,7 +1533,7 @@ export const widgets = [
     exposedVariables: {
       value: '',
       isMandatory: false,
-      isVisibile: true,
+      isVisible: true,
       isDisabled: false,
       isLoading: false,
     },
@@ -1796,6 +1796,12 @@ export const widgets = [
         accordian: 'field',
         visibility: false,
       },
+      borderRadius: {
+        type: 'input',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
       boxShadow: {
         type: 'boxShadow',
         displayName: 'Box Shadow',
@@ -1833,7 +1839,7 @@ export const widgets = [
     exposedVariables: {
       value: 99,
       isMandatory: false,
-      isVisibile: true,
+      isVisible: true,
       isDisabled: false,
       isLoading: false,
     },
@@ -2030,12 +2036,19 @@ export const widgets = [
         accordian: 'field',
         visibility: false,
       },
+      borderRadius: {
+        type: 'input',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
       boxShadow: {
         type: 'boxShadow',
         displayName: 'Box Shadow',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
+
       padding: {
         type: 'switch',
         displayName: 'Padding',
@@ -2050,7 +2063,7 @@ export const widgets = [
     exposedVariables: {
       value: '',
       isMandatory: false,
-      isVisibile: true,
+      isVisible: true,
       isDisabled: false,
       isLoading: false,
     },

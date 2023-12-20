@@ -176,14 +176,14 @@ export const PasswordInput = function PasswordInput({
   }, [properties.loadingState]);
 
   useEffect(() => {
-    setExposedVariable('isVisibile', visibility);
+    setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
   useEffect(() => {
     setExposedVariable('setVisibility', async function (state) {
       setVisibility(state);
-      setExposedVariable('isVisibile', state);
+      setExposedVariable('isVisible', state);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
@@ -249,7 +249,7 @@ export const PasswordInput = function PasswordInput({
                   ? padding == 'default'
                     ? '8px'
                     : '5px'
-                  : `${elementWidth}px`,
+                  : `${elementWidth + 3}px`,
               position: 'absolute',
               top: `${
                 defaultAlignment === 'side' ? '50%' : label?.length > 0 && width > 0 ? 'calc(50% + 10px)' : '50%'
