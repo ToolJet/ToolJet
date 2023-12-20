@@ -89,7 +89,7 @@ export const Code = ({
 
   console.log('paramMeta', paramMeta);
   return (
-    <div className={`field ${options.className}`} style={{ marginBottom: '4px' }}>
+    <div className={`field ${options.className}`} style={{ marginBottom: '6px' }}>
       <CodeHinter
         enablePreview={true}
         initialValue={initialValue}

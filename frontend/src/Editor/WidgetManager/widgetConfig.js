@@ -1716,6 +1716,12 @@ export const widgets = [
         accordian: 'field',
         visibility: false,
       },
+      borderRadius: {
+        type: 'input',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
       boxShadow: {
         type: 'boxShadow',
         displayName: 'Box Shadow',
@@ -1950,12 +1956,19 @@ export const widgets = [
         accordian: 'field',
         visibility: false,
       },
+      borderRadius: {
+        type: 'input',
+        displayName: 'Border radius',
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        accordian: 'field',
+      },
       boxShadow: {
         type: 'boxShadow',
         displayName: 'Box Shadow',
         validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         accordian: 'field',
       },
+
       padding: {
         type: 'switch',
         displayName: 'Padding',
