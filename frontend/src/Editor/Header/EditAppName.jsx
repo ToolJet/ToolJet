@@ -64,6 +64,19 @@ function EditAppName({ appId, appName = '', onNameChanged, appCreationMode }) {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+    }
+  };
+
+  React.useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown); // Clean up the event listener
+    };
+  }, []);
+
   const handleBlur = () => {
     saveAppName(name);
   };

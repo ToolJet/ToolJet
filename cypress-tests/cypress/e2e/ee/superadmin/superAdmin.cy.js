@@ -30,8 +30,7 @@ data.workspaceName = `${fake.companyName}-workspace`;
 
 describe("dashboard", () => {
   beforeEach(() => {
-    cy.apiLogin();
-    cy.visit('/my-workspace')
+    cy.defaultWorkspaceLogin()
     cy.intercept("GET", "/api/folders?searchKey=&type=front-end").as("homePage");
     resetAllowPersonalWorkspace();
   });
@@ -239,9 +238,7 @@ describe("dashboard", () => {
     addNewUserMW(data.firstName, data.email);
     common.logout();
 
-    cy.apiLogin();
-    cy.visit('/my-workspace');
-    cy.wait(500)
+    cy.defaultWorkspaceLogin()
 
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
@@ -287,9 +284,7 @@ describe("dashboard", () => {
     cy.wait("@homePage");
 
     common.logout();
-    cy.apiLogin();
-    cy.visit('/my-workspace')
-    cy.wait(500)
+    cy.defaultWorkspaceLogin()
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -314,9 +309,7 @@ describe("dashboard", () => {
     cy.contains(commonEeText.defaultWorkspace).should("not.exist");
 
     common.logout();
-    cy.apiLogin();
-    cy.visit('/my-workspace')
-    cy.wait(500)
+    cy.defaultWorkspaceLogin()
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -377,9 +370,7 @@ describe("dashboard", () => {
     cy.wait(1000);
     common.logout();
 
-    cy.apiLogin();
-    cy.visit('/')
-    cy.wait(500)
+    cy.defaultWorkspaceLogin()
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(
@@ -404,9 +395,7 @@ describe("dashboard", () => {
     cy.get(commonEeSelectors.modalCloseButton).click();
     cy.logoutApi();
 
-    cy.apiLogin();
-    cy.visit('/')
-    cy.wait(500)
+    cy.defaultWorkspaceLogin()
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.get(instanceSettingsSelector.manageInstanceSettings).click();
     cy.get(instanceSettingsSelector.allowWorkspaceToggle).eq(0).then(($el) => {
@@ -430,9 +419,7 @@ describe("dashboard", () => {
       "User is not assigned to any workspaces"
     );
 
-    cy.apiLogin();
-    cy.visit('/')
-    cy.wait(500)
+    cy.defaultWorkspaceLogin()
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -484,18 +471,14 @@ describe("dashboard", () => {
     cy.visit('/')
     cy.get(commonSelectors.createAnAccountLink).should("not.exist");
 
-    cy.apiLogin();
-    cy.visit('/my-workspace')
-    cy.wait(500)
+    cy.defaultWorkspaceLogin()
     addNewUser(data.firstName, data.email);
     cy.get(commonSelectors.workspaceName).click();
     cy.contains(data.email).should("not.exist");
     cy.get(".add-new-workspace-icon-wrap").should("not.exist");
     cy.logoutApi();
 
-    cy.apiLogin();
-    cy.visit('/my-workspace')
-    cy.wait(500)
+    cy.defaultWorkspaceLogin()
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(

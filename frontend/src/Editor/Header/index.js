@@ -13,15 +13,16 @@ import { ToolTip } from '@/_components/ToolTip';
 import PromoteConfirmationModal from '../EnvironmentsManager/PromoteConfirmationModal';
 import cx from 'classnames';
 import { useAppVersionState, useAppVersionStore } from '@/_stores/appVersionStore';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { LicenseTooltip } from '@/LicenseTooltip';
-import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
+import { useAppInfo, useCurrentUser, useAppDataActions } from '@/_stores/appDataStore';
 import UpdatePresence from './UpdatePresence';
 import { redirectToDashboard } from '@/_helpers/utils';
 import { useEditorActions, useEditorState } from '@/_stores/editorStore';
-import _ from 'lodash';
+import { isEmpty } from 'lodash';
+import queryString from 'query-string';
 
 export default function EditorHeader({
   M,
@@ -44,10 +45,21 @@ export default function EditorHeader({
   isEditorFreezed,
 }) {
   const currentUser = useCurrentUser();
-  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, environments, creationMode } = useAppInfo();
+  const {
+    isSaving,
+    appId,
+    appName,
+    app,
+    isPublic,
+    appVersionPreviewLink,
+    environments,
+    creationMode,
+    currentVersionId,
+  } = useAppInfo();
   const { featureAccess, currentAppEnvironment, currentAppEnvironmentId } = useEditorState();
   const { currentAppVersionEnvironment } = useAppVersionState();
   const { setCurrentAppEnvironmentId } = useEditorActions();
+  const { setAppPreviewLink } = useAppDataActions();
 
   const [promoteModalData, setPromoteModalData] = useState(null);
 
@@ -61,7 +73,12 @@ export default function EditorHeader({
     }),
     shallow
   );
-  const currentState = useCurrentState();
+  const { pageHandle } = useCurrentStateStore(
+    (state) => ({
+      pageHandle: state?.page?.handle,
+    }),
+    shallow
+  );
 
   const handleLogoClick = (e) => {
     e.preventDefault();
@@ -90,6 +107,18 @@ export default function EditorHeader({
     !isVersionReleased &&
     currentAppEnvironment &&
     currentAppEnvironment.name !== 'production';
+
+  useEffect(() => {
+    const previewQuery = queryString.stringify({
+      version: editingVersion?.name,
+      ...(featureAccess?.multiEnvironment ? { env: currentAppEnvironment?.name } : {}),
+    });
+    const appVersionPreviewLink = editingVersion.id
+      ? `/applications/${slug || appId}/${pageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
+      : '';
+    setAppPreviewLink(appVersionPreviewLink);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, currentVersionId, editingVersion, currentAppEnvironmentId, pageHandle]);
 
   return (
     <div className="header" style={{ width: '100%' }}>
@@ -223,37 +252,39 @@ export default function EditorHeader({
               className="d-flex justify-content-end navbar-right-section"
               style={{ width: '300px', paddingRight: '12px' }}
             >
-              <div className="navbar-nav flex-row order-md-last release-buttons ">
-                <div className="nav-item">
-                  {appId && (
-                    <ManageAppUsers
-                      currentEnvironment={currentAppEnvironment}
-                      multiEnvironmentEnabled={featureAccess?.multiEnvironment}
-                      app={app}
-                      appId={appId}
-                      slug={slug}
-                      M={M}
-                      pageHandle={currentState?.page?.handle}
-                      darkMode={darkMode}
-                      isVersionReleased={isVersionReleased}
-                      isPublic={isPublic ?? false}
-                    />
-                  )}
+              <div className=" release-buttons navbar-nav flex-row">
+                <div className="preview-share-wrap navbar-nav flex-row" style={{ gap: '4px' }}>
+                  <div className="nav-item">
+                    {appId && (
+                      <ManageAppUsers
+                        currentEnvironment={currentAppEnvironment}
+                        multiEnvironmentEnabled={featureAccess?.multiEnvironment}
+                        app={app}
+                        appId={appId}
+                        slug={slug}
+                        M={M}
+                        pageHandle={pageHandle}
+                        darkMode={darkMode}
+                        isVersionReleased={isVersionReleased}
+                        isPublic={isPublic ?? false}
+                      />
+                    )}
+                  </div>
+                  <div className="nav-item">
+                    <Link
+                      title="Preview"
+                      to={appVersionPreviewLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      data-cy="preview-link-button"
+                      className="editor-header-icon tj-secondary-btn"
+                    >
+                      <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
+                    </Link>
+                  </div>
                 </div>
-                <div className="nav-item">
-                  <Link
-                    title="Preview"
-                    to={appVersionPreviewLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    data-cy="preview-link-button"
-                    className="editor-header-icon tj-secondary-btn"
-                  >
-                    <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
-                  </Link>
-                </div>
-                <div className="nav-item dropdown">
-                  {!_.isEmpty(featureAccess) && shouldRenderPromoteButton && (
+                <div className="nav-item dropdown promote-release-btn">
+                  {!isEmpty(featureAccess) && shouldRenderPromoteButton && (
                     <ButtonSolid
                       variant="primary"
                       onClick={handlePromote}

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { debounce } from 'lodash';
+
 // Table Search
 export const GlobalFilter = ({
   globalFilter,
-  useAsyncDebounce,
   setGlobalFilter,
   onComponentOptionChanged,
   component,
@@ -13,13 +14,14 @@ export const GlobalFilter = ({
   tableEvents,
 }) => {
   const [value, setValue] = React.useState(globalFilter);
-  const onChange = useAsyncDebounce((filterValue) => {
-    setValue(filterValue);
+  const onChange = (filterValue) => {
     setGlobalFilter(filterValue || undefined);
     onComponentOptionChanged(component, 'searchText', filterValue).then(() => {
       onEvent('onSearch', tableEvents, { component, data: {} });
     });
-  }, 500);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedChange = useMemo(() => debounce(onChange, 500), []);
 
   return (
     <div
@@ -31,8 +33,11 @@ export const GlobalFilter = ({
         <input
           type="text"
           className={`align-self-center bg-transparent tj-text tj-text-xsm mx-lg-1`}
-          defaultValue={value || ''}
-          onChange={(e) => onChange(e.target.value)}
+          value={value || ''}
+          onChange={(e) => {
+            setValue(e.target.value);
+            debouncedChange(e.target.value);
+          }}
           placeholder="Search"
           data-cy="search-input-field"
           style={{
@@ -45,6 +50,7 @@ export const GlobalFilter = ({
           onClick={() => {
             setGlobalFilter(undefined);
             setValue('');
+            onComponentOptionChanged(component, 'searchText', '');
           }}
         >
           <SolidIcon name="remove" width="16" height="16px" fill={darkMode ? '#3E63DD' : '#3E63DD'} />

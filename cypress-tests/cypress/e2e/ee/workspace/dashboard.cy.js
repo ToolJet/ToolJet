@@ -9,13 +9,18 @@ import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 
 describe("dashboard", () => {
+  const selector =
+    Cypress.env("environment") === "Enterprise"
+      ? commonEeSelectors.instanceSettingIcon
+      : '[data-cy="icon-settings"]';
+
   before(() => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
-    cy.intercept("GET", "/api/folders?searchKey=&type=front-end", { folders: [] }).as(
-      "folders"
-    );
+    cy.intercept("GET", "/api/folders?searchKey=&type=front-end", {
+      folders: [],
+    }).as("folders");
     login();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
@@ -123,7 +128,7 @@ describe("dashboard", () => {
     verifyTooltip('[data-cy="icon-database"]', "Database");
     verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
     verifyTooltip(commonSelectors.workspaceSettingsIcon, "Workspace settings");
-    verifyTooltip(commonEeSelectors.instanceSettingIcon, "Settings");
+    verifyTooltip(selector, "Settings");
     verifyTooltip(commonEeSelectors.auditLogIcon, "Audit logs");
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");

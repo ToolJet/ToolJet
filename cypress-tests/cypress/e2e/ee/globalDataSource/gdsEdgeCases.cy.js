@@ -49,20 +49,15 @@ data.text4 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Global Datasource Manager", () => {
     beforeEach(() => {
-        cy.apiLogin();
-        cy.visit('/my-workspace')
-        cy.wait(1000)
+        cy.defaultWorkspaceLogin();
     });
 
     before(() => {
-        cy.apiLogin();
+        cy.defaultWorkspaceLogin();
         cy.apiCreateApp(data.appName);
-        cy.visit('/my-workspace')
-        cy.wait(1000);
         addNewUserMW(data.userName1, data.userEmail1);
         cy.logoutApi();
-        cy.apiLogin();
-        cy.visit('/my-workspace')
+        cy.defaultWorkspaceLogin();
         navigateToManageGroups();
         createGroup(data.userName1);
         cy.wait(1000);
@@ -70,8 +65,7 @@ describe("Global Datasource Manager", () => {
         addAppToGroup(data.appName);
         addNewUserMW(data.userName2, data.userEmail2);
         cy.logoutApi();
-        cy.apiLogin();
-        cy.visit('/my-workspace')
+        cy.defaultWorkspaceLogin();
         navigateToManageGroups();
         createGroup(data.userName2);
         cy.wait(1000);
