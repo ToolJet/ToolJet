@@ -689,7 +689,7 @@ export const widgets = [
     },
     exposedVariables: {
       buttonText: 'Button',
-      isVisibile: true,
+      isVisible: true,
       isDisabled: false,
       isLoading: false,
     },
