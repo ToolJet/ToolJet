@@ -70,7 +70,7 @@ export const useAppDataStore = create(
           const response = await appVersionService.saveAppVersionEventHandlers(appId, versionId, events, updateType);
 
           useAppDataStore.getState().actions.setIsSaving(false);
-          const updatedEvents = get().events;
+          const updatedEvents = [...get().events];
 
           updatedEvents.forEach((e, index) => {
             const toUpdate = response.find((r) => r.id === e.id);
@@ -87,7 +87,7 @@ export const useAppDataStore = create(
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
-          const updatedEvents = get().events;
+          const updatedEvents = [...get().events];
           const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
           useAppDataStore.getState().actions.setIsSaving(false);
           updatedEvents.push(response);
@@ -100,7 +100,7 @@ export const useAppDataStore = create(
           const appId = get().appId;
           const versionId = get().currentVersionId;
 
-          const updatedEvents = get().events;
+          const updatedEvents = [...get().events];
 
           const response = await appVersionService.deleteAppVersionEventHandler(appId, versionId, eventId);
           useAppDataStore.getState().actions.setIsSaving(false);
