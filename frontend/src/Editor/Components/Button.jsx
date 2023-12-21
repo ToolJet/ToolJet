@@ -114,6 +114,21 @@ export const Button = function Button(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable, setLabel, setDisable, setVisibility, setLoading]);
 
+  useEffect(() => {
+    setExposedVariable('isLoading', loading);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', disable);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disable]);
+
   const hasCustomBackground = computedBgColor?.charAt() === '#';
   if (hasCustomBackground) {
     computedStyles['--tblr-btn-color-darker'] = tinycolor(computedBgColor).darken(8).toString();
