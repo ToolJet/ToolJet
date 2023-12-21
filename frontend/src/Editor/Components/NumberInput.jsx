@@ -50,9 +50,7 @@ export const NumberInput = function NumberInput({
   };
 
   useEffect(() => {
-    if (!isNaN(value)) {
-      setExposedVariable('value', value);
-    }
+    setExposedVariable('value', value || 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
