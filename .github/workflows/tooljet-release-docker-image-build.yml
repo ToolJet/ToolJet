@@ -53,7 +53,10 @@ jobs:
           file: docker/production.Dockerfile
           push: true
           tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:latest
-          platforms: linux/amd64
+          platforms: linux/amd64, linux/arm64, linux/amd64/v2, linux/riscv64, linux/ppc64le, linux/s390x, linux/386, linux/mips64le, linux/mips64, linux/arm/v7, linux/arm/v6
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -107,7 +110,10 @@ jobs:
           file: docker/production.Dockerfile
           push: true
           tags: tooljet/tooljet-ce:${{ github.event.inputs.image }},tooljet/tooljet-ce:latest
-          platforms: linux/amd64
+          platforms: linux/amd64, linux/arm64, linux/amd64/v2, linux/riscv64, linux/ppc64le, linux/s390x, linux/386, linux/mips64le, linux/mips64, linux/arm/v7, linux/arm/v6
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
