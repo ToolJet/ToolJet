@@ -2879,13 +2879,35 @@ input:focus-visible {
   }
 }
 
+.jet-outline-button {
+  box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.12);
+  outline: none;
+  background-color: #FFFFFF;
+  border: 1px solid var(--Border-strong, #ACB2B9);
+
+
+  &.btn-custom:hover {
+    background: var(--tblr-btn-color-darker) !important;
+  }
+
+  &.btn-custom:active {
+    background: var(--tblr-btn-color-clicked) !important;
+
+  }
+
+}
+
 .jet-button {
-  box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.04);
+  box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.12);
   outline: none;
   border: none;
 
   &.btn-custom:hover {
     background: var(--tblr-btn-color-darker) !important;
+  }
+
+  &.btn-custom:active {
+    background: var(--tblr-btn-color-clicked) !important;
   }
 }
 

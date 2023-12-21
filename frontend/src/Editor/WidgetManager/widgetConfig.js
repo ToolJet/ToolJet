@@ -751,7 +751,7 @@ export const widgets = [
         textColor: { value: '#fff' },
         loaderColor: { value: '#fff' },
         borderRadius: { value: '{{6}}' },
-        backgroundColor: { value: '#3E63DD' },
+        backgroundColor: { value: '#4368E3' },
         iconColor: { value: '#FBFCFD' },
         direction: { value: 'right' },
         padding: { value: 'default' },

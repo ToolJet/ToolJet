@@ -16,6 +16,7 @@ export const Button = function Button(props) {
     iconColor,
     padding,
     direction,
+    type,
     iconVisibility,
   } = styles;
   const { loadingState, tooltip, disabledState } = properties;
@@ -24,7 +25,6 @@ export const Button = function Button(props) {
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
   const iconName = styles.icon; // Replace with the name of the icon you want
-
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
 
@@ -48,19 +48,31 @@ export const Button = function Button(props) {
     loading !== properties.loadingState && setLoading(properties.loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
+  const computedIconColor = ['#FBFCFD'].includes(iconColor) ? (type == 'primary' ? '#FBFCFD' : '#889099') : iconColor;
+  const computedTextColor = ['#fff', '#ffffff'].includes(textColor)
+    ? type == 'primary'
+      ? '#FBFCFD'
+      : '#1B1F24'
+    : textColor;
+  const computedBgColor = ['#4368E3'].includes(backgroundColor)
+    ? type == 'primary'
+      ? '#4368E3'
+      : '#ffffff'
+    : backgroundColor;
 
   const computedStyles = {
-    backgroundColor,
-    color: textColor,
+    backgroundColor: computedBgColor,
+    color: computedTextColor,
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height,
     display: visibility ? '' : 'none',
-    '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
+    '--tblr-btn-color-darker': tinycolor(computedBgColor).darken(8).toString(),
+    '--tblr-btn-color-clicked': tinycolor(computedBgColor).darken(15).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
     borderColor: borderColor,
     boxShadow: boxShadow,
-    padding: '2px 4px',
+    padding: '6px 12px',
   };
 
   useEffect(() => {
@@ -102,9 +114,10 @@ export const Button = function Button(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable, setLabel, setDisable, setVisibility, setLoading]);
 
-  const hasCustomBackground = backgroundColor?.charAt() === '#';
+  const hasCustomBackground = computedBgColor?.charAt() === '#';
   if (hasCustomBackground) {
-    computedStyles['--tblr-btn-color-darker'] = tinycolor(backgroundColor).darken(8).toString();
+    computedStyles['--tblr-btn-color-darker'] = tinycolor(computedBgColor).darken(8).toString();
+    computedStyles['--tblr-btn-color-clicked'] = tinycolor(computedBgColor).darken(15).toString();
   }
 
   const handleClick = () => {
@@ -122,9 +135,11 @@ export const Button = function Button(props) {
     >
       <button
         disabled={disable || loading}
-        className={cx('jet-button overflow-hidden btn', {
+        className={cx('overflow-hidden btn', {
           'btn-loading': loading,
           'btn-custom': hasCustomBackground,
+          'jet-button ': type == 'primary',
+          'jet-outline-button ': type == 'outline',
         })}
         style={computedStyles}
         onClick={handleClick}
@@ -164,7 +179,7 @@ export const Button = function Button(props) {
                 style={{
                   width: '14px',
                   height: '14px',
-                  color: iconColor,
+                  color: computedIconColor,
                 }}
                 stroke={1.5}
               />
