@@ -341,7 +341,14 @@ const EditorComponent = (props) => {
   const fetchApps = async (page) => {
     const { apps } = await appService.getAll(page);
 
-    updateState({ apps: apps.map((app) => ({ id: app.id, name: app.name, slug: app.slug })) });
+    updateState({
+      apps: apps.map((app) => ({
+        id: app.id,
+        name: app.name,
+        slug: app.slug,
+        current_version_id: app.current_version_id,
+      })),
+    });
   };
 
   const fetchOrgEnvironmentVariables = () => {
@@ -1888,6 +1895,7 @@ const EditorComponent = (props) => {
                       allComponents={appDefinition?.pages[currentPageId]?.components}
                       darkMode={props.darkMode}
                       pages={getPagesWithIds()}
+                      cloneComponents={cloningComponents}
                     />
                   </div>
                 }

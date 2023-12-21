@@ -214,7 +214,7 @@ export const EventManager = ({
   function getAllApps() {
     let appsOptionsList = [];
     apps
-      .filter((item) => item.slug !== undefined && item.id !== appId)
+      .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
       .forEach((item) => {
         appsOptionsList.push({
           name: item.name,
