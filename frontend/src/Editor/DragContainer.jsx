@@ -388,11 +388,8 @@ export default function DragContainer({
               }}
               // linePadding={10}
               onDragEnd={(e) => {
-                console.log('onDragEnd', e);
                 try {
-                  console.log('On-drag end => ');
                   setIsDragging(false);
-                  console.log('onDragEnd', e);
                   setDraggedTarget();
                   if (draggedSubContainer) {
                     return;
@@ -513,16 +510,21 @@ export default function DragContainer({
               .map((i) => {
                 let groupedTargets1 = [
                   ...selectedComponents
-                    .filter((component) => component?.component?.parent === i.parent)
+                    .filter((component) => {
+                      const comp = list.find((l) => l.id === component.id);
+                      comp?.component?.parent === i.parent;
+                    })
                     .map((component) => '.ele-' + component.id),
                 ];
                 groupedTargets1 = [...new Set(groupedTargets1)];
                 console.log(
                   'groupedTargets-->target ' + i.parent,
+                  selectedComponents,
                   groupedTargets1.length ? groupedTargets1 : `.target-${i.parent}`
                 );
                 return (
                   <Moveable
+                    flushSync={flushSync}
                     key={i.parent}
                     ref={(el) => (childMoveableRefs.current[i.id] = el)}
                     ables={[MouseCustomAble]}
@@ -544,9 +546,10 @@ export default function DragContainer({
                         turnOffAutoLayout();
                         return false;
                       }
-                      setDraggedSubContainer((dragged) => (dragged ? dragged : i.parent));
+                      setDraggedSubContainer(draggedSubContainer ? draggedSubContainer : i.parent);
                     }}
                     onDrag={(e) => {
+                      console.log('Ondrag subcontainer', draggedSubContainer);
                       if (draggedSubContainer === i.parent) {
                         e.target.style.transform = e.transform;
                       }
@@ -558,6 +561,9 @@ export default function DragContainer({
                       }
                       setDraggedSubContainer(false);
                       const { lastEvent, clientX, clientY } = e;
+                      if (!lastEvent) {
+                        return;
+                      }
                       let {
                         translate: [left, top],
                       } = lastEvent;
@@ -709,6 +715,9 @@ export default function DragContainer({
                       middle: true,
                     }}
                     snapThreshold={5}
+                    // passing checkInput param breaks
+                    {...(draggedSubContainer === i.parent ? {} : { checkInput: true })}
+                    // dragArea={false}
                     elementGuidelines={list
                       .filter((l) => l.parent === i.parent)
                       .map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
