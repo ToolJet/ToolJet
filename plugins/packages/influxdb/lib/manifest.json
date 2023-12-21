@@ -29,7 +29,7 @@
       "value": ""
     },
     "protocol": {
-      "type": "HTTP"
+      "value": "http"
     }
   },
   "properties": {
