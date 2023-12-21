@@ -197,7 +197,7 @@ class ManageOrgUsersComponent extends React.Component {
 
       const updateUserBody = {
         firstName: this.state.fields.firstName,
-        lastName: this.state.fields.lastName,
+        lastName: this.state.fields.lastName ?? '',
         addGroups: groupsToAdd,
         removeGroups: groupsToRemove,
       };

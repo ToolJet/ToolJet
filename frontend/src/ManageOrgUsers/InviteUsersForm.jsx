@@ -82,6 +82,23 @@ function InviteUsersForm({
     manageUser(currentEditingUser.id, selectedGroupsIds, newGroupsToAdd, groupsToRemove);
   };
 
+  const getEditedGroups = () => {
+    const selectedGroupsIds = selectedGroups.map((group) => group.value);
+    const newGroupsToAdd = selectedGroupsIds.filter((selectedGroupId) => !existingGroups.includes(selectedGroupId));
+    const groupsToRemove = existingGroups.filter((existingGroup) => !selectedGroupsIds.includes(existingGroup));
+    return { newGroupsToAdd, groupsToRemove };
+  };
+
+  const isEdited = () => {
+    const { newGroupsToAdd, groupsToRemove } = getEditedGroups();
+    const { first_name, last_name } = currentEditingUser || {};
+    return isEditing
+      ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
+          groupsToRemove.length ||
+          newGroupsToAdd.length
+      : true;
+  };
+
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
 
   return (
@@ -161,7 +178,12 @@ function InviteUsersForm({
                     <label className="form-label" data-cy="label-email-input-field">
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
-                    <ToolTip placement="bottom" message="Cannot edit user email address" show={isEditing}>
+                    <ToolTip
+                      delay={{ show: '0', hide: '0' }}
+                      placement="bottom"
+                      message="Cannot edit user email address"
+                      show={isEditing}
+                    >
                       <div className="tj-app-input">
                         <input
                           type="text"
@@ -244,7 +266,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={uploadingUsers || creatingUser}
+              disabled={uploadingUsers || creatingUser || !isEdited()}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"
