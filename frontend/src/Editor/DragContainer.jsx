@@ -78,10 +78,10 @@ export default function DragContainer({
   const childMoveableRefs = useRef([]);
   const [movableTargets, setMovableTargets] = useState({});
   const boxList = boxes
-    .filter(
-      (box) =>
-        box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value ===
-        '{{true}}'
+    .filter((box) =>
+      ['{{true}}', true].includes(
+        box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value
+      )
     )
     .map((box) => ({
       id: box.id,
