@@ -11,7 +11,7 @@
 	/* font-weight: bold; */
 	box-sizing: border-box;
 	/* transition: transform 0.1s; */
-    z-index: 3001;
+    /* z-index: 3001; */
 }
 
 .moveable-control-box>.moveable-control-box:not(.moveable-control-box-d-block, .moveable-dragging){

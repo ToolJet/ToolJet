@@ -522,7 +522,6 @@ export const SubContainer = ({
   }
 
   const renderWidget = (key, height) => {
-    console.log('childeWidget', key, height);
     if (!childWidgets[key]) {
       return;
     }

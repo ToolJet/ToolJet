@@ -4,6 +4,7 @@ const initialState = {
   draggedElement: null,
   activeGrid: null,
   noOfGrid: 43,
+  draggedSubContainer: false,
 };
 
 export const useGridStore = create(
@@ -13,6 +14,7 @@ export const useGridStore = create(
       actions: {
         setActiveGrid: (gridId) => set({ activeGrid: gridId }),
         setNoOfGrid: (noOfGrid) => set({ noOfGrid }),
+        setDraggedSubContainer: (draggedSubContainer) => set({ draggedSubContainer }),
       },
     }),
     { name: 'Grid Store' }
@@ -21,3 +23,5 @@ export const useGridStore = create(
 
 export const useActiveGrid = () => useGridStore((state) => [state.activeGrid, state.actions.setActiveGrid]);
 export const useNoOfGrid = () => useGridStore((state) => [state.noOfGrid, state.actions.setNoOfGrid]);
+export const useDraggedSubContainer = () =>
+  useGridStore((state) => [state.draggedSubContainer, state.actions.setDraggedSubContainer]);
