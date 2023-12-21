@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { authHeaderForUser, clearDB, createUser, createNestAppInstanceWithEnvMock } from '../test.helper';
 import { getManager, QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { mocked } from 'ts-jest/utils';
+import { mocked } from 'jest-mock';
 import got from 'got';
 
 jest.mock('got');
@@ -111,7 +111,7 @@ describe.skip('Tooljet DB controller', () => {
         };
       });
 
-      mockedGot.mockImplementationOnce(postgrestResponse);
+      (mockedGot as unknown as jest.Mock).mockImplementationOnce(postgrestResponse);
 
       const response = await request(nestApp.getHttpServer())
         .get(

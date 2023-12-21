@@ -14,7 +14,6 @@ const Preview = ({ darkMode }) => {
   const previewLoading = usePreviewLoading();
   const { setPreviewData } = useQueryPanelActions();
   const previewPanelRef = useRef();
-
   useEffect(() => {
     setTheme(() => getTheme(darkMode));
   }, [darkMode]);
@@ -40,7 +39,7 @@ const Preview = ({ darkMode }) => {
 
   const renderRawData = () => {
     if (!queryPreviewData) {
-      return `${queryPreviewData}`;
+      return queryPreviewData === null ? '' : `${queryPreviewData}`;
     } else {
       return isJson ? JSON.stringify(queryPreviewData).toString() : queryPreviewData.toString();
     }

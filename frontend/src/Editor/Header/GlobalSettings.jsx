@@ -158,7 +158,9 @@ export const GlobalSettings = ({
             <div className="app-slug-container">
               <div className="row">
                 <div className="col tj-app-input input-with-icon">
-                  <label className="field-name">Unique app slug</label>
+                  <label className="field-name" data-cy="app-slug-label">
+                    Unique app slug
+                  </label>
                   <input
                     type="text"
                     className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'} slug-input`}
@@ -184,18 +186,25 @@ export const GlobalSettings = ({
                     </div>
                   )}
                   {slug?.error ? (
-                    <label className="label tj-input-error">{slug?.error || ''}</label>
+                    <label className="label tj-input-error" data-cy="app-slug-error-label">
+                      {slug?.error || ''}
+                    </label>
                   ) : isSlugUpdated ? (
-                    <label className="label label-success">{`Slug accepted!`}</label>
+                    <label className="label label-success" data-cy="app-slug-accepted-label">{`Slug accepted!`}</label>
                   ) : (
-                    <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
+                    <label
+                      className="label label-info"
+                      data-cy="app-slug-info-label"
+                    >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
                   )}
                 </div>
               </div>
               <div className="row">
                 <div className="col modal-main tj-app-input">
-                  <label className="field-name">App link</label>
-                  <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
+                  <label className="field-name" data-cy="app-link-label">
+                    App link
+                  </label>
+                  <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="app-link-field">
                     {!slugProgress ? (
                       `${getHostURL()}/${getWorkspaceId()}/apps/${slug?.value || oldSlug || ''}`
                     ) : (
@@ -207,7 +216,7 @@ export const GlobalSettings = ({
                       </div>
                     )}
                   </div>
-                  <label className="label label-success label-updated">
+                  <label className="label label-success label-updated" data-cy="app-link-success-label">
                     {isSlugUpdated ? `Link updated successfully!` : ''}
                   </label>
                 </div>
