@@ -19,7 +19,7 @@ export const ConfigHandle = function ConfigHandle({
       className={`config-handle ${customClassName}`}
       ref={dragRef}
       style={{
-        top: position === 'top' ? '-18px' : widgetTop + widgetHeight - 10,
+        top: position === 'top' ? '-20px' : widgetTop + widgetHeight - 10,
       }}
     >
       <span

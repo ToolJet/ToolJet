@@ -398,13 +398,18 @@ export default function DragContainer({
                   let draggedOverElemId;
                   if (document.elementFromPoint(e.clientX, e.clientY)) {
                     const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                    const draggedOverElem = targetElems.find(
-                      (ele) =>
+                    const draggedOverElem = targetElems.find((ele) => {
+                      const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
+                      if (isOwnChild) return false;
+                      return (
                         ele.id !== e.target.id &&
-                        (ele.classList.contains('target') || ele.classList.contains('nested-target'))
-                    );
-                    setDragTarget(draggedOverElem?.id);
-                    draggedOverElemId = draggedOverElem?.id;
+                        (ele.classList.contains('target') ||
+                          ele.classList.contains('nested-target') ||
+                          ele.classList.contains('drag-container-parent'))
+                      );
+                    });
+                    draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
+                    setDragTarget(draggedOverElemId);
                   }
                   // console.log("draggedOverElemId", draggedOverElemId);
                   const parentElem = list.find(({ id }) => id === draggedOverElemId);
@@ -416,9 +421,10 @@ export default function DragContainer({
                     : undefined;
                   const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
                   const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
-                  if (parentElem && isParentChangeAllowed) {
-                    left = left - parentElem.left * gridWidth;
-                    top = top - parentElem.top;
+                  if (draggedOverElemId && isParentChangeAllowed) {
+                    let { left: _left, top: _top } = getMouseDistanceFromParentDiv(e, draggedOverElemId);
+                    left = _left;
+                    top = _top;
                   } else {
                     e.target.style.transform = `translate(${Math.round(left / gridWidth) * gridWidth}px, ${
                       Math.round(top / 10) * 10
