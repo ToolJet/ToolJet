@@ -769,7 +769,7 @@ export const Container = ({
         autoComputeLayout={appDefinition.pages[currentPageId]?.autoComputeLayout}
         setDraggedSubContainer={setDraggedSubContainer}
         draggedSubContainer={draggedSubContainer}
-        mode={mode}
+        mode={isVersionReleased ? 'view' : mode}
       />
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: '10%' }}>
