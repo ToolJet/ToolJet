@@ -62,13 +62,6 @@ export const Modal = function Modal({
   }, [setShowModal]);
 
   useEffect(() => {
-    const canShowModal = exposedVariables.show ?? false;
-    setShowModal(exposedVariables.show ?? false);
-    fireEvent(canShowModal ? 'onOpen' : 'onClose');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exposedVariables.show]);
-
-  useEffect(() => {
     const handleModalOpen = () => {
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
       const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
