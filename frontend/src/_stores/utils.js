@@ -237,7 +237,9 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
         return result;
       }
 
-      const componentMeta = componentTypes.find((comp) => comp.component === component.component.component);
+      const componentMeta = _.cloneDeep(
+        componentTypes.find((comp) => comp.component === component.component.component)
+      );
 
       if (!componentMeta) {
         return result;

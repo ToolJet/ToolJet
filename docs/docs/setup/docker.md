@@ -128,11 +128,39 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   `sudo docker-compose up -d`
 
   iv. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
-  :::
+:::
 
-
-
-
-  </TabItem>
+</TabItem>
 </Tabs>
+
+## Docker Backup
+The is a Docker-specific feature that assists in backing up the database during an upgrade process. If you plan to utilize this feature, uncomment the backup service in the docker-compose file. Additionally, you need to set an environment variable: `DATABASE_BACKUP=true`. This enables the creation of a `pg_dump` file, which will be stored in the backup folder.
+
+To restore the database from this dump, execute the following command:
+
+```
+cat your_dump.sql | docker exec -i --user postgres <postgres-db-container-name> psql -U postgres
+```
+
+
+## Upgrading to v2.24.3-ee2.10.2
+
+Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+
+If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+
+#### Prerequisites for Upgrading to the Latest Version:
+
+- It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+
+- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+
+For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
+
+
+
+
+
 

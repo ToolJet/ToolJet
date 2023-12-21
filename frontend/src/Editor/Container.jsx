@@ -316,8 +316,9 @@ export const Container = ({
         }
 
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-        const componentMeta = componentTypes.find((component) => component.component === item.component.component);
-        console.log('adding new component');
+        const componentMeta = _.cloneDeep(
+          componentTypes.find((component) => component.component === item.component.component)
+        );
         const newComponent = addNewWidgetToTheEditor(
           componentMeta,
           monitor,
@@ -607,7 +608,6 @@ export const Container = ({
       removeComponent,
       currentLayout,
       deviceWindowWidth,
-      selectedComponents,
       darkMode,
       sideBarDebugger,
       currentPageId,
@@ -629,7 +629,6 @@ export const Container = ({
     removeComponent,
     currentLayout,
     deviceWindowWidth,
-    selectedComponents,
     darkMode,
     sideBarDebugger,
     currentPageId,

@@ -10,7 +10,7 @@ describe("Manage SSO for multi workspace", () => {
   const data = {};
   const envVar = Cypress.env("environment");
   beforeEach(() => {
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin();
   });
   it("Should verify General settings page elements", () => {
     common.navigateToManageSSO();

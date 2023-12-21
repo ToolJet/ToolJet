@@ -20,6 +20,7 @@ import {
   getAuthUrl,
   sanitizeCustomParams,
   checkIfContentTypeIsURLenc,
+  checkIfContentTypeIsMultipartFormData,
   validateAndSetRequestOptionsBasedOnAuthType,
 } from './oauth';
 
@@ -43,6 +44,7 @@ export {
   sanitizeHeaders,
   sanitizeSearchParams,
   checkIfContentTypeIsURLenc,
+  checkIfContentTypeIsMultipartFormData,
   validateAndSetRequestOptionsBasedOnAuthType,
   fetchHttpsCertsForCustomCA,
 };
