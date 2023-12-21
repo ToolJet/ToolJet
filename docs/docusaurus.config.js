@@ -102,7 +102,8 @@ module.exports = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.`,
+      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.
+      <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />`,
     },
     algolia: {
       appId: 'O8HQRLI0WA',
