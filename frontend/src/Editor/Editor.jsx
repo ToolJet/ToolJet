@@ -139,28 +139,13 @@ const EditorComponent = (props) => {
     app,
     appName,
     slug,
+    events,
     currentUser,
     currentVersionId,
     appDefinitionDiff,
     appDiffOptions,
     areOthersOnSameVersionAndPage,
-  } = useAppDataStore(
-    (state) => ({
-      isMaintenanceOn: state.isMaintenanceOn,
-      appId: state.appId,
-      app: state.app,
-      appName: state.appName,
-      slug: state.slug,
-      currentUser: state.currentUser,
-      currentVersionId: state.currentVersionId,
-      appDefinitionDiff: state.appDefinitionDiff,
-      appDiffOptions: state.appDiffOptions,
-      areOthersOnSameVersionAndPage: state.areOthersOnSameVersionAndPage,
-    }),
-    shallow
-  );
-
-  const events = useAppInfo((state) => state.events);
+  } = useAppInfo();
 
   const currentState = useCurrentState();
 
@@ -311,7 +296,7 @@ const EditorComponent = (props) => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ events })]);
+  }, [events?.length, JSON.stringify({ events })]);
 
   const handleMessage = (event) => {
     const { data } = event;
