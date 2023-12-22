@@ -26,12 +26,12 @@ export class MigrationForComponentLayoutToApplyGridCompatibility1703232500904 im
           return [];
         }
         return entityManager.query(
-          `SELECT id, "left", "type" FROM layouts WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})`
+          `SELECT id, "left", "type", "top", "width" FROM layouts WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})`
         );
       },
       async (entityManager: EntityManager, layouts: Layout[]) => {
         for (const layout of layouts) {
-          const { id, left, type } = layout;
+          const { id, left, type, top, width } = layout;
           const newLeft = this.resolveGridPositionForComponent(left, type);
           await entityManager.update(
             Layout,
@@ -40,6 +40,8 @@ export class MigrationForComponentLayoutToApplyGridCompatibility1703232500904 im
             },
             {
               left: newLeft,
+              top: type === 'desktop' ? top : top !== 0 ? top - 30 : top,
+              width: type === 'desktop' ? width : this.resolveGridPositionForComponent(width, 'mobile'),
             }
           );
         }
