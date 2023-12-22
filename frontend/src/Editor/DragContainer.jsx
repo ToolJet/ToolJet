@@ -77,6 +77,7 @@ export default function DragContainer({
   const [dragTarget, setDragTarget] = useState();
   const [draggedTarget, setDraggedTarget] = useState();
   const moveableRef = useRef();
+  const draggedOverElemRef = useRef(null);
   const childMoveableRefs = useRef([]);
   const [movableTargets, setMovableTargets] = useState({});
   const boxList = boxes
@@ -468,12 +469,24 @@ export default function DragContainer({
                 let draggedOverElemId;
                 if (document.elementFromPoint(e.clientX, e.clientY)) {
                   const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-                  const draggedOverElem = targetElems.find(
-                    (ele) => ele.id !== e.target.id && ele.classList.contains('target')
+                  const draggedOverElements = targetElems.filter(
+                    (ele) =>
+                      ele.id !== e.target.id &&
+                      (ele.classList.contains('target') || ele.classList.contains('real-canvas'))
                   );
+                  const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
+                  const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
+                  // const draggedOverElem = targetElems.find(
+                  //   (ele) => ele.id !== e.target.id && ele.classList.contains('target')
+                  // );
                   setDragTarget(draggedOverElem?.id);
                   console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
                   draggedOverElemId = draggedOverElem?.id;
+                  if (draggedOverElemRef.current?.id !== draggedOverContainer?.id) {
+                    draggedOverContainer.classList.add('show-grid');
+                    draggedOverElemRef.current && draggedOverElemRef.current.classList.remove('show-grid');
+                    draggedOverElemRef.current = draggedOverContainer;
+                  }
                 }
                 console.log('draggedOverElemId parent', draggedOverElemId, parent);
               }}
