@@ -349,6 +349,7 @@ export default function DragContainer({
                 }
               }}
               onResizeStart={(e) => {
+                e.setMin([gridWidth, 10]);
                 if (currentLayout === 'mobile' && autoComputeLayout) {
                   turnOffAutoLayout();
                   return false;
