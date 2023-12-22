@@ -1200,6 +1200,7 @@ const EditorComponent = (props) => {
     for (const selectedComponent of selectedComponents) {
       let top = newComponents[selectedComponent.id].layouts[currentLayout].top;
       let left = newComponents[selectedComponent.id].layouts[currentLayout].left;
+      const width = newComponents[selectedComponent.id]?.layouts[currentLayout]?.width;
 
       switch (direction) {
         case 'ArrowLeft':
@@ -1214,6 +1215,10 @@ const EditorComponent = (props) => {
         case 'ArrowUp':
           top = top - 10;
           break;
+      }
+
+      if (left < 0 || top < 0 || left + width > noOfGrids) {
+        return;
       }
 
       newComponents[selectedComponent.id].layouts[currentLayout].top = top;
