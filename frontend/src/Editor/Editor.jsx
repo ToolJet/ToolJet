@@ -414,7 +414,6 @@ const EditorComponent = (props) => {
       }
 
       if (ymapEventHandlersUpdated?.update === true) {
-        console.log('---arpit:: should update:: ', { ymapEventHandlersUpdated });
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
