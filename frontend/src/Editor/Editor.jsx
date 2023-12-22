@@ -309,7 +309,6 @@ const EditorComponent = (props) => {
         currentVersionId: currentVersionId,
         currentSessionId: currentSessionId,
       });
-      prevEventsStoreRef.current = events;
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
