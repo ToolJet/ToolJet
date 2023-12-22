@@ -211,7 +211,7 @@ export const DraggableBox = React.memo(
       <div
         className={
           inCanvas
-            ? ''
+            ? 'widget-in-canvas'
             : cx('text-center align-items-center clearfix draggable-box-wrapper', {
                 '': component.component !== 'KanbanBoard',
                 'd-none': component.component === 'KanbanBoard',
@@ -237,21 +237,21 @@ export const DraggableBox = React.memo(
             style={getStyles(isDragging, isSelectedComponent)}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
-              {mode === 'edit' &&
-                !readOnly &&
-                (configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) &&
-                !isResizing && (
-                  <ConfigHandle
-                    id={id}
-                    removeComponent={removeComponent}
-                    component={component}
-                    position={layoutData.top < 15 ? 'bottom' : 'top'}
-                    widgetTop={layoutData.top}
-                    widgetHeight={layoutData.height}
-                    isMultipleComponentsSelected={isMultipleComponentsSelected}
-                    configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
-                  />
-                )}
+              {mode === 'edit' && !readOnly && (
+                <ConfigHandle
+                  id={id}
+                  removeComponent={removeComponent}
+                  component={component}
+                  position={layoutData.top < 15 ? 'bottom' : 'top'}
+                  widgetTop={layoutData.top}
+                  widgetHeight={layoutData.height}
+                  isMultipleComponentsSelected={isMultipleComponentsSelected}
+                  configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                  mouseOver={mouseOver}
+                  isSelectedComponent={isSelectedComponent}
+                  showHandle={(configWidgetHandlerForModalComponent || mouseOver || isSelectedComponent) && !isResizing}
+                />
+              )}
               <Sentry.ErrorBoundary
                 fallback={<h2>Something went wrong.</h2>}
                 beforeCapture={(scope) => {

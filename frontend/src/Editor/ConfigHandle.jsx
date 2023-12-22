@@ -13,6 +13,7 @@ export const ConfigHandle = function ConfigHandle({
   customClassName = '',
   configWidgetHandlerForModalComponent = false,
   isVersionReleased,
+  showHandle,
 }) {
   return (
     <div
@@ -20,6 +21,7 @@ export const ConfigHandle = function ConfigHandle({
       ref={dragRef}
       style={{
         top: position === 'top' ? '-20px' : widgetTop + widgetHeight - 10,
+        visibility: showHandle ? 'visible' : 'hidden',
       }}
     >
       <span
