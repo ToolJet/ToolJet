@@ -59,7 +59,7 @@ export class SeedsService {
       });
       testUser.organizationId = organization.id;
 
-      await manager.save(user);
+      await manager.save(testUser);
       // Save test user
 
       // TODO: Remove role usage
