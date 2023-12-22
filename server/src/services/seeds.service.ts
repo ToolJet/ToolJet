@@ -77,7 +77,7 @@ export class SeedsService {
       // Test user organization mapping
       const testUserOrganization = manager.create(OrganizationUser, {
         organizationId: organization.id,
-        userId: user.id,
+        userId: testUser.id,
         role: 'all_users',
         status: WORKSPACE_USER_STATUS.ACTIVE,
       });
