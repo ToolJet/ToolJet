@@ -761,6 +761,7 @@ export const Container = ({
         gridWidth={gridWidth}
         selectedComponents={selectedComponents}
         setIsDragging={setIsDragging}
+        setIsResizing={setIsResizing}
         currentLayout={currentLayout}
         subContainerWidths={subContainerWidths}
         turnOffAutoLayout={turnOffAutoLayout}
