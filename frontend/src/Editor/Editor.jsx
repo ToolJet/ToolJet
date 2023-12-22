@@ -287,13 +287,11 @@ const EditorComponent = (props) => {
   }, [currentLayout, mounted]);
 
   useEffect(() => {
-    if (mounted) {
-      props.ymap?.set('eventHandlersUpdated', {
-        updated: true,
-        currentVersionId: currentVersionId,
-        currentSessionId: currentSessionId,
-      });
-    }
+    props.ymap?.set('eventHandlersUpdated', {
+      updated: true,
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events?.length, JSON.stringify({ events })]);
