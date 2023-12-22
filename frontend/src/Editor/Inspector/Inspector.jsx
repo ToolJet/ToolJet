@@ -361,8 +361,8 @@ export const Inspector = ({
       />
       <div>
         <div className="row inspector-component-title-input-holder">
-          <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
-            <span data-cy={`inspector-close-icon`} className="cursor-pointer">
+          <div className="d-flex align-items-center col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
+            <span data-cy={`inspector-close-icon`} className="cursor-pointer" style={{ height: '28px', width: '28px' }}>
               <ArrowLeft fill={'var(--slate12)'} width={'14'} />
             </span>
           </div>

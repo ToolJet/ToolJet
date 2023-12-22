@@ -302,7 +302,7 @@ button {
 }
 
 .accordion-body {
-  padding: 8px 16px 16px 16px !important;
+  padding: 4px 16px 16px 16px !important;
 
   .form-label {
     font-weight: 400;
@@ -1128,6 +1128,7 @@ button {
   }
 }
 
+
 .template-library-modal {
   font-weight: 500;
 
@@ -1448,6 +1449,7 @@ button {
     /* IE and Edge */
     scrollbar-width: none;
     /* Firefox */
+    border-top: 1px solid var(--slate5) !important;
   }
 
   /* Hide scrollbar for Chrome, Safari and Opera */
@@ -4932,10 +4934,6 @@ input[type="text"] {
 
 // comment styles ::override
 .editor-sidebar {
-  .nav-tabs {
-    border-bottom: 1px solid var(--slate5) !important;
-  }
-
   .nav-tabs .nav-link.active {
     background-color: transparent !important;
   }
@@ -4955,6 +4953,7 @@ input[type="text"] {
     margin: 0;
     display: flex;
     align-items: center;
+    height: 36px;
   }
 }
 
@@ -11928,4 +11927,8 @@ tbody {
 
 .label-hinter-margin {
   margin-bottom: 4px;
+}
+
+.accordion-header {
+  height: 52px;
 }
