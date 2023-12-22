@@ -9,7 +9,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 
 - Create a new table named *testDB*. 
 - The `id` field will be present by default to create a unique identifier for each record in our database table.
-- Click on **Add more columns** button and two more columns: `pdf` and `image`.
+- Click on **Add more columns** button and add two more columns: `pdf` and `image`.
 - Select `varchar` as datatype for the pdf and image columns.
 
 <i>While we are using the ToolJet Database for this guide; feel free to use other databases while applying the same principles.</i>
@@ -28,7 +28,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
     <img className="screenshot-full" src="/img/how-to/load-base64/filepickers-rename.png" alt="Rename Filepickers"  />
 </div>
 
-- For *pdfPicker*, Change the **Accept file types** property to `{{"pdf/*"}}` - this ensures that the Filepicker only accepts PDF files. 
+- For *pdfPicker*, change the **Accept file types** property to `{{"pdf/*"}}` - this ensures that the Filepicker only accepts PDF files. 
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
     <img className="screenshot-full" src="/img/how-to/load-base64/pdf-accepted-file-type.png" alt="Accepted File Type Settings"  />
@@ -53,7 +53,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 {{components.imagePicker.file[0].base64Data}}
 ```
 
-<i>In the above query, we are usign the <b>exposed variables</b> of both Filepicker components to get the base64 strings of the files we had uploaded earlier.</i>
+<i>In the above query, we are using the <b>exposed variables</b> of both Filepicker components to get the base64 strings of the files we had uploaded earlier.</i>
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
     <img className="screenshot-full" src="/img/how-to/load-base64/add-files-query.png" alt="Add Files Query"  />
@@ -83,8 +83,6 @@ The upload process is now complete. Whenever files are selected in the Filepicke
 ```js
 {{'data:image;base64,' + queries.getFiles.data[0].image}}
 ```
-<!-- <i>'data:image/base64,' specifies that the data should be interpreted as a base64-encoded image.
-`queries.getFiles.data[0].image` fetches the base64-encoded image data from the first row in the data array returned by the getFiles query.</i> -->
 
 - Let's apply the same logic for the **displayPDF** component and enter the below value in the **File URL** property:
 
