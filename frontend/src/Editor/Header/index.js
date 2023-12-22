@@ -4,7 +4,7 @@ import AppLogo from '@/_components/AppLogo';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
-import { AppVersionsManager } from '../AppVersionsManager/List';
+import { AppVersionsManager } from '../AppVersionsManager/AppVersionsManager';
 import { ManageAppUsers } from '../ManageAppUsers';
 import { ReleaseVersionButton } from '../ReleaseVersionButton';
 import cx from 'classnames';
@@ -146,18 +146,15 @@ export default function EditorHeader({
                 </div>
               </div>
               <div className="navbar-seperator"></div>
-              <div className="d-flex align-items-center p-0" style={{ marginRight: '12px' }}>
-                <div className="d-flex version-manager-container p-0">
-                  {editingVersion && (
-                    <AppVersionsManager
-                      appId={appId}
-                      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                      onVersionDelete={onVersionDelete}
-                      isPublic={isPublic ?? false}
-                    />
-                  )}
-                </div>
-              </div>
+
+              {editingVersion && (
+                <AppVersionsManager
+                  appId={appId}
+                  setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+                  onVersionDelete={onVersionDelete}
+                  isPublic={isPublic ?? false}
+                />
+              )}
             </div>
             <div
               className="d-flex justify-content-end navbar-right-section"

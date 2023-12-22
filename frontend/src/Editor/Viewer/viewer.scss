@@ -1,0 +1,36 @@
+.viewer-vertical-line {
+    position: relative;
+    width: 0;
+    border-left: 1px solid var(--slate5);
+    content: '';
+    margin: 0px 1.375rem;
+  }
+
+.preview-chip {
+    padding : 2px 8px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+.released-version-no-header-dark-mode-icon {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 0px 4px;
+  border: none;
+  border: 1px solid var(--slate7);
+  border-radius: 6px;
+  z-index: 1000;
+  cursor: pointer;
+  background-color: var(--base);
+  box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.04);
+}
+
+.released-version-no-header-mbl-preview {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  z-index: 1000;
+}
