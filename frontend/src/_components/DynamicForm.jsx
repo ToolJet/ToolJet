@@ -108,10 +108,10 @@ const DynamicForm = ({
 
       Object.keys(fields).length > 0 &&
         Object.keys(fields).map((key) => {
-          const { type, encrypted } = fields[key];
-          if ((type === 'password' || encrypted) && !(key in computedProps)) {
+          const { type, encrypted, key: propertyKey } = fields[key];
+          if ((type === 'password' || encrypted) && !(propertyKey in computedProps)) {
             //Editable encrypted fields only if datasource doesn't exists
-            encrpytedFieldsProps[key] = {
+            encrpytedFieldsProps[propertyKey] = {
               disabled: !!selectedDataSource?.id,
             };
           }
@@ -375,7 +375,12 @@ const DynamicForm = ({
         //Send old field value if editing mode disabled for encrypted fields
         const newOptions = { ...options };
         const oldFieldValue = selectedDataSource?.['options']?.[field];
-        optionsChanged({ ...newOptions, [field]: oldFieldValue });
+        if (oldFieldValue) {
+          optionsChanged({ ...newOptions, [field]: oldFieldValue });
+        } else {
+          delete newOptions[field];
+          optionsChanged({ ...newOptions });
+        }
       }
       setComputedProps({
         ...computedProps,
@@ -389,7 +394,7 @@ const DynamicForm = ({
     return (
       <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
-          const { label, type, encrypted, className } = obj[key];
+          const { label, type, encrypted, className, key: propertyKey } = obj[key];
           const Element = getElement(type);
           const isSpecificComponent = ['tooljetdb-operations'].includes(type);
 
@@ -426,9 +431,9 @@ const DynamicForm = ({
                         variant="tertiary"
                         target="_blank"
                         rel="noreferrer"
-                        onClick={(event) => handleEncryptedFieldsToggle(event, key)}
+                        onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
                       >
-                        {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
+                        {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
                       </ButtonSolid>
                     </div>
                   )}
@@ -455,7 +460,7 @@ const DynamicForm = ({
               >
                 <Element
                   {...getElementProps(obj[key])}
-                  {...computedProps[key]}
+                  {...computedProps[propertyKey]}
                   data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
                   //to be removed after whole ui is same
                   isHorizontalLayout={isHorizontalLayout}
