@@ -111,22 +111,27 @@ export class SeedsService {
   }
 
   async createGroupAndAssociateUser(group: string, manager: EntityManager, user: User): Promise<void> {
-    const groupPermission = manager.create(GroupPermission, {
-      organizationId: user.organizationId,
-      group: group,
-      appCreate: group == 'admin',
-      appDelete: group == 'admin',
-      folderCreate: group == 'admin',
-      orgEnvironmentVariableCreate: group == 'admin',
-      orgEnvironmentVariableUpdate: group == 'admin',
-      orgEnvironmentVariableDelete: group == 'admin',
-      orgEnvironmentConstantCreate: group == 'admin',
-      orgEnvironmentConstantDelete: group == 'admin',
-      folderUpdate: group == 'admin',
-      folderDelete: group == 'admin',
+    let groupPermission = await manager.findOne(GroupPermission, {
+      where: { organizationId: user.organizationId, group: group },
     });
 
-    await manager.save(groupPermission);
+    if (!groupPermission) {
+      groupPermission = manager.create(GroupPermission, {
+        organizationId: user.organizationId,
+        group: group,
+        appCreate: group == 'admin',
+        appDelete: group == 'admin',
+        folderCreate: group == 'admin',
+        orgEnvironmentVariableCreate: group == 'admin',
+        orgEnvironmentVariableUpdate: group == 'admin',
+        orgEnvironmentVariableDelete: group == 'admin',
+        orgEnvironmentConstantCreate: group == 'admin',
+        orgEnvironmentConstantDelete: group == 'admin',
+        folderUpdate: group == 'admin',
+        folderDelete: group == 'admin',
+      });
+      await manager.save(groupPermission);
+    }
 
     const userGroupPermission = manager.create(UserGroupPermission, {
       groupPermissionId: groupPermission.id,
