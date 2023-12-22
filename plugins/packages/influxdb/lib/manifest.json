@@ -33,7 +33,7 @@
     }
   },
   "properties": {
-    "api_key": {
+    "api_token": {
       "label": "API token",
       "key": "api_token",
       "type": "password",
