@@ -213,14 +213,20 @@ export class EditColumnTableDto {
   @Validate(SQLInjectionValidator, { message: 'Column name does not support special characters' })
   column_name: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => sanitizeInput(value))
+  @Validate(SQLInjectionValidator)
+  data_type: string;
+
   @IsOptional()
   @Transform(({ value, obj }) => {
     const sanitizedValue = sanitizeInput(value);
     return validateDefaultValue(sanitizedValue, obj);
   })
-  // @Match('data_type', {
-  //   message: 'Default value must match the data type',
-  // })
+  @Match('data_type', {
+    message: 'Default value must match the data type',
+  })
   @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
   column_default: string | number | boolean;
 
