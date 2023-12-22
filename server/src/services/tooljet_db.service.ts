@@ -63,6 +63,8 @@ export class TooljetDbService {
         return await this.renameTable(organizationId, params);
       case 'join_tables':
         return await this.joinTable(organizationId, params);
+      case 'edit_column':
+        return await this.editColumn(organizationId, params);
       default:
         throw new BadRequestException('Action not defined');
     }
@@ -163,12 +165,14 @@ export class TooljetDbService {
       let query = `${column['column_name']} ${column['data_type']}`;
       if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
       if (column['constraint_type']) query += ` ${column['constraint_type']}`;
+      if (column['isNotNull']) query += ` NOT NULL`;
 
       if (restColumns)
         for (const col of restColumns) {
           query += `, ${col['column_name']} ${col['data_type']}`;
           if (col['column_default']) query += ` DEFAULT ${this.addQuotesIfString(col['column_default'])}`;
           if (col['constraint_type']) query += ` ${col['constraint_type']}`;
+          if (col['isNotNull']) query += ` NOT NULL`;
         }
 
       // if tooljetdb query fails in this connection, we must rollback internal table
@@ -245,7 +249,8 @@ export class TooljetDbService {
 
     let query = `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']}`;
     if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
-    if (column['constraint']) query += ` ${column['constraint']};`;
+    if (column['constraint_type']) query += ` ${column['constraint_type']};`;
+    if (column['isNotNull']) query += ` NOT NULL`;
 
     const result = await this.tooljetDbManager.query(query);
     await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
@@ -429,5 +434,31 @@ export class TooljetDbService {
     if (isEmpty(tableNamesNotInOrg)) return internalTables;
 
     throw new NotFoundException('Some tables are not found');
+  }
+
+  private async editColumn(organizationId: string, params) {
+    const { table_name: tableName, column } = params;
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, tableName },
+    });
+
+    if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
+    let query = '';
+
+    if (column?.column_default)
+      query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${
+        column.column_name
+      } SET DEFAULT ${this.addQuotesIfString(column['column_default'])};`;
+    if ('isNotNull' in column) {
+      column.isNotNull
+        ? (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} SET NOT NULL;`)
+        : (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} DROP NOT NULL;`);
+    }
+
+    if (column?.column_name && column?.new_column_name)
+      query += `ALTER TABLE "${internalTable.id}" RENAME COLUMN ${column.column_name} TO ${column.new_column_name};`;
+    const result = await this.tooljetDbManager.query(query);
+    await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+    return result;
   }
 }
