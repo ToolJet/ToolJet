@@ -143,7 +143,6 @@ const EditorComponent = (props) => {
     currentVersionId,
     appDefinitionDiff,
     appDiffOptions,
-    events,
     areOthersOnSameVersionAndPage,
   } = useAppDataStore(
     (state) => ({
@@ -156,11 +155,12 @@ const EditorComponent = (props) => {
       currentVersionId: state.currentVersionId,
       appDefinitionDiff: state.appDefinitionDiff,
       appDiffOptions: state.appDiffOptions,
-      events: state.events,
       areOthersOnSameVersionAndPage: state.areOthersOnSameVersionAndPage,
     }),
     shallow
   );
+
+  const events = useAppInfo((state) => state.events);
 
   const currentState = useCurrentState();
 
@@ -187,7 +187,6 @@ const EditorComponent = (props) => {
   const selectionRef = useRef(null);
 
   const prevAppDefinition = useRef(appDefinition);
-  const prevEventsStoreRef = useRef(events);
 
   useLayoutEffect(() => {
     resetAllStores();
@@ -303,7 +302,7 @@ const EditorComponent = (props) => {
   }, [currentLayout, mounted]);
 
   useEffect(() => {
-    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
+    if (mounted) {
       props.ymap?.set('eventHandlersUpdated', {
         updated: true,
         currentVersionId: currentVersionId,
