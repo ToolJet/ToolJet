@@ -48,6 +48,20 @@ export class SeedsService {
 
       await manager.save(user);
 
+      // Create test user
+      const testUser = manager.create(User, {
+        firstName: 'ToolJet',
+        lastName: 'User',
+        email: 'test@tooljet.com',
+        password: 'password',
+        defaultOrganizationId: organization.id,
+        status: USER_STATUS.ACTIVE,
+      });
+      testUser.organizationId = organization.id;
+
+      await manager.save(user);
+      // Save test user
+
       // TODO: Remove role usage
       const organizationUser = manager.create(OrganizationUser, {
         organizationId: organization.id,
@@ -60,7 +74,21 @@ export class SeedsService {
 
       await manager.save(organizationUser);
 
+      // Test user organization mapping
+      const testUserOrganization = manager.create(OrganizationUser, {
+        organizationId: organization.id,
+        userId: user.id,
+        role: 'all_users',
+        status: WORKSPACE_USER_STATUS.ACTIVE,
+      });
+
+      await manager.save(testUserOrganization);
+      // Save Test user organization mapping
+
       await this.createDefaultUserGroups(manager, user);
+
+      // Adding test user to group
+      this.addToGroup(manager, testUser);
 
       console.log(
         'Seeding complete. Use default credentials to login.\n' + 'email: dev@tooljet.io\n' + 'password: password'
@@ -70,6 +98,13 @@ export class SeedsService {
 
   async createDefaultUserGroups(manager: EntityManager, user: User): Promise<void> {
     const defaultGroups = ['all_users', 'admin'];
+    for (const group of defaultGroups) {
+      await this.createGroupAndAssociateUser(group, manager, user);
+    }
+  }
+
+  async addToGroup(manager: EntityManager, user: User): Promise<void> {
+    const defaultGroups = ['all_users'];
     for (const group of defaultGroups) {
       await this.createGroupAndAssociateUser(group, manager, user);
     }
