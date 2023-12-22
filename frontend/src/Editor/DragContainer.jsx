@@ -7,6 +7,7 @@ import DragContainerNested from './DragContainerNested';
 import _, { isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
+import { useGridStoreActions } from '@/_stores/gridStore';
 const NO_OF_GRIDS = 43;
 
 const MouseCustomAble = {
@@ -64,6 +65,7 @@ export default function DragContainer({
   gridWidth,
   selectedComponents = [],
   setIsDragging,
+  setIsResizing,
   currentLayout,
   subContainerWidths,
   currentPageId,
@@ -97,6 +99,7 @@ export default function DragContainer({
 
   const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
   const [count, setCount] = useState(0);
+  const { setActiveGrid } = useGridStoreActions();
 
   useEffect(() => {
     if (!moveableRef.current) {
@@ -293,6 +296,7 @@ export default function DragContainer({
               }}
               onResizeEnd={(e) => {
                 try {
+                  setIsResizing(false);
                   console.log('onResizeEnd>>>>>>>>>>>>>>', e);
                   // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
                   // e.target.style.width = `${width}px`;
@@ -349,6 +353,7 @@ export default function DragContainer({
                 }
               }}
               onResizeStart={(e) => {
+                setIsResizing(true);
                 e.setMin([gridWidth, 10]);
                 if (currentLayout === 'mobile' && autoComputeLayout) {
                   turnOffAutoLayout();
@@ -623,6 +628,8 @@ export default function DragContainer({
                       });
                     }}
                     onResizeStart={(e) => {
+                      setActiveGrid(i.parent);
+                      e.setMin([gridWidth, 10]);
                       if (currentLayout === 'mobile' && autoComputeLayout) {
                         turnOffAutoLayout();
                         return false;
@@ -652,6 +659,7 @@ export default function DragContainer({
                       e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
                     }}
                     onResizeEnd={(e) => {
+                      setActiveGrid(null);
                       try {
                         const gridWidth = subContainerWidths[i.parent];
 

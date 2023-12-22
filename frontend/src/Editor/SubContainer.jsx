@@ -19,7 +19,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainerNested from './DragContainerNested';
-import { useNoOfGrid } from '@/_stores/gridStore';
+import { useGridStore, useNoOfGrid } from '@/_stores/gridStore';
 
 // const NO_OF_GRIDS = 43;
 
@@ -88,6 +88,7 @@ export const SubContainer = ({
 
   // const [noOfGrids] = useNoOfGrid();
   const noOfGrids = 43;
+  const { isGridActive } = useGridStore((state) => ({ isGridActive: state.activeGrid === parent }), shallow);
 
   const gridWidth = getContainerCanvasWidth() / noOfGrids;
 
@@ -612,7 +613,7 @@ export const SubContainer = ({
       style={styles}
       id={`canvas-${parent}`}
       className={`real-canvas ${
-        (isDragging || isResizing || draggedSubContainer === parent) && !readOnly ? 'show-grid' : ''
+        (isDragging || isResizing || draggedSubContainer === parent || isGridActive) && !readOnly ? 'show-grid' : ''
       }`}
     >
       <DragContainerNested

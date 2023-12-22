@@ -1,4 +1,5 @@
 import { create, zustandDevTools } from './utils';
+import { shallow } from 'zustand/shallow';
 
 const initialState = {
   draggedElement: null,
@@ -21,7 +22,8 @@ export const useGridStore = create(
   )
 );
 
-export const useActiveGrid = () => useGridStore((state) => [state.activeGrid, state.actions.setActiveGrid]);
+export const useActiveGrid = () => useGridStore((state) => state.activeGrid, shallow);
 export const useNoOfGrid = () => useGridStore((state) => [state.noOfGrid, state.actions.setNoOfGrid]);
 export const useDraggedSubContainer = () =>
   useGridStore((state) => [state.draggedSubContainer, state.actions.setDraggedSubContainer]);
+export const useGridStoreActions = () => useGridStore((state) => state.actions, shallow);
