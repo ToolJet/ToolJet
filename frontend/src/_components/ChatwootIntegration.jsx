@@ -33,7 +33,7 @@ function ChatwootIntegration({ token, darkMode, currentUser, hideMessageBubble =
     window.addEventListener('chatwoot:ready', function () {
       window.$chatwoot.setUser(currentUser?.id, {
         email: currentUser?.email,
-        name: currentUser?.first_name + currentUser?.last_name,
+        name: currentUser?.first_name + ' ' + currentUser?.last_name,
       });
     });
 
