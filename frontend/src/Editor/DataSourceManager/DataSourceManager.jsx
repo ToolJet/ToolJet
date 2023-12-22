@@ -169,7 +169,7 @@ class DataSourceManagerComponent extends React.Component {
       connectionTestError: null,
       options: {
         ...this.state.options,
-        [option]: { ...this.state.options[option], value: value },
+        [option]: { value: value },
       },
     };
 
