@@ -59,8 +59,9 @@ const DefaultDataSourceNames: DefaultDataSourceName[] = [
 ];
 const DefaultDataSourceKinds: DefaultDataSourceKind[] = ['restapi', 'runjs', 'runpy', 'tooljetdb', 'workflows'];
 
-function resolveGridPositionForComponent(dimension: number) {
-  return Math.round((dimension * 43) / 100);
+function resolveGridPositionForComponent(dimension: number, type: string) {
+  const numberOfGrids = type === 'desktop' ? 43 : 12;
+  return Math.round((dimension * numberOfGrids) / 100);
 }
 
 @Injectable()
@@ -449,7 +450,7 @@ export class AppImportExportService {
                     const newLayout = new Layout();
                     newLayout.type = type;
                     newLayout.top = layout.top;
-                    newLayout.left = resolveGridPositionForComponent(layout.left);
+                    newLayout.left = resolveGridPositionForComponent(layout.left, type);
                     newLayout.width = layout.width;
                     newLayout.height = layout.height;
                     newLayout.componentId = appResourceMappings.componentsMapping[componentId];
@@ -753,7 +754,7 @@ export class AppImportExportService {
               newLayout.type = layout.type;
               newLayout.top = layout.top;
               newLayout.left = shouldUpdateForGridCompatibility
-                ? resolveGridPositionForComponent(layout.left)
+                ? resolveGridPositionForComponent(layout.left, layout.type)
                 : layout.left;
               newLayout.width = layout.width;
               newLayout.height = layout.height;
