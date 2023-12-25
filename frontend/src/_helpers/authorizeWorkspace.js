@@ -180,7 +180,12 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
           .catch(() => authenticationService.logout());
       } else if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
         /* CASE-4 */
-        window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
+        /* window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace'; */
+        if (error?.data?.statusCode == 422) {
+          redirectToErrorPage(ERROR_TYPES.UNKNOWN);
+        } else {
+          redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE);
+        }
       } else {
         /* Any other errors, leave the user on current page [Let the page or private-route component take care] */
         if (!isThisWorkspaceLoginPage() && !isThisWorkspaceLoginPage(true))
