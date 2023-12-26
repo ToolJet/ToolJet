@@ -32,6 +32,10 @@ import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { CreateEventHandlerDto, UpdateEventHandlerDto } from '@dto/event-handler.dto';
+import { LicenseService } from '@services/license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { User as UserEntity } from 'src/entities/user.entity';
+import { AppEnvironmentService } from '@services/app_environments.service';
 
 @Controller({
   path: 'apps',
@@ -44,13 +48,15 @@ export class AppsControllerV2 {
     private pageService: PageService,
     private eventsService: EventsService,
     private eventService: EventsService,
+    private licenseService: LicenseService,
+    private appEnvironmentService: AppEnvironmentService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Get(':id')
-  async show(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
+  async show(@User() user: UserEntity, @AppDecorator() app: App, @Query('access_type') accessType: string) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
@@ -98,6 +104,14 @@ export class AppsControllerV2 {
         ...response['editing_version'],
         definition: camelizeKeys(app.editingVersion.definition),
       };
+    }
+
+    if (
+      response['editing_version'] &&
+      !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, user.organizationId))
+    ) {
+      const developmentEnv = await this.appEnvironmentService.getByPriority(user.organizationId);
+      response['editing_version']['current_environment_id'] = developmentEnv.id;
     }
 
     return response;

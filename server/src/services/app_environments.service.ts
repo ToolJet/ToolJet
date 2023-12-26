@@ -42,6 +42,18 @@ export class AppEnvironmentService {
     }, manager);
   }
 
+  getByPriority(organizationId: string, ASC = true, manager?: EntityManager): Promise<AppEnvironment> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const condition: FindOneOptions<AppEnvironment> = {
+        where: {
+          organizationId,
+        },
+        order: { priority: ASC ? 'ASC' : 'DESC' },
+      };
+      return manager.findOneOrFail(AppEnvironment, condition);
+    }, manager);
+  }
+
   async getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
