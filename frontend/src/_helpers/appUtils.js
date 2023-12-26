@@ -828,7 +828,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false, parameters) {
+export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}) {
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
@@ -838,7 +838,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters) {
     setPreviewData('');
   }
 
-  if (_.isUndefined(parameters)) {
+  if (_.isEmpty(parameters)) {
     parameters = query.options?.parameters?.reduce(
       (parameters, parameter) => ({
         ...parameters,
@@ -937,7 +937,15 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters) {
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters) {
+export function runQuery(
+  _ref,
+  queryId,
+  queryName,
+  confirmed = undefined,
+  mode = 'edit',
+  parameters = {},
+  shouldSetPreviewData = false
+) {
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   const queryEvents = useAppDataStore
     .getState()
@@ -949,7 +957,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
-  if (parameters?.shouldSetPreviewData) {
+  if (shouldSetPreviewData) {
     setPreviewLoading(true);
     queryPreviewData && setPreviewData('');
   }
@@ -961,7 +969,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     return;
   }
 
-  if (_.isUndefined(parameters)) {
+  if (_.isEmpty(parameters)) {
     parameters = dataQuery.options?.parameters?.reduce(
       (parameters, parameter) => ({
         ...parameters,
@@ -1066,7 +1074,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               errorData = data;
               break;
           }
-          if (parameters?.shouldSetPreviewData) {
+          if (shouldSetPreviewData) {
             setPreviewLoading(false);
             setPreviewData(errorData);
           }
@@ -1109,7 +1117,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           let rawData = data.data;
           let finalData = data.data;
 
-          if (parameters?.shouldSetPreviewData) {
+          if (shouldSetPreviewData) {
             setPreviewLoading(false);
             setPreviewData(finalData);
           }
