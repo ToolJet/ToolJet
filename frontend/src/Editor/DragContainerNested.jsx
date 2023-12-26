@@ -3,7 +3,15 @@ import './DragContainer.css';
 import { isEmpty } from 'lodash';
 const NO_OF_GRIDS = 43;
 
-export default function DragContainerNested({ boxes, renderWidget, canvasWidth, gridWidth, parent, currentLayout }) {
+export default function DragContainerNested({
+  boxes,
+  renderWidget,
+  canvasWidth,
+  gridWidth,
+  parent,
+  currentLayout,
+  readOnly,
+}) {
   const boxList = boxes.map((box) => ({
     id: box.id,
     height: box?.layouts?.desktop?.height,
@@ -37,7 +45,11 @@ export default function DragContainerNested({ boxes, renderWidget, canvasWidth, 
         {/* <button onClick={() => setList((list) => [...list, { id: new Date().getTime() }])}>Add</button> */}
         {list.map((i) => (
           <div
-            className={`target-${parent} target1-${i.parent} ele-${i.id} nested-target moveable-box target`}
+            className={
+              readOnly
+                ? `ele-${i.id} nested-target moveable-box`
+                : `target-${parent} target1-${i.parent} ele-${i.id} nested-target moveable-box target`
+            }
             key={i.id}
             id={i.id}
             style={{ transform: `translate(332px, -134px)`, ...getDimensions(i.id) }}

@@ -482,7 +482,10 @@ export default function DragContainer({
                   setDragTarget(draggedOverElem?.id);
                   console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
                   draggedOverElemId = draggedOverElem?.id;
-                  if (draggedOverElemRef.current?.id !== draggedOverContainer?.id) {
+                  if (
+                    draggedOverElemRef.current?.id !== draggedOverContainer?.id &&
+                    !draggedOverContainer.classList.contains('hide-grid')
+                  ) {
                     draggedOverContainer.classList.add('show-grid');
                     draggedOverElemRef.current && draggedOverElemRef.current.classList.remove('show-grid');
                     draggedOverElemRef.current = draggedOverContainer;
