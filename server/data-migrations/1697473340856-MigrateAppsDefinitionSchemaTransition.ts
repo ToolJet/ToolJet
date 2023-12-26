@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, EntityManager, Transaction } from 'typeorm';
+import { In, MigrationInterface, QueryRunner, EntityManager } from 'typeorm';
 import { AppVersion } from '../src/entities/app_version.entity';
 import { Component } from 'src/entities/component.entity';
 import { Page } from 'src/entities/page.entity';
@@ -15,25 +15,11 @@ interface AppResourceMappings {
 
 export class MigrateAppsDefinitionSchemaTransition1697473340856 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const totalAppVersions = await queryRunner.manager.count(AppVersion);
-
-    if (totalAppVersions === 0) {
-      console.log('No app versions found. Skipping migration.');
-      return;
-    }
-
-    await this.migrateAppsDefinition(queryRunner.manager);
-  }
-
-  @Transaction()
-  private async migrateAppsDefinition(entityManager: EntityManager, queryRunner?: QueryRunner): Promise<void> {
+    const entityManager = queryRunner.manager;
     const appVersionRepository = entityManager.getRepository(AppVersion);
-    const appVersions = await appVersionRepository.query(
-      `SELECT id FROM app_versions WHERE definition->>'pages' IS NOT NULL ORDER BY updated_at DESC`
-    );
+    const appVersions = await appVersionRepository.find();
     const totalVersions = appVersions.length;
 
-    const startTime = new Date().getTime();
     const migrationProgress = new MigrationProgress(
       'MigrateAppsDefinitionSchemaTransition1697473340856',
       totalVersions
@@ -44,20 +30,17 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     await processDataInBatches(
       entityManager,
       async (entityManager: EntityManager, skip: number, take: number) => {
-        const ids = appVersions.slice(skip, skip + take).map((appVersion) => appVersion.id);
-        if (!ids || ids.length === 0) {
-          return [];
-        }
-        return entityManager.query(`SELECT * FROM app_versions WHERE id IN (${ids.map((id) => `'${id}'`).join(',')})`);
+        return entityManager.find(AppVersion, {
+          where: { id: In(appVersions.map((appVersion) => appVersion.id)) },
+          take,
+          skip,
+        });
       },
       async (entityManager: EntityManager, versions: AppVersion[]) => {
         await this.processVersions(entityManager, versions, migrationProgress);
       },
       batchSize
     );
-
-    const endTime = new Date().getTime();
-    console.log(`Migration time taken: ${(endTime - startTime) / 1000} seconds`);
   }
 
   private async processVersions(
@@ -67,6 +50,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   ) {
     for (const version of versions) {
       const definition = version['definition'];
+
+      if (!definition) return;
 
       const dataQueriesRepository = entityManager.getRepository(DataQuery);
       const dataQueries = await dataQueriesRepository.find({
@@ -84,13 +69,12 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           const page = definition.pages[pageId];
           const pagePositionInTheList = Object.keys(definition?.pages).indexOf(pageId);
           const pageEvents = page.events || [];
-          const pageComponents = page.components || {};
+          const pageComponents = page.components;
 
           const isHomepage = (definition['homePageId'] as any) === pageId;
 
           const componentEvents = [];
           const componentLayouts = [];
-          let savedComponents = [];
           const transformedComponents = this.transformComponentData(
             pageComponents,
             componentEvents,
@@ -98,8 +82,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           );
 
           const newPage = entityManager.create(Page, {
-            name: page.name || page.handle || pageId,
-            handle: page.handle || pageId,
+            name: page.name,
+            handle: page.handle,
             appVersionId: version.id,
             disabled: page.disabled || false,
             hidden: page.hidden || false,
@@ -110,43 +94,41 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
           appResourceMappings.pagesMapping[pageId] = pageCreated.id;
 
-          if (Array.isArray(transformedComponents) && transformedComponents.length > 0) {
-            transformedComponents.forEach((component) => {
-              component.page = pageCreated;
-            });
+          transformedComponents.forEach((component) => {
+            component.page = pageCreated;
+          });
 
-            savedComponents = await entityManager.save(Component, transformedComponents);
+          const savedComponents = await entityManager.save(Component, transformedComponents);
 
-            for (const componentId in pageComponents) {
-              const componentLayout = pageComponents[componentId]['layouts'];
+          for (const componentId in pageComponents) {
+            const componentLayout = pageComponents[componentId]['layouts'];
 
-              if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
-                for (const type in componentLayout) {
-                  const layout = componentLayout[type];
-                  const newLayout = new Layout();
-                  newLayout.type = type;
-                  newLayout.top = layout.top;
-                  newLayout.left = layout.left;
-                  newLayout.width = layout.width;
-                  newLayout.height = layout.height;
-                  newLayout.componentId = appResourceMappings.componentsMapping[componentId];
+            if (componentLayout && appResourceMappings.componentsMapping[componentId]) {
+              for (const type in componentLayout) {
+                const layout = componentLayout[type];
+                const newLayout = new Layout();
+                newLayout.type = type;
+                newLayout.top = layout.top;
+                newLayout.left = layout.left;
+                newLayout.width = layout.width;
+                newLayout.height = layout.height;
+                newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
-                  componentLayouts.push(newLayout);
-                }
+                componentLayouts.push(newLayout);
               }
             }
-
-            await entityManager.save(Layout, componentLayouts);
           }
 
-          if (Array.isArray(pageEvents) && pageEvents.length > 0) {
+          await entityManager.save(Layout, componentLayouts);
+
+          if (pageEvents.length > 0) {
             pageEvents.forEach(async (event, index) => {
               const newEvent = {
-                name: event.eventId || `${pageCreated.name} Page Event ${index}`,
+                name: event.eventId,
                 sourceId: pageCreated.id,
                 target: Target.page,
                 event: event,
-                index: index,
+                index: pageEvents.index || index,
                 appVersionId: version.id,
               };
 
@@ -157,68 +139,60 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
           componentEvents.forEach((eventObj) => {
             if (eventObj.event?.length === 0) return;
 
-            if (Array.isArray(eventObj.event) && eventObj.event.length > 0) {
-              eventObj.event.forEach(async (event, index) => {
-                const newEvent = {
-                  name: event.eventId || `event ${index}`,
-                  sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
-                  target: Target.component,
-                  event: event,
-                  index: index,
-                  appVersionId: version.id,
-                };
+            eventObj.event.forEach(async (event, index) => {
+              const newEvent = {
+                name: event.eventId,
+                sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
+                target: Target.component,
+                event: event,
+                index: eventObj.index || index,
+                appVersionId: version.id,
+              };
 
-                await entityManager.save(EventHandler, newEvent);
-              });
-            }
+              await entityManager.save(EventHandler, newEvent);
+            });
           });
 
-          if (savedComponents.length > 0) {
-            savedComponents.forEach(async (component) => {
-              if (component.type === 'Table') {
-                const tableActions = component?.properties?.actions?.value || [];
-                const tableColumns = component?.properties?.columns?.value || [];
-                const tableActionAndColumnEvents = [];
+          savedComponents.forEach(async (component) => {
+            if (component.type === 'Table') {
+              const tableActions = component.properties?.actions?.value || [];
+              const tableColumns = component.properties?.columns?.value || [];
+              const tableActionAndColumnEvents = [];
 
-                tableActions.forEach((action) => {
-                  const actionEvents = action?.events || [];
+              tableActions.forEach((action) => {
+                const actionEvents = action.events || [];
 
-                  if (!actionEvents || !Array.isArray(actionEvents)) return;
-
-                  actionEvents.forEach((event, index) => {
-                    tableActionAndColumnEvents.push({
-                      name: event.eventId,
-                      sourceId: component.id,
-                      target: Target.tableAction,
-                      event: { ...event, ref: action.name },
-                      index: index,
-                      appVersionId: version.id,
-                    });
+                actionEvents.forEach((event, index) => {
+                  tableActionAndColumnEvents.push({
+                    name: event.eventId,
+                    sourceId: component.id,
+                    target: Target.tableAction,
+                    event: { ...event, ref: action.name },
+                    index: event.index ?? index,
+                    appVersionId: version.id,
                   });
                 });
+              });
 
-                tableColumns.forEach((column) => {
-                  if (column?.columnType !== 'toggle') return;
-                  const columnEvents = column?.events || [];
+              tableColumns.forEach((column) => {
+                if (column?.columnType !== 'toggle') return;
+                const columnEvents = column.events || [];
 
-                  if (!columnEvents || !Array.isArray(columnEvents)) return;
-
-                  columnEvents.forEach((event, index) => {
-                    tableActionAndColumnEvents.push({
-                      name: event.eventId || `event ${index}`,
-                      sourceId: component.id,
-                      target: Target.tableColumn,
-                      event: { ...event, ref: column.name },
-                      index: index,
-                      appVersionId: version.id,
-                    });
+                columnEvents.forEach((event, index) => {
+                  tableActionAndColumnEvents.push({
+                    name: event.eventId,
+                    sourceId: component.id,
+                    target: Target.tableColumn,
+                    event: { ...event, ref: column.name },
+                    index: event.index ?? index,
+                    appVersionId: version.id,
                   });
                 });
+              });
 
-                await entityManager.save(EventHandler, tableActionAndColumnEvents);
-              }
-            });
-          }
+              await entityManager.save(EventHandler, tableActionAndColumnEvents);
+            }
+          });
 
           if (isHomepage) {
             updateHomepageId = pageCreated.id;
@@ -229,14 +203,14 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       for (const dataQuery of dataQueries) {
         const queryEvents = dataQuery?.options?.events || [];
 
-        if (Array.isArray(queryEvents) && queryEvents.length > 0) {
+        if (queryEvents.length > 0) {
           queryEvents.forEach(async (event, index) => {
             const newEvent = {
-              name: event.eventId || `${dataQuery.name} Query Event ${index}`,
+              name: event.eventId,
               sourceId: dataQuery.id,
               target: Target.dataQuery,
               event: event,
-              index: index,
+              index: queryEvents.index || index,
               appVersionId: version.id,
             };
 
@@ -245,26 +219,13 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         }
       }
 
-      let globalSettings = definition?.globalSettings;
-      if (!definition?.globalSettings) {
-        globalSettings = {
-          hideHeader: false,
-          appInMaintenance: false,
-          canvasMaxWidth: 100,
-          canvasMaxWidthType: '%',
-          canvasMaxHeight: 2400,
-          canvasBackgroundColor: '#edeff5',
-          backgroundFxQuery: '',
-        };
-      }
-
       await entityManager.update(
         AppVersion,
         { id: version.id },
         {
           homePageId: updateHomepageId,
           showViewerNavigation: definition?.showViewerNavigation || true,
-          globalSettings: globalSettings,
+          globalSettings: definition.globalSettings,
         }
       );
 
@@ -288,8 +249,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     const allEvents = await manager.find(EventHandler, {
       where: { appVersionId: versionId },
     });
-
-    if (!allEvents || allEvents.length === 0) return;
 
     for (const event of allEvents) {
       const eventDefinition = event.event;
@@ -317,8 +276,6 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     componentEvents: any[],
     componentsMapping: Record<string, string>
   ): Component[] {
-    if (!data) return [];
-
     const transformedComponents: Component[] = [];
 
     const allComponents = Object.keys(data).map((key) => {
@@ -328,16 +285,9 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       };
     });
 
-    if (!allComponents || allComponents.length === 0) return [];
-
     for (const componentId in data) {
       const component = data[componentId];
-
-      if (!component) return;
-
       const componentData = component['component'];
-
-      if (!componentData?.component) return;
 
       let skipComponent = false;
       const transformedComponent: Component = new Component();
@@ -347,7 +297,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
       const isParentTabOrCalendar = this.isChildOfTabsOrCalendar(component, allComponents, parentId);
 
       if (isParentTabOrCalendar) {
-        const childTabId = component?.parent.split('-')[component?.parent.split('-').length - 1];
+        const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
         const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
         const mappedParentId = componentsMapping[_parentId];
 
@@ -361,21 +311,21 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
 
       if (!skipComponent) {
         transformedComponent.id = uuid();
-        transformedComponent.name = componentData.name || componentId;
+        transformedComponent.name = componentData.name;
         transformedComponent.type = componentData.component;
-        transformedComponent.properties = componentData?.definition?.properties || {};
-        transformedComponent.styles = componentData?.definition?.styles || {};
-        transformedComponent.validation = componentData?.definition?.validation || {};
-        transformedComponent.general = componentData?.definition?.general || {};
-        transformedComponent.generalStyles = componentData?.definition?.generalStyles || {};
-        transformedComponent.displayPreferences = componentData?.definition?.others || {};
-        transformedComponent.parent = component?.parent ? parentId : null;
+        transformedComponent.properties = componentData.definition.properties || {};
+        transformedComponent.styles = componentData.definition.styles || {};
+        transformedComponent.validation = componentData.definition.validation || {};
+        transformedComponent.general = componentData.definition.general || {};
+        transformedComponent.generalStyles = componentData.definition.generalStyles || {};
+        transformedComponent.displayPreferences = componentData.definition.others || {};
+        transformedComponent.parent = component.parent ? parentId : null;
 
         transformedComponents.push(transformedComponent);
 
         componentEvents.push({
           componentId: componentId,
-          event: componentData?.definition?.events || [],
+          event: componentData.definition.events,
         });
         componentsMapping[componentId] = transformedComponent.id;
       }
@@ -385,9 +335,7 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
   }
 
   isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-    if (allComponents.length === 0) return false;
-
-    if (componentParentId && component) {
+    if (componentParentId) {
       const parentId = component?.parent?.split('-').slice(0, -1).join('-');
 
       const parentComponent = allComponents.find((comp) => comp.id === parentId);
@@ -406,8 +354,8 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     await queryRunner.query('DELETE FROM layout');
     await queryRunner.query('DELETE FROM event_handler');
 
-    await queryRunner.query('ALTER TABLE app_versions DROP COLUMN IF EXISTS homePageId');
-    await queryRunner.query('ALTER TABLE app_versions DROP COLUMN IF EXISTS globalSettings');
-    await queryRunner.query('ALTER TABLE app_versions DROP COLUMN IF EXISTS showViewerNavigation');
+    await queryRunner.query('ALTER TABLE app_version DROP COLUMN IF EXISTS homePageId');
+    await queryRunner.query('ALTER TABLE app_version DROP COLUMN IF EXISTS globalSettings');
+    await queryRunner.query('ALTER TABLE app_version DROP COLUMN IF EXISTS showViewerNavigation');
   }
 }
