@@ -22,7 +22,7 @@ jobs:
       - name: Keep only the first line in versions.json
         run: |
           # Navigate to the docs directory
-          cd docs
+          cd ./docs
 
           # Use sed to edit versions.json and keep only the first line
           sed -i '1!d' versions.json
