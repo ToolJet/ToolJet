@@ -23,10 +23,6 @@ const Runjs = (props) => {
 
   return (
     <Card className="runjs-editor mb-3">
-      {/* {(options.hasParamSupport || props.mode === 'create') && (
-        
-      )} */}
-
       <CodeHinter
         initialValue={props.options.code}
         mode="javascript"

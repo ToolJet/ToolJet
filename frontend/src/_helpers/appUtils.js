@@ -828,7 +828,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false, parameters, hasParamSupport = false) {
+export function previewQuery(_ref, query, calledFromQuery = false, parameters) {
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
@@ -854,15 +854,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters, h
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(
-        _ref,
-        query.options.code,
-        query?.id,
-        true,
-        '',
-        parameters,
-        hasParamSupport
-      );
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true, '', parameters);
     } else if (query.kind === 'tooljetdb') {
       queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
     } else if (query.kind === 'runpy') {

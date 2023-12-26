@@ -86,8 +86,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
       kind: selectedDataSource.kind,
       name: queryName,
     };
-    const hasParamSupport = selectedQuery?.options?.hasParamSupport;
-    previewQuery(editorRef, query, false, undefined, hasParamSupport)
+    previewQuery(editorRef, query, false, undefined)
       .then(() => {
         ref.current.scrollIntoView();
       })
