@@ -45,15 +45,6 @@ jobs:
       - name: Create deployment
         id: create-deployment
         run: |
-          # Debug versions.json content before jq
-          cat docs/versions.json
-          
-          jq '.[0]' --argfile input docs/versions.json > tmp_versions.json
-          mv tmp_versions.json docs/versions.json
-
-          # Display the modified file content
-          cat docs/versions.json
-
           export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
           --header 'accept: application/json' \
@@ -93,6 +84,15 @@ jobs:
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
           }')
+
+          # Debug versions.json content before jq
+          cat docs/versions.json
+          
+          jq '.[0]' --argfile input docs/versions.json > tmp_versions.json
+          mv tmp_versions.json docs/versions.json
+
+          # Display the modified file content
+          cat docs/versions.json          
 
           echo "response: $RESPONSE"
           export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
