@@ -25,6 +25,7 @@ describe("Editor- CSA", () => {
   });
 
   afterEach(() => {
+    cy.wait(500);
     cy.apiDeleteApp();
   });
 

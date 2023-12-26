@@ -218,6 +218,7 @@ const sidebars = {
       'items': [
         'workflows/overview',
         'workflows/nodes',
+        'workflows/workflow-triggers',
         'workflows/permissions',
         'workflows/logs',
       ],
@@ -384,6 +385,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Setup',
           'items': [
+            'contributing-guide/setup/codespaces',
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',

@@ -121,13 +121,14 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
 Cypress.Commands.add(
   "openApp",
   (
+    workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
     componentSelector = "[data-cy='empty-editor-text']"
   ) => {
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
-    cy.visit(`/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}`);
+    cy.visit(`/${workspaceId}/apps/${appId}`);
     cy.get(componentSelector, { timeout: 10000 });
   }
 );
@@ -185,6 +186,29 @@ Cypress.Commands.add("logoutApi", () => {
       { log: false }
     ).then((response) => {
       expect(response.status).to.equal(200);
+    });
+  });
+});
+
+Cypress.Commands.add("userInviteApi", (userName, userEmail) => {
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    cy.request(
+      {
+        method: "POST",
+        url: "http://localhost:3000/api/organization_users",
+        headers: {
+          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          Cookie: `tj_auth_token=${cookie.value}`,
+        },
+        body: {
+          first_name: userName,
+          email: userEmail,
+          groups: [],
+        },
+      },
+      { log: false }
+    ).then((response) => {
+      expect(response.status).to.equal(201);
     });
   });
 });

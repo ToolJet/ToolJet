@@ -81,3 +81,9 @@ export const editRowText = {
   selectRowToEditText: "Select a row to edit",
   rowEditedSuccessfullyToast: "Row edited successfully",
 };
+
+export const bulkUploadDataText = {
+  bulkUploadbuttonText: "Bulk upload data",
+  templateHelperText:
+    "Download the template to add your data or format your file in the same as the template. ToolJet won’t be able to recognise files in any other format.",
+};
