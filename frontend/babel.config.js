@@ -11,7 +11,7 @@ const plugins = [
       // Windows users can use "\\" here if needed
     },
   ],
-  "@babel/transform-runtime",
+  ["@babel/transform-runtime"],
 ];
 
 if (process.env.NODE_ENV === "developement") {
