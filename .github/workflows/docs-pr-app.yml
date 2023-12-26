@@ -85,14 +85,11 @@ jobs:
             }
           }')
 
-          # Check if the content of versions.json is a string
-          if [[ $(jq -e '. | type' docs/versions.json) == "string" ]]; then
-            # Extract the first version from the string
-            FIRST_VERSION=$(jq -r '.' docs/versions.json)
-          else
-            # Extract the first version from the array
-            FIRST_VERSION=$(jq -r '.[0]' docs/versions.json)
-          fi
+          # Extract the first version from versions.json
+          FIRST_VERSION=$(jq -r '.[0]' docs/versions.json)
+
+          # Save the first version back to versions.json
+          echo "[\"$FIRST_VERSION\"]" > docs/versions.json
 
           echo "response: $RESPONSE"
           export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
