@@ -28,13 +28,13 @@ const ColumnsForm = ({ columns, setColumns }) => {
           })}
         >
           <div className="row align-items-center">
-            <div className="col-3 m-0">
+            <div className="col-3 m-0 pe-0">
               <span data-cy="name-input-field-label">Name</span>
             </div>
-            <div className="col-3 m-0">
+            <div className="col-3 m-0 pe-0">
               <span data-cy="type-input-field-label">Type</span>
             </div>
-            <div className="col-3 m-0">
+            <div className="col-3 m-0 pe-0">
               <span data-cy="default-input-field-label">Default</span>
             </div>
           </div>
@@ -42,7 +42,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
         {Object.keys(columns).map((index) => (
           <div
             key={index}
-            className={cx('list-group-item', {
+            className={cx('list-group-item mb-1', {
               'bg-gray': !darkMode,
             })}
           >
@@ -50,7 +50,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
               {/* <div className="col-1">
                   <DragIcon />
                 </div> */}
-              <div className="col-3 m-0" data-cy="column-name-input-field">
+              <div className="col-3 m-0 pe-0 ps-1" data-cy="column-name-input-field">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -66,9 +66,10 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   disabled={columns[index].constraint_type === 'PRIMARY KEY'}
                 />
               </div>
-              <div className="col-3" data-cy="type-dropdown-field" style={{ marginRight: '16px' }}>
+              <div className="col-3 pe-0 ps-1" data-cy="type-dropdown-field">
                 <Select
                   width="120px"
+                  height="36px"
                   isDisabled={columns[index].constraint_type === 'PRIMARY KEY'}
                   useMenuPortal={false}
                   options={columns[index].constraint_type === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
@@ -80,7 +81,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   }}
                 />
               </div>
-              <div className="col-3 m-0" data-cy="column-default-input-field">
+              <div className="col-2 m-0 pe-0 ps-1" data-cy="column-default-input-field">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -97,16 +98,33 @@ const ColumnsForm = ({ columns, setColumns }) => {
                 />
               </div>
               {columns[index].constraint_type === 'PRIMARY KEY' && (
-                <div className="col-2">
-                  <span
+                <div className="col-3">
+                  <div
                     className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}
                     data-cy="primary-key-text"
                   >
                     Primary Key
-                  </span>
+                  </div>
                 </div>
               )}
-              <div className="col-1 cursor-pointer" data-cy="column-delete-icon" onClick={() => handleDelete(index)}>
+              {columns[index].constraint_type !== 'PRIMARY KEY' && (
+                <div className="col-3 d-flex">
+                  <label className={`form-switch`}>
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      // defaultChecked={value ? value : defaultValue === 'true'}
+                      // onChange={(e) => setInputValue(e.target.checked)}
+                    />
+                  </label>
+                  <span>NOT NULL</span>
+                </div>
+              )}
+              <div
+                className="col-1 cursor-pointer d-flex"
+                data-cy="column-delete-icon"
+                onClick={() => handleDelete(index)}
+              >
                 {columns[index].constraint_type !== 'PRIMARY KEY' && <DeleteIcon />}
               </div>
             </div>
