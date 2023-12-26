@@ -16,6 +16,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Keep only the first line in versions.json
+        run: |
+          # Navigate to the docs directory
+          cd docs
+
+          # Use sed to edit versions.json and keep only the first line
+          sed -i '1!d' versions.json
+
+          # Display the modified file content
+          cat versions.json
+        working-directory: ./docs
+    
       - name: Create deployment
         id: create-deployment
         run: |
