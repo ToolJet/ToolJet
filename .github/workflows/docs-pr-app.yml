@@ -45,6 +45,13 @@ jobs:
       - name: Create deployment
         id: create-deployment
         run: |
+          # Use jq to edit versions.json and keep only the first version
+          jq '.[0]' versions.json > tmp_versions.json
+          mv tmp_versions.json versions.json
+
+          # Display the modified file content
+          cat versions.json
+
           export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
           --header 'accept: application/json' \
@@ -84,12 +91,6 @@ jobs:
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
           }')
-
-          # Extract the first version from versions.json
-          FIRST_VERSION=$(jq -r '.[0]' docs/versions.json)
-
-          # Save the first version back to versions.json
-          echo "[\"$FIRST_VERSION\"]" > docs/versions.json
 
           echo "response: $RESPONSE"
           export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
