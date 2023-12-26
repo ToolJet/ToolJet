@@ -13,6 +13,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const [isNotNull, setIsNotNull] = useState(false);
 
   useEffect(() => {
     toast.dismiss();
@@ -39,7 +40,8 @@ const ColumnForm = ({ onCreate, onClose }) => {
       selectedTable.table_name,
       columnName,
       dataType,
-      defaultValue
+      defaultValue,
+      isNotNull
     );
 
     setFetching(false);
@@ -81,6 +83,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
             Data type
           </div>
           <Select
+            width="100%"
             useMenuPortal={false}
             placeholder="Select data type"
             value={dataType}
@@ -102,6 +105,27 @@ const ColumnForm = ({ onCreate, onClose }) => {
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
+        </div>
+
+        <div className="row mb-3">
+          <div className="col-1">
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={isNotNull}
+                onChange={(e) => {
+                  setIsNotNull(e.target.checked);
+                }}
+              />
+            </label>
+          </div>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
+            <p className="fw-400 secondary-text">
+              {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
+            </p>
+          </div>
         </div>
       </div>
       <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleCreate} />
