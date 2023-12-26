@@ -33,7 +33,7 @@ jobs:
       - name: Keep only the first line in versions.json
         run: |
           # Use jq to edit versions.json and keep only the first version
-          jq '. = [.[:1]]' versions.json > tmp_versions.json
+          jq '.[0]' versions.json > tmp_versions.json
           mv tmp_versions.json versions.json
 
           # Display the modified file content
