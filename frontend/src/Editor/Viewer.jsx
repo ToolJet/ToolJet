@@ -176,7 +176,7 @@ class ViewerComponent extends React.Component {
       ...variables,
       ...constants,
     });
-    useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
