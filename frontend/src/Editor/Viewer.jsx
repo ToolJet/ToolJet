@@ -500,10 +500,22 @@ class ViewerComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
+    const navigationParams = {
+      env: defaultParams.env,
+      version: defaultParams.version,
+    };
+
+    //! For basic plan, env is undefined so we need to remove it from the url
+    const navigationParamsString = navigationParams.env
+      ? `env=${navigationParams.env}`
+      : '' + navigationParams.version
+      ? `version=${navigationParams.version}`
+      : '';
+
     this.props.navigate(
-      `/applications/${this.state.slug}/${handle}?${
-        !_.isEmpty(defaultParams) ? `version=${defaultParams.version}` : ''
-      }${queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''}`,
+      `/applications/${this.state.slug}/${handle}?${!_.isEmpty(defaultParams) ? navigationParamsString : ''}${
+        queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''
+      }`,
       {
         state: {
           isSwitchingPage: true,
