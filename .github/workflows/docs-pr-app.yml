@@ -21,11 +21,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}        
 
-      # - name: List files in docs directory
-      #   run: |
-      #     cd docs
-      #     ls -la
-      #   working-directory: ./docs
+      - name: List files in docs directory
+        run: |
+          ls -la
+        working-directory: ./docs
         
       # - name: Debug current working directory
       #   run: |
