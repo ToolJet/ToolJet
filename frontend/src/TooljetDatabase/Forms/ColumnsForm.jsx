@@ -113,8 +113,12 @@ const ColumnsForm = ({ columns, setColumns }) => {
                     <input
                       className="form-check-input"
                       type="checkbox"
-                      // defaultChecked={value ? value : defaultValue === 'true'}
-                      // onChange={(e) => setInputValue(e.target.checked)}
+                      checked={columns[index]?.isNotNull ?? false}
+                      onChange={(e) => {
+                        const prevColumns = { ...columns };
+                        prevColumns[index].isNotNull = e.target.checked;
+                        setColumns(prevColumns);
+                      }}
                     />
                   </label>
                   <span>NOT NULL</span>
