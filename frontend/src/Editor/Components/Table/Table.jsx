@@ -449,6 +449,13 @@ export function Table({
     }));
   }, [JSON.stringify([transformations, currentState])]);
 
+  useEffect(() => {
+    setExposedVariables({
+      currentData: tableData,
+      updatedData: tableData,
+    });
+  }, [JSON.stringify(tableData)]);
+
   const columnDataForAddNewRows = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
@@ -898,6 +905,11 @@ export function Table({
 
     //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
+
+  const pageData = page.map((row) => row.original);
+  useEffect(() => {
+    setExposedVariable('currentPageData', pageData);
+  }, [JSON.stringify(pageData)]);
 
   function downlaodPopover() {
     const options = [
