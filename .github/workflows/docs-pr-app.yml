@@ -45,9 +45,11 @@ jobs:
       - name: Create deployment
         id: create-deployment
         run: |
-          # Use jq to edit versions.json and keep only the first version
-          jq '.[0]' docs/versions.json > docs/tmp_versions.json
-          mv docs/tmp_versions.json docs/versions.json
+          # Debug versions.json content before jq
+          cat docs/versions.json
+          
+          jq '.[0]' --argfile input docs/versions.json > tmp_versions.json
+          mv tmp_versions.json docs/versions.json
 
           # Display the modified file content
           cat docs/versions.json
