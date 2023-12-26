@@ -173,10 +173,12 @@ export const processDataInBatches = async <T>(
     data = await getData(entityManager, skip, batchSize);
     skip += batchSize;
 
-    if (data.length > 0) {
+    //if data is undefined, skip processing
+
+    if (data && data.length > 0) {
       await processBatch(entityManager, data);
     }
-  } while (data.length === batchSize);
+  } while (!data || data.length === batchSize);
 };
 
 export const generateNextNameAndSlug = (firstWord: string) => {
