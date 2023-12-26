@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
-import _ from 'lodash';
 import { Pagination } from '@/_components/Pagination';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
+import _ from 'lodash';
 
 export const Listview = function Listview({
   id,
@@ -18,6 +18,7 @@ export const Listview = function Listview({
   setExposedVariables,
   darkMode,
   dataCy,
+  childComponents,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -80,7 +81,6 @@ export const Listview = function Listview({
 
   useEffect(() => {
     const childrenDataClone = _.cloneDeep(childrenData);
-
     const exposedVariables = {
       data: removeFunctionObjects(childrenDataClone),
       children: childrenData,
@@ -94,7 +94,33 @@ export const Listview = function Listview({
       setExposedVariables(exposedVariables);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenData]);
+  }, [childrenData, childComponents]);
+
+  function filterComponents() {
+    const childrenDataClone = _.cloneDeep(childrenData);
+
+    const componentNamesSet = [];
+    if (childrenDataClone?.[0]) {
+      Object.keys(childrenDataClone?.[0]).forEach((item) => {
+        for (const key in childComponents) {
+          const componentName = childComponents[key].component.name;
+          componentNamesSet.push(componentName);
+        }
+        if (!componentNamesSet.includes(item)) {
+          for (const key in childrenDataClone) {
+            delete childrenDataClone[key][item];
+          }
+        }
+      });
+    }
+    return childrenDataClone;
+  }
+
+  useEffect(() => {
+    const data = filterComponents(childComponents, childrenData);
+    setChildrenData(data);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childComponents]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageChanged = (page) => {
