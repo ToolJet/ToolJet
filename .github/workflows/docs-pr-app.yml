@@ -46,11 +46,11 @@ jobs:
         id: create-deployment
         run: |
           # Use jq to edit versions.json and keep only the first version
-          jq '.[0]' versions.json > tmp_versions.json
-          mv tmp_versions.json versions.json
+          jq '.[0]' docs/versions.json > docs/tmp_versions.json
+          mv docs/tmp_versions.json docs/versions.json
 
           # Display the modified file content
-          cat versions.json
+          cat docs/versions.json
 
           export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
