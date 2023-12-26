@@ -25,11 +25,6 @@ jobs:
         run: |
           ls -la
         working-directory: ./docs
-        
-      # - name: Debug current working directory
-      #   run: |
-      #     pwd
-      #   working-directory: ./docs
 
       - name: Keep only the first line in versions.json
         run: |
@@ -86,6 +81,16 @@ jobs:
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
           }')
+
+          # Display the un-modified file content
+          cat versions.json
+          
+          # Use jq to edit versions.json and keep only the first version
+          jq '.[0]' versions.json > tmp_versions.json
+          mv tmp_versions.json versions.json
+
+          # Display the modified file content
+          cat versions.json
 
           echo "response: $RESPONSE"
           export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
