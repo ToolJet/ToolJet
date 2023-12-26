@@ -323,7 +323,7 @@ class ViewerComponent extends React.Component {
           redirectToErrorPage(ERROR_TYPES.INVALID);
         } else if (error?.statusCode === 403) {
           redirectToErrorPage(ERROR_TYPES.RESTRICTED);
-        } else {
+        } else if (error?.statusCode !== 401) {
           redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }
       });
