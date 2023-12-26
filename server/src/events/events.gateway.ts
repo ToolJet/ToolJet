@@ -30,7 +30,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('authenticate')
   onAuthenticateEvent(client: any, data: string) {
     const signedJwt = this.authService.verifyToken(data);
-    if (isEmpty(signedJwt)) client._events.close();
+    if (isEmpty(signedJwt)) client.close();
     else client.isAuthenticated = true;
     return;
   }
