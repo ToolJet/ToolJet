@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef, useMemo, useCallback } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
@@ -6,12 +6,23 @@ import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
+import { ConfirmDialog } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
 import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/EditColumnForm';
 import TableFooter from './Footer';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import BigInt from '../Icons/Biginteger.svg';
+import Float from '../Icons/Float.svg';
+import Integer from '../Icons/Integer.svg';
+import CharacterVar from '../Icons/Text.svg';
+import Boolean from '../Icons/Toggle.svg';
+import Menu from '../Icons/Menu.svg';
+import DeleteIcon from '../Table/ActionsPopover/Icons/DeleteColumn.svg';
+
+import './styles.scss';
 
 const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const {
@@ -29,7 +40,18 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
+  const [editColumnHeader, setEditColumnHeader] = useState({
+    hoveredColumn: null,
+    clickedColumn: null,
+    columnHeaderValue: null,
+    deletePopupModal: false,
+    columnEditPopover: false,
+  });
+  const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
+
   const prevSelectedTableRef = useRef({});
+  const columnCreatorElement = useRef();
+  const wholeScreenWidth = window.innerWidth;
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -108,15 +130,15 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const checkDataType = (type) => {
     switch (type) {
       case 'integer':
-        return 'int';
+        return <Integer width="18" height="18" className="tjdb-column-header-name" />;
       case 'bigint':
-        return 'bigint';
+        return <BigInt width="18" height="18" className="tjdb-column-header-name" />;
       case 'character varying':
-        return 'varchar';
+        return <CharacterVar width="18" height="18" className="tjdb-column-header-name" />;
       case 'boolean':
-        return 'bool';
+        return <Boolean width="18" height="18" className="tjdb-column-header-name" />;
       case 'double precision':
-        return 'float';
+        return <Float width="18" height="18" className="tjdb-column-header-name" />;
       default:
         return type;
     }
@@ -160,6 +182,55 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }
   );
 
+  const columHeaderLength = useMemo(() => headerGroups[0]?.headers?.length || 0, [headerGroups]);
+
+  const moveColumnCreateElement = useCallback(() => {
+    setTimeout(() => {
+      const initialxAxis = columnCreatorElement.current?.getBoundingClientRect().x;
+      const fullWidth = window.innerWidth;
+      setWidth((prevState) => ({
+        ...prevState,
+        screenWidth: fullWidth,
+        xAxis: initialxAxis,
+      }));
+    }, 200);
+  }, [setWidth, columnCreatorElement]);
+
+  useEffect(() => {
+    moveColumnCreateElement();
+  }, []);
+
+  useEffect(() => {
+    moveColumnCreateElement();
+  }, [columHeaderLength]);
+
+  const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
+
+  const colStyles = {
+    position: 'absolute',
+    top: '0px',
+    right: '-28px',
+    width: '29px',
+    height: '30px',
+    borderWidth: '0px 1px 1px 1px',
+    borderStyle: 'solid',
+    borderRadius: '0px',
+  };
+
+  const colStyles1 = {
+    position: 'fixed',
+    top: '112px',
+    right: '0px',
+    width: '29px',
+    height: '30px',
+    borderWidth: '0px 1px 1px 1px',
+    borderStyle: 'solid',
+    borderRadius: '0px',
+    zIndex: '1',
+  };
+
+  const positionValue = width.xAxis > widthOfScreen ? colStyles1 : colStyles;
+
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
     if (shouldDelete) {
@@ -183,29 +254,113 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     }
   };
 
-  const handleDeleteColumn = async (columnName) => {
-    const shouldDelete = confirm(`Are you sure you want to delete the column "${columnName}"?`);
-    if (shouldDelete) {
-      const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName);
-      if (error) {
-        toast.error(error?.message ?? `Error deleting column "${columnName}" from table "${selectedTable}"`);
-        return;
-      }
-      await fetchTableMetadata();
-      toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
+  const handleDeleteColumn = async () => {
+    const columnName = editColumnHeader?.columnHeaderValue;
+    setEditColumnHeader((prevState) => ({
+      ...prevState,
+      deletePopupModal: false,
+    }));
+    const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName);
+    if (error) {
+      toast.error(error?.message ?? `Error deleting column "${columnName}" from table "${selectedTable}"`);
+      return;
     }
+    await fetchTableMetadata();
+    toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
+  };
+
+  const handleDelete = (column) => {
+    setEditColumnHeader((prevState) => ({
+      ...prevState,
+      deletePopupModal: true,
+      columnHeaderValue: column,
+    }));
+    closeMenu();
   };
 
   if (!selectedTable) return null;
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  const closeMenu = () => {
-    document.body.click();
+  const handleMouseOver = (index) => {
+    setEditColumnHeader((prevState) => ({
+      ...prevState,
+      hoveredColumn: index,
+    }));
   };
+
+  const onMenuClick = (e, index) => {
+    setEditColumnHeader((prevState) => ({
+      ...prevState,
+      clickedColumn: index,
+      columnEditPopover: !editColumnHeader?.columnEditPopover,
+    }));
+  };
+
+  const handleMouseOut = () => {
+    setEditColumnHeader((prevState) => ({
+      ...prevState,
+      hoveredColumn: null,
+    }));
+  };
+
+  const closeMenu = () => {
+    setEditColumnHeader((prevState) => ({
+      ...prevState,
+      columnEditPopover: false,
+    }));
+  };
+
+  function showTooltipForId(column) {
+    return (
+      <ToolTip message="Column cannot be edited or deleted" placement="bottom">
+        <div className="primaryKeyTooltip">
+          <div>
+            <span className="tj-text-xsm tj-db-dataype text-lowercase">
+              {column.Header == 'id' ? (
+                <Integer width="18" height="18" className="tjdb-column-header-name" />
+              ) : (
+                checkDataType(column?.dataType)
+              )}
+            </span>
+            {column.render('Header')}
+          </div>
+          <div className="tjdb-primary-key-parent">
+            <span className="primary-key-text">Primary key</span>
+          </div>
+        </div>
+      </ToolTip>
+    );
+  }
 
   return (
     <div>
+      <ConfirmDialog
+        title={'Delete Column'}
+        show={editColumnHeader?.deletePopupModal}
+        message={
+          'Deleting the column could affect it’s associated queries/components. Are you sure you want to continue?'
+        }
+        onConfirm={handleDeleteColumn}
+        onCancel={() => {
+          setEditColumnHeader((prevState) => ({
+            ...prevState,
+            deletePopupModal: false,
+          }));
+        }}
+        darkMode={darkMode}
+        confirmButtonType="dangerPrimary"
+        cancelButtonType="tertiary"
+        onCloseIconClick={() => {
+          setEditColumnHeader((prevState) => ({
+            ...prevState,
+            deletePopupModal: false,
+          }));
+        }}
+        confirmButtonText={'Delete Column'}
+        cancelButtonText={'Cancel'}
+        confirmIcon={<DeleteIcon />}
+      />
       {Object.keys(selectedRowIds).length > 0 && (
         <div className="w-100 bg-white">
           <button
@@ -239,42 +394,87 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       >
         <table
           {...getTableProps()}
-          className="table w-auto card-table table-bordered table-vcenter text-nowrap datatable"
+          className="table card-table table-bordered table-vcenter text-nowrap datatable"
+          style={{ position: 'relative' }}
         >
           <thead>
+            <button
+              ref={columnCreatorElement}
+              onClick={() => openCreateColumnDrawer()}
+              style={positionValue}
+              className="add-row-btn-database"
+            >
+              +
+            </button>
             {headerGroups.map((headerGroup, index) => (
               <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
-                  <TablePopover
+                  <th
                     key={column.Header}
-                    onEdit={() => {
-                      setSelectedColumn(column);
-                      setIsEditColumnDrawerOpen(true);
-                      closeMenu();
-                    }}
-                    onDelete={() => handleDeleteColumn(column.Header)}
-                    disabled={index === 0 || column.isPrimaryKey}
+                    width={index === 0 ? 66 : 230}
+                    title={column?.Header || ''}
+                    className={`${
+                      editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
+                        ? 'table-header-click tj-database-column-header tj-text-xsm'
+                        : 'table-header tj-database-column-header tj-text-xsm'
+                    }`}
+                    data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
+                    {...column.getHeaderProps()}
+                    onMouseOver={() => handleMouseOver(index)}
+                    onMouseOut={() => handleMouseOut()}
                   >
-                    <th
-                      width={index === 0 ? 66 : 230}
-                      title={column?.Header || ''}
-                      className="table-header tj-database-column-header tj-text-xsm"
-                      data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
-                      {...column.getHeaderProps()}
-                    >
-                      {column.render('Header')}
-                      <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                        {column.Header == 'id' ? 'serial' : checkDataType(column?.dataType)}
-                      </span>
-                    </th>
-                  </TablePopover>
+                    {column.Header !== 'id' && index > 0 ? (
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div>
+                          <span className="tj-text-xsm tj-db-dataype text-lowercase">
+                            {column.Header == 'id' ? (
+                              <Integer width="18" height="18" className="tjdb-column-header-name" />
+                            ) : (
+                              checkDataType(column?.dataType)
+                            )}
+                          </span>
+                          {column.render('Header')}
+                        </div>
+                        <TablePopover
+                          onEdit={() => {
+                            setSelectedColumn(column);
+                            setIsEditColumnDrawerOpen(true);
+                            closeMenu();
+                          }}
+                          onDelete={() => handleDelete(column.Header)}
+                          disabled={index === 0 || column.isPrimaryKey}
+                          show={editColumnHeader.columnEditPopover && editColumnHeader.clickedColumn === index}
+                          className="column-popover-parent"
+                        >
+                          <div className="tjdb-menu-icon-parent">
+                            <Menu
+                              width="20"
+                              height="20"
+                              className="tjdb-menu-icon"
+                              onClick={(e) => onMenuClick(e, index)}
+                            />
+                          </div>
+                        </TablePopover>
+                      </div>
+                    ) : column.Header === 'id' ? (
+                      showTooltipForId(column)
+                    ) : (
+                      <>
+                        <span className="tj-text-xsm tj-db-dataype text-lowercase">
+                          {column.Header == 'id' ? (
+                            <Integer width="18" height="18" className="tjdb-column-header-name" />
+                          ) : (
+                            checkDataType(column?.dataType)
+                          )}
+                        </span>
+                        {column.render('Header')}
+                      </>
+                    )}
+                  </th>
                 ))}
               </tr>
             ))}
           </thead>
-          <button onClick={() => openCreateColumnDrawer()} className="add-row-btn-database">
-            +
-          </button>
           <tbody
             className={cx({
               'bg-white': rows.length > 0 && !darkMode,
@@ -301,7 +501,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                 prepareRow(row);
                 return (
                   <>
-                    <tr {...row.getRowProps()} key={index}>
+                    <tr className={`${`row-tj`}`} {...row.getRowProps()} key={index}>
                       {row.cells.map((cell, index) => {
                         const dataCy =
                           cell.column.id === 'selection'
@@ -311,7 +511,13 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                           <td
                             key={`cell.value-${index}`}
                             title={cell.value || ''}
-                            className="table-cell"
+                            className={`${
+                              editColumnHeader?.clickedColumn === index && editColumnHeader?.columnEditPopover === true
+                                ? `table-cell-click`
+                                : editColumnHeader?.hoveredColumn === index
+                                ? 'table-cell-hover-background'
+                                : `table-cell`
+                            }`}
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
                           >
