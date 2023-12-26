@@ -133,10 +133,12 @@ class ViewerComponent extends React.Component {
         }
 
         if (query.pluginId || query?.plugin?.id) {
-          const pluginData = camelizeKeys(query.plugin);
+          const exposedVariables =
+            query.plugin?.manifestFile?.data?.source?.exposedVariables ||
+            query.plugin?.manifest_file?.data?.source?.exposed_variables;
 
           queryState[query.name] = {
-            ...pluginData.manifestFile.data.source.exposedVariables,
+            ...exposedVariables,
             ...this.props.currentState.queries[query.name],
           };
         } else {
