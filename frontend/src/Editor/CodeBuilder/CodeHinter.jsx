@@ -201,45 +201,34 @@ export function CodeHinter({
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
   const updatePreview = () => {
-    const customResolvables = getCustomResolvables();
-    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+    let globalPreviewCopy = null;
+    let globalErrorCopy = null;
+    const [preview, error] = getPreviewAndErrorFromValue(currentValue);
     setPrevCurrentValue(currentValue);
 
-    if (error) {
-      setResolvingError(error);
+    const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
+
+    setPrevCurrentValue(currentValue);
+    if (error || !_valid || typeof preview === 'function') {
+      globalPreviewCopy = null;
+      globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
+      setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
       setResolvedValue(null);
     } else {
+      globalPreviewCopy = preview;
+      globalErrorCopy = null;
       setResolvingError(null);
       setResolvedValue(preview);
     }
+
+    return [globalPreviewCopy, globalErrorCopy];
   };
 
   useEffect(() => {
-    let globalPreviewCopy = null;
-    let globalErrorCopy = null;
-    if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
-      const [preview, error] = getPreviewAndErrorFromValue(currentValue);
-      // checking type error if any in run time
-      const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
-
-      setPrevCurrentValue(currentValue);
-      if (error || !_valid || typeof preview === 'function') {
-        globalPreviewCopy = null;
-        globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
-        setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
-        setResolvedValue(null);
-      } else {
-        globalPreviewCopy = preview;
-        globalErrorCopy = null;
-        setResolvingError(null);
-        setResolvedValue(preview);
-      }
-    }
-
-    updatePreview();
+    let [globalPreviewCopy, globalErrorCopy] = enablePreview ? updatePreview() : [null, null];
 
     return () => {
-      if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+      if (enablePreview) {
         setPrevCurrentValue(null);
         setResolvedValue(globalPreviewCopy);
         setResolvingError(globalErrorCopy);
