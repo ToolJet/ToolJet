@@ -92,7 +92,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
       );
     } catch (err) {
       error = err;
-      console.log('eval_error', err);
+      // console.log('eval_error', err);
     }
   }
 

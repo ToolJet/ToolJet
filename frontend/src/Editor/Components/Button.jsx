@@ -3,7 +3,7 @@ import cx from 'classnames';
 const tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable } = props;
+  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 
   const [label, setLabel] = useState(properties.text);
@@ -46,27 +46,28 @@ export const Button = function Button(props) {
   };
 
   useEffect(() => {
-    setExposedVariable('click', async function () {
-      if (!disable) {
-        fireEvent('onClick');
-      }
-    });
-    setExposedVariable('setText', async function (text) {
-      setLabel(text);
-      setExposedVariable('buttonText', text);
-    });
+    const exposedVariables = {
+      click: async function () {
+        if (!disable) {
+          fireEvent('onClick');
+        }
+      },
+      setText: async function (text) {
+        setLabel(text);
+        setExposedVariable('buttonText', text);
+      },
+      disable: async function (value) {
+        setDisable(value);
+      },
+      visibility: async function (value) {
+        setVisibility(value);
+      },
+      loading: async function (value) {
+        setLoading(value);
+      },
+    };
 
-    setExposedVariable('disable', async function (value) {
-      setDisable(value);
-    });
-
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
-
-    setExposedVariable('loading', async function (value) {
-      setLoading(value);
-    });
+    setExposedVariables(exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable, setLabel, setDisable, setVisibility, setLoading]);
