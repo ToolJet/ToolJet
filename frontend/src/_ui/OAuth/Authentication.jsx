@@ -2,6 +2,7 @@ import React from 'react';
 import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
+import EncryptedFieldWrapper from '@/_components/EncyrptedFieldWrapper';
 
 const Authentication = ({
   auth_type,
@@ -23,6 +24,9 @@ const Authentication = ({
   multiple_auth_enabled,
   optionchanged,
   workspaceConstants,
+  optionsChanged,
+  selectedDataSource,
+  options,
 }) => {
   if (auth_type === 'oauth2') {
     return (
@@ -97,20 +101,22 @@ const Authentication = ({
         </div>
 
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">
-            Client Secret
-            <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
-              Encrypted
-            </small>
-          </label>
-          <Input
-            type="password"
-            className="form-control"
-            onChange={(e) => optionchanged('client_secret', e.target.value)}
-            value={client_secret}
-            workspaceConstants={workspaceConstants}
-          />
+          <EncryptedFieldWrapper
+            options={options}
+            selectedDataSource={selectedDataSource}
+            optionchanged={optionchanged}
+            optionsChanged={optionsChanged}
+            name="client_secret"
+            label="Client Secret"
+          >
+            <Input
+              type="password"
+              className="form-control"
+              onChange={(e) => optionchanged('client_secret', e.target.value)}
+              value={client_secret}
+              workspaceConstants={workspaceConstants}
+            />
+          </EncryptedFieldWrapper>
         </div>
 
         <div className="col-md-12">
@@ -199,20 +205,22 @@ const Authentication = ({
           />
         </div>
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">
-            Password
-            <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
-              Encrypted
-            </small>
-          </label>
-          <Input
-            type="password"
-            className="form-control"
-            onChange={(e) => optionchanged('password', e.target.value)}
-            value={password}
-            workspaceConstants={workspaceConstants}
-          />
+          <EncryptedFieldWrapper
+            options={options}
+            selectedDataSource={selectedDataSource}
+            optionchanged={optionchanged}
+            optionsChanged={optionsChanged}
+            name="password"
+            label="Password"
+          >
+            <Input
+              type="password"
+              className="form-control"
+              onChange={(e) => optionchanged('password', e.target.value)}
+              value={password}
+              workspaceConstants={workspaceConstants}
+            />
+          </EncryptedFieldWrapper>
         </div>
       </div>
     );
@@ -220,20 +228,22 @@ const Authentication = ({
     return (
       <div>
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">
-            Token
-            <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
-              Encrypted
-            </small>
-          </label>
-          <Input
-            type="password"
-            className="form-control"
-            onChange={(e) => optionchanged('bearer_token', e.target.value)}
-            value={bearer_token}
-            workspaceConstants={workspaceConstants}
-          />
+          <EncryptedFieldWrapper
+            options={options}
+            selectedDataSource={selectedDataSource}
+            optionchanged={optionchanged}
+            optionsChanged={optionsChanged}
+            name="bearer_token"
+            label="Token"
+          >
+            <Input
+              type="password"
+              className="form-control"
+              onChange={(e) => optionchanged('bearer_token', e.target.value)}
+              value={bearer_token}
+              workspaceConstants={workspaceConstants}
+            />
+          </EncryptedFieldWrapper>
         </div>
       </div>
     );
