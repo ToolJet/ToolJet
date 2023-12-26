@@ -828,7 +828,8 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}) {
+export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedParameters = {}) {
+  let parameters = userSuppliedParameters;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
   const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
@@ -943,9 +944,10 @@ export function runQuery(
   queryName,
   confirmed = undefined,
   mode = 'edit',
-  parameters = {},
+  userSuppliedParameters = {},
   shouldSetPreviewData = false
 ) {
+  let parameters = userSuppliedParameters;
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   const queryEvents = useAppDataStore
     .getState()
