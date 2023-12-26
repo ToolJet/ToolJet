@@ -19,6 +19,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: List files in docs directory
+        run: |
+          cd docs
+          ls -la
+        working-directory: ./docs
+        
+      - name: Debug current working directory
+        run: |
+          pwd
+        working-directory: ./docs
+
       - name: Keep only the first line in versions.json
         run: |
           # Navigate to the docs directory
