@@ -85,9 +85,11 @@ jobs:
             }
           }')
 
-          # Use jq to edit versions.json and keep only the first version
-          jq '.[0]' docs/versions.json > docs/tmp_versions.json
-          mv docs/tmp_versions.json docs/versions.json
+          # Use jq to extract the first version from versions.json
+          FIRST_VERSION=$(jq -r '.[0]' docs/versions.json)
+
+          # Save the first version back to versions.json
+          echo "[\"$FIRST_VERSION\"]" > docs/versions.json
 
           echo "response: $RESPONSE"
           export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
