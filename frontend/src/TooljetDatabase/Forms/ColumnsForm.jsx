@@ -121,7 +121,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                       }}
                     />
                   </label>
-                  <span>NOT NULL</span>
+                  <span>{columns[index]?.isNotNull ?? false ? 'NOT NULL' : 'NULL'}</span>
                 </div>
               )}
               <div
