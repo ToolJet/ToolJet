@@ -547,8 +547,29 @@ export const SubContainer = ({
           onComponentClick={onComponentClick}
           onEvent={onEvent}
           height={height}
-          onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
-          onComponentOptionsChanged={onComponentOptionsChanged}
+          onComponentOptionChanged={
+            checkParent(box)
+              ? onComponentOptionChangedForSubcontainer
+              : (component, optionName, value, componentId = '') => {
+                  if (typeof value === 'function' && _.findKey(exposedVariables, optionName)) {
+                    return Promise.resolve();
+                  }
+                  onOptionChange && onOptionChange({ component, optionName, value, componentId });
+                }
+          }
+          onComponentOptionsChanged={(component, variableSet, id) => {
+            checkParent(box)
+              ? onComponentOptionsChanged(component, variableSet)
+              : variableSet.map((item) => {
+                  onOptionChange &&
+                    onOptionChange({
+                      component,
+                      optionName: item[0],
+                      value: item[1],
+                      componentId: id,
+                    });
+                });
+          }}
           key={key}
           paramUpdated={paramUpdated}
           id={key}
@@ -570,7 +591,7 @@ export const SubContainer = ({
           customResolvables={customResolvables}
           onComponentHover={onComponentHover}
           hoveredComponent={hoveredComponent}
-          parentId={parentComponent?.name}
+          parentId={parent}
           sideBarDebugger={sideBarDebugger}
           isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
           exposedVariables={exposedVariables ?? {}}
