@@ -22,6 +22,7 @@ export const ConfigHandle = function ConfigHandle({
       style={{
         top: position === 'top' ? '-20px' : widgetTop + widgetHeight - 10,
         visibility: showHandle ? 'visible' : 'hidden',
+        left: '-1px',
       }}
     >
       <span
