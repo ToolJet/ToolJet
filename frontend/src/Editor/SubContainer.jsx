@@ -15,6 +15,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
+import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
@@ -46,7 +47,6 @@ export const SubContainer = ({
   onComponentHover,
   hoveredComponent,
   sideBarDebugger,
-  selectedComponents,
   onOptionChange,
   exposedVariables,
   addDefaultChildren = false,
@@ -140,7 +140,7 @@ export const SubContainer = ({
         defaultChildren.forEach((child) => {
           const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
 
-          const componentMeta = componentTypes.find((component) => component.component === componentName);
+          const componentMeta = _.cloneDeep(componentTypes.find((component) => component.component === componentName));
           const componentData = JSON.parse(JSON.stringify(componentMeta));
 
           const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / NO_OF_GRIDS;
@@ -308,7 +308,9 @@ export const SubContainer = ({
     () => ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
-        const componentMeta = componentTypes.find((component) => component.component === item.component.component);
+        const componentMeta = _.cloneDeep(
+          componentTypes.find((component) => component.component === item.component.component)
+        );
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
         const parentComp =
           parentComponent?.component === 'Kanban'
@@ -400,6 +402,7 @@ export const SubContainer = ({
     let newBoxes = { ...boxes };
 
     const subContainerHeight = canvasBounds.height - 30;
+    const selectedComponents = useEditorStore.getState().selectedComponents;
 
     if (selectedComponents) {
       for (const selectedComponent of selectedComponents) {
@@ -520,6 +523,7 @@ export const SubContainer = ({
     backgroundSize: `${gridWidth}px 10px`,
   };
 
+  //check if parent is listview or form return false is so
   const checkParent = (box) => {
     let isListView = false,
       isForm = false;
@@ -588,7 +592,19 @@ export const SubContainer = ({
                         onOptionChange && onOptionChange({ component, optionName, value, componentId });
                       }
                 }
-                onComponentOptionsChanged={onComponentOptionsChanged}
+                onComponentOptionsChanged={(component, variableSet, id) => {
+                  checkParent(box)
+                    ? onComponentOptionsChanged(component, variableSet)
+                    : variableSet.map((item) => {
+                        onOptionChange &&
+                          onOptionChange({
+                            component,
+                            optionName: item[0],
+                            value: item[1],
+                            componentId: id,
+                          });
+                      });
+                }}
                 key={key}
                 onResizeStop={onResizeStop}
                 onDragStop={onDragStop}
@@ -632,7 +648,6 @@ export const SubContainer = ({
                   removeComponent,
                   currentLayout,
                   deviceWindowWidth,
-                  selectedComponents,
                   darkMode,
                   readOnly,
                   onComponentHover,

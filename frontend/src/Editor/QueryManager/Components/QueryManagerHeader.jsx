@@ -86,8 +86,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
       kind: selectedDataSource.kind,
       name: queryName,
     };
-    const hasParamSupport = selectedQuery?.options?.hasParamSupport;
-    previewQuery(editorRef, query, false, undefined, hasParamSupport)
+    previewQuery(editorRef, query, false, undefined)
       .then(() => {
         ref.current.scrollIntoView();
       })
@@ -106,7 +105,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
         })}
       >
         <button
-          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
+          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
           data-cy="query-run-button"
           disabled={isInDraft}

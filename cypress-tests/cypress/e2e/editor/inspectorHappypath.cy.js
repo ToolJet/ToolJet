@@ -82,9 +82,14 @@ describe("Editor- Inspector", () => {
     cy.get('[data-cy="switch-page-label-and-input"] > .select-search')
       .click()
       .type("home{enter}");
+
     cy.get('[data-cy="button-add-query-param"]').click();
-    cy.wait(1000);
-    cy.get('[data-cy="button-add-query-param"]').click();
+    cy.wait(3000);
+    cy.get("body").then(($body) => {
+      if ($body.find('[data-cy="query-param-key-input-field"]').length == 0) {
+        cy.get('[data-cy="button-add-query-param"]').click();
+      }
+    });
 
     addSupportCSAData("query-param-key", "key");
     addSupportCSAData("query-param-value", "value");

@@ -92,7 +92,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
       );
     } catch (err) {
       error = err;
-      console.log('eval_error', err);
+      // console.log('eval_error', err);
     }
   }
 
@@ -411,15 +411,7 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  queryId,
-  isPreview,
-  mode = '',
-  parameters = {},
-  hasParamSupport = false
-) {
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
   const currentState = getCurrentState();
   let result = {},
     error = null;
@@ -432,7 +424,6 @@ export async function executeMultilineJS(
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
   const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
-  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
 
   const defaultParams =
     queryDetails?.options?.parameters?.reduce(
@@ -484,7 +475,7 @@ export async function executeMultilineJS(
       'client',
       'server',
       'constants',
-      ...(hasParamSupport ? ['parameters'] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
       code,
     ];
     var evalFn = new AsyncFunction(...fnParams);
@@ -502,7 +493,7 @@ export async function executeMultilineJS(
       currentState?.client,
       currentState?.server,
       currentState?.constants,
-      ...(hasParamSupport ? [formattedParams] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
     ];
     result = {
       status: 'ok',

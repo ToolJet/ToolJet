@@ -572,11 +572,27 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'control-component': {
-        const component = Object.values(getCurrentState()?.components ?? {}).filter(
+        let component = Object.values(getCurrentState()?.components ?? {}).filter(
           (component) => component.id === event.componentId
         )[0];
-        const action = component?.[event.componentSpecificActionHandle];
-        const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
+        let action = '';
+        let actionArguments = '';
+        // check if component id not found then try to find if its available as child widget else continue
+        //  with normal flow finding action
+        if (component == undefined) {
+          component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
+          const parent = Object.values(getCurrentState()?.components ?? {}).find(
+            (item) => item.id === component.parent
+          );
+          const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
+          if (child) {
+            action = child[event.componentSpecificActionHandle];
+          }
+        } else {
+          //normal component outside a container ex : form
+          action = component?.[event.componentSpecificActionHandle];
+        }
+        actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
           value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
         }));
@@ -812,10 +828,18 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false, parameters, hasParamSupport = false) {
-  const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedParameters = {}) {
+  let parameters = userSuppliedParameters;
+  const queryPanelState = useQueryPanelStore.getState();
+  const { queryPreviewData } = queryPanelState;
+  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+
   setPreviewLoading(true);
-  if (_.isUndefined(parameters)) {
+  if (queryPreviewData) {
+    setPreviewData('');
+  }
+
+  if (_.isEmpty(parameters)) {
     parameters = query.options?.parameters?.reduce(
       (parameters, parameter) => ({
         ...parameters,
@@ -831,15 +855,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters, h
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(
-        _ref,
-        query.options.code,
-        query?.id,
-        true,
-        '',
-        parameters,
-        hasParamSupport
-      );
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true, '', parameters);
     } else if (query.kind === 'tooljetdb') {
       queryExecutionPromise = tooljetDbOperations.perform(query, queryState);
     } else if (query.kind === 'runpy') {
@@ -922,13 +938,31 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters, h
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters) {
+export function runQuery(
+  _ref,
+  queryId,
+  queryName,
+  confirmed = undefined,
+  mode = 'edit',
+  userSuppliedParameters = {},
+  shouldSetPreviewData = false
+) {
+  let parameters = userSuppliedParameters;
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   const queryEvents = useAppDataStore
     .getState()
     .events.filter((event) => event.target === 'data_query' && event.sourceId === queryId);
 
   let dataQuery = {};
+
+  // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  const queryPanelState = useQueryPanelStore.getState();
+  const { queryPreviewData } = queryPanelState;
+  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+  if (shouldSetPreviewData) {
+    setPreviewLoading(true);
+    queryPreviewData && setPreviewData('');
+  }
 
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
@@ -937,7 +971,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     return;
   }
 
-  if (_.isUndefined(parameters)) {
+  if (_.isEmpty(parameters)) {
     parameters = dataQuery.options?.parameters?.reduce(
       (parameters, parameter) => ({
         ...parameters,
@@ -1042,6 +1076,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               errorData = data;
               break;
           }
+          if (shouldSetPreviewData) {
+            setPreviewLoading(false);
+            setPreviewData(errorData);
+          }
           // errorData = query.kind === 'runpy' ? data.data : data;
           useCurrentStateStore.getState().actions.setErrors({
             [queryName]: {
@@ -1073,13 +1111,18 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           resolve(data);
           onEvent(_self, 'onDataQueryFailure', queryEvents);
           if (mode !== 'view') {
-            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-            toast.error(err?.message);
+            const err = query.kind == 'tooljetdb' ? data?.error || data : data;
+            toast.error(err?.message ? err?.message : 'Something went wrong');
           }
           return;
         } else {
           let rawData = data.data;
           let finalData = data.data;
+
+          if (shouldSetPreviewData) {
+            setPreviewLoading(false);
+            setPreviewData(finalData);
+          }
 
           if (dataQuery.options.enableTransformation) {
             finalData = await runTransformation(
@@ -1211,7 +1254,7 @@ export function computeComponentState(components = {}) {
       if (!components[key]) return;
 
       const { component } = components[key];
-      const componentMeta = componentTypes.find((comp) => component.component === comp.component);
+      const componentMeta = _.cloneDeep(componentTypes.find((comp) => component.component === comp.component));
 
       const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
       const existingValues = currentComponents[existingComponentName];
@@ -1828,36 +1871,22 @@ export const buildComponentMetaDefinition = (components = {}) => {
   for (const componentId in components) {
     const currentComponentData = components[componentId];
 
-    const componentMeta = componentTypes.find((comp) => currentComponentData.component.component === comp.component);
+    const componentMeta = _.cloneDeep(
+      componentTypes.find((comp) => currentComponentData.component.component === comp.component)
+    );
 
     const mergedDefinition = {
       ...componentMeta.definition,
 
-      properties: {
-        ...componentMeta.definition.properties,
-        ...currentComponentData?.component.definition.properties,
-      },
-
-      styles: {
-        ...componentMeta.definition.styles,
-        ...currentComponentData?.component.definition.styles,
-      },
-      generalStyles: {
-        ...componentMeta.definition.generalStyles,
-        ...currentComponentData?.component.definition.generalStyles,
-      },
-      validation: {
-        ...componentMeta.definition.validation,
-        ...currentComponentData?.component.definition.validation,
-      },
-      others: {
-        ...componentMeta.definition.others,
-        ...currentComponentData?.component.definition.others,
-      },
-      general: {
-        ...componentMeta.definition.general,
-        ...currentComponentData?.component.definition.general,
-      },
+      properties: _.merge(componentMeta.definition.properties, currentComponentData?.component.definition.properties),
+      styles: _.merge(componentMeta.definition.styles, currentComponentData?.component.definition.styles),
+      generalStyles: _.merge(
+        componentMeta.definition.generalStyles,
+        currentComponentData?.component.definition.generalStyles
+      ),
+      validation: _.merge(componentMeta.definition.validation, currentComponentData?.component.definition.validation),
+      others: _.merge(componentMeta.definition.others, currentComponentData?.component.definition.others),
+      general: _.merge(componentMeta.definition.general, currentComponentData?.component.definition.general),
     };
 
     const mergedComponent = {

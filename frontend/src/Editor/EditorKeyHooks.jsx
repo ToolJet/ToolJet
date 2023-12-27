@@ -21,7 +21,6 @@ export const EditorKeyHooks = ({
         cloneComponents();
         break;
       case 'KeyC':
-        console.log('copyComponent');
         copyComponents();
         break;
       case 'KeyX':
