@@ -69,7 +69,7 @@ jobs:
             ],
             "serviceDetails": {
                 "pullRequestPreviewsEnabled": "no",
-                "buildCommand": "version-remove.sh",
+                "buildCommand": "jq -r '.[0]' versions.json > tmp_versions.json && mv tmp_versions.json versions.json && npm install && npm run build",
                 "publishPath": "build/",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
