@@ -76,8 +76,8 @@ jobs:
 
       - name: Install Node Dependencies
         run: |
-          npm install --unsafe-perm     
-
+          npm install --unsafe-perm
+ 
       - run: npm run build
 
   lint:
@@ -124,7 +124,11 @@ jobs:
           sudo apt-get install -y build-essential
 
       - name: Install Krb5
-        run: sudo apt-get install libkrb5-dev -y            
+        run: sudo apt-get install libkrb5-dev -y
+
+      - name: Install Node Dependencies
+        run: |
+          npm install --unsafe-perm
 
       - run: npm run build:plugins
       - run: npm --prefix frontend ci && npm --prefix server ci && npm --prefix plugins ci

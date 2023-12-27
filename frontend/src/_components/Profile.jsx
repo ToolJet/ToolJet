@@ -19,6 +19,7 @@ export const Profile = function Header({ darkMode, checkForUnsavedChanges }) {
 
   function logout() {
     authenticationService.logout();
+    window?.$chatwoot?.reset();
   }
 
   function getUserDetails() {

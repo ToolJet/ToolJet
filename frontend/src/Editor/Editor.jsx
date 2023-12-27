@@ -1160,7 +1160,7 @@ const EditorComponent = (props) => {
     for (let key in prevPatch) {
       const type = typeof prevPatch[key];
 
-      if (type === 'object') {
+      if (type === 'object' && !_.isEmpty(prevPatch[key])) {
         handlePaths(prevPatch[key], [...paths, key], appJSON);
       } else {
         const currentpath = [...paths, key].join('.');
@@ -2106,6 +2106,7 @@ const EditorComponent = (props) => {
                     switchSidebarTab={switchSidebarTab}
                     darkMode={props.darkMode}
                     pages={getPagesWithIds()}
+                    cloneComponents={cloningComponents}
                   />
                 </div>
               ) : (

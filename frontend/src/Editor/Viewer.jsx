@@ -112,15 +112,6 @@ class ViewerComponent extends React.Component {
       };
     }
 
-    let mobileLayoutHasWidgets = false;
-
-    if (this.props.currentLayout === 'mobile') {
-      const currentComponents = appDefData.pages[appDefData.homePageId].components;
-      mobileLayoutHasWidgets =
-        Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
-          .length > 0;
-    }
-
     let queryState = {};
     let dataQueries = [];
 
@@ -197,7 +188,7 @@ class ViewerComponent extends React.Component {
       ...variables,
       ...constants,
     });
-    useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(this.props?.currentLayout == 'mobile' ? 'mobile' : 'desktop');
     this.props.updateState({ events: data.events ?? [] });
     this.setState(
       {
@@ -206,7 +197,7 @@ class ViewerComponent extends React.Component {
         canvasWidth:
           this.props.currentLayout === 'desktop'
             ? '100%'
-            : mobileLayoutHasWidgets
+            : this.props?.currentLayout === 'mobile'
             ? `${this.state.deviceWindowWidth}px`
             : '1292px',
         selectedComponent: null,
@@ -332,7 +323,7 @@ class ViewerComponent extends React.Component {
           redirectToErrorPage(ERROR_TYPES.INVALID);
         } else if (error?.statusCode === 403) {
           redirectToErrorPage(ERROR_TYPES.RESTRICTED);
-        } else {
+        } else if (error?.statusCode !== 401) {
           redirectToErrorPage(ERROR_TYPES.UNKNOWN);
         }
       });
@@ -540,10 +531,21 @@ class ViewerComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
+    const navigationParams = {
+      env: defaultParams.env,
+      version: defaultParams.version,
+    };
+
+    //! For basic plan, env is undefined so we need to remove it from the url
+    const envParams = navigationParams.env ? `env=${navigationParams.env}` : '';
+    const versionParams = navigationParams.version ? `version=${navigationParams.version}` : '';
+
+    const navigationParamsString = `${envParams}${envParams && versionParams ? '&' : ''}${versionParams}`;
+
     this.props.navigate(
-      `/applications/${this.state.slug}/${handle}?${
-        !_.isEmpty(defaultParams) ? `env=${defaultParams.env}&version=${defaultParams.version}` : ''
-      }${queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''}`,
+      `/applications/${this.state.slug}/${handle}?${!_.isEmpty(defaultParams) ? navigationParamsString : ''}${
+        queryParamsString ? `${!_.isEmpty(defaultParams) ? '&' : ''}${queryParamsString}` : ''
+      }`,
       {
         state: {
           isSwitchingPage: true,
