@@ -390,6 +390,14 @@ export default function DragContainer({
                   turnOffAutoLayout();
                   return false;
                 }
+                const box = boxes.find((box) => box.id === e.target.id);
+                if (['RangeSlider', 'Container'].includes(box?.component?.component)) {
+                  const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+                  const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
+                  if (!isHandle) {
+                    return false;
+                  }
+                }
                 setDraggedTarget(e.target.id);
                 setIsDragging(true);
               }}
@@ -574,6 +582,16 @@ export default function DragContainer({
                         turnOffAutoLayout();
                         return false;
                       }
+                      const box = boxes.find((box) => box.id === e.target.id);
+                      if (['RangeSlider', 'Container'].includes(box?.component?.component)) {
+                        const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+                        const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
+                        if (!isHandle) {
+                          console.log('eeeeeeee', e.inputEvent);
+                          // e.inputEvent.stopPropagation();
+                          return false;
+                        }
+                      }
                       setDraggedSubContainer(draggedSubContainer ? draggedSubContainer : i.parent);
                     }}
                     onDrag={(e) => {
@@ -747,6 +765,7 @@ export default function DragContainer({
                     }}
                     snapThreshold={5}
                     // passing checkInput param breaks
+                    // checkInput={true}
                     {...(draggedSubContainer === i.parent ? {} : { checkInput: true })}
                     // dragArea={false}
                     elementGuidelines={list
