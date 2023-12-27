@@ -32,8 +32,8 @@ jobs:
           cat versions.json
           
           # Use jq to edit versions.json and keep only the first version
-          jq '.[0]' versions.json > tmp_versions.json
-          mv tmp_versions.json versions.json
+          jq -r '. | split("\n")[0]' docs/versions.json > tmp_versions.json
+          mv tmp_versions.json docs/versions.json
 
           # Display the modified file content
           cat versions.json
