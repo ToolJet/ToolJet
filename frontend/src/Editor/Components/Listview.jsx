@@ -97,23 +97,25 @@ export const Listview = function Listview({
   }, [childrenData, childComponents]);
 
   function filterComponents() {
-    const childrenDataClone = _.cloneDeep(childrenData);
+    if (!childrenData || childrenData.length === 0) {
+      return [];
+    }
 
-    const componentNamesSet = [];
-    if (childrenDataClone?.[0]) {
-      Object.keys(childrenDataClone?.[0]).forEach((item) => {
-        for (const key in childComponents) {
-          const componentName = childComponents[key].component.name;
-          componentNamesSet.push(componentName);
-        }
-        if (!componentNamesSet.includes(item)) {
-          for (const key in childrenDataClone) {
-            delete childrenDataClone[key][item];
+    const componentNamesSet = new Set(
+      Object.values(childComponents ?? {}).map((component) => component.component.name)
+    );
+    const filteredData = _.cloneDeep(childrenData);
+    if (filteredData?.[0]) {
+      Object.keys(filteredData?.[0]).forEach((item) => {
+        if (!componentNamesSet?.has(item)) {
+          for (const key in filteredData) {
+            delete filteredData[key][item];
           }
         }
       });
     }
-    return childrenDataClone;
+
+    return filteredData;
   }
 
   useEffect(() => {
