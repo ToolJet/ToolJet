@@ -19,10 +19,10 @@ jobs:
       - name: List files in docs directory 
         run: |
           ls -la
-        working-directory: ./docs
+        working-directory: docs
 
       - name: Keep only the first line in versions.json     
-        working-directory: ./docs        
+        working-directory: docs        
         run: |
           # Display the un-modified file content
           cat versions.json
@@ -38,15 +38,15 @@ jobs:
         id: create-deployment
         run: |
 
-          # Display the un-modified file content
-          cat docs/versions.json
+          # # Display the un-modified file content
+          # cat docs/versions.json
 
-          # Use head to extract the first version
-          head -n 1 docs/versions.json > tmp_versions.json
-          mv tmp_versions.json docs/versions.json
+          # # Use head to extract the first version
+          # head -n 1 docs/versions.json > tmp_versions.json
+          # mv tmp_versions.json docs/versions.json
 
-          # Display the modified file content
-          cat docs/versions.json
+          # # Display the modified file content
+          # cat docs/versions.json
 
           export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
