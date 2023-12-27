@@ -16,25 +16,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Print current directory
-        run: pwd
-        working-directory: ./docs
-
-      - name: List files in docs directory 
-        run: |
-          ls -la
-        working-directory: docs
-
       - name: Keep only the first line in versions.json     
-        working-directory: docs        
         run: |
           # Display the un-modified file content
           cat versions.json
           
           # Use jq to edit versions.json and keep only the first version
-          jq -r '.[0]' versions.json > tmp_versions.json
-          mv tmp_versions.json versions.json
+          jq -r '.[0]' docs/versions.json > tmp_versions.json
+          mv tmp_versions.json docs/versions.json
 
           # Display the modified file content
           cat versions.json
