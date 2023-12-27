@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # - name: checkout
+      # - name: checkout sdvcsdc
       #   uses: actions/checkout@v3    
 
       # - name: Keep only the first line in versions.json
