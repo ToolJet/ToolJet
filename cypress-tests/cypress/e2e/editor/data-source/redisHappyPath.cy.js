@@ -123,7 +123,7 @@ describe("Data source Redis", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("redis_password")
     );
 
@@ -156,7 +156,7 @@ describe("Data source Redis", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       "redis_password"
     );
 
@@ -168,7 +168,7 @@ describe("Data source Redis", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("redis_password")
     );
 

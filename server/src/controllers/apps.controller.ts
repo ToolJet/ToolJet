@@ -12,7 +12,6 @@ import {
   BadRequestException,
   UseInterceptors,
   NotFoundException,
-  NotImplementedException,
   Headers,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -37,6 +36,7 @@ import { AppDecorator } from 'src/decorators/app.decorator';
 import { WorkflowCountGuard } from '@ee/licensing/guards/workflowcount.guard';
 import { GitSyncService } from '@services/git_sync.service';
 import { AppCloneDto } from '@dto/app-clone.dto';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Controller('apps')
 export class AppsController {
@@ -207,6 +207,7 @@ export class AppsController {
   @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
   @Get('validate-released-app-access/:slug')
   async releasedAppAccess(@User() user, @AppDecorator() app: App) {
+    let editPermission = false;
     if (user) {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
@@ -217,10 +218,17 @@ export class AppsController {
           })
         );
       }
+
+      editPermission = ability.can('editApp', app);
     }
 
     if (!app.currentVersionId) {
-      throw new NotImplementedException('App is not released yet');
+      const errorResponse = {
+        statusCode: HttpStatus.NOT_IMPLEMENTED,
+        error: 'App is not released yet',
+        message: { error: 'App is not released yet', editPermission: editPermission },
+      };
+      throw new HttpException(errorResponse, HttpStatus.NOT_IMPLEMENTED);
     }
 
     const { id, slug } = app;

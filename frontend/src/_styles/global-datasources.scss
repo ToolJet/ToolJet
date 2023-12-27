@@ -189,6 +189,13 @@
             }
         }
     }
+
+    .empty-ds-container {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, 0);
+        top: 30%;
+    }
 }
 
 .datasources-info {
@@ -261,4 +268,24 @@
 
 .delete-modal {
     z-index: 1060 !important;
+}
+
+.add-plugins-container {
+    padding: 10px 0px;
+    margin: auto;
+    width: 28%;
+    height: 300px;
+    text-align: center;
+
+    .warning-container {
+        padding: 5px;
+        background-color: var(--slate3);
+        width: 50px;
+        height: 50px;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        border-radius: 6px;
+        margin: auto;
+    }
 }

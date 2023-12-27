@@ -64,6 +64,7 @@ import { EMPTY_ARRAY, useEditorActions, useEditorState, useEditorStore } from '@
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
 import EditorSelecto from './EditorSelecto';
+import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
@@ -83,6 +84,7 @@ const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).to
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
+  const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
 
   const {
@@ -368,6 +370,7 @@ const EditorComponent = (props) => {
         name: app.name,
         slug: app.slug,
         creationMode: app?.creationMode || app?.creation_mode,
+        current_version_id: app.current_version_id,
       })),
     });
   };
@@ -663,12 +666,14 @@ const EditorComponent = (props) => {
   const onVersionRelease = (versionId) => {
     useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
 
-    socket.send(
-      JSON.stringify({
-        event: 'events',
-        data: { message: 'versionReleased', appId: appId },
-      })
-    );
+    if (socket instanceof WebSocket && socket?.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'versionReleased', appId: appId },
+        })
+      );
+    }
   };
 
   const computeCanvasBackgroundColor = () => {
@@ -1471,6 +1476,17 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
 
+  const navigateToPage = (queryParams = [], handle) => {
+    const appId = useAppDataStore.getState()?.appId;
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+
+    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
+  };
+
   const switchPage = (pageId, queryParams = []) => {
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
@@ -1485,13 +1501,7 @@ const EditorComponent = (props) => {
 
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-
-    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    navigateToPage(queryParams, handle);
 
     const page = {
       id: pageId,
@@ -1500,6 +1510,7 @@ const EditorComponent = (props) => {
       variables: copyOfAppDefinition.pages[pageId]?.variables ?? {},
     };
 
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const globals = {
       ...currentState.globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
@@ -1696,9 +1707,8 @@ const EditorComponent = (props) => {
     });
 
     toast.success('Page handle updated successfully');
-
     const queryParams = getQueryParams();
-    switchPage(pageId, Object.entries(queryParams));
+    navigateToPage(Object.entries(queryParams), newHandle);
   };
 
   const updateOnSortingPages = (newSortedPages) => {
@@ -1853,6 +1863,7 @@ const EditorComponent = (props) => {
           setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => setAppVersionPromoted(isCurrentVersionPromoted)}
           fetchEnvironments={fetchEnvironments}
           isEditorFreezed={isEditorFreezed}
+          isSocketOpen={isSocketOpen}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">

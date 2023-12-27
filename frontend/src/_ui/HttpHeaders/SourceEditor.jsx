@@ -62,7 +62,11 @@ export default ({
                 )}
                 {index === 0 && (
                   <td>
-                    <button disabled={isDisabled} className="btn btn-sm btn-primary" onClick={addNewKeyValuePair}>
+                    <button
+                      disabled={isDisabled}
+                      className="btn btn-sm btn-primary"
+                      onClick={() => addNewKeyValuePair(options)}
+                    >
                       Add
                     </button>
                   </td>

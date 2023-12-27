@@ -131,7 +131,7 @@ describe("Data source Elasticsearch", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("elasticsearch_password")
     );
 
@@ -161,7 +161,7 @@ describe("Data source Elasticsearch", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       "elasticsearch_password"
     );
 
@@ -171,7 +171,7 @@ describe("Data source Elasticsearch", () => {
     );
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("elasticsearch_password")
     );
 
