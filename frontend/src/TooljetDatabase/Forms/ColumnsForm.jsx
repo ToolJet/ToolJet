@@ -54,7 +54,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
       height: '36px',
       minHeight: '36px',
     }),
-    menuList: (provided, state) => ({
+    menuList: (provided, _state) => ({
       ...provided,
       padding: '8px',
     }),
