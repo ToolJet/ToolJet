@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import cx from 'classnames';
-import Select from '@/_ui/Select';
+//import Select from '@/_ui/Select';
+import Select, { components } from 'react-select';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
-import { dataTypes, primaryKeydataTypes } from '../constants';
+import { dataTypes, primaryKeydataTypes, formatOptionLabel } from '../constants';
+import Tick from '../Icons/Tick.svg';
 
 const ColumnsForm = ({ columns, setColumns }) => {
+  const [columnIndex, setColumnIndex] = useState(0);
+
   const handleDelete = (index) => {
     const newColumns = { ...columns };
     delete newColumns[index];
@@ -13,6 +17,51 @@ const ColumnsForm = ({ columns, setColumns }) => {
   };
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const { Option } = components;
+
+  const CustomSelectOption = (props) => (
+    <Option {...props}>
+      <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center justify-content-start">
+          <div>{props.data.icon}</div>
+          <span className="dataType-dropdown-label">{props.data.label}</span>
+          <span className="dataType-dropdown-value">{props.data.name}</span>
+        </div>
+        <div>
+          {columnIndex?.value === props.data.value ? (
+            <div>
+              <Tick width="16" height="16" />
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </Option>
+  );
+
+  const CustomStyle = {
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected ? '#F0F4FF' : 'transparent',
+      ':hover': {
+        backgroundColor: state.isFocused ? '#F0F4FF' : '',
+      },
+    }),
+    control: (provided, state) => ({
+      ...provided,
+      background: state.isFocused ? '#fff' : '',
+      border: state.isFocused ? '1px solid #90b5e2 !important' : '1px solid #cccccc',
+      boxShadow: state.isFocused ? 'none' : 'none',
+      height: '36px',
+    }),
+    menuList: (provided, state) => ({
+      ...provided,
+      padding: '8px',
+    }),
+    menu: (base) => ({
+      ...base,
+      width: '360px',
+    }),
+  };
 
   return (
     <div className="">
@@ -71,14 +120,18 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   width="120px"
                   height="36px"
                   isDisabled={columns[index].constraint_type === 'PRIMARY KEY'}
-                  useMenuPortal={false}
+                  //useMenuPortal={false}
                   options={columns[index].constraint_type === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
-                  value={columns[index].data_type}
+                  //value={columns[index].data_type}
                   onChange={(value) => {
+                    setColumnIndex(value);
                     const prevColumns = { ...columns };
-                    prevColumns[index].data_type = value;
+                    prevColumns[index].data_type = value.value;
                     setColumns(prevColumns);
                   }}
+                  components={{ Option: CustomSelectOption }}
+                  styles={CustomStyle}
+                  formatOptionLabel={formatOptionLabel}
                 />
               </div>
               <div className="col-2 m-0 pe-0 ps-1" data-cy="column-default-input-field">
