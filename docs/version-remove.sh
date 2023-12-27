@@ -8,4 +8,6 @@ cat docs/versions.json
 head -n 1 docs/versions.json > tmp_versions.json
 mv tmp_versions.json docs/versions.json
 
+npm i && npm run build
+
 exec "$@"
