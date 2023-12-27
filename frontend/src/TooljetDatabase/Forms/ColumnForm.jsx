@@ -174,7 +174,12 @@ const ColumnForm = ({ onCreate, onClose }) => {
           </div>
         </div>
       </div>
-      <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleCreate} />
+      <DrawerFooter
+        fetching={fetching}
+        onClose={onClose}
+        onCreate={handleCreate}
+        shouldDisableCreateBtn={isEmpty(columnName) || isEmpty(dataType)}
+      />
     </div>
   );
 };
