@@ -634,7 +634,9 @@ export const SubContainer = ({
       style={styles}
       id={`canvas-${parent}`}
       className={`real-canvas ${
-        (isDragging || isResizing || draggedSubContainer === parent || isGridActive) && !readOnly ? 'show-grid' : ''
+        (isDragging || isResizing || draggedSubContainer === parent || isGridActive) && !readOnly
+          ? 'show-grid'
+          : 'hide-grid'
       }`}
     >
       <DragContainerNested
@@ -644,6 +646,7 @@ export const SubContainer = ({
         gridWidth={gridWidth}
         parent={parent}
         currentLayout={currentLayout}
+        readOnly={readOnly}
       />
       {/* {checkParentVisibility() &&
         Object.keys(childWidgets).map((key) => {
