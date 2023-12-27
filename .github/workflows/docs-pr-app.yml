@@ -16,16 +16,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: List files in docs directory
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}         
+      - name: List files in docs directory 
         run: |
           ls -la
         working-directory: ./docs
 
-      - name: Keep only the first line in versions.json
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}         
+      - name: Keep only the first line in versions.json     
         working-directory: ./docs        
         run: |
           # Display the un-modified file content
