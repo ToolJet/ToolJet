@@ -16,6 +16,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Print current directory
+        run: pwd
+        working-directory: ./docs
+
       - name: List files in docs directory 
         run: |
           ls -la
