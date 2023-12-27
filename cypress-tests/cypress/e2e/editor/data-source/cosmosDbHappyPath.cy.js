@@ -96,7 +96,7 @@ describe("Data sources", () => {
     );
     fillDataSourceTextField(
       "Key",
-      "Enter your key",
+      "**************",
       Cypress.env("cosmosdb_key")
     );
 

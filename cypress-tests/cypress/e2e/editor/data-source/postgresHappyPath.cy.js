@@ -145,7 +145,7 @@ describe("Data sources", () => {
     );
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("pg_password")
     );
 

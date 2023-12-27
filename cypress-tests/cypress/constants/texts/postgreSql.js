@@ -13,7 +13,7 @@ export const postgreSqlText = {
       : "Databases (19)";
   },
   allApis: "APIs (20)",
-  allCloudStorage: "Cloud Storage (4)",
+  allCloudStorage: "Cloud Storages (4)",
 
   postgreSQL: "PostgreSQL",
   labelHost: "Host",

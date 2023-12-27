@@ -1,9 +1,9 @@
 # pull official base image
-FROM node:18.3.0-buster
+FROM node:18.18.2-buster
 
 ENV NODE_ENV=development
 
-RUN npm i -g npm@8.11.0
+RUN npm i -g npm@9.8.1
 
 # set working directory
 WORKDIR /app

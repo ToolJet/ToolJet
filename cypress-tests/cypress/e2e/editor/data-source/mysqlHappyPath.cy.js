@@ -129,7 +129,7 @@ describe("Data sources MySql", () => {
     );
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("mysql_password")
     );
 
@@ -169,7 +169,7 @@ describe("Data sources MySql", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("mysql_password")
     );
 

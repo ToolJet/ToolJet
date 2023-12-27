@@ -109,7 +109,7 @@ describe("Data source SMTP", () => {
 
     fillDataSourceTextField(
       postgreSqlText.labelPassword,
-      "Enter password",
+      "**************",
       Cypress.env("smtp_password")
     );
 
