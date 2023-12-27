@@ -2,7 +2,7 @@
 import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import DeleteIcon from './Icons/Delete.svg';
+import DeleteIcon from '../../Icons/DeleteIcon.svg';
 import EditIcon from '../../Icons/EditColumn.svg';
 
 // eslint-disable-next-line no-unused-vars
