@@ -157,7 +157,6 @@ export class PostgrestTableColumnDto {
 export class RenamePostgrestTableDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(31, { message: 'Table name must be less than 32 characters' })
   @MinLength(1, { message: 'Table name must be at least 1 character' })
   @Matches(/^[a-zA-Z0-9_]*$/, {
     message: 'Table name can only contain letters, numbers and underscores',
