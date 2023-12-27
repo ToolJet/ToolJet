@@ -53,7 +53,7 @@ jobs:
             ],
             "serviceDetails": {
                 "pullRequestPreviewsEnabled": "no",
-                "buildCommand": "bash version-remove.sh",
+                "buildCommand": "bash build-latest-version.sh",
                 "publishPath": "build/",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
