@@ -9790,7 +9790,7 @@ tbody {
     display: flex;
   }
 
-  input[name="email"]:disabled {
+  input[name="email"]:disabled, input[name="fullName"]:disabled {
     background-color: var(--slate3) !important;
     color: var(--slate9) !important
   }

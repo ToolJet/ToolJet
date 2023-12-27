@@ -159,20 +159,28 @@ function InviteUsersForm({
                     Name
                   </label>
                   <div className="form-group mb-3 ">
-                    <div className="tj-app-input">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder={t('header.organization.menus.manageUsers.enterFullName', 'Enter full name')}
-                        name="fullName"
-                        onChange={changeNewUserOption.bind(this, 'fullName')}
-                        value={fields['fullName']}
-                        data-cy="input-field-full-name"
-                      />
-                      <span className="text-danger" data-cy="error-message-fullname">
-                        {errors['fullName']}
-                      </span>
-                    </div>
+                    <ToolTip
+                      delay={{ show: '0', hide: '0' }}
+                      placement="bottom"
+                      message="Only user can edit their name"
+                      show={isEditing}
+                    >
+                      <div className="tj-app-input">
+                        <input
+                          type="text"
+                          className={cx('form-control', { disabled: isEditing })}
+                          placeholder={t('header.organization.menus.manageUsers.enterFullName', 'Enter full name')}
+                          name="fullName"
+                          onChange={changeNewUserOption.bind(this, 'fullName')}
+                          value={fields['fullName']}
+                          data-cy="input-field-full-name"
+                          disabled={isEditing}
+                        />
+                        <span className="text-danger" data-cy="error-message-fullname">
+                          {errors['fullName']}
+                        </span>
+                      </div>
+                    </ToolTip>
                   </div>
                   <div className="form-group mb-3 ">
                     <label className="form-label" data-cy="label-email-input-field">
