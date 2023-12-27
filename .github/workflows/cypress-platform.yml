@@ -14,13 +14,13 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-workspace' }}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-workspace' || github.event.label.name == 'run-cypress') }}
 
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18.3.0
+          node-version: 18.18.2
 
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master

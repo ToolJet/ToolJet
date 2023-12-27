@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
@@ -11,6 +11,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
@@ -37,15 +38,26 @@ export const LeftSidebarInspector = ({
     }),
     shallow
   );
-  const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
-  const selectedComponent = React.useMemo(() => {
-    return {
-      id: appDefinition['selectedComponent']?.id,
-      component: appDefinition['selectedComponent']?.component?.name,
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appDefinition['selectedComponent']]);
+  const { selectedComponents } = useEditorStore(
+    (state) => ({
+      selectedComponents: state.selectedComponents,
+    }),
+    shallow
+  );
   const currentState = useCurrentState();
+
+  const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
+
+  const selectedComponent = React.useMemo(() => {
+    const _selectedComponent = selectedComponents[selectedComponents.length - 1];
+
+    return {
+      id: _selectedComponent?.id,
+      component: _selectedComponent?.component?.name,
+    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedComponents]);
 
   const memoizedJSONData = React.useMemo(() => {
     const updatedQueries = {};
@@ -62,6 +74,7 @@ export const LeftSidebarInspector = ({
     delete jsontreeData.server;
     delete jsontreeData.actions;
     delete jsontreeData.succededQuery;
+    delete jsontreeData.layout;
 
     //*Sorted components and queries alphabetically
     const sortedComponents = Object.keys(jsontreeData['components'])
@@ -117,7 +130,7 @@ export const LeftSidebarInspector = ({
   const iconsList = useMemo(() => [...queryIcons, ...componentIcons], [queryIcons, componentIcons]);
 
   const handleRemoveComponent = (component) => {
-    removeComponent(component);
+    removeComponent(component.id);
   };
 
   const handleSelectComponentOnEditor = (component) => {

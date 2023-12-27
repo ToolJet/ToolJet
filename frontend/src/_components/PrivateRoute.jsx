@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { authenticationService } from '@/_services';
-import { appendWorkspaceId, excludeWorkspaceIdFromURL, getPathname } from '@/_helpers/routes';
+import { appendWorkspaceId, excludeWorkspaceIdFromURL, getPathname, getQueryParams } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { handleAppAccess } from '@/_helpers/handleAppAccess';
+import queryString from 'query-string';
 
 export const PrivateRoute = ({ children }) => {
   const [session, setSession] = React.useState(authenticationService.currentSessionValue);
@@ -29,11 +30,24 @@ export const PrivateRoute = ({ children }) => {
     );
     if (isEditorOrViewerGoingToRender && group_permissions && !isSwitchingPages) {
       const componentType = pathname.startsWith('/apps/') ? 'editor' : 'viewer';
-      const { slug } = params;
+      const { slug, versionId, pageHandle } = params;
 
       /* Validate the app permissions */
-      const accessDetails = await handleAppAccess(componentType, slug);
-      setExtraProps(accessDetails);
+      let accessDetails = await handleAppAccess(componentType, slug, versionId);
+      const { versionName, ...restDetails } = accessDetails;
+      if (versionName) {
+        const restQueryParams = getQueryParams();
+        const search = queryString.stringify({
+          version: versionName,
+          ...restQueryParams,
+        });
+        /* means. the User is trying to load old preview URL. Let's change these to query params */
+        navigate(
+          { pathname: `/applications/${slug}${pageHandle ? `/${pageHandle}` : ''}`, search },
+          { replace: true, state: location?.state }
+        );
+      }
+      setExtraProps(restDetails);
       callback();
     } else {
       callback();
@@ -76,16 +90,15 @@ export const PrivateRoute = ({ children }) => {
       (session?.authentication_status === false || session?.authentication_failed) &&
       !location.pathname.startsWith('/applications/')
     ) {
-      // not logged in so redirect to login page with the return url'
-      return (
-        <Navigate
-          to={{
-            pathname: `/login${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`,
-            search: `?redirectTo=${excludeWorkspaceIdFromURL(location.pathname)}`,
-            state: { from: location },
-          }}
-          replace
-        />
+      const redirectTo = `${excludeWorkspaceIdFromURL(location.pathname)}${location.search}`;
+      const workspaceId = getWorkspaceId();
+      return navigate(
+        {
+          pathname: `/login${workspaceId ? `/${workspaceId}` : ''}`,
+          search: `?redirectTo=${redirectTo}`,
+          state: { from: location },
+        },
+        { replace: true }
       );
     }
 
@@ -96,6 +109,8 @@ export const PrivateRoute = ({ children }) => {
 export const AdminRoute = ({ children }) => {
   const [session, setSession] = React.useState(authenticationService.currentSessionValue);
   const location = useLocation();
+  const navigate = useNavigate();
+
   useEffect(() => {
     const subject = authenticationService.currentSession.subscribe((newSession) => {
       setSession(newSession);
@@ -106,17 +121,16 @@ export const AdminRoute = ({ children }) => {
 
   // authorised so return component
   if (session?.group_permissions) {
+    // TODO-check: do we really need this route while we are having the integration menu item.?
     //check: [Marketplace route]
     if (!session?.admin) {
-      return (
-        <Navigate
-          to={{
-            pathname: '/',
-            search: `?redirectTo=${location.pathname}`,
-            state: { from: location },
-          }}
-          replace
-        />
+      return navigate(
+        {
+          pathname: '/',
+          search: `?redirectTo=${location.pathname}`,
+          state: { from: location },
+        },
+        { replace: true }
       );
     }
 
@@ -124,15 +138,14 @@ export const AdminRoute = ({ children }) => {
   } else {
     if (session?.authentication_status === false && !location.pathname.startsWith('/applications/')) {
       // not logged in so redirect to login page with the return url'
-      return (
-        <Navigate
-          to={{
-            pathname: `/login${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`,
-            search: `?redirectTo=${location.pathname}`,
-            state: { from: location },
-          }}
-          replace
-        />
+      const workspaceId = getWorkspaceId();
+      return navigate(
+        {
+          pathname: `/login${workspaceId ? `/${workspaceId}` : ''}`,
+          search: `?redirectTo=${location.pathname}`,
+          state: { from: location },
+        },
+        { replace: true }
       );
     }
 

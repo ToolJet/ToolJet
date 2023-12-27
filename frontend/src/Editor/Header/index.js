@@ -12,32 +12,34 @@ import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
+import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { redirectToDashboard } from '@/_helpers/routes';
+import queryString from 'query-string';
+import { isEmpty } from 'lodash';
 
 export default function EditorHeader({
   M,
-  app,
-  appVersionPreviewLink,
-  slug,
-  appId,
   canUndo,
   canRedo,
   handleUndo,
   handleRedo,
-  isSaving,
   saveError,
   onNameChanged,
   setAppDefinitionFromVersion,
-  handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
   onVersionDelete,
-  currentUser,
+  slug,
   darkMode,
+  isSocketOpen,
 }) {
+  const currentUser = useCurrentUser();
+
+  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, currentVersionId } = useAppInfo();
+  const { setAppPreviewLink } = useAppDataActions();
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -45,9 +47,15 @@ export default function EditorHeader({
     }),
     shallow
   );
-  const currentState = useCurrentState();
+  const { pageHandle } = useCurrentStateStore(
+    (state) => ({
+      pageHandle: state?.page?.handle,
+    }),
+    shallow
+  );
 
   const updatePresence = useUpdatePresence();
+
   useEffect(() => {
     const initialPresence = {
       firstName: currentUser?.first_name ?? '',
@@ -62,10 +70,21 @@ export default function EditorHeader({
     updatePresence(initialPresence);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
-  const handleLogoClick = () => {
+
+  const handleLogoClick = (e) => {
+    e.preventDefault();
     // Force a reload for clearing interval triggers
     redirectToDashboard();
   };
+
+  useEffect(() => {
+    const previewQuery = queryString.stringify({ version: editingVersion.name });
+    const appVersionPreviewLink = editingVersion.id
+      ? `/applications/${slug || appId}/${pageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
+      : '';
+    setAppPreviewLink(appVersionPreviewLink);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, currentVersionId, editingVersion]);
 
   return (
     <div className="header" style={{ width: '100%' }}>
@@ -96,7 +115,7 @@ export default function EditorHeader({
                 }}
               >
                 <div className="global-settings-app-wrapper p-0 m-0 ">
-                  <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
+                  <EditAppName appId={appId} appName={appName} onNameChanged={onNameChanged} />
                 </div>
                 <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
                 <div className="d-flex align-items-center">
@@ -133,9 +152,9 @@ export default function EditorHeader({
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       onVersionDelete={onVersionDelete}
+                      isPublic={isPublic ?? false}
                     />
                   )}
                 </div>
@@ -145,41 +164,46 @@ export default function EditorHeader({
               className="d-flex justify-content-end navbar-right-section"
               style={{ width: '300px', paddingRight: '12px' }}
             >
-              <div className="navbar-nav flex-row order-md-last release-buttons ">
-                <div className="nav-item">
-                  {app.id && (
-                    <ManageAppUsers
-                      app={app}
-                      slug={slug}
-                      darkMode={darkMode}
-                      handleSlugChange={handleSlugChange}
-                      pageHandle={currentState?.page?.handle}
-                      M={M}
-                    />
-                  )}
+              <div className=" release-buttons navbar-nav flex-row">
+                <div className="preview-share-wrap navbar-nav flex-row" style={{ gap: '4px' }}>
+                  <div className="nav-item">
+                    {appId && (
+                      <ManageAppUsers
+                        app={app}
+                        appId={appId}
+                        slug={slug}
+                        darkMode={darkMode}
+                        isVersionReleased={isVersionReleased}
+                        pageHandle={pageHandle}
+                        M={M}
+                        isPublic={isPublic ?? false}
+                      />
+                    )}
+                  </div>
+                  <div className="nav-item">
+                    <Link
+                      title="Preview"
+                      to={appVersionPreviewLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      data-cy="preview-link-button"
+                      className="editor-header-icon tj-secondary-btn"
+                    >
+                      <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
+                    </Link>
+                  </div>
                 </div>
-                <div className="nav-item">
-                  <Link
-                    title="Preview"
-                    to={appVersionPreviewLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    data-cy="preview-link-button"
-                    className="editor-header-icon tj-secondary-btn"
-                  >
-                    <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
-                  </Link>
-                </div>
-                <div className="nav-item dropdown">
-                  {app.id && (
+
+                {isSocketOpen && (
+                  <div className="nav-item dropdown promote-release-btn">
                     <ReleaseVersionButton
-                      appId={app.id}
-                      appName={app.name}
+                      appId={appId}
+                      appName={appName}
                       onVersionRelease={onVersionRelease}
                       saveEditingVersion={saveEditingVersion}
                     />
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

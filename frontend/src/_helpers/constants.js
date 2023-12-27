@@ -27,3 +27,45 @@ export const ON_BOARDING_ROLES = [
   'Product manager',
   'Other',
 ];
+
+export const ERROR_TYPES = {
+  URL_UNAVAILABLE: 'url-unavailable',
+  RESTRICTED: 'restricted',
+  INVALID: 'invalid-link',
+  UNKNOWN: 'unknown',
+};
+
+export const ERROR_MESSAGES = {
+  'url-unavailable': {
+    title: 'App URL Unavailable',
+    message:
+      'The app URL is currently unavailable because the app has not been released. Please either release it or contact admin for access.',
+    cta: 'Back to home page',
+    queryParams: [],
+  },
+  restricted: {
+    title: 'Restricted access',
+    message: 'You don’t have access to this app. Kindly contact admin to know more.',
+    cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
+  'invalid-link': {
+    title: 'Invalid link',
+    message: 'The link you provided is invalid. Please check the link and try again.',
+    cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
+  unknown: {
+    title: 'Oops, something went wrong!',
+    message: 'An error occurred while loading the app. Please try again or contact admin.',
+    cta: 'Back to home page',
+    retry: true,
+    queryParams: [],
+  },
+};
+
+export const TOOLTIP_MESSAGES = {
+  SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
+};

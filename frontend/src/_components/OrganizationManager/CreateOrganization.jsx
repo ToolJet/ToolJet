@@ -9,32 +9,40 @@ import _ from 'lodash';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
-  const [fields, setFields] = useState({ name: { value: '', error: '' }, slug: { value: null, error: '' } });
+  const [name, setName] = useState({ value: null, error: '' });
+  const [slug, setSlug] = useState({ value: null, error: '' });
   const [slugProgress, setSlugProgress] = useState(false);
   const [workspaceNameProgress, setWorkspaceNameProgress] = useState(false);
-  const [isDisabled, setDisabled] = useState(true);
+  const [isNameDisabled, setNameDisabled] = useState(true);
+  const [isSlugDisabled, setSlugDisabled] = useState(true);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { t } = useTranslation();
 
   const createOrganization = () => {
     let emptyError = false;
-    const fieldsTemp = fields;
-    Object.keys(fields).map((key) => {
-      if (!fields?.[key]?.value?.trim()) {
-        fieldsTemp[key] = {
-          error: `Workspace ${key} can't be empty`,
-        };
+
+    [name, slug].map((field, index) => {
+      if (!field?.value?.trim()) {
+        index === 0
+          ? setName({
+              ...name,
+              error: {
+                error: `Workspace name can't be empty`,
+              },
+            })
+          : setSlug({ ...slug, error: `Workspace slug can't be empty` });
         emptyError = true;
       }
     });
-    setFields({ ...fields, ...fieldsTemp });
+    const errorFound = !_.isEmpty(name.error) || !_.isEmpty(slug.error);
 
-    if (!emptyError && !Object.keys(fields).find((key) => !_.isEmpty(fields[key].error))) {
+    if (!emptyError && !errorFound) {
+      const slugValue = slug.value;
       setIsCreating(true);
-      organizationService.createOrganization({ name: fields['name'].value, slug: fields['slug'].value }).then(
+      organizationService.createOrganization({ name: name.value, slug: slugValue }).then(
         () => {
           setIsCreating(false);
-          const newPath = appendWorkspaceId(fields['slug'].value, location.pathname, true);
+          const newPath = appendWorkspaceId(slugValue, location.pathname, true);
           window.history.replaceState(null, null, newPath);
           window.location.reload();
         },
@@ -47,13 +55,18 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const handleInputChange = async (value, field) => {
-    setFields({
-      ...fields,
-      [field]: {
-        ...fields[field],
+    if (field === 'slug') {
+      setSlug({
+        ...slug,
         error: null,
-      },
-    });
+      });
+    }
+    if (field === 'name') {
+      setName({
+        ...name,
+        error: null,
+      });
+    }
     let error = validateName(
       value,
       `Workspace ${field}`,
@@ -79,20 +92,22 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       }
     }
 
-    setFields({
-      ...fields,
-      [field]: {
-        value,
-        error: error?.errorMsg,
-      },
-    });
+    const disabled = !error?.status;
+    const updatedValue = {
+      value,
+      error: error?.errorMsg,
+    };
 
-    const otherInputErrors = Object.keys(fields).find(
-      (key) => (key !== field && !_.isEmpty(fields[key].error)) || (key !== field && _.isEmpty(fields[key].value))
-    );
-    setDisabled(!error?.status || otherInputErrors);
-    field === 'slug' && setSlugProgress(false);
-    field === 'name' && setWorkspaceNameProgress(false);
+    if (field === 'slug') {
+      setSlug(updatedValue);
+      setSlugDisabled(disabled);
+      setSlugProgress(false);
+    }
+    if (field === 'name') {
+      setName(updatedValue);
+      setNameDisabled(disabled);
+      setWorkspaceNameProgress(false);
+    }
     return;
   };
 
@@ -104,16 +119,25 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const closeModal = () => {
-    setFields({ name: { value: '', error: '' }, slug: { value: null, error: '' } });
+    /* reseting states */
+    setName({ value: null, error: '' });
+    setSlug({ value: null, error: '' });
     setShowCreateOrg(false);
-    setDisabled(true);
+    setNameDisabled(true);
+    setSlugDisabled(true);
   };
 
-  const delayedFieldChange = _.debounce(async (value, field) => {
-    field === 'name' && setWorkspaceNameProgress(true);
-    field === 'slug' && setSlugProgress(true);
-    await handleInputChange(value, field);
-  }, 500);
+  const delayedSlugChange = _.debounce(async (value) => {
+    setSlugProgress(true);
+    await handleInputChange(value, 'slug');
+  }, 300);
+
+  const delayedNameChange = _.debounce(async (value) => {
+    setWorkspaceNameProgress(true);
+    await handleInputChange(value, 'name');
+  }, 300);
+
+  const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
 
   return (
     <AlertDialog
@@ -124,14 +148,14 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       <div className="workspace-folder-modal">
         <div className="row">
           <div className="tj-app-input">
-            <label>Workspace name</label>
+            <label data-cy="workspace-name-label">Workspace name</label>
             <input
               type="text"
               onChange={async (e) => {
                 e.persist();
-                await delayedFieldChange(e.target.value, 'name');
+                await delayedNameChange(e.target.value);
               }}
-              className={`form-control ${fields['name']?.error ? 'is-invalid' : 'is-valid'}`}
+              className={`form-control ${name?.error ? 'is-invalid' : 'is-valid'}`}
               placeholder={t('header.organization.workspaceName', 'Workspace name')}
               disabled={isCreating}
               onKeyDown={handleKeyDown}
@@ -139,30 +163,34 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               data-cy="workspace-name-input-field"
               autoFocus
             />
-            {fields['name']?.error ? (
-              <label className="label tj-input-error">{fields['name']?.error || ''}</label>
+            {name?.error ? (
+              <label className="label tj-input-error" data-cy="workspace-error-label">
+                {name?.error || ''}
+              </label>
             ) : (
-              <label className="label label-info">Name must be unique and max 50 characters</label>
+              <label className="label label-info" data-cy="workspace-name-info-label">
+                Name must be unique and max 50 characters
+              </label>
             )}
           </div>
         </div>
         <div className="row">
           <div className="tj-app-input input-with-icon">
-            <label>Unique workspace slug</label>
+            <label data-cy="slug-input-label">Unique workspace slug</label>
             <input
               type="text"
-              className={`form-control ${fields['slug']?.error ? 'is-invalid' : 'is-valid'}`}
+              className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'}`}
               placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
               disabled={isCreating}
               maxLength={50}
               onChange={async (e) => {
                 e.persist();
-                await delayedFieldChange(e.target.value, 'slug');
+                await delayedSlugChange(e.target.value);
               }}
               data-cy="workspace-slug-input-field"
               autoFocusfields
             />
-            {!slugProgress && fields['slug'].value !== null && !fields['slug'].error && (
+            {!slugProgress && slug.value !== null && !slug.error && (
               <div className="icon-container">
                 <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -174,21 +202,26 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 </svg>
               </div>
             )}
-            {fields['slug']?.error ? (
-              <label className="label tj-input-error">{fields['slug']?.error || ''}</label>
-            ) : fields['slug'].value && !slugProgress ? (
-              <label className="label label-success">{`Slug accepted!`}</label>
+            {slug?.error ? (
+              <label className="label tj-input-error" data-cy="input-label-error">
+                {slug?.error || ''}
+              </label>
+            ) : slug.value && !slugProgress ? (
+              <label className="label label-success" data-cy="slug-sucess-label">{`Slug accepted!`}</label>
             ) : (
-              <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
+              <label
+                className="label label-info"
+                data-cy="slug-info-label"
+              >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
             )}
           </div>
         </div>
         <div className="row mb-3">
           <div className="col modal-main tj-app-input">
-            <label>Workspace link</label>
-            <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
+            <label data-cy="workspace-link-label">Workspace link</label>
+            <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="slug-field">
               {!slugProgress ? (
-                `${getHostURL()}/${fields['slug']?.value || '<workspace-slug>'}`
+                `${getHostURL()}/${slug?.value || '<workspace-slug>'}`
               ) : (
                 <div className="d-flex gap-2">
                   <div class="spinner-border text-secondary workspace-spinner" role="status">
@@ -198,8 +231,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 </div>
               )}
             </div>
-            <label className="label label-success label-updated">
-              {fields['slug'].value && !fields['slug'].error && !slugProgress ? `Link updated successfully!` : ''}
+            <label className="label label-success label-updated" data-cy="slug-error-label">
+              {slug.value && !slug.error && !slugProgress ? `Link updated successfully!` : ''}
             </label>
           </div>
         </div>
@@ -209,7 +242,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
             <ButtonSolid
-              disabled={isCreating || isDisabled || slugProgress || workspaceNameProgress}
+              disabled={isDisabled}
               onClick={createOrganization}
               data-cy="create-workspace-button"
               isLoading={isCreating}

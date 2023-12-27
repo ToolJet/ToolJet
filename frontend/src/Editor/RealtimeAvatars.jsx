@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Popover from '@/_ui/Popover';
 import Avatar from '@/_ui/Avatar';
 // eslint-disable-next-line import/no-unresolved
 import { useOthers, useSelf } from '@y-presence/react';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 
 const MAX_DISPLAY_USERS = 2;
 const RealtimeAvatars = ({ darkMode }) => {
@@ -10,12 +11,25 @@ const RealtimeAvatars = ({ darkMode }) => {
   const others = useOthers();
   const othersOnSameVersionAndPage = others.filter(
     (other) =>
-      other?.presence?.editingVersionId === self?.presence.editingVersionId &&
-      other?.presence?.editingPageId === self?.presence.editingPageId
+      other?.presence &&
+      self?.presence &&
+      other?.presence?.editingVersionId === self?.presence?.editingVersionId &&
+      other?.presence?.editingPageId === self?.presence?.editingPageId
   );
 
   const getAvatarText = (presence) => presence.firstName?.charAt(0) + presence.lastName?.charAt(0);
   const getAvatarTitle = (presence) => `${presence.firstName} ${presence.lastName}`;
+
+  const { updateState } = useAppDataActions();
+  const { areOthersOnSameVersionAndPage, currentVersionId } = useAppInfo();
+
+  useEffect(() => {
+    const areActiveUsersOnSameVersionAndPage = othersOnSameVersionAndPage.length > 0;
+    const shouldUpdateState = areActiveUsersOnSameVersionAndPage !== areOthersOnSameVersionAndPage;
+
+    if (shouldUpdateState) updateState({ areOthersOnSameVersionAndPage: areActiveUsersOnSameVersionAndPage });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ others, self, currentVersionId })]);
 
   const popoverContent = () => {
     return othersOnSameVersionAndPage

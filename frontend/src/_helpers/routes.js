@@ -48,7 +48,7 @@ export function getQueryParams(query) {
 
   for (const param of paramsArray) {
     const [key, value] = param.split('=');
-    queryParams[key] = decodeURIComponent(value);
+    if (key) queryParams[key] = decodeURIComponent(value);
   }
 
   return query ? queryParams[query] : queryParams;
@@ -108,6 +108,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
     'oauth2',
     'applications',
     'integrations',
+    'error',
   ];
 
   const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
@@ -119,8 +120,10 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 };
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
-  if (!['integrations', 'applications', 'switch-workspace'].find((path) => pathname.includes(path))) {
-    pathname = getSubpath() ? pathname.replace(getSubpath(), '') : pathname;
+  const subPath = getSubpath();
+  const tempPathname = subPath ? pathname.replace(subPath, '') : pathname;
+  if (!['/integrations', '/applications/', '/switch-workspace'].find((path) => tempPathname.startsWith(path))) {
+    pathname = tempPathname;
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
     const newPath = paths.join('/');
@@ -132,9 +135,9 @@ export const excludeWorkspaceIdFromURL = (pathname) => {
 export const getSubpath = () =>
   window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
 
-const returnWorkspaceIdIfNeed = (path) => {
+export const returnWorkspaceIdIfNeed = (path) => {
   if (path) {
-    return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
+    return !path.startsWith('/applications/') && !path.startsWith('/integrations') ? `/${getWorkspaceId()}` : '';
   }
   return `/${getWorkspaceId()}`;
 };
@@ -154,9 +157,12 @@ export const getRedirectURL = (path) => {
   return redirectLoc;
 };
 
-export const getRedirectTo = () => {
-  const params = new URL(window.location.href).searchParams;
-  return params.get('redirectTo') || '/';
+export const getRedirectTo = (paramObj) => {
+  const params = paramObj || new URL(window.location.href).searchParams;
+  let combined = Array.from(params.entries())
+    .map((param) => param.join('='))
+    .join('&');
+  return params.get('redirectTo') ? combined.replace('redirectTo=', '') : '/';
 };
 
 export const getPreviewQueryParams = () => {
@@ -166,9 +172,21 @@ export const getPreviewQueryParams = () => {
   };
 };
 
-export const getRedirectToWithParams = () => {
+export const getRedirectToWithParams = (shouldAddCustomParams = false) => {
   const pathname = getPathname(null, true);
-  const queryParams = pathname.includes('/applications/') ? getPreviewQueryParams() : {};
+  let query = pathname.includes('/applications/') ? constructQueryParamsInOrder(shouldAddCustomParams) : '';
+  return `${pathname}${query}`;
+};
+
+export const redirectToErrorPage = (errType, queryParams) => {
   const query = !_.isEmpty(queryParams) ? queryString.stringify(queryParams) : '';
-  return `${pathname}${!_.isEmpty(query) ? `?${query}` : ''}`;
+  window.location = `${getHostURL()}/error/${errType}${!_.isEmpty(query) ? `?${query}` : ''}`;
+};
+
+/* TODO-reuse: Somewhere in the code we used same logic to construct preview params */
+const constructQueryParamsInOrder = (shouldAddCustomParams = false) => {
+  const { version, ...rest } = getQueryParams();
+  const queryStr = shouldAddCustomParams && !_.isEmpty(rest) ? queryString.stringify(rest) : '';
+  const previewParams = `${version ? `?version=${version}` : ''}`;
+  return `${previewParams}${queryStr ? `${previewParams ? '&' : '?'}${queryStr}` : ''}`;
 };

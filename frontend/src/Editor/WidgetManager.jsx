@@ -83,6 +83,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
 
     const commonItems = ['Table', 'Chart', 'Button', 'Text', 'Datepicker'];
     const formItems = [
+      'Form',
       'TextInput',
       'NumberInput',
       'PasswordInput',

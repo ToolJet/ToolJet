@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
 import { ToolTip } from '@/_components/ToolTip';
@@ -91,7 +91,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 {/* DATASOURCES */}
                 {admin && (
                   <li className="text-center cursor-pointer">
-                    <ToolTip message="Data Sources" placement="right">
+                    <ToolTip message="Data sources" placement="right">
                       <Link
                         to={getPrivateRoute('data_sources')}
                         onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
@@ -113,7 +113,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <ToolTip message="Marketplace (Beta)" placement="right">
                       <Link
                         to="/integrations"
-                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('integrations'), event)}
+                        onClick={(event) => checkForUnsavedChanges('/integrations', event)}
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === '/integrations' && `current-seleted-route`
                         }`}

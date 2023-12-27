@@ -536,7 +536,7 @@ export const widgets = [
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'regular' },
-        borderRadius: { value: '0' },
+        borderRadius: { value: '4' },
         tableType: { value: 'table-classic' },
       },
     },
@@ -676,7 +676,7 @@ export const widgets = [
         textColor: { value: '#fff' },
         loaderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
         borderColor: { value: '#375FCF' },
         disabledState: { value: '{{false}}' },
       },
@@ -714,7 +714,7 @@ export const widgets = [
       },
       loadingState: {
         type: 'toggle',
-        displayName: 'Loading State',
+        displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -1050,6 +1050,217 @@ export const widgets = [
     },
   },
   {
+    name: 'Form',
+    displayName: 'Form',
+    description: 'Wrapper for multiple components',
+    defaultSize: {
+      width: 13,
+      height: 330,
+    },
+    defaultChildren: [
+      {
+        componentName: 'Text',
+        layout: {
+          top: 40,
+          left: 10,
+          height: 30,
+          width: 17,
+        },
+        properties: ['text'],
+        styles: ['fontWeight', 'textSize', 'textColor'],
+        defaultValue: {
+          text: 'User Details',
+          fontWeight: 'bold',
+          textSize: 20,
+          textColor: '#000',
+        },
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 90,
+          left: 10,
+          height: 30,
+        },
+        properties: ['text'],
+        defaultValue: {
+          text: 'Name',
+        },
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 160,
+          left: 10,
+          height: 30,
+        },
+        properties: ['text'],
+        defaultValue: {
+          text: 'Age',
+        },
+      },
+      {
+        componentName: 'TextInput',
+        layout: {
+          top: 120,
+          left: 10,
+          height: 30,
+          width: 25,
+        },
+        properties: ['placeholder'],
+        defaultValue: {
+          placeholder: 'Enter your name',
+        },
+      },
+      {
+        componentName: 'NumberInput',
+        layout: {
+          top: 190,
+          left: 10,
+          height: 30,
+          width: 25,
+        },
+        properties: ['value'],
+        styles: ['borderColor'],
+        defaultValue: {
+          value: 24,
+          borderColor: '#dadcde',
+        },
+      },
+      {
+        componentName: 'Button',
+        layout: {
+          top: 240,
+          left: 10,
+          height: 30,
+          width: 10,
+        },
+        properties: ['text'],
+        defaultValue: {
+          text: 'Submit',
+        },
+      },
+    ],
+    component: 'Form',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      buttonToSubmit: {
+        type: 'select',
+        displayName: 'Button To Submit Form',
+        options: [{ name: 'None', value: 'none' }],
+        validation: {
+          schema: { type: 'string' },
+        },
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      advanced: {
+        type: 'toggle',
+        displayName: ' Use custom schema',
+      },
+      JSONSchema: {
+        type: 'code',
+        displayName: 'JSON Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
+        },
+      },
+    },
+    events: {
+      onSubmit: { displayName: 'On submit' },
+      onInvalid: { displayName: 'On invalid' },
+    },
+    styles: {
+      backgroundColor: {
+        type: 'color',
+        displayName: 'Background color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border Radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }],
+          },
+        },
+      },
+      borderColor: {
+        type: 'color',
+        displayName: 'Border color',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
+    exposedVariables: {
+      data: {},
+      isValid: true,
+    },
+    actions: [
+      {
+        handle: 'submitForm',
+        displayName: 'Submit Form',
+      },
+      {
+        handle: 'resetForm',
+        displayName: 'Reset Form',
+      },
+    ],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        loadingState: { value: '{{false}}' },
+        advanced: { value: '{{false}}' },
+        JSONSchema: {
+          value:
+            "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
+        },
+      },
+      events: [],
+      styles: {
+        backgroundColor: { value: '#fff' },
+        borderRadius: { value: '0' },
+        borderColor: { value: '#fff' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
     name: 'TextInput',
     displayName: 'Text Input',
     description: 'User text input field',
@@ -1173,7 +1384,7 @@ export const widgets = [
         textColor: { value: '#000' },
         borderColor: { value: '#dadcde' },
         errTextColor: { value: '#ff0000' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         backgroundColor: { value: '#fff' },
@@ -1264,11 +1475,11 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
       },
       borderColor: {
         type: 'color',
-        displayName: 'Border Color',
+        displayName: 'Border color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1299,7 +1510,7 @@ export const widgets = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
         backgroundColor: { value: '#ffffffff' },
         borderColor: { value: '#fff' },
         textColor: { value: '#232e3c' },
@@ -1361,7 +1572,7 @@ export const widgets = [
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1388,7 +1599,7 @@ export const widgets = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
         backgroundColor: { value: '#ffffff' },
       },
     },
@@ -1496,7 +1707,7 @@ export const widgets = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
       },
     },
   },
@@ -1871,7 +2082,7 @@ export const widgets = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
       },
     },
   },
@@ -1967,7 +2178,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        borderRadius: { value: '0' },
+        borderRadius: { value: '4' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -2006,7 +2217,7 @@ export const widgets = [
     styles: {
       fontWeight: {
         type: 'select',
-        displayName: 'Font Weight',
+        displayName: 'Font weight',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'bold', value: 'bold' },
@@ -2016,7 +2227,7 @@ export const widgets = [
       },
       decoration: {
         type: 'select',
-        displayName: 'Text Decoration',
+        displayName: 'Text decoration',
         options: [
           { name: 'none', value: 'none' },
           { name: 'overline', value: 'overline' },
@@ -2027,7 +2238,7 @@ export const widgets = [
       },
       transformation: {
         type: 'select',
-        displayName: 'Text Transformation',
+        displayName: 'Text transformation',
         options: [
           { name: 'none', value: 'none' },
           { name: 'uppercase', value: 'uppercase' },
@@ -2037,20 +2248,20 @@ export const widgets = [
       },
       fontStyle: {
         type: 'select',
-        displayName: 'Font Style',
+        displayName: 'Font style',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'italic', value: 'italic' },
           { name: 'oblique', value: 'oblique' },
         ],
       },
-      lineHeight: { type: 'number', displayName: 'Line Height' },
-      textIndent: { type: 'number', displayName: 'Text Indent' },
-      letterSpacing: { type: 'number', displayName: 'Letter Spacing' },
-      wordSpacing: { type: 'number', displayName: 'Word Spacing' },
+      lineHeight: { type: 'number', displayName: 'Line height' },
+      textIndent: { type: 'number', displayName: 'Text indent' },
+      letterSpacing: { type: 'number', displayName: 'Letter spacing' },
+      wordSpacing: { type: 'number', displayName: 'Word spacing' },
       fontVariant: {
         type: 'select',
-        displayName: 'Font Variant',
+        displayName: 'Font variant',
         options: [
           { name: 'normal', value: 'normal' },
           { name: 'small-caps', value: 'small-caps' },
@@ -2060,28 +2271,28 @@ export const widgets = [
       },
       textSize: {
         type: 'number',
-        displayName: 'Text Size',
+        displayName: 'Text size',
         validation: {
           schema: { type: 'number' },
         },
       },
       backgroundColor: {
         type: 'color',
-        displayName: 'Background Color',
+        displayName: 'Background color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textColor: {
         type: 'color',
-        displayName: 'Text Color',
+        displayName: 'Text color',
         validation: {
           schema: { type: 'string' },
         },
       },
       textAlign: {
         type: 'alignButtons',
-        displayName: 'Align Text',
+        displayName: 'Align text',
         validation: {
           schema: { type: 'string' },
         },
@@ -2355,7 +2566,7 @@ export const widgets = [
       events: [],
       styles: {
         backgroundColor: { value: '#fff' },
-        borderRadius: { value: '0' },
+        borderRadius: { value: '4' },
         borderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
@@ -2549,7 +2760,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        borderRadius: { value: '0' },
+        borderRadius: { value: '4' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
         justifyContent: { value: 'left' },
@@ -2678,7 +2889,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        borderRadius: { value: '0' },
+        borderRadius: { value: '4' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
       },
@@ -3003,14 +3214,14 @@ export const widgets = [
     styles: {
       textColor: {
         type: 'color',
-        displayName: 'Star Color',
+        displayName: 'Star color',
         validation: {
           schema: { type: 'string' },
         },
       },
       labelColor: {
         type: 'color',
-        displayName: 'Label Color',
+        displayName: 'Label color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3073,7 +3284,7 @@ export const widgets = [
     styles: {
       dividerColor: {
         type: 'color',
-        displayName: 'Divider Color',
+        displayName: 'Divider color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3124,21 +3335,21 @@ export const widgets = [
     properties: {
       instructionText: {
         type: 'code',
-        displayName: 'Instruction Text',
+        displayName: 'Instruction text',
         validation: {
           schema: { type: 'string' },
         },
       },
       enableDropzone: {
         type: 'code',
-        displayName: 'Use Drop zone',
+        displayName: 'Use drop zone',
         validation: {
           schema: { type: 'boolean' },
         },
       },
       enablePicker: {
         type: 'code',
-        displayName: 'Use File Picker',
+        displayName: 'Use file picker',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -3277,7 +3488,7 @@ export const widgets = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
       },
     },
   },
@@ -3525,7 +3736,7 @@ export const widgets = [
       styles: {
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
       },
     },
   },
@@ -3612,7 +3823,7 @@ export const widgets = [
       },
       hideTabs: {
         type: 'toggle',
-        displayName: 'Hide Tabs',
+        displayName: 'Hide tabs',
         validation: {
           schema: {
             type: 'boolean',
@@ -3633,7 +3844,7 @@ export const widgets = [
     styles: {
       highlightColor: {
         type: 'color',
-        displayName: 'Highlight Color',
+        displayName: 'Highlight color',
         validation: {
           schema: { type: 'string' },
         },
@@ -3726,8 +3937,8 @@ export const widgets = [
         type: 'select',
         displayName: 'Timer type',
         options: [
-          { name: 'Count Up', value: 'countUp' },
-          { name: 'Count Down', value: 'countDown' },
+          { name: 'Count up', value: 'countUp' },
+          { name: 'Count down', value: 'countDown' },
         ],
         validation: {
           schema: { type: 'string' },
@@ -3976,7 +4187,7 @@ export const widgets = [
         borderColor: { value: '#dadcde' },
         visibility: { value: '{{true}}' },
         disabledState: { value: '{{false}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
       },
     },
   },
@@ -4111,7 +4322,7 @@ export const widgets = [
     },
   },
   {
-    name: 'CircularProgressbar',
+    name: 'CircularProgressBar',
     displayName: 'Circular Progressbar',
     description: 'Show circular progress',
     component: 'CircularProgressBar',
@@ -4484,7 +4695,7 @@ export const widgets = [
       },
       hideDate: {
         type: 'toggle',
-        displayName: 'Hide Date',
+        displayName: 'Hide date',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -4876,7 +5087,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         backgroundColor: { value: '' },
         textColor: { value: '' },
         visibility: { value: '{{true}}' },
-        borderRadius: { value: '{{0}}' },
+        borderRadius: { value: '{{4}}' },
         disabledState: { value: '{{false}}' },
         selectedTextColor: { value: '' },
         selectedBackgroundColor: { value: '' },
@@ -4894,7 +5105,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
       showDownloadOption: {
         type: 'toggle',
-        displayName: 'Show the Download',
+        displayName: 'Show the download',
         validation: { schema: { type: 'boolean' } },
       },
     },
@@ -5280,7 +5491,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Choose colors from a palette',
     component: 'ColorPicker',
     properties: {
-      defaultColor: { type: 'color', displayName: 'Default Color' },
+      defaultColor: { type: 'color', displayName: 'Default color' },
     },
     defaultSize: {
       width: 9,
@@ -5578,217 +5789,6 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     },
   },
   {
-    name: 'Form',
-    displayName: 'Form',
-    description: 'Wrapper for multiple components',
-    defaultSize: {
-      width: 13,
-      height: 330,
-    },
-    defaultChildren: [
-      {
-        componentName: 'Text',
-        layout: {
-          top: 40,
-          left: 10,
-          height: 30,
-          width: 17,
-        },
-        properties: ['text'],
-        styles: ['fontWeight', 'textSize', 'textColor'],
-        defaultValue: {
-          text: 'User Details',
-          fontWeight: 'bold',
-          textSize: 20,
-          textColor: '#000',
-        },
-      },
-      {
-        componentName: 'Text',
-        layout: {
-          top: 90,
-          left: 10,
-          height: 30,
-        },
-        properties: ['text'],
-        defaultValue: {
-          text: 'Name',
-        },
-      },
-      {
-        componentName: 'Text',
-        layout: {
-          top: 160,
-          left: 10,
-          height: 30,
-        },
-        properties: ['text'],
-        defaultValue: {
-          text: 'Age',
-        },
-      },
-      {
-        componentName: 'TextInput',
-        layout: {
-          top: 120,
-          left: 10,
-          height: 30,
-          width: 25,
-        },
-        properties: ['placeholder'],
-        defaultValue: {
-          placeholder: 'Enter your name',
-        },
-      },
-      {
-        componentName: 'NumberInput',
-        layout: {
-          top: 190,
-          left: 10,
-          height: 30,
-          width: 25,
-        },
-        properties: ['value'],
-        styles: ['borderColor'],
-        defaultValue: {
-          value: 24,
-          borderColor: '#dadcde',
-        },
-      },
-      {
-        componentName: 'Button',
-        layout: {
-          top: 240,
-          left: 10,
-          height: 30,
-          width: 10,
-        },
-        properties: ['text'],
-        defaultValue: {
-          text: 'Submit',
-        },
-      },
-    ],
-    component: 'Form',
-    others: {
-      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
-      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
-    },
-    properties: {
-      buttonToSubmit: {
-        type: 'select',
-        displayName: 'Button To Submit Form',
-        options: [{ name: 'None', value: 'none' }],
-        validation: {
-          schema: { type: 'string' },
-        },
-        conditionallyRender: {
-          key: 'advanced',
-          value: false,
-        },
-      },
-      loadingState: {
-        type: 'toggle',
-        displayName: 'Loading state',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      advanced: {
-        type: 'toggle',
-        displayName: ' Use custom schema',
-      },
-      JSONSchema: {
-        type: 'code',
-        displayName: 'JSON Schema',
-        conditionallyRender: {
-          key: 'advanced',
-          value: true,
-        },
-      },
-    },
-    events: {
-      onSubmit: { displayName: 'On submit' },
-      onInvalid: { displayName: 'On invalid' },
-    },
-    styles: {
-      backgroundColor: {
-        type: 'color',
-        displayName: 'Background color',
-        validation: {
-          schema: { type: 'string' },
-        },
-      },
-      borderRadius: {
-        type: 'code',
-        displayName: 'Border Radius',
-        validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
-        },
-      },
-      borderColor: {
-        type: 'color',
-        displayName: 'Border color',
-        validation: {
-          schema: { type: 'string' },
-        },
-      },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-    },
-    exposedVariables: {
-      data: {},
-      isValid: true,
-    },
-    actions: [
-      {
-        handle: 'submitForm',
-        displayName: 'Submit Form',
-      },
-      {
-        handle: 'resetForm',
-        displayName: 'Reset Form',
-      },
-    ],
-    definition: {
-      others: {
-        showOnDesktop: { value: '{{true}}' },
-        showOnMobile: { value: '{{false}}' },
-      },
-      properties: {
-        loadingState: { value: '{{false}}' },
-        advanced: { value: '{{false}}' },
-        JSONSchema: {
-          value:
-            "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
-        },
-      },
-      events: [],
-      styles: {
-        backgroundColor: { value: '#fff' },
-        borderRadius: { value: '0' },
-        borderColor: { value: '#fff' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
-      },
-    },
-  },
-  {
     name: 'BoundedBox',
     displayName: 'Bounded Box',
     description: 'An infinitely customizable image annotation widget',
@@ -5804,7 +5804,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       imageUrl: {
         type: 'code',
-        displayName: 'Image Url',
+        displayName: 'Image URL',
         validation: {
           schema: { type: 'string' },
         },
