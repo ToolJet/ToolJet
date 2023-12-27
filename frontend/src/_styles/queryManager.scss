@@ -31,7 +31,7 @@ $border-radius: 4px;
       .card-header {
         background-color: var(--slate3);
         height: 30px;
-        border-radius: 5px;
+        border-radius: 4px;
         color: var(--slate11);
 
         .parameterItem {
@@ -44,6 +44,7 @@ $border-radius: 4px;
 
             .query-param-text {
               color: var(--slate12);
+              font-weight: 400 !important;
             }
 
             button {
@@ -55,6 +56,7 @@ $border-radius: 4px;
           button#runjs-param-add-btn {
             padding: 0;
             height: inherit;
+            border: none !important;
           }
         }
       }
@@ -1594,13 +1596,15 @@ $border-radius: 4px;
   font-size: 10px;
   font-weight: 400;
   color: var(--tomato-09, #E54D2E);
+
   svg {
     height: 17px;
     width: 17px;
     margin-right: 2px;
   }
-  svg>path{
-    fill:var(--tomato-09, #E54D2E);
+
+  svg>path {
+    fill: var(--tomato-09, #E54D2E);
     opacity: 0.75;
   }
 }

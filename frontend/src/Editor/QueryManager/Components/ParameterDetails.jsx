@@ -101,19 +101,19 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
 export const PillButton = ({ name, onClick, onRemove, marginBottom, className, size }) => (
   <ButtonGroup
     aria-label="Parameter"
-    className={cx('ms-2 bg-slate3', { 'mb-2': marginBottom, ...(className && { [className]: true }) })}
-    style={{ borderRadius: '15px' }}
+    className={cx('bg-slate3', { 'mb-2': marginBottom, ...(className && { [className]: true }) })}
+    style={{ borderRadius: '19px', marginLeft: '2px' }}
   >
     <Button
       size="sm"
       className={cx('bg-transparent color-slate12 runjs-parameter-badge', { 'py-0 px-2': size === 'sm' })}
       onClick={onClick}
       style={{
-        borderTopLeftRadius: '15px',
-        borderBottomLeftRadius: '15px',
+        borderTopLeftRadius: '19px',
+        borderBottomLeftRadius: '19px',
         textTransform: 'none',
         fontWeight: 500,
-        ...(!onRemove && { borderRadius: '15px' }),
+        ...(!onRemove && { borderRadius: '19px' }),
       }}
     >
       <span data-cy={`query-param-${String(name).toLowerCase()}`} className="text-truncate query-param-text">
@@ -127,8 +127,8 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
         size="sm"
         className={cx('bg-transparent color-slate12', { 'p-0 pe-1': size === 'sm' })}
         style={{
-          borderTopRightRadius: '15px',
-          borderBottomRightRadius: '15px',
+          borderTopRightRadius: '19px',
+          borderBottomRightRadius: '19px',
           paddingLeft: 0,
           paddingRight: '0.1rem',
         }}
