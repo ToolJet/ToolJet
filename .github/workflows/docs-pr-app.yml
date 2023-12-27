@@ -19,14 +19,14 @@ jobs:
       - name: Keep only the first line in versions.json     
         run: |
           # Display the un-modified file content
-          cat versions.json
+          cat docs/versions.json
           
           # Use jq to edit versions.json and keep only the first version
           jq -r '.[0]' docs/versions.json > tmp_versions.json
           mv tmp_versions.json docs/versions.json
 
           # Display the modified file content
-          cat versions.json
+          cat docs/versions.json
     
       - name: Create deployment
         id: create-deployment
