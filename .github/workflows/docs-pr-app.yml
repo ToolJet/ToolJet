@@ -69,7 +69,7 @@ jobs:
             ],
             "serviceDetails": {
                 "pullRequestPreviewsEnabled": "no",
-                "buildCommand": "npm install && npm run build",
+                "buildCommand": "jq -r '.[0]' versions.json | mv /dev/stdin versions.json && npm install && npm run build",
                 "publishPath": "build/",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
