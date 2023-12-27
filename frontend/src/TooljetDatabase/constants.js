@@ -37,7 +37,7 @@ export const operators = [
 
 export const formatOptionLabel = ({ label, icon }) => (
   <div>
-    <span style={{ marginRight: '8px' }}>{icon}</span>
+    <span style={{ marginRight: '4px' }}>{icon}</span>
     {label}
   </div>
 );

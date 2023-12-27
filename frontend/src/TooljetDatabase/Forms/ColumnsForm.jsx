@@ -48,10 +48,11 @@ const ColumnsForm = ({ columns, setColumns }) => {
     }),
     control: (provided, state) => ({
       ...provided,
-      background: state.isFocused ? '#fff' : '',
-      border: state.isFocused ? '1px solid #90b5e2 !important' : '1px solid #cccccc',
+      background: state.isDisabled ? '#f4f6fa' : '#fff',
+      border: state.isFocused ? '1px solid #90b5e2 !important' : '1px solid #dadcde',
       boxShadow: state.isFocused ? 'none' : 'none',
-      height: '36px',
+      height: '36px !important',
+      minHeight: '36px',
     }),
     menuList: (provided, state) => ({
       ...provided,
@@ -121,16 +122,16 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   isDisabled={columns[index].constraint_type === 'PRIMARY KEY'}
                   //useMenuPortal={false}
                   options={columns[index].constraint_type === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
-                  //value={columns[index].data_type}
                   onChange={(value) => {
                     setColumnIndex(value);
                     const prevColumns = { ...columns };
-                    prevColumns[index].data_type = value.value;
+                    prevColumns[index].data_type = value ? value.label : null;
                     setColumns(prevColumns);
                   }}
-                  components={{ Option: CustomSelectOption }}
+                  components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
                   styles={CustomStyle}
                   formatOptionLabel={formatOptionLabel}
+                  placeholder={columns[index].constraint_type === 'PRIMARY KEY' ? columns[0].data_type : 'Select...'}
                 />
               </div>
               <div className="col-3 m-0" data-cy="column-default-input-field">
