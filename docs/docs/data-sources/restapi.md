@@ -197,7 +197,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
   |:----------- |:----------- |
   | response_type | code ( `code` refers to the Authorization Code) |
   | client_id | **Client ID**  |
-  | redirect_url | `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.  |
+  | redirect_uri | `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.  |
     
 - Keep the default selection for **Client Authentication** and **Save** the data source.
 
