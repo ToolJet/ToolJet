@@ -130,7 +130,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                     prevColumns[index].data_type = value.value;
                     setColumns(prevColumns);
                   }}
-                  components={{ Option: CustomSelectOption }}
+                  components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
                   styles={CustomStyle}
                   formatOptionLabel={formatOptionLabel}
                 />

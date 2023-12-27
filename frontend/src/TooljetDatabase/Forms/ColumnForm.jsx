@@ -48,8 +48,10 @@ const ColumnForm = ({ onCreate, onClose }) => {
     control: (provided, state) => ({
       ...provided,
       background: state.isFocused ? '#f8faff' : 'transparent',
-      border: state.isFocused ? '1px solid #3e63dd !important' : '1px solid #cccccc',
+      border: state.isFocused ? '1px solid #3e63dd !important' : '1px solid #DADCDE',
       boxShadow: state.isFocused ? 'none' : 'none',
+      height: '36px',
+      minHeight: '36px',
     }),
     menuList: (provided, state) => ({
       ...provided,
