@@ -38,6 +38,9 @@ const EditorSelecto = ({
         el.classList.remove('resizer-select');
       });
     }
+    e.removed.forEach((el) => {
+      el.classList.remove('resizer-select');
+    });
   }, []);
 
   const onAreaSelectionEnd = useCallback(
