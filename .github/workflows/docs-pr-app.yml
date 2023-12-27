@@ -16,6 +16,22 @@ jobs:
     runs-on: ubuntu-latest
 # hello
     steps:
+      # - name: checkout
+      #   uses: actions/checkout@v3    
+
+      # - name: Keep only the first line in versions.json
+      #   working-directory: ./docs
+      #   run: |
+      #     # Display the un-modified file content
+      #     cat versions.json
+          
+      #     # Use jq to edit versions.json and keep only the first version
+      #     jq -r '.[0]' versions.json > tmp_versions.json
+      #     mv tmp_versions.json versions.json
+
+      #     # Display the modified file content
+      #     cat versions.json
+    
       - name: Create deployment
         id: create-deployment
         run: |
