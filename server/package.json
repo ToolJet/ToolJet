@@ -49,7 +49,7 @@
     "@nestjs/schedule": "^2.2.0",
     "@nestjs/serve-static": "^2.2.2",
     "@nestjs/throttler": "^5.0.1",
-    "@nestjs/typeorm": "^8.0.0",
+    "@nestjs/typeorm": "8.0.0",
     "@nestjs/websockets": "^8.0.10",
     "@node-saml/node-saml": "^4.0.5",
     "@sentry/node": "6.17.6",
