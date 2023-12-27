@@ -156,11 +156,6 @@ export default function UpgradePlan({ current_organization_id }) {
           </div>
           <div className="input-container">
             <div className="label-container">
-              <label className="tj-text-xsm tj-text font-weight-500">Coupon code</label>
-            </div>
-          </div>
-          <div className="input-container">
-            <div className="label-container">
               <label className="tj-text-xsm tj-text font-weight-500">Promo code</label>
             </div>
             <div className="input-wrapper">
