@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       # - name: checkout
       #   uses: actions/checkout@v3    
 
@@ -36,17 +35,6 @@ jobs:
       - name: Create deployment
         id: create-deployment
         run: |
-
-          # Display the un-modified file content
-          cat docs/versions.json
-
-          # Use head to extract the first version
-          head -n 1 docs/versions.json > tmp_versions.json
-          mv tmp_versions.json docs/versions.json
-
-          # Display the modified file content
-          cat docs/versions.json
-
           export RESPONSE=$(curl --request POST \
           --url https://api.render.com/v1/services \
           --header 'accept: application/json' \
@@ -81,7 +69,7 @@ jobs:
             ],
             "serviceDetails": {
                 "pullRequestPreviewsEnabled": "no",
-                "buildCommand": "npm i && npm run build",
+                "buildCommand": "./version-remove.sh && npm i && npm run build",
                 "publishPath": "build/",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
             }
