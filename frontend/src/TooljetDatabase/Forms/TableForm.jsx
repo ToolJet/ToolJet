@@ -131,6 +131,7 @@ const TableForm = ({
         onClose={onClose}
         onEdit={handleEdit}
         onCreate={handleCreate}
+        shouldDisableCreateBtn={isEmpty(tableName)}
       />
     </div>
   );
