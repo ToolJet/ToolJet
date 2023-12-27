@@ -3,7 +3,7 @@ import cx from 'classnames';
 //import Select from '@/_ui/Select';
 import Select, { components } from 'react-select';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
-import DeleteIcon from '../Icons/DeleteIcon.svg';
+import DeleteIconNew from '../Icons/DeleteIconNew.svg';
 import { dataTypes, primaryKeydataTypes, formatOptionLabel } from '../constants';
 import Tick from '../Icons/Tick.svg';
 
@@ -54,7 +54,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
       height: '36px',
       minHeight: '36px',
     }),
-    menuList: (provided, state) => ({
+    menuList: (provided, _state) => ({
       ...provided,
       padding: '8px',
     }),
@@ -183,7 +183,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                 data-cy="column-delete-icon"
                 onClick={() => handleDelete(index)}
               >
-                {columns[index].constraint_type !== 'PRIMARY KEY' && <DeleteIcon />}
+                {columns[index].constraint_type !== 'PRIMARY KEY' && <DeleteIconNew width="16" height="16" />}
               </div>
             </div>
           </div>
