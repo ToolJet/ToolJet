@@ -4,11 +4,14 @@
   "private": true,
   "scripts": {
     "cy:run": "cypress run --browser=chrome 103, --headless",
-    "cy:open": "cypress open --browser=chrome 103, --e2e"
+    "cy:open": "cypress open --browser=chrome 103, --e2e",
+    "cy:percy": "percy exec -- cypress run --browser=chrome --headless --spec=cypress/e2e/visualTesting/visualTesting.cy.js"
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.12.0",
     "@faker-js/faker": "^7.3.0",
+    "@percy/cli": "^1.27.5",
+    "@percy/cypress": "^3.1.2",
     "cypress": "^12.5.1"
   },
   "dependencies": {
