@@ -74,8 +74,6 @@ jobs:
           key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
           script: |
             ls -lah
-            
-            cd /home/admin/
 
             # Stop the Docker containers
             sudo docker-compose down
