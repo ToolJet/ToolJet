@@ -73,7 +73,7 @@ jobs:
           username: admin
           key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
           script: |
-            cd /home/admin/docker-compose.yml
+            cd ./home/admin/docker-compose.yml
 
             # Stop the Docker containers
             sudo docker-compose down
