@@ -209,6 +209,19 @@ export default function generateColumnsData({
             const cellStyles = {
               color: textColor ?? '',
             };
+            const allowedDecimalPlaces = column?.decimalPlaces ?? null;
+            const removingExcessDecimalPlaces = (cellValue, allowedDecimalPlaces) => {
+              if (cellValue?.toString()?.includes('.')) {
+                const splittedCellValue = cellValue?.toString()?.split('.');
+                const decimalPlacesUnderLimit = splittedCellValue[1].split('').splice(0, allowedDecimalPlaces).join('');
+                console.log('manish ::', { integer: splittedCellValue[0], decimalPlacesUnderLimit });
+                cellValue = Number(`${splittedCellValue[0]}.${decimalPlacesUnderLimit}`);
+              }
+              return cellValue;
+            };
+            if (allowedDecimalPlaces) {
+              removingExcessDecimalPlaces(cellValue, allowedDecimalPlaces);
+            }
             if (isEditable) {
               const validationData = validateWidget({
                 validationObject: {
@@ -238,10 +251,13 @@ export default function generateColumnsData({
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
+                          const value = allowedDecimalPlaces
+                            ? removingExcessDecimalPlaces(e.target.value, allowedDecimalPlaces)
+                            : e.target.value;
                           handleCellValueChange(
                             cell.row.index,
                             column.key || column.name,
-                            Number(e.target.value),
+                            Number(value),
                             cell.row.original
                           );
                         }
@@ -249,10 +265,13 @@ export default function generateColumnsData({
                     }}
                     onBlur={(e) => {
                       if (e.target.defaultValue !== e.target.value) {
+                        const value = allowedDecimalPlaces
+                          ? removingExcessDecimalPlaces(e.target.value, allowedDecimalPlaces)
+                          : e.target.value;
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
-                          Number(e.target.value),
+                          Number(value),
                           cell.row.original
                         );
                       }
