@@ -1,7 +1,7 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const Boolean = ({ value = false, isEditable, onChange, toggleOnBg = 'green', toggleOffBg = 'red' }) => {
+export const Boolean = ({ value = false, isEditable, onChange, toggleOnBg, toggleOffBg }) => {
   const nonEditableContent = (isTruthyValue) => {
     return isTruthyValue ? (
       <SolidIcon name="tick" width="24" fill={`var(--grass9)`} />
