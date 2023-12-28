@@ -640,3 +640,58 @@
 .th:has(.resizer:hover){
   border-right:4px solid var(--slate5, #ECEEF0) !important; 
 }
+
+// boolean column type css
+.boolean-switch{
+  position: relative;
+  display: inline-block;
+  width: 28px;
+  height: 16px;
+  padding: 2px;
+  input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .boolean-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--slate7);
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 12px;
+    padding: 2px;
+  }
+  .boolean-slider:before {
+    position: absolute;
+    content: "";
+    width: 12px;
+    height: 12px;
+    left:2px;
+    bottom: 2px;
+    background-color: var(--base);
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 50%;
+  }
+  input:checked + .boolean-slider {
+    background-color: var(--indigo10);
+  }
+  
+  input:focus + .boolean-slider {
+    box-shadow: 0 0 1px var(--indigo10);
+  }
+  
+  input:checked + .boolean-slider:before {
+    -webkit-transform: translateX(12px);
+    -ms-transform: translateX(12px);
+    transform: translateX(12px);
+  }
+}
+
+
+
