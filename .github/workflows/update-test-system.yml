@@ -73,13 +73,15 @@ jobs:
           username: admin
           key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
           script: |
-            cd /home/admin/
+            cd ./home/admin/
 
             # Stop the Docker containers
             sudo docker-compose down
 
             # Update docker-compose.yml with the new image
-            sed -i "s|image: tooljet/tj-osv:dummy-test-system|" /home/admin/docker-compose.yml
+            cp /home/admin/docker-compose.yml /home/admin/docker-compose.yml.tmp
+            sed "s|image: tooljet/tj-osv:dummy-test-system|" /home/admin/docker-compose.yml.tmp > /home/admin/docker-compose.yml
+            rm /home/admin/docker-compose.yml.tmp
 
             # Start the Docker containers
             sudo docker-compose up -d
