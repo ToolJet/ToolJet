@@ -79,7 +79,7 @@ jobs:
             sudo docker-compose down
 
             # Update docker-compose.yml with the new image
-            awk '/^[[:space:]]*tooljet:/ {f=1} f && /^[[:space:]]*image:/ {$0="      image: tooljet/tj-osv:dummy-test-system"} 1' docker-compose.yaml > docker-compose.tmp && mv docker-compose.tmp docker-compose.yaml
+            awk '/^[[:space:]]*tooljet:/ {f=1} f && /^[[:space:]]*image:/ {sub(/image:[[:space:]]*[^[:space:]]+/, "      image: tooljet/tj-osv:dummy-test-system")} 1' docker-compose.yaml > docker-compose.tmp && mv docker-compose.tmp docker-compose.yaml
 
             # Start the Docker containers
             # sudo docker-compose up -d
