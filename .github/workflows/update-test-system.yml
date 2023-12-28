@@ -79,7 +79,7 @@ jobs:
             sudo docker-compose down
 
             # Update docker-compose.yml with the new image
-            sed -i -E "s|image:[[:space:]]*[^[:space:]]+|image: tooljet/tj-osv:dummy-test-system|" docker-compose.yaml
+            sed -i -E "/^\s*tooljet:/ { s|image:[[:space:]]*[^[:space:]]+|image: tooljet/tj-osv:dummy-test-system|" docker-compose.yaml
 
             # Start the Docker containers
             sudo docker-compose up -d
