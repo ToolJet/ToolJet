@@ -18,8 +18,6 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   COMMIT_HASH: ${{ github.sha }}
-  SAFE_BRANCH_NAME: ${{ github.head_ref || github.ref_name | replace('/', '-') }}
-
 
 jobs:
   Building-image-for-test-system:
@@ -53,6 +51,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
 
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
