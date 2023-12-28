@@ -489,11 +489,13 @@ export default function generateColumnsData({
             return (
               <div className="h-100 d-flex align-items-center">
                 <Boolean
-                  value={cellValue}
+                  value={!!cellValue}
                   isEditable={isEditable}
                   onChange={(value) =>
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original)
                   }
+                  toggleOnBg={column?.toggleOnBg}
+                  toggleOffBg={column?.toggleOffBg}
                 />
               </div>
             );
