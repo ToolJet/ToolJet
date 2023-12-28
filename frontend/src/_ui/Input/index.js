@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import OrgConstantVariablesPreviewBox from '@/_components/OrgConstantsVariablesResolver';
+import OrgConstantVariablesPreviewBox from '../../_components/OrgConstantsVariablesResolver';
 import SolidIcon from '../Icon/SolidIcons';
 
 const Input = ({ helpText, ...props }) => {

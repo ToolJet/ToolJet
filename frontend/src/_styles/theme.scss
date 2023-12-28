@@ -11839,6 +11839,14 @@ tbody {
       background-color: var(--slate2) !important;
     }
   }
+
+  input:disabled {
+    background-color: var(--slate3) !important;
+  }
+
+  .react-select__control--is-disabled {
+    background-color: var(--slate3) !important;
+  }
 }
 
 .org-edit-icon {

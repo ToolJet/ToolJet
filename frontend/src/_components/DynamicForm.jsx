@@ -133,7 +133,7 @@ const DynamicForm = ({
               };
             }
           } else {
-            if ((type === 'password' || encrypted) && !(key in computedProps)) {
+            if ((type === 'password' || encrypted) && !(propertyKey in computedProps)) {
               //Editable encrypted fields only if datasource doesn't exists
               encrpytedFieldsProps[propertyKey] = {
                 disabled: !!selectedDataSource?.id,

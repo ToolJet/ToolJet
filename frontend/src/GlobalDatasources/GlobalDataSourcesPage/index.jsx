@@ -16,6 +16,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { canDeleteDataSource } from '@/_helpers';
+import { ToolTip } from '@/_components/ToolTip';
 
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -54,6 +55,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     canCreateDataSource,
     canUpdateDataSource,
     isLoading,
+    environmentLoading,
   } = useContext(GlobalDataSourcesContext);
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -260,6 +262,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   };
 
   const renderCardGroup = (source, type) => {
+    const canAddDataSource = canCreateDataSource() || canDeleteDataSource();
     if (type === 'Plugins' && source.length === 0) {
       return (
         <div className="add-plugins-container">
@@ -267,7 +270,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             <SolidIcon name="warning" />
           </div>
           <div className="tj-text-sm font-weight-500 tj-text">No plugins added</div>
-          {admin && (
+          {canAddDataSource && (
             <>
               <div className="tj-text-xsm font-weight-400 mt-2 mb-3">
                 Browse through plugins in marketplace to add them as a Data Source.{' '}
@@ -288,17 +291,22 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         </div>
       );
     }
+
     const addDataSourceBtn = (item) => (
-      <ButtonSolid
-        disabled={addingDataSource}
-        isLoading={addingDataSource}
-        variant="secondary"
-        onClick={() => createDataSource(item)}
-        data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
-      >
-        <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
-        <span className="ml-2">Add</span>
-      </ButtonSolid>
+      <ToolTip message="You do not have permission to add a data source" show={!canAddDataSource} placement="bottom">
+        <div>
+          <ButtonSolid
+            disabled={addingDataSource || !canAddDataSource}
+            isLoading={addingDataSource}
+            variant="secondary"
+            onClick={() => createDataSource(item)}
+            data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
+          >
+            <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
+            <span className="ml-2">Add</span>
+          </ButtonSolid>
+        </div>
+      </ToolTip>
     );
 
     const datasources = source.map((datasource) => {
@@ -394,6 +402,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
             showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
+            environmentLoading={environmentLoading}
           />
         )}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}

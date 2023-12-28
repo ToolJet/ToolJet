@@ -27,6 +27,7 @@ export const GlobalDatasources = (props) => {
   const [isLoading, setLoading] = useState(true);
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
+  const [environmentLoading, setEnvironmentLoading] = useState(false);
   const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -179,8 +180,10 @@ export const GlobalDatasources = (props) => {
   };
 
   const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
+    setEnvironmentLoading(true);
     globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
       setSelectedDataSource({ ...data });
+      setEnvironmentLoading(false);
     });
   };
 
@@ -210,6 +213,7 @@ export const GlobalDatasources = (props) => {
       activeDatasourceList,
       setActiveDatasourceList,
       setLoading,
+      environmentLoading,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -222,6 +226,7 @@ export const GlobalDatasources = (props) => {
       currentEnvironment,
       isLoading,
       activeDatasourceList,
+      environmentLoading,
     ]
   );
 
