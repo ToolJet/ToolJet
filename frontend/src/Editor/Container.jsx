@@ -74,7 +74,7 @@ export const Container = ({
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    maxWidth: `${canvasWidth}px`,
+    maxWidth: currentLayout === 'mobile' ? deviceWindowWidth : `${canvasWidth}px`,
     backgroundSize: `${gridWidth}px 10px`,
   };
 

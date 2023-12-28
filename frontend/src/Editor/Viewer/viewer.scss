@@ -7,8 +7,6 @@
   }
 
 .preview-chip {
-    padding : 2px 8px;
-    border-radius: 100px;
     font-size: 12px;
     font-weight: 500;
     line-height: 20px;
@@ -30,7 +28,45 @@
 
 .released-version-no-header-mbl-preview {
   position: fixed;
-  top: 1rem;
+  // top: 1rem;
   left: 50%;
   z-index: 1000;
+  border-radius: 100px;
+  padding : 2px 8px;
+}
+
+.preview-settings-overlay {
+  display: flex;
+  align-items: center;
+  background-color: var(--base);
+  padding: 3px 6px;
+  border : 1px solid #E4E7EB;
+  border-radius: 6px;
+  margin-top: 4px;
+  .preview-settings-text {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px; /* 166.667% */
+    color: #6A727C;
+    display: flex;
+    align-items: center
+  }
+}
+
+.offcanvas {
+  background-color: var(--base) !important;
+  max-height: 212px !important;
+  .offcanvas-title {
+    color:  #6A727C;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px; /* 166.667% */
+  }
+  .offcanvas-body {
+    padding: 0px 4px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 8px;
+  }
 }

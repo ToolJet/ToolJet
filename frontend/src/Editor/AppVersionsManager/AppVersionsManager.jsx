@@ -5,7 +5,6 @@ import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import classNames from 'classnames';
 import { useEditorStore } from '@/_stores/editorStore';
 
 const appVersionLoadingStatus = Object.freeze({
@@ -19,6 +18,7 @@ export const AppVersionsManager = function ({
   setAppDefinitionFromVersion,
   onVersionDelete,
   isEditable = true,
+  isViewer,
 }) {
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
   const [deleteVersion, setDeleteVersion] = useState({
@@ -154,13 +154,13 @@ export const AppVersionsManager = function ({
   return (
     <div className="d-flex align-items-center p-0" style={{ marginRight: currentLayout === 'mobile' ? '0px' : '12px' }}>
       <div
-        className={classNames('d-flex version-manager-container p-0', {
-          'w-100': currentLayout === 'mobile',
+        className={cx('d-flex version-manager-container p-0', {
+          'w-100': currentLayout === 'mobile' && isViewer,
         })}
       >
         <div
-          className={classNames('app-versions-selector', {
-            'w-100': currentLayout === 'mobile',
+          className={cx('app-versions-selector', {
+            'w-100': currentLayout === 'mobile' && isViewer,
           })}
           data-cy="app-version-selector"
         >

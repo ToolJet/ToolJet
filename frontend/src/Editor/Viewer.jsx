@@ -608,6 +608,7 @@ class ViewerComponent extends React.Component {
               currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
               switchPage={this.switchPage}
               setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+              showViewerNavigation={appDefinition?.showViewerNavigation}
             />
             <div className="sub-section">
               <div className="main">
@@ -632,8 +633,8 @@ class ViewerComponent extends React.Component {
                       <div
                         className="canvas-area"
                         style={{
-                          width: currentCanvasWidth,
-                          maxWidth: canvasMaxWidth,
+                          width: this.props.currentLayout === 'mobile' ? '450px' : currentCanvasWidth,
+                          maxWidth: this.props.currentLayout === 'mobile' ? '450px' : canvasMaxWidth,
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,
                           padding: 0,
@@ -656,7 +657,7 @@ class ViewerComponent extends React.Component {
                                 darkMode={this.props.darkMode}
                                 onEvent={this.handleEvent}
                                 mode="view"
-                                deviceWindowWidth={deviceWindowWidth}
+                                deviceWindowWidth={this.props.currentLayout === 'mobile' ? '450px' : deviceWindowWidth}
                                 selectedComponent={this.state.selectedComponent}
                                 onComponentClick={(id, component) => {
                                   this.setState({

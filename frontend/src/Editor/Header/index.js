@@ -116,7 +116,14 @@ export default function EditorHeader({
                 <div className="global-settings-app-wrapper p-0 m-0 ">
                   <EditAppName appId={appId} appName={appName} onNameChanged={onNameChanged} />
                 </div>
-                <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
+                <HeaderActions
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                  handleUndo={handleUndo}
+                  handleRedo={handleRedo}
+                  showToggleLayoutBtn
+                  showUndoRedoBtn
+                />
                 <div className="d-flex align-items-center">
                   <div style={{ width: '100px', marginRight: '20px' }}>
                     <span
