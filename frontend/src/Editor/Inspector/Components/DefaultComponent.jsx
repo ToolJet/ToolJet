@@ -108,6 +108,7 @@ export const baseComponentProperties = (
           apps={apps}
           darkMode={darkMode}
           pages={pages}
+          component={component}
         />
       ),
     });
