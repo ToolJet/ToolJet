@@ -156,7 +156,13 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="text"
-                    style={{ ...cellStyles }}
+                    style={{
+                      ...cellStyles,
+                      maxWidth: width,
+                      outline: 'none',
+                      border: 'none',
+                      background: 'inherit',
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -179,7 +185,7 @@ export default function generateColumnsData({
                         );
                       }
                     }}
-                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                    className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                     onFocus={(e) => e.stopPropagation()}
                   />
@@ -229,7 +235,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="number"
-                    style={{ ...cellStyles }}
+                    style={{ ...cellStyles, maxWidth: width, outline: 'none', border: 'none', background: 'inherit' }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -253,7 +259,7 @@ export default function generateColumnsData({
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
-                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
+                    className={`table-column-type-input-element ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
                   <div className="invalid-feedback">{validationError}</div>

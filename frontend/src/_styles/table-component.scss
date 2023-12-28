@@ -695,3 +695,26 @@
 
 
 
+.jet-data-table{
+  .table{
+    .td{
+      &:hover{
+        border: 1px solid var(--slate8);
+        background-color: var(--slate4);
+      }
+      &:focus-within{
+        border: 1px solid var(--indigo9);
+        background-color: var(--indigo1) !important; 
+      }
+      .table-column-type-div-element,.table-column-type-input-element{
+        &:focus-visible{
+          border: none !important;
+          outline: none !important;
+        }
+      }
+      .table-column-type-input-element{
+        color: var(--slate12);
+      }
+    }
+  }
+}
