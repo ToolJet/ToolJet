@@ -73,17 +73,17 @@ jobs:
             cd /path/to/your/docker/compose/directory
 
             # Stop the Docker containers
-            docker-compose down
+            sudo docker-compose down
 
             # Update docker-compose.yml with the new image
             sed -i 's|image: your_previous_image_name|image: tooljet/tj-osv:${{ github.event.pull_request.head.ref }}|' docker-compose.yml
 
             # Start the Docker containers
-            docker-compose up -d
+            sudo docker-compose up -d
 
       - name: docker logs
         run: |
-          docker logs Tooljet-app
+          sudo docker logs Tooljet-app
 
 
   manual-image-build:
