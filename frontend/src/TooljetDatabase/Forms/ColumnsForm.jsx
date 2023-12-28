@@ -8,7 +8,7 @@ import { dataTypes, primaryKeydataTypes, formatOptionLabel } from '../constants'
 import Tick from '../Icons/Tick.svg';
 
 const ColumnsForm = ({ columns, setColumns }) => {
-  const [columnIndex, setColumnIndex] = useState(0);
+  const [columnIndex, setColumnIndex] = useState({ index: 0, value: '' });
 
   const handleDelete = (index) => {
     const newColumns = { ...columns };
@@ -28,7 +28,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
           <span className="dataType-dropdown-value">{props.data.name}</span>
         </div>
         <div>
-          {columnIndex?.value === props.data.value ? (
+          {columns[columnIndex.index].data_type === props.data.label ? (
             <div>
               <Tick width="16" height="16" />
             </div>
@@ -41,26 +41,53 @@ const ColumnsForm = ({ columns, setColumns }) => {
   const CustomStyle = {
     option: (base, state) => ({
       ...base,
-      backgroundColor: state.isSelected ? '#F0F4FF' : 'transparent',
+      backgroundColor:
+        state.isSelected && !darkMode ? '#F0F4FF' : state.isSelected && darkMode ? '#323C4B' : 'transparent',
       ':hover': {
-        backgroundColor: state.isFocused ? '#F0F4FF' : '',
+        backgroundColor: state.isFocused && !darkMode ? '#F0F4FF' : '#323C4B',
       },
+      color: darkMode ? '#fff' : '#232e3c',
+      cursor: 'pointer',
     }),
     control: (provided, state) => ({
       ...provided,
-      background: state.isFocused ? '#fff' : '',
-      border: state.isFocused ? '1px solid #90b5e2 !important' : '1px solid #DADCDE',
+      background:
+        state.isDisabled && darkMode
+          ? '#1f2936'
+          : state.isDisabled && !darkMode
+          ? '#f4f6fa'
+          : state.isFocused && !darkMode
+          ? '#fff'
+          : state.isFocused && darkMode
+          ? 'transparent'
+          : !darkMode
+          ? '#fff'
+          : 'transparent',
+      borderColor:
+        state.isFocused && !darkMode
+          ? '#90B5E2 !important'
+          : state.isFocused && darkMode
+          ? '#90b5e2 !important'
+          : darkMode && state.isDisabled
+          ? '#3a3f42'
+          : '#dadcde',
+      '&:hover': {
+        borderColor: darkMode ? '#dadcde' : '#dadcde',
+      },
       boxShadow: state.isFocused ? 'none' : 'none',
-      height: '36px',
+      height: '36px !important',
       minHeight: '36px',
     }),
     menuList: (provided, _state) => ({
       ...provided,
       padding: '8px',
+      color: darkMode ? '#fff' : '#232e3c',
     }),
-    menu: (base) => ({
+    menu: (base, _state) => ({
       ...base,
       width: '360px',
+      background: darkMode ? 'rgb(31,40,55)' : 'white',
+      //borderColor: darkMode ? '#4c5155 !important' : '#c1c8cd !important',
     }),
   };
 
@@ -123,16 +150,20 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   isDisabled={columns[index].constraint_type === 'PRIMARY KEY'}
                   //useMenuPortal={false}
                   options={columns[index].constraint_type === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
-                  //value={columns[index].data_type}
                   onChange={(value) => {
-                    setColumnIndex(value);
+                    setColumnIndex((prevState) => ({
+                      ...prevState,
+                      index: index,
+                      value: value.value,
+                    }));
                     const prevColumns = { ...columns };
-                    prevColumns[index].data_type = value.value;
+                    prevColumns[index].data_type = value ? value.value : null;
                     setColumns(prevColumns);
                   }}
                   components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
                   styles={CustomStyle}
                   formatOptionLabel={formatOptionLabel}
+                  placeholder={columns[index].constraint_type === 'PRIMARY KEY' ? columns[0].data_type : 'Select...'}
                 />
               </div>
               <div className="col-2 m-0 pe-0 ps-1" data-cy="column-default-input-field">
@@ -189,9 +220,10 @@ const ColumnsForm = ({ columns, setColumns }) => {
           </div>
         ))}
         <div
-          onClick={() =>
-            setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} }))
-          }
+          onClick={() => {
+            setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
+              setColumnIndex({ index: 0, value: '' });
+          }}
           className="mt-2 btn border-0 card-footer add-more-columns-btn"
           data-cy="add-more-columns-button"
         >
