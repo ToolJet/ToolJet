@@ -68,16 +68,6 @@ export const StylesTabElements = ({
               shouldFlexDirectionBeRow={true}
             />
           </div>
-          <div className="field" data-cy={`input-and-label-cell-background-color`}>
-            <Color
-              param={{ name: 'Cell BG' }}
-              paramType="properties"
-              componentMeta={{ properties: { color: { displayName: 'Cell Background Color' } } }}
-              definition={{ value: column?.cellBackgroundColor }}
-              onChange={(name, value, color) => onColumnItemChange(index, 'cellBackgroundColor', color)}
-              shouldFlexDirectionBeRow={true}
-            />
-          </div>
         </div>
       )}
       {column.columnType === 'toggle' && (
@@ -155,6 +145,42 @@ export const StylesTabElements = ({
             />
           </div>
         </>
+      )}
+      {column.columnType === 'boolean' && (
+        <div>
+          <div className="field">
+            <Color
+              param={{ name: 'Toggle on bg' }}
+              paramType="properties"
+              componentMeta={{ properties: { color: { displayName: 'Toggle on bg' } } }}
+              definition={{ value: column?.toggleOnBg || darkMode ? '#849DFF' : '#3A5CCC' }}
+              onChange={(name, value, color) => onColumnItemChange(index, 'toggleOnBg', color)}
+              shouldFlexDirectionBeRow={true}
+            />
+          </div>
+          <div className="field">
+            <Color
+              param={{ name: 'Toggle off bg' }}
+              paramType="properties"
+              componentMeta={{ properties: { color: { displayName: 'Toggle off bg' } } }}
+              definition={{ value: column?.toggleOffBg || darkMode ? '#3A3F42' : '#D7DBDF' }}
+              onChange={(name, value, color) => onColumnItemChange(index, 'toggleOffBg', color)}
+              shouldFlexDirectionBeRow={true}
+            />
+          </div>
+        </div>
+      )}
+      {['string', 'default', undefined, 'number', 'boolean'].includes(column.columnType) && (
+        <div className="field" data-cy={`input-and-label-cell-background-color`}>
+          <Color
+            param={{ name: 'Cell BG' }}
+            paramType="properties"
+            componentMeta={{ properties: { color: { displayName: 'Cell Background Color' } } }}
+            definition={{ value: column?.cellBackgroundColor }}
+            onChange={(name, value, color) => onColumnItemChange(index, 'cellBackgroundColor', color)}
+            shouldFlexDirectionBeRow={true}
+          />
+        </div>
       )}
     </>
   );
