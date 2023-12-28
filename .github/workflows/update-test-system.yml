@@ -57,7 +57,7 @@ jobs:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tj-osv:${{ github.event.pull_request.head.ref }}
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-${{ env.COMMIT_HASH }}
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -75,16 +75,15 @@ jobs:
             # Stop the Docker containers
             docker-compose down
 
-            # Remove the old Docker image
-            docker rmi -f your_previous_image_name
-
             # Update docker-compose.yml with the new image
             sed -i 's|image: your_previous_image_name|image: tooljet/tj-osv:${{ github.event.pull_request.head.ref }}|' docker-compose.yml
 
             # Start the Docker containers
             docker-compose up -d
 
-
+      - name: docker logs
+        run: |
+          docker logs Tooljet-app
 
 
   manual-image-build:
