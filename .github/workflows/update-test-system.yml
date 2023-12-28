@@ -63,7 +63,7 @@ jobs:
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-${{ env.COMMIT_HASH }}
           platforms: linux/amd64
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }} # hello
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: SSH into EC2 instance
