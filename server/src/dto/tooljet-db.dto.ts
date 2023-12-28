@@ -97,6 +97,19 @@ class ReservedKeywordConstraint implements ValidatorConstraintInterface {
   }
 }
 
+export class ConstraintTypeDto {
+  @IsOptional()
+  @IsBoolean()
+  @Validate(SQLInjectionValidator)
+  is_not_null: boolean;
+
+  @IsString()
+  @Transform(({ value }) => sanitizeInput(value))
+  @IsOptional()
+  @Validate(SQLInjectionValidator)
+  is_primary_key: Array<string>;
+}
+
 export class CreatePostgrestTableDto {
   @IsString()
   @IsNotEmpty()
@@ -137,12 +150,6 @@ export class PostgrestTableColumnDto {
   @Validate(SQLInjectionValidator)
   data_type: string;
 
-  @IsString()
-  @Transform(({ value }) => sanitizeInput(value))
-  @IsOptional()
-  @Validate(SQLInjectionValidator)
-  constraint_type: string;
-
   @IsOptional()
   @Transform(({ value, obj }) => {
     const sanitizedValue = sanitizeInput(value);
@@ -155,9 +162,7 @@ export class PostgrestTableColumnDto {
   column_default: string | number | boolean;
 
   @IsOptional()
-  @IsBoolean()
-  @Validate(SQLInjectionValidator)
-  isNotNull: boolean;
+  constraints_type: ConstraintTypeDto;
 }
 
 export class RenamePostgrestTableDto {
@@ -201,7 +206,6 @@ export class EditColumnTableDto {
   @IsNotEmpty()
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
-  @MaxLength(31, { message: 'Column name must be less than 32 characters' })
   @MinLength(1, { message: 'Column name must be at least 1 character' })
   @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
     message:
@@ -231,7 +235,5 @@ export class EditColumnTableDto {
   column_default: string | number | boolean;
 
   @IsOptional()
-  @IsBoolean()
-  @Validate(SQLInjectionValidator)
-  isNotNull: boolean;
+  constraints_type: ConstraintTypeDto;
 }
