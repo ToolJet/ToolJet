@@ -1421,7 +1421,6 @@ export function Table({
                               'selector-column':
                                 cell.column.columnType === 'selector' && cell.column.id === 'selection',
                               'resizing-column': cell.column.isResizing || cell.column.id === resizingColumnId,
-                              'has-number': cell.column.columnType === 'number',
                             }
                           )}
                           {...cellProps}

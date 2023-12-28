@@ -241,7 +241,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="number"
-                    style={{ ...cellStyles, maxWidth: width, outline: 'none', border: 'none', background: 'inherit' }}
+                    style={{ ...cellStyles, maxWidth: width }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -271,7 +271,7 @@ export default function generateColumnsData({
                       }
                     }}
                     onFocus={(e) => e.stopPropagation()}
-                    className={`table-column-type-input  ${!isValid ? 'is-invalid' : ''}`}
+                    className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
                   <div className="invalid-feedback">{validationError}</div>
