@@ -475,7 +475,11 @@ export default function generateColumnsData({
           }
           case 'boolean': {
             return (
-              <div className="h-100 d-flex align-items-center">
+              <div
+                className={`h-100 d-flex align-items-center justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
+              >
                 <Boolean
                   value={cellValue}
                   isEditable={isEditable}
