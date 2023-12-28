@@ -82,11 +82,8 @@ jobs:
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:dummy-test-system|' docker-compose.yaml
 
             # Start the Docker containers
-            # sudo docker-compose up -d
             cat docker-compose.yaml
-
-            # Logs of docker container
-            sudo docker logs Tooljet-app
+            sudo docker-compose up -d
 
 
   manual-image-build:
