@@ -9,6 +9,7 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
+import { Boolean } from '../Boolean';
 
 export default function generateColumnsData({
   columnProperties,
@@ -469,6 +470,13 @@ export default function generateColumnsData({
             return (
               <div className="h-100 d-flex align-items-center">
                 <Link cellValue={cellValue} linkTarget={linkTarget} />
+              </div>
+            );
+          }
+          case 'boolean': {
+            return (
+              <div className="h-100 d-flex align-items-center">
+                <Boolean />
               </div>
             );
           }

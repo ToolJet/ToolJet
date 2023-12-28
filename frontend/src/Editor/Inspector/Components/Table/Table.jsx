@@ -200,6 +200,7 @@ class TableComponent extends React.Component {
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
                 { name: 'Image', value: 'image' },
+                { name: 'Boolean', value: 'boolean' },
               ]}
               value={column.columnType}
               search={true}
