@@ -36,7 +36,9 @@ function createColumn(organizationId, tableId, columnName, dataType, defaultValu
       column_name: columnName,
       data_type: dataType,
       column_default: defaultValue,
-      isNotNull: isNotNull,
+      constraints_type: {
+        is_not_null: isNotNull,
+      },
     },
   });
 }
