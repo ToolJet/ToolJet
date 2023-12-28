@@ -54,20 +54,6 @@ const Limits = () => {
           Apps
         </a>
         <a
-          onClick={() => setCurrentTab('workspaces')}
-          className={cx('nav-item nav-link', { active: currentTab === 'workspaces' })}
-          data-cy="workspaces-sub-tab"
-        >
-          <SolidIcon
-            name="workspace"
-            fill={currentTab === 'workspaces' ? '#3E63DD' : '#C1C8CD'}
-            className="manage-group-tab-icons"
-            width="16"
-            viewBox={'0 0 16 16'}
-          ></SolidIcon>
-          Workspaces
-        </a>
-        <a
           onClick={() => setCurrentTab('users')}
           className={cx('nav-item nav-link', { active: currentTab === 'users' })}
           data-cy="users-sub-tab"
