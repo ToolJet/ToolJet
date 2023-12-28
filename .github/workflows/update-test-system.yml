@@ -17,7 +17,6 @@ on:
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-  COMMIT_HASH: ${{ github.sha }}
 
 jobs:
   Building-image-for-test-system:
@@ -61,7 +60,7 @@ jobs:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-${{ env.COMMIT_HASH }}
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -80,7 +79,7 @@ jobs:
             sudo docker-compose down
 
             # Update docker-compose.yml with the new image
-            sed -i "s|image: your_previous_image_name|image: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-${{ env.COMMIT_HASH }} |" docker-compose.yml
+            sed -i "s|image: your_previous_image_name|image: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }} |" docker-compose.yml
 
             # Start the Docker containers
             sudo docker-compose up -d
