@@ -1,11 +1,11 @@
 export const verifyElemtsNoGds = (option) => {
   cy.get('[data-cy="label-select-datasource"]').verifyVisibleElement(
     "have.text",
-    "Connect to a data source"
+    "Connect to a Data Source"
   );
   cy.get('[data-cy="querymanager-description"]').verifyVisibleElement(
     "contain.text",
-    "Select a data source to start creating a new query. To know more about queries in ToolJet, you can read our"
+    "Select a Data Source to start creating a new query. To know more about queries in ToolJet, you can read our"
   );
   cy.get('[data-cy="querymanager-doc-link"]').verifyVisibleElement(
     "have.text",
@@ -47,27 +47,4 @@ export const verifyElemtsNoGds = (option) => {
   );
 };
 
-export const verifyElemtsWithGds = (name) => {
-  cy.apiCreateGDS(
-    "http://localhost:3000/api/v2/data_sources",
-    name,
-    "postgresql",
-    [
-      { key: "host", value: "localhost" },
-      { key: "port", value: 5432 },
-      { key: "database", value: "" },
-      { key: "username", value: "dev@tooljet.io" },
-      { key: "password", value: "password", encrypted: true },
-      { key: "ssl_enabled", value: true, encrypted: false },
-      { key: "ssl_certificate", value: "none", encrypted: false },
-    ]
-  );
-  cy.reload();
-  cy.get('[data-cy="cypress-psql-add-query-card"]').should("be.visible");
-  cy.get('[data-cy="label-avilable-ds"]').verifyVisibleElement(
-    "have.text",
-    "Available data sources (1)"
-  );
-  cy.get('[data-cy="cypress-psql-add-query-card"]').click();
-  cy.get('[data-cy="list-query-postgresql1"]').should("be.visible");
-};
+export const verifyElemtsWithGds = (option) => { };

@@ -8,6 +8,7 @@ import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { removeFunctionObjects } from '@/_helpers/appUtils';
+import { useAppInfo } from '@/_stores/appDataStore';
 export const Form = function Form(props) {
   const {
     id,
@@ -18,6 +19,7 @@ export const Form = function Form(props) {
     removeComponent,
     styles,
     setExposedVariable,
+    setExposedVariables,
     darkMode,
     currentState,
     fireEvent,
@@ -28,6 +30,10 @@ export const Form = function Form(props) {
     dataCy,
     paramUpdated,
   } = props;
+
+  const { events: allAppEvents } = useAppInfo();
+
+  const formEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
   const { buttonToSubmit, loadingState, advanced, JSONSchema } = properties;
   const backgroundColor =
@@ -52,16 +58,19 @@ export const Form = function Form(props) {
   const mounted = useMounted();
 
   useEffect(() => {
-    setExposedVariable('resetForm', async function () {
-      resetComponent();
-    });
-    setExposedVariable('submitForm', async function () {
-      if (isValid) {
-        onEvent('onSubmit', { component }).then(() => resetComponent());
-      } else {
-        fireEvent('onInvalid');
-      }
-    });
+    const exposedVariables = {
+      resetForm: async function () {
+        resetComponent();
+      },
+      submitForm: async function () {
+        if (isValid) {
+          onEvent('onSubmit', formEvents).then(() => resetComponent());
+        } else {
+          fireEvent('onInvalid');
+        }
+      },
+    };
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
@@ -110,9 +119,13 @@ export const Form = function Form(props) {
     let childValidation = true;
 
     if (childComponents === null) {
-      setExposedVariable('data', formattedChildData);
-      !advanced && setExposedVariable('children', formattedChildData);
-      setExposedVariable('isValid', childValidation);
+      const exposedVariables = {
+        data: formattedChildData,
+        isValid: childValidation,
+        ...(!advanced && { children: formattedChildData }),
+      };
+
+      setExposedVariables(exposedVariables);
       return setValidation(childValidation);
     }
 
@@ -122,7 +135,7 @@ export const Form = function Form(props) {
     } else {
       Object.keys(childComponents).forEach((childId) => {
         if (childrenData[childId]?.name) {
-          formattedChildData[childrenData[childId].name] = omit(childrenData[childId], 'name');
+          formattedChildData[childrenData[childId].name] = { ...omit(childrenData[childId], 'name'), id: childId };
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
         }
       });
@@ -132,11 +145,13 @@ export const Form = function Form(props) {
       Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formkey from final exposed data
     );
     const formattedChildDataClone = _.cloneDeep(formattedChildData);
-    !advanced && setExposedVariable('children', formattedChildDataClone);
-    setExposedVariable('data', removeFunctionObjects(formattedChildData));
-    setExposedVariable('isValid', childValidation);
+    const exposedVariables = {
+      ...(!advanced && { children: formattedChildDataClone }),
+      data: removeFunctionObjects(formattedChildData),
+      isValid: childValidation,
+    };
     setValidation(childValidation);
-
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData, childComponents, advanced, JSON.stringify(JSONSchema)]);
 
@@ -167,7 +182,7 @@ export const Form = function Form(props) {
   };
   const fireSubmissionEvent = () => {
     if (isValid) {
-      onEvent('onSubmit', { component }).then(() => resetComponent());
+      onEvent('onSubmit', formEvents).then(() => resetComponent());
     } else {
       fireEvent('onInvalid');
     }
@@ -182,6 +197,7 @@ export const Form = function Form(props) {
       fireSubmissionEvent();
     }
   };
+  //for custom json
   function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
     if (typeof value === 'function' && _.findKey({}, optionName)) {
       return Promise.resolve();

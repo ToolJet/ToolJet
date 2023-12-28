@@ -46,10 +46,13 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
+import { useAppInfo } from '@/_stores/appDataStore';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { OverlayTriggerComponent } from './OverlayTriggerComponent';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -92,7 +95,7 @@ export function Table({
   properties,
   variablesExposedForPreview,
   exposeToCodeHinter,
-  events,
+  // events,
   setProperty,
   mode,
   exposedVariables,
@@ -132,6 +135,11 @@ export function Table({
 
   const updatedDataReference = useRef([]);
   const preSelectRow = useRef(false);
+  const { events: allAppEvents } = useAppInfo();
+
+  const tableEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
+  const tableColumnEvents = allAppEvents.filter((event) => event.target === 'table_column' && event.sourceId === id);
+  const tableActionEvents = allAppEvents.filter((event) => event.target === 'table_action' && event.sourceId === id);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -140,11 +148,18 @@ export function Table({
     top: 'auto',
     borderRadius: '4px',
     ...(isDragging && {
-      marginLeft: '-280px', // hack changing marginLeft to -280px to bring the draggable header to the correct position at the start of drag
+      // marginLeft: '-280px', // hack changing marginLeft to -280px to bring the draggable header to the correct position at the start of drag
       display: 'flex',
       alignItems: 'center',
       paddingLeft: '10px',
       height: '30px',
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      right: '0',
+      bottom: '0',
+      zIndex: '9999',
+      width: '60px',
     }),
     ...(!isDragging && { transform: 'translate(0,0)', width: '100%' }),
     ...(isDropAnimating && { transitionDuration: '0.001s' }),
@@ -179,13 +194,14 @@ export function Table({
   );
 
   useEffect(() => {
-    const hoverEvent = component?.definition?.events?.find((event) => {
+    const hoverEvent = tableEvents?.find(({ event }) => {
       return event?.eventId == 'onRowHovered';
     });
-    if (hoverEvent?.eventId) {
+
+    if (hoverEvent?.event?.eventId) {
       setHoverAdded(true);
     }
-  }, [JSON.stringify(component.definition.events)]);
+  }, [JSON.stringify(tableEvents)]);
 
   function showFilters() {
     mergeToFilterDetails({ filtersVisible: true });
@@ -281,7 +297,7 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     let headers = columns.map((column) => {
-      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+      return { exportValue: String(column?.exportValue), key: column.key ? String(column.key) : column?.key };
     });
     let data = globalFilteredRows.map((row) => {
       return headers.reduce((accumulator, header) => {
@@ -328,7 +344,7 @@ export function Table({
 
   function onPageIndexChanged(page) {
     onComponentOptionChanged(component, 'pageIndex', page).then(() => {
-      onEvent('onPageChanged', { component, data: {} });
+      onEvent('onPageChanged', tableEvents, { component });
     });
   }
 
@@ -376,7 +392,11 @@ export function Table({
     dynamicColumn = useDynamicColumn
       ? resolveReferences(component.definition.properties?.columnData?.value, currentState, []) ?? []
       : [];
-    if (!Array.isArray(tableData)) tableData = [];
+    if (!Array.isArray(tableData)) {
+      tableData = [];
+    } else {
+      tableData = tableData.filter((data) => data !== null && data !== undefined);
+    }
   }
 
   tableData = tableData || [];
@@ -399,12 +419,13 @@ export function Table({
     tableRef,
     t,
     darkMode,
+    tableColumnEvents: tableColumnEvents,
   });
 
   columnData = useMemo(
     () =>
       columnData.filter((column) => {
-        if (resolveReferences(column.columnVisibility, currentState)) {
+        if (resolveReferences(column?.columnVisibility, currentState)) {
           return column;
         }
       }),
@@ -437,8 +458,9 @@ export function Table({
         defaultColumn,
         fireEvent,
         setExposedVariables,
+        tableActionEvents,
       }),
-    [JSON.stringify(actions)]
+    [JSON.stringify(actions), tableActionEvents]
   );
 
   const textWrapActions = (id) => {
@@ -448,7 +470,7 @@ export function Table({
     return wrapOption?.textWrap;
   };
 
-  const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
+  const optionsData = columnData.map((column) => column?.columnOptions?.selectOptions);
   const columns = useMemo(
     () => {
       return [...leftActionsCellData, ...columnData, ...rightActionsCellData];
@@ -467,6 +489,8 @@ export function Table({
       darkMode,
       allowSelection,
       highlightSelectedRow,
+      JSON.stringify(tableActionEvents),
+      JSON.stringify(tableColumnEvents),
     ] // Hack: need to fix
   );
 
@@ -640,9 +664,11 @@ export function Table({
     if (!sortOptions) {
       setExposedVariable('sortApplied', []);
     }
-    if (mounted) setExposedVariable('sortApplied', sortOptions);
-    fireEvent('onSort');
-  }, [sortOptions]);
+    if (mounted) {
+      setExposedVariable('sortApplied', sortOptions);
+      fireEvent('onSort');
+    }
+  }, [JSON.stringify(sortOptions)]);
 
   useEffect(() => {
     setExposedVariable('setPage', async function (targetPageIndex) {
@@ -692,9 +718,9 @@ export function Table({
   useEffect(() => {
     setExposedVariable('discardNewlyAddedRows', async function () {
       if (
-        tableDetails.addNewRowsDetails.addingNewRows &&
-        (Object.keys(tableDetails.addNewRowsDetails.newRowsChangeSet || {}).length > 0 ||
-          Object.keys(tableDetails.addNewRowsDetails.newRowsDataUpdates || {}).length > 0)
+        !_.isEmpty(exposedVariables.newRows) ||
+        !_.isEmpty(tableDetails.addNewRowsDetails.newRowsChangeSet) ||
+        !_.isEmpty(tableDetails.addNewRowsDetails.newRowsChangeSet)
       ) {
         setExposedVariables({
           newRows: [],
@@ -720,8 +746,9 @@ export function Table({
       mergeToTableDetails({ selectedRowsDetails });
     }
     if (
-      (!showBulkSelector && !highlightSelectedRow) ||
-      (showBulkSelector && !highlightSelectedRow && preSelectRow.current)
+      allowSelection &&
+      ((!showBulkSelector && !highlightSelectedRow) ||
+        (showBulkSelector && !highlightSelectedRow && preSelectRow.current))
     ) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
@@ -752,6 +779,8 @@ export function Table({
       if (!serverSidePagination && clientSidePagination) {
         setPageSize(rowsPerPage || 10);
       }
+    } else {
+      setPageSize(rows?.length || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
   useEffect(() => {
@@ -764,22 +793,29 @@ export function Table({
         ['currentData', data],
         ['selectedRow', []],
         ['selectedRowId', null],
-      ]).then(() => {
-        if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
-          toggleAllRowsSelected(false);
-          mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
-        }
-      });
+      ]);
+      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+        toggleAllRowsSelected(false);
+        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+      }
     }
   }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
-    if (!state.columnResizing.isResizingColumn && !_.isEmpty(newColumnSizes)) {
+
+    const isColumnSizeChanged = !_.isEmpty(diff(columnSizes, newColumnSizes));
+
+    if (isColumnSizeChanged && !state.columnResizing.isResizingColumn && !_.isEmpty(newColumnSizes)) {
       changeCanDrag(true);
-      paramUpdated(id, 'columnSizes', {
-        value: newColumnSizes,
-      });
+      paramUpdated(
+        id,
+        'columnSizes',
+        {
+          value: newColumnSizes,
+        },
+        { componentDefinitionChanged: true }
+      );
     } else {
       changeCanDrag(false);
     }
@@ -906,7 +942,7 @@ export function Table({
           </div>
           {allColumns.map(
             (column) =>
-              typeof column.Header === 'string' && (
+              typeof column?.Header === 'string' && (
                 <div key={column.id}>
                   <div>
                     <label className="dropdown-item d-flex cursor-pointer">
@@ -1032,12 +1068,12 @@ export function Table({
             {displaySearchBox && !loadingState && (
               <GlobalFilter
                 globalFilter={state.globalFilter}
-                useAsyncDebounce={useAsyncDebounce}
                 setGlobalFilter={setGlobalFilter}
                 onComponentOptionChanged={onComponentOptionChanged}
                 component={component}
                 onEvent={onEvent}
                 darkMode={darkMode}
+                tableEvents={tableEvents}
               />
             )}
           </div>
@@ -1062,7 +1098,7 @@ export function Table({
                 onDragStart={() => {
                   currentColOrder.current = allColumns?.map((o) => o.id);
                 }}
-                onDragUpdate={(dragUpdateObj) => {
+                onDragEnd={(dragUpdateObj) => {
                   const colOrder = [...currentColOrder.current];
                   const sIndex = dragUpdateObj.source.index;
                   const dIndex = dragUpdateObj.destination && dragUpdateObj.destination.index;
@@ -1496,7 +1532,7 @@ export function Table({
                       variant="primary"
                       className={`tj-text-xsm`}
                       onClick={() => {
-                        onEvent('onBulkUpdate', { component }).then(() => {
+                        onEvent('onBulkUpdate', tableEvents, { component }).then(() => {
                           handleChangesSaved();
                         });
                       }}
@@ -1529,21 +1565,14 @@ export function Table({
                 ) : (
                   !loadingState && (
                     <span data-cy={`footer-number-of-records`} className="font-weight-500 color-slate11">
-                      {`${globalFilteredRows.length} Records`}
+                      {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
+                      {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                     </span>
                   )
                 ))}
             </div>
             <div className={`col d-flex justify-content-center h-100 ${loadingState && 'w-100'}`}>
-              {loadingState && (
-                <div className="w-100">
-                  <SkeletonTheme baseColor="var(--slate3)" width="100%">
-                    <Skeleton count={1} width={'100%'} height={28} className="mb-1" />
-                  </SkeletonTheme>
-                </div>
-              )}
-
-              {enablePagination && !loadingState && (
+              {enablePagination && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
                   serverSide={serverSidePagination}
@@ -1558,6 +1587,7 @@ export function Table({
                   enablePrevButton={enablePrevButton}
                   darkMode={darkMode}
                   tableWidth={width}
+                  loadingState={loadingState}
                 />
               )}
             </div>
@@ -1681,6 +1711,7 @@ export function Table({
           columns={columnsForAddNewRow}
           addNewRowsDetails={tableDetails.addNewRowsDetails}
           utilityForNestedNewRow={utilityForNestedNewRow}
+          tableEvents={tableEvents}
         />
       )}
     </div>

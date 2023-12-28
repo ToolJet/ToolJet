@@ -1,14 +1,16 @@
 import React, { useContext } from 'react';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { isEmpty, uniqueId } from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
+import { isEmpty } from 'lodash';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const ListRows = React.memo(({ darkMode }) => {
-  const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange } = useContext(TooljetDatabaseContext);
+  const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange, offsetOptionChanged } =
+    useContext(TooljetDatabaseContext);
 
   function handleWhereFiltersChange(filters) {
     handleOptionsChange('where_filters', filters);
@@ -21,14 +23,14 @@ export const ListRows = React.memo(({ darkMode }) => {
   function addNewFilterConditionPair() {
     const existingFilters = listRowsOptions?.where_filters ? Object.values(listRowsOptions?.where_filters) : [];
     const emptyFilter = { column: '', operator: '', value: '' };
-    const newFilter = { ...emptyFilter, ...{ id: uniqueId() } };
+    const newFilter = { ...emptyFilter, ...{ id: uuidv4() } };
     handleWhereFiltersChange({ ...existingFilters, ...{ [newFilter.id]: newFilter } });
   }
 
   function addNewSortConditionPair() {
     const existingFilters = listRowsOptions?.order_filters ? Object.values(listRowsOptions?.order_filters) : [];
     const emptyFilter = { column: '', order: '' };
-    const newFilter = { ...emptyFilter, ...{ id: uniqueId() } };
+    const newFilter = { ...emptyFilter, ...{ id: uuidv4() } };
     handleOrderFiltersChange({ ...existingFilters, ...{ [newFilter.id]: newFilter } });
   }
 
@@ -154,7 +156,7 @@ export const ListRows = React.memo(({ darkMode }) => {
           </div>
 
           {/* Limit */}
-          <div className="field-container d-flex">
+          <div className="field-container d-flex mb-2">
             <label className="form-label" data-cy="label-column-limit">
               Limit
             </label>
@@ -166,6 +168,22 @@ export const ListRows = React.memo(({ darkMode }) => {
                 height={'32px'}
                 placeholder="Enter limit"
                 onChange={(newValue) => limitOptionChanged(newValue)}
+              />
+            </div>
+          </div>
+          {/* Offset */}
+          <div className="field-container d-flex">
+            <label className="form-label" data-cy="label-column-offset">
+              Offset
+            </label>
+            <div className="field flex-grow-1">
+              <CodeHinter
+                initialValue={listRowsOptions?.offset ?? ''}
+                className="codehinter-plugins"
+                theme={darkMode ? 'monokai' : 'default'}
+                height={'32px'}
+                placeholder="Enter offset"
+                onChange={(newValue) => offsetOptionChanged(newValue)}
               />
             </div>
           </div>

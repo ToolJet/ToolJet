@@ -8,6 +8,7 @@ export const RadioButton = function RadioButton({
   styles,
   fireEvent,
   setExposedVariable,
+  setExposedVariables,
   darkMode,
   dataCy,
 }) {
@@ -36,10 +37,13 @@ export const RadioButton = function RadioButton({
   }
 
   useEffect(() => {
-    setExposedVariable('value', value);
-    setExposedVariable('selectOption', async function (option) {
-      onSelect(option);
-    });
+    const exposedVariables = {
+      value: value,
+      selectOption: async function (option) {
+        onSelect(option);
+      },
+    };
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, setValue]);
 

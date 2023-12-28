@@ -48,12 +48,12 @@ describe("dashboard", () => {
       installed_version: "2.9.2",
       version_ignored: false,
     }).as("version");
-    login();
+    cy.defaultWorkspaceLogin();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
     cy.wait("@version");
     // deleteDownloadsFolder();
-    cy.visitTheWorkspace('My workspace')
+    cy.visit('/my-workspace')
 
   });
 
@@ -159,7 +159,7 @@ describe("dashboard", () => {
     cy.reload();
     verifyTooltip(commonSelectors.dashboardIcon, "Dashboard");
     verifyTooltip(commonSelectors.databaseIcon, "Database");
-    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data Sources");
+    verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
     verifyTooltip(commonSelectors.workspaceSettingsIcon, "Workspace settings");
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");
@@ -168,11 +168,9 @@ describe("dashboard", () => {
 
   it("Should verify app card elements and app card operations", () => {
     cy.apiLogin();
-    cy.apiCreateApp();
+    cy.apiCreateApp(data.appName);
     cy.openApp();
-    cy.renameApp(data.appName);
     cy.dragAndDropWidget("Table", 250, 250);
-
 
     cy.get(commonSelectors.editorPageLogo).click();
 
@@ -192,7 +190,6 @@ describe("dashboard", () => {
             expect($el.contents().last().text().trim()).to.eq("The Developer");
           });
       });
-    cy.reloadAppForTheElement(data.appName);
 
     viewAppCardOptions(data.appName);
     cy.get(
@@ -213,7 +210,6 @@ describe("dashboard", () => {
 
     modifyAndVerifyAppCardIcon(data.appName);
     createFolder(data.folderName);
-    cy.reloadAppForTheElement(data.appName);
 
     viewAppCardOptions(data.appName);
     cy.get(
@@ -246,7 +242,7 @@ describe("dashboard", () => {
     cy.get(commonSelectors.appCard(data.appName))
       .contains(data.appName)
       .should("be.visible");
-    cy.reloadAppForTheElement(data.appName);
+
     viewAppCardOptions(data.appName);
 
     cy.get(commonSelectors.appCardOptions(commonText.removeFromFolderOption))
@@ -256,7 +252,6 @@ describe("dashboard", () => {
 
     cancelModal(commonText.cancelButton);
 
-    cy.reloadAppForTheElement(data.appName);
     viewAppCardOptions(data.appName);
     cy.get(
       commonSelectors.appCardOptions(commonText.removeFromFolderOption)
@@ -276,17 +271,13 @@ describe("dashboard", () => {
     deleteFolder(data.folderName);
 
     cy.get(commonSelectors.allApplicationsLink).click();
-    cy.reloadAppForTheElement(data.appName);
 
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      dashboardText.appClonedToast
-    );
-    cy.waitForAppLoad();
-    cy.wait(2000);
-    cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
+    cy.get('[data-cy="clone-app"]').click();
+    cy.get('.go3958317564').should('be.visible').and('have.text', dashboardText.appClonedToast)
+    cy.wait(3000);
+    cy.renameApp(data.cloneAppName);
     cy.dragAndDropWidget("button", 25, 25);
     cy.get(commonSelectors.editorPageLogo).click();
     cy.wait("@appLibrary");
@@ -340,13 +331,12 @@ describe("dashboard", () => {
 
   it("Should verify the app CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
-    cy.appUILogin();
-    cy.createApp();
-    cy.renameApp(data.appName);
+    cy.defaultWorkspaceLogin();
+    cy.createApp(data.appName);
     cy.dragAndDropWidget("Button", 450, 450);
 
     cy.get(commonSelectors.editorPageLogo).click();
-    cy.reloadAppForTheElement(data.appName);
+
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
       data.appName
@@ -367,9 +357,8 @@ describe("dashboard", () => {
 
   it("Should verify the folder CRUD operation", () => {
     data.appName = `${fake.companyName}-App`;
-    cy.appUILogin();
-    cy.createApp();
-    cy.renameApp(data.appName);
+    cy.defaultWorkspaceLogin();
+    cy.createApp(data.appName);
     cy.dragAndDropWidget("Button", 100, 100);
 
     cy.get(commonSelectors.editorPageLogo).click();
@@ -431,7 +420,7 @@ describe("dashboard", () => {
       .should("be.visible")
       .and("have.text", "Edit folder");
 
-    cy.get(commonSelectors.folderNameInput).should("be.visible")
+    cy.get(commonSelectors.folderNameInput).should("be.visible");
 
     // verifyModal(
     //   commonText.updateFolderTitle,

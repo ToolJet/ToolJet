@@ -35,16 +35,17 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 
   1. Download our production docker-compose file into the server.
   ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose-db.yaml
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose-db.yaml
   mv docker-compose-db.yaml docker-compose.yaml
   mkdir postgres_data
+  mkdir redis_data
   ```
 
   2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
   ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.internal.example
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/internal.sh && chmod +x internal.sh
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.internal.example
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/internal.sh && chmod +x internal.sh
   mv .env.internal.example .env && ./internal.sh
   ```
 
@@ -82,7 +83,8 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 
   2. Download our production docker-compose file into the server.
   ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose.yaml
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose.yaml
+  mkdir redis_data
   ```
 
   3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
@@ -96,8 +98,8 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   </div> 
 
   ```bash
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.external.example
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/external.sh && chmod +x external.sh
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.external.example
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/external.sh && chmod +x external.sh
   mv .env.external.example .env && ./external.sh
   ```
 
@@ -126,11 +128,39 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   `sudo docker-compose up -d`
 
   iv. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
-  :::
+:::
 
-
-
-
-  </TabItem>
+</TabItem>
 </Tabs>
+
+## Docker Backup
+The is a Docker-specific feature that assists in backing up the database during an upgrade process. If you plan to utilize this feature, uncomment the backup service in the docker-compose file. Additionally, you need to set an environment variable: `DATABASE_BACKUP=true`. This enables the creation of a `pg_dump` file, which will be stored in the backup folder.
+
+To restore the database from this dump, execute the following command:
+
+```
+cat your_dump.sql | docker exec -i --user postgres <postgres-db-container-name> psql -U postgres
+```
+
+
+## Upgrading to v2.24.3-ee2.10.2
+
+Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+
+If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+
+#### Prerequisites for Upgrading to the Latest Version:
+
+- It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+
+- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+
+For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
+
+
+
+
+
 

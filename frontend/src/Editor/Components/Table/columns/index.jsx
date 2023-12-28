@@ -9,6 +9,7 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
+
 export default function generateColumnsData({
   columnProperties,
   columnSizes,
@@ -25,10 +26,13 @@ export default function generateColumnsData({
   tableRef,
   t,
   darkMode,
+  tableColumnEvents,
 }) {
   return columnProperties.map((column) => {
-    const columnSize = columnSizes[column.id] || columnSizes[column.name];
-    const columnType = column.columnType;
+    if (!column) return;
+
+    const columnSize = columnSizes[column?.id] || columnSizes[column?.name];
+    const columnType = column?.columnType;
     let sortType = 'alphanumeric';
 
     const columnOptions = {};
@@ -151,7 +155,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="text"
-                    style={{ ...cellStyles, maxWidth: width }}
+                    style={{ ...cellStyles }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -293,7 +297,6 @@ export default function generateColumnsData({
                   darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
                 }`}
                 readOnly={!isEditable}
-                style={{ maxWidth: width }}
                 onBlur={(e) => {
                   if (isEditable && e.target.defaultValue !== e.target.value) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
@@ -373,7 +376,11 @@ export default function generateColumnsData({
           case 'badge':
           case 'badges': {
             return (
-              <div className="h-100 d-flex align-items-center">
+              <div
+                className={`h-100 d-flex align-items-center justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
+              >
                 <CustomSelect
                   options={columnOptions.selectOptions}
                   value={cellValue}
@@ -448,6 +455,7 @@ export default function generateColumnsData({
                           column: column,
                           rowId: cell.row.id,
                           row: cell.row.original,
+                          tableColumnEvents,
                         });
                       }
                     );
