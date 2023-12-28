@@ -459,9 +459,21 @@ export class TooljetDbService {
 
     if (column?.column_name && column?.new_column_name)
       query += `ALTER TABLE "${internalTable.id}" RENAME COLUMN ${column.column_name} TO ${column.new_column_name};`;
-
-    const result = await this.tooljetDbManager.query(query);
-    await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-    return result;
+    const internalTableInfo = {};
+    try {
+      const result = await this.tooljetDbManager.query(query);
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      return result;
+    } catch (error) {
+      internalTableInfo[internalTable.id] = tableName;
+      if (error instanceof QueryFailedError || error instanceof TypeORMError) {
+        let customErrorMessage: string = error.message;
+        Object.entries(internalTableInfo).forEach(([key, value]) => {
+          customErrorMessage = customErrorMessage.replace(key, value as string);
+        });
+        throw new HttpException(customErrorMessage, 422);
+      }
+      throw error;
+    }
   }
 }
