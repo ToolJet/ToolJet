@@ -113,26 +113,28 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   className="form-control"
                   placeholder="Enter name"
                   data-cy={`name-input-field-${columns[index].column_name}`}
-                  disabled={columns[index].constraint_type === 'PRIMARY KEY'}
+                  disabled={columns[index]?.constraints_type?.is_primary_key === true}
                 />
               </div>
               <div className="col-3 pe-0 ps-1" data-cy="type-dropdown-field">
                 <Select
                   width="120px"
                   height="36px"
-                  isDisabled={columns[index].constraint_type === 'PRIMARY KEY'}
+                  isDisabled={columns[index]?.constraints_type?.is_primary_key === true}
                   //useMenuPortal={false}
-                  options={columns[index].constraint_type === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
+                  options={columns[index]?.constraints_type?.is_primary_key === true ? primaryKeydataTypes : dataTypes}
                   onChange={(value) => {
                     setColumnIndex(value);
                     const prevColumns = { ...columns };
-                    prevColumns[index].data_type = value ? value.label : null;
+                    prevColumns[index].data_type = value ? value.value : null;
                     setColumns(prevColumns);
                   }}
                   components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
                   styles={CustomStyle}
                   formatOptionLabel={formatOptionLabel}
-                  placeholder={columns[index].constraint_type === 'PRIMARY KEY' ? columns[0].data_type : 'Select...'}
+                  placeholder={
+                    columns[index]?.constraints_type?.is_primary_key === true ? columns[0].data_type : 'Select...'
+                  }
                 />
               </div>
               <div className="col-2 m-0 pe-0 ps-1" data-cy="column-default-input-field">
@@ -148,10 +150,12 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   className="form-control"
                   data-cy="default-input-field"
                   placeholder="NULL"
-                  disabled={columns[index].constraint_type === 'PRIMARY KEY' || columns[index].data_type === 'serial'}
+                  disabled={
+                    columns[index]?.constraints_type?.is_primary_key === true || columns[index].data_type === 'serial'
+                  }
                 />
               </div>
-              {columns[index].constraint_type === 'PRIMARY KEY' && (
+              {columns[index]?.constraints_type?.is_primary_key === true && (
                 <div className="col-3">
                   <div
                     className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}
@@ -161,21 +165,23 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   </div>
                 </div>
               )}
-              {columns[index].constraint_type !== 'PRIMARY KEY' && (
+              {columns[index]?.constraints_type?.is_primary_key !== true && (
                 <div className="col-3 d-flex">
                   <label className={`form-switch`}>
                     <input
                       className="form-check-input"
                       type="checkbox"
-                      checked={columns[index]?.isNotNull ?? false}
+                      checked={columns[index]?.constraints_type?.is_not_null ?? false}
                       onChange={(e) => {
                         const prevColumns = { ...columns };
-                        prevColumns[index].isNotNull = e.target.checked;
+                        const columnConstraints = prevColumns[index]?.constraints_type ?? {};
+                        columnConstraints.is_not_null = e.target.checked;
+                        prevColumns[index].constraints_type = { ...columnConstraints };
                         setColumns(prevColumns);
                       }}
                     />
                   </label>
-                  <span>{columns[index]?.isNotNull ?? false ? 'NOT NULL' : 'NULL'}</span>
+                  <span>{columns[index]?.constraints_type?.is_not_null ?? false ? 'NOT NULL' : 'NULL'}</span>
                 </div>
               )}
               <div
@@ -183,7 +189,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                 data-cy="column-delete-icon"
                 onClick={() => handleDelete(index)}
               >
-                {columns[index].constraint_type !== 'PRIMARY KEY' && <DeleteIconNew width="16" height="16" />}
+                {columns[index]?.constraints_type?.is_primary_key !== true && <DeleteIconNew width="16" height="16" />}
               </div>
             </div>
           </div>
