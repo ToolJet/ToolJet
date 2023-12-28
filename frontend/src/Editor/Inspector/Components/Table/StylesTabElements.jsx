@@ -147,13 +147,13 @@ export const StylesTabElements = ({
         </>
       )}
       {column.columnType === 'boolean' && (
-        <div>
+        <div className="d-flex flex-column custom-gap-16">
           <div className="field">
             <Color
               param={{ name: 'Toggle on bg' }}
               paramType="properties"
               componentMeta={{ properties: { color: { displayName: 'Toggle on bg' } } }}
-              definition={{ value: column?.toggleOnBg || darkMode ? '#849DFF' : '#3A5CCC' }}
+              definition={{ value: column?.toggleOnBg ? column.toggleOnBg : darkMode ? '#849DFF' : '#3A5CCC' }}
               onChange={(name, value, color) => onColumnItemChange(index, 'toggleOnBg', color)}
               shouldFlexDirectionBeRow={true}
             />
@@ -163,7 +163,7 @@ export const StylesTabElements = ({
               param={{ name: 'Toggle off bg' }}
               paramType="properties"
               componentMeta={{ properties: { color: { displayName: 'Toggle off bg' } } }}
-              definition={{ value: column?.toggleOffBg || darkMode ? '#3A3F42' : '#D7DBDF' }}
+              definition={{ value: column?.toggleOffBg ? column.toggleOffBg : darkMode ? '#3A3F42' : '#D7DBDF' }}
               onChange={(name, value, color) => onColumnItemChange(index, 'toggleOffBg', color)}
               shouldFlexDirectionBeRow={true}
             />
