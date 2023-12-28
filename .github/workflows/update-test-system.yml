@@ -1,4 +1,4 @@
-name: Test system
+name: Test system deploy
 
 on:
   pull_request_target:
@@ -15,7 +15,7 @@ jobs:
   Build-and-update-image:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'update-test-system' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'test-system-deploy' }}
 
     steps:
       - name: Checkout
@@ -86,3 +86,24 @@ jobs:
 
             #View containers
             sudo docker ps
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'test-system-deploy'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['test-system-deployed']
+            })            
