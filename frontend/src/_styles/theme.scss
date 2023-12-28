@@ -10369,7 +10369,29 @@ tbody {
   }
 }
 
-.add-row-btn-database {
+.add-row-btn-database-absolute {
+  position: absolute;
+  top: 0px;
+  right: -28px;
+  width: 29px;
+  height: 30px;
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-radius: 0px;
+  background: var(--slate7);
+  border-color: var(--slate4);
+}
+
+.add-row-btn-database-fixed {
+  position: fixed;
+  top: 112px;
+  right: 0px;
+  width: 29px;
+  height: 30px;
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-radius: 0px;
+  z-index: 1;
   background: var(--slate7);
   border-color: var(--slate4);
 }

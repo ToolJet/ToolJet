@@ -206,30 +206,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
 
   const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
 
-  const colStyles = {
-    position: 'absolute',
-    top: '0px',
-    right: '-28px',
-    width: '29px',
-    height: '30px',
-    borderWidth: '0px 1px 1px 1px',
-    borderStyle: 'solid',
-    borderRadius: '0px',
-  };
-
-  const colStyles1 = {
-    position: 'fixed',
-    top: '112px',
-    right: '0px',
-    width: '29px',
-    height: '30px',
-    borderWidth: '0px 1px 1px 1px',
-    borderStyle: 'solid',
-    borderRadius: '0px',
-    zIndex: '1',
-  };
-
-  const positionValue = width.xAxis > widthOfScreen ? colStyles1 : colStyles;
+  const positionValue = width.xAxis > widthOfScreen ? 'add-row-btn-database-fixed' : 'add-row-btn-database-absolute';
 
   const handleDeleteRow = async () => {
     const shouldDelete = confirm('Are you sure you want to delete the selected rows?');
@@ -398,12 +375,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
           style={{ position: 'relative' }}
         >
           <thead>
-            <button
-              ref={columnCreatorElement}
-              onClick={() => openCreateColumnDrawer()}
-              style={positionValue}
-              className="add-row-btn-database"
-            >
+            <button ref={columnCreatorElement} onClick={() => openCreateColumnDrawer()} className={`${positionValue}`}>
               +
             </button>
             {headerGroups.map((headerGroup, index) => (
