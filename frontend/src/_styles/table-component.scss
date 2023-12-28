@@ -718,3 +718,50 @@
     }
   }
 }
+.table-column-popover#popover-basic-2{
+  z-index: 9999 !important;
+  min-width: 280px;
+  .popover-body{
+    display: flex;
+    flex-direction: column;
+    padding: 16px 16px 24px 16px!important;
+    gap: 16px !important;
+    align-self: stretch;
+    background-color: var(--slate1) !important;
+    border-radius: 0;
+    .optional-properties-when-editable-true{
+      background-color: var(--slate3);
+      padding: 12px 16px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap:10px;
+    }
+    label{
+      @extend .tj-text;
+      @extend .tj-text-xsm;
+      font-weight: 500;
+      color: var(--slate12) !important;
+      padding-bottom: 2px;
+    }
+    .ToggleGroupItem{
+      flex : 1 1 0;
+    }
+  }
+  .popover-header{
+    padding: 4px 0 0 0 !important;
+    background-color: var(--slate3);
+    .active-column-tab{
+      border-bottom: 1px solid var(--indigo9);
+      color : var(--indigo9)
+    }
+    .column-header-tab{
+      display: flex;
+      padding: 6px 8px;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      flex: 1 0 0;
+    }
+  }
+}

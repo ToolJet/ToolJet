@@ -11854,7 +11854,9 @@ tbody {
 .custom-gap-2 {
   gap: 2px
 }
-
+.custom-gap-3{
+  gap: 3px;
+}
 .custom-gap-4 {
   gap: 4px;
 }
@@ -11866,8 +11868,13 @@ tbody {
 .custom-gap-12 {
   gap: 12px
 }
-
-#inspector-tabpane-properties {
+.custom-gap-16{
+  gap: 16px;
+}
+.text-black-000{
+  color: var(--text-black-000) !important;
+}
+#inspector-tabpane-properties{
   .accordion {
     .accordion-item:last-child {
       border-bottom: none !important;
