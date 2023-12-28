@@ -60,7 +60,7 @@ jobs:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
