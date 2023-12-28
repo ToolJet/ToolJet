@@ -30,7 +30,7 @@ const MobileNavigationMenu = ({
   //   const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased, shallow);
   var styles = {
     bmBurgerButton: {
-      position: 'fixed',
+      position: 'absolute',
       width: '16px',
       height: '16px',
       top: '1rem',
