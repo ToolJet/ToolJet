@@ -476,7 +476,13 @@ export default function generateColumnsData({
           case 'boolean': {
             return (
               <div className="h-100 d-flex align-items-center">
-                <Boolean />
+                <Boolean
+                  value={cellValue}
+                  isEditable={isEditable}
+                  onChange={(value) =>
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original)
+                  }
+                />
               </div>
             );
           }
