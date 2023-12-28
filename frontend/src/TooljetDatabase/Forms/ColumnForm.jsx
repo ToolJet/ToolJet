@@ -16,6 +16,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
 
   const CustomSelectOption = (props) => (
@@ -40,15 +41,37 @@ const ColumnForm = ({ onCreate, onClose }) => {
   const CustomStyle = {
     option: (base, state) => ({
       ...base,
-      backgroundColor: state.isSelected ? '#F0F4FF' : 'transparent',
+      backgroundColor:
+        state.isSelected && !darkMode ? '#F0F4FF' : state.isSelected && darkMode ? '#323C4B' : 'transparent',
       ':hover': {
-        backgroundColor: state.isFocused ? '#F0F4FF' : '',
+        backgroundColor: state.isFocused && !darkMode ? '#F0F4FF' : '#323C4B',
       },
+      color: darkMode ? '#fff' : '#232e3c',
+      cursor: 'pointer',
     }),
     control: (provided, state) => ({
       ...provided,
-      background: state.isFocused ? '#f8faff' : 'transparent',
-      border: state.isFocused ? '1px solid #3e63dd !important' : '1px solid #dadcde',
+      background:
+        state.isDisabled && darkMode
+          ? '#1f2936'
+          : state.isDisabled && !darkMode
+          ? '#f4f6fa'
+          : state.isFocused && !darkMode
+          ? '#f8faff'
+          : state.isFocused && darkMode
+          ? '#15192d !important'
+          : 'transparent',
+      borderColor:
+        state.isFocused && !darkMode
+          ? '#3e63dd !important'
+          : state.isFocused && darkMode
+          ? '#3e63dd !important'
+          : darkMode
+          ? '#3a3f42'
+          : '#dadcde',
+      '&:hover': {
+        borderColor: darkMode ? '#4c5155' : '#c1c8cd',
+      },
       boxShadow: state.isFocused ? 'none' : 'none',
       height: '36px !important',
       minHeight: '36px',
@@ -56,10 +79,13 @@ const ColumnForm = ({ onCreate, onClose }) => {
     menuList: (provided, _state) => ({
       ...provided,
       padding: '8px',
+      color: darkMode ? '#fff' : '#232e3c',
     }),
     menu: (base) => ({
       ...base,
       width: '100%',
+      background: darkMode ? 'rgb(31,40,55)' : 'white',
+      borderColor: darkMode ? '#4c5155' : '#c1c8cd',
     }),
   };
 
@@ -131,7 +157,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
             formatOptionLabel={formatOptionLabel}
             options={dataTypes}
             onChange={handleTypeChange}
-            components={{ Option: CustomSelectOption }}
+            components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
             styles={CustomStyle}
           />
         </div>
