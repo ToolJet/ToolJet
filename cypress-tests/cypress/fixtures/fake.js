@@ -17,7 +17,7 @@ function fullName() {
   return `${faker.name.firstName()} ${faker.name.lastName()}`;
 }
 function companyName() {
-  const str = faker.company.companyName();
+  const str = `${faker.company.companyName()} ${faker.name.lastName()}`;
   return str.substring(0, str.indexOf(" ")).replace(/[^a-zA-Z ]/g, "");
 }
 function widgetName() {
@@ -82,4 +82,3 @@ Object.defineProperty(fake, "randomRgb", { get: randomRgb });
 Object.defineProperty(fake, "boxShadowParam", { get: boxShadowParam });
 Object.defineProperty(fake, "randomRgbaHex", { get: randomRgbaHex });
 Object.defineProperty(fake, "tableName", { get: tableName });
-

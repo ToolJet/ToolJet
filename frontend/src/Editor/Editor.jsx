@@ -321,17 +321,13 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
-  useEffect(() => {
-    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
-      props.ymap?.set('eventHandlersUpdated', {
-        updated: true,
-        currentVersionId: currentVersionId,
-        currentSessionId: currentSessionId,
-      });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ events })]);
+  const handleYmapEventUpdates = () => {
+    props.ymap?.set('eventHandlersUpdated', {
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+      update: true,
+    });
+  };
 
   /**
    * ThandleMessage event listener in the login component for iframe communication.
@@ -459,8 +455,6 @@ const EditorComponent = (props) => {
 
         // Trigger real-time save with specific options
 
-        // const ymapOpts = ymapUpdates?.opts;
-
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
@@ -470,7 +464,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      if (ymapEventHandlersUpdated) {
+      if (ymapEventHandlersUpdated?.update === true) {
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -1124,7 +1118,7 @@ const EditorComponent = (props) => {
     for (let key in prevPatch) {
       const type = typeof prevPatch[key];
 
-      if (type === 'object') {
+      if (type === 'object' && !_.isEmpty(prevPatch[key])) {
         handlePaths(prevPatch[key], [...paths, key], appJSON);
       } else {
         const currentpath = [...paths, key].join('.');
@@ -1838,7 +1832,7 @@ const EditorComponent = (props) => {
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {isVersionReleased && <ReleasedVersionError />}
       {!isVersionReleased && isEditorFreezed && creationMode !== 'GIT' && <FreezeVersionInfo />}
-      <EditorContextWrapper>
+      <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}
