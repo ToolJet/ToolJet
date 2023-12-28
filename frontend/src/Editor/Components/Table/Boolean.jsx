@@ -19,6 +19,8 @@ export const Boolean = ({ value = false, isEditable, onChange }) => {
     );
   };
   return (
-    <div className="w-100">{isEditable ? editableContent(isEditable, value, onChange) : nonEditableContent(value)}</div>
+    <div className="w-100 d-flex align-items-center">
+      {isEditable ? editableContent(isEditable, value, onChange) : nonEditableContent(value)}
+    </div>
   );
 };

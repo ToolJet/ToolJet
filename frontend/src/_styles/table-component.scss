@@ -646,7 +646,7 @@
   position: relative;
   display: inline-block;
   width: 28px;
-  height: 18px;
+  height: 16px;
   padding: 2px;
   input { 
     opacity: 0;
@@ -671,8 +671,8 @@
     content: "";
     width: 12px;
     height: 12px;
-    left:3px;
-    bottom: 3px;
+    left:2px;
+    bottom: 2px;
     background-color: var(--base);
     -webkit-transition: .4s;
     transition: .4s;
@@ -687,9 +687,9 @@
   }
   
   input:checked + .boolean-slider:before {
-    -webkit-transform: translateX(10px);
-    -ms-transform: translateX(10px);
-    transform: translateX(10px);
+    -webkit-transform: translateX(12px);
+    -ms-transform: translateX(12px);
+    transform: translateX(12px);
   }
 }
 
