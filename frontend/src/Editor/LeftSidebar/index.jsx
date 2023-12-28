@@ -82,8 +82,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const currentState = useCurrentState();
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
 
-  const [realState, setRealState] = useState(currentState);
-
   const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
     currentPageId,
     isDebuggerOpen: !!selectedSidebarItem,
@@ -142,10 +140,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
-  useEffect(() => {
-    setRealState(currentState); //!ceck this
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components]);
 
   const backgroundFxQuery = appDefinition?.globalSettings?.backgroundFxQuery;
 

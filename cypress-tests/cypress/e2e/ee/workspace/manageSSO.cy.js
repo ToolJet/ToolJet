@@ -15,7 +15,7 @@ import * as SSO from "Support/utils/manageSSO";
 describe("Manage SSO for multi workspace", () => {
   const data = {};
   beforeEach(() => {
-    cy.appUILogin();
+    cy.defaultWorkspaceLogin()
   });
 
   it("Should verify the workspace login page", () => {

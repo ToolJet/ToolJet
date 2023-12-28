@@ -165,7 +165,7 @@ describe("Self host onboarding", () => {
         cy.get(':nth-child(8) > .feature-title').verifyVisibleElement("have.text", "Unlimited ToolJet tables and rows");
         cy.get(':nth-child(9) > .feature-title').verifyVisibleElement("have.text", "Multiplayer editing");
         cy.get(':nth-child(10) > .feature-title').verifyVisibleElement("have.text", "Multi-environments");
-        cy.get(':nth-child(11) > .feature-title').verifyVisibleElement("have.text", "GitSync (coming soon)");
+        cy.get(':nth-child(11) > .feature-title').verifyVisibleElement("have.text", "GitSync");
         cy.get(':nth-child(12) > .feature-title').verifyVisibleElement("have.text", "Audit logs");
         cy.get(':nth-child(13) > .feature-title').verifyVisibleElement("have.text", "Air-gapped deployment");
         cy.get(':nth-child(14) > .feature-title').verifyVisibleElement("have.text", "Priority support via email, phone & private channel");

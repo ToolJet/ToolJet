@@ -19,6 +19,7 @@ export const Form = function Form(props) {
     removeComponent,
     styles,
     setExposedVariable,
+    setExposedVariables,
     darkMode,
     currentState,
     fireEvent,
@@ -57,16 +58,19 @@ export const Form = function Form(props) {
   const mounted = useMounted();
 
   useEffect(() => {
-    setExposedVariable('resetForm', async function () {
-      resetComponent();
-    });
-    setExposedVariable('submitForm', async function () {
-      if (isValid) {
-        onEvent('onSubmit', formEvents).then(() => resetComponent());
-      } else {
-        fireEvent('onInvalid');
-      }
-    });
+    const exposedVariables = {
+      resetForm: async function () {
+        resetComponent();
+      },
+      submitForm: async function () {
+        if (isValid) {
+          onEvent('onSubmit', formEvents).then(() => resetComponent());
+        } else {
+          fireEvent('onInvalid');
+        }
+      },
+    };
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
@@ -115,9 +119,13 @@ export const Form = function Form(props) {
     let childValidation = true;
 
     if (childComponents === null) {
-      setExposedVariable('data', formattedChildData);
-      !advanced && setExposedVariable('children', formattedChildData);
-      setExposedVariable('isValid', childValidation);
+      const exposedVariables = {
+        data: formattedChildData,
+        isValid: childValidation,
+        ...(!advanced && { children: formattedChildData }),
+      };
+
+      setExposedVariables(exposedVariables);
       return setValidation(childValidation);
     }
 
@@ -127,7 +135,7 @@ export const Form = function Form(props) {
     } else {
       Object.keys(childComponents).forEach((childId) => {
         if (childrenData[childId]?.name) {
-          formattedChildData[childrenData[childId].name] = omit(childrenData[childId], 'name');
+          formattedChildData[childrenData[childId].name] = { ...omit(childrenData[childId], 'name'), id: childId };
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
         }
       });
@@ -137,11 +145,13 @@ export const Form = function Form(props) {
       Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formkey from final exposed data
     );
     const formattedChildDataClone = _.cloneDeep(formattedChildData);
-    !advanced && setExposedVariable('children', formattedChildDataClone);
-    setExposedVariable('data', removeFunctionObjects(formattedChildData));
-    setExposedVariable('isValid', childValidation);
+    const exposedVariables = {
+      ...(!advanced && { children: formattedChildDataClone }),
+      data: removeFunctionObjects(formattedChildData),
+      isValid: childValidation,
+    };
     setValidation(childValidation);
-
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData, childComponents, advanced, JSON.stringify(JSONSchema)]);
 
@@ -187,6 +197,7 @@ export const Form = function Form(props) {
       fireSubmissionEvent();
     }
   };
+  //for custom json
   function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
     if (typeof value === 'function' && _.findKey({}, optionName)) {
       return Promise.resolve();

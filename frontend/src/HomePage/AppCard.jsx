@@ -130,7 +130,7 @@ export default function AppCard({
   const editButtonStyle = appType === 'workflow' ? { width: '100%' } : {};
 
   return (
-    <div className="card homepage-app-card animation-fade">
+    <div className="card homepage-app-card">
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">

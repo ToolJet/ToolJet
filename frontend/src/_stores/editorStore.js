@@ -1,8 +1,10 @@
-import { create, zustandDevTools } from './utils';
+import { create } from './utils';
 import { v4 as uuid } from 'uuid';
 import { licenseService } from '@/_services';
 import { shallow } from 'zustand/shallow';
 const STORE_NAME = 'Editor';
+
+export const EMPTY_ARRAY = [];
 
 const ACTIONS = {
   SET_SHOW_COMMENTS: 'SET_SHOW_COMMENTS',
@@ -19,9 +21,8 @@ const initialState = {
   showComments: false,
   hoveredComponent: '',
   selectionInProgress: false,
-  selectedComponents: [],
+  selectedComponents: EMPTY_ARRAY,
   isEditorActive: false,
-  currentSidebarTab: 2,
   selectedComponent: null,
   scrollOptions: {
     container: null,
@@ -33,7 +34,6 @@ const initialState = {
   currentVersion: {},
   noOfVersionsSupported: 100,
   appDefinition: {},
-  // isSaving: false,
   isUpdatingEditorStateInProcess: false,
   saveError: false,
   isLoading: true,
@@ -48,7 +48,7 @@ const initialState = {
 };
 
 export const useEditorStore = create(
-  // Dev tools for this store are disabled comments since its freezing chrome tab
+  //Redux Dev tools for this store are disabled since its freezing chrome tab
   (set, get) => ({
     ...initialState,
     actions: {

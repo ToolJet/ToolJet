@@ -11,8 +11,7 @@ const groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 
 describe("Manage Groups", () => {
   before(() => {
-    cy.apiLogin();
-    cy.visit('/my-workspace');
+    cy.defaultWorkspaceLogin()
     resetDsPermissions();
   });
   it("Should verify the datasource permission UI elements on manage groups page", () => {

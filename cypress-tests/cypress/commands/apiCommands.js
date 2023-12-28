@@ -44,7 +44,11 @@ Cypress.Commands.add("apiCreateGDS", (url, name, kind, options) => {
       },
       { log: false }
     ).then((response) => {
+      {
+        log: false;
+      }
       expect(response.status).to.equal(201);
+      Cypress.env(`${name}-id`, response.body.id);
 
       Cypress.log({
         name: "Create Data Source",
@@ -80,6 +84,9 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
         type: "front-end",
       },
     }).then((response) => {
+      {
+        log: false;
+      }
       expect(response.status).to.equal(201);
       Cypress.env("appId", response.allRequestResponses[0]["Response Body"].id);
       Cypress.log({
@@ -115,13 +122,14 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
 Cypress.Commands.add(
   "openApp",
   (
+    workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
     componentSelector = "[data-cy='empty-editor-text']"
   ) => {
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
-    cy.visit(`/${Cypress.env("workspaceId")}/apps/${Cypress.env("appId")}`);
+    cy.visit(`/${workspaceId}/apps/${appId}`);
     cy.get(componentSelector, { timeout: 10000 });
   }
 );
