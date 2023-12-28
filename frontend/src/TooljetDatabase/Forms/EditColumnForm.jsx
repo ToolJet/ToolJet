@@ -1,12 +1,13 @@
 import React, { useState, useContext, useEffect } from 'react';
 //import Select from '@/_ui/Select';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { dataTypes, formatOptionLabel } from '../constants';
+import Tick from '../Icons/Toggle.svg';
 
 const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
@@ -14,6 +15,7 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const disabledDataType = dataTypes.find((e) => e.value === dataType);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -113,12 +115,13 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
           </div>
           <Select
             isDisabled={true}
-            // placeholder={dataType}
-            value={dataType}
+            defaultValue={disabledDataType}
             formatOptionLabel={formatOptionLabel}
             options={dataTypes}
             onChange={handleTypeChange}
+            components={{ IndicatorSeparator: () => null }}
             styles={CustomStyle}
+            isSearchable={false}
           />
         </div>
         <div className="mb-3 tj-app-input">
