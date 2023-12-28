@@ -12,7 +12,7 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
-  Building-image-for-test-system:
+  Build-and-update-image:
     runs-on: ubuntu-22.04
 
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'update-test-system' }}
@@ -83,3 +83,6 @@ jobs:
             # Start the Docker containers
             cat docker-compose.yaml
             sudo docker-compose up -d
+
+            #View containers
+            sudo docker ps
