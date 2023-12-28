@@ -134,7 +134,7 @@ export class TooljetDbService {
 
     // primary keys are only supported as serial type
     params.columns = params.columns.map((column) => {
-      if (column['constraint_type'] === 'PRIMARY KEY') {
+      if (column?.constraints_type?.is_primary_key ?? false) {
         primaryKeyExist = true;
         return { ...column, data_type: 'serial', column_default: null };
       }
@@ -164,15 +164,15 @@ export class TooljetDbService {
       const createTableString = `CREATE TABLE "${internalTable.id}" `;
       let query = `${column['column_name']} ${column['data_type']}`;
       if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
-      if (column['constraint_type']) query += ` ${column['constraint_type']}`;
-      if (column['isNotNull']) query += ` NOT NULL`;
+      if (column?.constraints_type?.is_primary_key ?? false) query += ` PRIMARY KEY`;
+      if (column?.constraints_type?.is_not_null ?? false) query += ` NOT NULL`;
 
       if (restColumns)
         for (const col of restColumns) {
           query += `, ${col['column_name']} ${col['data_type']}`;
           if (col['column_default']) query += ` DEFAULT ${this.addQuotesIfString(col['column_default'])}`;
-          if (col['constraint_type']) query += ` ${col['constraint_type']}`;
-          if (col['isNotNull']) query += ` NOT NULL`;
+          if (col?.constraints_type?.is_primary_key ?? false) query += ` PRIMARY KEY`;
+          if (col?.constraints_type?.is_not_null ?? false) query += ` NOT NULL`;
         }
 
       // if tooljetdb query fails in this connection, we must rollback internal table
@@ -249,8 +249,8 @@ export class TooljetDbService {
 
     let query = `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']}`;
     if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
-    if (column['constraint_type']) query += ` ${column['constraint_type']};`;
-    if (column['isNotNull']) query += ` NOT NULL`;
+    if (column?.constraints_type?.is_primary_key ?? false) query += ` PRIMARY KEY`;
+    if (column?.constraints_type?.is_not_null ?? false) query += ` NOT NULL`;
 
     const result = await this.tooljetDbManager.query(query);
     await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
@@ -438,6 +438,7 @@ export class TooljetDbService {
 
   private async editColumn(organizationId: string, params) {
     const { table_name: tableName, column } = params;
+    const { constraints_type = {} } = column;
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, tableName },
     });
@@ -449,16 +450,30 @@ export class TooljetDbService {
       query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${
         column.column_name
       } SET DEFAULT ${this.addQuotesIfString(column['column_default'])};`;
-    if ('isNotNull' in column) {
-      column.isNotNull
+
+    if ('is_not_null' in constraints_type) {
+      constraints_type.is_not_null
         ? (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} SET NOT NULL;`)
         : (query += `ALTER TABLE "${internalTable.id}" ALTER COLUMN ${column.column_name} DROP NOT NULL;`);
     }
 
     if (column?.column_name && column?.new_column_name)
       query += `ALTER TABLE "${internalTable.id}" RENAME COLUMN ${column.column_name} TO ${column.new_column_name};`;
-    const result = await this.tooljetDbManager.query(query);
-    await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-    return result;
+    const internalTableInfo = {};
+    try {
+      const result = await this.tooljetDbManager.query(query);
+      await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      return result;
+    } catch (error) {
+      internalTableInfo[internalTable.id] = tableName;
+      if (error instanceof QueryFailedError || error instanceof TypeORMError) {
+        let customErrorMessage: string = error.message;
+        Object.entries(internalTableInfo).forEach(([key, value]) => {
+          customErrorMessage = customErrorMessage.replace(key, value as string);
+        });
+        throw new HttpException(customErrorMessage, 422);
+      }
+      throw error;
+    }
   }
 }
