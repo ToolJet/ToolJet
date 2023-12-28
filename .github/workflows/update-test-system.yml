@@ -17,6 +17,9 @@ on:
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  COMMIT_HASH: ${{ github.sha }}
+  SAFE_BRANCH_NAME: ${{ github.head_ref || github.ref_name | replace('/', '-') }}
+
 
 jobs:
   Building-image-for-test-system:
@@ -66,11 +69,11 @@ jobs:
       - name: SSH into EC2 instance
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ env.EC2_INSTANCE_IP }}
+          host: ${{ secrets.EC2_INSTANCE_IP }}
           username: admin
-          key: ${{ env.EC2_INSTANCE_SSH_KEY }}
+          key: ${{ secrets.EC2_INSTANCE_SSH_KEY }}
           script: |
-            cd /path/to/your/docker/compose/directory
+            cd /home/admin/docker-compose.yml
 
             # Stop the Docker containers
             sudo docker-compose down
