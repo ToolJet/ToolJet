@@ -78,6 +78,12 @@ jobs:
             # Stop the Docker containers
             sudo docker-compose down
 
+            # Remove the existing tooljet/* images
+            sudo docker images -a | grep 'tooljet/' | awk '{print $3}' | xargs sudo docker rmi -f
+
+            #checking images
+            sudo docker images
+
             # Update docker-compose.yml with the new image
             sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:dummy-test-system|' docker-compose.yaml
 
