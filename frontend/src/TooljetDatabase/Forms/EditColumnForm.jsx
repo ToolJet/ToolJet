@@ -1,18 +1,21 @@
 import React, { useState, useContext, useEffect } from 'react';
-import Select from '@/_ui/Select';
+//import Select from '@/_ui/Select';
+import Select from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import { dataTypes } from '../constants';
+import { dataTypes, formatOptionLabel } from '../constants';
 
-const ColumnForm = ({ onDelete, onClose, selectedColumn }) => {
+const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const handleTypeChange = (value) => {
     setDataType(value);
@@ -27,76 +30,106 @@ const ColumnForm = ({ onDelete, onClose, selectedColumn }) => {
       toast.error('Data type cannot be empty');
       return;
     }
-
-    // setFetching(true);
-
-    // const { error } = await tooljetDatabaseService.createColumn(
-    //     organizationId,
-    //     selectedTable.table_name,
-    //     columnName,
-    //     dataType,
-    //     defaultValue
-    // );
-
-    // setFetching(false);
-
-    // if (error) {
-    //     toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
-    //     return;
-    // }
-
-    // toast.success(`Column created successfully`);
-    // onCreate && onCreate();
   };
+
+  const CustomStyle = {
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected ? '#F0F4FF' : 'transparent',
+      ':hover': {
+        backgroundColor: state.isFocused ? '#F0F4FF' : '',
+      },
+    }),
+    control: (provided, state) => ({
+      ...provided,
+      background: state.isDisabled && darkMode ? '#1f2936' : '#f4f6fa',
+      borderColor: darkMode ? '#3a3f42 !important' : state.isFocused && !darkMode ? '#3e63dd !important' : '#dadcde',
+      boxShadow: state.isFocused ? 'none' : 'none',
+      height: '36px !important',
+      minHeight: '36px',
+    }),
+    menuList: (provided, state) => ({
+      ...provided,
+      padding: '8px',
+    }),
+    menu: (base) => ({
+      ...base,
+      width: '100%',
+    }),
+  };
+
+  // const handleCreate = async () => {
+  //   if (isEmpty(columnName)) {
+  //     toast.error('Column name cannot be empty');
+  //     return;
+  //   }
+  //   if (isEmpty(dataType?.value)) {
+  //     toast.error('Data type cannot be empty');
+  //     return;
+  //   }
+  //   setFetching(true);
+  //   const { error } = await tooljetDatabaseService.createColumn(
+  //     organizationId,
+  //     selectedTable.table_name,
+  //     columnName,
+  //     dataType?.value,
+  //     defaultValue
+  //   );
+  //   setFetching(false);
+  //   if (error) {
+  //     toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
+  //     return;
+  //   }
+  //   toast.success(`Column created successfully`);
+  //   onCreate && onCreate();
+  // };
 
   return (
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title ">
         <h3 className="" data-cy="create-new-column-header">
-          Edit column
+          Create a new column
         </h3>
       </div>
-      <div className="card-body mt-4">
-        <div className="mb-4 d-flex justify-content-between align-items-center tj-app-name-input">
-          <div className="form-label-name mb-0" data-cy="column-name-input-field-label">
+      <div className="card-body">
+        <div className="mb-3 tj-app-input">
+          <div className="form-label" data-cy="column-name-input-field-label">
             Column name
           </div>
           <input
             value={columnName}
             type="text"
             placeholder="Enter column name"
-            className="form-control w-75"
+            className="form-control"
             data-cy="column-name-input-field"
             autoComplete="off"
             onChange={(e) => setColumnName(e.target.value)}
             autoFocus
           />
         </div>
-        <div
-          className="mb-4 d-flex justify-content-between align-items-center data-type-dropdown-section-type"
-          data-cy="data-type-dropdown-section"
-        >
-          <div className="form-label data-type mb-0" data-cy="data-type-input-field-label">
+        <div className="column-datatype-selector mb-3 data-type-dropdown-section" data-cy="data-type-dropdown-section">
+          <div className="form-label" data-cy="data-type-input-field-label">
             Data type
           </div>
           <Select
-            useMenuPortal={false}
-            placeholder="Select data type"
+            isDisabled={true}
+            // placeholder={dataType}
             value={dataType}
+            formatOptionLabel={formatOptionLabel}
             options={dataTypes}
             onChange={handleTypeChange}
-            className="w-75"
+            styles={CustomStyle}
           />
         </div>
-        <div className="mb-4 d-flex justify-content-between align-items-center tj-app-default-type-input">
-          <div className="form-label default-type mb-0" data-cy="default-value-input-field-label">
+        <div className="mb-3 tj-app-input">
+          <div className="form-label" data-cy="default-value-input-field-label">
             Default value
           </div>
           <input
             value={defaultValue}
             type="text"
             placeholder="Enter default value"
-            className="form-control w-75"
+            className="form-control"
             data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
@@ -104,15 +137,8 @@ const ColumnForm = ({ onDelete, onClose, selectedColumn }) => {
           />
         </div>
       </div>
-      <DrawerFooter
-        fetching={fetching}
-        onClose={onClose}
-        onDelete={onDelete}
-        onCreate={handleCreate}
-        isDeleteMode={true}
-      />
+      <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleCreate} />
     </div>
   );
 };
-
 export default ColumnForm;
