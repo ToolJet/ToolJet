@@ -446,6 +446,9 @@ export class UsersService {
       case 'CustomStyle':
         return await this.hasGroup(user, 'admin');
 
+      case 'ConfigureGitSync':
+        return await this.hasGroup(user, 'admin');
+
       case 'Thread':
       case 'Comment':
         return await this.canUserPerformActionOnApp(user, 'update', resourceId);

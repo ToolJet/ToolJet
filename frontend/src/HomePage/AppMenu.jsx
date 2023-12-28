@@ -14,6 +14,7 @@ export const AppMenu = function AppMenu({
   darkMode,
   currentFolder,
   appType,
+  appCreationMode,
 }) {
   const { t } = useTranslation();
   const Field = ({ text, onClick, customClass }) => {
@@ -49,8 +50,9 @@ export const AppMenu = function AppMenu({
               <div data-cy="card-options">
                 {canUpdateApp && (
                   <Field
+                    customClass={appCreationMode === 'GIT' && 'disabled-action-tooltip'}
                     text={t('homePage.appCard.renameApp', 'Rename app')}
-                    onClick={() => openAppActionModal('rename-app')}
+                    onClick={() => appCreationMode !== 'GIT' && openAppActionModal('rename-app')}
                   />
                 )}
                 {canUpdateApp && (

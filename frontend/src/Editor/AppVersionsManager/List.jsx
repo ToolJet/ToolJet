@@ -14,6 +14,7 @@ export const AppVersionsManager = function ({
   currentEnvironment,
   environments,
   setCurrentEnvironment,
+  appCreationMode,
 }) {
   const [appVersions, setAppVersions] = useState([]);
   const [appVersionStatus, setGetAppVersionStatus] = useState('');
@@ -52,6 +53,7 @@ export const AppVersionsManager = function ({
     const currentPromotedEnvironment = currentEnvironmentId
       ? environments.find((env) => env.id === currentEnvironmentId)
       : environments.find((env) => env.name === 'development');
+
     if (currentPromotedEnvironment.name === 'production' || currentPromotedEnvironment.name === 'staging') {
       // we don't want to allow editing of production and staging environments
       // so let's freeze the editor
@@ -183,6 +185,7 @@ export const AppVersionsManager = function ({
     deleteVersion,
     deleteAppVersion,
     resetDeleteModal,
+    appCreationMode,
   };
 
   const handleOnSelectVersion = (id) => {

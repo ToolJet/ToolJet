@@ -1,0 +1,109 @@
+.webhook-header{
+    margin-left: 10px !important;
+}
+.webhook-popover{
+    min-width:350px !important;
+    position: absolute !important;
+    inset: 20px auto auto -8px !important;
+    transform: translate3d(372px, 32.5px, 0px) !important;
+    z-index: 0;
+}
+.parameterDashed{
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='black' stroke-width='1' stroke-dasharray='6%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    height:40px
+}
+.parentInput{
+    border: 1px solid rgba(101, 109, 119, 0.16) !important;
+    background-color: #FBFCFD;
+}
+.deleteBox{
+    width: 34px;
+}
+.dropDown-content{
+    padding:8px;
+    background-color: white;
+    left:10px;
+    top:42px;
+    z-index: 1;
+    box-shadow: 0px 32px 64px -12px rgba(62, 99, 221, 0.15);
+    width: 210px;
+    border: 1px solid #F1F3F5;
+}
+.dropDown-content-env{
+    padding:8px;
+    background-color: white;
+    top:42px;
+    z-index: 1;
+    box-shadow: 0px 32px 64px -12px rgba(62, 99, 221, 0.15);
+    width: 100%;
+    border: 1px solid #F1F3F5;
+}
+.btn-endpoint-url{
+    color: #889096;
+    width: 185px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.nested-dropdown{
+    width: 100%;
+    left:210px;
+    position: absolute;
+    padding: 7px;
+    top:0px;
+    border-radius: 6px;
+}
+.hidden {
+    display: none;
+  }
+.env-dropdown-icon{
+    margin-left: 10px;
+    font-size: 14px;
+}
+.dropdowns:hover{
+background-color: #F0F4FF;
+border-radius: 4px;
+}
+.selected{
+    background-color: #F0F4FF;
+    border-radius: 4px;
+}
+.testKeyInput{
+    height:35px;
+    border-radius: 4px;
+    border : 1px solid rgba(101, 109, 119, 0.16);
+    background-color: #FBFCFD;
+    width:100%
+}
+.testKeyInput:focus {
+    border : 1px solid #3E63DD
+}
+.test-json-title{
+    width:158px
+}
+.endpoint-url{
+    width: 238px;
+    color: #889096;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    p{
+        width: 160px;
+        color: #889096;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+.keyInput{
+    height:35px;
+    border-radius: 4px 0px 0px 4px;
+    border : none;
+    background-color: #FBFCFD;
+    width:160px
+}
+
+.keyInput:focus {
+    border : 1px solid #3E63DD
+}

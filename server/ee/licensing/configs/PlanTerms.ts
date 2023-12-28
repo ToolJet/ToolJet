@@ -22,9 +22,23 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
     whiteLabelling: false,
     multiEnvironment: false,
     multiPlayerEdit: false,
+    gitSync: false,
     comments: false,
   },
   domains: [],
+  workflows: {
+    execution_timeout: 60,
+    workspace: {
+      total: 200,
+      daily_executions: 500,
+      monthly_executions: 10000,
+    },
+    instance: {
+      total: 1000,
+      daily_executions: 25000,
+      monthly_executions: 50000,
+    },
+  },
   auditLogs: {
     maximumDays: 0,
   },

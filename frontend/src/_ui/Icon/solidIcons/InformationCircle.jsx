@@ -2,7 +2,7 @@ import React from 'react';
 
 const InformationCircle = ({
   fill = '#28303F',
-  innerFill = '#28303F',
+  innerFill = '#3E63DD',
   width = '25',
   className = '',
   viewBox = '0 0 25 25',

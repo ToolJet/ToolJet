@@ -123,7 +123,7 @@ describe("dashboard", () => {
     verifyTooltip('[data-cy="icon-database"]', "Database");
     verifyTooltip(commonSelectors.globalDataSourceIcon, "Data sources");
     verifyTooltip(commonSelectors.workspaceSettingsIcon, "Workspace settings");
-    verifyTooltip(commonEeSelectors.instanceSettingIcon, "Settings");
+    verifyTooltip('[data-cy="icon-settings"]', "Settings");
     verifyTooltip(commonEeSelectors.auditLogIcon, "Audit logs");
     verifyTooltip(commonSelectors.notificationsIcon, "Comment notifications");
     verifyTooltip(dashboardSelector.modeToggle, "Mode");

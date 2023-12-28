@@ -130,7 +130,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
   const handleInteractOutside = (ev) => {
     const isBtnClicked = Object.values(sideBarBtnRefs.current).some((btnRef) => {
-      return btnRef?.contains(ev.target);
+      if (!btnRef) return false;
+      return btnRef.contains(ev?.target) || false;
     });
 
     if (!isBtnClicked && !pinned) {

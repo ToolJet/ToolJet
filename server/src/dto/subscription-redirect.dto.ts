@@ -32,10 +32,6 @@ export class PaymentRedirectDto {
 
   @IsOptional()
   @IsString()
-  coupon_code: string;
-
-  @IsOptional()
-  @IsString()
   promo_code: string;
 
   @IsEmail()

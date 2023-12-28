@@ -22,6 +22,7 @@ import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { GlobalDatasources } from '@/GlobalDatasources';
+import { GitSyncConfig } from '@/GitSyncComponent/GitSyncConfig';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
@@ -348,6 +349,10 @@ class AppComponent extends React.Component {
                 <Route
                   path="workspace-variables"
                   element={<ManageOrgVars switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                />
+                <Route
+                  path="configure-git"
+                  element={<GitSyncConfig switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
                 />
                 <Route
                   path="workspace-constants"

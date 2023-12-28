@@ -23,12 +23,15 @@ const Domains = () => {
         ?.filter((domain) => domain?.hostname)
         .map((domain, index) => (
           <div key={index} className="hostname-wrapper">
-            <div className="heading">Hostname</div>
+            <div className="heading" data-cy="host-name-label">
+              Hostname
+            </div>
             <input
               readOnly
               type="text"
               className={'form-control'}
               value={`${domain?.hostname}${domain?.subpath ?? ''}`}
+              data-cy="host-name-field"
             />
           </div>
         ))}
@@ -44,8 +47,12 @@ const DomainsListEmptyContainer = () => {
       <div className="warning-holder mb-3">
         <SolidIcon name="warning" width="30" />
       </div>
-      <div className="tj-text-md mb-2 font-weight-500">No Domain Linked</div>
-      <div className="tj-text-sm">Please contact ToolJet team to link your domain</div>
+      <div className="tj-text-md mb-2 font-weight-500" data-cy="no-domain-header">
+        No Domain Linked
+      </div>
+      <div className="tj-text-sm" data-cy="no-domain-info-text">
+        Please contact ToolJet team to link your domain
+      </div>
     </div>
   );
 };

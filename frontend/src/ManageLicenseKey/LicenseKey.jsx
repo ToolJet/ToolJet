@@ -65,7 +65,9 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
       {license && (
         <div className="metrics-wrapper">
           <div className="col-md-12">
-            <label className="form-label mt-3">License</label>
+            <label className="form-label mt-3" data-cy="license-label">
+              License
+            </label>
             <div style={{ position: 'relative' }}>
               <Textarea
                 placeholder="Enter license key"
@@ -74,6 +76,7 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
                 value={licenseKey}
                 onChange={(e) => optionChanged(e.target.value)}
                 disabled={loading}
+                data-cy="license-text-area"
               />
             </div>
           </div>
@@ -84,6 +87,7 @@ const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
             variant="primary"
             fill="#fff"
             className="mt-3"
+            data-cy="update-button"
           >
             Update
           </ButtonSolid>

@@ -22,6 +22,8 @@ const LicenseTooltip = ({
     LDAP: 'ldap',
     SAML: 'saml',
     'Multi-environments': 'multiEnvironment',
+    'Import from git': 'gitSync',
+    GitSync: 'gitSync',
   };
 
   const generateMessage = () => {

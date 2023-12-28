@@ -13,6 +13,12 @@ export function checkIfContentTypeIsURLenc(headers: [] = []) {
   return contentType === 'application/x-www-form-urlencoded';
 }
 
+export function checkIfContentTypeIsMultipartFormData(headers: [] = []) {
+  const objectHeaders = Object.fromEntries(headers);
+  const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
+  return contentType === 'multipart/form-data';
+}
+
 export function sanitizeCustomParams(customArray: any) {
   const params = Object.fromEntries(customArray ?? []);
   Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));

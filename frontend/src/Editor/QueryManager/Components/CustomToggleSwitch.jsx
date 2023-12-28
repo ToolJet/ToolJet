@@ -23,7 +23,7 @@ export const CustomToggleSwitch = ({
           id={action}
           checked={isChecked}
           onClick={() => {
-            if (action === 'bodyToggle') {
+            if (action === 'bodyToggle' || action === 'endPointTrigger') {
               toggleSwitchFunction(!isChecked);
             } else {
               toggleSwitchFunction(action);

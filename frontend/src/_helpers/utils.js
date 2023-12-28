@@ -9,6 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed } from './routes';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
@@ -1067,10 +1068,11 @@ export const defaultAppEnvironments = [
   { name: 'production', isDefault: true, priority: 3 },
 ];
 
-export const executeWorkflow = async (self, workflowId, _blocking = false, params = {}) => {
-  const appId = self?.state?.appId;
-  const resolvedParams = resolveReferences(params, self.state.currentState, {}, {});
-  const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId);
+export const executeWorkflow = async (self, workflowId, _blocking = false, params = {}, appEnvId) => {
+  const { appId } = useAppDataStore.getState();
+  const currentState = getCurrentState();
+  const resolvedParams = resolveReferences(params, currentState, {}, {});
+  const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
   return { data: executionResponse.result };
 };
 

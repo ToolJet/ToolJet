@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { VM } from 'vm2';
+import * as ivm from 'isolated-vm';
 
 const getFunctionWrappedCode = (code, state, isIfCondition) => {
   if (isIfCondition) {
@@ -27,18 +27,21 @@ export function resolveCode(codeContext) {
     error = `Cannot resolve function call ${code}`;
   } else if (isJsCode) {
     try {
-      const vm = new VM({
-        sandbox: {
-          ...state,
-          ...customObjects,
-          ...Object.fromEntries(reservedKeyword.map((keyWord) => [keyWord, null])),
-        },
-        timeout: 100,
+      const globalState = {
+        ...state,
+        ...customObjects,
+        ...Object.fromEntries(reservedKeyword.map((keyWord) => [keyWord, null])),
+      };
+      const codeToExecute = getFunctionWrappedCode(code, globalState, isIfCondition);
+      const isolate = new ivm.Isolate({ memoryLimit: 128 });
+      const context = isolate.createContextSync();
+      Object.entries(globalState).forEach(([key, value]) => {
+        context.global.set(key, new ivm.ExternalCopy(value).copyInto({ release: true }));
       });
-      console.log('code to be evaluated', code);
-      let functionEnvelopedCode = getFunctionWrappedCode(code, state, isIfCondition);
+      const script = isolate.compileScriptSync(codeToExecute);
+      console.log('code to be evaluated', codeToExecute);
 
-      result = vm.run(functionEnvelopedCode);
+      result = script.runSync(context, { release: true, timeout: 100 });
     } catch (err) {
       error = err;
       console.log('eval_error', err);
@@ -61,18 +64,15 @@ export function getDynamicVariables(text) {
   return matchedParams;
 }
 
-//! Only this is enough to resolve variables in nodes
-function resolveVariableReference(object, state) {
+function resolveVariableReference(object, state, addLog) {
   const code = object.replace('{{', '').replace('}}', '');
-
-  if ((object.match(/{{/g) || []).length === 1) {
-    return state[code];
-  }
-
-  return object;
+  // Setting isIfCondition to true so that js query need not be
+  // used in wrapped function
+  const result = resolveCode({ code, state, isIfCondition: true, addLog });
+  return result;
 }
 
-export function getQueryVariables(options, state) {
+export function getQueryVariables(options, state, addLog) {
   const queryVariables = {};
   const optionsType = typeof options;
 
@@ -82,7 +82,7 @@ export function getQueryVariables(options, state) {
       const dynamicVariables = getDynamicVariables(options) || [];
 
       dynamicVariables.forEach((variable) => {
-        queryVariables[variable] = resolveVariableReference(variable, state);
+        queryVariables[variable] = resolveVariableReference(variable, state, addLog);
       });
       break;
     }
@@ -90,11 +90,11 @@ export function getQueryVariables(options, state) {
     case 'object': {
       if (Array.isArray(options)) {
         options.forEach((element) => {
-          _.merge(queryVariables, getQueryVariables(element, state));
+          _.merge(queryVariables, getQueryVariables(element, state, addLog));
         });
       } else {
         Object.keys(options || {}).forEach((key) => {
-          _.merge(queryVariables, getQueryVariables(options[key], state));
+          _.merge(queryVariables, getQueryVariables(options[key], state, addLog));
         });
       }
       break;

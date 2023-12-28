@@ -155,6 +155,7 @@ export default function AppCard({
                   darkMode={darkMode}
                   currentFolder={currentFolder}
                   appType={appType}
+                  appCreationMode={app?.creation_mode || app?.creationMode}
                 />
               )}
             </div>

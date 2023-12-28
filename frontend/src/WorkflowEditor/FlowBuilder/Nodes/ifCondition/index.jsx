@@ -19,6 +19,7 @@ function IfConditionNode() {
         isValidConnection={(connection) => connection.source === 'some-id'}
         onConnect={(params) => console.log('handle onConnect', params)}
         className="node-handle"
+        isConnectable={true}
       />
       <Handle
         id="true"

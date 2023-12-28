@@ -7,7 +7,7 @@ export const datePickerText = {
   },
 
   datepicker1: "datepicker1",
-  labelDefaultValue: "Default Value",
+  labelDefaultValue: "Default value",
   labelformat: "Format",
   labelEnableDateSection: "Enable date selection?",
   labelEnableTimeSection: "Enable time selection?",

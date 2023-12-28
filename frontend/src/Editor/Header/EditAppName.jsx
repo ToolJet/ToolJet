@@ -5,7 +5,7 @@ import { handleHttpErrorMessages, validateName } from '@/_helpers/utils';
 import InfoOrErrorBox from './InfoOrErrorBox';
 import { toast } from 'react-hot-toast';
 
-function EditAppName({ appId, appName = '', onNameChanged }) {
+function EditAppName({ appId, appName = '', onNameChanged, appCreationMode }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [name, setName] = useState(appName);
   const [isValid, setIsValid] = useState(true);
@@ -92,7 +92,7 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
 
   return (
     <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
-      <ToolTip message={name} placement="bottom" isVisible={!isEditing}>
+      <ToolTip message={name} placement="bottom" isVisible={!isEditing && appCreationMode !== 'GIT'}>
         <input
           ref={inputRef}
           type="text"
@@ -116,6 +116,7 @@ function EditAppName({ appId, appName = '', onNameChanged }) {
           value={name}
           maxLength={50}
           data-cy="app-name-input"
+          disabled={appCreationMode === 'GIT'}
         />
       </ToolTip>
       <InfoOrErrorBox

@@ -368,17 +368,25 @@ class ManageAppUsersComponent extends React.Component {
                       </span>
                     </div>
                     {newSlug?.error ? (
-                      <label className="label tj-input-error">{newSlug?.error || ''}</label>
+                      <label className="label tj-input-error" data-cy="app-slug-error-label">
+                        {newSlug?.error || ''}
+                      </label>
                     ) : isSlugUpdated ? (
-                      <label className="label label-success">{`Slug accepted!`}</label>
+                      <label
+                        className="label label-success"
+                        data-cy="app-slug-accepted-label"
+                      >{`Slug accepted!`}</label>
                     ) : (
-                      <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
+                      <label
+                        className="label label-info"
+                        data-cy="app-slug-info-label"
+                      >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
                     )}
                   </div>
                   {this?.props?.isPublic && window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true' && (
                     <div className="tj-app-input">
                       <label className="field-name" data-cy="iframe-link-label">
-                        {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
+                        {this.props.t('editor.shareModal.embeddableLink', 'Embedded app link')}
                       </label>
                       <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
                         <span data-cy="iframe-link">{embeddableLink}</span>

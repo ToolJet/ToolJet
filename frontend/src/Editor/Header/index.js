@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AppLogo from '@/_components/AppLogo';
 import EditAppName from './EditAppName';
@@ -15,8 +15,9 @@ import cx from 'classnames';
 import { useAppVersionState, useAppVersionStore } from '@/_stores/appVersionStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
-import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { LicenseTooltip } from '@/LicenseTooltip';
+import { useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 import UpdatePresence from './UpdatePresence';
 import { redirectToDashboard } from '@/_helpers/utils';
 import { useEditorActions, useEditorState } from '@/_stores/editorStore';
@@ -36,12 +37,14 @@ export default function EditorHeader({
   saveEditingVersion,
   onVersionDelete,
   slug,
+  toggleGitSyncModal,
   darkMode,
   setCurrentAppVersionPromoted,
   fetchEnvironments,
+  isEditorFreezed,
 }) {
   const currentUser = useCurrentUser();
-  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, environments } = useAppInfo();
+  const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, environments, creationMode } = useAppInfo();
   const { featureAccess, currentAppEnvironment, currentAppEnvironmentId } = useEditorState();
   const { currentAppVersionEnvironment } = useAppVersionState();
   const { setCurrentAppEnvironmentId } = useEditorActions();
@@ -65,7 +68,6 @@ export default function EditorHeader({
     // Force a reload for clearing interval triggers
     redirectToDashboard();
   };
-
   const handlePromote = () => {
     const curentEnvIndex = environments.findIndex((env) => env.id === currentAppEnvironmentId);
 
@@ -74,7 +76,6 @@ export default function EditorHeader({
       target: environments[curentEnvIndex + 1],
     });
   };
-
   // a flag to disable the release button if the current environment is not production
   const shouldDisablePromote = isSaving || currentAppEnvironment.priority < currentAppVersionEnvironment.priority;
 
@@ -119,7 +120,12 @@ export default function EditorHeader({
                 }}
               >
                 <div className="global-settings-app-wrapper p-0 m-0 ">
-                  <EditAppName appId={appId} appName={appName} onNameChanged={onNameChanged} />
+                  <EditAppName
+                    appId={appId}
+                    appName={appName}
+                    onNameChanged={onNameChanged}
+                    appCreationMode={creationMode}
+                  />
                 </div>
                 <HeaderActions canUndo={canUndo} canRedo={canRedo} handleUndo={handleUndo} handleRedo={handleRedo} />
                 <div className="d-flex align-items-center">
@@ -179,8 +185,37 @@ export default function EditorHeader({
                       currentEnvironment={currentAppEnvironment}
                       setCurrentEnvironment={setCurrentAppEnvironmentId}
                       isPublic={isPublic ?? false}
+                      appCreationMode={creationMode}
                     />
                   )}
+                </div>
+                <div
+                  onClick={
+                    featureAccess?.gitSync &&
+                    currentAppEnvironment?.priority === 1 &&
+                    (creationMode === 'GIT' || !isEditorFreezed) &&
+                    toggleGitSyncModal
+                  }
+                  className={
+                    featureAccess?.gitSync &&
+                    currentAppEnvironment?.priority === 1 &&
+                    (creationMode === 'GIT' || !isEditorFreezed)
+                      ? 'git-sync-btn'
+                      : 'git-sync-btn disabled-action-tooltip'
+                  }
+                >
+                  <LicenseTooltip feature={'GitSync'} limits={featureAccess} placement="bottom">
+                    <ToolTip
+                      message={`${
+                        currentAppEnvironment?.priority !== 1 &&
+                        'GitSync can only be performed in development environment'
+                      }`}
+                      show={featureAccess?.gitSync}
+                      placement="bottom"
+                    >
+                      <SolidIcon name="gitsync" />
+                    </ToolTip>
+                  </LicenseTooltip>
                 </div>
               </div>
             </div>

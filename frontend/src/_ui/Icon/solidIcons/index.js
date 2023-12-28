@@ -30,6 +30,7 @@ import Computer from './Computer.jsx';
 import Copy from './Copy.jsx';
 import DarkMode from './DarkMode.jsx';
 import Datasource from './Datasource.jsx';
+import Delete from './Delete.jsx';
 import Diamond from './Diamond.jsx';
 import DownArrow from './DownArrow.jsx';
 import EditRectangle from './EditRectangle.jsx';
@@ -45,6 +46,7 @@ import FloppyDisk from './FloppyDisk.jsx';
 import Folder from './Folder.jsx';
 import FolderDownload from './FolderDownload.jsx';
 import FolderUpload from './FolderUpload.jsx';
+import GitSync from './GitSync.jsx';
 import FullOuterJoin from './FullOuterJoin.jsx';
 import Globe from './Globe.jsx';
 import Grid from './Grid.jsx';
@@ -73,6 +75,7 @@ import NotificationRinging from './NotificationRinging.jsx';
 import NotificationSide from './NotificationSide.jsx';
 import NotificationSilent from './NotificationSilent.jsx';
 import NotificationUnread from './NotificationUnread.jsx';
+import Open from './Open.jsx';
 import Page from './Page.jsx';
 import PageAdd from './PageAdd.jsx';
 import Pin from './Pin.jsx';
@@ -82,6 +85,7 @@ import Play from './Play.jsx';
 import Plus from './Plus.jsx';
 import Plus01 from './Plus01.jsx';
 import Reload from './Reload.jsx';
+import Read from './Read.jsx';
 import ReloadError from './ReloadError.jsx';
 import Remove from './Remove.jsx';
 import Remove01 from './Remove01.jsx';
@@ -106,6 +110,7 @@ import SortArrowDown from './SortArrowDown.jsx';
 import SortArrowUp from './SortArrowUp.jsx';
 import Subtract from './Subtract.jsx';
 import Sun from './Sun.jsx';
+import Sync from './SyncIcon.jsx';
 import Table from './Table.jsx';
 import Tick from './Tick.jsx';
 import Trash from './Trash.jsx';
@@ -227,6 +232,8 @@ const Icon = (props) => {
       return <DarkMode {...props} />;
     case 'datasource':
       return <Datasource {...props} />;
+    case 'delete':
+      return <Delete {...props} />;
     case 'diamond':
       return <Diamond {...props} />;
     case 'downarrow':
@@ -263,6 +270,8 @@ const Icon = (props) => {
       return <FolderDownload {...props} />;
     case 'folderupload':
       return <FolderUpload {...props} />;
+    case 'gitsync':
+      return <GitSync {...props} />;
     case 'fullouterjoin':
       return <FullOuterJoin {...props} />;
     case 'globe':
@@ -329,6 +338,8 @@ const Icon = (props) => {
       return <NotificationSilent {...props} />;
     case 'notificationunread':
       return <NotificationUnread {...props} />;
+    case 'open':
+      return <Open {...props} />;
     case 'page':
       return <Page {...props} />;
     case 'pageAdd':
@@ -347,6 +358,8 @@ const Icon = (props) => {
       return <PlusRectangle {...props} />;
     case 'reload':
       return <Reload {...props} />;
+    case 'read':
+      return <Read {...props} />;
     case 'reloaderror':
       return <ReloadError {...props} />;
     case 'remove':
@@ -397,6 +410,8 @@ const Icon = (props) => {
       return <Subtract {...props} />;
     case 'sun':
       return <Sun {...props} />;
+    case 'sync':
+      return <Sync {...props} />;
     case 'table':
       return <Table {...props} />;
     case 'tick':

@@ -27,4 +27,8 @@ export class CreateWorkflowExecutionDto {
   @IsString()
   @IsOptional()
   app?: string;
+
+  @IsString()
+  @IsOptional()
+  appEnvId?: string;
 }
