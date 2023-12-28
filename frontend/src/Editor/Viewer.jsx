@@ -599,7 +599,7 @@ class ViewerComponent extends React.Component {
             key={queryConfirmationList[0]?.queryName}
           />
           <DndProvider backend={HTML5Backend}>
-            <ViewerNavigation.Header
+            {/* <ViewerNavigation.Header
               showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
               appName={this.state.app?.name ?? null}
               changeDarkMode={this.changeDarkMode}
@@ -609,7 +609,7 @@ class ViewerComponent extends React.Component {
               switchPage={this.switchPage}
               setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
               showViewerNavigation={appDefinition?.showViewerNavigation}
-            />
+            /> */}
             <div className="sub-section">
               <div className="main">
                 <div
@@ -629,7 +629,10 @@ class ViewerComponent extends React.Component {
                         darkMode={this.props.darkMode}
                       />
                     )}
-                    <div className="flex-grow-1 d-flex justify-content-center">
+                    <div
+                      className="flex-grow-1 d-flex justify-content-center"
+                      style={{ backgroundColor: this.props.currentLayout === 'mobile' ? 'red' : 'unset' }}
+                    >
                       <div
                         className="canvas-area"
                         style={{
@@ -640,6 +643,17 @@ class ViewerComponent extends React.Component {
                           padding: 0,
                         }}
                       >
+                        <ViewerNavigation.Header
+                          showHeader={!appDefinition.globalSettings?.hideHeader && isAppLoaded}
+                          appName={this.state.app?.name ?? null}
+                          changeDarkMode={this.changeDarkMode}
+                          darkMode={this.props.darkMode}
+                          pages={Object.entries(this.state.appDefinition?.pages) ?? []}
+                          currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
+                          switchPage={this.switchPage}
+                          setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
+                          showViewerNavigation={appDefinition?.showViewerNavigation}
+                        />
                         {defaultComponentStateComputed && (
                           <>
                             {isLoading ? (

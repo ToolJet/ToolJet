@@ -57,7 +57,6 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, showToggleLay
               tabIndex="-1"
               onClick={() => {
                 toggleCurrentLayout('mobile');
-                window.devtools.open('responsive');
               }}
               data-cy={`button-change-layout-to-mobile`}
             >

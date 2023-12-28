@@ -101,7 +101,7 @@ const PreviewSettings = ({ isMobileLayout, onAppEnvironmentChanged, setAppDefini
             <Offcanvas.Title>Preview settings</Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
-            <span>
+            {/* <span>
               {editingVersion && (
                 <AppVersionsManager
                   appId={appId}
@@ -118,7 +118,7 @@ const PreviewSettings = ({ isMobileLayout, onAppEnvironmentChanged, setAppDefini
                   isEditable={false}
                 />
               )}
-            </span>
+            </span> */}
           </Offcanvas.Body>
         </Navbar.Offcanvas>
       </Navbar>
