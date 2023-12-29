@@ -2,7 +2,7 @@ import React from 'react';
 import _ from 'lodash';
 import SelectSearch from 'react-select-search';
 import { resolveReferences, validateWidget, determineJustifyContentValue } from '@/_helpers/utils';
-import { CustomSelect } from '../CustomSelect';
+import { CustomDropdown } from '../CustomDropdown';
 import { Tags } from '../Tags';
 import { Radio } from '../Radio';
 import { Toggle } from '../Toggle';
@@ -368,7 +368,7 @@ export default function generateColumnsData({
                   horizontalAlignment
                 )}`}
               >
-                <CustomSelect
+                <CustomDropdown
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   multiple={columnType === 'badges'}
