@@ -15,24 +15,25 @@ const LegalReasonsErrorModal = ({
   showFooter = true,
   toggleModal,
 }) => {
-  const [showModal, setShowModal] = useState(propShowModal);
+  const [isOpen, setShowModal] = useState(propShowModal);
   const currentUser = authenticationService.currentSessionValue;
+  const handleClose = () => {
+    setShowModal(false);
+    toggleModal && toggleModal();
+    document.querySelector('.legal-reason-backdrop').remove();
+  };
 
   useEffect(() => {
     setShowModal(propShowModal);
   }, [propShowModal]);
 
-  const handleClose = () => {
-    setShowModal(false);
-    toggleModal && toggleModal();
-  };
-
   const modalContent = (
     <>
       <Modal
         id="legal-reason-modal"
-        show={showModal}
-        onHide={handleClose}
+        show={isOpen}
+        onHide={toggleModal ?? handleClose}
+        backdropClassName="legal-reason-backdrop"
         size="sm"
         centered={true}
         contentClassName={`${darkMode ? 'theme-dark dark-theme license-error-modal' : 'license-error-modal'}`}
