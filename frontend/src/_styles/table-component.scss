@@ -648,6 +648,10 @@
         border: 1px solid var(--slate8);
         background-color: var(--slate4);
       }
+      &:has(.invalid-feedback):hover{
+        border: 1px solid var(--tomato10);
+
+      }
       &:focus-within{
         border: 1px solid var(--indigo9);
         background-color: var(--indigo1) !important; 
