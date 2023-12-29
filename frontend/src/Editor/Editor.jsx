@@ -842,7 +842,7 @@ const EditorComponent = (props) => {
     }
   };
 
-  const setAppDefinitionFromVersion = (appData) => {
+  const setAppDefinitionFromVersion = (appData, isEnvironmentSwitched = false, selectedEnvironmentId = null) => {
     const version = appData?.editing_version?.id;
     if (version?.id !== editingVersionId) {
       if (version?.id === currentVersionId) {
@@ -856,7 +856,7 @@ const EditorComponent = (props) => {
       });
       onEditorFreeze(false);
       setAppVersionPromoted(false);
-      callBack(appData, null, true, false, null);
+      callBack(appData, null, true, isEnvironmentSwitched, selectedEnvironmentId);
       initComponentVersioning();
     }
   };

@@ -94,7 +94,7 @@ export const AppVersionsManager = function ({
     return appVersionService
       .getAppVersionData(appId, id)
       .then((data) => {
-        setAppDefinitionFromVersion(data, true, shouldFreezeEditor(data.currentEnvironmentId));
+        setAppDefinitionFromVersion(data, true, currentEnvironment?.id);
       })
       .catch((error) => {
         toast.error(error);
