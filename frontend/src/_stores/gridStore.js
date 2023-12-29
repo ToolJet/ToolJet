@@ -6,6 +6,8 @@ const initialState = {
   activeGrid: null,
   noOfGrid: 43,
   draggedSubContainer: false,
+  resizingComponentId: null,
+  draggingComponentId: null,
 };
 
 export const useGridStore = create(
@@ -16,6 +18,8 @@ export const useGridStore = create(
         setActiveGrid: (gridId) => set({ activeGrid: gridId }),
         setNoOfGrid: (noOfGrid) => set({ noOfGrid }),
         setDraggedSubContainer: (draggedSubContainer) => set({ draggedSubContainer }),
+        setResizingComponentId: (id) => set({ resizingComponentId: id }),
+        setDraggingComponentId: (id) => set({ draggingComponentId: id }),
       },
     }),
     { name: 'Grid Store' }
