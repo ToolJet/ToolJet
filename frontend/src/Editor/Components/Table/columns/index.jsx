@@ -9,6 +9,7 @@ import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
 import { Link } from '../Link';
 import moment from 'moment';
+import { CustomSelect } from '../CustomSelect';
 
 export default function generateColumnsData({
   columnProperties,
@@ -52,6 +53,18 @@ export default function generateColumnsData({
         columnOptions.selectOptions = labels.map((label, index) => {
           return { name: label, value: values[index] };
         });
+      }
+    }
+    if (columnType === 'select') {
+      columnOptions.selectOptions = [];
+      const useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
+      if (useDynamicOptions) {
+        columnOptions.selectOptions = resolveReferences(column?.dynamicOptions || [], currentState);
+      } else {
+        columnOptions.selectOptions = column?.options ?? [
+          { name: 'manish', value: 'manish' },
+          { name: 'arpit', value: 'arpit' },
+        ];
       }
     }
     if (columnType === 'datepicker') {
@@ -300,7 +313,8 @@ export default function generateColumnsData({
               ></textarea>
             );
           }
-          case 'dropdown': {
+          case 'dropdown':
+          case 'select': {
             const validationData = validateWidget({
               validationObject: {
                 regex: {
@@ -324,20 +338,41 @@ export default function generateColumnsData({
             const { isValid, validationError } = validationData;
 
             return (
-              <div className="h-100 d-flex align-items-center">
-                <SelectSearch
-                  options={columnOptions.selectOptions}
-                  value={cellValue}
-                  search={true}
-                  onChange={(value) => {
-                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
-                  }}
-                  fuzzySearch
-                  placeholder={t('globals.select', 'Select') + '...'}
-                  disabled={!isEditable}
-                  className="select-search"
-                />
-                <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
+              <div
+                className="h-100 d-flex align-items-center flex-column justify-content-center"
+                styles={{ flex: '1 1 0' }}
+              >
+                {columnType === 'dropdown' && (
+                  <SelectSearch
+                    options={columnOptions.selectOptions}
+                    value={cellValue}
+                    search={true}
+                    onChange={(value) => {
+                      handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    }}
+                    fuzzySearch
+                    placeholder={t('globals.select', 'Select') + '...'}
+                    disabled={!isEditable}
+                    className="select-search"
+                  />
+                )}
+                {columnType === 'select' && (
+                  <CustomSelect
+                    options={columnOptions.selectOptions}
+                    value={cellValue}
+                    search={true}
+                    onChange={(value) => {
+                      handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
+                    }}
+                    fuzzySearch
+                    placeholder={t('globals.select', 'Select') + '...'}
+                    disabled={!isEditable}
+                    className="select-search table-select-search"
+                    styles={{ background: 'inherit', border: 'none' }}
+                    darkMode={darkMode}
+                  />
+                )}
+                <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
               </div>
             );
           }
