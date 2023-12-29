@@ -126,6 +126,7 @@ const TableForm = ({
                   setTableName(e.target.value);
                 }}
                 autoFocus
+                onKeyPress={handleKeyPress}
               />
             </div>
           </div>
@@ -138,7 +139,6 @@ const TableForm = ({
         onClose={onClose}
         onEdit={handleEdit}
         onCreate={handleCreate}
-        onKeyPress={handleKeyPress}
       />
     </div>
   );
