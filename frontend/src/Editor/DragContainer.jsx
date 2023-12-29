@@ -101,7 +101,7 @@ export default function DragContainer({
 
   const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
   const [count, setCount] = useState(0);
-  const { setActiveGrid } = useGridStoreActions();
+  const { setActiveGrid, setResizingComponentId, setDraggingComponentId } = useGridStoreActions();
 
   useEffect(() => {
     if (!moveableRef.current) {
@@ -298,6 +298,7 @@ export default function DragContainer({
               }}
               onResizeEnd={(e) => {
                 try {
+                  setResizingComponentId(null);
                   setIsResizing(false);
                   console.log('onResizeEnd>>>>>>>>>>>>>>', e);
                   // const width = Math.round(e.lastEvent.width / gridWidth) * gridWidth;
@@ -355,6 +356,7 @@ export default function DragContainer({
                 }
               }}
               onResizeStart={(e) => {
+                setResizingComponentId(e.target.id);
                 setIsResizing(true);
                 e.setMin([gridWidth, 10]);
                 if (currentLayout === 'mobile' && autoComputeLayout) {
@@ -405,6 +407,7 @@ export default function DragContainer({
               onDragEnd={(e) => {
                 try {
                   if (isDraggingRef.current) {
+                    setDraggingComponentId(null);
                     isDraggingRef.current = false;
                     setIsDragging(false);
                   }
@@ -463,6 +466,7 @@ export default function DragContainer({
               }}
               onDrag={(e) => {
                 if (!isDraggingRef.current) {
+                  setDraggingComponentId(e.target.id);
                   isDraggingRef.current = true;
                   setIsDragging(true);
                 }
@@ -601,12 +605,20 @@ export default function DragContainer({
                       setDraggedSubContainer(draggedSubContainer ? draggedSubContainer : i.parent);
                     }}
                     onDrag={(e) => {
+                      if (!isDraggingRef.current) {
+                        setDraggingComponentId(e.target.id);
+                        isDraggingRef.current = true;
+                      }
                       console.log('Ondrag subcontainer', draggedSubContainer);
                       if (draggedSubContainer === i.parent) {
                         e.target.style.transform = e.transform;
                       }
                     }}
                     onDragEnd={(e) => {
+                      if (isDraggingRef.current) {
+                        setDraggingComponentId(null);
+                        isDraggingRef.current = false;
+                      }
                       if (draggedSubContainer !== i.parent) {
                         setDraggedSubContainer(false);
                         return;
@@ -668,6 +680,7 @@ export default function DragContainer({
                       });
                     }}
                     onResizeStart={(e) => {
+                      setResizingComponentId(e.target.id);
                       setActiveGrid(i.parent);
                       e.setMin([gridWidth, 10]);
                       if (currentLayout === 'mobile' && autoComputeLayout) {
@@ -699,6 +712,7 @@ export default function DragContainer({
                       e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
                     }}
                     onResizeEnd={(e) => {
+                      setResizingComponentId(null);
                       setActiveGrid(null);
                       try {
                         const gridWidth = subContainerWidths[i.parent];
