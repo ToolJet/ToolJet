@@ -1,5 +1,5 @@
 import React from 'react';
-const CheveronLeftDouble = ({ fill = '#C1C8CD', width = '24', className = 'manish', viewBox = '0 0 24 24' }) => (
+const CheveronLeftDouble = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0 24 24' }) => (
   <svg
     className={className}
     width={width}
