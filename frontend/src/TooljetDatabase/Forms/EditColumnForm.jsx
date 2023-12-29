@@ -14,6 +14,7 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
   const [fetching, setFetching] = useState(false);
+  const [isNotNull, setIsNotNull] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
 
@@ -24,14 +25,20 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   };
 
   const handleCreate = async () => {
-    if (isEmpty(columnName)) {
-      toast.error('Column name cannot be empty');
-      return;
-    }
-    if (isEmpty(dataType)) {
-      toast.error('Data type cannot be empty');
-      return;
-    }
+    //const colDetails = defaultValue?.length > 0 ? defaultValue : columnName !== selectedColumn?.Header ? columnName ;
+    const colDetails = {
+      column: {
+        column_name: selectedColumn?.Header,
+        data_type: selectedColumn?.dataType,
+        ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
+        ...(defaultValue?.length > 0 ? { column_default: defaultValue } : {}),
+        constraints_type: {
+          is_not_null: isNotNull,
+        },
+      },
+    };
+
+    console.log('first', colDetails);
   };
 
   const CustomStyle = {
@@ -70,7 +77,7 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   //     return;
   //   }
   //   setFetching(true);
-  //   const { error } = await tooljetDatabaseService.createColumn(
+  //   const { error } = await tooljetDatabaseService.updateColumn(
   //     organizationId,
   //     selectedTable.table_name,
   //     columnName,
@@ -138,6 +145,26 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}
           />
+        </div>
+        <div className="row mb-3">
+          <div className="col-1">
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={isNotNull}
+                onChange={(e) => {
+                  setIsNotNull(e.target.checked);
+                }}
+              />
+            </label>
+          </div>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
+            <p className="fw-400 secondary-text">
+              {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
+            </p>
+          </div>
         </div>
       </div>
       <DrawerFooter fetching={fetching} onClose={onClose} onCreate={handleCreate} />

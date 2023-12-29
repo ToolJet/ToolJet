@@ -72,9 +72,10 @@ export default function JoinSort({ darkMode }) {
         joinOrderByOptions.map((options, i) => {
           const tableDetails = options?.table ? findTableDetails(options?.table) : '';
           return (
-            <Row className="border rounded mb-2 mx-0" key={i}>
-              <Col sm="6" className="p-0 border-end">
+            <Row className="mb-2 mx-0" key={i}>
+              <Col sm="6" className="p-0">
                 <DropDownSelect
+                  buttonClasses="border border-end-0 rounded-start"
                   showPlaceHolder
                   options={tableList}
                   darkMode={darkMode}
@@ -102,8 +103,9 @@ export default function JoinSort({ darkMode }) {
                 />
               </Col>
               <Col sm="6" className="p-0 d-flex">
-                <div className="flex-grow-1 border-end">
+                <div className="flex-grow-1 overflow-hidden">
                   <DropDownSelect
+                    buttonClasses="border border-end-0"
                     showPlaceHolder
                     options={sortbyConstants}
                     darkMode={darkMode}
@@ -126,7 +128,10 @@ export default function JoinSort({ darkMode }) {
                 <ButtonSolid
                   size="sm"
                   variant="ghostBlack"
-                  className="px-1 rounded-0"
+                  className="px-1 rounded-0 border rounded-end"
+                  customStyles={{
+                    height: '30px',
+                  }}
                   onClick={() => setJoinOrderByOptions(joinOrderByOptions.filter((opt, idx) => idx !== i))}
                 >
                   <Trash fill="var(--slate9)" style={{ height: '16px' }} />
@@ -137,7 +142,7 @@ export default function JoinSort({ darkMode }) {
         })
       )}
       {/* Dynamically render below Row */}
-      <Row className="mx-0">
+      <Row className="mx-1 mb-1">
         <Col className="p-0">
           <ButtonSolid variant="ghostBlue" size="sm" onClick={() => setJoinOrderByOptions([...joinOrderByOptions, {}])}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />

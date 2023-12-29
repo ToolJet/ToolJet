@@ -479,6 +479,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                           cell.column.id === 'selection'
                             ? `${cell.row.values?.id}-checkbox`
                             : `id-${cell.row.values?.id}-column-${cell.column.id}`;
+                        const cellValue = cell.value === null ? '' : cell.value;
                         return (
                           <td
                             key={`cell.value-${index}`}

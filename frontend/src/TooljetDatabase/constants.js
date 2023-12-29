@@ -24,11 +24,9 @@ export const operators = [
   { value: 'is', label: 'is' },
 ];
 
-export const formatOptionLabel = ({ label, icon }) => {
-  return (
-    <div>
-      <span style={{ marginRight: '4px' }}>{icon}</span>
-      {label}
-    </div>
-  );
-};
+export const formatOptionLabel = ({ label, icon }) => (
+  <div>
+    <span style={{ marginRight: '4px' }}>{icon}</span>
+    {label}
+  </div>
+);

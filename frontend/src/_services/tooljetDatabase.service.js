@@ -60,6 +60,10 @@ function updateRows(headers, tableId, data, query = '') {
   return tooljetAdapter.patch(`/tooljet-db/proxy/${tableId}?${query}`, data, headers);
 }
 
+// function updateColumn(organizationId, tableName, columns) {
+//   return tooljetAdapter.patch(`/organizations/${organizationId}/table/${tableName}/column`, columns, organizationId);
+// }
+
 function deleteRows(headers, tableId, query = '') {
   return tooljetAdapter.delete(`/tooljet-db/proxy/${tableId}?${query}`, headers);
 }
