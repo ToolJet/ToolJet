@@ -8,7 +8,7 @@ import { dataTypes, primaryKeydataTypes, formatOptionLabel } from '../constants'
 import Tick from '../Icons/Tick.svg';
 
 const ColumnsForm = ({ columns, setColumns }) => {
-  const [columnIndex, setColumnIndex] = useState({ index: 0, value: '' });
+  const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
 
   const handleDelete = (index) => {
     const newColumns = { ...columns };
@@ -28,7 +28,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
           <span className="dataType-dropdown-value">{props.data.name}</span>
         </div>
         <div>
-          {columns[columnIndex.index].data_type === props.data.label ? (
+          {columns[columnSelection.index].data_type === props.data.label ? (
             <div>
               <Tick width="16" height="16" />
             </div>
@@ -88,6 +88,10 @@ const ColumnsForm = ({ columns, setColumns }) => {
       width: '360px',
       background: darkMode ? 'rgb(31,40,55)' : 'white',
       //borderColor: darkMode ? '#4c5155 !important' : '#c1c8cd !important',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: darkMode ? '#fff' : '#232e3c',
     }),
   };
 
@@ -150,7 +154,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   //useMenuPortal={false}
                   options={columns[index].constraint_type === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
                   onChange={(value) => {
-                    setColumnIndex((prevState) => ({
+                    setColumnSelection((prevState) => ({
                       ...prevState,
                       index: index,
                       value: value.value,
@@ -200,7 +204,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
         <div
           onClick={() => {
             setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
-              setColumnIndex({ index: 0, value: '' });
+              setColumnSelection({ index: 0, value: '' });
           }}
           className="mt-2 btn border-0 card-footer add-more-columns-btn"
           data-cy="add-more-columns-button"

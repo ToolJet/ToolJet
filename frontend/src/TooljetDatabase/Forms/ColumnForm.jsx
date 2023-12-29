@@ -87,6 +87,10 @@ const ColumnForm = ({ onCreate, onClose }) => {
       background: darkMode ? 'rgb(31,40,55)' : 'white',
       borderColor: darkMode ? '#4c5155' : '#c1c8cd',
     }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: darkMode ? '#fff' : '#232e3c',
+    }),
   };
 
   useEffect(() => {

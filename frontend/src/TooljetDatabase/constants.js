@@ -4,7 +4,6 @@ import Float from './Icons/Float.svg';
 import Integer from './Icons/Integer.svg';
 import CharacterVar from './Icons/Text.svg';
 import Boolean from './Icons/Toggle.svg';
-const darkMode = localStorage.getItem('darkMode');
 
 export const dataTypes = [
   {
@@ -37,11 +36,10 @@ export const operators = [
 ];
 
 export const formatOptionLabel = ({ label, icon }) => {
-  const color = darkMode === 'true' ? '#fff' : '#232e3c';
   return (
     <div>
       <span style={{ marginRight: '4px' }}>{icon}</span>
-      <span style={{ color: `${color}` }}>{label}</span>
+      <span>{label}</span>
     </div>
   );
 };
