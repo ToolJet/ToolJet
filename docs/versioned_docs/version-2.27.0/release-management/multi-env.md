@@ -3,7 +3,9 @@ id: multi-environment
 title: Multi-Environment
 ---
 
+<a href="https://www.tooljet.com/pricing">
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+</a>
 
 ToolJet's **multi-environment** helps in streamlining workflows, thereby minimizing the chances of errors, and enables effective application management. Using multi-environment ensures that your ToolJet application is rigorously tested before it is made available to users.
 
@@ -59,7 +61,8 @@ To configure connection settings for different environments, follow these steps:
  </div>
 
 2. Once the development of a particular app version is complete, it can be promoted to the **Staging** environment. To promote the app from development to staging, click the **Promote>>** button located at the top-right of the app builder.
- - When you click the Promote button, a confirmation modal will appear. Click **Promote>>** to move the app version to the Staging environment.
+
+- When you click the Promote button, a confirmation modal will appear. Click **Promote>>** to move the app version to the Staging environment.
 
  <div style={{textAlign: 'center'}}>
 
@@ -67,8 +70,8 @@ To configure connection settings for different environments, follow these steps:
 
  </div>
 
- - Please note that once versions are promoted from Development, they cannot be edited. To make changes to the promoted versions, you need to switch back to the Development environment and create a new version.
- 
+- Please note that once versions are promoted from Development, they cannot be edited. To make changes to the promoted versions, you need to switch back to the Development environment and create a new version.
+
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/v2-beta/multi-env/noeditstag.png" alt="Multi-Environment" />
@@ -76,7 +79,8 @@ To configure connection settings for different environments, follow these steps:
  </div>
 
 3. In the Staging environment, the selected app version can undergo testing and reviews.
- - If **changes are required** for the version in staging, switch to the **Development** environment using the dropdown on the top bar. Since the version has already been promoted to Staging, you cannot directly edit it. Instead, create a new version from the selected version and make the desired changes to the newly created version.
+
+- If **changes are required** for the version in staging, switch to the **Development** environment using the dropdown on the top bar. Since the version has already been promoted to Staging, you cannot directly edit it. Instead, create a new version from the selected version and make the desired changes to the newly created version.
 
  <div style={{textAlign: 'center'}}>
 
@@ -84,13 +88,13 @@ To configure connection settings for different environments, follow these steps:
 
  </div>
 
- - After making changes in the new version, the app builder will automatically save the changes and enable the **Promote** button. You can then promote the new version to the Staging environment for further testing and reviews.
- :::info
- Please note that Development, Staging, and Production environments can contain any number of versions.
- :::
+- After making changes in the new version, the app builder will automatically save the changes and enable the **Promote** button. You can then promote the new version to the Staging environment for further testing and reviews.
+  :::info
+  Please note that Development, Staging, and Production environments can contain any number of versions.
+  :::
 
 4. Once the version in the Staging environment has been thoroughly tested and reviewed and **no further changes are required**, it can be promoted to the **Production** environment. Simply click the **Promote>>** button located at the top-right to move the app from the Staging environment to the Production environment.
- 
+
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/v2-beta/multi-env/promprod.png" alt="Multi-Environment" />
@@ -105,8 +109,8 @@ To configure connection settings for different environments, follow these steps:
 
  </div>
 
- :::info
- Please note that only one version of the app can be released at a time.
- :::
+:::info
+Please note that only one version of the app can be released at a time.
+:::
 
 ToolJet's app builder remembers your last editing state. When you reopen an app, it resumes from where you left off, ensuring a seamless experience. For instance, if you edited an app in the staging environment, it will open in the staging environment when you return.
