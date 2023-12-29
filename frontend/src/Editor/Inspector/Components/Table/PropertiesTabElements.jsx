@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { EventManager } from '../../EventManager';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
+import { OptionsList } from './SelectOptionsList/OptionsList';
 export const PropertiesTabElements = ({
   column,
   index,
@@ -45,6 +46,7 @@ export const PropertiesTabElements = ({
             { name: 'Date Picker', value: 'datepicker' },
             { name: 'Image', value: 'image' },
             { name: 'Boolean', value: 'boolean' },
+            { name: 'Select', value: 'select' },
           ]}
           value={column.columnType}
           search={true}
@@ -148,6 +150,19 @@ export const PropertiesTabElements = ({
             />
           </div>
         </div>
+      )}
+      {column.columnType === 'select' && (
+        <OptionsList
+          column={column}
+          props={props}
+          index={index}
+          darkMode={darkMode}
+          currentState={currentState}
+          getPopoverFieldSource={getPopoverFieldSource}
+          setColumnPopoverRootCloseBlocker={setColumnPopoverRootCloseBlocker}
+          component={component}
+          onColumnItemChange={onColumnItemChange}
+        />
       )}
       {column.columnType === 'datepicker' && (
         <div>

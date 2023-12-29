@@ -24,6 +24,8 @@ export const ProgramaticallyHandleProperties = ({
         return props.columnVisibility;
       case 'linkTarget':
         return props.linkTarget;
+      case 'useDynamicOptions':
+        return props?.useDynamicOptions;
       default:
         return;
     }

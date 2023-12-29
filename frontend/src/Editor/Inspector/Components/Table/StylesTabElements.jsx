@@ -170,7 +170,7 @@ export const StylesTabElements = ({
           </div>
         </div>
       )}
-      {['string', 'default', undefined, 'number', 'boolean'].includes(column.columnType) && (
+      {['string', 'default', undefined, 'number', 'boolean', 'select'].includes(column.columnType) && (
         <div className="field" data-cy={`input-and-label-cell-background-color`}>
           <Color
             param={{ name: 'Cell BG' }}
