@@ -48,10 +48,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
     columnEditPopover: false,
   });
   const [width, setWidth] = useState({ screenWidth: 0, xAxis: 0 });
+  const [wholeScreenWidth, setWholeScreenWidth] = useState(window.innerWidth);
 
   const prevSelectedTableRef = useRef({});
   const columnCreatorElement = useRef();
-  const wholeScreenWidth = window.innerWidth;
+  //const wholeScreenWidth = window.innerWidth;
 
   const fetchTableMetadata = () => {
     if (!isEmpty(selectedTable)) {
@@ -197,12 +198,24 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   }, [setWidth, columnCreatorElement]);
 
   useEffect(() => {
+    const handleResize = () => {
+      setWholeScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
     moveColumnCreateElement();
   }, []);
 
   useEffect(() => {
     moveColumnCreateElement();
-  }, [columHeaderLength]);
+  }, [wholeScreenWidth, columHeaderLength]);
 
   const widthOfScreen = width.screenWidth > 0 ? width.screenWidth : wholeScreenWidth;
 
