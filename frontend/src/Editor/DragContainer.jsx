@@ -394,7 +394,7 @@ export default function DragContainer({
                   return false;
                 }
                 const box = boxes.find((box) => box.id === e.target.id);
-                if (['RangeSlider', 'Container'].includes(box?.component?.component)) {
+                if (['RangeSlider', 'Container', 'BoundedBox'].includes(box?.component?.component)) {
                   const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
                   const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
                   if (!isHandle) {
@@ -593,7 +593,7 @@ export default function DragContainer({
                         return false;
                       }
                       const box = boxes.find((box) => box.id === e.target.id);
-                      if (['RangeSlider', 'Container'].includes(box?.component?.component)) {
+                      if (['RangeSlider', 'Container', 'BoundedBox'].includes(box?.component?.component)) {
                         const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
                         const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
                         if (!isHandle) {
