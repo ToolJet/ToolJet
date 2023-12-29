@@ -79,6 +79,7 @@ export default function DragContainer({
   const moveableRef = useRef();
   const draggedOverElemRef = useRef(null);
   const childMoveableRefs = useRef([]);
+  const isDraggingRef = useRef(false);
   const [movableTargets, setMovableTargets] = useState({});
   const boxList = boxes
     .filter((box) =>
@@ -399,12 +400,14 @@ export default function DragContainer({
                   }
                 }
                 setDraggedTarget(e.target.id);
-                setIsDragging(true);
               }}
               // linePadding={10}
               onDragEnd={(e) => {
                 try {
-                  setIsDragging(false);
+                  if (isDraggingRef.current) {
+                    isDraggingRef.current = false;
+                    setIsDragging(false);
+                  }
                   setDraggedTarget();
                   if (draggedSubContainer) {
                     return;
@@ -459,7 +462,10 @@ export default function DragContainer({
                 }
               }}
               onDrag={(e) => {
-                console.log('On-drag ... => ');
+                if (!isDraggingRef.current) {
+                  isDraggingRef.current = true;
+                  setIsDragging(true);
+                }
                 if (draggedSubContainer) {
                   return;
                 }
