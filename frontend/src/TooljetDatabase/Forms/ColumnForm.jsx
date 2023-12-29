@@ -6,7 +6,7 @@ import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import { dataTypes, formatOptionLabel } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import Tick from '../Icons/Tick.svg';
 import './styles.scss';
 
@@ -18,6 +18,24 @@ const ColumnForm = ({ onCreate, onClose }) => {
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
+
+  const darkDisabledBackground = '#1f2936';
+  const lightDisabledBackground = '#f4f6fa';
+  const lightFocussedBackground = '#f8faff';
+  const darkFocussedBackground = '#15192d';
+  const lightBackground = 'transparent';
+  const darkBackground = 'transparent';
+
+  const darkBorderHover = '#4c5155';
+  const lightBorderHover = '#c1c8cd';
+
+  const darkDisabledBorder = '#3a3f42';
+  const lightDisabledBorder = '#dadcde';
+  const lightFocussedBorder = '#3e63dd !important';
+  const darkFocussedBorder = '#3e63dd !important';
+  const lightBorder = '#dadcde';
+  const darkBorder = '#3a3f42';
+  const dropdownContainerWidth = '100%';
 
   const CustomSelectOption = (props) => (
     <Option {...props}>
@@ -38,60 +56,24 @@ const ColumnForm = ({ onCreate, onClose }) => {
     </Option>
   );
 
-  const CustomStyle = {
-    option: (base, state) => ({
-      ...base,
-      backgroundColor:
-        state.isSelected && !darkMode ? '#F0F4FF' : state.isSelected && darkMode ? '#323C4B' : 'transparent',
-      ':hover': {
-        backgroundColor: state.isFocused && !darkMode ? '#F0F4FF' : '#323C4B',
-      },
-      color: darkMode ? '#fff' : '#232e3c',
-      cursor: 'pointer',
-    }),
-    control: (provided, state) => ({
-      ...provided,
-      background:
-        state.isDisabled && darkMode
-          ? '#1f2936'
-          : state.isDisabled && !darkMode
-          ? '#f4f6fa'
-          : state.isFocused && !darkMode
-          ? '#f8faff'
-          : state.isFocused && darkMode
-          ? '#15192d !important'
-          : 'transparent',
-      borderColor:
-        state.isFocused && !darkMode
-          ? '#3e63dd !important'
-          : state.isFocused && darkMode
-          ? '#3e63dd !important'
-          : darkMode
-          ? '#3a3f42'
-          : '#dadcde',
-      '&:hover': {
-        borderColor: darkMode ? '#4c5155' : '#c1c8cd',
-      },
-      boxShadow: state.isFocused ? 'none' : 'none',
-      height: '36px !important',
-      minHeight: '36px',
-    }),
-    menuList: (provided, state) => ({
-      ...provided,
-      padding: '8px',
-      color: darkMode ? '#fff' : '#232e3c',
-    }),
-    menu: (base) => ({
-      ...base,
-      width: '100%',
-      background: darkMode ? 'rgb(31,40,55)' : 'white',
-      borderColor: darkMode ? '#4c5155' : '#c1c8cd',
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: darkMode ? '#fff' : '#232e3c',
-    }),
-  };
+  const customStyles = tjdbDropdownStyles(
+    darkMode,
+    darkDisabledBackground,
+    lightDisabledBackground,
+    lightFocussedBackground,
+    darkFocussedBackground,
+    lightBackground,
+    darkBackground,
+    darkBorderHover,
+    lightBorderHover,
+    darkDisabledBorder,
+    lightDisabledBorder,
+    lightFocussedBorder,
+    darkFocussedBorder,
+    lightBorder,
+    darkBorder,
+    dropdownContainerWidth
+  );
 
   useEffect(() => {
     toast.dismiss();
@@ -162,7 +144,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
             options={dataTypes}
             onChange={handleTypeChange}
             components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
-            styles={CustomStyle}
+            styles={customStyles}
           />
         </div>
         <div className="mb-3 tj-app-input">
