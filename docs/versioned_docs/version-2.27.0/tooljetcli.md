@@ -37,7 +37,7 @@ tooljet --version
 
 ## Commands
 
-### info
+### Info
 
 This command returns the information about where tooljet is being run
 
@@ -51,7 +51,7 @@ tooljet info
 
 </div>
 
-### create
+### Create
 
 This command creates a new plugin.
 
@@ -68,7 +68,7 @@ Read the detailed guide on creating a marketplace plugin [here](/docs/contributi
 
 </div>
 
-### delete
+### Delete
 
 This command deletes a plugin.
 
@@ -84,7 +84,7 @@ The CLI will prompt developers to verify if the plugin to be deleted is a market
 
 </div>
 
-### install
+### Install
 
 Installs a new npm module inside a tooljet plugin
 

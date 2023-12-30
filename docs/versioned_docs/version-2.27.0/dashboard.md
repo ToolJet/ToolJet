@@ -31,11 +31,7 @@ Previously, the workspace slug was an automatically generated workspace ID, like
 
 #### Conditions for workspace slug
 
-- The workspace slug should be unique.
-- The workspace slug should not contain any special characters except `-`.
-- The workspace slug should not contain any spaces.
-- The workspace slug should not contain any capital letters.
-- The workspace slug should not be empty.
+The workspace slug must be unique, contain no special characters except hyphens, no spaces, no capital letters, and cannot be empty.
 
 <div style={{textAlign: 'center'}}>
 
