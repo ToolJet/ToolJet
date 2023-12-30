@@ -7,7 +7,7 @@ Topbar is present at the top of the app-builder, and is used to configure the ap
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/topbarnew1.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/topbarnew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -19,7 +19,7 @@ Upon the creation of a new app, it is automatically assigned a unique app name.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/appnamenew1.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/appnamenew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -41,7 +41,7 @@ Width of the component will be automatically adjusted to fit the screen while vi
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/canvasmodes1.gif" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/canvasmodes1.gif" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -51,7 +51,7 @@ Whenever a change is made on the component or the query panel/queries, the chang
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/changessaved1.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/changessaved.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -61,7 +61,7 @@ This will show a profile picture of the developer who is currently working on th
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/profile1.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/profile.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -71,7 +71,7 @@ ToolJet's multi-environment helps in streamlining workflows, thereby minimizing 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/envnew.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/envnew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -87,7 +87,7 @@ Versioning is also helpful when working with **[multiple environments](/docs/rel
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/versionsnew1.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/versionsnew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -99,7 +99,7 @@ You can also use **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)** to 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/undonew1.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/undonew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -116,7 +116,7 @@ Learn more about **[Sharing](/docs/app-builder/share)** your tooljet application
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/sharenew1.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/sharenew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -126,7 +126,7 @@ Clicking on **Preview** button will open up the currently opened version of the 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/previewnew1.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/previewnew.png" alt="App Builder: Topbar"/>
 
 </div>
 
@@ -140,6 +140,6 @@ ToolJet will block editing of the Released version of an app and will display a 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/releasenew1.png" alt="App Builder: Topbar"/>
+<img className="screenshot-full" src="../../static/img/v2-beta/app-builder/toolbar/releasenew.png" alt="App Builder: Topbar"/>
 
 </div>
