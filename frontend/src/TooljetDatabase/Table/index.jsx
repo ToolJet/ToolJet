@@ -12,6 +12,7 @@ import Drawer from '@/_ui/Drawer';
 import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import { Col } from 'react-bootstrap';
 
 const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const {
@@ -257,10 +258,16 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                       data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
                       {...column.getHeaderProps()}
                     >
-                      {column.render('Header')}
-                      <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                        {column.Header == 'id' ? 'serial' : checkDataType(column?.dataType)}
-                      </span>
+                      <Col
+                        style={{
+                          flex: `0 0 ${index === 0 ? '66px' : '230px'}`,
+                        }}
+                      >
+                        {column.render('Header')}
+                        <span className="tj-text-xsm tj-db-dataype text-lowercase">
+                          {column.Header == 'id' ? 'serial' : checkDataType(column?.dataType)}
+                        </span>
+                      </Col>
                     </th>
                   </TablePopover>
                 ))}
@@ -311,7 +318,13 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                             data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
                             {...cell.getCellProps()}
                           >
-                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                            <Col
+                              style={{
+                                flex: `0 0 ${index === 0 ? '66px' : '230px'}`,
+                              }}
+                            >
+                              {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                            </Col>
                           </td>
                         );
                       })}
