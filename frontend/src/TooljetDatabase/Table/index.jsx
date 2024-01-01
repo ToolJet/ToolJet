@@ -252,7 +252,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                     disabled={index === 0 || column.isPrimaryKey}
                   >
                     <th
-                      width={index === 0 ? 66 : 230}
                       title={column?.Header || ''}
                       className="table-header tj-database-column-header tj-text-xsm"
                       data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
