@@ -83,7 +83,7 @@ export const Inspector = ({
   const [inputRef, setInputFocus] = useFocus();
 
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
-  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput'];
+  const shouldAddBoxShadow = ['TextInput', 'PasswordInput', 'NumberInput', 'ToggleSwitch'];
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -317,6 +317,7 @@ export const Inspector = ({
           component.component.component !== 'TextInput' &&
           component.component.component !== 'PasswordInput' &&
           component.component.component !== 'NumberInput' &&
+          component.component.component !== 'ToggleSwitch' &&
           'p-3'
         }
       >
@@ -463,7 +464,7 @@ const widgetsWithStyleConditions = {
     ],
   },
 };
-const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput'];
+const styleGroupedComponentTypes = ['TextInput', 'NumberInput', 'PasswordInput', 'ToggleSwitch'];
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   // Initialize an object to group properties by "accordian"
@@ -471,7 +472,8 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   if (
     component.component.component === 'TextInput' ||
     component.component.component === 'PasswordInput' ||
-    component.component.component === 'NumberInput'
+    component.component.component === 'NumberInput' ||
+    component.component.component === 'ToggleSwitch'
   ) {
     // Iterate over the properties in componentMeta.styles
     for (const key in componentMeta.styles) {
@@ -491,7 +493,8 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   return Object.keys(
     component.component.component === 'TextInput' ||
       component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput'
+      component.component.component === 'NumberInput' ||
+      component.component.component === 'ToggleSwitch'
       ? groupedProperties
       : componentMeta.styles
   ).map((style) => {
@@ -520,7 +523,8 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
     if (
       component.component.component === 'TextInput' ||
       component.component.component === 'PasswordInput' ||
-      component.component.component === 'NumberInput'
+      component.component.component === 'NumberInput' ||
+      component.component.component === 'ToggleSwitch'
     ) {
       items.push({
         title: `${style}`,

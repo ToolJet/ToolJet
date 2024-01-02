@@ -2368,6 +2368,16 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
+
+    validation: {
+      mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
+      customRule: {
+        type: 'code',
+        displayName: 'Custom validation',
+        placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
+      },
+    },
+
     properties: {
       label: {
         type: 'code',
@@ -2376,12 +2386,41 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+
       defaultValue: {
+        type: 'switch',
+        displayName: 'Default state',
+        validation: { schema: { type: 'boolean' } },
+        options: [
+          { displayName: 'On', value: '{{true}}' },
+          { displayName: 'Off', value: '{{false}}' },
+        ],
+        accordian: 'label',
+      },
+      loadingState: {
         type: 'toggle',
-        displayName: 'Default Status',
-        validation: {
-          schema: { type: 'boolean' },
-        },
+        displayName: 'Loading state',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: { schema: { type: 'boolean' } },
+        section: 'additionalActions',
+      },
+      tooltip: {
+        type: 'input',
+        displayName: 'Tooltip',
+        validation: { schema: { type: 'string' } },
+        section: 'additionalActions',
+        staticText: '',
       },
     },
     events: {
@@ -2394,47 +2433,116 @@ export const widgets = [
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'label',
       },
-      toggleSwitchColor: {
+      borderColor: {
         type: 'color',
-        displayName: 'Toggle Switch Color',
+        displayName: 'Border color',
         validation: {
           schema: { type: 'string' },
         },
+        accordian: 'switch',
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
+      checkedColor: {
+        type: 'color',
+        displayName: 'Checked color',
         validation: {
-          schema: { type: 'boolean' },
+          schema: { type: 'string' },
         },
+        accordian: 'switch',
       },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
+      uncheckedColor: {
+        type: 'color',
+        displayName: 'Unchecked color',
         validation: {
-          schema: { type: 'boolean' },
+          schema: { type: 'string' },
         },
+        accordian: 'switch',
+      },
+      handleColor: {
+        type: 'color',
+        displayName: 'Handle color',
+        validation: {
+          schema: { type: 'string' },
+        },
+        accordian: 'switch',
+      },
+      alignment: {
+        type: 'switch',
+        displayName: 'alignment',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Left', value: 'left' },
+          { displayName: 'Right', value: 'right' },
+        ],
+        accordian: 'label',
+      },
+      padding: {
+        type: 'switch',
+        displayName: 'Padding',
+        validation: { schema: { type: 'string' } },
+        options: [
+          { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
+        ],
+        accordian: 'container',
       },
     },
     exposedVariables: {
       value: false,
+      label: 'Label',
+      isMandatory: false,
+      isVisible: true,
+      isDisabled: false,
+      isLoading: false,
     },
+    actions: [
+      {
+        handle: 'toggle',
+        displayName: 'toggle',
+      },
+      {
+        handle: 'setVisibility',
+        displayName: 'setVisibility',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setDisable',
+        displayName: 'setDisable',
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+      {
+        handle: 'setLoading',
+        displayName: 'setLoading',
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      },
+    ],
     definition: {
       others: {
         showOnDesktop: { value: '{{true}}' },
         showOnMobile: { value: '{{false}}' },
       },
+      validation: {
+        mandatory: { value: false },
+        customRule: { value: null },
+      },
       properties: {
-        label: { value: 'Toggle label' },
+        label: { value: 'Label' },
         defaultValue: { value: '{{false}}' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        loadingState: { value: '{{false}}' },
+        tooltip: { value: '' },
       },
       events: [],
       styles: {
-        textColor: { value: '' },
-        toggleSwitchColor: { value: '' },
-        visibility: { value: '{{true}}' },
-        disabledState: { value: '{{false}}' },
+        textColor: { value: '#11181C' },
+        checkedColor: { value: '#3E63DD' },
+        uncheckedColor: { value: '#D7DBDF' },
+        padding: { value: 'default' },
+        borderColor: { value: '#FFFFFF00' },
+        handleColor: { value: '#FFFFFF' },
+        alignment: { value: 'left' },
       },
     },
   },
