@@ -602,12 +602,12 @@ export default function DragContainer({
                           return false;
                         }
                       }
-                      setDraggedSubContainer(draggedSubContainer ? draggedSubContainer : i.parent);
                     }}
                     onDrag={(e) => {
                       if (!isDraggingRef.current) {
                         setDraggingComponentId(e.target.id);
                         isDraggingRef.current = true;
+                        setDraggedSubContainer(draggedSubContainer ? draggedSubContainer : i.parent);
                       }
                       console.log('Ondrag subcontainer', draggedSubContainer);
                       if (draggedSubContainer === i.parent) {
