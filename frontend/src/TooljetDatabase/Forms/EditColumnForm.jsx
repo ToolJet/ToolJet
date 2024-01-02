@@ -150,8 +150,7 @@ const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
             <WarningInfo />
           </div>
           <span className="edit-warning-text">
-            Editing the column could break queries and apps connected with this table. Please wait for ToolJet to update
-            links before making changes to queries.
+            Editing the column could break queries and apps connected with this table.
           </span>
         </div>
         <div className="mb-3 tj-app-input">
