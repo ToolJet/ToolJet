@@ -334,6 +334,11 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
         const mappedParentId = componentsMapping[_parentId];
 
         parentId = `${mappedParentId}-${childTabId}`;
+      } else if (this.isChildOfKanbanModal(component, allComponents, parentId)) {
+        const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+        const mappedParentId = componentsMapping[_parentId];
+
+        parentId = `${mappedParentId}-modal`;
       } else {
         if (component.parent && !componentsMapping[parentId]) {
           skipComponent = true;
@@ -378,6 +383,13 @@ export class MigrateAppsDefinitionSchemaTransition1697473340856 implements Migra
     }
 
     return false;
+  };
+
+  isChildOfKanbanModal = (component, allComponents = [], componentParentId = undefined) => {
+    if (!componentParentId || !componentParentId.includes('modal')) return false;
+    const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+    const parentComponent = allComponents.find((comp) => comp.id === parentId);
+    return parentComponent.component.component === 'Kanban';
   };
 
   public async down(queryRunner: QueryRunner): Promise<void> {
