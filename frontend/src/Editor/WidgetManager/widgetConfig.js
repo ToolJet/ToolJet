@@ -259,7 +259,7 @@ export const widgets = [
       },
       actionButtonTextColor: {
         type: 'color',
-        displayName: 'Text color',
+        displayName: 'Text Color',
         validation: {
           schema: { type: 'string' },
         },
@@ -1193,7 +1193,7 @@ export const widgets = [
       },
       borderRadius: {
         type: 'code',
-        displayName: 'Border radius',
+        displayName: 'Border Radius',
         validation: {
           schema: {
             type: 'union',
@@ -5630,21 +5630,21 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     properties: {
       linkTarget: {
         type: 'code',
-        displayName: 'Link target',
+        displayName: 'Link Target',
         validation: {
           schema: { type: 'string' },
         },
       },
       linkText: {
         type: 'code',
-        displayName: 'Link text',
+        displayName: 'Link Text',
         validation: {
           schema: { type: 'string' },
         },
       },
       targetType: {
         type: 'select',
-        displayName: 'Target type',
+        displayName: 'Target Type',
         options: [
           { name: 'New Tab', value: 'new' },
           { name: 'Same Tab', value: 'same' },
@@ -5668,7 +5668,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       textSize: {
         type: 'number',
-        displayName: 'Text size',
+        displayName: 'Text Size',
         validation: {
           schema: { type: 'number' },
         },
