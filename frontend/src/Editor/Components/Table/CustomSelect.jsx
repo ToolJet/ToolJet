@@ -43,11 +43,10 @@ export const CustomSelect = ({
         hasSearch={false}
         fuzzySearch={false}
         placeholder={placeholder}
-        disabled={disabled}
+        isDisabled={disabled}
         className={className}
         components={{
           MenuList: CustomMenuList,
-          ValueContainer: CustomValueContainer,
         }}
         value={value}
         onMenuInputFocus={() => setIsFocused(true)}
@@ -106,41 +105,5 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       </div>
       <MenuList {...props} selectProps={selectProps} />
     </div>
-  );
-};
-
-const CustomValueContainer = ({ children, selectProps, ...props }) => {
-  const commonProps = {
-    cx: props.cx,
-    clearValue: props.clearValue,
-    getStyles: props.getStyles,
-    getValue: props.getValue,
-    hasValue: props.hasValue,
-    isMulti: props.isMulti,
-    isRtl: props.isRtl,
-    options: props.options,
-    selectOption: props.selectOption,
-    setValue: props.setValue,
-    selectProps,
-    theme: props.theme,
-    getClassNames: props.getClassNames,
-  };
-
-  return (
-    <ValueContainer {...props} selectProps={selectProps}>
-      {React.Children.map(children, (child) => {
-        return child ? (
-          child
-        ) : props.hasValue ? (
-          <SingleValue {...commonProps} isFocused={selectProps.isFocused} isDisabled={selectProps.isDisabled}>
-            {selectProps?.getOptionLabel(props?.getValue()[0])}
-          </SingleValue>
-        ) : (
-          <Placeholder {...commonProps} key="placeholder" isDisabled={selectProps.isDisabled} data={props.getValue()}>
-            {selectProps.placeholder}
-          </Placeholder>
-        );
-      })}
-    </ValueContainer>
   );
 };
