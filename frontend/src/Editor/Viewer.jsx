@@ -41,6 +41,7 @@ import { shallow } from 'zustand/shallow';
 import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
 import { getPreviewQueryParams, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
+import { camelizeKeys } from 'humps';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -130,8 +131,12 @@ class ViewerComponent extends React.Component {
         }
 
         if (query.pluginId || query?.plugin?.id) {
+          const exposedVariables =
+            query.plugin?.manifestFile?.data?.source?.exposedVariables ||
+            query.plugin?.manifest_file?.data?.source?.exposed_variables;
+
           queryState[query.name] = {
-            ...query.plugin.manifestFile.data.source.exposedVariables,
+            ...exposedVariables,
             ...this.props.currentState.queries[query.name],
           };
         } else {

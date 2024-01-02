@@ -18,8 +18,7 @@ import { selectAndAddDataSource } from "Support/utils/postgreSql";
 
 describe("", () => {
     beforeEach(() => {
-        cy.apiLogin();
-        cy.visit("/my-workspace");
+        cy.defaultWorkspaceLogin();
     });
     it("should verify license page elements", () => {
         cy.get(commonEeSelectors.instanceSettingIcon).click();

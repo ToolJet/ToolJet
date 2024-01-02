@@ -26,7 +26,6 @@ describe("App share functionality", () => {
     const firstUserEmail = data.email;
     const envVar = Cypress.env("environment");
 
-
     beforeEach(() => {
         cy.appUILogin();
     });

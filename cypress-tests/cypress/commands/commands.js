@@ -3,6 +3,8 @@ import { dashboardSelector } from "Selectors/dashboard";
 import { ssoSelector } from "Selectors/manageSSO";
 import { commonText, createBackspaceText } from "Texts/common";
 import { passwordInputText } from "Texts/passwordInput";
+import { importSelectors } from "Selectors/exportImport";
+import { importText } from "Texts/exportImport";
 
 Cypress.Commands.add(
   "login",
@@ -186,14 +188,14 @@ Cypress.Commands.add(
   },
   (subject, value) => {
     cy.wrap(subject)
-      .click()
+      .realClick()
       .find("pre.CodeMirror-line")
       .invoke("text")
       .then((text) => {
-        cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        cy.wrap(subject).realType(createBackspaceText(text)),
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -299,9 +301,84 @@ Cypress.Commands.add("hideTooltip", () => {
   });
 });
 
+Cypress.Commands.add("importApp", (appFile) => {
+  cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+  cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
+    force: true,
+  });
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    importText.appImportedToastMessage
+  );
+});
+
+Cypress.Commands.add("moveComponent", (componentName, x, y) => {
+  cy.get(`[data-cy="draggable-widget-${componentName}"]`, { log: false })
+    .trigger("mouseover", {
+      force: true,
+      log: false,
+    })
+    .trigger("mousedown", {
+      which: 1,
+      force: true,
+      log: false,
+    });
+  cy.get(commonSelectors.canvas, { log: false })
+    .trigger("mousemove", {
+      which: 1,
+      clientX: x,
+      ClientY: y,
+      clientX: x,
+      clientY: y,
+      pageX: x,
+      pageY: y,
+      screenX: x,
+      screenY: y,
+      log: false,
+    })
+    .trigger("mouseup", { log: false });
+
+  const log = Cypress.log({
+    name: "moveComponent",
+    displayName: "Component moved:",
+    message: `X: ${x}, Y:${y}`,
+  });
+});
+
+Cypress.Commands.add("getPosition", (componentName) => {
+  cy.get(commonWidgetSelector.draggableWidget(componentName)).then(
+    ($element) => {
+      const element = $element[0];
+      const rect = element.getBoundingClientRect();
+
+      const clientX = Math.round(rect.left + window.scrollX + rect.width / 2);
+      const clientY = Math.round(rect.top + window.scrollY + rect.height / 2);
+
+      const log = Cypress.log({
+        name: "getPosition",
+        displayName: `${componentName}'s Position:\n`,
+        message: `\nX: ${clientX}, Y:${clientY}`,
+      });
+      return [clientX, clientY];
+    }
+  );
+});
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
   cy.apiLogin();
+  cy.intercept('GET', "http://localhost:3000/api/library_apps").as("library_apps")
   cy.visit('/my-workspace');
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 })
+  cy.wait("@library_apps")
 })
+
+Cypress.Commands.add('visitSlug', ({ actualUrl, currentUrl = 'http://localhost:8082/error/unknown' }) => {
+  cy.visit(actualUrl);
+  cy.wait(3000);
+
+  cy.url().then((url) => {
+    if (url === currentUrl) {
+      cy.visit(actualUrl);
+    }
+  });
+});
