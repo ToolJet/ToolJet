@@ -64,6 +64,7 @@ import GitSyncModal from './GitSyncModal';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppInfo, useAppDataStore } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
+import { useSocketOpen } from '@/_hooks/use-socket-open';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
@@ -81,6 +82,7 @@ const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).to
 
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
+  const isSocketOpen = useSocketOpen(socket);
   const mounted = useMounted();
 
   const {
@@ -681,12 +683,14 @@ const EditorComponent = (props) => {
   const onVersionRelease = (versionId) => {
     useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
 
-    socket.send(
-      JSON.stringify({
-        event: 'events',
-        data: { message: 'versionReleased', appId: appId },
-      })
-    );
+    if (socket instanceof WebSocket && socket?.readyState === WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'versionReleased', appId: appId },
+        })
+      );
+    }
   };
 
   const computeCanvasBackgroundColor = () => {
@@ -1901,6 +1905,7 @@ const EditorComponent = (props) => {
           setCurrentAppVersionPromoted={(isCurrentVersionPromoted) => setAppVersionPromoted(isCurrentVersionPromoted)}
           fetchEnvironments={fetchEnvironments}
           isEditorFreezed={isEditorFreezed}
+          isSocketOpen={isSocketOpen}
         />
         <DndProvider backend={HTML5Backend}>
           <div className="sub-section">
