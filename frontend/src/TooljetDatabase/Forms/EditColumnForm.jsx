@@ -6,8 +6,7 @@ import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import { dataTypes, formatOptionLabel } from '../constants';
-import Tick from '../Icons/Toggle.svg';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 
 const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
@@ -18,7 +17,44 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
 
+  const darkDisabledBackground = '#1f2936';
+  const lightDisabledBackground = '#f4f6fa';
+  const lightFocussedBackground = '#fff';
+  const darkFocussedBackground = 'transparent';
+  const lightBackground = '#fff';
+  const darkBackground = 'transparent';
+
+  const darkBorderHover = '#dadcde';
+  const lightBorderHover = '#dadcde';
+
+  const darkDisabledBorder = '#3a3f42';
+  const lightDisabledBorder = '#dadcde';
+  const lightFocussedBorder = '#dadcde';
+  const darkFocussedBorder = '#3e63dd !important';
+  const lightBorder = '#dadcde';
+  const darkBorder = '#3a3f42 !important';
+  const dropdownContainerWidth = '360px';
+
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const customStyles = tjdbDropdownStyles(
+    darkMode,
+    darkDisabledBackground,
+    lightDisabledBackground,
+    lightFocussedBackground,
+    darkFocussedBackground,
+    lightBackground,
+    darkBackground,
+    darkBorderHover,
+    lightBorderHover,
+    darkDisabledBorder,
+    lightDisabledBorder,
+    lightFocussedBorder,
+    darkFocussedBorder,
+    lightBorder,
+    darkBorder,
+    dropdownContainerWidth
+  );
 
   const handleTypeChange = (value) => {
     setDataType(value);
@@ -39,32 +75,6 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
     };
 
     console.log('first', colDetails);
-  };
-
-  const CustomStyle = {
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected ? '#F0F4FF' : 'transparent',
-      ':hover': {
-        backgroundColor: state.isFocused ? '#F0F4FF' : '',
-      },
-    }),
-    control: (provided, state) => ({
-      ...provided,
-      background: state.isDisabled && darkMode ? '#1f2936' : '#f4f6fa',
-      borderColor: darkMode ? '#3a3f42 !important' : state.isFocused && !darkMode ? '#3e63dd !important' : '#dadcde',
-      boxShadow: state.isFocused ? 'none' : 'none',
-      height: '36px !important',
-      minHeight: '36px',
-    }),
-    menuList: (provided, state) => ({
-      ...provided,
-      padding: '8px',
-    }),
-    menu: (base) => ({
-      ...base,
-      width: '100%',
-    }),
   };
 
   // const handleCreate = async () => {
@@ -127,7 +137,7 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
             options={dataTypes}
             onChange={handleTypeChange}
             components={{ IndicatorSeparator: () => null }}
-            styles={CustomStyle}
+            styles={customStyles}
             isSearchable={false}
           />
         </div>
