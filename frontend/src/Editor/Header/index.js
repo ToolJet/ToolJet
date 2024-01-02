@@ -42,6 +42,7 @@ export default function EditorHeader({
   setCurrentAppVersionPromoted,
   fetchEnvironments,
   isEditorFreezed,
+  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
   const { isSaving, appId, appName, app, isPublic, appVersionPreviewLink, environments, creationMode } = useAppInfo();
@@ -77,7 +78,8 @@ export default function EditorHeader({
     });
   };
   // a flag to disable the release button if the current environment is not production
-  const shouldDisablePromote = isSaving || currentAppEnvironment.priority < currentAppVersionEnvironment.priority;
+  const shouldDisablePromote =
+    environments.length === 0 || isSaving || currentAppEnvironment.priority < currentAppVersionEnvironment.priority;
 
   const shouldRenderReleaseButton =
     app?.id &&
@@ -253,7 +255,7 @@ export default function EditorHeader({
                   </Link>
                 </div>
                 <div className="nav-item dropdown">
-                  {!_.isEmpty(featureAccess) && shouldRenderPromoteButton && (
+                  {isSocketOpen && !_.isEmpty(featureAccess) && shouldRenderPromoteButton && (
                     <ButtonSolid
                       variant="primary"
                       onClick={handlePromote}
@@ -280,7 +282,7 @@ export default function EditorHeader({
                     </ButtonSolid>
                   )}
 
-                  {shouldRenderReleaseButton && (
+                  {isSocketOpen && shouldRenderReleaseButton && (
                     <ReleaseVersionButton
                       appId={appId}
                       appName={app.name}
