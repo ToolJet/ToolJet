@@ -6,7 +6,16 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 
 const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
-  const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
+  const {
+    organizationId,
+    selectedTable,
+    setSelectedTableData,
+    setTotalRecords,
+    selectedTableData,
+    pageSize,
+    totalRecords,
+    pageCount,
+  } = useContext(TooljetDatabaseContext);
 
   return (
     <>
@@ -38,8 +47,10 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <EditRowForm
           onEdit={() => {
+            const limit = pageSize;
+            const pageRange = `${(pageCount - 1) * pageSize + 1}`;
             tooljetDatabaseService
-              .findOne(organizationId, selectedTable.id, 'order=id.desc')
+              .findOne(organizationId, selectedTable.id, `order=id.desc&limit=${limit}&offset=${pageRange - 1}`)
               .then(({ headers, data = [], error }) => {
                 if (error) {
                   toast.error(error?.message ?? `Failed to fetch table "${selectedTable.table_name}"`);
