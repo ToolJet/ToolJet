@@ -2624,7 +2624,7 @@ hr {
   transition: all .1s ease-in-out;
 }
 
-.canvas-area .modal .config-handle{
+.canvas-area #modal-container .modal-component > .config-handle{
   visibility: visible !important;
 }
 
