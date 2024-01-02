@@ -19,7 +19,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import DragContainerNested from './DragContainerNested';
-import { useGridStore, useNoOfGrid } from '@/_stores/gridStore';
+import { useGridStore, useDragTarget } from '@/_stores/gridStore';
 
 // const NO_OF_GRIDS = 43;
 
@@ -62,7 +62,6 @@ export const SubContainer = ({
   parentGridWidth,
   subContainerWidths,
   turnOffAutoLayout,
-  draggedSubContainer,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -72,6 +71,7 @@ export const SubContainer = ({
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
   const currentState = useCurrentState();
+  const [dragTarget] = useDragTarget();
   const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
@@ -634,9 +634,7 @@ export const SubContainer = ({
       style={styles}
       id={`canvas-${parent}`}
       className={`real-canvas ${
-        (isDragging || isResizing || draggedSubContainer === parent || isGridActive) && !readOnly
-          ? 'show-grid'
-          : 'hide-grid'
+        (isDragging || isResizing || dragTarget === parent || isGridActive) && !readOnly ? 'show-grid' : 'hide-grid'
       }`}
     >
       <DragContainerNested
