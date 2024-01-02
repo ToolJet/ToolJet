@@ -7,7 +7,7 @@ import DragContainerNested from './DragContainerNested';
 import _, { isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
-import { useGridStoreActions } from '@/_stores/gridStore';
+import { useGridStoreActions, useDragTarget } from '@/_stores/gridStore';
 const NO_OF_GRIDS = 43;
 
 const MouseCustomAble = {
@@ -74,7 +74,7 @@ export default function DragContainer({
   setDraggedSubContainer,
   draggedSubContainer,
 }) {
-  const [dragTarget, setDragTarget] = useState();
+  const [dragTarget, setDragTarget] = useDragTarget();
   const [draggedTarget, setDraggedTarget] = useState();
   const moveableRef = useRef();
   const draggedOverElemRef = useRef(null);
@@ -97,7 +97,7 @@ export default function DragContainer({
     }));
   const [list, setList] = useState(boxList);
 
-  console.log('draggedSubContainer => ', draggedSubContainer);
+  console.log('dragTarget => ', dragTarget);
 
   const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
   const [count, setCount] = useState(0);
@@ -430,7 +430,6 @@ export default function DragContainer({
                       );
                     });
                     draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
-                    setDragTarget(draggedOverElemId);
                   }
                   // console.log("draggedOverElemId", draggedOverElemId);
                   const parentElem = list.find(({ id }) => id === draggedOverElemId);
@@ -463,6 +462,7 @@ export default function DragContainer({
                 } catch (error) {
                   console.log('error', error);
                 }
+                setDragTarget(null);
               }}
               onDrag={(e) => {
                 if (!isDraggingRef.current) {
@@ -497,7 +497,9 @@ export default function DragContainer({
                   // const draggedOverElem = targetElems.find(
                   //   (ele) => ele.id !== e.target.id && ele.classList.contains('target')
                   // );
-                  setDragTarget(draggedOverElem?.id);
+                  if (dragTarget !== draggedOverElem?.id) {
+                    setDragTarget(draggedOverElem?.id);
+                  }
                   console.log('draggedOverElem =>', draggedOverElem?.id, dragTarget);
                   draggedOverElemId = draggedOverElem?.id;
                   if (
@@ -547,7 +549,7 @@ export default function DragContainer({
               snapThreshold={5}
               elementGuidelines={list.map((l) => ({ element: `.ele-${l.id}`, className: 'grid-guide-lines' }))}
               isDisplaySnapDigit={false}
-              snapGridWidth={gridWidth}
+              // snapGridWidth={gridWidth}
               bounds={{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }}
             />
 
@@ -613,6 +615,24 @@ export default function DragContainer({
                       if (draggedSubContainer === i.parent) {
                         e.target.style.transform = e.transform;
                       }
+                      let draggedOverElemId = i.parent;
+                      if (document.elementFromPoint(e.clientX, e.clientY)) {
+                        const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
+                        const draggedOverElem = targetElems.find((ele) => {
+                          const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
+                          if (isOwnChild) return false;
+                          return (
+                            ele.id !== e.target.id &&
+                            (ele.classList.contains('target') ||
+                              ele.classList.contains('nested-target') ||
+                              ele.classList.contains('drag-container-parent'))
+                          );
+                        });
+                        draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
+                        if (dragTarget !== draggedOverElemId) {
+                          setDragTarget(draggedOverElemId ? draggedOverElemId : 'canvas');
+                        }
+                      }
                     }}
                     onDragEnd={(e) => {
                       if (isDraggingRef.current) {
@@ -649,7 +669,6 @@ export default function DragContainer({
                               ele.classList.contains('drag-container-parent'))
                           );
                         });
-                        setDragTarget(draggedOverElem?.id);
                         draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
                         console.log('draggedOverElem', draggedOverElem, draggedOverElemId);
                         if (draggedOverElemId !== i.parent) {
@@ -672,6 +691,7 @@ export default function DragContainer({
                           parent: draggedOverElemId,
                         },
                       ]);
+                      setDragTarget(null);
                     }}
                     onDragGroup={({ events }) => {
                       events.forEach((ev) => {

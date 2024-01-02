@@ -8,6 +8,7 @@ const initialState = {
   draggedSubContainer: false,
   resizingComponentId: null,
   draggingComponentId: null,
+  dragTarget: null,
 };
 
 export const useGridStore = create(
@@ -20,6 +21,7 @@ export const useGridStore = create(
         setDraggedSubContainer: (draggedSubContainer) => set({ draggedSubContainer }),
         setResizingComponentId: (id) => set({ resizingComponentId: id }),
         setDraggingComponentId: (id) => set({ draggingComponentId: id }),
+        setDragTarget: (dragTarget) => set({ dragTarget }),
       },
     }),
     { name: 'Grid Store' }
@@ -31,3 +33,4 @@ export const useNoOfGrid = () => useGridStore((state) => [state.noOfGrid, state.
 export const useDraggedSubContainer = () =>
   useGridStore((state) => [state.draggedSubContainer, state.actions.setDraggedSubContainer]);
 export const useGridStoreActions = () => useGridStore((state) => state.actions, shallow);
+export const useDragTarget = () => useGridStore((state) => [state.dragTarget, state.actions.setDragTarget]);

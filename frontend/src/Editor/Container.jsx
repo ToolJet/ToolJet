@@ -24,7 +24,7 @@ import _, { cloneDeep } from 'lodash';
 import { diff } from 'deep-object-diff';
 import DragContainer from './DragContainer';
 import { compact, correctBounds } from './gridUtils';
-import { useDraggedSubContainer, useNoOfGrid } from '@/_stores/gridStore';
+import { useDraggedSubContainer, useNoOfGrid, useDragTarget } from '@/_stores/gridStore';
 import useConfirm from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/Confirm';
 // eslint-disable-next-line import/no-unresolved
 
@@ -61,6 +61,7 @@ export const Container = ({
   // import { useActiveGrid } from '@/_stores/gridStore';
   const [subContainerWidths, setSubContainerWidths] = useState({});
   const [draggedSubContainer, setDraggedSubContainer] = useDraggedSubContainer(false);
+  const [dragTarget] = useDragTarget();
 
   const { showComments, currentLayout, selectedComponents } = useEditorStore(
     (state) => ({
@@ -721,7 +722,7 @@ export const Container = ({
       }}
       style={{ ...styles, height: canvasHeight }}
       className={cx('real-canvas', {
-        'show-grid': isDragging || isResizing,
+        'show-grid': isDragging || isResizing || dragTarget === 'canvas',
       })}
       id="real-canvas"
       data-cy="real-canvas"
