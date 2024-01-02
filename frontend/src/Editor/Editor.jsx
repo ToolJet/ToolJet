@@ -736,16 +736,13 @@ const EditorComponent = (props) => {
       releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
     }
 
-    const isMultiEnvironmentActive = useEditorStore.getState().featureAccess?.multiEnvironment ?? false;
-
     const currentAppVersionEnvId =
-      !isMultiEnvironmentActive && useAppVersionStore.getState().isVersionReleased
-        ? data['editing_version']['promoted_from'] || data['editing_version']['promotedFrom']
-        : data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
+      data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
 
     const currentOrgId = data?.organization_id || data?.organizationId;
 
-    const currentEnvironmentId = !environmentSwitch ? currentAppVersionEnvId : selectedEnvironmentId;
+    const currentEnvironmentId =
+      !environmentSwitch && !versionSwitched ? currentAppVersionEnvId : selectedEnvironmentId;
     await fetchOrgEnvironmentConstants(currentEnvironmentId);
 
     let envDetails = useEditorStore.getState().currentAppEnvironment;
@@ -842,7 +839,12 @@ const EditorComponent = (props) => {
     }
   };
 
-  const setAppDefinitionFromVersion = (appData, isEnvironmentSwitched = false, selectedEnvironmentId = null) => {
+  const setAppDefinitionFromVersion = (
+    appData,
+    versionSwitched = false,
+    isEnvironmentSwitched = false,
+    selectedEnvironmentId = null
+  ) => {
     const version = appData?.editing_version?.id;
     if (version?.id !== editingVersionId) {
       if (version?.id === currentVersionId) {
@@ -856,7 +858,7 @@ const EditorComponent = (props) => {
       });
       onEditorFreeze(false);
       setAppVersionPromoted(false);
-      callBack(appData, null, true, isEnvironmentSwitched, selectedEnvironmentId);
+      callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId);
       initComponentVersioning();
     }
   };

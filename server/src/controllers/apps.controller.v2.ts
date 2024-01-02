@@ -178,6 +178,12 @@ export class AppsControllerV2 {
 
     const appCurrentEditingVersion = JSON.parse(JSON.stringify(appVersion));
 
+    if (appCurrentEditingVersion && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+      const developmentEnv = await this.appEnvironmentService.getByPriority(user.organizationId);
+      appCurrentEditingVersion['currentEnvironmentId'] = developmentEnv.id;
+    }
+
+
     delete appCurrentEditingVersion['app'];
 
     const appData = {

@@ -75,7 +75,7 @@ export const AppVersionsManager = function ({
         }
         // if current selected version is not present in the current environment, then select the first version
         if (!data.appVersions.find((version) => version.id === editingVersion.id)) {
-          selectVersion(data.appVersions[0].id);
+          selectVersion(data.appVersions[0].id, true);
         }
       })
       .catch((error) => {
@@ -90,11 +90,16 @@ export const AppVersionsManager = function ({
     }
   }, [currentEnvironment, appId]);
 
-  const selectVersion = (id) => {
+  const selectVersion = (id, isCurrentVersionNotUpgradedYet = false, isUserSwitchedVersion = false) => {
     return appVersionService
       .getAppVersionData(appId, id)
       .then((data) => {
-        setAppDefinitionFromVersion(data, true, currentEnvironment?.id);
+        setAppDefinitionFromVersion(
+          data,
+          isUserSwitchedVersion,
+          isCurrentVersionNotUpgradedYet,
+          currentEnvironment?.id
+        );
       })
       .catch((error) => {
         toast.error(error);
@@ -191,7 +196,7 @@ export const AppVersionsManager = function ({
   const handleOnSelectVersion = (id) => {
     if (editingVersion.id === id) return;
 
-    return selectVersion(id);
+    return selectVersion(id, false, true);
   };
 
   return (
