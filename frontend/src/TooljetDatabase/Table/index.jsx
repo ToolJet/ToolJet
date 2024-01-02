@@ -530,7 +530,11 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         />
       </div>
       <Drawer isOpen={isEditColumnDrawerOpen} onClose={() => setIsEditColumnDrawerOpen(false)} position="right">
-        <EditColumnForm selectedColumn={selectedColumn} onClose={() => setIsEditColumnDrawerOpen(false)} />
+        <EditColumnForm
+          selectedColumn={selectedColumn}
+          setColumns={setColumns}
+          onClose={() => setIsEditColumnDrawerOpen(false)}
+        />
       </Drawer>
     </div>
   );

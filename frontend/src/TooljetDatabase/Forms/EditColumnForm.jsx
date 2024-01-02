@@ -1,20 +1,21 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 //import Select from '@/_ui/Select';
-import Select, { components } from 'react-select';
+import Select from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
-import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import WarningInfo from '../Icons/Edit-information.svg';
 
-const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
+const ColumnForm = ({ onClose, selectedColumn, setColumns }) => {
+  const nullValue = selectedColumn.is_nullable === 'YES' ? false : true;
+
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
   const [defaultValue, setDefaultValue] = useState(selectedColumn?.column_default);
   const [dataType, setDataType] = useState(selectedColumn?.dataType);
   const [fetching, setFetching] = useState(false);
-  const [isNotNull, setIsNotNull] = useState(false);
+  const [isNotNull, setIsNotNull] = useState(nullValue);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
   const disabledDataType = dataTypes.find((e) => e.value === dataType);
 
@@ -62,20 +63,52 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   };
 
   const handleCreate = async () => {
-    //const colDetails = defaultValue?.length > 0 ? defaultValue : columnName !== selectedColumn?.Header ? columnName ;
     const colDetails = {
       column: {
         column_name: selectedColumn?.Header,
         data_type: selectedColumn?.dataType,
         ...(columnName !== selectedColumn?.Header ? { new_column_name: columnName } : {}),
         ...(defaultValue?.length > 0 ? { column_default: defaultValue } : {}),
-        constraints_type: {
-          is_not_null: isNotNull,
-        },
+        ...(nullValue !== isNotNull
+          ? {
+              constraints_type: {
+                is_not_null: isNotNull,
+              },
+            }
+          : {}),
       },
     };
 
-    console.log('first', colDetails);
+    if (columnName !== selectedColumn?.Header || defaultValue?.length > 0 || nullValue !== isNotNull) {
+      setFetching(true);
+      const { error } = await tooljetDatabaseService.updateColumn(organizationId, selectedTable.table_name, colDetails);
+      setFetching(false);
+      if (error) {
+        toast.error(error?.message ?? `Failed to edit a column in "${selectedTable.table_name}" table`);
+        onClose && onClose();
+        return;
+      }
+    }
+    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
+      if (error) {
+        toast.error(error?.message ?? `Error fetching columns for table "${selectedTable}"`);
+        return;
+      }
+
+      if (data?.result?.length > 0) {
+        setColumns(
+          data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+            Header: column_name,
+            accessor: column_name,
+            dataType: data_type,
+            isPrimaryKey: keytype?.toLowerCase() === 'primary key',
+            ...rest,
+          }))
+        );
+      }
+    });
+    toast.success(`Column edited successfully`);
+    onClose && onClose();
   };
 
   // const handleCreate = async () => {
@@ -87,20 +120,20 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   //     toast.error('Data type cannot be empty');
   //     return;
   //   }
-  //   setFetching(true);
-  //   const { error } = await tooljetDatabaseService.updateColumn(
-  //     organizationId,
-  //     selectedTable.table_name,
-  //     columnName,
-  //     dataType?.value,
-  //     defaultValue
-  //   );
-  //   setFetching(false);
-  //   if (error) {
-  //     toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
-  //     return;
-  //   }
-  //   toast.success(`Column created successfully`);
+  // setFetching(true);
+  // const { error } = await tooljetDatabaseService.updateColumn(
+  //   organizationId,
+  //   selectedTable.table_name,
+  //   columnName,
+  //   dataType?.value,
+  //   defaultValue
+  // );
+  // setFetching(false);
+  // if (error) {
+  //   toast.error(error?.message ?? `Failed to create a new column in "${selectedTable.table_name}" table`);
+  //   return;
+  // }
+  // toast.success(`Column created successfully`);
   //   onCreate && onCreate();
   // };
 
