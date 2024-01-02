@@ -6,7 +6,7 @@ import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
-import { dataTypes, formatOptionLabel } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
 import Tick from '../Icons/Tick.svg';
 import './styles.scss';
 
@@ -16,7 +16,26 @@ const ColumnForm = ({ onCreate, onClose }) => {
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
+
+  const darkDisabledBackground = '#1f2936';
+  const lightDisabledBackground = '#f4f6fa';
+  const lightFocussedBackground = '#f8faff';
+  const darkFocussedBackground = '#15192d';
+  const lightBackground = 'transparent';
+  const darkBackground = 'transparent';
+
+  const darkBorderHover = '#4c5155';
+  const lightBorderHover = '#c1c8cd';
+
+  const darkDisabledBorder = '#3a3f42';
+  const lightDisabledBorder = '#dadcde';
+  const lightFocussedBorder = '#3e63dd !important';
+  const darkFocussedBorder = '#3e63dd !important';
+  const lightBorder = '#dadcde';
+  const darkBorder = '#3a3f42';
+  const dropdownContainerWidth = '100%';
 
   const CustomSelectOption = (props) => (
     <Option {...props}>
@@ -37,31 +56,24 @@ const ColumnForm = ({ onCreate, onClose }) => {
     </Option>
   );
 
-  const CustomStyle = {
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected ? '#F0F4FF' : 'transparent',
-      ':hover': {
-        backgroundColor: state.isFocused ? '#F0F4FF' : '',
-      },
-    }),
-    control: (provided, state) => ({
-      ...provided,
-      background: state.isFocused ? '#f8faff' : 'transparent',
-      border: state.isFocused ? '1px solid #3e63dd !important' : '1px solid #dadcde',
-      boxShadow: state.isFocused ? 'none' : 'none',
-      height: '36px !important',
-      minHeight: '36px',
-    }),
-    menuList: (provided, state) => ({
-      ...provided,
-      padding: '8px',
-    }),
-    menu: (base) => ({
-      ...base,
-      width: '100%',
-    }),
-  };
+  const customStyles = tjdbDropdownStyles(
+    darkMode,
+    darkDisabledBackground,
+    lightDisabledBackground,
+    lightFocussedBackground,
+    darkFocussedBackground,
+    lightBackground,
+    darkBackground,
+    darkBorderHover,
+    lightBorderHover,
+    darkDisabledBorder,
+    lightDisabledBorder,
+    lightFocussedBorder,
+    darkFocussedBorder,
+    lightBorder,
+    darkBorder,
+    dropdownContainerWidth
+  );
 
   useEffect(() => {
     toast.dismiss();
@@ -131,8 +143,8 @@ const ColumnForm = ({ onCreate, onClose }) => {
             formatOptionLabel={formatOptionLabel}
             options={dataTypes}
             onChange={handleTypeChange}
-            components={{ Option: CustomSelectOption }}
-            styles={CustomStyle}
+            components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
+            styles={customStyles}
           />
         </div>
         <div className="mb-3 tj-app-input">

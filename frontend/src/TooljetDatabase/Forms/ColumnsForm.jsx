@@ -4,11 +4,11 @@ import cx from 'classnames';
 import Select, { components } from 'react-select';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
-import { dataTypes, primaryKeydataTypes, formatOptionLabel } from '../constants';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, primaryKeydataTypes } from '../constants';
 import Tick from '../Icons/Tick.svg';
 
 const ColumnsForm = ({ columns, setColumns }) => {
-  const [columnIndex, setColumnIndex] = useState(0);
+  const [columnSelection, setColumnSelection] = useState({ index: 0, value: '' });
 
   const handleDelete = (index) => {
     const newColumns = { ...columns };
@@ -19,6 +19,24 @@ const ColumnsForm = ({ columns, setColumns }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
 
+  const darkDisabledBackground = '#1f2936';
+  const lightDisabledBackground = '#f4f6fa';
+  const lightFocussedBackground = '#fff';
+  const darkFocussedBackground = 'transparent';
+  const lightBackground = '#fff';
+  const darkBackground = 'transparent';
+
+  const darkBorderHover = '#dadcde';
+  const lightBorderHover = '#dadcde';
+
+  const darkDisabledBorder = '#3a3f42';
+  const lightDisabledBorder = '#dadcde';
+  const lightFocussedBorder = '#90B5E2 !important';
+  const darkFocussedBorder = '#90b5e2 !important';
+  const lightBorder = '#dadcde';
+  const darkBorder = '#dadcde';
+  const dropdownContainerWidth = '360px';
+
   const CustomSelectOption = (props) => (
     <Option {...props}>
       <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
@@ -28,7 +46,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
           <span className="dataType-dropdown-value">{props.data.name}</span>
         </div>
         <div>
-          {columnIndex?.value === props.data.value ? (
+          {columns[columnSelection.index].data_type === props.data.value ? (
             <div>
               <Tick width="16" height="16" />
             </div>
@@ -38,31 +56,24 @@ const ColumnsForm = ({ columns, setColumns }) => {
     </Option>
   );
 
-  const CustomStyle = {
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected ? '#F0F4FF' : 'transparent',
-      ':hover': {
-        backgroundColor: state.isFocused ? '#F0F4FF' : '',
-      },
-    }),
-    control: (provided, state) => ({
-      ...provided,
-      background: state.isDisabled ? '#f4f6fa' : '#fff',
-      border: state.isFocused ? '1px solid #90b5e2 !important' : '1px solid #dadcde',
-      boxShadow: state.isFocused ? 'none' : 'none',
-      height: '36px !important',
-      minHeight: '36px',
-    }),
-    menuList: (provided, state) => ({
-      ...provided,
-      padding: '8px',
-    }),
-    menu: (base) => ({
-      ...base,
-      width: '360px',
-    }),
-  };
+  const customStyles = tjdbDropdownStyles(
+    darkMode,
+    darkDisabledBackground,
+    lightDisabledBackground,
+    lightFocussedBackground,
+    darkFocussedBackground,
+    lightBackground,
+    darkBackground,
+    darkBorderHover,
+    lightBorderHover,
+    darkDisabledBorder,
+    lightDisabledBorder,
+    lightFocussedBorder,
+    darkFocussedBorder,
+    lightBorder,
+    darkBorder,
+    dropdownContainerWidth
+  );
 
   return (
     <div className="">
@@ -123,13 +134,17 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   //useMenuPortal={false}
                   options={columns[index].constraint_type === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
                   onChange={(value) => {
-                    setColumnIndex(value);
+                    setColumnSelection((prevState) => ({
+                      ...prevState,
+                      index: index,
+                      value: value.value,
+                    }));
                     const prevColumns = { ...columns };
-                    prevColumns[index].data_type = value ? value.label : null;
+                    prevColumns[index].data_type = value ? value.value : null;
                     setColumns(prevColumns);
                   }}
                   components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
-                  styles={CustomStyle}
+                  styles={customStyles}
                   formatOptionLabel={formatOptionLabel}
                   placeholder={columns[index].constraint_type === 'PRIMARY KEY' ? columns[0].data_type : 'Select...'}
                 />
@@ -167,9 +182,10 @@ const ColumnsForm = ({ columns, setColumns }) => {
           </div>
         ))}
         <div
-          onClick={() =>
-            setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} }))
-          }
+          onClick={() => {
+            setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} })),
+              setColumnSelection({ index: 0, value: '' });
+          }}
           className="mt-2 btn border-0 card-footer add-more-columns-btn"
           data-cy="add-more-columns-button"
         >
