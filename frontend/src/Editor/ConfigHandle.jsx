@@ -20,7 +20,7 @@ export const ConfigHandle = function ConfigHandle({
       className={`config-handle ${customClassName}`}
       ref={dragRef}
       style={{
-        top: position === 'top' ? '-20px' : widgetTop + widgetHeight - 10,
+        top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 0 : 10),
         visibility: showHandle ? 'visible' : 'hidden',
         left: '-1px',
       }}
