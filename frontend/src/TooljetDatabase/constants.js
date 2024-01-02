@@ -4,6 +4,7 @@ import Float from './Icons/Float.svg';
 import Integer from './Icons/Integer.svg';
 import CharacterVar from './Icons/Text.svg';
 import Boolean from './Icons/Toggle.svg';
+const darkMode = localStorage.getItem('darkMode');
 
 export const dataTypes = [
   {
@@ -24,12 +25,14 @@ export const operators = [
   { value: 'is', label: 'is' },
 ];
 
-export const formatOptionLabel = ({ label, icon }) => (
-  <div>
-    <span style={{ marginRight: '4px' }}>{icon}</span>
-    {label}
-  </div>
-);
+export const formatOptionLabel = ({ label, icon }) => {
+  return (
+    <div>
+      <span style={{ marginRight: '4px' }}>{icon}</span>
+      <span>{label}</span>
+    </div>
+  );
+};
 
 export default function tjdbDropdownStyles(
   darkMode,
