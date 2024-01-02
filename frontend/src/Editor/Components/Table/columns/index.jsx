@@ -62,10 +62,7 @@ export default function generateColumnsData({
       if (useDynamicOptions) {
         columnOptions.selectOptions = resolveReferences(column?.dynamicOptions || [], currentState);
       } else {
-        columnOptions.selectOptions = column?.options ?? [
-          { name: 'manish', value: 'manish' },
-          { name: 'arpit', value: 'arpit' },
-        ];
+        columnOptions.selectOptions = column?.options ?? [];
       }
     }
     if (columnType === 'datepicker') {

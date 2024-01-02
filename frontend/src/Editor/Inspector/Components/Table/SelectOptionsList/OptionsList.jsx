@@ -53,7 +53,7 @@ export const OptionsList = ({
     const columns = props.component.component.definition.properties.columns;
     const column = columns.value[index];
     const options = column.options || [];
-    options.push({ name: 'one', value: '1' });
+    options.push({ label: 'one', value: '1' });
     column.options = options;
     const newColumns = columns.value;
     newColumns[index] = column;
@@ -96,11 +96,11 @@ export const OptionsList = ({
             </label>
             <CodeHinter
               currentState={currentState}
-              initialValue={option.name}
+              initialValue={option?.label}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
-              placeholder={option.name}
+              placeholder={option?.label}
               onChange={(value) => handleSelectOption(option, optionIndex, value, index, 'name')}
               componentName={getPopoverFieldSource(column.columnType, 'labels')}
               popOverCallback={(showing) => {
@@ -118,7 +118,7 @@ export const OptionsList = ({
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
-              placeholder={option.name}
+              placeholder={option.value}
               onChange={(value) => handleSelectOption(option, optionIndex, value, index, 'value')}
               componentName={getPopoverFieldSource(column.columnType, 'values')}
               popOverCallback={(showing) => {
@@ -137,10 +137,10 @@ export const OptionsList = ({
     }
     return {
       options: [
-        { name: 'Jane Cooper', value: 'Jane Copoper' },
-        { name: 'Cameron Williamson', value: 'Cameron Williamson' },
-        { name: 'Leslie Alexander', value: 'Leslie Alexander' },
-        { name: 'Brooklyn Simmons', value: 'Brooklyn Simmons' },
+        { label: 'Jane Cooper', value: 'Jane Copoper' },
+        { label: 'Cameron Williamson', value: 'Cameron Williamson' },
+        { label: 'Leslie Alexander', value: 'Leslie Alexander' },
+        { label: 'Brooklyn Simmons', value: 'Brooklyn Simmons' },
       ],
     };
   };
@@ -191,9 +191,9 @@ export const OptionsList = ({
                   return (
                     <div className="w-100" {...droppableProps} ref={innerRef}>
                       {column?.options?.map((option, optionIndex) => {
-                        const resolvedItemName = option.name;
+                        const resolvedItemName = option.label;
                         return (
-                          <Draggable key={option.name} draggableId={option.name} index={optionIndex}>
+                          <Draggable key={option.label} draggableId={option.label} index={optionIndex}>
                             {(provided, snapshot) => {
                               return (
                                 <div
