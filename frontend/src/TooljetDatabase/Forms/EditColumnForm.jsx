@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import tjdbDropdownStyles, { dataTypes, formatOptionLabel } from '../constants';
+import WarningInfo from '../Icons/Edit-information.svg';
 
 const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
   const [columnName, setColumnName] = useState(selectedColumn?.Header);
@@ -107,10 +108,19 @@ const ColumnForm = ({ onCreate, onClose, selectedColumn }) => {
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title ">
         <h3 className="" data-cy="create-new-column-header">
-          Create a new column
+          Edit column
         </h3>
       </div>
       <div className="card-body">
+        <div className="edit-warning-info mb-3">
+          <div className="edit-warning-icon">
+            <WarningInfo />
+          </div>
+          <span className="edit-warning-text">
+            Editing the column could break queries and apps connected with this table. Please wait for ToolJet to update
+            links before making changes to queries.
+          </span>
+        </div>
         <div className="mb-3 tj-app-input">
           <div className="form-label" data-cy="column-name-input-field-label">
             Column name
