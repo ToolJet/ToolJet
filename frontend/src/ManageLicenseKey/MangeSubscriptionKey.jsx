@@ -30,7 +30,7 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings, darkMode
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
-    return () => window.$chatwoot.toggleBubbleVisibility('hide');
+    return () => window.$chatwoot?.toggleBubbleVisibility('hide');
   }, []);
 
   const defaultOrgName = (groupName) => {

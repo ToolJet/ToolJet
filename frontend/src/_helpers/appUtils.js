@@ -327,7 +327,7 @@ export async function runTransformation(
 }
 
 export async function executeActionsForEventId(_ref, eventId, events = [], mode, customVariables) {
-  const filteredEvents = events.filter((event) => event?.event.eventId === eventId);
+  const filteredEvents = events?.filter((event) => event?.event.eventId === eventId);
 
   for (const event of filteredEvents) {
     await executeAction(_ref, event.event, mode, customVariables); // skipcq: JS-0032
