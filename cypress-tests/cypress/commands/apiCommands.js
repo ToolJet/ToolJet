@@ -260,6 +260,11 @@ Cypress.Commands.add(
           },
         }).then((queryResponse) => {
           expect(queryResponse.status).to.equal(201);
+          Cypress.log({
+            name: "Created queery",
+            displayName: "QUERY CREATED",
+            message: `: ${queryName}: ${dsKind}`,
+          });
         });
       });
     });
