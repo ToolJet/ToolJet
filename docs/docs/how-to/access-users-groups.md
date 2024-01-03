@@ -3,8 +3,6 @@ id: access-currentuser
 title: Enable/Disable a Component Using Current User's Property
 ---
 
-# Enable/Disable a component using current user's property
-
 Let's take a look at the exposed variables of the currentUser property by clicking on the **[inspector](/docs/app-builder/left-sidebar/#inspector)** icon on the left sidebar:
 
 - **email** : The value can accessed using `{{globals.currentUser.email}}`

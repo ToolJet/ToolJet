@@ -1,6 +1,6 @@
 ---
 id: loading-image-pdf-from-db
-title: Upload and view images and PDFs using base64 string
+title: Upload And View Images and PDFs Using Base64 String
 ---
 
 This guide shows how to upload and view images and PDFs using the base64 string format. 
