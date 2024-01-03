@@ -6,7 +6,15 @@ import { renderElement } from '../Utils';
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/Editor/Box';
-const SHOW_ADDITIONAL_ACTIONS = ['Text', 'TextInput', 'DropDown', 'NumberInput', 'PasswordInput', 'ToggleSwitch'];
+const SHOW_ADDITIONAL_ACTIONS = [
+  'Text',
+  'TextInput',
+  'DropDown',
+  'NumberInput',
+  'PasswordInput',
+  'ToggleSwitch',
+  'Checkbox',
+];
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -79,7 +87,7 @@ export const baseComponentProperties = (
     'Additional Actions': Object.keys(AllComponents).filter(
       (component) => !SHOW_ADDITIONAL_ACTIONS.includes(component)
     ),
-    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'ToggleSwitch'],
+    General: ['Modal', 'TextInput', 'PasswordInput', 'NumberInput', 'ToggleSwitch', 'Checkbox'],
     Layout: [],
   };
   if (component.component.component === 'Listview') {

@@ -235,13 +235,13 @@ export const ToggleSwitch = ({
         <div
           className={`d-flex flex-column `}
           style={{
-            height,
+            height: padding === 'default' && height,
           }}
         >
           <div
             className={`d-flex ${alignment === 'right' ? 'flex-row-reverse' : ''}`}
             style={{
-              height,
+              height: padding === 'default' && height,
               display: visibility ? 'flex' : 'none',
               boxShadow,
               gap: '8px ',
