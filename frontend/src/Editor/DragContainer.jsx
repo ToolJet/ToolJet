@@ -215,6 +215,7 @@ export default function DragContainer({
               style={{
                 transform: `translate(332px, -134px)`,
                 ...getDimensions(i.id),
+                ...(hoveredComponent === i.id ? { zIndex: 2 } : {}),
               }}
             >
               {renderWidget(i.id, undefined, (dragged) => {
