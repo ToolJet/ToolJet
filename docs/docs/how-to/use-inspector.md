@@ -1,6 +1,6 @@
 ---
 id: use-inspector
-title: How to Use the Inspector in App-Builder
+title: Use Inspector in App-Builder
 ---
 
 This guide introduces **Inspector** in the app-builder, a feature that lets you view data related to queries, components, global variables, page-related variables, user-set variables and constants.
