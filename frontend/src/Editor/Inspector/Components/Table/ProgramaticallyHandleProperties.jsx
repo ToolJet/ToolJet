@@ -26,6 +26,8 @@ export const ProgramaticallyHandleProperties = ({
         return props.linkTarget;
       case 'useDynamicOptions':
         return props?.useDynamicOptions;
+      case 'makeDefaultOption':
+        return props?.[index]?.makeDefaultOption;
       default:
         return;
     }
@@ -42,9 +44,17 @@ export const ProgramaticallyHandleProperties = ({
   };
 
   const value = getValueBasedOnProperty(property, props);
-  const param = { name: property };
-  const definition = { value, fxActive: props.fxActive };
-  const initialValue = getInitialValue(property, definition);
+  const param = { name: property === 'makeDefaultOption' ? `options::${property}` : property };
+  let definition;
+  let initialValue;
+  let isFxActive = Array.isArray(props) ? props?.[index]?.fxActive ?? false : props.fxActive ?? false;
+  if (Array.isArray(props)) {
+    definition = { value, fxActive: props?.[index]?.fxActive };
+    initialValue = getInitialValue(property, definition);
+  } else {
+    definition = { value, fxActive: props.fxActive };
+    initialValue = getInitialValue(property, definition);
+  }
 
   const options = {};
   return (
@@ -64,7 +74,7 @@ export const ProgramaticallyHandleProperties = ({
         onFxPress={(active) => {
           callbackFunction(index, 'fxActive', active);
         }}
-        fxActive={props?.fxActive ?? false}
+        fxActive={isFxActive}
         component={component.component}
         className={options.className}
       />

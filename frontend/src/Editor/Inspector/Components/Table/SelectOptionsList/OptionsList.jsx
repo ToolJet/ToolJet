@@ -82,6 +82,17 @@ export const OptionsList = ({
       newColumns[index] = column;
       props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
     };
+
+    const handleDefaultOptionSelection = (optionIndex, property, value) => {
+      const columns = props.component.component.definition.properties.columns;
+      const column = columns.value[index];
+      const options = column.options;
+      options[optionIndex][property] = value;
+      column.options = options;
+      const newColumns = columns.value;
+      newColumns[index] = column;
+      props.paramUpdated({ name: 'columns' }, 'value', newColumns, 'properties', true);
+    };
     return (
       <Popover
         id="popover-basic"
@@ -101,10 +112,10 @@ export const OptionsList = ({
               mode="javascript"
               lineNumbers={false}
               placeholder={option?.label}
-              onChange={(value) => handleSelectOption(option, optionIndex, value, index, 'name')}
-              componentName={getPopoverFieldSource(column.columnType, 'labels')}
+              onChange={(value) => handleSelectOption(option, optionIndex, value, index, 'label')}
+              componentName={getPopoverFieldSource(column.columnType, 'options::label')}
               popOverCallback={(showing) => {
-                setColumnPopoverRootCloseBlocker('labels', showing);
+                setColumnPopoverRootCloseBlocker('options::label', showing);
               }}
             />
           </div>
@@ -120,12 +131,27 @@ export const OptionsList = ({
               lineNumbers={false}
               placeholder={option.value}
               onChange={(value) => handleSelectOption(option, optionIndex, value, index, 'value')}
-              componentName={getPopoverFieldSource(column.columnType, 'values')}
+              componentName={getPopoverFieldSource(column.columnType, 'options::value')}
               popOverCallback={(showing) => {
-                setColumnPopoverRootCloseBlocker('values', showing);
+                setColumnPopoverRootCloseBlocker('options::value', showing);
               }}
             />
           </div>
+          <ProgramaticallyHandleProperties
+            label="Make this option as default"
+            currentState={currentState}
+            index={optionIndex}
+            darkMode={darkMode}
+            callbackFunction={handleDefaultOptionSelection}
+            property="makeDefaultOption"
+            props={column.options}
+            component={component}
+            paramMeta={{
+              type: 'toggle',
+              displayName: 'Make this option as default',
+            }}
+            paramType="properties"
+          />
         </Popover.Body>
       </Popover>
     );

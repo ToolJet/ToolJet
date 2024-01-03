@@ -63,6 +63,7 @@ export const CustomSelect = ({
         }}
         useCustomStyles={true}
         styles={customStyles}
+        defaultValue={options[0]}
       />
     </div>
   );

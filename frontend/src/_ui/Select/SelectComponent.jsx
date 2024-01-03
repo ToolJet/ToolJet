@@ -41,7 +41,7 @@ export const SelectComponent = ({
           return option;
         });
 
-  const currentValue = selectOptions.find((option) => option.value === value) || value;
+  const currentValue = value ? selectOptions.find((option) => option.value === value) || value : defaultValue;
 
   const handleOnChange = (data) => {
     if (isMulti) {
@@ -62,7 +62,6 @@ export const SelectComponent = ({
   return (
     <Select
       {...restProps}
-      defaultValue={defaultValue}
       isLoading={isLoading}
       isDisabled={isDisabled || isLoading}
       options={selectOptions}
