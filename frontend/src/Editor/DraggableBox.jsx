@@ -226,12 +226,23 @@ export const DraggableBox = React.memo(
               'draggable-box-in-editor': mode === 'edit',
             })}
             onMouseEnter={(e) => {
-              if (e.currentTarget.className.includes(`widget-${id}`)) {
-                onComponentHover?.(id);
+              console.log('e.currentTarget', e.currentTarget, e.target);
+              const closestDraggableBox = e.target.closest('.draggable-box');
+              if (closestDraggableBox) {
+                const classNames = closestDraggableBox.className.split(' ');
+                let compId = null;
+
+                classNames.forEach((className) => {
+                  if (className.startsWith('widget-')) {
+                    compId = className.replace('widget-', '');
+                  }
+                });
+
+                onComponentHover?.(compId);
                 e.stopPropagation();
               }
             }}
-            onMouseLeave={() => {
+            onMouseLeave={(e) => {
               setHoveredComponent('');
             }}
             style={getStyles(isDragging, isSelectedComponent)}
