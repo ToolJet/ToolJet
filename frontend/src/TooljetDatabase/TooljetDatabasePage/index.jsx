@@ -173,10 +173,6 @@ const TooljetDatabasePage = ({ totalTables }) => {
                 <div className="card-body  tj-db-operations-header">
                   <div className="row align-items-center">
                     <div className="col-8 align-items-center p-3">
-                      <CreateColumnDrawer
-                        isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
-                        setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
-                      />
                       {columns?.length > 0 && (
                         <>
                           <CreateRowDrawer
@@ -232,6 +228,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
           </>
         )}
       </div>
+      <CreateColumnDrawer
+        isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
+        setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
+      />
     </div>
   );
 };

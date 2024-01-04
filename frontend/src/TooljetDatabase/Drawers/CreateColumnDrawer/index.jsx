@@ -4,24 +4,12 @@ import { toast } from 'react-hot-toast';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen }) => {
   const { organizationId, selectedTable, setColumns, setSelectedTableData } = useContext(TooljetDatabaseContext);
 
   return (
     <>
-      <button
-        onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
-        className={`ghost-black-operation ${isCreateColumnDrawerOpen ? 'open' : ''}`}
-        data-cy="add-new-column-button"
-      >
-        <SolidIcon name="column" width="14" fill={isCreateColumnDrawerOpen ? '#3E63DD' : '#889096'} />
-        <span className=" tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }}>
-          Add new column
-        </span>
-      </button>
-
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">
         <CreateColumnForm
           onCreate={() => {
