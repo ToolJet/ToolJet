@@ -104,6 +104,7 @@ jobs:
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
 
       - name: Set up database
         run: |
