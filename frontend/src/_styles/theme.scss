@@ -11167,6 +11167,7 @@ tbody {
   flex-direction: column;
   font-family: 'IBM Plex Sans';
   font-style: normal;
+  position: relative;
 
   .text-danger {
     font-weight: 400 !important;
@@ -11234,6 +11235,21 @@ tbody {
 
   }
 
+}
+
+.tj-app-input-wrapper {
+  display: flex;
+
+  .eye-icon {
+    position: absolute;
+    right: 8px;
+    top: 5px;
+    cursor: pointer;
+  }
+
+  .form-control {
+    padding-right: 2.2rem;
+  }
 }
 
 
@@ -11854,6 +11870,14 @@ tbody {
     &:hover {
       background-color: var(--slate2) !important;
     }
+  }
+
+  input:disabled {
+    background-color: var(--slate3) !important;
+  }
+
+  .react-select__control--is-disabled {
+    background-color: var(--slate3) !important;
   }
 }
 

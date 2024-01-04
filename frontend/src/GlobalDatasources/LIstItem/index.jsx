@@ -33,7 +33,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
 
   const focusModal = () => {
     const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
-    element.focus();
+    element?.focus();
   };
 
   const selectDataSource = () => {

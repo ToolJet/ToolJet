@@ -27,6 +27,7 @@ export const GlobalDatasources = (props) => {
   const [isLoading, setLoading] = useState(true);
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
+  const [environmentLoading, setEnvironmentLoading] = useState(false);
   const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -103,10 +104,22 @@ export const GlobalDatasources = (props) => {
     globalDatasourceService
       .getAll(current_organization_id)
       .then((data) => {
-        const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
+        const orderedDataSources = data.data_sources
+          .map((ds) => {
+            if (ds.options && ds.options.connection_limit) {
+              return {
+                ...ds,
+                options: {
+                  ...ds.options,
+                  connectionLimit: ds.options.connection_limit,
+                },
+              };
+            }
+            return ds;
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
         const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
-
         if (!resetSelection && ds) {
           setEditing(true);
           setSelectedDataSource(ds);
@@ -167,8 +180,10 @@ export const GlobalDatasources = (props) => {
   };
 
   const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
+    setEnvironmentLoading(true);
     globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
       setSelectedDataSource({ ...data });
+      setEnvironmentLoading(false);
     });
   };
 
@@ -198,6 +213,7 @@ export const GlobalDatasources = (props) => {
       activeDatasourceList,
       setActiveDatasourceList,
       setLoading,
+      environmentLoading,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -210,6 +226,7 @@ export const GlobalDatasources = (props) => {
       currentEnvironment,
       isLoading,
       activeDatasourceList,
+      environmentLoading,
     ]
   );
 

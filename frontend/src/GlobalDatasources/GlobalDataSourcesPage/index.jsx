@@ -1,13 +1,14 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import cx from 'classnames';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import { Sidebar } from '../Sidebar';
 import { GlobalDataSourcesContext } from '..';
 import { DataSourceManager } from '@/Editor/DataSourceManager';
 import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
-import { pluginsService, globalDatasourceService } from '@/_services';
+import { pluginsService, globalDatasourceService, authenticationService } from '@/_services';
 import { Card } from '@/_ui/Card';
 import { SegregatedList } from '../SegregatedList';
 import { SearchBox } from '@/_components';
@@ -15,6 +16,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { canDeleteDataSource } from '@/_helpers';
+import { ToolTip } from '@/_components/ToolTip';
 
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
@@ -22,7 +24,11 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   const [filteredDataSources, setFilteredDataSources] = useState([]);
   const [queryString, setQueryString] = useState('');
   const [addingDataSource, setAddingDataSource] = useState(false);
+  const [suggestingDataSource, setSuggestingDataSource] = useState(false);
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { admin } = authenticationService.currentSessionValue;
+  const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
   const [modalProps, setModalProps] = useState({
     backdrop: false,
     dialogClassName: `datasource-edit-modal`,
@@ -49,6 +55,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     canCreateDataSource,
     canUpdateDataSource,
     isLoading,
+    environmentLoading,
   } = useContext(GlobalDataSourcesContext);
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -104,15 +111,22 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     const searchQuery = e.target.value;
     setQueryString(searchQuery);
 
-    const arr = [];
-    const filteredDatasources = datasourcesGroups().filter((group) => group.key === activeDatasourceList)[0].list;
+    let arr = [];
 
-    filteredDatasources.forEach((datasource) => {
-      if (datasource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-        arr.push(datasource);
-      }
+    const filtered = datasourcesGroups().map((datasourceGroup) => {
+      datasourceGroup.list.map((dataSource) => {
+        if (dataSource.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+          arr.push({ ...dataSource, type: datasourceGroup.type });
+        }
+      });
+      datasourceGroup.list = [...arr];
+      (datasourceGroup.renderDatasources = () => renderCardGroup(datasourceGroup.list, datasourceGroup.type)),
+        (arr = []);
+      return datasourceGroup;
     });
-    setFilteredDataSources([...arr]);
+    const filteredDsList = filtered.reduce((acc, filteredGroup) => [...acc, ...filteredGroup.list], []);
+    filteredDsList.length >= 1 ? setSuggestingDataSource(false) : setSuggestingDataSource(true);
+    setFilteredDataSources([...filtered]);
   };
 
   const createDataSource = (dataSource) => {
@@ -171,8 +185,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   };
 
   const segregateDataSources = () => {
-    const datasources = datasourcesGroups();
-    const searchPlaceholder = datasources.filter((ds) => ds.key === activeDatasourceList)[0];
+    const datasources = queryString && queryString.length > 0 ? filteredDataSources : datasourcesGroups();
 
     return (
       <div className="datasource-list-container">
@@ -182,21 +195,40 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               dataCy={`home-page`}
               className="border-0 homepage-search"
               darkMode={darkMode}
-              placeholder={`Search ${searchPlaceholder?.type || 'datasources'}`}
+              placeholder={`Search  data sources`}
               initialValue={queryString}
               width={'100%'}
               callBack={handleSearch}
-              onClearCallback={() => setQueryString('')}
+              onClearCallback={() => {
+                setQueryString('');
+                setSuggestingDataSource(false);
+              }}
             />
             <div className="liner mb-4"></div>
           </div>
-          {datasources
-            .filter((ds) => ds.key === activeDatasourceList)
-            .map((dataSource) => {
+          {suggestingDataSource ? (
+            <center className="empty-ds-container">
+              <div>
+                <p className="mt-2 tj-text-lg font-weight-500 tj-text">{`No results for "${queryString}"`}</p>
+              </div>
+              <img src="assets/images/icons/no-results.svg" width="200" height="200" />
+            </center>
+          ) : (
+            datasources.map((dataSource) => {
               {
-                return dataSource.renderDatasources();
+                return (
+                  (dataSource.list.length > 0 || (!queryString && dataSource.type === 'Plugins')) && (
+                    <>
+                      <div id={dataSource.key} className="tj-text-md font-weight-500 tj-text">
+                        {dataSource.type}
+                      </div>
+                      {dataSource.renderDatasources()}
+                    </>
+                  )
+                );
               }
-            })}
+            })
+          )}
         </div>
       </div>
     );
@@ -206,10 +238,17 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     const dataSourceList = datasourcesGroups().splice(0, 5);
     const handleOnSelect = (activekey, type) => {
       setQueryString('');
+      setSuggestingDataSource(false);
       toggleDataSourceManagerModal(false);
       setActiveDatasourceList(activekey);
       updateSidebarNAV(type);
       setSelectedDataSource(null);
+      setTimeout(() => {
+        const element = document.getElementById(activekey);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     };
     return (
       <div>
@@ -222,52 +261,53 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     );
   };
 
-  const renderCardGroup = (source) => {
-    const addDataSourceBtn = (item) => (
-      <ButtonSolid
-        disabled={addingDataSource}
-        isLoading={addingDataSource}
-        variant="secondary"
-        onClick={() => createDataSource(item)}
-        data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
-      >
-        <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
-        <span className="ml-2">Add</span>
-      </ButtonSolid>
-    );
-
-    if (queryString && queryString.length > 0) {
-      const filteredDatasources = filteredDataSources?.map((datasource) => {
-        const src = datasource?.iconFile?.data
-          ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
-          : datasource.kind.toLowerCase();
-
-        return {
-          ...datasource,
-          src,
-          title: datasource.name,
-        };
-      });
+  const renderCardGroup = (source, type) => {
+    const canAddDataSource = canCreateDataSource() || canDeleteDataSource();
+    if (type === 'Plugins' && source.length === 0) {
       return (
-        <>
-          <div className="row row-deck mt-4 ">
-            {filteredDatasources?.map((item) => (
-              <Card
-                key={item.key}
-                title={item.title}
-                src={item.src}
-                usePluginIcon={isEmpty(item?.iconFile?.data)}
-                height="35px"
-                width="35px"
-                actionButton={addDataSourceBtn(item)}
-                className="datasource-card"
-                titleClassName={'datasource-card-title'}
-              />
-            ))}
+        <div className="add-plugins-container">
+          <div className="warning-container mb-2">
+            <SolidIcon name="warning" />
           </div>
-        </>
+          <div className="tj-text-sm font-weight-500 tj-text">No plugins added</div>
+          {canAddDataSource && (
+            <>
+              <div className="tj-text-xsm font-weight-400 mt-2 mb-3">
+                Browse through plugins in marketplace to add them as a Data Source.{' '}
+              </div>
+              <ButtonSolid
+                onClick={() => {
+                  marketplaceEnabled
+                    ? navigate('/integrations')
+                    : toast.error('Please enable marketplace to add plugins');
+                }}
+                style={{ margin: 'auto' }}
+                variant="secondary"
+              >
+                Add plugins
+              </ButtonSolid>
+            </>
+          )}
+        </div>
       );
     }
+
+    const addDataSourceBtn = (item) => (
+      <ToolTip message="You do not have permission to add a data source" show={!canAddDataSource} placement="bottom">
+        <div>
+          <ButtonSolid
+            disabled={addingDataSource || !canAddDataSource}
+            isLoading={addingDataSource}
+            variant="secondary"
+            onClick={() => createDataSource(item)}
+            data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
+          >
+            <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
+            <span className="ml-2">Add</span>
+          </ButtonSolid>
+        </div>
+      </ToolTip>
+    );
 
     const datasources = source.map((datasource) => {
       const src = datasource?.iconFile?.data
@@ -283,7 +323,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
 
     return (
       <>
-        <div className="row row-deck mt-4">
+        <div className="row row-deck mt-3">
           {datasources.map((item) => (
             <Card
               key={item.key}
@@ -312,17 +352,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     };
     const dataSourceList = [
       {
-        type: 'All Datasources',
-        key: '#alldatasources',
-        list: [
-          ...allDataSourcesList.databases,
-          ...allDataSourcesList.apis,
-          ...allDataSourcesList.cloudStorages,
-          ...allDataSourcesList.plugins,
-        ],
-        renderDatasources: () => renderCardGroup(allDataSourcesList, 'All Datasources'),
-      },
-      {
         type: 'Databases',
         key: '#databases',
         list: allDataSourcesList.databases,
@@ -335,7 +364,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         renderDatasources: () => renderCardGroup(allDataSourcesList.apis, 'APIs'),
       },
       {
-        type: 'Cloud Storage',
+        type: 'Cloud Storages',
         key: '#cloudstorage',
         list: allDataSourcesList.cloudStorages,
         renderDatasources: () => renderCardGroup(allDataSourcesList.cloudStorages, 'Cloud Storages'),
@@ -345,12 +374,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         key: '#plugins',
         list: allDataSourcesList.plugins,
         renderDatasources: () => renderCardGroup(allDataSourcesList.plugins, 'Plugins'),
-      },
-      {
-        type: 'Filtered Datasources',
-        key: '#filtereddatasources',
-        list: allDataSourcesList.filteredDatasources,
-        renderDatasources: () => renderCardGroup(filteredDataSources, activeDatasourceList),
       },
     ];
 
@@ -379,6 +402,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
             showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
+            environmentLoading={environmentLoading}
           />
         )}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}

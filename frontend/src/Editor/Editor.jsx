@@ -321,17 +321,13 @@ const EditorComponent = (props) => {
     }
   }, [currentLayout, mounted]);
 
-  useEffect(() => {
-    if (mounted && JSON.stringify(prevEventsStoreRef.current) !== JSON.stringify(events)) {
-      props.ymap?.set('eventHandlersUpdated', {
-        updated: true,
-        currentVersionId: currentVersionId,
-        currentSessionId: currentSessionId,
-      });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ events })]);
+  const handleYmapEventUpdates = () => {
+    props.ymap?.set('eventHandlersUpdated', {
+      currentVersionId: currentVersionId,
+      currentSessionId: currentSessionId,
+      update: true,
+    });
+  };
 
   /**
    * ThandleMessage event listener in the login component for iframe communication.
@@ -370,6 +366,7 @@ const EditorComponent = (props) => {
         name: app.name,
         slug: app.slug,
         creationMode: app?.creationMode || app?.creation_mode,
+        current_version_id: app.current_version_id,
       })),
     });
   };
@@ -458,8 +455,6 @@ const EditorComponent = (props) => {
 
         // Trigger real-time save with specific options
 
-        // const ymapOpts = ymapUpdates?.opts;
-
         realtimeSave(props.ymap?.get('appDef').newDefinition, {
           skipAutoSave: true,
           skipYmapUpdate: true,
@@ -469,7 +464,7 @@ const EditorComponent = (props) => {
         });
       }
 
-      if (ymapEventHandlersUpdated) {
+      if (ymapEventHandlersUpdated?.update === true) {
         if (
           !ymapEventHandlersUpdated.currentSessionId ||
           ymapEventHandlersUpdated.currentSessionId === currentSessionId
@@ -741,16 +736,13 @@ const EditorComponent = (props) => {
       releasedId && useAppVersionStore.getState().actions.updateReleasedVersionId(releasedId);
     }
 
-    const isMultiEnvironmentActive = useEditorStore.getState().featureAccess?.multiEnvironment ?? false;
-
     const currentAppVersionEnvId =
-      !isMultiEnvironmentActive && useAppVersionStore.getState().isVersionReleased
-        ? data['editing_version']['promoted_from'] || data['editing_version']['promotedFrom']
-        : data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
+      data['editing_version']['current_environment_id'] || data['editing_version']['currentEnvironmentId'];
 
     const currentOrgId = data?.organization_id || data?.organizationId;
 
-    const currentEnvironmentId = !environmentSwitch ? currentAppVersionEnvId : selectedEnvironmentId;
+    const currentEnvironmentId =
+      !environmentSwitch && !versionSwitched ? currentAppVersionEnvId : selectedEnvironmentId;
     await fetchOrgEnvironmentConstants(currentEnvironmentId);
 
     let envDetails = useEditorStore.getState().currentAppEnvironment;
@@ -847,7 +839,12 @@ const EditorComponent = (props) => {
     }
   };
 
-  const setAppDefinitionFromVersion = (appData) => {
+  const setAppDefinitionFromVersion = (
+    appData,
+    versionSwitched = false,
+    isEnvironmentSwitched = false,
+    selectedEnvironmentId = null
+  ) => {
     const version = appData?.editing_version?.id;
     if (version?.id !== editingVersionId) {
       if (version?.id === currentVersionId) {
@@ -861,7 +858,7 @@ const EditorComponent = (props) => {
       });
       onEditorFreeze(false);
       setAppVersionPromoted(false);
-      callBack(appData, null, true, false, null);
+      callBack(appData, null, versionSwitched, isEnvironmentSwitched, selectedEnvironmentId);
       initComponentVersioning();
     }
   };
@@ -1475,6 +1472,17 @@ const EditorComponent = (props) => {
     useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   };
 
+  const navigateToPage = (queryParams = [], handle) => {
+    const appId = useAppDataStore.getState()?.appId;
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+
+    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
+  };
+
   const switchPage = (pageId, queryParams = []) => {
     // This are fetched from store to handle runQueriesOnAppLoad
     const currentPageId = useEditorStore.getState().currentPageId;
@@ -1489,13 +1497,7 @@ const EditorComponent = (props) => {
 
     if (!name || !handle) return;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
-    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
-
-    props?.navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${handle}?${queryParamsString}`, {
-      state: {
-        isSwitchingPage: true,
-      },
-    });
+    navigateToPage(queryParams, handle);
 
     const page = {
       id: pageId,
@@ -1504,6 +1506,7 @@ const EditorComponent = (props) => {
       variables: copyOfAppDefinition.pages[pageId]?.variables ?? {},
     };
 
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const globals = {
       ...currentState.globals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
@@ -1700,9 +1703,8 @@ const EditorComponent = (props) => {
     });
 
     toast.success('Page handle updated successfully');
-
     const queryParams = getQueryParams();
-    switchPage(pageId, Object.entries(queryParams));
+    navigateToPage(Object.entries(queryParams), newHandle);
   };
 
   const updateOnSortingPages = (newSortedPages) => {
@@ -1832,7 +1834,7 @@ const EditorComponent = (props) => {
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {isVersionReleased && <ReleasedVersionError />}
       {!isVersionReleased && isEditorFreezed && creationMode !== 'GIT' && <FreezeVersionInfo />}
-      <EditorContextWrapper>
+      <EditorContextWrapper handleYmapEventUpdates={handleYmapEventUpdates}>
         <EditorHeader
           darkMode={props.darkMode}
           appDefinition={_.cloneDeep(appDefinition)}

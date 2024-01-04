@@ -441,7 +441,8 @@ export class OauthService {
         organizationDetails,
         isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
         false,
-        user
+        user,
+        manager
       );
     });
   }

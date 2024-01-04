@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -22,6 +22,7 @@ import posthog from 'posthog-js';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
+import { EditorContext } from '../Context/EditorContextWrapper';
 
 export const EventManager = ({
   sourceId,
@@ -55,6 +56,8 @@ export const EventManager = ({
     events: state.events,
   }));
 
+  const { handleYmapEventUpdates } = useContext(EditorContext) || {};
+
   const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler } =
     useAppDataActions();
 
@@ -71,6 +74,11 @@ export const EventManager = ({
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    handleYmapEventUpdates && handleYmapEventUpdates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ allAppEvents })]);
 
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
@@ -216,7 +224,7 @@ export const EventManager = ({
   function getAllApps() {
     let appsOptionsList = [];
     apps
-      .filter((item) => item.slug !== undefined && item.id !== appId)
+      .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
       .forEach((item) => {
         appsOptionsList.push({
           name: item.name,
@@ -335,6 +343,8 @@ export const EventManager = ({
       attachedTo: sourceId,
       index: eventIndex,
     });
+
+    handleYmapEventUpdates();
   }
 
   //following two are functions responsible for on change and value for the control specific actions
