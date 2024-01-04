@@ -23,9 +23,9 @@ export const BlankPage = function BlankPage({
   const navigate = useNavigate();
 
   const staticTemplates = [
-    { id: 's3-file-explorer', name: 'S3 file explore' },
-    { id: 'job-application-tracker', name: 'Job application tracker' },
-    { id: 'whatsapp-and-sms-crm', name: 'Whatsapp and sms crm' },
+    { id: 'customer-ticketing-form', name: 'Customer ticketing form' },
+    { id: 'inventory-management-tooljet-db', name: 'Inventory management' },
+    { id: 'kpi-management-dashboard-tooljet-db', name: 'KPI management dashboard' },
   ];
 
   const appCreationDisabled = !canCreateApp();
