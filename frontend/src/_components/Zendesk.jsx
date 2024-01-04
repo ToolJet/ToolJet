@@ -5,6 +5,7 @@ import { retrieveWhiteLabelText } from '../_helpers/utils';
 import Input from '@/_ui/Input';
 import Radio from '@/_ui/Radio';
 import Button from '@/_ui/Button';
+import EncryptedFieldWrapper from './EncyrptedFieldWrapper';
 
 const Zendesk = ({
   optionchanged,
@@ -15,6 +16,7 @@ const Zendesk = ({
   currentAppEnvironmentId,
   workspaceConstants,
   isDisabled,
+  optionsChanged,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
@@ -75,21 +77,23 @@ const Zendesk = ({
           />
         </div>
         <div className="col-md-12 mb-2">
-          <label className="form-label text-muted mt-3">
-            Client Secret
-            <small className="text-green mx-2">
-              <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
-              Encrypted
-            </small>
-          </label>
-          <Input
-            type="password"
-            className="form-control"
-            onChange={(e) => optionchanged('client_secret', e.target.value)}
-            value={options?.client_secret?.value}
-            workspaceConstants={workspaceConstants}
-            disabled={isDisabled}
-          />
+          <EncryptedFieldWrapper
+            options={options}
+            selectedDataSource={selectedDataSource}
+            optionchanged={optionchanged}
+            optionsChanged={optionsChanged}
+            name="client_secret"
+            label="Client Secret"
+          >
+            <Input
+              type="password"
+              className="form-control"
+              onChange={(e) => optionchanged('client_secret', e.target.value)}
+              value={options?.client_secret?.value}
+              workspaceConstants={workspaceConstants}
+              disabled={isDisabled}
+            />
+          </EncryptedFieldWrapper>
         </div>
 
         <div className="col-md-12">

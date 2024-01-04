@@ -37,9 +37,9 @@ export const ERROR_TYPES = {
 
 export const ERROR_MESSAGES = {
   'url-unavailable': {
-    title: 'URL unavailable',
+    title: 'App URL Unavailable',
     message:
-      'This URL is not accessible because it has not been released yet. Please either release it or contact admin for access.',
+      'The app URL is currently unavailable because the app has not been released. Please either release it or contact admin for access.',
     cta: 'Back to home page',
     queryParams: [],
   },

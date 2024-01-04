@@ -15,7 +15,6 @@ import {
 } from "Support/utils/commonWidget";
 
 import {
-
     addQuery,
     selectDatasource,
 } from "Support/utils/dataSource";
@@ -231,13 +230,12 @@ describe("Workspace constants", () => {
 
         cy.apiCreateApp(data.appName);
         cy.openApp();
-        cy.renameApp(data.appName);
-        cy.dragAndDropWidget("Text", 550, 650);
 
         addQuery("table_preview", `SELECT * FROM tooljet;`, data.dsName);
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
         cy.get(".custom-toggle-switch>.switch>").eq(3).click();
         cy.waitForAutoSave();
+        cy.dragAndDropWidget("Text", 550, 650);
         editAndVerifyWidgetName(data.widgetName);
         cy.waitForAutoSave();
 

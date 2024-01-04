@@ -424,15 +424,13 @@ export class OauthService {
           manager
         );
       }
-      return await this.validateLicense(
-        await this.authService.generateLoginResultPayload(
-          response,
-          userDetails,
-          organizationDetails,
-          isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
-          false,
-          user
-        ),
+      return await this.authService.generateLoginResultPayload(
+        response,
+        userDetails,
+        organizationDetails,
+        isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
+        false,
+        user,
         manager
       );
     });

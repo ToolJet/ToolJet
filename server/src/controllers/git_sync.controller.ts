@@ -39,24 +39,15 @@ export class GitSyncController {
   ) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('app/:id')
-  async getAppGitByAppId(@User() user, @Param('id') appId: string) {
-    const appGit = await this.gitSyncServices.findAppGitByAppId(appId);
-    return decamelizeKeys({ appGit });
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Get('workspace/:id')
   async getOrgGitByOrgId(@User() user, @Param('id') organizationId: string) {
-    let organizationGit = await this.gitSyncServices.findOrgGitByOrganizationId(organizationId);
+    const organizationGit = await this.gitSyncServices.findOrgGitByOrganizationId(organizationId);
+
+    if (!organizationGit) {
+      return;
+    }
     if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.GIT_SYNC))) {
-      organizationGit = await this.gitSyncServices.setFinalizeConfig(user.id, organizationGit.id, {
-        isFinalized: organizationGit.isFinalized,
-        isEnabled: false,
-        gitUrl: organizationGit.gitUrl,
-        sshPrivateKey: organizationGit.sshPrivateKey,
-        sshPublicKey: organizationGit.sshPublicKey,
-      });
+      organizationGit.isEnabled = false;
     }
     return decamelizeKeys({ organizationGit });
   }
@@ -89,11 +80,10 @@ export class GitSyncController {
     @Param('id') organizationGitId: string,
     @Body() organizationGitUpdateDto: OrganizationGitUpdateDto
   ) {
-    const userId = user.id;
-
     if (!(await this.usersService.userCan(user, null, 'ConfigureGitSync', null)))
       throw new ForbiddenException('You do not have permissions to perform this action');
-    const data = await this.gitSyncServices.setFinalizeConfig(userId, organizationGitId, organizationGitUpdateDto);
+
+    const data = await this.gitSyncServices.setFinalizeConfig(user.id, organizationGitId, organizationGitUpdateDto);
     return decamelizeKeys({ data });
   }
 

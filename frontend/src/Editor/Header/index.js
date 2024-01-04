@@ -43,6 +43,7 @@ export default function EditorHeader({
   setCurrentAppVersionPromoted,
   fetchEnvironments,
   isEditorFreezed,
+  isSocketOpen,
 }) {
   const currentUser = useCurrentUser();
   const {
@@ -94,7 +95,8 @@ export default function EditorHeader({
     });
   };
   // a flag to disable the release button if the current environment is not production
-  const shouldDisablePromote = isSaving || currentAppEnvironment.priority < currentAppVersionEnvironment.priority;
+  const shouldDisablePromote =
+    environments.length === 0 || isSaving || currentAppEnvironment.priority < currentAppVersionEnvironment.priority;
 
   const shouldRenderReleaseButton =
     app?.id &&
