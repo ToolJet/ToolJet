@@ -12,8 +12,16 @@ import {
   addSupportCSAData,
 } from "Support/utils/events";
 import { multipageSelector } from "Selectors/multipage";
+import {
+  navigateToCreateNewVersionModal
+} from "Support/utils/version";
+import { createNewVersion } from "Support/utils/exportImport";
+
 
 describe("Editor- Inspector", () => {
+  let currentVersion = "";
+  let newVersion = [];
+  let versionFrom = "";
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-App`);
@@ -170,10 +178,17 @@ describe("Editor- Inspector", () => {
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
     cy.apiDeleteApp();
   });
-  it("should verify deletion of component from inspector", () => {
+  it.only("should verify deletion of component from inspector", () => {
     cy.dragAndDropWidget("button", 500, 500);
     cy.get(commonWidgetSelector.sidebarinspector).click();
     deleteComponentFromInspector("button1");
+    cy.verifyToastMessage(
+      `[class=go3958317564]`,
+      "Component deleted! (⌘ + Z to undo)"
+    );
+    navigateToCreateNewVersionModal((currentVersion = "v1"));
+    createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
+    cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
 
   });
 });
