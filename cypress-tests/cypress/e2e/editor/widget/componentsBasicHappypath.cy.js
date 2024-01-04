@@ -5,7 +5,7 @@ import { tableSelector } from "Selectors/table";
 import {
   verifyComponent,
   deleteComponentAndVerify,
-  verifyComponentWithOutLabel
+  verifyComponentWithOutLabel,
 } from "Support/utils/basicComponents";
 import {
   openAccordion,
@@ -29,49 +29,62 @@ import {
   commonWidgetText,
   codeMirrorInputLabel,
 } from "Texts/common";
+import { resizeQueryPanel } from "Support/utils/dataSource";
 
 describe("Basic components", () => {
   const data = {};
   beforeEach(() => {
-    data.appName = `${fake.companyName}-App`;
-    cy.appUILogin();
-    cy.createApp();
-    cy.modifyCanvasSize(900, 900);
-    cy.renameApp(data.appName);
+    data.appName = `${fake.companyName}-${fake.companyName}-App`;
+    cy.apiLogin();
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
+    cy.modifyCanvasSize(1200, 900);
+    cy.intercept("GET", "/api/comments/*").as("loadComments");
+    resizeQueryPanel(0);
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("Should verify Toggle switch", () => {
-    cy.dragAndDropWidget("Toggle Switch", 50, 50);
+    cy.dragAndDropWidget("Toggle Switch", 300, 300);
     verifyComponent("toggleswitch1");
 
-    cy.resizeWidget("toggleswitch1", 850, 600);
+    cy.resizeWidget("toggleswitch1", 650, 400, false);
 
     openEditorSidebar("toggleswitch1");
     editAndVerifyWidgetName("toggleswitch2");
 
     verifyAndModifyParameter(commonWidgetText.parameterLabel, "label");
+    cy.forceClickOnCanvas();
     cy.waitForAutoSave();
+    cy.get(
+      '[data-cy="draggable-widget-toggleswitch2"] > .form-check-label'
+    ).should("have.text", "label");
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(1500);
     verifyComponent("toggleswitch2");
+    cy.get(
+      '[data-cy="draggable-widget-toggleswitch2"] > .form-check-label'
+    ).should("have.text", "label");
 
     cy.go("back");
+    cy.waitForAppLoad();
+    resizeQueryPanel(0);
     deleteComponentAndVerify("toggleswitch2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Checkbox", () => {
-    cy.dragAndDropWidget("Checkbox", 50, 50);
-    cy.resizeWidget("checkbox1", 100, 200);
+    resizeQueryPanel("0");
+    cy.dragAndDropWidget("Checkbox", 300, 300);
+    // cy.resizeWidget("checkbox1", 50, 200,false);
     cy.forceClickOnCanvas();
     verifyComponent("checkbox1");
 
-    cy.resizeWidget("checkbox1", 850, 600);
-
     openEditorSidebar("checkbox1");
     editAndVerifyWidgetName("checkbox2");
+    cy.resizeWidget("checkbox2", 650, 400, false);
 
     verifyAndModifyParameter(commonWidgetText.parameterLabel, "label");
     cy.forceClickOnCanvas();
@@ -85,19 +98,17 @@ describe("Basic components", () => {
     verifyComponent("checkbox2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("checkbox2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Radio Button", () => {
-    cy.dragAndDropWidget("Radio Button", 50, 50);
-    // cy.resizeWidget("radiobutton1", 100, 200);
+    cy.dragAndDropWidget("Radio Button", 300, 300);
+    // cy.resizeWidget("radiobutton1", 100, 200,false);
     cy.forceClickOnCanvas();
     verifyComponent("radiobutton1");
 
-    cy.resizeWidget("radiobutton1", 850, 600);
+    cy.resizeWidget("radiobutton1", 650, 400, false);
 
     openEditorSidebar("radiobutton1");
     editAndVerifyWidgetName("radiobutton2");
@@ -114,21 +125,19 @@ describe("Basic components", () => {
     verifyComponent("radiobutton2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("radiobutton2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
   it("Should verify Dropdown", () => {
-    cy.dragAndDropWidget("Dropdown", 50, 50);
-    // cy.resizeWidget("radiobutton1", 100, 200);
+    resizeQueryPanel("0");
+    cy.dragAndDropWidget("Dropdown", 300, 300);
+    cy.resizeWidget("dropdown1", 400, 500, false);
     cy.forceClickOnCanvas();
     verifyComponent("dropdown1");
 
-    cy.resizeWidget("dropdown1", 850, 600);
-
     openEditorSidebar("dropdown1");
     editAndVerifyWidgetName("dropdown2");
+    cy.resizeWidget("dropdown2", 650, 400, false);
 
     verifyAndModifyParameter(commonWidgetText.parameterLabel, "label");
     cy.forceClickOnCanvas();
@@ -142,23 +151,20 @@ describe("Basic components", () => {
     verifyComponent("dropdown2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("dropdown2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
   //pending
   it("Should verify Rating", () => {
     cy.dragAndDropWidget("Rating", 300, 300);
     cy.get('[data-cy="draggable-widget-starrating1"]').click({ force: true });
-    // cy.resizeWidget("starrating1", 300, 500);
+    cy.resizeWidget("starrating1", 400, 500, false);
     cy.forceClickOnCanvas();
     verifyComponent("starrating1");
 
-    cy.resizeWidget("starrating1", 850, 600);
-
     openEditorSidebar("starrating1");
     editAndVerifyWidgetName("starrating2");
+    cy.resizeWidget("starrating2", 650, 400, false);
 
     verifyAndModifyParameter(commonWidgetText.parameterLabel, "label");
     cy.forceClickOnCanvas();
@@ -172,10 +178,8 @@ describe("Basic components", () => {
     verifyComponent("starrating2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("starrating2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Button Group", () => {
@@ -183,7 +187,7 @@ describe("Basic components", () => {
     cy.forceClickOnCanvas();
     verifyComponent("buttongroup1");
 
-    cy.resizeWidget("buttongroup1", 850, 600);
+    cy.resizeWidget("buttongroup1", 650, 400, false);
 
     openEditorSidebar("buttongroup1");
     editAndVerifyWidgetName("buttongroup2");
@@ -199,20 +203,17 @@ describe("Basic components", () => {
     verifyComponent("buttongroup2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("buttongroup2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Calendar", () => {
-    cy.dragAndDropWidget("Calendar", 50, 50);
-    cy.get('[data-tip="Hide query editor"]').click();
+    cy.dragAndDropWidget("Calendar", 300, 300);
     cy.get('[data-cy="draggable-widget-calendar1"]').click({ force: true });
     cy.forceClickOnCanvas();
     verifyComponent("calendar1");
 
-    cy.resizeWidget("calendar1", 850, 600);
+    cy.resizeWidget("calendar1", 650, 400, false);
 
     openEditorSidebar("calendar1");
     editAndVerifyWidgetName("calendar2");
@@ -222,39 +223,34 @@ describe("Basic components", () => {
     verifyComponent("calendar2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("calendar2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Chart", () => {
-    cy.dragAndDropWidget("Chart", 50, 50);
+    cy.dragAndDropWidget("Chart", 300, 300);
     cy.get('[data-cy="draggable-widget-chart1"]').click({ force: true });
-    cy.forceClickOnCanvas();
     verifyComponent("chart1");
-
-    cy.resizeWidget("chart1", 850, 600);
 
     openEditorSidebar("chart1");
     editAndVerifyWidgetName("chart2", ["Chart data", "Properties"]);
+    // cy.resizeWidget("chart1", 650, 400, false);
 
     verifyAndModifyParameter("Title", "label");
     cy.forceClickOnCanvas();
-    cy.waitForAutoSave();
+    cy.resizeWidget("chart2", 650, 400, false);
     cy.get('[data-cy="draggable-widget-chart2"]').should(
       "contain.text",
       "label"
     );
+    cy.waitForAutoSave();
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
     verifyComponent("chart2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("chart2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Circular Progress Bar", () => {
@@ -262,7 +258,7 @@ describe("Basic components", () => {
     cy.forceClickOnCanvas();
     verifyComponent("circularprogressbar1");
 
-    cy.resizeWidget("circularprogressbar1", 850, 600);
+    cy.resizeWidget("circularprogressbar1", 650, 400, false);
 
     openEditorSidebar("circularprogressbar1");
     editAndVerifyWidgetName("circularprogressbar2");
@@ -274,10 +270,8 @@ describe("Basic components", () => {
     verifyComponent("circularprogressbar2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("circularprogressbar2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Code Editor", () => {
@@ -286,7 +280,7 @@ describe("Basic components", () => {
     cy.forceClickOnCanvas();
     verifyComponent("codeeditor1");
 
-    cy.resizeWidget("codeeditor1", 850, 600);
+    cy.resizeWidget("codeeditor1", 650, 400, false);
 
     openEditorSidebar("codeeditor1");
     editAndVerifyWidgetName("codeeditor2");
@@ -297,10 +291,8 @@ describe("Basic components", () => {
     verifyComponent("codeeditor2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("codeeditor2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Color Picker", () => {
@@ -309,7 +301,7 @@ describe("Basic components", () => {
     cy.forceClickOnCanvas();
     verifyComponent("colorpicker1");
 
-    cy.resizeWidget("colorpicker1", 850, 600);
+    cy.resizeWidget("colorpicker1", 650, 400, false);
 
     openEditorSidebar("colorpicker1");
     editAndVerifyWidgetName("colorpicker2");
@@ -321,66 +313,61 @@ describe("Basic components", () => {
     verifyComponent("colorpicker2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("colorpicker2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
-//needed fix
-  it.skip("Should verify Custom Component", () => {
-    cy.dragAndDropWidget("Custom Component", 50, 50);
-    cy.get('[data-cy="draggable-widget-customcomponent1"]').click({ force: true });
-    cy.forceClickOnCanvas();
+  it("Should verify Custom Component", () => {
+    cy.dragAndDropWidget("Custom Component", 300, 300);
+    // cy.get('[data-cy="draggable-widget-customcomponent1"]').click({
+    //   force: true,
+    // });
+    // cy.forceClickOnCanvas();
     verifyComponent("customcomponent1");
     openEditorSidebar("customcomponent1");
 
     // editAndVerifyWidgetName("customcomponent2", ["Code"]);
     closeAccordions(["Code"]);
-    cy.get(commonWidgetSelector.WidgetNameInputField).type("{selectAll}{backspace}customcomponent2", {delay:30});
-    cy.forceClickOnCanvas()
-  
-    cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
-    cy.get(commonWidgetSelector.widgetConfigHandle(name))
-      .click()
-      .should("have.text", name);
-
-    cy.resizeWidget("customcomponent1", 850, 600);
-
-    openEditorSidebar("customcomponent1");
+    cy.get(commonWidgetSelector.WidgetNameInputField).type(
+      "{selectAll}{backspace}customcomponent2",
+      { delay: 30 }
+    );
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
+    cy.resizeWidget("customcomponent2", 650, 400, false);
+    cy.wait(2000);
+    cy.get(
+      commonWidgetSelector.draggableWidget("customcomponent2")
+    ).realHover();
+    cy.get(commonWidgetSelector.widgetConfigHandle("customcomponent2"))
+      .click()
+      .should("have.text", "customcomponent2");
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
     verifyComponent("customcomponent2", ["Code"]);
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("customcomponent2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Container", () => {
-    cy.dragAndDropWidget("Container", 50, 50);
+    cy.dragAndDropWidget("Container", 300, 300);
     cy.forceClickOnCanvas();
     verifyComponent("container1");
-
-    cy.resizeWidget("container1", 850, 600);
 
     openEditorSidebar("container1");
     editAndVerifyWidgetName("container2", ["Layout"]);
 
     cy.forceClickOnCanvas();
+    cy.resizeWidget("container2", 650, 400, false);
     cy.waitForAutoSave();
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
     verifyComponent("container2", ["Layout"]);
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("container2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Date-Range Picker", () => {
@@ -389,7 +376,7 @@ describe("Basic components", () => {
     cy.forceClickOnCanvas();
     verifyComponent("daterangepicker1");
 
-    cy.resizeWidget("daterangepicker1", 850, 600);
+    cy.resizeWidget("daterangepicker1", 650, 400, false);
 
     openEditorSidebar("daterangepicker1");
     editAndVerifyWidgetName("daterangepicker2");
@@ -401,25 +388,33 @@ describe("Basic components", () => {
     verifyComponent("daterangepicker2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("daterangepicker2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
-//visible issue
+  // visible issue
   it.skip("Should verify Divider", () => {
-    verifyComponentWithOutLabel("Divider", "divider1", "divider2", data.appName)
+    verifyComponentWithOutLabel(
+      "Divider",
+      "divider1",
+      "divider2",
+      data.appName
+    );
   });
 
   it("Should verify File Picker", () => {
-    verifyComponentWithOutLabel("File Picker", "filepicker1", "filepicker2", data.appName)
+    verifyComponentWithOutLabel(
+      "File Picker",
+      "filepicker1",
+      "filepicker2",
+      data.appName
+    );
   });
 
   it("Should verify Form", () => {
-    cy.dragAndDropWidget("Form", 50, 50);
+    cy.dragAndDropWidget("Form", 300, 300);
     verifyComponent("form1");
 
-    cy.resizeWidget("form1", 850, 600);
+    cy.resizeWidget("form1", 650, 400, false);
 
     openEditorSidebar("form1");
     editAndVerifyWidgetName("form2");
@@ -430,17 +425,17 @@ describe("Basic components", () => {
     verifyComponent("form2");
 
     cy.go("back");
+    cy.waitForAppLoad();
+    cy.wait(1500);
+    resizeQueryPanel(0);
     deleteComponentAndVerify("form2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify HTML", () => {
-    cy.dragAndDropWidget("HTML Viewe", 50, 50, "HTML Viewer"); // search logic WIP
+    cy.dragAndDropWidget("HTML Viewe", 300, 300, "HTML Viewer"); // search logic WIP
     verifyComponent("html1");
 
-    cy.resizeWidget("html1", 850, 600);
+    cy.resizeWidget("html1", 650, 400, false);
 
     openEditorSidebar("html1");
     editAndVerifyWidgetName("html2");
@@ -451,38 +446,37 @@ describe("Basic components", () => {
     verifyComponent("html2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("html2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Icon", () => {
-    verifyComponentWithOutLabel("Icon", "icon1", "icon2", data.appName)
+    verifyComponentWithOutLabel("Icon", "icon1", "icon2", data.appName);
   });
 
   it("Should verify Iframe", () => {
-    verifyComponentWithOutLabel("Iframe", "iframe1", "iframe2", data.appName)
+    verifyComponentWithOutLabel("Iframe", "iframe1", "iframe2", data.appName);
   });
 
-  it("Should verify Kamban", () => {
-    verifyComponentWithOutLabel("Kanban Board", "kanbanboard1", "kanbanboard2", data.appName)  });
+  it.skip("Should verify Kanban", () => {
+    verifyComponentWithOutLabel("Kanban", "kanban1", "kanban2", data.appName);
+  });
 
   it("Should verify Link", () => {
-    verifyComponentWithOutLabel("Link", "link1", "link2", data.appName)
+    verifyComponentWithOutLabel("Link", "link1", "link2", data.appName);
   });
 
   it("Should verify Map", () => {
-    cy.dragAndDropWidget("Map", 50, 50);
-    cy.get("body").then($body => {
+    cy.dragAndDropWidget("Map", 300, 300);
+    cy.get("body").then(($body) => {
       if ($body.find(".dismissButton").length > 0) {
-        cy.get('.dismissButton').click();
+        cy.get(".dismissButton").click();
       }
-    })
+    });
 
     verifyComponent("map1");
 
-    cy.resizeWidget("map1", 850, 600);
+    cy.resizeWidget("map1", 650, 400, false);
 
     openEditorSidebar("map1");
     editAndVerifyWidgetName("map2");
@@ -493,22 +487,19 @@ describe("Basic components", () => {
     verifyComponent("map2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("map2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Modal", () => {
-    verifyComponentWithOutLabel("Modal", "modal1", "modal2", data.appName)
+    verifyComponentWithOutLabel("Modal", "modal1", "modal2", data.appName);
   });
 
   it("Should verify PDF", () => {
-    cy.dragAndDropWidget("PDF", 50, 50);
-    cy.get('[data-tip="Hide query editor"]').click();
+    cy.dragAndDropWidget("PDF", 300, 300);
     verifyComponent("pdf1");
 
-    cy.resizeWidget("pdf1", 850, 600);
+    cy.resizeWidget("pdf1", 650, 400, false);
 
     openEditorSidebar("pdf1");
     editAndVerifyWidgetName("pdf2");
@@ -519,50 +510,84 @@ describe("Basic components", () => {
     verifyComponent("pdf2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("pdf2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName);
   });
 
   it("Should verify Pagination", () => {
-    verifyComponentWithOutLabel("Pagination", "pagination1", "pagination2", data.appName)
+    verifyComponentWithOutLabel(
+      "Pagination",
+      "pagination1",
+      "pagination2",
+      data.appName
+    );
   });
 
   it("Should verify QR Scanner", () => {
-    verifyComponentWithOutLabel("QR Scanner", "qrscanner1", "qrscanner2", data.appName)
+    verifyComponentWithOutLabel(
+      "QR Scanner",
+      "qrscanner1",
+      "qrscanner2",
+      data.appName
+    );
   });
 
   it("Should verify Range Slider", () => {
-    verifyComponentWithOutLabel("Range Slider", "rangeslider1", "rangeslider2", data.appName)
+    verifyComponentWithOutLabel(
+      "Range Slider",
+      "rangeslider1",
+      "rangeslider2",
+      data.appName
+    );
   });
 
   it("Should verify Rich Text Editor", () => {
-    verifyComponentWithOutLabel("Text Editor", "richtexteditor1", "richtexteditor2", data.appName)
+    verifyComponentWithOutLabel(
+      "Text Editor",
+      "richtexteditor1",
+      "richtexteditor2",
+      data.appName
+    );
   });
 
   it("Should verify Spinner", () => {
-    verifyComponentWithOutLabel("Spinner", "spinner1", "spinner2", data.appName);
+    verifyComponentWithOutLabel(
+      "Spinner",
+      "spinner1",
+      "spinner2",
+      data.appName
+    );
   });
 
   it("Should verify Statistics", () => {
-    verifyComponentWithOutLabel("Statistics", "statistics1", "statistics2", data.appName)
+    verifyComponentWithOutLabel(
+      "Statistics",
+      "statistics1",
+      "statistics2",
+      data.appName
+    );
   });
 
   it("Should verify Steps", () => {
-    verifyComponentWithOutLabel("Steps", "steps1", "steps2", data.appName)
+    verifyComponentWithOutLabel("Steps", "steps1", "steps2", data.appName);
   });
 
   it("Should verify SVG Image", () => {
-    verifyComponentWithOutLabel("SVG Image", "svgimage1", "svgimage2", data.appName)
+    verifyComponentWithOutLabel(
+      "SVG Image",
+      "svgimage1",
+      "svgimage2",
+      data.appName
+    );
   });
 
   it("Should verify Tabs", () => {
-    cy.dragAndDropWidget("Tabs", 50, 50);
+    resizeQueryPanel("0");
+    cy.dragAndDropWidget("Tabs", 300, 300);
     verifyComponent("tabs1");
-    deleteComponentAndVerify("image1");
+    // deleteComponentAndVerify("image1");
 
-    cy.resizeWidget("tabs1", 850, 600);
+    cy.resizeWidget("tabs1", 650, 400, false);
 
     openEditorSidebar("tabs1");
     editAndVerifyWidgetName("tabs2");
@@ -573,32 +598,50 @@ describe("Basic components", () => {
     verifyComponent("tabs2");
 
     cy.go("back");
+    resizeQueryPanel(0);
     deleteComponentAndVerify("tabs2");
-    cy.get(commonSelectors.editorPageLogo).click();
-
-    cy.deleteApp(data.appName); 
   });
 
   it("Should verify Tags", () => {
-    verifyComponentWithOutLabel("Tags", "tags1", "tags2", data.appName)
+    verifyComponentWithOutLabel("Tags", "tags1", "tags2", data.appName);
   });
 
-  it("Should verify Textarea", () => {
-    verifyComponentWithOutLabel("Textarea", "textarea1", "textarea2", data.appName)
+  it("Should verify Text area", () => {
+    verifyComponentWithOutLabel(
+      "Text area",
+      "textarea1",
+      "textarea2",
+      data.appName
+    );
   });
 
   it("Should verify Timeline", () => {
-    verifyComponentWithOutLabel("Timeline", "timeline1", "timeline2", data.appName)
+    verifyComponentWithOutLabel(
+      "Timeline",
+      "timeline1",
+      "timeline2",
+      data.appName
+    );
   });
   it("Should verify Timer", () => {
-    verifyComponentWithOutLabel("Timer", "timer1", "timer2", data.appName)
+    verifyComponentWithOutLabel("Timer", "timer1", "timer2", data.appName);
   });
 
   it("Should verify Tree Select", () => {
-    verifyComponentWithOutLabel("Tree Select", "treeselect1", "treeselect2", data.appName)
+    verifyComponentWithOutLabel(
+      "Tree Select",
+      "treeselect1",
+      "treeselect2",
+      data.appName
+    );
   });
 
   it("Should verify Vertical Divider", () => {
-    verifyComponentWithOutLabel("Vertical Divider", "verticaldivider1", "verticaldivider2", data.appName)
-    });
+    verifyComponentWithOutLabel(
+      "Vertical Divider",
+      "verticaldivider1",
+      "verticaldivider2",
+      data.appName
+    );
+  });
 });

@@ -77,6 +77,7 @@ return sql
 :::info
 Here the **Unique identifier** is **id**, this is the column name that is used to identify the row in the database.
 Update the **Unique identifier** if you are using a different column name.
+Update **table1** with the name of the table you are using.
 :::
 <div style={{textAlign: 'center'}}>
 

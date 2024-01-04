@@ -5,7 +5,7 @@ export const dashboardSelector = {
   emptyPageHeader: "[data-cy=empty-homepage-welcome-header]",
   emptyPageDescription: "[data-cy=empty-homepage-description]",
   createAppButton: "[data-cy=create-new-application]",
-  importAppButton: "[data-cy=import-an-application]",
+  importAppButton: '[data-cy="button-import-an-app"]',
   chooseFromTemplate: "[data-cy=choose-from-template]",
   modeToggle: '[data-cy="mode-switch-button"]',
   dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
@@ -22,14 +22,16 @@ export const dashboardSelector = {
   changeButton: "[data-cy=change-button]",
   addToFolderTitle: "[data-cy=add-to-folder-title]",
   moveAppText: "[data-cy=move-selected-app-to-text]",
-  selectFolder: '[data-cy="select-folder"]>>>.css-s59k37-ValueContainer',
+  selectFolder: '[data-cy="select-folder"]>.css-nwhe5y-container > .react-select__control > .react-select__value-container',
   addToFolderButton: "[data-cy=add-to-folder-button]",
   appTemplateRow: '[data-cy="app-template-row"]',
   homePageContent: '[data-cy="home-page-content"]',
   seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
   folderLabel: '[data-cy="folder-info"]',
-  dashboardAppsHeaderLabel:'[data-cy="app-header-label"]',
+  dashboardAppsHeaderLabel: '[data-cy="app-header-label"]',
   versionLabel: '[data-cy="version-label"]',
+  dashboardAppCreateButton: '[data-cy="button-new-app-from-scratch"]',
+
   appCardIcon: (iconName) => {
     return `[data-cy="app-card-${cyParamName(iconName)}-icon"]`;
   },
@@ -39,4 +41,19 @@ export const dashboardSelector = {
   folderName: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-name"]`;
   },
+
+  createWorkspaceTitle: '[data-cy="create-workspace-title"]',
+  workspaceNameLabel: '[data-cy="workspace-name-label"]',
+  workspaceNameInfoLabel: '[data-cy="workspace-name-info-label"]',
+  slugNameInputLabel: '[data-cy="slug-input-label"]',
+  workspaceSlugInputField: '[data-cy="workspace-slug-input-field"]',
+  slugInfoLabel: '[data-cy="slug-info-label"]',
+  workspaceLinkLabel: '[data-cy="workspace-link-label"]',
+  slugField: '[data-cy="slug-field"]',
+  createWorkspaceButton: '[data-cy="create-workspace-button"]',
+  workspaceErrorLabel: '[data-cy="workspace-error-label"]',
+  inputLabelError: '[data-cy="input-label-error"]',
+  slugSuccessLabel: '[data-cy="slug-sucess-label"]',
+  slugErrorLabel: '[data-cy="slug-error-label"]',
+  editWorkspaceTitle: '[data-cy="edit-workspace-title"]',
 };

@@ -13,6 +13,7 @@ ToolJet version 2 comes with a bunch of exciting features, with the major ones b
 
 Checkout the latest changelog for v2 [here](https://github.com/ToolJet/ToolJet/releases).
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
 ## Deployment
 
 Based on your opted deployment method from our [setup doc](/docs/setup/), you can directly deploy v2 without any additional configuration for the default setup.
@@ -29,5 +30,5 @@ Server may take some time to be ready to handle the HTTP request as v2 changes r
 - Docker compose deployments with [auto SSL](/docs/1.x.x/setup/docker) is deprecated
 
 ## Help and Support
-- Feel free to join our highly active **[Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg)** or you can also e-mail us at **hello@tooljet.com**.
+- Feel free to join our highly active **[Slack Community](https://tooljet.com/slack)** or you can also e-mail us at **hello@tooljet.com**.
 - If you have found a bug, please create a **[GitHub issue](https://github.com/ToolJet/ToolJet/issues)** for the same.

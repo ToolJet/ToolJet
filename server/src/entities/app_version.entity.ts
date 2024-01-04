@@ -8,14 +8,13 @@ import {
   JoinColumn,
   BaseEntity,
   Unique,
-  ManyToMany,
-  JoinTable,
   OneToMany,
 } from 'typeorm';
 import { App } from './app.entity';
-import { AppEnvironment } from './app_environments.entity';
 import { DataQuery } from './data_query.entity';
 import { DataSource } from './data_source.entity';
+import { Page } from './page.entity';
+import { EventHandler } from './event_handler.entity';
 
 @Entity({ name: 'app_versions' })
 @Unique(['name', 'appId'])
@@ -29,8 +28,20 @@ export class AppVersion extends BaseEntity {
   @Column('simple-json', { name: 'definition' })
   definition;
 
+  @Column('simple-json', { name: 'global_settings' })
+  globalSettings;
+
+  @Column({ name: 'show_viewer_navigation' })
+  showViewerNavigation: boolean;
+
+  @Column({ name: 'home_page_id' })
+  homePageId: string;
+
   @Column({ name: 'app_id' })
   appId: string;
+
+  @Column({ name: 'current_environment_id' })
+  currentEnvironmentId: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -45,20 +56,14 @@ export class AppVersion extends BaseEntity {
   @OneToMany(() => DataSource, (dataSource) => dataSource.appVersion)
   dataSources: DataSource[];
 
-  @OneToMany(() => AppEnvironment, (appEnv) => appEnv.appVersion, { onDelete: 'CASCADE' })
-  appEnvironments: AppEnvironment[];
-
-  @ManyToMany(() => DataQuery)
-  @JoinTable({
-    name: 'data_sources',
-    joinColumn: {
-      name: 'app_version_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'id',
-      referencedColumnName: 'dataSourceId',
-    },
-  })
+  @OneToMany(() => DataQuery, (dataQuery) => dataQuery.appVersion)
   dataQueries: DataQuery[];
+
+  @OneToMany(() => Page, (page) => page.appVersion, { onDelete: 'CASCADE' })
+  pages: Page[];
+
+  @OneToMany(() => EventHandler, (eventHandler) => eventHandler.appVersion, {
+    onDelete: 'CASCADE',
+  })
+  eventHandlers: EventHandler[];
 }

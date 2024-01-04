@@ -9,6 +9,8 @@ title: Kubernetes (AKS)
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using Azure Database for PostgreSQL since this guide is for deploying using AKS.
 :::
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
 
 1. Create an AKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned on the [Azure's documentation](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough-portal).
@@ -47,7 +49,23 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
 1. Setup PostgREST server
 
    ```bash
-    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/GKE/postgrest.yaml
+    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/AKS/postgrest.yaml
    ```
 
-2. Update ToolJet deployment with the appropriate env variables [here](https://github.com/ToolJet/ToolJet/blob/chore/main/kubernetes/GKE/deployment.yaml#L62) and apply the changes.
+2. Update ToolJet deployment with the appropriate env variables [here](https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/AKS/deployment.yaml) and apply the changes.
+
+## Upgrading to v2.24.3-ee2.10.2
+
+Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+
+If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+
+#### Prerequisites for Upgrading to the Latest Version:
+
+- It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+
+- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+
+For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.

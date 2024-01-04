@@ -1,0 +1,324 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "HarperDB datasource",
+  "description": "A schema defining HarperDB datasource",
+  "type": "database",
+  "defaults": {
+    "mode": "sql"
+  },
+  "properties": {
+    "mode": {
+      "label": "",
+      "key": "mode",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "list": [
+        {
+          "name": "SQL mode",
+          "value": "sql"
+        },
+        {
+          "name": "NoSQL mode",
+          "value": "nosql"
+        }
+      ]
+    },
+    "sql": {
+      "sql_query": {
+        "key": "sql_query",
+        "type": "codehinter",
+        "description": "Enter your SQL query",
+        "height": "150px"
+      }
+    },
+    "nosql": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Single select dropdown for operation",
+        "list": [
+          {
+            "name": "Insert",
+            "value": "insert"
+          },
+          {
+            "name": "Update",
+            "value": "update"
+          },
+          {
+            "name": "Delete",
+            "value": "delete"
+          },
+          {
+            "name": "Search By Hash",
+            "value": "search_by_hash"
+          },
+          {
+            "name": "Search By Value",
+            "value": "search_by_value"
+          },
+          {
+            "name": "Search By Conditions",
+            "value": "search_by_conditions"
+          }
+        ]
+      },
+      "insert": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "records": {
+          "label": "Records",
+          "key": "records",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter records to insert",
+          "placeholder": "[{id: 1, name: 'Jose', age: 24}]",
+          "height": "150px"
+        }
+      },
+      "update": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "records": {
+          "label": "Records",
+          "key": "records",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter records to update",
+          "placeholder": "[{id: 1, age: 25}]",
+          "height": "150px"
+        }
+      },
+      "delete": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "hash_values": {
+          "label": "Hash Values",
+          "key": "hash_values",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter hash attribute - primary key to delete records",
+          "placeholder": "[123, 65]",
+          "height": "150px"
+        }
+      },
+      "search_by_hash": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "hash_values": {
+          "label": "Hash Values",
+          "key": "hash_values",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter hash attribute - primary key to search records",
+          "placeholder": "[123, 66]",
+          "height": "70px"
+        },
+        "attributes": {
+          "label": "Table Attributes",
+          "key": "attributes",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter table attributes to be queried",
+          "placeholder": "['name', 'age']",
+          "height": "70px"
+        }
+      },
+      "search_by_value": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "search_attribute": {
+          "label": "Search Attribute",
+          "key": "search_attribute",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Attribute you wish to search",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "search_value": {
+          "label": "Search Value",
+          "key": "search_value",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Value you wish to search",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "attributes": {
+          "label": "Table Attributes",
+          "key": "attributes",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter Table Attributes to be queried",
+          "placeholder": "['name', 'age']",
+          "height": "100px"
+        }
+      },
+      "search_by_conditions": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "operator": {
+          "label": "Operator Inbetween Each condition",
+          "key": "operator",
+          "type": "dropdown",
+          "description": "Choose a operator to be used in between each condition",
+          "list": [
+            {
+              "name": "And",
+              "value": "and"
+            },
+            {
+              "name": "Or",
+              "value": "or"
+            }
+          ]
+        },
+        "offset": {
+          "label": "Offset",
+          "key": "offset",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Offset",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "limit": {
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Limit",
+          "height": "36px",
+          "className": "codehinter-plugins"
+        },
+        "attributes": {
+          "label": "Table Attributes",
+          "key": "attributes",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter Table Attributes to be queried",
+          "placeholder": "['name', 'age']",
+          "height": "70px"
+        },
+        "conditions": {
+          "label": "Conditions to filter",
+          "key": "conditions",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter Conditions to Filter",
+          "height": "150px",
+          "placeholder": "[{'search_attribute': 'age', 'search_type': 'between', 'search_value': [25, 29]}, {'search_attribute': 'weight_lbs', 'search_type': 'greater_than', 'search_value': 40}]"
+        }
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "table",
+    "mode",
+    "records",
+    "hash_values",
+    "attributes",
+    "search_attribute",
+    "search_value",
+    "conditions"
+  ]
+}

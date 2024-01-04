@@ -18,6 +18,11 @@ function OnboardingBubblesSH({ page }) {
           page === 4 && 'onboarding-bubbles-active'
         } `}
       ></div>
+      <div
+        className={`onboarding-bubbles ${page >= 5 && 'onboarding-bubbles-selected'} ${
+          page === 5 && 'onboarding-bubbles-active'
+        } `}
+      ></div>
     </div>
   );
 }

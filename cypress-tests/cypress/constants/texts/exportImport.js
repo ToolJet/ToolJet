@@ -1,9 +1,11 @@
 export const appVersionText = {
+  createNewVersion: "Create new version",
   createVersion: "Create Version",
   versionNameLabel: "Version Name",
   createVersionFromLabel: "Create version from",
-  emptyToastMessage: "The version name should not be empty",
+  emptyToastMessage: "Version name should not be empty",
   createdToastMessage: "Version Created",
+  versionNameAlreadyExists: "Version name already exists.",
 };
 
 export const exportAppModalText = {
@@ -17,6 +19,6 @@ export const exportAppModalText = {
 
 export const importText = {
   importOption: "Import",
-  couldNotImportAppToastMessage: `Could not import the app: SyntaxError: Unexpected token '�', "�PNG\r\n\u001a\n\u0000\u0000"... is not valid JSON`,
+  couldNotImportAppToastMessage: `Could not import: SyntaxError: Unexpected token`,
   appImportedToastMessage: "App imported successfully.",
 };

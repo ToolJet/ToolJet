@@ -1,11 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotAcceptableException } from '@nestjs/common';
 import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject, dbTransactionWrap, isPlural } from 'src/helpers/utils.helper';
+import {
+  catchDbException,
+  cleanObject,
+  dbTransactionWrap,
+  isPlural,
+  generateNextNameAndSlug,
+} from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -24,6 +30,9 @@ import {
 } from 'src/helpers/user_lifecycle';
 import { decamelize } from 'humps';
 import { Response } from 'express';
+import { AppEnvironmentService } from './app_environments.service';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { OrganizationUpdateDto } from '@dto/organization.dto';
 
 const MAX_ROW_COUNT = 500;
 
@@ -38,7 +47,7 @@ type FetchUserResponse = {
   accountSetupToken?: string;
 };
 
-type UserFilterOptions = { email?: string; firstName?: string; lastName?: string; status?: string };
+type UserFilterOptions = { searchText?: string; status?: string };
 
 interface UserCsvRow {
   first_name: string;
@@ -46,6 +55,18 @@ interface UserCsvRow {
   email: string;
   groups?: any;
 }
+
+const orgConstraints = [
+  {
+    dbConstraint: DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
+    message: 'This workspace name is already taken.',
+  },
+  {
+    dbConstraint: DataBaseConstraints.WORKSPACE_SLUG_UNIQUE,
+    message: 'This workspace slug is already taken.',
+  },
+];
+
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -56,27 +77,33 @@ export class OrganizationsService {
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
+    private appEnvironmentService: AppEnvironmentService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
     private configService: ConfigService
   ) {}
 
-  async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
+  async create(name: string, slug: string, user: User, manager?: EntityManager): Promise<Organization> {
     let organization: Organization;
     await dbTransactionWrap(async (manager: EntityManager) => {
-      organization = await manager.save(
-        manager.create(Organization, {
-          ssoConfigs: [
-            {
-              sso: 'form',
-              enabled: true,
-            },
-          ],
-          name,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
-      );
+      organization = await catchDbException(async () => {
+        return await manager.save(
+          manager.create(Organization, {
+            ssoConfigs: [
+              {
+                sso: 'form',
+                enabled: true,
+              },
+            ],
+            name,
+            slug,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        );
+      }, orgConstraints);
+
+      await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
 
       const createdGroupPermissions: GroupPermission[] = await this.createDefaultGroupPermissionsForOrganization(
         organization,
@@ -114,14 +141,22 @@ export class OrganizationsService {
         enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
         enabled: true,
       },
-      enableSignUp:
-        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
+      enableSignUp: this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
     };
   }
 
   async get(id: string): Promise<Organization> {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
+  }
+
+  async fetchOrganization(slug: string): Promise<Organization> {
+    let organization: Organization;
+    try {
+      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug'] });
+    } catch (error) {
+      organization = await this.organizationsRepository.findOne({ where: { id: slug }, select: ['id', 'slug'] });
+    }
+    return organization;
   }
 
   async getSingleOrganization(): Promise<Organization> {
@@ -144,6 +179,8 @@ export class OrganizationsService {
           orgEnvironmentVariableCreate: isAdmin,
           orgEnvironmentVariableUpdate: isAdmin,
           orgEnvironmentVariableDelete: isAdmin,
+          orgEnvironmentConstantCreate: isAdmin,
+          orgEnvironmentConstantDelete: isAdmin,
           folderUpdate: isAdmin,
           folderDelete: isAdmin,
         });
@@ -159,9 +196,7 @@ export class OrganizationsService {
       return [];
     }
     const options = {
-      email: searchInput,
-      firstName: searchInput,
-      lastName: searchInput,
+      searchText: searchInput,
     };
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or')
       .orderBy('user.firstName', 'ASC')
@@ -180,20 +215,25 @@ export class OrganizationsService {
   }
 
   organizationUsersQuery(organizationId: string, options: UserFilterOptions, condition?: 'and' | 'or') {
+    const defaultConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.searchText)
+          qb.orWhere('lower(user.email) like :email', {
+            email: `%${options?.searchText.toLowerCase()}%`,
+          });
+        if (options?.searchText)
+          qb.orWhere('lower(user.firstName) like :firstName', {
+            firstName: `%${options?.searchText.toLowerCase()}%`,
+          });
+        if (options?.searchText)
+          qb.orWhere('lower(user.lastName) like :lastName', {
+            lastName: `%${options?.searchText.toLowerCase()}%`,
+          });
+      });
+    };
+
     const getOrConditions = () => {
       return new Brackets((qb) => {
-        if (options?.email)
-          qb.orWhere('lower(user.email) like :email', {
-            email: `%${options?.email.toLowerCase()}%`,
-          });
-        if (options?.firstName)
-          qb.orWhere('lower(user.firstName) like :firstName', {
-            firstName: `%${options?.firstName.toLowerCase()}%`,
-          });
-        if (options?.lastName)
-          qb.orWhere('lower(user.lastName) like :lastName', {
-            lastName: `%${options?.lastName.toLowerCase()}%`,
-          });
         if (options?.status)
           qb.orWhere('organization_user.status = :status', {
             status: `${options?.status}`,
@@ -202,18 +242,6 @@ export class OrganizationsService {
     };
     const getAndConditions = () => {
       return new Brackets((qb) => {
-        if (options?.email)
-          qb.andWhere('lower(user.email) like :email', {
-            email: `%${options?.email.toLowerCase()}%`,
-          });
-        if (options?.firstName)
-          qb.andWhere('lower(user.firstName) like :firstName', {
-            firstName: `%${options?.firstName.toLowerCase()}%`,
-          });
-        if (options?.lastName)
-          qb.andWhere('lower(user.lastName) like :lastName', {
-            lastName: `%${options?.lastName.toLowerCase()}%`,
-          });
         if (options?.status)
           qb.andWhere('organization_user.status = :status', {
             status: `${options?.status}`,
@@ -224,13 +252,15 @@ export class OrganizationsService {
       .innerJoinAndSelect('organization_user.user', 'user')
       .where('organization_user.organization_id = :organizationId', {
         organizationId,
-      });
+      })
+      .andWhere(defaultConditions());
     query.andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
     return query;
   }
 
   async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
-    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'and')
+    const condition = options?.searchText ? 'and' : 'or';
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, condition)
       .orderBy('user.firstName', 'ASC')
       .take(10)
       .skip(10 * (page - 1))
@@ -248,9 +278,7 @@ export class OrganizationsService {
         status: orgUser.status,
         avatarId: orgUser.user.avatarId,
         ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
-        ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&
-        orgUser.user.invitationToken
+        ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
           ? { accountSetupToken: orgUser.user.invitationToken }
           : {}),
       };
@@ -258,7 +286,8 @@ export class OrganizationsService {
   }
 
   async usersCount(user: User, options: UserFilterOptions): Promise<number> {
-    return await this.organizationUsersQuery(user.organizationId, options, 'and').getCount();
+    const condition = options?.searchText ? 'and' : 'or';
+    return await this.organizationUsersQuery(user.organizationId, options, condition).getCount();
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {
@@ -329,33 +358,39 @@ export class OrganizationsService {
       .getOne();
   }
 
+  constructOrgFindQuery(slug: string, id: string, statusList?: Array<boolean>) {
+    const query = createQueryBuilder(Organization, 'organization').leftJoinAndSelect(
+      'organization.ssoConfigs',
+      'organisation_sso',
+      'organisation_sso.enabled IN (:...statusList)',
+      {
+        statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
+      }
+    );
+    if (slug) {
+      query.andWhere(`organization.slug = :slug`, { slug });
+    } else {
+      query.andWhere(`organization.id = :id`, { id });
+    }
+    return query;
+  }
+
   async fetchOrganizationDetails(
     organizationId: string,
     statusList?: Array<boolean>,
     isHideSensitiveData?: boolean,
     addInstanceLevelSSO?: boolean
   ): Promise<DeepPartial<Organization>> {
-    const result: DeepPartial<Organization> = await createQueryBuilder(Organization, 'organization')
-      .leftJoinAndSelect(
-        'organization.ssoConfigs',
-        'organisation_sso',
-        'organisation_sso.enabled IN (:...statusList)',
-        {
-          statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
-        }
-      )
-      .andWhere('organization.id = :organizationId', {
-        organizationId,
-      })
-      .getOne();
+    let result: DeepPartial<Organization>;
+    try {
+      result = await this.constructOrgFindQuery(organizationId, null, statusList).getOneOrFail();
+    } catch (error) {
+      result = await this.constructOrgFindQuery(null, organizationId, statusList).getOne();
+    }
 
     if (!result) return;
 
-    if (
-      addInstanceLevelSSO &&
-      this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-      result.inheritSSO
-    ) {
+    if (addInstanceLevelSSO && result.inheritSSO) {
       if (
         this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') &&
         !result.ssoConfigs?.some((config) => config.sso === 'google')
@@ -403,11 +438,16 @@ export class OrganizationsService {
       }
       return result;
     }
-    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp);
+    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp, result.id);
   }
 
-  private hideSSOSensitiveData(ssoConfigs: DeepPartial<SSOConfigs>[], organizationName, enableSignUp): any {
-    const configs = { name: organizationName, enableSignUp };
+  private hideSSOSensitiveData(
+    ssoConfigs: DeepPartial<SSOConfigs>[],
+    organizationName: string,
+    enableSignUp: boolean,
+    organizationId: string
+  ): any {
+    const configs = { name: organizationName, enableSignUp, id: organizationId };
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
         const configId = config['id'];
@@ -460,11 +500,12 @@ export class OrganizationsService {
     );
   }
 
-  async updateOrganization(organizationId: string, params) {
-    const { name, domain, enableSignUp, inheritSSO } = params;
+  async updateOrganization(organizationId: string, params: OrganizationUpdateDto) {
+    const { name, slug, domain, enableSignUp, inheritSSO } = params;
 
     const updatableParams = {
       name,
+      slug,
       domain,
       enableSignUp,
       inheritSSO,
@@ -473,7 +514,9 @@ export class OrganizationsService {
     // removing keys with undefined values
     cleanObject(updatableParams);
 
-    return await this.organizationsRepository.update(organizationId, updatableParams);
+    return await catchDbException(async () => {
+      return await this.organizationsRepository.update(organizationId, updatableParams);
+    }, orgConstraints);
   }
 
   async updateOrganizationConfigs(organizationId: string, params: any) {
@@ -530,8 +573,6 @@ export class OrganizationsService {
     };
     const groups = inviteNewUserDto.groups ?? [];
 
-    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
 
@@ -542,7 +583,7 @@ export class OrganizationsService {
         shouldSendWelcomeMail = false;
 
       if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
-        throw new BadRequestException('User with such email already exists.');
+        throw new BadRequestException('Duplicate email found. Please provide a unique email address.');
       }
 
       if (user?.invitationToken) {
@@ -554,16 +595,15 @@ export class OrganizationsService {
         );
       }
 
-      if (!isSingleWorkspace) {
-        if (!user) {
-          // User not exist
-          shouldSendWelcomeMail = true;
-          // Create default organization if user not exist
-          defaultOrganization = await this.create('Untitled workspace', null, manager);
-        } else if (user.invitationToken) {
-          // User not setup
-          shouldSendWelcomeMail = true;
-        }
+      if (!user) {
+        // User not exist
+        shouldSendWelcomeMail = true;
+        // Create default organization if user not exist
+        const { name, slug } = generateNextNameAndSlug('My workspace');
+        defaultOrganization = await this.create(name, slug, null, manager);
+      } else if (user.invitationToken) {
+        // User not setup
+        shouldSendWelcomeMail = true;
       }
       user = await this.usersService.create(
         userParams,
@@ -598,7 +638,8 @@ export class OrganizationsService {
             user.email,
             user.firstName,
             user.invitationToken,
-            `${organizationUser.invitationToken}?oid=${organizationUser.organizationId}`,
+            organizationUser.invitationToken,
+            organizationUser.organizationId,
             currentOrganization.name,
             `${currentUser.firstName} ${currentUser.lastName ?? ''}`
           )
@@ -641,7 +682,9 @@ export class OrganizationsService {
     const existingUsers = [];
     const archivedUsers = [];
     const invalidRows = [];
+    const invalidFields = new Set();
     const invalidGroups = [];
+    let isUserInOtherGroupsAndAdmin = false;
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const manager = getManager();
 
@@ -674,19 +717,39 @@ export class OrganizationsService {
           }
 
           //Check for invalid groups
-          const receivedGroups: string[] = data?.groups;
-          for (const group of receivedGroups) {
-            if (existingGroups.indexOf(group) === -1) {
-              invalidGroups.push(group);
+          const receivedGroups: string[] | null = data?.groups.length ? data?.groups : null;
+
+          if (Array.isArray(receivedGroups)) {
+            for (const group of receivedGroups) {
+              if (group === 'admin' && receivedGroups.includes('all_users') && receivedGroups.length > 2) {
+                isUserInOtherGroupsAndAdmin = true;
+                break;
+              }
+
+              if (existingGroups.indexOf(group) === -1) {
+                invalidGroups.push(group);
+              }
             }
           }
 
-          return next(null, data.first_name !== '' && data.last_name !== '' && emailPattern.test(data.email));
+          data.first_name = data.first_name?.trim();
+          data.last_name = data.last_name?.trim();
+
+          const isValidName = data.first_name !== '' || data.last_name !== '';
+
+          return next(null, isValidName && emailPattern.test(data.email) && receivedGroups?.length > 0);
         }, manager);
       })
       .on('data', function () {})
       .on('data-invalid', (row, rowNumber) => {
+        const invalidField = Object.keys(row).filter((key) => {
+          if (Array.isArray(row[key])) {
+            return row[key].length === 0;
+          }
+          return !row[key] || row[key] === '';
+        });
         invalidRows.push(rowNumber);
+        invalidFields.add(invalidField);
       })
       .on('end', async (rowCount: number) => {
         try {
@@ -695,14 +758,22 @@ export class OrganizationsService {
           }
 
           if (invalidRows.length) {
+            const invalidFieldsArray = invalidFields.entries().next().value[1];
+            const errorMsg = `Invalid row(s): [${invalidFieldsArray.join(', ')}] in [${
+              invalidRows.length
+            }] row(s). No users were uploaded.`;
+            throw new BadRequestException(errorMsg);
+          }
+
+          if (isUserInOtherGroupsAndAdmin) {
             throw new BadRequestException(
-              `Please fix row number${isPlural(invalidRows)}: ${invalidRows.join(', ')}. No users were uploaded`
+              'Conflicting Group Memberships: User cannot be in both the Admin group and other groups simultaneously.'
             );
           }
 
           if (invalidGroups.length) {
             throw new BadRequestException(
-              `Group${isPlural(invalidGroups)} ${invalidGroups.join(', ')} doesn't exist. No users were uploaded`
+              `${invalidGroups.length} group${isPlural(invalidGroups)} doesn't exist. No users were uploaded`
             );
           }
 
@@ -716,15 +787,19 @@ export class OrganizationsService {
 
           if (existingUsers.length) {
             throw new BadRequestException(
-              `User${isPlural(existingUsers)} with email ${existingUsers.join(
-                ', '
-              )} already exists. No users were uploaded`
+              `${existingUsers.length} users with same email already exist. No users were uploaded `
             );
           }
 
-          this.inviteUserswrapper(users, currentUser).catch((error) => {
-            console.error(error);
-          });
+          if (users.length === 0) {
+            throw new BadRequestException('No users were uploaded');
+          }
+
+          if (users.length > 250) {
+            throw new BadRequestException(`You can only invite 250 users at a time`);
+          }
+
+          await this.inviteUserswrapper(users, currentUser);
           res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
         } catch (error) {
           const { status, response } = error;
@@ -734,5 +809,17 @@ export class OrganizationsService {
       .on('error', (error) => {
         throw error.message;
       });
+  }
+
+  async checkWorkspaceUniqueness(name: string, slug: string) {
+    if (!(slug || name)) {
+      throw new NotAcceptableException('Request should contain the slug or name');
+    }
+    const result = await getManager().findOne(Organization, {
+      ...(name && { name }),
+      ...(slug && { slug }),
+    });
+    if (result) throw new ConflictException(`${name ? 'Name' : 'Slug'} must be unique`);
+    return;
   }
 }

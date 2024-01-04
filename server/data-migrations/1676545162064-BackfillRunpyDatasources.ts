@@ -8,6 +8,7 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 export class BackfillRunpyDatasources1676545162064 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
+    let progress = 0;
 
     const allVersions = await entityManager
       .createQueryBuilder()
@@ -16,6 +17,11 @@ export class BackfillRunpyDatasources1676545162064 implements MigrationInterface
       .getRawMany();
 
     for (const version of allVersions) {
+      progress++;
+      console.log(
+        `BackfillRunpyDatasources1676545162064 Progress ${Math.round((progress / allVersions.length) * 100)} %`
+      );
+
       await this.createDefaultVersionAndAttachQueries(entityManager, version);
     }
   }

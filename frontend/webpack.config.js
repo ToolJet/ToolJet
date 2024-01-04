@@ -3,6 +3,12 @@ const webpack = require('webpack');
 const path = require('path');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+require('dotenv').config({ path: '../.env' });
+const hash = require('string-hash');
+const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
+const fs = require('fs');
+const versionPath = path.resolve(__dirname, '.version');
+const version = fs.readFileSync(versionPath, 'utf-8').trim();
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -51,7 +57,7 @@ module.exports = {
       '@assets': path.resolve(__dirname, 'assets/'),
     },
   },
-  devtool: environment === 'development' ? 'inline-source-map' : false,
+  devtool: environment === 'development' ? 'eval-cheap-source-map' : 'hidden-source-map',
   module: {
     rules: [
       {
@@ -72,14 +78,21 @@ module.exports = {
       },
       {
         test: /\.svg$/,
-        use: [
-          {
-            loader: '@svgr/webpack',
-            options: {
-              limit: 10000,
+        use: ({ resource }) => ({
+          loader: '@svgr/webpack',
+          options: {
+            svgoConfig: {
+              plugins: [
+                {
+                  name: 'prefixIds',
+                  cleanupIDs: {
+                    prefix: `svg-${hash(resource)}`,
+                  },
+                },
+              ],
             },
           },
-        ],
+        }),
       },
       {
         test: /\.css$/,
@@ -131,6 +144,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.ejs',
       favicon: './assets/images/logo.svg',
+      hash: environment === 'production',
     }),
     new CompressionPlugin({
       test: /\.js(\?.*)?$/i,
@@ -140,6 +154,16 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
       'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
+    }),
+    // Add Sentry plugin for error and performance monitoring
+    sentryWebpackPlugin({
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      release: {
+        // The version should be same as what its when we are sending error events
+        name: `tooljet-${version}`,
+      },
     }),
   ],
   devServer: {
@@ -161,6 +185,8 @@ module.exports = {
       COMMENT_FEATURE_ENABLE: process.env.COMMENT_FEATURE_ENABLE ?? true,
       ENABLE_TOOLJET_DB: process.env.ENABLE_TOOLJET_DB ?? true,
       ENABLE_MULTIPLAYER_EDITING: true,
+      ENABLE_MARKETPLACE_FEATURE: process.env.ENABLE_MARKETPLACE_FEATURE ?? true,
+      ENABLE_MARKETPLACE_DEV_MODE: process.env.ENABLE_MARKETPLACE_DEV_MODE,
       TOOLJET_MARKETPLACE_URL:
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
     }),

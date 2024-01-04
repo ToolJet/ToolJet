@@ -1,0 +1,111 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "AWS Textract datasource",
+  "description": "A schema defining AWS Textract datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "analyze_document",
+          "name": "Analyze Document"
+        },
+        {
+          "value": "analyze_document_s3",
+          "name": "Analyze document stored in AWS S3"
+        }
+      ]
+    },
+    "analyze_document": {
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter document"
+      },
+      "feature_types": {
+        "label": "Data output",
+        "key": "feature_types",
+        "type": "checkbox-group",
+        "description": "Enter access key",
+        "list": [
+          {
+            "label": "Forms",
+            "value": "FORMS"
+          },
+          {
+            "label": "Tables",
+            "value": "TABLES"
+          },
+          {
+            "label": "Queries",
+            "value": "QUERIES"
+          },
+          {
+            "label": "Signature detection",
+            "value": "SIGNATURES"
+          }
+        ]
+      }
+    },
+    "analyze_document_s3": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
+      },
+      "key": {
+        "label": "Key",
+        "key": "key",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter key"
+      },
+      "featureTypes": {
+        "label": "Data output",
+        "key": "feature_types",
+        "type": "checkbox-group",
+        "description": "Enter access key",
+        "list": [
+          {
+            "label": "Forms",
+            "value": "FORMS"
+          },
+          {
+            "label": "Tables",
+            "value": "TABLES"
+          },
+          {
+            "label": "Queries",
+            "value": "QUERIES"
+          },
+          {
+            "label": "Signature detection",
+            "value": "SIGNATURES"
+          }
+        ]
+      }
+    }
+  }
+}

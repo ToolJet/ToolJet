@@ -8,7 +8,7 @@ title: Custom JavaScript
 You can write custom JavaScript code to interact with components and queries. To do that, you just need to create a new query and select **Run JavaScript Code** from the data sources dropdown.
 
 
-<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/custom-javascript.png" alt="custom js" />
+<img className="screenshot-full" src="/img/datasource-reference/custom-javascript/run-js.png" alt="custom js" />
 
 
 #### Example: Displaying random number
@@ -48,6 +48,6 @@ ToolJet allows you to internally utilize these libraries:
 
 :::danger
 
-Issues with writing custom JavaScript code? Ask in our [Slack community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg).
+Issues with writing custom JavaScript code? Ask in our [Slack Community](https://tooljet.com/slack).
 
 :::

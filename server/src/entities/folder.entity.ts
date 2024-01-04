@@ -8,11 +8,13 @@ import {
   OneToMany,
   AfterLoad,
   JoinTable,
+  Unique,
 } from 'typeorm';
 import { FolderApp } from './folder_app.entity';
 import { App } from './app.entity';
 
 @Entity({ name: 'folders' })
+@Unique('folder_name_organization_id_unique', ['name', 'organizationId'])
 export class Folder {
   @PrimaryGeneratedColumn('uuid')
   id: string;

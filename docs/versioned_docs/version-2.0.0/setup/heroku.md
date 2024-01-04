@@ -7,6 +7,9 @@ title: Heroku
 
 <iframe width="800" height="500" src="https://www.youtube.com/embed/ApDtwE1OXY0" frameborder="0" allowfullscreen width="100%"></iframe>
 
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
+
 ### Follow the steps below to deploy ToolJet on Heroku:
 
 1. Click the button below to start one click deployment.  
@@ -83,7 +86,7 @@ Please install Heroku CLI on your local machine. Please refer Heroku CLI install
 
   `${HEROKU_PG_DB_NAME` Should be the name of the PostgreSQL created by the Tooljet app. 
 
-  You can get the `${HEROKU_PG_DB_NAME` of the Tooljet application from the Resources tab under Heroku Postgre attachments as shown below. (eg: `${HEROKU_PG_DB_NAME = postgresql-transparent-24158` ). 
+  You can get the `${HEROKU_PG_DB_NAME` of the Tooljet application from the Resources tab under Heroku Postgres attachments as shown below. (eg: `${HEROKU_PG_DB_NAME = postgresql-transparent-24158` ). 
 
   ```bash
   heroku addons:attach ${HEROKU_PG_DB_NAME} -a ${YOUR_PGRST_APP_NAME}
@@ -140,3 +143,19 @@ Please install Heroku CLI on your local machine. Please refer Heroku CLI install
 
 
   Please enter the below env variables in the Tooljet application, under the setting tab. You can also refer environment variable [**here**](/docs/setup/env-vars#tooljet-database).
+
+## Upgrading to v2.24.3-ee2.10.2
+
+Version v2.24.3-ee2.10.2 includes architectural changes and, hence, comes with new migrations.
+
+If this is a new installation of the application, you may start directly with version v2.24.3-ee2.10.2. This guide is not required for new installations.
+
+#### Prerequisites for Upgrading to the Latest Version:
+
+- It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
+
+- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+
+- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to v2.24.3-ee2.10.2.
+
+For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.

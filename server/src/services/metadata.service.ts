@@ -8,6 +8,7 @@ import { User } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { App } from 'src/entities/app.entity';
+import { DataSource } from 'src/entities/data_source.entity';
 
 @Injectable()
 export class MetadataService {
@@ -85,6 +86,7 @@ export class MetadataService {
     const totalInternalTableCount = await manager.count(InternalTable);
     const totalEditorCount = await this.fetchTotalEditorCount(manager);
     const totalViewerCount = await this.fetchTotalViewerCount(manager);
+    const totalDatasourcesByKindCount = await this.fetchDatasourcesByKindCount(manager);
 
     try {
       return await got('https://hub.tooljet.io/telemetry', {
@@ -97,6 +99,7 @@ export class MetadataService {
           total_apps: totalAppCount,
           tooljet_db_table_count: totalInternalTableCount,
           tooljet_version: globalThis.TOOLJET_VERSION,
+          data_sources_count: totalDatasourcesByKindCount,
           deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),
         },
       });
@@ -107,23 +110,29 @@ export class MetadataService {
 
   async checkForUpdates(metadata: Metadata) {
     const installedVersion = globalThis.TOOLJET_VERSION;
-    const response = await got('https://hub.tooljet.io/updates', {
-      method: 'post',
-    });
-    const data = JSON.parse(response.body);
-    const latestVersion = data['latest_version'];
+    let latestVersion;
 
-    const newOptions = {
-      last_checked: new Date(),
-    };
+    try {
+      const response = await got('https://hub.tooljet.io/updates', {
+        method: 'post',
+      });
+      const data = JSON.parse(response.body);
+      latestVersion = data['latest_version'];
 
-    if (gt(latestVersion, installedVersion) && installedVersion !== metadata.data['ignored_version']) {
-      newOptions['latest_version'] = latestVersion;
-      newOptions['version_ignored'] = false;
+      const newOptions = {
+        last_checked: new Date(),
+      };
+
+      if (gt(latestVersion, installedVersion) && installedVersion !== metadata.data['ignored_version']) {
+        newOptions['latest_version'] = latestVersion;
+        newOptions['version_ignored'] = false;
+      }
+
+      await this.updateMetaData(newOptions);
+    } catch (error) {
+      console.error('Error while connecting to URL https://hub.tooljet.io/updates', error);
     }
-
-    await this.updateMetaData(newOptions);
-    return { latestVersion };
+    return { latestVersion: latestVersion || installedVersion };
   }
 
   async fetchTotalEditorCount(manager: EntityManager) {
@@ -158,5 +167,19 @@ export class MetadataService {
       .select('users.id')
       .distinct()
       .getCount();
+  }
+
+  async fetchDatasourcesByKindCount(manager: EntityManager) {
+    const dsGroupedByKind = await manager
+      .createQueryBuilder(DataSource, 'data_sources')
+      .select('kind')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('kind')
+      .getRawMany();
+
+    return dsGroupedByKind.reduce((acc, { kind, count }) => {
+      acc[kind] = count;
+      return acc;
+    }, {});
   }
 }

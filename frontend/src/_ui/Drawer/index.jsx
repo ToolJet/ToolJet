@@ -23,6 +23,7 @@ const Drawer = ({
   onClose,
   position = 'left',
   removeWhenClosed = true,
+  drawerStyle,
 }) => {
   const bodyRef = useRef(document.querySelector('body'));
   const portalRootRef = useRef(document.getElementById('tooljet-drawer-root') || createPortalRoot());
@@ -79,18 +80,18 @@ const Drawer = ({
 
   return createPortal(
     <ErrorBoundary showFallback={true}>
-      <FocusTrap active={isOpen && !disableFocus}>
+      <FocusTrap focusTrapOptions={{ initialFocus: false }} active={isOpen && !disableFocus}>
         <div
           aria-hidden={`${!isOpen}`}
           className={cx('drawer-container', {
             open: isOpen,
             in: isTransitioning,
             className,
-            'theme-dark': darkMode,
+            'theme-dark dark-theme': darkMode,
           })}
         >
           <Toast toastOptions={toastOptions} />
-          <div className={cx('drawer', position)} role="dialog">
+          <div className={cx('drawer', position)} role="dialog" style={drawerStyle}>
             {children}
           </div>
           <div className="backdrop" onClick={onClose} />

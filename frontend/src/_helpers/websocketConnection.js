@@ -24,13 +24,12 @@ class WebSocketConnection {
   addListeners(appId) {
     // Connection opened
     this.socket.addEventListener('open', (event) => {
-      console.log('connection established', event);
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      // console.log('connection established', event);
 
+      //TODO: verify if the socket functionality is working or not
       this.socket.send(
         JSON.stringify({
           event: 'authenticate',
-          data: currentUser.auth_token,
         })
       );
 
@@ -44,12 +43,12 @@ class WebSocketConnection {
 
     // Connection closed
     this.socket.addEventListener('close', (event) => {
-      console.log('connection closed', event);
+      // console.log('connection closed', event);
     });
 
     // Listen for possible errors
     this.socket.addEventListener('error', (event) => {
-      console.log('WebSocket error: ', event);
+      // console.log('WebSocket error: ', event);
     });
   }
 }

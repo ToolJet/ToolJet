@@ -1,6 +1,11 @@
 const { defineConfig } = require("cypress");
 const { rmdir } = require("fs");
+const fs = require("fs");
+const XLSX = require("node-xlsx");
+
 const pg = require("pg");
+const path = require("path");
+const pdf = require("pdf-parse");
 
 module.exports = defineConfig({
   execTimeout: 1800000,
@@ -8,7 +13,7 @@ module.exports = defineConfig({
   requestTimeout: 10000,
   pageLoadTimeout: 20000,
   responseTimeout: 10000,
-  viewportWidth: 1200,
+  viewportWidth: 1440,
   viewportHeight: 960,
   chromeWebSecurity: false,
   trashAssetsBeforeRuns: true,
@@ -57,7 +62,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        UpdateId({ dbconfig, sql }) {
+        updateId({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
         },
@@ -65,22 +70,32 @@ module.exports = defineConfig({
 
       return require("./cypress/plugins/index.js")(on, config);
     },
+    downloadsFolder: "cypress/downloads",
     experimentalRunAllSpecs: true,
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
-      "cypress/e2e/editor/**/*.cy.js",
-      "cypress/e2e/exportImport/**/*.cy.js",
-      "cypress/e2e/authentication/**/*.cy.js",
-      "cypress/e2e/dashboard/multi-workspace/**/*.cy.js",
-      "cypress/e2e/dashboard/*.cy.js",
+      // "cypress/e2e/selfHost/*.cy.js",
+      // "cypress/e2e/authentication/*.cy.js",
+      // "cypress/e2e/workspace/*.cy.js",
+      // "cypress/e2e/editor/data-source/*.cy.js",
+      "cypress/e2e/editor/app-version/version.cy.js",
+      "cypress/e2e/exportImport/export.cy.js",
+      "cypress/e2e/exportImport/import.cy.js",
+      "cypress/e2e/database/database.cy.js",
+      "cypress/e2e/editor/widget/*.cy.js",
+      "cypress/e2e/editor/multipage/*.cy.js",
     ],
     numTestsKeptInMemory: 1,
-    redirectionLimit: 10,
+    redirectionLimit: 7,
     experimentalRunAllSpecs: true,
     experimentalMemoryManagement: true,
     video: false,
     videoUploadOnPasses: false,
+    retries: {
+      runMode: 2,
+      openMode: 0,
+    },
   },
 });

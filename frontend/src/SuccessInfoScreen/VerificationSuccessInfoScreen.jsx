@@ -4,7 +4,7 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { authenticationService } from '@/_services';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -15,6 +15,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { buildURLWithQuery } from '@/_helpers/utils';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -30,17 +31,16 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const { t } = useTranslation();
 
   const location = useLocation();
-  const history = useHistory();
+  const params = useParams();
 
-  const organizationId = new URLSearchParams(location?.state?.search).get('oid');
-  const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-  const source = new URLSearchParams(location?.state?.search).get('source');
+  const organizationId = new URLSearchParams(location?.search).get('oid');
+  const source = new URLSearchParams(location?.search).get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const getUserDetails = () => {
     setIsLoading(true);
     authenticationService
-      .verifyToken(location?.state?.token, location?.state?.organizationToken)
+      .verifyToken(params?.token, params?.organizationToken)
       .then((data) => {
         if (data?.redirect_url) {
           window.location.href = buildURLWithQuery(data.redirect_url, {
@@ -52,7 +52,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         setUserDetails(data);
         setIsLoading(false);
         if (data?.email !== '') {
-          if (location?.state?.organizationToken) {
+          if (params?.organizationToken) {
             setShowJoinWorkspace(true);
             return;
           }
@@ -71,32 +71,20 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
     if (source == 'sso') setShowJoinWorkspace(true);
     authenticationService.deleteLoginOrganizationId();
-    if (!single_organization) {
-      if (organizationId) {
-        authenticationService.saveLoginOrganizationId(organizationId);
-        organizationId &&
-          authenticationService.getOrganizationConfigs(organizationId).then(
-            (configs) => {
-              setIsGettingConfigs(false);
-              setConfigs(configs);
-            },
-            () => {
-              setIsGettingConfigs(false);
-            }
-          );
-      } else {
-        setIsGettingConfigs(false);
-      }
+    if (organizationId) {
+      authenticationService.saveLoginOrganizationId(organizationId);
+      organizationId &&
+        authenticationService.getOrganizationConfigs(organizationId).then(
+          (configs) => {
+            setIsGettingConfigs(false);
+            setConfigs(configs);
+          },
+          () => {
+            setIsGettingConfigs(false);
+          }
+        );
     } else {
-      authenticationService.getOrganizationConfigs().then(
-        (configs) => {
-          setIsGettingConfigs(false);
-          setConfigs(configs);
-        },
-        () => {
-          setIsGettingConfigs(false);
-        }
-      );
+      setIsGettingConfigs(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -122,16 +110,15 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         companyName: '',
         companySize: '',
         role: '',
-        token: location?.state?.token,
-        organizationToken: location?.state?.organizationToken ?? '',
+        token: params?.token,
+        organizationToken: params?.organizationToken ?? '',
         source: source,
         password: password,
       })
       .then((user) => {
-        authenticationService.updateUser(user);
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        history.push('/');
+        redirectToDashboard(user);
       })
       .catch((res) => {
         setIsLoading(false);
@@ -149,15 +136,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     setPassword(event.target.value);
   };
   const clickContinue = (e) => {
-    if (single_organization) userDetails?.onboarding_details?.questions ? setShowOnboarding(true) : setUpAccount(e);
-    else {
-      userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
-        ? setShowOnboarding(true)
-        : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
-          (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
-        ? setShowJoinWorkspace(true)
-        : setUpAccount(e);
-    }
+    userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
+      ? setShowOnboarding(true)
+      : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
+        (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
+      ? setShowJoinWorkspace(true)
+      : setUpAccount(e);
   };
 
   return (
@@ -381,8 +365,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       {verifiedToken && showOnboarding && (
         <OnBoardingForm
           userDetails={userDetails}
-          token={location?.state?.token}
-          organizationToken={location?.state?.organizationToken ?? ''}
+          token={params?.token}
+          organizationToken={params?.organizationToken ?? ''}
           password={password}
           darkMode={darkMode}
         />

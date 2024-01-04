@@ -25,28 +25,19 @@ export const initEditorWalkThrough = () => {
       {
         element: '.component-image-holder',
         popover: {
-          title: 'Drag and drop widgets',
-          description: 'From the widget sidebar, drag and drop widgets to the canvas.',
+          title: 'Drag and drop components',
+          description: 'From the component sidebar, drag and drop components to the canvas.',
           position: 'left',
           closeBtnText: 'Skip (1/6)',
-        },
-      },
-      {
-        element: '.sidebar-datasources',
-        popover: {
-          title: 'Connect to data sources',
-          description: 'You can manage your data sources from here.',
-          position: 'right',
-          closeBtnText: 'Skip (2/6)',
         },
       },
       {
         element: '.left-sidebar-inspector',
         popover: {
           title: 'Inspector',
-          description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+          description: 'Inspector lets you check the properties of components, results of queries etc.',
           position: 'right',
-          closeBtnText: 'Skip (3/6)',
+          closeBtnText: 'Skip (2/6)',
         },
       },
       {
@@ -56,16 +47,26 @@ export const initEditorWalkThrough = () => {
           description:
             'Create queries to interact with your data sources, run JavaScript snippets and to make API requests.',
           position: 'top',
+          closeBtnText: 'Skip (3/6)',
+        },
+      },
+      {
+        element: '.preview-share-wrap',
+        popover: {
+          title: 'Preview & share',
+          description:
+            'Click on preview to view the current changes on app viewer. Click on share button to view the sharing options.',
+          position: 'left',
           closeBtnText: 'Skip (4/6)',
         },
       },
       {
-        element: '.release-buttons',
+        element: '.promote-release-btn',
         popover: {
-          title: 'Preview, release & share',
+          title: 'Release',
           description:
-            'Click on preview to view the current changes on app viewer. Click on share button to view the sharing options. Release the editing version to make the changes live. Released versions cannot be modified, you will have to create another version to make more changes.',
-          position: 'bottom',
+            ' Release the editing version to make the changes live. Released versions cannot be modified, you will have to create another version to make more changes.',
+          position: 'left',
           closeBtnText: 'Skip (5/6)',
         },
       },
@@ -74,7 +75,7 @@ export const initEditorWalkThrough = () => {
         popover: {
           title: 'Collaborate',
           description: 'Add comments on canvas and tag your team members to collaborate.',
-          position: 'right',
+          position: 'top',
           closeBtnText: 'Skip (6/6)',
         },
       },

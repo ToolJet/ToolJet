@@ -52,9 +52,12 @@ export default class Snowflake implements QueryService {
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    await this.getConnection(sourceOptions, {}, false);
+    const connection = await this.getConnection(sourceOptions, {}, false);
+    const isConnectionValid = await connection.isValidAsync();
 
-    return { status: 'ok' };
+    if (isConnectionValid) return { status: 'ok' };
+
+    throw new Error('Connection is invalid');
   }
 
   async connAsync(connection: snowflake.Connection) {
@@ -75,6 +78,8 @@ export default class Snowflake implements QueryService {
       database: sourceOptions.database,
       schema: sourceOptions.schema,
       role: sourceOptions.role,
+      clientSessionKeepAlive: true,
+      clientSessionKeepAliveHeartbeatFrequency: 900,
     });
 
     return await this.connAsync(connection);
@@ -90,7 +95,7 @@ export default class Snowflake implements QueryService {
     if (checkCache) {
       let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
 
-      if (connection) {
+      if (connection && (await connection.isValidAsync())) {
         return connection;
       } else {
         connection = await this.buildConnection(sourceOptions);

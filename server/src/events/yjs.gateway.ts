@@ -21,7 +21,7 @@ export class YjsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // error code 4000 to communicate to client
     // that it should not reconnect if auth failed
     const ERROR_CODE_WEBSOCKET_AUTH_FAILED = 4000;
-    const token = this.getCookie(request?.headers?.cookie, 'auth_token');
+    const token = this.getCookie(request?.headers?.cookie, 'tj_auth_token');
     if (isEmpty(token)) {
       connection.close(ERROR_CODE_WEBSOCKET_AUTH_FAILED);
     } else {

@@ -19,10 +19,18 @@ export class AddUniqueConstraintToVersionName1655726247638 implements MigrationI
   }
 
   private async migrateVersions(entityManager: EntityManager) {
-    const appVersions = await entityManager.find(AppVersion);
+    const appVersions = await entityManager.find(AppVersion, {
+      select: ['name', 'appId', 'id'],
+    });
     for (const version of appVersions) {
       const { name, appId, id } = version;
-      const versionsWithSameName = await entityManager.find(AppVersion, { appId, name });
+      const versionsWithSameName = await entityManager.find(AppVersion, {
+        where: {
+          appId,
+          name,
+        },
+        select: ['name', 'appId', 'id'],
+      });
       if (versionsWithSameName.length > 1) {
         const versionsNeedToChange = versionsWithSameName.filter((appVersion) => appVersion.id !== id);
         for (const versionToChange of versionsNeedToChange) {

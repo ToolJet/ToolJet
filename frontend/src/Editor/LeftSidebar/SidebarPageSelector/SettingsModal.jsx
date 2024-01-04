@@ -8,29 +8,26 @@ export const SettingsModal = ({
   show,
   handleClose,
   darkMode,
-  updateOnPageLoadEvents,
-  currentState,
+
   apps,
   pages,
   components,
-  dataQueries,
+  pinPagesPopover,
 }) => {
   const [isSaving, _setIsSaving] = useState(false);
-  console.log({ dataQueries });
 
   const allpages = pages.filter((p) => p.id !== page.id);
 
   return (
-    <div onClick={(event) => event.stopPropagation()}>
+    <div>
       <Modal
         show={show}
-        // onHide={handleClose}
+        onHide={handleClose}
         size="sm"
         centered
-        className={`${darkMode && 'theme-dark'} page-handle-edit-modal`}
+        className={`${darkMode && 'dark-theme'} page-handle-edit-modal`}
         backdrop="static"
         enforceFocus={false}
-        onClick={(event) => event.stopPropagation()}
       >
         <Modal.Header>
           <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }} data-cy={'modal-title-page-events'}>
@@ -55,9 +52,10 @@ export const SettingsModal = ({
             </svg>
           </span>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body onClick={() => pinPagesPopover(true)}>
           <b data-cy={'page-events-labe'}>Events</b>
           <EventManager
+            //!page
             component={{
               component: {
                 definition: {
@@ -65,13 +63,12 @@ export const SettingsModal = ({
                 },
               },
             }}
-            componentMeta={{ events: { onPageLoad: { displayName: 'On page load' } } }}
-            currentState={currentState}
-            dataQueries={dataQueries}
+            sourceId={page?.id}
+            eventSourceType="page"
+            eventMetaDefinition={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
             components={components}
             apps={apps}
             pages={allpages}
-            eventsChanged={(events) => updateOnPageLoadEvents(page.id, events)}
             popOverCallback={(showing) => showing}
           />
         </Modal.Body>

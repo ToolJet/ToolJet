@@ -8,27 +8,34 @@ import {
   cleanSensitiveData,
   User,
   App,
-  getCurrentToken,
   OAuthUnauthorizedClientError,
+  getRefreshedToken,
+  checkIfContentTypeIsURLenc,
+  checkIfContentTypeIsMultipartFormData,
+  isEmpty,
+  validateAndSetRequestOptionsBasedOnAuthType,
+  sanitizeHeaders,
+  sanitizeSearchParams,
+  getAuthUrl,
 } from '@tooljet-plugins/common';
+const FormData = require('form-data');
 const JSON5 = require('json5');
-import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
+import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import { SourceOptions } from './types';
 
-function isEmpty(value: number | null | undefined | string) {
-  return (
-    value === undefined ||
-    value === null ||
-    !isNaN(value as number) ||
-    (typeof value === 'object' && Object.keys(value).length === 0) ||
-    (typeof value === 'string' && value.trim().length === 0)
-  );
-}
+function isFileObject(value) {
+  const keys = Object.keys(value);
 
-function sanitizeCustomParams(customArray: any) {
-  const params = Object.fromEntries(customArray ?? []);
-  Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
-  return params;
+  return (
+    typeof value === 'object' &&
+    keys.length > 0 &&
+    keys.includes('name') && // example.zip
+    keys.includes('type') && // application/zip
+    keys.includes('content') && // raw'ish bytes (contains new lines - \n)
+    keys.includes('dataURL') && // data url representation
+    keys.includes('base64Data') && // data in base64
+    keys.includes('filePath')
+  );
 }
 
 interface RestAPIResult extends QueryResult {
@@ -38,31 +45,6 @@ interface RestAPIResult extends QueryResult {
 }
 
 export default class RestapiQueryService implements QueryService {
-  authUrl(sourceOptions: SourceOptions): string {
-    const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
-    const tooljetHost = process.env.TOOLJET_HOST;
-    const authUrl = new URL(
-      `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
-    );
-    Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
-    return authUrl.toString();
-  }
-  /* Headers of the source will be overridden by headers of the query */
-  headers(sourceOptions: any, queryOptions: any, hasDataSource: boolean): Headers {
-    const _headers = (queryOptions.headers || []).filter((o) => {
-      return o.some((e) => !isEmpty(e));
-    });
-
-    if (!hasDataSource) return Object.fromEntries(_headers);
-
-    const headerData = _headers.concat(sourceOptions.headers || []);
-
-    const headers = Object.fromEntries(headerData);
-    Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
-
-    return headers;
-  }
-
   /* Body params of the source will be overridden by body params of the query */
   body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
     const bodyToggle = queryOptions['body_toggle'];
@@ -83,18 +65,6 @@ export default class RestapiQueryService implements QueryService {
     }
   }
 
-  /* Search params of the source will be overridden by Search params of the query */
-  searchParams(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
-    const _urlParams = (queryOptions.url_params || []).filter((o) => {
-      return o.some((e) => !isEmpty(e));
-    });
-
-    if (!hasDataSource) return Object.fromEntries(_urlParams);
-
-    const urlParams = _urlParams.concat(sourceOptions.url_params || []);
-    return Object.fromEntries(urlParams);
-  }
-
   isJson(str: string) {
     try {
       JSON.parse(str);
@@ -113,42 +83,8 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
-    const authType = sourceOptions['auth_type'];
-    const requiresOauth = authType === 'oauth2';
-
-    const headers = this.headers(sourceOptions, queryOptions, hasDataSource);
-    const isUrlEncoded = this.checkIfContentTypeIsURLenc(queryOptions['headers']);
-    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
-
-    /* Chceck if OAuth tokens exists for the source if query requires OAuth */
-    if (requiresOauth) {
-      const tokenData = sourceOptions['tokenData'];
-      const isAppPublic = context?.app.isPublic;
-      const userData = context?.user;
-      const currentToken = getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
-
-      if (!currentToken && !userData?.id && isAppPublic) {
-        throw new QueryError('Missing access token', {}, {});
-      }
-
-      if (!currentToken) {
-        return {
-          status: 'needs_oauth',
-          data: { auth_url: this.authUrl(sourceOptions) },
-        };
-      } else {
-        const accessToken = currentToken['access_token'];
-        if (sourceOptions['add_token_to'] === 'header') {
-          const headerPrefix = sourceOptions['header_prefix'];
-          headers['Authorization'] = `${headerPrefix}${accessToken}`;
-        }
-      }
-    }
-
-    let result = {};
-    let requestObject = {};
-    let responseObject = {};
-    let responseHeaders = {};
+    const isUrlEncoded = checkIfContentTypeIsURLenc(queryOptions['headers']);
+    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(queryOptions['headers']);
 
     /* Prefixing the base url of datasource if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
@@ -157,29 +93,62 @@ export default class RestapiQueryService implements QueryService {
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
 
-    if (authType === 'bearer') {
-      headers['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
-    }
-
-    const requestOptions: OptionsOfTextResponseBody = {
+    const _requestOptions: OptionsOfTextResponseBody = {
       method,
-      headers,
-      ...this.fetchHttpsCertsForCustomCA(),
+      ...this.fetchHttpsCertsForCustomCA(sourceOptions),
+      headers: sanitizeHeaders(sourceOptions, queryOptions, hasDataSource),
       searchParams: {
         ...paramsFromUrl,
-        ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
+        ...sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource),
       },
-      ...(isUrlEncoded ? { form: json } : { json }),
     };
 
-    if (authType === 'basic') {
-      requestOptions.username = sourceOptions.username;
-      requestOptions.password = sourceOptions.password;
+    const hasFiles = (json) => {
+      return Object.values(json || {}).some((item) => {
+        return isFileObject(item);
+      });
+    };
+
+    if (isUrlEncoded) {
+      _requestOptions.form = json;
+    } else if (isMultipartFormData && hasFiles(json)) {
+      const form = new FormData();
+      for (const key in json) {
+        const value = json[key];
+        if (isFileObject(value)) {
+          const fileBuffer = Buffer.from(value?.base64Data || '', 'base64');
+          form.append(key, fileBuffer, {
+            filename: value?.name || '',
+            contentType: value?.type || '',
+            knownLength: fileBuffer.length,
+          });
+        } else if (value !== undefined && value !== null) {
+          form.append(key, value);
+        }
+      }
+      _requestOptions.body = form;
+    } else {
+      _requestOptions.json = json;
     }
+
+    const authValidatedRequestOptions = validateAndSetRequestOptionsBasedOnAuthType(
+      sourceOptions,
+      context,
+      _requestOptions
+    );
+    const { status, data } = authValidatedRequestOptions;
+    if (status === 'needs_oauth') return authValidatedRequestOptions;
+
+    const requestOptions = data as OptionsOfTextResponseBody;
+
+    let result = {};
+    let requestObject = {};
+    let responseObject = {};
+    let responseHeaders = {};
 
     try {
       const response = await got(url, requestOptions);
-      result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
+      result = this.getResponse(response);
       requestObject = {
         requestUrl: response.request.requestUrl,
         method: response.request.options.method,
@@ -215,7 +184,7 @@ export default class RestapiQueryService implements QueryService {
         };
       }
 
-      if (requiresOauth && error?.response?.statusCode == 401) {
+      if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode == 401) {
         throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
       }
       throw new QueryError('Query could not be completed', error.message, result);
@@ -232,14 +201,57 @@ export default class RestapiQueryService implements QueryService {
     };
   }
 
-  fetchHttpsCertsForCustomCA() {
-    if (!process.env.NODE_EXTRA_CA_CERTS) return {};
+  fetchHttpsCertsForCustomCA(sourceOptions: any) {
+    let httpsParams: any = {};
+    switch (sourceOptions.ssl_certificate) {
+      case 'ca_certificate':
+        httpsParams = {
+          https: {
+            certificateAuthority: [sourceOptions.ca_cert],
+          },
+        };
+        break;
+      case 'client_certificate':
+        httpsParams = {
+          https: {
+            certificateAuthority: [sourceOptions.ca_cert],
+            key: [sourceOptions.client_key],
+            certificate: [sourceOptions.client_cert],
+          },
+        };
+        break;
+      default:
+        break;
+    }
 
-    return {
-      https: {
-        certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
-      },
-    };
+    if (process.env.NODE_EXTRA_CA_CERTS) {
+      'https' in httpsParams
+        ? (httpsParams.https.certificateAuthority = httpsParams.https?.certificateAuthority.concat([
+            ...tls.rootCertificates,
+            readFileSync(process.env.NODE_EXTRA_CA_CERTS),
+          ]))
+        : (httpsParams = {
+            https: {
+              certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
+            },
+          });
+    }
+
+    return httpsParams;
+  }
+
+  private getResponse(response) {
+    try {
+      if (this.isJson(response.body)) {
+        return JSON.parse(response.body);
+      }
+      if (response.rawBody && response.headers?.['content-type']?.startsWith('image/')) {
+        return Buffer.from(response.rawBody, 'binary').toString('base64');
+      }
+    } catch (error) {
+      console.error('Error while parsing response', error);
+    }
+    return response.body;
   }
 
   checkIfContentTypeIsURLenc(headers: [] = []) {
@@ -248,103 +260,11 @@ export default class RestapiQueryService implements QueryService {
     return contentType === 'application/x-www-form-urlencoded';
   }
 
+  authUrl(sourceOptions: SourceOptions): string {
+    return getAuthUrl(sourceOptions);
+  }
+
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
-    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
-    const currentToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['tokenData'], userId, isAppPublic);
-    const refreshToken = currentToken['refresh_token'];
-    if (!refreshToken) {
-      throw new QueryError('Refresh token not found', error.response, {});
-    }
-    const accessTokenUrl = sourceOptions['access_token_url'];
-    const clientId = sourceOptions['client_id'];
-    const clientSecret = sourceOptions['client_secret'];
-    const grantType = 'refresh_token';
-    const isUrlEncoded = this.checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
-    const customAccessTokenHeaders = sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
-
-    const data = {
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: grantType,
-      refresh_token: refreshToken,
-    };
-
-    const accessTokenDetails = {};
-    let result, response;
-
-    try {
-      response = await got(accessTokenUrl, {
-        method: 'post',
-        headers: {
-          'Content-Type': isUrlEncoded ? 'application/x-www-form-urlencoded' : 'application/json',
-          ...customAccessTokenHeaders,
-        },
-        form: isUrlEncoded ? data : undefined,
-        json: !isUrlEncoded ? data : undefined,
-      });
-      result = JSON.parse(response.body);
-    } catch (error) {
-      console.error(
-        `Error while REST API refresh token call. Status code : ${error.response?.statusCode}, Message : ${error.response?.body}`
-      );
-      if (error instanceof HTTPError) {
-        result = {
-          requestObject: {
-            requestUrl: error.request?.requestUrl,
-            requestHeaders: error.request?.options?.headers,
-            requestParams: urrl.parse(error.request?.requestUrl, true).query,
-          },
-          responseObject: {
-            statusCode: error.response?.statusCode,
-            responseBody: error.response?.body,
-          },
-          responseHeaders: error.response?.headers,
-        };
-      }
-      if (error.response?.statusCode >= 400 && error.response?.statusCode < 500) {
-        throw new OAuthUnauthorizedClientError(
-          'Unauthorized status from Oauth server',
-          JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
-          result
-        );
-      }
-      throw new QueryError(
-        'could not connect to Oauth server',
-        JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
-        result
-      );
-    }
-
-    if (!(response.statusCode >= 200 || response.statusCode < 300)) {
-      throw new QueryError(
-        'could not connect to Oauth server. status code',
-        JSON.stringify({ statusCode: response.statusCode }),
-        {
-          responseObject: {
-            statusCode: response.statusCode,
-            responseBody: response.body,
-          },
-          responseHeaders: response.headers,
-        }
-      );
-    }
-
-    if (result['access_token']) {
-      accessTokenDetails['access_token'] = result['access_token'];
-      accessTokenDetails['refresh_token'] = result['refresh_token'] || refreshToken;
-    } else {
-      throw new QueryError(
-        'access_token not found in the response',
-        {},
-        {
-          responseObject: {
-            statusCode: response.statusCode,
-            responseBody: response.body,
-          },
-          responseHeaders: response.headers,
-        }
-      );
-    }
-    return accessTokenDetails;
+    return getRefreshedToken(sourceOptions, error, userId, isAppPublic);
   }
 }

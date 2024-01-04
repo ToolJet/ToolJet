@@ -28,6 +28,16 @@ In this how-to guide, we will learn how to make a query trigger at the specific 
 	    queries.post.run()
     }
     ```
+  - Or use **async**-**await** in the function, if you're triggering multiple actions:
+  ```js
+  actions.setVariable('interval',setInterval(countdown, 5000));
+  async function countdown(){
+    await queries.restapi1.run()
+    await queries.restapi2.run()
+    await actions.showAlert('info','This is an information')
+  }
+  ```
+  
 - Go to the **Advanced** tab of the query, enable `Run query on page load?` this will trigger this RunJS query when the app is loaded. Name the query as `set` and **Save** it. Note that you will have to save the query and not `Save and Run` because doing it will trigger the query and you won't be able to stop the query unless you reload the page or go back to dashboard.
     <div style={{textAlign: 'center'}}>
 

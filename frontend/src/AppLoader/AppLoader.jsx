@@ -1,63 +1,41 @@
 import React, { useEffect } from 'react';
 import { withTranslation } from 'react-i18next';
-import { appService, organizationService, authenticationService } from '@/_services';
 import { Editor } from '../Editor/Editor';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import config from 'config';
-import { safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
-import { toast } from 'react-hot-toast';
-import useRouter from '@/_hooks/use-router';
+import { appService } from '@/_services';
+import { useAppDataActions } from '@/_stores/appDataStore';
 
-const AppLoaderComponent = (props) => {
-  const router = useRouter();
-  const appId = props.match.params.id;
-  const currentUser = authenticationService.currentUserValue;
+const AppLoaderComponent = React.memo((props) => {
+  const [shouldLoadApp, setShouldLoadApp] = React.useState(false);
+  const { updateState } = useAppDataActions();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => loadAppDetails(), []);
+  useEffect(() => {
+    props?.id && props?.slug && loadAppDetails(props?.id);
 
-  const loadAppDetails = () => {
-    appService.getApp(appId, 'edit').catch((error) => {
-      handleError(error);
+    return () => {
+      setShouldLoadApp(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadAppDetails = (appId) => {
+    appService.fetchApp(appId, 'edit').then((data) => {
+      setShouldLoadApp(true);
+      updateState({
+        app: data,
+        appId: data.id,
+      });
     });
   };
 
-  const switchOrganization = (orgId) => {
-    const path = `/apps/${appId}`;
-    const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
-    organizationService.switchOrganization(orgId).then(
-      (data) => {
-        authenticationService.updateCurrentUserDetails(data);
-        window.location.href = `${sub_path}${path}`;
-      },
-      () => {
-        return (window.location.href = `${sub_path}/login/${orgId}?redirectTo=${path}`);
-      }
-    );
-  };
+  if (!shouldLoadApp) return <></>;
 
-  const handleError = (error) => {
-    try {
-      if (error?.data) {
-        const statusCode = error.data?.statusCode;
-        if (statusCode === 403) {
-          const errorObj = safelyParseJSON(error.data?.message);
-          if (errorObj?.organizationId && currentUser.organization_id !== errorObj?.organizationId) {
-            switchOrganization(errorObj?.organizationId);
-            return;
-          }
-          return router.push('/');
-        } else if (statusCode === 404 || statusCode === 422) {
-          toast.error(error?.error ?? 'App not found');
-        }
-        return router.push('/');
-      }
-    } catch (err) {
-      return router.push('/');
-    }
-  };
-
-  return config.ENABLE_MULTIPLAYER_EDITING ? <RealtimeEditor {...props} /> : <Editor {...props} />;
-};
+  return config.ENABLE_MULTIPLAYER_EDITING ? (
+    <RealtimeEditor {...props} shouldLoadApp={shouldLoadApp} />
+  ) : (
+    <Editor {...props} />
+  );
+});
 
 export const AppLoader = withTranslation()(AppLoaderComponent);

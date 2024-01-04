@@ -13,15 +13,15 @@ module.exports = defineConfig({
   requestTimeout: 10000,
   pageLoadTimeout: 20000,
   responseTimeout: 10000,
-  viewportWidth: 1200,
+  viewportWidth: 1440,
   viewportHeight: 960,
   chromeWebSecurity: false,
   trashAssetsBeforeRuns: true,
 
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents (on, config) {
       on("task", {
-        readPdf(pathToPdf) {
+        readPdf (pathToPdf) {
           return new Promise((resolve) => {
             const pdfPath = path.resolve(pathToPdf);
             let dataBuffer = fs.readFileSync(pdfPath);
@@ -33,7 +33,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        readXlsx(filePath) {
+        readXlsx (filePath) {
           return new Promise((resolve, reject) => {
             try {
               let dataBuffer = fs.readFileSync(filePath);
@@ -48,21 +48,25 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        deleteFolder(folderName) {
+        deleteFolder (folderName) {
           return new Promise((resolve, reject) => {
-            rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
-              if (err) {
-                console.error(err);
-                return reject(err);
-              }
-              resolve(null);
-            });
+            if (fs.existsSync(folderName)) {
+              rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
+                if (err) {
+                  console.error(err);
+                  return reject(err);
+                }
+                return resolve(null);
+              });
+            } else {
+              return resolve(null);
+            }
           });
         },
       });
 
       on("task", {
-        updateId({ dbconfig, sql }) {
+        updateId ({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
         },
@@ -74,10 +78,10 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: "cypress/e2e/**/*.cy.js",
-    numTestsKeptInMemory: 25,
+    downloadsFolder: "cypress/downloads",
+    numTestsKeptInMemory: 0,
     redirectionLimit: 10,
     experimentalRunAllSpecs: true,
-    downloadsFolder: "cypress/downloads",
     trashAssetsBeforeRuns: true,
     experimentalMemoryManagement: true,
   },

@@ -32,7 +32,7 @@ export const EditorKeyHooks = ({
   };
 
   useKeyHooks(
-    ['up, down, left, right', 'esc', 'backspace', 'cmd+d, ctrl+d, cmd+c, ctrl+c, cmd+x, ctrl+x'],
+    ['up, down, left, right', 'esc', 'backspace', 'meta+d, ctrl+d, meta+c, ctrl+c, meta+x, ctrl+x'],
     handleHotKeysCallback
   );
 

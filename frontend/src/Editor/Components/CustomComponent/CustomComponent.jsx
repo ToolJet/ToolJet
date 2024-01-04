@@ -2,10 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import { isEqual } from 'lodash';
 import iframeContent from './iframe.html';
 
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { isQueryRunnable } from '@/_helpers/utils';
+
 export const CustomComponent = (props) => {
-  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataQueries, dataCy } =
-    props;
-  const { visibility } = styles;
+  const dataQueries = useDataQueries();
+  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataCy } = props;
+  const { visibility, boxShadow } = styles;
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);
   const iFrameRef = useRef(null);
@@ -42,9 +45,16 @@ export const CustomComponent = (props) => {
           if (e.data.message === 'UPDATE_DATA') {
             setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
           } else if (e.data.message === 'RUN_QUERY') {
-            const filteredQuery = dataQueryRef.current.filter((query) => query.name === e.data.queryName);
+            const filteredQuery = dataQueryRef.current.filter(
+              (query) => query.name === e.data.queryName && isQueryRunnable(query)
+            );
+            const parameters = e.data.parameters ? JSON.parse(e.data.parameters) : {};
             filteredQuery.length === 1 &&
-              fireEvent('onTrigger', { queryId: filteredQuery[0].id, queryName: filteredQuery[0].name });
+              fireEvent('onTrigger', {
+                queryId: filteredQuery[0].id,
+                queryName: filteredQuery[0].name,
+                parameters,
+              });
           } else {
             sendMessageToIframe(e.data);
           }
@@ -94,7 +104,7 @@ export const CustomComponent = (props) => {
   };
 
   return (
-    <div className="card" style={{ display: visibility ? '' : 'none', height }} data-cy={dataCy}>
+    <div className="card" style={{ display: visibility ? '' : 'none', height, boxShadow }} data-cy={dataCy}>
       <iframe
         srcDoc={iframeContent}
         style={{ width: '100%', height: '100%', border: 'none' }}

@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     node: true,
     jest: true,
@@ -37,7 +38,6 @@ module.exports = {
         singleQuote: true,
       },
     ],
-    '@typescript-eslint/no-floating-promises': ['error'],
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -45,6 +45,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { vars: 'all', args: 'none' }],
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-empty-function': 0,
+    'no-unsafe-optional-chaining': 'off',
     '@typescript-eslint/ban-types': [
       'error',
       {

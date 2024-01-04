@@ -2,7 +2,8 @@ import React from 'react';
 import moment from 'moment';
 import { toast } from 'react-hot-toast';
 import { commentNotificationsService } from '@/_services';
-import { hightlightMentionedUserInComment } from '@/_helpers/utils';
+import { hightlightMentionedUserInComment, getWorkspaceId } from '@/_helpers/utils';
+import { appendWorkspaceId } from '@/_helpers/routes';
 
 export const Notification = ({ id, creator, comment, updatedAt, commentLink, isRead, fetchData, darkMode }) => {
   const updateMentionedNotification = async () => {
@@ -14,10 +15,16 @@ export const Notification = ({ id, creator, comment, updatedAt, commentLink, isR
     fetchData();
   };
 
+  const getNewCommentLink = () => {
+    const url = new URL(commentLink);
+    url.pathname = appendWorkspaceId(getWorkspaceId(), url.pathname);
+    return url;
+  };
+
   const updated = moment(updatedAt).fromNow();
   return (
     <div className="list-group-item" style={{ paddingLeft: 0 }}>
-      <a className="text-muted text-decoration-none" href={commentLink} target="_blank" rel="noreferrer">
+      <a className="text-muted text-decoration-none" href={getNewCommentLink()} target="_blank" rel="noreferrer">
         <div className="row">
           <div className="col-auto">
             {creator?.avatar ? (

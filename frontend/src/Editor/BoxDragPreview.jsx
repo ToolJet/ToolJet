@@ -1,8 +1,15 @@
 import React, { useEffect, useState, memo } from 'react';
+import { shallow } from 'zustand/shallow';
+import { useEditorStore } from '@/_stores/editorStore';
 
-export const BoxDragPreview = memo(function BoxDragPreview({ item, currentLayout, canvasWidth }) {
+export const BoxDragPreview = memo(function BoxDragPreview({ item, canvasWidth }) {
   const [tickTock, setTickTock] = useState(false);
-
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
   useEffect(
     function subscribeToIntervalTick() {
       const interval = setInterval(() => setTickTock(!tickTock), 500);

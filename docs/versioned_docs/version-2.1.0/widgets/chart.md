@@ -120,6 +120,222 @@ The result will be like this:
 
 </div>
 
+### Using Plotly JSON chart schema
+
+In the **JSON description**, the value needs to be the `data` array with x and y axis values and at the end we need to specify the `type`. let's take a look at the examples for different chart types.
+#### Line
+
+```bash
+  {
+                "data": [
+                    {
+                        "x": [
+                            "Jan",
+                            "Feb",
+                            "Mar"
+                        ],
+                        "y": [
+                            100,
+                            80,
+                            40
+                        ],
+                        "type": "line"
+                    },
+                    {
+                        "x": [
+                            "Jan",
+                            "Feb",
+                            "Mar"
+                        ],
+                        "y": [
+                            300,
+                            30,
+                            20
+                        ],
+                        "type": "line"
+                    }
+                ]
+            }
+```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/plotly/line.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+#### Bar
+
+```bash
+{
+    "data": [
+        {
+            "name": "SF Zoo",
+            "type": "bar",
+            "x": [
+                20,
+                14,
+                23
+            ],
+            "y": [
+                "giraffes",
+                "orangutans",
+                "monkeys"
+            ],
+            "marker": {
+                "line": {
+                    "color": "rgba(55, 128, 191, 1.0)",
+                    "width": 1
+                },
+                "color": "rgba(55, 128, 191, 0.6)"
+            },
+            "orientation": "h"
+        },
+        {
+            "name": "LA Zoo",
+            "type": "bar",
+            "x": [
+                12,
+                18,
+                29
+            ],
+            "y": [
+                "giraffes",
+                "orangutans",
+                "monkeys"
+            ],
+            "marker": {
+                "line": {
+                    "color": "rgba(255, 153, 51, 1.0)",
+                    "width": 1
+                },
+                "color": "rgba(255, 153, 51, 0.6)"
+            },
+            "orientation": "h"
+        }
+    ],
+    "layout": {
+        "barmode": "stack"
+    },
+    "frames": []
+}
+```
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/plotly/bar2.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+#### Area
+
+```bash
+{
+    "data": [
+        {
+            "uid": "babced",
+            "fill": "tonexty",
+            "mode": "none",
+            "name": "Col2",
+            "type": "scatter",
+            "x": [
+                "2000-01-01",
+                "2001-01-01",
+                "2002-01-01",
+                "2003-01-01",
+                "2004-01-01",
+                "2005-01-01",
+                "2006-01-01",
+                "2007-01-01",
+                "2008-01-01",
+                "2009-01-01",
+                "2010-01-01",
+                "2011-01-01",
+                "2012-01-01",
+                "2013-01-01",
+                "2014-01-01",
+                "2015-01-01",
+                "2016-01-01"
+            ],
+            "y": [
+                "17087182",
+                "29354370",
+                "38760373",
+                "40912332",
+                "51611646",
+                "64780617",
+                "85507314",
+                "121892559",
+                "172338726",
+                "238027855",
+                "206956723",
+                "346004403",
+                "697089489",
+                "672985183",
+                "968882453",
+                "863105652",
+                "1068513050"
+            ],
+            "fillcolor": "rgb(224, 102, 102)"
+        }
+    ],
+    "layout": {
+        "title": "Total Number of Websites",
+        "width": 800,
+        "xaxis": {
+            "type": "date",
+            "range": [
+                946702800000,
+                1451624400000
+            ],
+            "title": "Source: <a href=\"http://www.scribblrs.com/\">Scribblrs</a><br>Source: <a href=\"http://www.internetlivestats.com/total-number-of-websites/\">Internet Live Stats</a>",
+            "showgrid": false,
+            "autorange": true,
+            "tickformat": "%Y"
+        },
+        "yaxis": {
+            "type": "linear",
+            "range": [
+                0,
+                1124750578.9473684
+            ],
+            "title": "",
+            "autorange": true
+        },
+        "height": 500,
+        "autosize": false
+    },
+    "frames": []
+}
+```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/plotly/area.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+#### Few more exmaples:
+
+**Link to JSON description:** https://raw.githubusercontent.com/plotly/plotly.js/master/test/image/mocks/0.json
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/plotly/chart1.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+**Link to JSON description:** https://raw.githubusercontent.com/plotly/plotly.js/master/test/image/mocks/12.json
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/plotly/chart2.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+:::tip
+Check the **[Plotly documentation](https://plotly.com/chart-studio-help/json-chart-schema/#more-examples)** to explore the all type of charts available.
+:::
+
 ## Marker color
 
 Modify the color of marker using the color picker or by providing a `HEX color code`.

@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
+
 export const DropDown = function DropDown({
   height,
   validate,
@@ -13,50 +14,74 @@ export const DropDown = function DropDown({
   id,
   component,
   exposedVariables,
-  registerAction,
   dataCy,
 }) {
-  let { label, value, display_values, values } = properties;
-  const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
-  const [currentValue, setCurrentValue] = useState(() => value);
+  let { label, value, advanced, schema, placeholder, display_values, values } = properties;
+  const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
+  const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
+  const [showValidationError, setShowValidationError] = useState(false);
 
-  if (!_.isArray(values)) {
+  const validationData = validate(value);
+  const { isValid, validationError } = validationData;
+
+  function findDefaultItem(schema) {
+    const foundItem = schema?.find((item) => item?.default === true);
+    return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
+  }
+
+  if (advanced) {
+    values = schema?.map((item) => item?.value);
+    display_values = schema?.map((item) => item?.label);
+    value = findDefaultItem(schema);
+  } else if (!_.isArray(values)) {
     values = [];
   }
 
   let selectOptions = [];
 
   try {
-    selectOptions = [
-      ...values.map((value, index) => {
-        return { label: display_values[index], value: value };
-      }),
-    ];
+    selectOptions = advanced
+      ? [
+          ...schema
+            .filter((data) => data.visible)
+            .map((value) => ({
+              ...value,
+              isDisabled: value.disable,
+            })),
+        ]
+      : [
+          ...values.map((value, index) => {
+            return { label: display_values[index], value: value };
+          }),
+        ];
   } catch (err) {
     console.log(err);
   }
 
+  const setExposedItem = (value, index, onSelectFired = false) => {
+    setCurrentValue(value);
+    onSelectFired ? setExposedVariable('value', value).then(fireEvent('onSelect')) : setExposedVariable('value', value);
+    setExposedVariable('selectedOptionLabel', index === undefined ? undefined : display_values?.[index]);
+  };
+
   function selectOption(value) {
-    if (values.includes(value)) {
-      setCurrentValue(value);
-      setExposedVariable('value', value).then(fireEvent('onSelect'));
+    let index = null;
+    index = values?.indexOf(value);
+
+    if (values?.includes(value)) {
+      setExposedItem(value, index, true);
     } else {
-      setCurrentValue(undefined);
-      setExposedVariable('value', undefined).then(fireEvent('onSelect'));
+      setExposedItem(undefined, undefined, true);
     }
   }
 
-  registerAction(
-    'selectOption',
-    async function (value) {
+  useEffect(() => {
+    setExposedVariable('selectOption', async function (value) {
       selectOption(value);
-    },
-    [JSON.stringify(values), setCurrentValue]
-  );
-
-  const validationData = validate(value);
-  const { isValid, validationError } = validationData;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]);
 
   useEffect(() => {
     setExposedVariable('isValid', isValid);
@@ -65,26 +90,34 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     let newValue = undefined;
+    let index = null;
     if (values?.includes(value)) {
       newValue = value;
+      index = values?.indexOf(value);
     }
-    setExposedVariable('value', newValue);
-    setCurrentValue(newValue);
+    setExposedItem(newValue, index);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value, JSON.stringify(values)]);
 
   useEffect(() => {
-    if (exposedValue !== currentValue) setExposedVariable('value', currentValue);
+    let index = null;
+    if (exposedValue !== currentValue) {
+      setExposedVariable('value', currentValue);
+    }
+    index = values?.indexOf(currentValue);
+    setExposedVariable('selectedOptionLabel', display_values?.[index]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
+  }, [currentValue, JSON.stringify(display_values), JSON.stringify(values)]);
 
   useEffect(() => {
     let newValue = undefined;
+    let index = null;
+
     if (values?.includes(currentValue)) newValue = currentValue;
     else if (values?.includes(value)) newValue = value;
-
-    setCurrentValue(newValue);
-    setExposedVariable('value', newValue);
+    index = values?.indexOf(newValue);
+    setExposedItem(newValue, index);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
@@ -92,6 +125,28 @@ export const DropDown = function DropDown({
     setExposedVariable('label', label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
+
+  useEffect(() => {
+    if (advanced) {
+      setExposedVariable(
+        'optionLabels',
+        schema?.filter((item) => item?.visible)?.map((item) => item.label)
+      );
+      if (hasVisibleFalse(currentValue)) {
+        setCurrentValue(findDefaultItem(schema));
+      }
+    } else setExposedVariable('optionLabels', display_values);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
+
+  function hasVisibleFalse(value) {
+    for (let i = 0; i < schema?.length; i++) {
+      if (schema[i].value === value && schema[i].visible === false) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
@@ -106,7 +161,7 @@ export const DropDown = function DropDown({
       background: darkMode ? 'rgb(31,40,55)' : 'white',
       minHeight: height,
       height: height,
-      boxShadow: state.isFocused ? null : null,
+      boxShadow: state.isFocused ? boxShadow : boxShadow,
       borderRadius: Number.parseFloat(borderRadius),
     }),
 
@@ -125,6 +180,7 @@ export const DropDown = function DropDown({
     input: (provided, _state) => ({
       ...provided,
       color: darkMode ? 'white' : 'black',
+      margin: '0px',
     }),
     indicatorSeparator: (_state) => ({
       display: 'none',
@@ -136,19 +192,19 @@ export const DropDown = function DropDown({
     option: (provided, state) => {
       const styles = darkMode
         ? {
-            color: 'white',
+            color: state.isDisabled ? '#88909698' : 'white',
             backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
             ':hover': {
-              backgroundColor: state.value === currentValue ? '#1F2E64' : '#323C4B',
+              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#1F2E64' : '#323C4B',
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
           }
         : {
             backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
-            color: state.value === currentValue ? 'white' : 'black',
+            color: state.isDisabled ? '#88909694' : state.value === currentValue ? 'white' : 'black',
             ':hover': {
-              backgroundColor: state.value === currentValue ? '#3650AF' : '#d8dce9',
+              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#3650AF' : '#d8dce9',
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
@@ -168,7 +224,6 @@ export const DropDown = function DropDown({
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
   };
-
   return (
     <>
       <div
@@ -187,13 +242,14 @@ export const DropDown = function DropDown({
         <div className="col px-0 h-100">
           <Select
             isDisabled={disabledState}
-            value={
-              selectOptions.filter((option) => option.value === currentValue)[0] ?? { label: '', value: undefined }
-            }
+            value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
+              setShowValidationError(true);
               if (actionProps.action === 'select-option') {
                 setCurrentValue(selectedOption.value);
-                setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+                setExposedVariable('value', selectedOption.value);
+                fireEvent('onSelect');
+                setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
             }}
             options={selectOptions}
@@ -202,10 +258,13 @@ export const DropDown = function DropDown({
             onInputChange={onSearchTextChange}
             onFocus={(event) => onComponentClick(event, component, id)}
             menuPortalTarget={document.body}
+            placeholder={placeholder}
           />
         </div>
       </div>
-      <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>{validationError}</div>
+      <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>
+        {showValidationError && validationError}
+      </div>
     </>
   );
 };

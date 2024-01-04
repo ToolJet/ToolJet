@@ -18,9 +18,9 @@
       ]
     },
     "send_sms": {
-      "toNumber": {
+      "to_number": {
         "label": "To Number",
-        "key": "toNumber",
+        "key": "to_number",
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter to number",

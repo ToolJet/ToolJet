@@ -132,9 +132,14 @@ export default class PostgrestQueryBuilder {
    * @param value  The value to filter with.
    */
   is(column, value) {
-    this.url.append(`${column}`, `is.${value}`);
+    if (value === 'notNull') {
+      this.url.append(`${column}`, `not.is.null`);
+    } else {
+      this.url.append(`${column}`, `is.${value}`);
+    }
     return this;
   }
+
   /**
    * Finds all rows whose value on the stated `column` is found on the
    * specified `values`.

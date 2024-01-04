@@ -5,15 +5,20 @@ import { useEventListener } from '@/_hooks/use-event-listener';
 import { xorWith, isEqual } from 'lodash';
 import { Cursor } from './Cursor';
 import { USER_COLORS } from '@/_helpers/constants';
-import { userService } from '@/_services';
+import { userService, authenticationService } from '@/_services';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
-const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
-  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+const RealtimeCursors = ({ editingPageId }) => {
   const others = useOthers();
-
   const unavailableColors = others.map((other) => other?.presence?.color);
   const availableColors = xorWith(USER_COLORS, unavailableColors, isEqual);
-
+  const { editingVersionId } = useAppVersionStore(
+    (state) => ({
+      editingVersionId: state?.editingVersion?.id,
+    }),
+    shallow
+  );
   const self = useSelf();
   const updatePresence = useUpdatePresence();
 
@@ -28,17 +33,20 @@ const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
   }, [editingVersionId, editingPageId]);
 
   React.useEffect(() => {
-    async function fetchAvatar() {
-      const blob = await userService.getAvatar(currentUser.avatar_id);
+    async function fetchAvatar(avatarId) {
+      const blob = await userService.getAvatar(avatarId);
       const fileReader = new FileReader();
       fileReader.onload = (e) => {
         updatePresence({ image: e.target.result });
       };
       fileReader.readAsDataURL(blob);
     }
-    if (currentUser.avatar_id) fetchAvatar();
+    const currentSession = authenticationService.currentSessionValue;
+    const currentUser = currentSession?.current_user;
+    if (currentUser.avatar_id) fetchAvatar(currentUser.avatar_id);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser.avatar_id]);
+  }, []);
 
   const othersOnSameVersionAndPage = others.filter(
     (other) =>

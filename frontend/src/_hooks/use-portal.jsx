@@ -12,12 +12,15 @@ const usePortal = ({ children, ...restProps }) => {
     optionalProps = {},
     selectors = {},
     dragResizePortal = false,
+    callgpt,
+    isCopilotEnabled = false,
   } = restProps;
 
   const renderCustomComponent = ({ component, ...restProps }) => {
     const { selectors } = restProps;
     return React.createElement('div', { ...selectors }, component);
   };
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   React.useEffect(() => {
     if (isOpen) {
@@ -31,13 +34,19 @@ const usePortal = ({ children, ...restProps }) => {
     <React.Fragment>
       {isOpen && (
         <Portal
-          className={`modal-portal-wrapper ${dragResizePortal && 'resize-modal-portal'}`}
+          className={`modal-portal-wrapper ${darkMode && 'dark-theme'} ${dragResizePortal && 'resize-modal-portal'}`}
           isOpen={isOpen}
           trigger={callback}
           componentName={componentName}
           dragResizePortal={dragResizePortal}
+          callgpt={callgpt}
+          isCopilotEnabled={isCopilotEnabled}
         >
-          <div className={`editor-container ${optionalProps.cls ?? ''}`} key={key}>
+          <div
+            className={`editor-container ${optionalProps.cls ?? ''}`}
+            key={key}
+            data-cy={`codehinder-popup-input-field`}
+          >
             {React.cloneElement(children, { ...styleProps })}
           </div>
           {renderCustomComponent({ component: customComponent(), selectors: selectors })}

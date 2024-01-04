@@ -2,6 +2,10 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
+import { ConflictException } from '@nestjs/common';
+import { DataBaseConstraints } from './db_constraints.constants';
+const protobuf = require('protobufjs');
+const semver = require('semver');
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -77,7 +81,46 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
-export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
+export const updateTimestampForAppVersion = async (manager, appVersionId) => {
+  const appVersion = await manager.findOne('app_versions', appVersionId);
+  if (appVersion) {
+    await manager.update('app_versions', appVersionId, { updatedAt: new Date() });
+  }
+};
+
+export async function dbTransactionForAppVersionAssociationsUpdate(
+  operation: (...args) => any,
+  appVersionId: string
+): Promise<any> {
+  return await getManager().transaction(async (manager) => {
+    const result = await operation(manager);
+
+    await updateTimestampForAppVersion(manager, appVersionId);
+
+    return result;
+  });
+}
+
+type DbContraintAndMsg = {
+  dbConstraint: DataBaseConstraints;
+  message: string;
+};
+
+export async function catchDbException(operation: () => any, dbConstraints: DbContraintAndMsg[]): Promise<any> {
+  try {
+    return await operation();
+  } catch (err) {
+    dbConstraints.map((dbConstraint) => {
+      if (err?.message?.includes(dbConstraint.dbConstraint)) {
+        throw new ConflictException(dbConstraint.message);
+      }
+    });
+
+    throw err;
+  }
+}
+
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
 
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
@@ -87,4 +130,108 @@ export function validateDefaultValue(value: any, params: any) {
   const { data_type } = params;
   if (data_type === 'boolean') return value || 'false';
   return value;
+}
+
+export async function dropForeignKey(tableName: string, columnName: string, queryRunner) {
+  const table = await queryRunner.getTable(tableName);
+  const foreignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf(columnName) !== -1);
+  await queryRunner.dropForeignKey(tableName, foreignKey);
+}
+
+export async function getServiceAndRpcNames(protoDefinition) {
+  const root = protobuf.parse(protoDefinition).root;
+  const serviceNamesAndMethods = root.nestedArray
+    .filter((item) => item instanceof protobuf.Service)
+    .reduce((acc, service) => {
+      const rpcMethods = service.methodsArray.map((method) => method.name);
+      acc[service.name] = rpcMethods;
+      return acc;
+    }, {});
+  return serviceNamesAndMethods;
+}
+
+export class MigrationProgress {
+  private progress = 0;
+  constructor(private fileName: string, private totalCount: number) {}
+
+  show() {
+    this.progress++;
+    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
+  }
+}
+
+export const processDataInBatches = async <T>(
+  entityManager: EntityManager,
+  getData: (entityManager: EntityManager, skip: number, take: number) => Promise<T[]>,
+  processBatch: (entityManager: EntityManager, data: T[]) => Promise<void>,
+  batchSize = 1000
+): Promise<void> => {
+  let skip = 0;
+  let data: T[];
+
+  do {
+    data = await getData(entityManager, skip, batchSize);
+    skip += batchSize;
+
+    if (data.length > 0) {
+      await processBatch(entityManager, data);
+    }
+  } while (data.length === batchSize);
+};
+
+export const generateNextNameAndSlug = (firstWord: string) => {
+  const name = `${firstWord} ${Date.now()}`;
+  const slug = name.replace(/\s+/g, '-').toLowerCase();
+  return {
+    name,
+    slug,
+  };
+};
+
+export const truncateAndReplace = (name) => {
+  const secondsSinceEpoch = Date.now();
+  if (name.length > 35) {
+    return name.replace(name.substring(35, 50), secondsSinceEpoch);
+  }
+  return name + secondsSinceEpoch;
+};
+
+export const generateInviteURL = (
+  invitationToken: string,
+  organizationToken?: string,
+  organizationId?: string,
+  source?: string
+) => {
+  const host = process.env.TOOLJET_HOST;
+  const subpath = process.env.SUB_PATH;
+
+  return `${host}${subpath ? subpath : '/'}invitations/${invitationToken}${
+    organizationToken ? `/workspaces/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''}` : ''
+  }${source ? `${organizationId ? '&' : '?'}source=${source}` : ''}`;
+};
+
+export const generateOrgInviteURL = (organizationToken: string, organizationId?: string) => {
+  const host = process.env.TOOLJET_HOST;
+  const subpath = process.env.SUB_PATH;
+  return `${host}${subpath ? subpath : '/'}organization-invitations/${organizationToken}${
+    organizationId ? `?oid=${organizationId}` : ''
+  }`;
+};
+
+export function extractMajorVersion(version) {
+  return semver.valid(semver.coerce(version));
+}
+
+/**
+ * Checks if a given Tooljet version is compatible with normalized app definition schemas.
+ *
+ * This function uses the 'semver' library to compare the provided version with a minimum version requirement
+ * for normalized app definition schemas (2.24.1). It returns true if the version is greater than or equal to
+ * the required version, indicating compatibility.
+ *
+ * @param {string} version - The Tooljet version to check.
+ * @returns {boolean} - True if the version is compatible, false otherwise.
+ */
+export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
+  return semver.satisfies(semver.coerce(version), '>= 2.24.0');
 }

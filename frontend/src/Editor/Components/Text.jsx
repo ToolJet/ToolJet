@@ -6,8 +6,8 @@ export const Text = function Text({
   properties,
   styles,
   darkMode,
-  registerAction,
   setExposedVariable,
+  setExposedVariables,
   dataCy,
 }) {
   let {
@@ -25,6 +25,7 @@ export const Text = function Text({
     wordSpacing,
     fontVariant,
     disabledState,
+    boxShadow,
   } = styles;
   const { loadingState } = properties;
   const [text, setText] = useState(() => computeText());
@@ -36,29 +37,25 @@ export const Text = function Text({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styles.visibility]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const text = computeText();
     setText(text);
     setExposedVariable('text', text);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.text]);
 
-  registerAction(
-    'setText',
-    async function (text) {
-      setText(text);
-      setExposedVariable('text', text);
-    },
-    [setText]
-  );
-  registerAction(
-    'visibility',
-    async function (value) {
-      setVisibility(value);
-    },
-    [setVisibility]
-  );
+    const exposedVariables = {
+      text: text,
+      setText: async function (text) {
+        setText(text);
+        setExposedVariable('text', text);
+      },
+      visibility: async function (value) {
+        setVisibility(value);
+      },
+    };
+    setExposedVariables(exposedVariables);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.text, setText, setVisibility]);
 
   function computeText() {
     return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;
@@ -80,6 +77,7 @@ export const Text = function Text({
     textIndent: `${textIndent}px` ?? '0px',
     letterSpacing: `${letterSpacing}px` ?? '0px',
     wordSpacing: `${wordSpacing}px` ?? '0px',
+    boxShadow,
   };
 
   return (
@@ -87,7 +85,7 @@ export const Text = function Text({
       {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text || '0') }}
         />
       )}
       {loadingState === true && (

@@ -1,9 +1,9 @@
 export const firestoreText = {
   firestore: "Firestore",
   cypressFirestore: "cypress-firestore",
-  labelPrivateKey: "Private keyEncrypted",
+  labelPrivateKey: "Private key",
   privateKey: "Private key",
-  placeholderPrivateKey: "Enter private key",
+  placeholderPrivateKey: "**************",
 
   errorGcpKeyCouldNotBeParsed:
     "GCP key could not be parsed as a valid JSON object",

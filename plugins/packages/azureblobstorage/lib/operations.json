@@ -1,0 +1,197 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Azure Blob Storage datasource",
+  "description": "A schema defining Azure Blob Storage datasource",
+  "type": "cloud-storage",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "create_container",
+          "name": "Create container"
+        },
+        {
+          "value": "list_containers",
+          "name": "List containers"
+        },
+        {
+          "value": "list_blobs",
+          "name": "List blobs"
+        },
+        {
+          "value": "upload_blob",
+          "name": "Upload blob"
+        },
+        {
+          "value": "read_blob",
+          "name": "Read blob"
+        },
+        {
+          "value": "delete_blob",
+          "name": "Delete blob"
+        }
+      ]
+    },
+    "list_blobs": {
+      "containerName": {
+        "label": "Container",
+        "key": "containerName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter container name",
+        "className": "codehinter-plugins"
+      },
+      "prefix": {
+        "label": "Prefix",
+        "key": "prefix",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter prefix",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter prefix",
+        "className": "codehinter-plugins"
+      },
+      "maxPageSize": {
+        "label": "Page Size",
+        "key": "maxPageSize",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter page size",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter page size",
+        "className": "codehinter-plugins"
+      },
+      "continuationToken": {
+        "label": "Continuation Token",
+        "key": "continuationToken",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter continuation token",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter continuation token",
+        "className": "codehinter-plugins"
+      }
+    },
+    "upload_blob": {
+      "containerName": {
+        "label": "Container",
+        "key": "containerName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container name",
+        "height": "36px",
+        "placeholder": "Enter container name",
+        "className": "codehinter-plugins"
+      },
+      "blobName": {
+        "label": "Blob Name",
+        "key": "blobName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter blob name",
+        "height": "36px",
+        "placeholder": "Enter blob name",
+        "className": "codehinter-plugins"
+      },
+      "contentType": {
+        "label": "Content Type",
+        "key": "contentType",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter content type",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "data": {
+        "label": "Upload data",
+        "key": "data",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter upload data",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "encoding": {
+        "label": "Encoding",
+        "key": "encoding",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter encoding",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "utf8"
+      }
+    },
+    "read_blob": {
+      "containerName": {
+        "label": "Container Name",
+        "key": "containerName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter container name",
+        "className": "codehinter-plugins"
+      },
+      "blobName": {
+        "label": "Blob Name",
+        "key": "blobName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter blob name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter blob name",
+        "className": "codehinter-plugins"
+      }
+    },
+    "delete_blob": {
+      "containerName": {
+        "label": "Container Name",
+        "key": "containerName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter container name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter container name",
+        "className": "codehinter-plugins"
+      },
+      "blobName": {
+        "label": "Blob Name",
+        "key": "blobName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter blob name",
+        "width": "320px",
+        "height": "36px",
+        "placeholder": "Enter blob name",
+        "className": "codehinter-plugins"
+      }
+    },
+    "create_container": {
+      "containerName": {
+        "label": "Container Name",
+        "key": "containerName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Container name",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    }
+  }
+}

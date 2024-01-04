@@ -50,4 +50,4 @@ The references for data sources and widgets:
 - We have extensively documented the features of ToolJet, but in case you are stuck, please feel free to e-mail us at **hello@tooljet.com**
 - If you are using ToolJet cloud, click on the chat icon at the bottom-left corner for instant help.
 - If you have found a bug, please create a **[GitHub issue](https://github.com/ToolJet/ToolJet/issues)** for the same.
-- Feel free to join our highly active **[Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg)**.
+- Feel free to join our highly active **[Slack Community](https://tooljet.com/slack)**.

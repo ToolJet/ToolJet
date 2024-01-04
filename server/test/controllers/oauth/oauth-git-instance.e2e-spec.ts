@@ -1,13 +1,12 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { clearDB, createUser, createNestAppInstanceWithEnvMock, generateRedirectUrl } from '../../test.helper';
-import { mocked } from 'ts-jest/utils';
 import got from 'got';
 import { Organization } from 'src/entities/organization.entity';
 import { Repository } from 'typeorm';
 
 jest.mock('got');
-const mockedGot = mocked(got);
+const mockedGot = jest.mocked(got);
 
 describe('oauth controller', () => {
   let app: INestApplication;
@@ -19,28 +18,8 @@ describe('oauth controller', () => {
     'email',
     'first_name',
     'last_name',
-    'auth_token',
-    'admin',
-    'organization_id',
-    'organization',
-    'group_permissions',
-    'app_group_permissions',
-  ].sort();
-
-  const groupPermissionsKeys = [
-    'id',
-    'organization_id',
-    'group',
-    'app_create',
-    'app_delete',
-    'updated_at',
-    'created_at',
-    'folder_create',
-    'folder_update',
-    'folder_delete',
-    'org_environment_variable_create',
-    'org_environment_variable_delete',
-    'org_environment_variable_update',
+    'current_organization_id',
+    'current_organization_slug',
   ].sort();
 
   beforeEach(async () => {
@@ -104,14 +83,14 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id })
@@ -138,14 +117,14 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id })
@@ -185,14 +164,14 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
         });
 
@@ -235,8 +214,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token }).expect(401);
         });
@@ -281,8 +260,8 @@ describe('oauth controller', () => {
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -324,18 +303,18 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io');
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io');
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -362,20 +341,20 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -400,18 +379,18 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io');
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io');
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -440,20 +419,20 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -481,20 +460,20 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -504,7 +483,7 @@ describe('oauth controller', () => {
           await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'active',
@@ -528,48 +507,33 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
         });
 
         it('Workspace Login - should return login info when the user exist', async () => {
           await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'active',
@@ -592,14 +556,14 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -608,34 +572,19 @@ describe('oauth controller', () => {
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
         });
 
         it('Common Login - should return login info when the user exist but invited status', async () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'invited',
@@ -659,43 +608,26 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeTruthy();
-          expect(organization_id).not.toBe(current_organization.id);
-          expect(organization).toBe('Untitled workspace');
-          expect(group_permissions).toHaveLength(2);
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(Object.keys(group_permissions[1]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).not.toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('invited');
         });
@@ -704,7 +636,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'invited',
@@ -727,14 +659,14 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -743,27 +675,12 @@ describe('oauth controller', () => {
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
@@ -786,7 +703,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
           });
@@ -809,14 +726,14 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
@@ -826,27 +743,12 @@ describe('oauth controller', () => {
           expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
@@ -869,7 +771,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
           });
@@ -892,14 +794,14 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
           });
 
-          mockedGot.mockImplementationOnce(gitAuthResponse);
-          mockedGot.mockImplementationOnce(gitGetUserResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitAuthResponse);
+          (mockedGot as unknown as jest.Mock).mockImplementationOnce(gitGetUserResponse);
 
           const response = await request(app.getHttpServer())
             .post('/api/oauth/sign-in/common/git')
@@ -911,56 +813,14 @@ describe('oauth controller', () => {
           expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
-        });
-      });
-    });
-
-    describe('Multi-Workspace Disabled', () => {
-      beforeEach(() => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
-              return 'google-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_ID':
-              return 'git-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
-              return 'git-secret';
-            case 'DISABLE_MULTI_WORKSPACE':
-              return 'true';
-            default:
-              return process.env[key];
-          }
-        });
-      });
-      describe('sign in via Git OAuth', () => {
-        it('should return 403', async () => {
-          await request(app.getHttpServer())
-            .post('/api/oauth/sign-in/common/git')
-            .send({ token: 'some-token' })
-            .expect(403);
         });
       });
     });

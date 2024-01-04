@@ -9,7 +9,9 @@ export const tableText = {
   ],
 
   placeHolderSearch: "Search",
-  defaultPageIndexDetails: "1 of 1",
+  defaultPageIndexDetails: "of 1",
+  currentPageIndexDetails: 1,
+
   defaultNumberOfRecords: "4 Records",
 
   optionDownloadCSV: "Download as CSV",
@@ -27,4 +29,8 @@ export const tableText = {
   email: "email",
   name: "name",
   optionEquals: "equals",
+
+  labelDynamicColumn: "Use dynamic column",
+  makeEditable: "Make editable",
+  lableDisableActionButton: "Disable action button",
 };

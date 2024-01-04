@@ -1,0 +1,24 @@
+{
+  "name": "@tooljet-plugins/azureblobstorage",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "tsc -b",
+    "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
+  },
+  "homepage": "https://github.com/tooljet/tooljet#readme",
+  "dependencies": {
+    "@azure/storage-blob": "^12.12.0",
+    "@tooljet-plugins/common": "file:../common",
+    "react": "^17.0.2"
+  }
+}

@@ -65,6 +65,10 @@ function randomRgbaHex() {
   return rgba;
 }
 
+function tableName() {
+  return faker.name.firstName();
+}
+
 Object.defineProperty(fake, "email", { get: email });
 Object.defineProperty(fake, "password", { get: password });
 Object.defineProperty(fake, "firstName", { get: firstName });
@@ -77,3 +81,5 @@ Object.defineProperty(fake, "randomRgba", { get: randomRgba });
 Object.defineProperty(fake, "randomRgb", { get: randomRgb });
 Object.defineProperty(fake, "boxShadowParam", { get: boxShadowParam });
 Object.defineProperty(fake, "randomRgbaHex", { get: randomRgbaHex });
+Object.defineProperty(fake, "tableName", { get: tableName });
+

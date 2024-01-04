@@ -12,11 +12,11 @@ export default class TwilioQueryService implements QueryService {
 
     try {
       if (queryOptions.operation && queryOptions.operation === 'send_sms') {
-        result = await this.getClient(sourceOptions.accountSid, sourceOptions.authToken)
+        result = await this.getClient(sourceOptions.account_sid, sourceOptions.auth_token)
           .messages.create({
             body: queryOptions.body,
-            messagingServiceSid: sourceOptions.messagingServiceSid,
-            to: queryOptions.toNumber,
+            messagingServiceSid: sourceOptions.messaging_service_sid,
+            to: queryOptions.to_number,
           })
           .then((message) => message);
       }

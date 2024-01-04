@@ -128,6 +128,10 @@ jobs:
               {
                 "key": "SMTP_PASSWORD",
                 "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
+              },
+              {
+                "key": "ENABLE_MARKETPLACE_FEATURE",
+                "value": "true"
               }
             ],
             "serviceDetails": {
@@ -241,6 +245,28 @@ jobs:
             } catch (e) {
               console.log(e)
             }
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt update
+          sudo apt install postgresql-client -y
+
+      - name: Wait after installing PostgreSQL
+        run: sleep 25
+
+      - name: Drop PostgreSQL PR database
+        env:
+          PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
+          PGPORT: 5432
+          PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
+          PGDATABASE: ${{ env.PR_NUMBER }}
+        run: |
+          if PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \| -f 1 | grep -qw $PGDATABASE; then
+            echo "Database $PGDATABASE exists, deleting..."
+            PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
+          else
+            echo "Database $PGDATABASE does not exist."
+          fi
 
   suspend-review-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}

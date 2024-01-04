@@ -56,7 +56,7 @@ module.exports = {
           'aria-label': 'GitHub repository',
         },
         {
-          href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+          href: 'https://tooljet.com/slack',
           position: 'right',
           className: 'navbar-social-link navbar-slack-logo',
           'aria-label': 'Slack workspace',
@@ -74,19 +74,13 @@ module.exports = {
       links: [
         {
           title: 'Docs',
-          items: [
-            {
-              label: 'Tutorial',
-              to: '/docs/category/tutorial',
-            },
-          ],
         },
         {
           title: 'Community',
           items: [
             {
               label: 'Slack',
-              href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+              href: 'https://tooljet.com/slack',
             },
           ],
         },
@@ -108,7 +102,8 @@ module.exports = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.`,
+      copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.
+      <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />`,
     },
     algolia: {
       appId: 'O8HQRLI0WA',
@@ -127,17 +122,17 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.1.0',
+          lastVersion: '2.27.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
-        sitemap: {},
-        gtag: isProd
+        sitemap: {
+          ignorePatterns: ['/1.x.x/', '/docs/1.x.x/'],
+        },
+        googleTagManager: isProd
           ? {
-            trackingID: process.env.GA_MID,
-            // Optional fields.
-            anonymizeIP: true, // Should IPs be anonymized?
+            containerId: process.env.GTM,
           }
           : undefined,
       },
@@ -145,5 +140,6 @@ module.exports = {
   ],
   plugins: [
     devServerPlugin,
+    'plugin-image-zoom'
   ],
 };

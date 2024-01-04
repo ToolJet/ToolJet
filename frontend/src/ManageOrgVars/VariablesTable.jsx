@@ -1,5 +1,7 @@
 import React from 'react';
 import { withTranslation } from 'react-i18next';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Tooltip } from 'react-tooltip';
 
 class VariablesTable extends React.Component {
   constructor(props) {
@@ -17,7 +19,7 @@ class VariablesTable extends React.Component {
     const { isLoading, variables } = this.props;
     return (
       <div className="container-xl">
-        <div className="card">
+        <div className="card workspace-variable-table-card">
           <div
             className="card-table fixedHeader table-responsive table-bordered"
             ref={this.tableRef}
@@ -25,7 +27,7 @@ class VariablesTable extends React.Component {
           >
             <table
               data-testid="variablesTable"
-              className="table table-vcenter"
+              className="table table-vcenter variables-table-wrapper"
               disabled={true}
               data-cy="workspace-variable-table"
             >
@@ -40,7 +42,7 @@ class VariablesTable extends React.Component {
                   <th data-cy="workspace-variable-table-type-header">
                     {this.props.t('header.organization.menus.manageSSO.environmentVar.variableTable.type', 'Type')}
                   </th>
-                  {(this.props.canUpdateVariable || this.props.canDeleteVariable) && <th className="w-1"></th>}
+                  {this.props.canDeleteVariable && <th className="w-1"></th>}
                 </tr>
               </thead>
               {isLoading ? (
@@ -113,7 +115,7 @@ class VariablesTable extends React.Component {
                           {variable.variable_type}
                         </small>
                       </td>
-                      {(this.props.canUpdateVariable || this.props.canDeleteVariable) && (
+                      {this.props.canDeleteVariable && (
                         <td>
                           <div
                             style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}
@@ -121,49 +123,21 @@ class VariablesTable extends React.Component {
                               .toLowerCase()
                               .replace(/\s+/g, '-')}-workspace-variable-update`}
                           >
-                            {this.props.canUpdateVariable && (
-                              <button
-                                className="btn btn-sm btn-org-env"
-                                onClick={() => this.props.onEditBtnClicked(variable)}
-                                data-cy={`${variable.variable_name
-                                  .toLowerCase()
-                                  .replace(/\s+/g, '-')}-workspace-variable-edit-button`}
-                              >
-                                <div>
-                                  <img
-                                    data-tip="Update"
-                                    className="svg-icon"
-                                    src="assets/images/icons/edit.svg"
-                                    width="15"
-                                    height="15"
-                                    style={{
-                                      cursor: 'pointer',
-                                    }}
-                                  ></img>
-                                </div>
-                              </button>
-                            )}
                             {this.props.canDeleteVariable && (
-                              <button
-                                className="btn btn-sm btn-org-env"
-                                onClick={() => this.props.onDeleteBtnClicked(variable)}
-                                data-cy={`${variable.variable_name
-                                  .toLowerCase()
-                                  .replace(/\s+/g, '-')}-workspace-variable-delete-button`}
-                              >
-                                <div>
-                                  <img
-                                    data-tip="Delete"
-                                    className="svg-icon"
-                                    src="assets/images/icons/query-trash-icon.svg"
-                                    width="15"
-                                    height="15"
-                                    style={{
-                                      cursor: 'pointer',
-                                    }}
-                                  />
-                                </div>
-                              </button>
+                              <>
+                                <button
+                                  className="btn btn-sm btn-org-env"
+                                  onClick={() => this.props.onDeleteBtnClicked(variable)}
+                                  data-cy={`${variable.variable_name
+                                    .toLowerCase()
+                                    .replace(/\s+/g, '-')}-workspace-variable-delete-button`}
+                                >
+                                  <div>
+                                    <SolidIcon name="trash" width="14" />
+                                  </div>
+                                </button>
+                                <Tooltip id="tooltip-for-delete" className="tooltip" />
+                              </>
                             )}
                           </div>
                         </td>

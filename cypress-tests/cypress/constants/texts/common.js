@@ -6,13 +6,15 @@ export const path = {
   loginPath: "/login",
   profilePath: "/settings",
   confirmInvite: "/confirm",
+  database: "/database",
 };
 
 export const commonText = {
-  autoSave: "Saved changes",
+  autoSave: "Changes saved",
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
+  welcomeTooljetWorkspace: "Welcome to your new ToolJet workspace",
   introductionMessage:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
   changeIconOption: "Change Icon",
@@ -31,8 +33,9 @@ export const commonText = {
   modalYesButton: "Yes",
   emptyFolderText: "This folder is empty",
   allApplicationsLink: "All applications",
-  deleteAppModalMessage:
-    "The app and the associated data will be permanently deleted, do you want to continue?",
+  deleteAppModalMessage: (appName) => {
+    return `The app ${appName} and the associated data will be permanently deleted, do you want to continue?`;
+  },
   appDeletedToast: "App deleted successfully.",
   folderDeletedToast: "Folder has been deleted.",
   createNewFolderButton: "+ Create new folder",
@@ -42,10 +45,11 @@ export const commonText = {
   createFolderButton: "Create folder",
   editFolderOption: "Edit folder",
   deleteFolderOption: "Delete folder",
-  updateFolderTitle: "Update folder",
+  updateFolderTitle: "Edit folder",
   updateFolderButton: "Update folder",
-  folderDeleteModalMessage:
-    "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
+  folderDeleteModalMessage: (folderName) => {
+    `Are you sure you want to delete the folder ${folderName}? Apps within the folder will not be deleted.`;
+  },
   closeButton: "modal close",
   workEmailLabel: "Email",
   emailInputError: "Invalid Email",
@@ -65,6 +69,8 @@ export const commonText = {
     "You are invited to a workspace My workspace. Accept the invite to join the workspace.",
   userNameInputLabel: "Name",
   acceptInviteButton: "Accept invite",
+  createButton: "Create",
+  saveChangesButton: "Save changes",
   emailInputLabel: "Email",
   allApplicationLink: "All apps",
   notificationsCardTitle: "Notifications",
@@ -119,6 +125,15 @@ export const commonText = {
   backToLoginButton: "Back to log in",
   resetPasswordPageDescription:
     "Your password has been reset successfully, log into ToolJet to continue your session",
+  labelFullNameInput: "Enter full name",
+  labelEmailInput: "Email address",
+  breadcrumbworkspaceSettingTitle: "Workspace settings",
+  breadcrumbGlobalDatasourceTitle: "Global datasources",
+  breadcrumbDatabaseTitle: "Databse",
+  breadcrumbApplications: "Applications",
+  breadcrumbSettings: "Settings",
+  addNewDataSourceButton: "Add new datasource",
+
   emailPageDescription: (email) => {
     return `We’ve sent an email to ${email} with a verification link. Please use that to verify your email address.`;
   },
@@ -146,6 +161,26 @@ export const commonText = {
     ThousandPlus: "1000+",
   },
   selfHostSignUpTermsHelperText: "By continuing you are agreeing to the",
+
+  shareModalElements: {
+    modalHeader: "Share",
+    makePublicAppToggleLabel: "Make application public",
+    shareableAppLink: "Shareable app link",
+    // iframeLinkLabel: "Get embeddable link for this application",
+    // ifameLinkCopyButton: "copy",
+  },
+  groupInputFieldLabel: "Select Group",
+  documentationLink: "Read Documentation",
+  constantsNameError:
+    "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
+  constantsValueError:
+    "Value should be less than 10000 characters and cannot be empty",
+
+  createApp: "Create app",
+  appName: "App Name",
+  enterAppName: "Enter app name",
+  appNameInfoLabel: "App name must be unique and max 50 characters",
+  renameApp: "Rename app",
 };
 
 export const commonWidgetText = {
@@ -154,19 +189,20 @@ export const commonWidgetText = {
   accordionGenaral: "General",
   accordionValidation: "Validation",
   accordionLayout: "Layout",
+  accordionDevices: "Devices",
 
   parameterCustomValidation: "Custom validation",
   parameterShowOnDesktop: "Show on desktop",
   parameterShowOnMobile: "Show on mobile",
   parameterVisibility: "Visibility",
   parameterDisable: "Disable",
-  parameterBorderRadius: "Border Radius",
+  parameterBorderRadius: "Border radius",
   borderRadiusInput: ["{{", "20}}"],
   parameterOptionLabels: "Option labels",
-  parameterBoxShadow: "Box Shadow",
-  boxShadowDefaultValue: "0px 0px 0px 0px #00000040",
+  parameterBoxShadow: "Box shadow",
+  boxShadowDefaultValue: "#00000040",
   parameterOptionvalues: "Option values",
-  boxShadowColor: "Box Shadow Color",
+  boxShadowColor: "Box shadow Color",
   boxShadowFxValue: "-5px 6px 5px 8px #ee121240",
 
   codeMirrorLabelTrue: "{{true}}",
@@ -174,10 +210,10 @@ export const commonWidgetText = {
   codeMirrorInputTrue: codeMirrorInputLabel(true),
   codeMirrorInputFalse: codeMirrorInputLabel("false"),
 
-  addEventHandlerLink: "+ Add event handler",
+  addEventHandlerLink: "New event handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
-  labelDefaultValue: "Default Value",
+  labelDefaultValue: "Default value",
   parameterLabel: "Label",
   labelMinimumValue: "Minimum value",
   labelMaximumValue: "Maximum value",
@@ -196,7 +232,7 @@ export const commonWidgetText = {
     return `Maximum ${value} characters is allowed`;
   },
 
-  datepickerDocumentationLink: "Datepicker documentation",
+  datepickerDocumentationLink: "Read documentation for Datepicker",
   text1: "text1",
   textinput1: "textinput1",
   toggleswitch1: "toggleswitch1",

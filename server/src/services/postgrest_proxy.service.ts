@@ -11,7 +11,8 @@ import { maybeSetSubPath } from '../helpers/utils.helper';
 export class PostgrestProxyService {
   constructor(private readonly manager: EntityManager, private readonly configService: ConfigService) {}
 
-  async perform(req, res, next, organizationId) {
+  async perform(req, res, next) {
+    const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
     req.url = await this.replaceTableNamesAtPlaceholder(req, organizationId);
     const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
     req.headers = {};
@@ -23,10 +24,10 @@ export class PostgrestProxyService {
     return this.httpProxy(req, res, next);
   }
 
-  private httpProxy = proxy(this.configService.get<string>('PGRST_HOST'), {
+  private httpProxy = proxy(this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001', {
     proxyReqPathResolver: function (req) {
-      const path = '/api/tooljet_db/organizations';
-      const pathRegex = new RegExp(`${maybeSetSubPath(path)}/.{36}/proxy`);
+      const path = '/api/tooljet-db';
+      const pathRegex = new RegExp(`${maybeSetSubPath(path)}/proxy`);
       const parts = req.url.split('?');
       const queryString = parts[1];
       const updatedPath = parts[0].replace(pathRegex, '');
@@ -84,7 +85,7 @@ export class PostgrestProxyService {
     return urlBeingReplaced;
   }
 
-  private async findOrFailAllInternalTableFromTableNames(requestedTableNames: Array<string>, organizationId: string) {
+  async findOrFailAllInternalTableFromTableNames(requestedTableNames: Array<string>, organizationId: string) {
     const internalTables = await this.manager.find(InternalTable, {
       where: {
         organizationId,

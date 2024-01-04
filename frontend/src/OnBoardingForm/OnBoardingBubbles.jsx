@@ -18,6 +18,11 @@ function OnBoardingBubbles({ formData, page }) {
           page === 2 && 'onboarding-bubbles-active'
         } `}
       ></div>
+      <div
+        className={`onboarding-bubbles ${formData.phoneNumber !== '' && 'onboarding-bubbles-selected'} ${
+          page === 3 && 'onboarding-bubbles-active'
+        } `}
+      ></div>
     </div>
   );
 }

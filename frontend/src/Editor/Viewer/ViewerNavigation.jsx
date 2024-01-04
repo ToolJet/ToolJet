@@ -6,36 +6,32 @@ import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
+import FolderList from '@/_ui/FolderList/FolderList';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
   if (isMobileDevice) {
     return null;
   }
-
   return (
     <div
-      className={`navigation-area ${darkMode && 'dark'}`}
+      className={`navigation-area`}
       style={{
         width: 200,
         // backgroundColor: canvasBackgroundColor,
       }}
     >
       <div className="page-handler-wrapper">
-        {pages.map(
-          ([id, page]) =>
-            !page.hidden && (
-              <div
-                key={page.handle}
-                onClick={() => switchPage(id)}
-                className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
-              >
-                <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
-                  <div className="card-body">
-                    <span className="mx-3 text-wrap">{_.truncate(page.name, { length: 18 })}</span>
-                  </div>
-                </div>
-              </div>
-            )
+        {pages.map(([id, page]) =>
+          page.hidden || page.disabled ? null : (
+            <FolderList key={page.handle} onClick={() => switchPage(id)} selectedItem={id === currentPageId}>
+              <span data-cy={`pages-name-${String(page.name).toLowerCase()}`} className="mx-3 text-wrap">
+                {_.truncate(page.name, { length: 18 })}
+              </span>
+            </FolderList>
+          )
         )}
       </div>
     </div>
@@ -123,21 +119,20 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
 
         <div className="p-2 w-100">
           <div className={`pages-container ${darkMode && 'dark'}`}>
-            {pages.map(
-              ([id, page]) =>
-                !page.hidden && (
-                  <div
-                    key={page.handle}
-                    onClick={() => handlepageSwitch(id)}
-                    className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
-                  >
-                    <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
-                      <div className="card-body">
-                        <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
-                      </div>
+            {pages.map(([id, page]) =>
+              page.hidden || page.disabled ? null : (
+                <div
+                  key={page.handle}
+                  onClick={() => handlepageSwitch(id)}
+                  className={`viewer-page-handler mb-2 cursor-pointer ${darkMode && 'dark'}`}
+                >
+                  <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
+                    <div className="card-body">
+                      <span className="mx-3">{_.truncate(page.name, { length: 22 })}</span>
                     </div>
                   </div>
-                )
+                </div>
+              )
             )}
           </div>
         </div>
@@ -147,16 +142,13 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
   );
 };
 
-const ViewerHeader = ({
-  showHeader,
-  appName,
-  changeDarkMode,
-  darkMode,
-  pages,
-  currentPageId,
-  switchPage,
-  currentLayout,
-}) => {
+const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, currentPageId, switchPage }) => {
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
   if (!showHeader && currentLayout !== 'mobile') {
     return null;
   }
@@ -164,13 +156,18 @@ const ViewerHeader = ({
   return (
     <Header
       styles={{
-        height: '45px',
+        height: '48px',
       }}
     >
       {showHeader && (
         <>
           <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
-            <Link to="/" data-cy="viewer-page-logo">
+            <Link
+              data-cy="viewer-page-logo"
+              onClick={() => {
+                redirectToDashboard();
+              }}
+            >
               <LogoIcon />
             </Link>
           </h1>

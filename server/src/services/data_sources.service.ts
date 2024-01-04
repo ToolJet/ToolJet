@@ -8,28 +8,36 @@ import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
-import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { DataSourceTypes } from 'src/helpers/data_source.constants';
+import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
+import { EncryptionService } from './encryption.service';
+import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.entity';
 
 @Injectable()
 export class DataSourcesService {
   constructor(
     private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
+    private encryptionService: EncryptionService,
     private appEnvironmentService: AppEnvironmentService,
+
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
   ) {}
 
-  async all(query: object): Promise<DataSource[]> {
+  async all(
+    query: object,
+    organizationId: string,
+    scope: DataSourceScopes = DataSourceScopes.LOCAL
+  ): Promise<DataSource[]> {
     const { app_version_id: appVersionId, environmentId }: any = query;
     let selectedEnvironmentId = environmentId;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
-        selectedEnvironmentId = (await this.appEnvironmentService.get(appVersionId, null, manager))?.id;
+        selectedEnvironmentId = (await this.appEnvironmentService.get(organizationId, null, true, manager))?.id;
       }
-      const result = await manager
+
+      const query = await manager
         .createQueryBuilder(DataSource, 'data_source')
         .innerJoinAndSelect('data_source.dataSourceOptions', 'data_source_options')
         .leftJoinAndSelect('data_source.plugin', 'plugin')
@@ -37,9 +45,19 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
         .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
-        .andWhere('data_source.appVersionId = :appVersionId', { appVersionId })
-        .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC })
-        .getMany();
+        .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
+
+      if (scope === DataSourceScopes.GLOBAL) {
+        query
+          .andWhere('data_source.organization_id = :organizationId', { organizationId })
+          .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.GLOBAL });
+      } else {
+        query
+          .andWhere('data_source.appVersionId = :appVersionId', { appVersionId })
+          .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.LOCAL });
+      }
+
+      const result = await query.getMany();
 
       //remove tokenData from restapi datasources
       const dataSources = result?.map((ds) => {
@@ -62,24 +80,37 @@ export class DataSourcesService {
     });
   }
 
-  async findOne(dataSourceId: string): Promise<DataSource> {
-    return await this.dataSourcesRepository.findOneOrFail({
-      where: { id: dataSourceId },
-      relations: ['plugin', 'apps', 'dataSourceOptions'],
-    });
+  async findOne(dataSourceId: string, manager?: EntityManager): Promise<DataSource> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.findOneOrFail(DataSource, {
+        where: { id: dataSourceId },
+        relations: ['plugin', 'apps', 'dataSourceOptions'],
+      });
+    }, manager);
   }
 
   async findOneByEnvironment(dataSourceId: string, environmentId?: string): Promise<DataSource> {
     const dataSource = await this.dataSourcesRepository.findOneOrFail({
       where: { id: dataSourceId },
-      relations: ['plugin', 'apps', 'dataSourceOptions'],
+      relations: ['plugin', 'apps', 'dataSourceOptions', 'appVersion', 'appVersion.app'],
     });
 
+    const dsOrganizationId = dataSource.organizationId || dataSource.appVersion.app.organizationId;
+
     if (!environmentId && dataSource.dataSourceOptions?.length > 1) {
-      throw new NotAcceptableException('Environment id should not be empty');
+      //fix for env id issue when importing cloud/enterprise apps to CE
+      if (dataSource.dataSourceOptions?.length > 1) {
+        const env = await this.appEnvironmentService.get(dsOrganizationId, null);
+        environmentId = env?.id;
+      } else {
+        throw new NotAcceptableException('Environment id should not be empty');
+      }
     }
+
     if (environmentId) {
-      dataSource.options = (await this.appEnvironmentService.getOptions(dataSourceId, null, environmentId)).options;
+      dataSource.options = (
+        await this.appEnvironmentService.getOptions(dataSourceId, dsOrganizationId, environmentId)
+      ).options;
     } else {
       dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
     }
@@ -96,13 +127,10 @@ export class DataSourcesService {
     ).app;
   }
 
-  async findDefaultDataSourceByKind(kind: string, appVersionId?: string, environmentId?: string) {
+  async findDefaultDataSourceByKind(kind: string, appVersionId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const currentEnv = environmentId
-        ? await manager.findOneOrFail(AppEnvironment, { where: { id: environmentId } })
-        : await manager.findOneOrFail(AppEnvironment, { where: { isDefault: true, appVersionId } });
       return await manager.findOneOrFail(DataSource, {
-        where: { kind, appVersionId: currentEnv.appVersionId, type: DataSourceTypes.STATIC },
+        where: { kind, appVersionId: appVersionId, type: DataSourceTypes.STATIC },
         relations: ['plugin', 'apps'],
       });
     });
@@ -112,6 +140,7 @@ export class DataSourcesService {
     kind: string,
     appVersionId: string,
     pluginId: string,
+    organizationId: string,
     manager: EntityManager
   ): Promise<DataSource> {
     const defaultDataSource = await manager.findOne(DataSource, {
@@ -122,7 +151,7 @@ export class DataSourcesService {
       return defaultDataSource;
     }
     const dataSource = await this.createDefaultDataSource(kind, appVersionId, pluginId, manager);
-    await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersionId, dataSource.id, manager);
+    await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
     return dataSource;
   }
 
@@ -148,7 +177,9 @@ export class DataSourcesService {
     name: string,
     kind: string,
     options: Array<object>,
-    appVersionId: string,
+    appVersionId?: string,
+    organizationId?: string,
+    scope: string = DataSourceScopes.LOCAL,
     pluginId?: string,
     environmentId?: string
   ): Promise<DataSource> {
@@ -158,16 +189,18 @@ export class DataSourcesService {
         kind,
         appVersionId,
         pluginId,
+        organizationId,
+        scope,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
       const dataSource = await manager.save(newDataSource);
 
       // Creating empty options mapping
-      await this.appEnvironmentService.createDataSourceInAllEnvironments(appVersionId, dataSource.id, manager);
+      await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
 
       // Find the environment to be updated
-      const envToUpdate = await this.appEnvironmentService.get(appVersionId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
 
       await this.appEnvironmentService.updateOptions(
         await this.parseOptionsForCreate(options, false, manager),
@@ -177,7 +210,7 @@ export class DataSourcesService {
       );
 
       // Find other environments to be updated
-      const allEnvs = await this.appEnvironmentService.getAll(appVersionId, manager);
+      const allEnvs = await this.appEnvironmentService.getAll(organizationId, manager);
 
       if (allEnvs?.length) {
         const envsToUpdate = allEnvs.filter((env) => env.id !== envToUpdate.id);
@@ -196,11 +229,17 @@ export class DataSourcesService {
     });
   }
 
-  async update(dataSourceId: string, name: string, options: Array<object>, environmentId?: string): Promise<void> {
+  async update(
+    dataSourceId: string,
+    organizationId: string,
+    name: string,
+    options: Array<object>,
+    environmentId?: string
+  ): Promise<void> {
     const dataSource = await this.findOne(dataSourceId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
 
       // if datasource is restapi then reset the token data
       if (dataSource.kind === 'restapi')
@@ -210,7 +249,9 @@ export class DataSourcesService {
           encrypted: false,
         });
 
-      dataSource.options = (await this.appEnvironmentService.getOptions(dataSourceId, null, envToUpdate.id)).options;
+      dataSource.options = (
+        await this.appEnvironmentService.getOptions(dataSourceId, organizationId, envToUpdate.id)
+      ).options;
 
       await this.appEnvironmentService.updateOptions(
         await this.parseOptionsForUpdate(dataSource, options),
@@ -236,11 +277,16 @@ export class DataSourcesService {
   }
 
   /* This function merges new options with the existing options */
-  async updateOptions(dataSourceId: string, optionsToMerge: any, environmentId?: string): Promise<void> {
+  async updateOptions(
+    dataSourceId: string,
+    optionsToMerge: any,
+    organizationId: string,
+    environmentId?: string
+  ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
-      const envToUpdate = await this.appEnvironmentService.get(dataSource.appVersionId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
 
@@ -248,17 +294,52 @@ export class DataSourcesService {
     });
   }
 
-  async testConnection(kind: string, options: object, plugin_id: string): Promise<object> {
+  async testConnection(
+    kind: string,
+    options: object,
+    plugin_id: string,
+    organization_id: string,
+    environment_id: string
+  ): Promise<object> {
     let result = {};
+
+    const parsedOptions = JSON.parse(JSON.stringify(options));
+
+    // need to match if currentOption is a contant, {{constants.psql_db}
+    const constantMatcher = /{{constants\..+?}}/g;
+
+    for (const key of Object.keys(parsedOptions)) {
+      const currentOption = parsedOptions[key]?.['value'];
+      const variablesMatcher = /(%%.+?%%)/g;
+      const variableMatched = variablesMatcher.exec(currentOption);
+
+      if (variableMatched) {
+        const resolved = await this.resolveVariable(currentOption, organization_id);
+        parsedOptions[key]['value'] = resolved;
+      }
+      if (constantMatcher.test(currentOption)) {
+        const resolved = await this.resolveConstants(currentOption, organization_id, environment_id);
+        parsedOptions[key]['value'] = resolved;
+      }
+    }
+
     try {
       const sourceOptions = {};
 
-      for (const key of Object.keys(options)) {
-        const credentialId = options[key]?.['credential_id'];
+      for (const key of Object.keys(parsedOptions)) {
+        const credentialId = parsedOptions[key]?.['credential_id'];
         if (credentialId) {
-          sourceOptions[key] = await this.credentialsService.getValue(credentialId);
+          const encryptedKeyValue = await this.credentialsService.getValue(credentialId);
+
+          //check if encrypted key value is a constant
+          if (constantMatcher.test(encryptedKeyValue)) {
+            const resolved = await this.resolveConstants(encryptedKeyValue, organization_id, environment_id);
+            sourceOptions[key] = resolved;
+          } else {
+            sourceOptions[key] = encryptedKeyValue;
+          }
         } else {
-          sourceOptions[key] = options[key]['value'];
+          sourceOptions[key] = parsedOptions[key]['value'];
         }
       }
 
@@ -339,7 +420,9 @@ export class DataSourcesService {
     for (const option of optionsWithOauth) {
       if (option['encrypted']) {
         const existingCredentialId =
-          dataSource.options[option['key']] && dataSource.options[option['key']]['credential_id'];
+          dataSource?.options &&
+          dataSource.options[option['key']] &&
+          dataSource.options[option['key']]['credential_id'];
 
         if (existingCredentialId) {
           (option['value'] || option['value'] === '') &&
@@ -391,6 +474,7 @@ export class DataSourcesService {
     dataSourceOptions: object,
     dataSourceId: string,
     userId: string,
+    organizationId: string,
     environmentId?: string
   ) {
     const existingAccessTokenCredentialId =
@@ -418,12 +502,79 @@ export class DataSourcesService {
           encrypted: false,
         },
       ];
-      await this.updateOptions(dataSourceId, tokenOptions, environmentId);
+      await this.updateOptions(dataSourceId, tokenOptions, organizationId, environmentId);
     }
+  }
+
+  async convertToGlobalSource(datasourceId: string, organizationId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.save(DataSource, {
+        id: datasourceId,
+        updatedAt: new Date(),
+        appVersionId: null,
+        organizationId,
+        scope: DataSourceScopes.GLOBAL,
+      });
+    });
   }
 
   getAuthUrl(provider: string, sourceOptions?: any): { url: string } {
     const service = new allPlugins[provider]();
     return { url: service.authUrl(sourceOptions) };
+  }
+
+  async resolveConstants(str: string, organization_id: string, environmentId: string) {
+    const tempStr: string = str.match(/\{\{(.*?)\}\}/g)[0].replace(/[{}]/g, '');
+    let result = tempStr;
+    if (new RegExp('^constants.').test(tempStr)) {
+      const splitArray = tempStr.split('.');
+      const constantName = splitArray[splitArray.length - 1];
+
+      const constant = await this.appEnvironmentService.getOrgEnvironmentConstant(
+        constantName,
+        organization_id,
+        environmentId
+      );
+
+      if (constant) {
+        result = constant.value;
+      }
+    }
+
+    return result;
+  }
+
+  async resolveVariable(str: string, organization_id: string) {
+    const tempStr: string = str.replace(/%%/g, '');
+    let result = tempStr;
+
+    const isServerVariable = new RegExp('^server').test(tempStr);
+    const isClientVariable = new RegExp('^client').test(tempStr);
+
+    if (isServerVariable || isClientVariable) {
+      const splitArray = tempStr.split('.');
+
+      const variableType = splitArray[0];
+      const variableName = splitArray[splitArray.length - 1];
+
+      const variableResult = await OrgEnvironmentVariable.findOne({
+        variableType: variableType,
+        organizationId: organization_id,
+        variableName: variableName,
+      });
+
+      if (isClientVariable && variableResult) {
+        result = variableResult.value;
+      }
+
+      if (isServerVariable && variableResult) {
+        result = await this.encryptionService.decryptColumnValue(
+          'org_environment_variables',
+          organization_id,
+          variableResult.value
+        );
+      }
+    }
+    return result;
   }
 }

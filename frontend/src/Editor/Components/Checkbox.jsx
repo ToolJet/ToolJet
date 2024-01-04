@@ -6,7 +6,7 @@ export const Checkbox = function Checkbox({
   styles,
   fireEvent,
   setExposedVariable,
-  registerAction,
+  setExposedVariables,
   darkMode,
   dataCy,
 }) {
@@ -14,7 +14,7 @@ export const Checkbox = function Checkbox({
   const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
   const [checked, setChecked] = React.useState(defaultValueFromProperties);
   const { label } = properties;
-  const { visibility, disabledState, checkboxColor } = styles;
+  const { visibility, disabledState, checkboxColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
 
   function toggleValue(e) {
@@ -28,26 +28,32 @@ export const Checkbox = function Checkbox({
     }
   }
   useEffect(() => {
-    setExposedVariable('value', defaultValueFromProperties);
+    const setCheckedAndNotify = async (status) => {
+      await setExposedVariable('value', status);
+      if (status) {
+        fireEvent('onCheck');
+      } else {
+        fireEvent('onUnCheck');
+      }
+      setChecked(status);
+    };
+    const exposedVariables = {
+      value: defaultValueFromProperties,
+      setChecked: setCheckedAndNotify,
+    };
+
     setDefaultvalue(defaultValueFromProperties);
     setChecked(defaultValueFromProperties);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultValueFromProperties]);
+    setExposedVariables(exposedVariables);
 
-  registerAction(
-    'setChecked',
-    async function (status) {
-      setExposedVariable('value', status).then(() => (status ? fireEvent('onCheck') : fireEvent('onUnCheck')));
-      setChecked(status);
-    },
-    [setChecked]
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValueFromProperties, setChecked]);
 
   return (
     <div
       data-disabled={disabledState}
       className="row py-1"
-      style={{ height, display: visibility ? '' : 'none' }}
+      style={{ height, display: visibility ? '' : 'none', boxShadow }}
       data-cy={dataCy}
     >
       <div className="col px-1 py-0 mt-0">

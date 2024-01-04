@@ -31,7 +31,8 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
     if (!newState[keyIndex]['cards']) [(newState[keyIndex]['cards'] = [])];
     newState[keyIndex]['cards'].push(newItem);
     setState(newState);
-    setExposedVariable('lastAddedCard', newItem).then(() => fireEvent('onCardAdded'));
+    setExposedVariable('lastAddedCard', newItem);
+    fireEvent('onCardAdded');
   };
 
   function onDragEnd(result) {
@@ -71,7 +72,8 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
         destinationCardIndex: dInd,
         cardDetails,
       };
-      setExposedVariable('lastCardMovement', movementDetails).then(() => fireEvent('onCardMoved'));
+      setExposedVariable('lastCardMovement', movementDetails);
+      fireEvent('onCardMoved');
     }
   }
 
@@ -91,7 +93,8 @@ function Board({ height, state, colStyles, setState, fireEvent, setExposedVariab
     const newState = state.map((column, index) => (index === columnIndex ? updatedColumn : column));
     setState(newState);
 
-    setExposedVariable('lastUpdatedCard', updatedCard).then(() => fireEvent('onCardUpdated'));
+    setExposedVariable('lastUpdatedCard', updatedCard);
+    fireEvent('onCardUpdated');
   };
 
   return (

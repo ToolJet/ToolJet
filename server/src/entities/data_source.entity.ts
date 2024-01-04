@@ -48,13 +48,18 @@ export class DataSource extends BaseEntity {
   @Column({ name: 'organization_id' })
   organizationId: string;
 
+  @Column({ type: 'enum', enumName: 'scope', enum: ['local', 'global'], default: 'local' })
+  scope: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 

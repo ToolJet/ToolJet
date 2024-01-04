@@ -1,0 +1,38 @@
+.ghost-black-operation {
+    color: var(--slate12);
+    border: none;
+    background: transparent;
+
+    &:hover {
+        color: var(--slate11);
+    }
+
+    &:active {
+        color: var(--indigo9);
+    }
+
+    &:focus-visible {
+        color: var(--slate11);
+        background: var(--base);
+        border: none;
+        box-shadow: 0px 0px 0px 4px var(--slate6);
+        outline: none;
+    }
+
+    &.applied {
+        background: var(--grass12);
+        border-radius: 6px;
+    }
+
+    &.open {
+        background: var(--indigo4);
+        border: 1px solid var(--indigo9);
+        border-radius: 6px;
+        color: var(--indigo9) !important;
+    }
+
+    &.disabled {
+        background: var(--slate3);
+        border-radius: 6px;
+    }
+}

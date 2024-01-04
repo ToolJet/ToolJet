@@ -3,6 +3,8 @@ import queryString from 'query-string';
 import { datasourceService } from '@/_services';
 import { RedirectLoader } from '@/_components';
 import { withTranslation } from 'react-i18next';
+import { getCookie } from '@/_helpers/cookie';
+import { withRouter } from '@/_hoc/withRouter';
 class AuthorizeComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -20,10 +22,11 @@ class AuthorizeComponent extends React.Component {
     const details = { code };
 
     const sourceId = localStorage.getItem('sourceWaitingForOAuth');
+    const current_organization_id = getCookie('orgIdForOauth');
 
     if (sourceId !== 'newSource') {
       datasourceService
-        .setOauth2Token(sourceId, details)
+        .setOauth2Token(sourceId, details, current_organization_id)
         .then(() => {
           this.setState({
             isLoading: false,
@@ -113,4 +116,4 @@ class AuthorizeComponent extends React.Component {
   }
 }
 
-export const Authorize = withTranslation()(AuthorizeComponent);
+export const Authorize = withTranslation()(withRouter(AuthorizeComponent));

@@ -36,7 +36,8 @@ services:
     image: tooljet-server:development
     platform: linux/x86_64
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - ./server:/app/server:delegated
       - ./plugins:/app/plugins
@@ -57,7 +58,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   postgres:
     image: postgres:13
@@ -68,6 +70,11 @@ services:
       - postgres:/data/postgres
     environment:
       - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres:

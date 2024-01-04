@@ -10,11 +10,16 @@ export const EditVersion = ({
   setAppVersions,
   setShowEditAppVersion,
   showEditAppVersion,
-  editingVersion,
+  appVersions,
 }) => {
   const [isEditingVersion, setIsEditingVersion] = useState(false);
+  const editingVersion = appVersions?.find((version) => version.id === editingVersionId);
   const [versionName, setVersionName] = useState(editingVersion?.name || '');
   const { t } = useTranslation();
+
+  React.useEffect(() => {
+    setVersionName(editingVersion?.name);
+  }, [editingVersion?.name]);
 
   const editVersion = () => {
     if (versionName.trim() === '') {
@@ -43,7 +48,10 @@ export const EditVersion = ({
   return (
     <AlertDialog
       show={showEditAppVersion}
-      closeModal={() => setShowEditAppVersion(false)}
+      closeModal={() => {
+        setVersionName(editingVersion?.name || '');
+        setShowEditAppVersion(false);
+      }}
       title={t('editor.appVersionManager.editVersion', 'Edit Version')}
     >
       <form
@@ -53,11 +61,12 @@ export const EditVersion = ({
         }}
       >
         <div className="row mb-3">
-          <div className="col modal-main">
+          <div className="col modal-main tj-app-input">
             <input
               type="text"
               onChange={(e) => setVersionName(e.target.value)}
               className="form-control"
+              data-cy="edit-version-name-input-field"
               placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
               disabled={isEditingVersion}
               value={versionName}
@@ -67,10 +76,22 @@ export const EditVersion = ({
         </div>
         <div className="row">
           <div className="col d-flex justify-content-end">
-            <button className="btn mx-2" onClick={() => setShowEditAppVersion(false)} type="button">
+            <button
+              className="btn mx-2"
+              data-cy="cancel-button"
+              onClick={() => {
+                setVersionName(editingVersion?.name || '');
+                setShowEditAppVersion(false);
+              }}
+              type="button"
+            >
               {t('globals.cancel', 'Cancel')}
             </button>
-            <button className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`} type="submit">
+            <button
+              className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`}
+              data-cy="save-button"
+              type="submit"
+            >
               {t('globals.save', 'Save')}
             </button>
           </div>

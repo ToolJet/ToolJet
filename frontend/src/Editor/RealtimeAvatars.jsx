@@ -1,9 +1,9 @@
-import React from 'react';
-import ReactTooltip from 'react-tooltip';
+import React, { useEffect } from 'react';
 import Popover from '@/_ui/Popover';
 import Avatar from '@/_ui/Avatar';
 // eslint-disable-next-line import/no-unresolved
 import { useOthers, useSelf } from '@y-presence/react';
+import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 
 const MAX_DISPLAY_USERS = 2;
 const RealtimeAvatars = ({ darkMode }) => {
@@ -11,19 +11,25 @@ const RealtimeAvatars = ({ darkMode }) => {
   const others = useOthers();
   const othersOnSameVersionAndPage = others.filter(
     (other) =>
-      other?.presence?.editingVersionId === self?.presence.editingVersionId &&
-      other?.presence?.editingPageId === self?.presence.editingPageId
+      other?.presence &&
+      self?.presence &&
+      other?.presence?.editingVersionId === self?.presence?.editingVersionId &&
+      other?.presence?.editingPageId === self?.presence?.editingPageId
   );
 
   const getAvatarText = (presence) => presence.firstName?.charAt(0) + presence.lastName?.charAt(0);
   const getAvatarTitle = (presence) => `${presence.firstName} ${presence.lastName}`;
 
-  // This is required for the tooltip not binding to dynamic content
-  // i.e. when others on the same version changes, tooltip
-  // ref: https://github.com/wwayne/react-tooltip#3-tooltip-not-binding-to-dynamic-content
-  React.useEffect(() => {
-    ReactTooltip.rebuild();
-  }, [othersOnSameVersionAndPage?.length]);
+  const { updateState } = useAppDataActions();
+  const { areOthersOnSameVersionAndPage, currentVersionId } = useAppInfo();
+
+  useEffect(() => {
+    const areActiveUsersOnSameVersionAndPage = othersOnSameVersionAndPage.length > 0;
+    const shouldUpdateState = areActiveUsersOnSameVersionAndPage !== areOthersOnSameVersionAndPage;
+
+    if (shouldUpdateState) updateState({ areOthersOnSameVersionAndPage: areActiveUsersOnSameVersionAndPage });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ others, self, currentVersionId })]);
 
   const popoverContent = () => {
     return othersOnSameVersionAndPage
@@ -40,6 +46,8 @@ const RealtimeAvatars = ({ darkMode }) => {
                     text={getAvatarText(presence)}
                     image={presence?.image}
                     borderShape="rounded"
+                    indexId={id}
+                    realtime={true}
                   />
                 </div>
                 <div className={`col text-truncate ${darkMode && 'text-white'}`}>
@@ -58,10 +66,14 @@ const RealtimeAvatars = ({ darkMode }) => {
   return (
     <div className="row realtime-avatars">
       <div className="col-auto ms-auto d-flex align-items-center">
-        <div className="avatar-list avatar-list-stacked">
+        <div className="avatar-list-stacked">
           {othersOnSameVersionAndPage.length > MAX_DISPLAY_USERS && (
             <Popover fullWidth={false} showArrow popoverContent={popoverContent()}>
-              <Avatar text={`+${othersOnSameVersionAndPage.length - MAX_DISPLAY_USERS}`} borderShape="rounded" />
+              <Avatar
+                text={`+${othersOnSameVersionAndPage.length - MAX_DISPLAY_USERS}`}
+                borderShape="rounded"
+                realtime={true}
+              />
             </Popover>
           )}
           {self?.presence && (
@@ -72,6 +84,8 @@ const RealtimeAvatars = ({ darkMode }) => {
               text={getAvatarText(self?.presence)}
               image={self?.presence?.image}
               borderShape="rounded"
+              indexId={self?.presence?.id}
+              realtime={true}
             />
           )}
           {othersOnSameVersionAndPage.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
@@ -83,6 +97,8 @@ const RealtimeAvatars = ({ darkMode }) => {
                 text={getAvatarText(presence)}
                 image={presence?.image}
                 borderShape="rounded"
+                indexId={id}
+                realtime={true}
               />
             );
           })}

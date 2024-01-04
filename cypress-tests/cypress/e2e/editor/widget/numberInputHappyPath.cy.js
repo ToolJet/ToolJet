@@ -23,9 +23,13 @@ import {
 
 describe("Number Input", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.createApp();
+    cy.apiLogin();
+    cy.apiCreateApp();
+    cy.openApp();
     cy.dragAndDropWidget("Number Input");
+  });
+  afterEach(() => {
+    cy.apiDeleteApp();
   });
 
   it("should verify the properties of the number input widget", () => {
@@ -33,11 +37,9 @@ describe("Number Input", () => {
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
     data.tooltipText = fake.randomSentence;
-    data.randomNumber = randomNumber(10, 99);
-    data.minimumvalue = randomNumber(5, 10);
-    data.maximumValue = randomNumber(90, 99);
-
-    cy.renameApp(data.appName);
+    data.randomNumber = `${randomNumber(10, 99)}`;
+    data.minimumvalue = `${randomNumber(5, 10)}`;
+    data.maximumValue = `${randomNumber(90, 99)}`;
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     editAndVerifyWidgetName(data.widgetName);
@@ -78,9 +80,10 @@ describe("Number Input", () => {
       commonWidgetSelector.draggableWidget(data.widgetName),
       randomNumber(1, 4)
     );
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", data.minimumvalue);
+    ).verifyVisibleElement("have.value", `${data.minimumvalue}`);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
@@ -90,15 +93,16 @@ describe("Number Input", () => {
     ]);
     verifyAndModifyParameter(
       commonWidgetText.labelMaximumValue,
-      data.maximumValue
+      `${data.maximumValue}`
     );
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(data.widgetName),
       randomNumber(100, 110)
     );
+    cy.forceClickOnCanvas;
     cy.get(
       commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", data.maximumValue);
+    ).verifyVisibleElement("have.value", `${data.maximumValue}`);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
@@ -130,9 +134,6 @@ describe("Number Input", () => {
       "have.text",
       numberInputText.numberInputDocumentationLink
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
   it("should verify the styles of the number input widget", () => {
     const data = {};
@@ -140,8 +141,6 @@ describe("Number Input", () => {
     data.colourHex = fake.randomRgbaHex;
     data.boxShadowColor = fake.randomRgba;
     data.boxShadowParam = fake.boxShadowParam;
-
-    cy.renameApp(data.appName);
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
@@ -192,9 +191,6 @@ describe("Number Input", () => {
       data.boxShadowColor,
       3
     );
-
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 
   it("should verify the app preview", () => {
@@ -208,8 +204,6 @@ describe("Number Input", () => {
     data.minimumvalue = randomNumber(5, 10);
     data.maximumValue = randomNumber(90, 99);
 
-    cy.renameApp(data.appName);
-
     openEditorSidebar(numberInputText.defaultWidgetName);
     verifyAndModifyParameter(
       commonWidgetText.labelDefaultValue,
@@ -217,11 +211,11 @@ describe("Number Input", () => {
     );
     verifyAndModifyParameter(
       commonWidgetText.labelMinimumValue,
-      data.minimumvalue
+      `${data.minimumvalue}`
     );
     verifyAndModifyParameter(
       commonWidgetText.labelMaximumValue,
-      data.maximumValue
+      `${data.maximumValue}`
     );
     verifyAndModifyParameter(
       commonWidgetText.labelPlaceHolder,
@@ -239,14 +233,11 @@ describe("Number Input", () => {
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
     );
-
     cy.forceClickOnCanvas();
-    cy.waitForAutoSave();
-    cy.reload();
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
+    openAccordion(commonWidgetText.accordionGenaral, [], 1);
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
 
     fillBoxShadowParams(
@@ -271,16 +262,18 @@ describe("Number Input", () => {
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName),
       randomNumber(1, 4)
     );
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", data.minimumvalue);
+    ).verifyVisibleElement("have.value", `${data.minimumvalue}`);
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName),
       randomNumber(100, 110)
     );
+    cy.forceClickOnCanvas();
     cy.get(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", data.maximumValue);
+    ).verifyVisibleElement("have.value", `${data.maximumValue}`);
     cy.get(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
     )
@@ -303,8 +296,5 @@ describe("Number Input", () => {
       data.boxShadowColor,
       data.boxShadowParam
     );
-
-    cy.get(commonSelectors.viewerPageLogo).click();
-    cy.deleteApp(data.appName);
   });
 });

@@ -1,4 +1,40 @@
 import _ from 'lodash';
+import { copilotService } from '@/_services/copilot.service';
+import { toast } from 'react-hot-toast';
+
+export async function getRecommendation(currentContext, query, lang = 'javascript') {
+  const words = query.split(' ');
+  let results = [];
+
+  function arrayToObject(arr) {
+    return _.reduce(
+      arr,
+      (result, { key, value }) => {
+        if (!result.hasOwnProperty(key)) {
+          result[key] = value;
+        }
+        return result;
+      },
+      {}
+    );
+  }
+
+  try {
+    words.forEach((word) => {
+      results = results.concat(searchQuery(word, currentContext));
+    });
+
+    const context = JSON.stringify(arrayToObject(results));
+
+    const { data } = await copilotService.getCopilotRecommendations({ context, query, lang });
+
+    return query + '\n' + data;
+  } catch ({ error, data }) {
+    const errorMessage = data?.message.includes('Unauthorized') ? 'Invalid Copilot API Key' : 'Something went wrong';
+    toast.error(errorMessage);
+    return query;
+  }
+}
 
 function getResult(suggestionList, query) {
   const result = suggestionList.filter((key) => key.includes(query));
@@ -32,7 +68,6 @@ function getResult(suggestionList, query) {
 export function getSuggestionKeys(refState, refSource) {
   const state = _.cloneDeep(refState);
   const queries = state['queries'];
-
   const actions = [
     'runQuery',
     'setVariable',
@@ -104,6 +139,16 @@ export function getSuggestionKeys(refState, refSource) {
     });
   }
 
+  return suggestionList;
+}
+
+export function attachCustomResolvables(resolvables) {
+  const suggestionList = [];
+  for (const key in resolvables) {
+    for (const innerKey in resolvables[key]) {
+      suggestionList.push(`${key}.${innerKey}`);
+    }
+  }
   return suggestionList;
 }
 
@@ -203,8 +248,17 @@ export function canShowHint(editor, ignoreBraces = false) {
   return value.slice(ch, ch + 2) === '}}' || value.slice(ch, ch + 2) === '%%';
 }
 
-export function handleChange(editor, onChange, ignoreBraces = false, currentState, editorSource = undefined) {
+export function handleChange(
+  editor,
+  onChange,
+  ignoreBraces = false,
+  currentState,
+  editorSource = undefined,
+  resolvables = {}
+) {
   const suggestions = getSuggestionKeys(currentState, editorSource);
+  const resolvedSuggstions = attachCustomResolvables(resolvables); //attach custom resolved values to suggetsion list
+  suggestions.push(...resolvedSuggstions);
   let state = editor.state.matchHighlighter;
   editor.addOverlay((state.overlay = makeOverlay(state.options.style)));
 
@@ -248,4 +302,22 @@ export function handleChange(editor, onChange, ignoreBraces = false, currentStat
     };
     keystrokeCaller();
   }
+}
+
+function searchQuery(query, obj) {
+  const lcQuery = query.toLowerCase();
+  let results = [];
+
+  for (const key in obj) {
+    const value = obj[key];
+    if (value !== null && typeof value === 'object') {
+      results = results?.concat(searchQuery(lcQuery, value));
+    } else {
+      if (key?.toLowerCase()?.includes(lcQuery) || value?.toString()?.toLowerCase()?.includes(lcQuery)) {
+        results.push({ key, value });
+      }
+    }
+  }
+
+  return results;
 }

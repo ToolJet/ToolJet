@@ -7,12 +7,12 @@ export const datePickerText = {
   },
 
   datepicker1: "datepicker1",
-  labelDefaultValue: "Default Value",
+  labelDefaultValue: "Default value",
   labelformat: "Format",
   labelEnableDateSection: "Enable date selection?",
   labelEnableTimeSection: "Enable time selection?",
   labelDisabledDates: "Disabled dates",
 
-  noEventMessage: "This datepicker doesn't have any event handlers",
+  noEventMessage: "No event handlers",
   defaultTime: "12:00 AM",
 };

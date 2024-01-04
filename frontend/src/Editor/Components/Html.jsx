@@ -7,15 +7,25 @@ export const Html = function ({ height, properties, styles, darkMode, dataCy }) 
     backgroundColor: darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',
   };
-  const { visibility } = styles;
+  const { visibility, boxShadow } = styles;
 
   const [rawHtml, setRawHtml] = useState('');
   useEffect(() => {
     setRawHtml(stringifyHTML);
   }, [stringifyHTML]);
+  DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+    // set all elements owning target to target=_blank
+    if ('target' in node) {
+      node.setAttribute('target', '_blank');
+      node.setAttribute('rel', 'noopener');
+    }
+  });
 
   return (
-    <div style={{ display: visibility ? '' : 'none', width: '100%', height, overflowY: 'auto' }} data-cy={dataCy}>
+    <div
+      style={{ display: visibility ? '' : 'none', width: '100%', height, overflowY: 'auto', boxShadow }}
+      data-cy={dataCy}
+    >
       {
         <div
           style={baseStyle}

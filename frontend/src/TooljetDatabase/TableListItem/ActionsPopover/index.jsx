@@ -5,26 +5,45 @@ import Popover from 'react-bootstrap/Popover';
 import EditIcon from './Icons/Edit.svg';
 // import CloneIcon from './Icons/Clone.svg';
 import DeleteIcon from './Icons/Delete.svg';
-import EllipsisIcon from './Icons/Ellipsis.svg';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
-  const [open, setOpen] = React.useState(false);
+export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable, onMenuToggle }) => {
+  const closeMenu = () => {
+    document.body.click();
+  };
 
   const popover = (
-    <Popover id="popover-contained" className="table-list-items">
-      <Popover.Content className={`${darkMode && 'theme-dark'}`}>
+    <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>
+      <Popover.Body className={`${darkMode && 'dark-theme'}`}>
         <div className={`row cursor-pointer`}>
-          <div className="col-auto">
+          <div className="col-auto" data-cy="edit-option-icon">
             <EditIcon />
           </div>
           <div
             className="col text-truncate"
-            onClick={() => {
-              setOpen(false);
+            data-cy="edit-option"
+            onClick={(event) => {
+              event.stopPropagation();
+              closeMenu();
               onEdit();
             }}
           >
             Edit
+          </div>
+        </div>
+        <div className="row mt-3 cursor-pointer">
+          <div className="col-auto" data-cy="export-option-icon">
+            <SolidIcon name="filedownload" width="13" viewBox="0 0 25 25" />
+          </div>
+          <div
+            className="col text-truncate"
+            data-cy="export-table-option"
+            onClick={() => {
+              closeMenu();
+              handleExportTable();
+            }}
+          >
+            Export table
           </div>
         </div>
         {/* <div className="row mt-3">
@@ -34,35 +53,31 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
           <div className="col text-truncate">Duplicate</div>
         </div> */}
         <div className="row mt-3 cursor-pointer">
-          <div className="col-auto">
+          <div className="col-auto" data-cy="delete-option-icon">
             <DeleteIcon />
           </div>
-          <div className="col text-truncate" onClick={onDelete}>
+          <div
+            className="col text-truncate"
+            data-cy="delete-option"
+            onClick={() => {
+              closeMenu();
+              onDelete();
+            }}
+          >
             Delete
           </div>
         </div>
-      </Popover.Content>
+      </Popover.Body>
     </Popover>
   );
 
   return (
-    <div
-      className={cx(`float-right cursor-pointer table-list-item-popover ${darkMode && 'dark'}`, {
-        'd-grid': open,
-      })}
-    >
-      <OverlayTrigger
-        onToggle={(isOpen) => {
-          setOpen(isOpen);
-        }}
-        show={open}
-        rootClose
-        trigger="click"
-        placement="bottom"
-        overlay={popover}
-      >
-        <EllipsisIcon />
-      </OverlayTrigger>
-    </div>
+    <OverlayTrigger trigger="click" placement="bottom" rootClose onToggle={onMenuToggle} overlay={popover}>
+      <div className={cx(`float-right cursor-pointer table-list-item-popover`)} data-cy="table-kebab-icon">
+        <span>
+          <SolidIcon name="morevertical" width="14" fill={darkMode ? '#FDFDFE' : '#11181C'} />
+        </span>
+      </div>
+    </OverlayTrigger>
   );
 };

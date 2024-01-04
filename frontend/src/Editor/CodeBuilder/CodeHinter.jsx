@@ -31,6 +31,12 @@ import { toast } from 'react-hot-toast';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import cx from 'classnames';
+import { Alert } from '@/_ui/Alert/Alert';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import ClientServerSwitch from './Elements/ClientServerSwitch';
+import { validateProperty } from '../component-properties-validation';
+const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data'];
 
 const AllElements = {
   Color,
@@ -40,12 +46,12 @@ const AllElements = {
   AlignButtons,
   Number,
   BoxShadow,
+  ClientServerSwitch,
 };
 
 export function CodeHinter({
   initialValue,
   onChange,
-  currentState,
   mode,
   theme,
   lineNumbers,
@@ -68,6 +74,10 @@ export function CodeHinter({
   component,
   popOverCallback,
   cyLabel = '',
+  callgpt = () => null,
+  isCopilotEnabled = false,
+  currentState: _currentState,
+  verticalLine = true,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -81,31 +91,94 @@ export function CodeHinter({
     highlightSelectionMatches: true,
     placeholder,
   };
-
+  const currentState = useCurrentState();
   const [realState, setRealState] = useState(currentState);
-  const [currentValue, setCurrentValue] = useState(initialValue);
+  const [currentValue, setCurrentValue] = useState('');
+
+  const [prevCurrentValue, setPrevCurrentValue] = useState(null);
+  const [resolvedValue, setResolvedValue] = useState(null);
+  const [resolvingError, setResolvingError] = useState(null);
+
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
+
+  // Todo: Remove this when workspace variables are deprecated
+  const isWorkspaceVariable =
+    typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   const slideInStyles = useSpring({
     config: { ...config.stiff },
     from: { opacity: 0, height: 0 },
     to: {
       opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
+      height: isFocused ? currentHeight + (isWorkspaceVariable ? 30 : 0) : 0,
     },
   });
   const { t } = useTranslation();
-
   const { variablesExposedForPreview } = useContext(EditorContext);
-
   const prevCountRef = useRef(false);
 
+  function getPropertyDefinition(paramName, component) {
+    if (component?.properties?.hasOwnProperty(`${paramName}`)) {
+      return component.properties?.[paramName];
+    } else if (component?.styles?.hasOwnProperty(`${paramName}`)) {
+      return component?.styles?.[paramName];
+    } else if (component?.general?.hasOwnProperty(`${paramName}`)) {
+      return component?.general?.[paramName];
+    } else if (component?.generalStyles?.hasOwnProperty(`${paramName}`)) {
+      return component?.generalStyles?.[paramName];
+    } else {
+      return {};
+    }
+  }
+
+  const checkTypeErrorInRunTime = (preview) => {
+    const propertyDefinition = getPropertyDefinition(paramName, component?.component);
+    const resolvedProperty = Object.keys(component?.component?.definition || {}).reduce((accumulator, currentKey) => {
+      if (
+        component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName) ||
+        (paramName === 'tooltip' &&
+          currentKey === 'general' &&
+          !component?.component?.definition?.[currentKey]?.hasOwnProperty(paramName))
+        //added second condition because initilly general is empty object and hence it was not going inside if statement and thus codehinter was always receiving undefined for initial render and thus showing error message in the preview
+      ) {
+        accumulator[`${paramName}`] = resolveReferences(preview, currentState);
+      }
+      return accumulator;
+    }, {});
+    const [_valid, errorMessages] = validateProperty(resolvedProperty, propertyDefinition, paramName);
+    return [_valid, errorMessages];
+  };
+
+  const getPreviewAndErrorFromValue = (value) => {
+    const customResolvables = getCustomResolvables();
+    const [preview, error] = resolveReferences(value, realState, null, customResolvables, true, true);
+    return [preview, error];
+  };
+
   useEffect(() => {
-    setRealState(currentState);
+    setCurrentValue(initialValue);
+    const [preview, error] = getPreviewAndErrorFromValue(initialValue);
+    const [_valid] = checkTypeErrorInRunTime(preview);
+    if (!_valid || error) setResolvingError(true);
+    return () => {
+      setPrevCurrentValue(null);
+      setResolvedValue(null);
+      setResolvingError(null);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components]);
+  }, []);
+
+  useEffect(() => {
+    if (_currentState) {
+      setRealState(_currentState);
+    } else {
+      setRealState(currentState);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ currentState, _currentState })]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -126,9 +199,42 @@ export function CodeHinter({
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
 
+  useEffect(() => {
+    let globalPreviewCopy = null;
+    let globalErrorCopy = null;
+    if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+      const [preview, error] = getPreviewAndErrorFromValue(currentValue);
+      // checking type error if any in run time
+      const [_valid, errorMessages] = checkTypeErrorInRunTime(preview);
+
+      setPrevCurrentValue(currentValue);
+      if (error || !_valid || typeof preview === 'function') {
+        globalPreviewCopy = null;
+        globalErrorCopy = error || errorMessages?.[errorMessages?.length - 1];
+        setResolvingError(error || errorMessages?.[errorMessages?.length - 1]);
+        setResolvedValue(null);
+      } else {
+        globalPreviewCopy = preview;
+        globalErrorCopy = null;
+        setResolvingError(null);
+        setResolvedValue(preview);
+      }
+    }
+
+    return () => {
+      if (enablePreview && isFocused && JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+        setPrevCurrentValue(null);
+        setResolvedValue(globalPreviewCopy);
+        setResolvingError(globalErrorCopy);
+      }
+    };
+  }, [JSON.stringify({ currentValue, realState, isFocused })]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [JSON.stringify({ currentValue, realState, isFocused })]);
+
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
-      handleChange(editor, onChange, ignoreBraces, realState, componentName);
+      handleChange(editor, onChange, ignoreBraces, realState, componentName, getCustomResolvables());
       setCurrentValue(editor.getValue()?.trim());
     }
   }
@@ -161,7 +267,7 @@ export function CodeHinter({
       if (component?.component?.component === 'Table' && fieldMeta?.name) {
         return {
           ...variablesExposedForPreview[component?.id],
-          cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
+          cellValue: variablesExposedForPreview[component?.id]?.rowData?.[fieldMeta?.name],
           rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
         };
       }
@@ -172,13 +278,15 @@ export function CodeHinter({
 
   const getPreview = () => {
     if (!enablePreview) return;
-    const customResolvables = getCustomResolvables();
-    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true);
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
+    const preview = resolvedValue;
+    const error = resolvingError;
 
-    if (error) {
+    if (resolvingError !== null && resolvedValue === null && error) {
       const err = String(error);
-      const errorMessage = err.includes('.run()') ? `${err} in ${componentName.split('::')[0]}'s field` : err;
+      const errorMessage = err.includes('.run()')
+        ? `${err} in ${componentName ? componentName.split('::')[0] + "'s" : 'fx'} field`
+        : err;
       return (
         <animated.div className={isOpen ? themeCls : null} style={{ ...slideInStyles, overflow: 'hidden' }}>
           <div ref={heightRef} className="dynamic-variable-preview bg-red-lt px-1 py-1">
@@ -201,7 +309,6 @@ export function CodeHinter({
       previewType = typeof previewContent;
     }
     const content = getPreviewContent(previewContent, previewType);
-
     return (
       <animated.div
         className={isOpen ? themeCls : null}
@@ -216,7 +323,7 @@ export function CodeHinter({
                 {previewType}
               </div>
               {isFocused && (
-                <div className="preview-icons">
+                <div className="preview-icons position-relative">
                   <CodeHinter.PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="Copy to clipboard" />
                 </div>
               )}
@@ -224,6 +331,10 @@ export function CodeHinter({
             {content}
           </div>
         </div>
+        {/* Todo: Remove this when workspace variables are deprecated */}
+        {enablePreview && isWorkspaceVariable && (
+          <CodeHinter.DepericatedAlertForWorkspaceVariable text={'Deprecating soon'} />
+        )}
       </animated.div>
     );
   };
@@ -271,120 +382,148 @@ export function CodeHinter({
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
   return (
-    <div ref={wrapperRef}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        {paramLabel && (
-          <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
+      <div className={cx('d-flex align-items-center justify-content-between')}>
+        {paramLabel === 'Type' && <div className="field-type-vertical-line"></div>}
+        {paramLabel && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
+          <div className={`field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`form-label ${darkMode && 'color-whitish-darkmode'}`}
+              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+                darkMode && 'color-whitish-darkmode'
+              }`}
             />
           </div>
         )}
-        <div className={`col-auto ${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
-          <div style={{ width: width, display: codeShow ? 'flex' : 'none', marginTop: '-1px' }}>
-            <FxButton
-              active={true}
-              onPress={() => {
-                setForceCodeBox(false);
-                onFxPress(false);
-              }}
-              dataCy={cyLabel}
-            />
+        <div className={`${(type ?? 'code') === 'code' ? 'd-none' : ''} `}>
+          <div
+            style={{ width: width, marginBottom: codeShow ? '0.5rem' : '0px' }}
+            className="d-flex align-items-center"
+          >
+            <div className="col-auto pt-0 fx-common">
+              {paramLabel !== 'Type' && (
+                <FxButton
+                  active={codeShow}
+                  onPress={() => {
+                    if (codeShow) {
+                      setForceCodeBox(false);
+                      onFxPress(false);
+                    } else {
+                      setForceCodeBox(true);
+                      onFxPress(true);
+                    }
+                  }}
+                  dataCy={cyLabel}
+                />
+              )}
+            </div>
+            {!codeShow && (
+              <ElementToRender
+                value={resolveReferences(initialValue, realState)}
+                onChange={(value) => {
+                  if (value !== currentValue) {
+                    onChange(value);
+                    setCurrentValue(value);
+                  }
+                }}
+                paramName={paramName}
+                paramLabel={paramLabel}
+                forceCodeBox={() => {
+                  setForceCodeBox(true);
+                  onFxPress(true);
+                }}
+                meta={fieldMeta}
+                cyLabel={cyLabel}
+              />
+            )}
           </div>
         </div>
       </div>
       <div
-        className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
+        className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
-        <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
-          <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
-            <div
-              className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
-              key={componentName}
-              style={{
-                height: height || 'auto',
-                minHeight,
-                maxHeight: '320px',
-                overflow: 'auto',
-                fontSize: ' .875rem',
-              }}
-              data-cy={`${cyLabel}-input-field`}
-            >
-              {usePortalEditor && (
-                <CodeHinter.PopupIcon
-                  callback={handleToggle}
-                  icon="portal-open"
-                  tip="Pop out code editor into a new window"
-                />
-              )}
-              <CodeHinter.Portal
-                isOpen={isOpen}
-                callback={setIsOpen}
-                componentName={componentName}
+        <div className={`col code-hinter-col`}>
+          <div className="d-flex">
+            <div className={`${verticalLine && 'code-hinter-vertical-line'}`}></div>
+            <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
+              <div
+                className={`${defaultClassName} ${className || 'codehinter-default-input'} ${
+                  resolvingError && 'border-danger'
+                }`}
                 key={componentName}
-                customComponent={getPreview}
-                forceUpdate={forceUpdate}
-                optionalProps={{ styles: { height: 300 }, cls: className }}
-                darkMode={darkMode}
-                selectors={{ className: 'preview-block-portal' }}
-                dragResizePortal={true}
+                style={{
+                  height: height || 'auto',
+                  minHeight,
+                  maxHeight: '320px',
+                  overflow: 'auto',
+                  fontSize: ' .875rem',
+                }}
+                data-cy={`${cyLabel}-input-field`}
               >
-                <CodeMirror
-                  value={typeof initialValue === 'string' ? initialValue : ''}
-                  realState={realState}
-                  scrollbarStyle={null}
-                  height={'100%'}
-                  onFocus={() => setFocused(true)}
-                  onBlur={(editor, e) => {
-                    e.stopPropagation();
-                    const value = editor.getValue()?.trimEnd();
-                    onChange(value);
-                    if (!isPreviewFocused.current) {
-                      setFocused(false);
-                    }
-                  }}
-                  onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
-                  onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
-                  options={options}
-                  viewportMargin={Infinity}
-                />
-              </CodeHinter.Portal>
+                {usePortalEditor && (
+                  <CodeHinter.PopupIcon
+                    callback={handleToggle}
+                    icon="portal-open"
+                    tip="Pop out code editor into a new window"
+                    transformation={componentName === 'transformation'}
+                  />
+                )}
+                <CodeHinter.Portal
+                  isCopilotEnabled={isCopilotEnabled}
+                  isOpen={isOpen}
+                  callback={setIsOpen}
+                  componentName={componentName}
+                  key={componentName}
+                  customComponent={getPreview}
+                  forceUpdate={forceUpdate}
+                  optionalProps={{ styles: { height: 300 }, cls: className }}
+                  darkMode={darkMode}
+                  selectors={{ className: 'preview-block-portal' }}
+                  dragResizePortal={true}
+                  callgpt={callgpt}
+                >
+                  <CodeMirror
+                    value={typeof initialValue === 'string' ? initialValue : ''}
+                    realState={realState}
+                    scrollbarStyle={null}
+                    height={'100%'}
+                    onFocus={() => setFocused(true)}
+                    onBlur={(editor, e) => {
+                      e?.stopPropagation();
+                      const value = editor?.getValue()?.trimEnd();
+                      onChange(value);
+                      if (!isPreviewFocused?.current) {
+                        setFocused(false);
+                      }
+                    }}
+                    onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
+                    onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+                    options={options}
+                    viewportMargin={Infinity}
+                  />
+                </CodeHinter.Portal>
+              </div>
+              {enablePreview && !isOpen && getPreview()}
             </div>
-            {enablePreview && !isOpen && getPreview()}
           </div>
         </div>
       </div>
-      {!codeShow && (
-        <div style={{ display: !codeShow ? 'block' : 'none' }}>
-          <ElementToRender
-            value={resolveReferences(initialValue, realState)}
-            onChange={(value) => {
-              if (value !== currentValue) {
-                onChange(value);
-                setCurrentValue(value);
-              }
-            }}
-            paramName={paramName}
-            paramLabel={paramLabel}
-            forceCodeBox={() => {
-              setForceCodeBox(true);
-              onFxPress(true);
-            }}
-            meta={fieldMeta}
-            cyLabel={cyLabel}
-          />
-        </div>
-      )}
     </div>
   );
 }
 
-const PopupIcon = ({ callback, icon, tip }) => {
+// eslint-disable-next-line no-unused-vars
+function CodeHinterInputField() {
+  return <></>;
+}
+
+const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
+  const size = transformation ? 20 : 12;
+
   return (
-    <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
+    <div className="d-flex justify-content-end w-100 position-absolute" style={{ top: 0 }}>
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"
@@ -394,8 +533,8 @@ const PopupIcon = ({ callback, icon, tip }) => {
         <img
           className="svg-icon m-2 popup-btn"
           src={`assets/images/icons/${icon}.svg`}
-          width="12"
-          height="12"
+          width={size}
+          height={size}
           onClick={(e) => {
             e.stopPropagation();
             callback();
@@ -412,5 +551,22 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
+const DepericatedAlertForWorkspaceVariable = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-warning"
+      cls="codehinter workspace-variables-alert-banner p-1 mb-0"
+      data-cy={``}
+      imgHeight={18}
+      imgWidth={18}
+    >
+      <div className="d-flex align-items-center">
+        <div class="">{text}</div>
+      </div>
+    </Alert>
+  );
+};
+
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;
+CodeHinter.DepericatedAlertForWorkspaceVariable = DepericatedAlertForWorkspaceVariable;

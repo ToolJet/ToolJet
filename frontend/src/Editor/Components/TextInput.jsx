@@ -6,8 +6,8 @@ export const TextInput = function TextInput({
   properties,
   styles,
   setExposedVariable,
+  setExposedVariables,
   fireEvent,
-  registerAction,
   component,
   darkMode,
   dataCy,
@@ -18,6 +18,7 @@ export const TextInput = function TextInput({
   const [value, setValue] = useState(properties.value);
   const [visibility, setVisibility] = useState(styles.visibility);
   const { isValid, validationError } = validate(value);
+  const [showValidationError, setShowValidationError] = useState(false);
 
   const computedStyles = {
     height,
@@ -25,6 +26,7 @@ export const TextInput = function TextInput({
     color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
     borderColor: styles.borderColor,
     backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
+    boxShadow: styles.boxShadow,
   };
 
   useEffect(() => {
@@ -48,34 +50,40 @@ export const TextInput = function TextInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
-  registerAction('setFocus', async function () {
-    textInputRef.current.focus();
-  });
-  registerAction('setBlur', async function () {
-    textInputRef.current.blur();
-  });
-  registerAction('disable', async function (value) {
-    setDisable(value);
-  });
-  registerAction('visibility', async function (value) {
-    setVisibility(value);
-  });
-  registerAction(
-    'setText',
-    async function (text) {
-      setValue(text);
-      setExposedVariable('value', text).then(fireEvent('onChange'));
-    },
-    [setValue]
-  );
-  registerAction(
-    'clear',
-    async function () {
-      setValue('');
-      setExposedVariable('value', '').then(fireEvent('onChange'));
-    },
-    [setValue]
-  );
+  useEffect(() => {
+    const exposedVariables = {
+      setFocus: async function () {
+        textInputRef.current.focus();
+      },
+      setBlur: async function () {
+        textInputRef.current.blur();
+      },
+      disable: async function (value) {
+        setDisable(value);
+      },
+      visibility: async function (value) {
+        setVisibility(value);
+      },
+    };
+    setExposedVariables(exposedVariables);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const exposedVariables = {
+      setText: async function (text) {
+        setValue(text);
+        setExposedVariable('value', text).then(fireEvent('onChange'));
+      },
+      clear: async function () {
+        setValue('');
+        setExposedVariable('value', '').then(fireEvent('onChange'));
+      },
+    };
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setValue]);
 
   return (
     <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
@@ -84,9 +92,8 @@ export const TextInput = function TextInput({
         onKeyUp={(e) => {
           if (e.key == 'Enter') {
             setValue(e.target.value);
-            setExposedVariable('value', e.target.value).then(() => {
-              fireEvent('onEnterPressed');
-            });
+            setExposedVariable('value', e.target.value);
+            fireEvent('onEnterPressed');
           }
         }}
         onChange={(e) => {
@@ -95,6 +102,7 @@ export const TextInput = function TextInput({
           fireEvent('onChange');
         }}
         onBlur={(e) => {
+          setShowValidationError(true);
           e.stopPropagation();
           fireEvent('onBlur');
         }}
@@ -116,7 +124,7 @@ export const TextInput = function TextInput({
         data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
         style={{ color: styles.errTextColor }}
       >
-        {validationError}
+        {showValidationError && validationError}
       </div>
     </div>
   );

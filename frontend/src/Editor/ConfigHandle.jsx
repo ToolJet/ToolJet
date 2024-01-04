@@ -12,6 +12,7 @@ export const ConfigHandle = function ConfigHandle({
   setSelectedComponent = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
   customClassName = '',
   configWidgetHandlerForModalComponent = false,
+  isVersionReleased,
 }) {
   return (
     <div
@@ -31,7 +32,6 @@ export const ConfigHandle = function ConfigHandle({
           style={{ display: 'flex', alignItems: 'center' }}
           onClick={(e) => {
             e.preventDefault();
-            e.stopPropagation();
             setSelectedComponent(id, component, e.shiftKey);
           }}
           role="button"
@@ -46,7 +46,7 @@ export const ConfigHandle = function ConfigHandle({
           />
           <span>{component.name}</span>
         </div>
-        {!isMultipleComponentsSelected && (
+        {!isMultipleComponentsSelected && !isVersionReleased && (
           <div className="delete-part">
             <img
               style={{ cursor: 'pointer', marginLeft: '5px' }}
@@ -55,8 +55,9 @@ export const ConfigHandle = function ConfigHandle({
               role="button"
               height="12"
               draggable="false"
-              onClick={() => removeComponent({ id })}
+              onClick={() => removeComponent(id)}
               data-cy={`${component.name.toLowerCase()}-delete-button`}
+              className="delete-icon"
             />
           </div>
         )}

@@ -3,5 +3,5 @@ import { App } from 'src/entities/app.entity';
 
 export const AppDecorator = createParamDecorator((data: unknown, ctx: ExecutionContext): App => {
   const request = ctx.switchToHttp().getRequest();
-  return request.app;
+  return request.tj_app;
 });

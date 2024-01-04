@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
 
 export const Tabs = function Tabs({
   id,
@@ -12,19 +12,19 @@ export const Tabs = function Tabs({
   currentState,
   removeComponent,
   setExposedVariable,
+  setExposedVariables,
   fireEvent,
-  registerAction,
   styles,
   darkMode,
   dataCy,
 }) {
-  const { tabWidth } = styles;
+  const { tabWidth, boxShadow } = styles;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
   // config for tabs. Includes title
-  const tabs = component.definition.properties?.tabs?.value ?? [];
+  const tabs = isExpectedDataType(resolveReferences(component.definition.properties.tabs.value, currentState), 'array');
   let parsedTabs = tabs;
   parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
   const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
@@ -71,11 +71,6 @@ export const Tabs = function Tabs({
   }, [parsedDefaultTab]);
 
   useEffect(() => {
-    setExposedVariable('currentTab', currentTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab]);
-
-  useEffect(() => {
     const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,16 +92,21 @@ export const Tabs = function Tabs({
     return id === currentTab ? 'visible' : 'hidden';
   }
 
-  registerAction(
-    'setTab',
-    async function (id) {
-      if (id) {
-        setCurrentTab(id);
-        setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
-      }
-    },
-    [setCurrentTab]
-  );
+  useEffect(() => {
+    const exposedVariables = {
+      setTab: async function (id) {
+        if (id) {
+          setCurrentTab(id);
+          setExposedVariable('currentTab', id);
+          fireEvent('onTabSwitch');
+        }
+      },
+      currentTab: currentTab,
+    };
+    setExposedVariables(exposedVariables);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setCurrentTab, currentTab]);
 
   const renderTabContent = (id, tab) => (
     <div
@@ -134,7 +134,7 @@ export const Tabs = function Tabs({
     <div
       data-disabled={parsedDisabledState}
       className="jet-tabs card"
-      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor }}
+      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
       data-cy={dataCy}
     >
       <ul
@@ -153,7 +153,8 @@ export const Tabs = function Tabs({
             style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
               !tab?.disabled && setCurrentTab(tab.id);
-              !tab?.disabled && setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+              !tab?.disabled && setExposedVariable('currentTab', tab.id);
+              fireEvent('onTabSwitch');
             }}
             key={tab.id}
           >

@@ -2,10 +2,9 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
-import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { validateEmail } from '../_helpers/utils';
+import { validateEmail } from '@/_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -14,7 +13,10 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
+import { withRouter } from '@/_hoc/withRouter';
+import { pathnameToArray, getSubpath, getRedirectURL, redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
+
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -24,42 +26,78 @@ class LoginPageComponent extends React.Component {
       isGettingConfigs: true,
       configs: undefined,
       emailError: false,
+      current_organization_name: null,
     };
-    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-    this.organizationId = props.match.params.organizationId;
+    this.organizationId = props.params.organizationId;
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
 
   componentDidMount() {
-    this.setRedirectUrlToCookie();
+    /* remove login oranization's id and slug from the cookie */
     authenticationService.deleteLoginOrganizationId();
-    if (
-      (!this.organizationId && authenticationService.currentUserValue) ||
-      (this.organizationId && authenticationService?.currentUserValue?.organization_id === this.organizationId)
-    ) {
-      // redirect to home if already logged in
-      // set redirect path for sso login
-      const redirectPath = this.eraseRedirectUrl();
-      return this.props.history.push(redirectPath ? redirectPath : '/');
-    }
-    if (this.organizationId || this.single_organization)
-      authenticationService.saveLoginOrganizationId(this.organizationId);
+    authenticationService.deleteLoginOrganizationSlug();
 
-    authenticationService.getOrganizationConfigs(this.organizationId).then(
+    this.organizationSlug = this.organizationId;
+    this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
+      if (newSession?.current_organization_name)
+        this.setState({ current_organization_name: newSession.current_organization_name });
+      if (newSession?.group_permissions || newSession?.id) {
+        if (
+          (!this.organizationId && newSession?.current_organization_id) ||
+          (!this.state.isGettingConfigs &&
+            this.organizationId &&
+            newSession?.current_organization_id === this.organizationId)
+        ) {
+          // redirect to home if already logged in
+          // set redirect path for sso/form login
+          let redirectPath = '';
+          if (this.state.formLogin) {
+            const path = getRedirectURL();
+            redirectPath = path === '/confirm' ? '/' : path;
+          } else {
+            const path = this.eraseRedirectUrl();
+            redirectPath = getRedirectURL(path);
+          }
+          window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+        }
+      }
+    });
+
+    authenticationService.getOrganizationConfigs(this.organizationSlug).then(
       (configs) => {
-        this.setState({ isGettingConfigs: false, configs });
+        this.organizationId = configs.id;
+        this.setState({
+          isGettingConfigs: false,
+          configs,
+        });
       },
       (response) => {
-        if (response.data.statusCode !== 404) {
-          return this.props.history.push({
+        if (response.data.statusCode !== 404 && response.data.statusCode !== 422) {
+          return this.props.navigate({
             pathname: '/',
             state: { errorMessage: 'Error while login, please try again' },
           });
         }
+
         // If there is no organization found for single organization setup
         // show form to sign up
         // redirected here for self hosted version
-        this.props.history.push('/setup');
+        response.data.statusCode !== 422 && !this.organizationSlug && this.props.navigate('/setup');
+
+        // if wrong workspace id then show workspace-switching page
+        if (response.data.statusCode === 422 || (response.data.statusCode === 404 && this.organizationSlug)) {
+          authenticationService
+            .validateSession()
+            .then(({ current_organization_id }) => {
+              authenticationService.updateCurrentSession({
+                current_organization_id,
+              });
+              this.props.history.push('/switch-workspace');
+            })
+            .catch(() => {
+              if (pathnameToArray()[0] !== 'login') window.location = '/login';
+            });
+        }
 
         this.setState({
           isGettingConfigs: false,
@@ -80,6 +118,10 @@ class LoginPageComponent extends React.Component {
       });
   }
 
+  componentWillUnmount() {
+    this.currentSessionObservable && this.currentSessionObservable.unsubscribe();
+  }
+
   eraseRedirectUrl() {
     const redirectPath = getCookie('redirectPath');
     redirectPath && eraseCookie('redirectPath');
@@ -95,15 +137,33 @@ class LoginPageComponent extends React.Component {
   };
 
   setRedirectUrlToCookie() {
-    const params = new URL(location.href).searchParams;
-    const redirectPath = params.get('redirectTo');
-    redirectPath && setCookie('redirectPath', redirectPath);
+    // Page is loaded inside an iframe
+    const iframe = window !== window.top;
+    const redirectPath = getRedirectTo(
+      iframe ? new URL(window.location.href).searchParams : new URL(location.href).searchParams
+    );
+
+    if (iframe) {
+      window.parent.postMessage(
+        {
+          type: 'redirectTo',
+          payload: {
+            redirectPath: redirectPath,
+          },
+        },
+        '*'
+      );
+    }
+
+    authenticationService.saveLoginOrganizationId(this.organizationId);
+    authenticationService.saveLoginOrganizationSlug(this.organizationSlug);
+    redirectPath && setCookie('redirectPath', redirectPath, iframe);
   }
 
   authUser = (e) => {
     e.preventDefault();
 
-    this.setState({ isLoading: true });
+    this.setState({ isLoading: true, formLogin: true });
 
     const { email, password } = this.state;
 
@@ -126,12 +186,8 @@ class LoginPageComponent extends React.Component {
       .then(this.authSuccessHandler, this.authFailureHandler);
   };
 
+  //TODO: remove this code if we don't need
   authSuccessHandler = () => {
-    authenticationService.deleteLoginOrganizationId();
-    const params = queryString.parse(this.props.location.search);
-    const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-    const redirectPath = from.pathname === '/confirm' ? '/' : from;
-    this.props.history.push(redirectPath);
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();
   };
@@ -161,6 +217,16 @@ class LoginPageComponent extends React.Component {
                 {isGettingConfigs ? (
                   <div className="loader-wrapper">
                     <ShowLoading />
+                  </div>
+                ) : /* If the configs don't have any organization id. that means the workspace slug is invalid */
+                this.organizationSlug && !configs?.id ? (
+                  <div className="text-center-onboard">
+                    <h2 data-cy="no-workspace">
+                      {this.props.t(
+                        'loginSignupPage.workspaceDoesntExist',
+                        'Workspace does not exist. Please check the workspace login url again'
+                      )}
+                    </h2>
                   </div>
                 ) : (
                   <div className="common-auth-container-wrapper ">
@@ -209,7 +275,12 @@ class LoginPageComponent extends React.Component {
                       )}
                       {this.state?.configs?.git?.enabled && (
                         <div className="login-sso-wrapper">
-                          <GitSSOLoginButton configs={this.state?.configs?.git?.configs} />
+                          <GitSSOLoginButton
+                            configs={this.state?.configs?.git?.configs}
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
+                          />
                         </div>
                       )}
                       {this.state?.configs?.google?.enabled && (
@@ -217,6 +288,9 @@ class LoginPageComponent extends React.Component {
                           <GoogleSSOLoginButton
                             configs={this.state?.configs?.google?.configs}
                             configId={this.state?.configs?.google?.config_id}
+                            setRedirectUrlToCookie={() => {
+                              this.setRedirectUrlToCookie();
+                            }}
                           />
                         </div>
                       )}
@@ -345,14 +419,15 @@ class LoginPageComponent extends React.Component {
                           )}
                         </ButtonSolid>
                       )}
-                      {authenticationService?.currentUserValue?.organization && this.organizationId && (
+                      {this.state.current_organization_name && this.organizationId && (
                         <div
                           className="text-center-onboard mt-3"
-                          data-cy={`back-to-${String(authenticationService?.currentUserValue?.organization)
+                          data-cy={`back-to-${String(this.state.current_organization_name)
                             .toLowerCase()
                             .replace(/\s+/g, '-')}`}
                         >
-                          back to&nbsp; <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
+                          back to&nbsp;{' '}
+                          <Link onClick={() => redirectToDashboard()}>{this.state.current_organization_name}</Link>
                         </div>
                       )}
                     </div>
@@ -367,4 +442,4 @@ class LoginPageComponent extends React.Component {
   }
 }
 
-export const LoginPage = withTranslation()(LoginPageComponent);
+export const LoginPage = withTranslation()(withRouter(LoginPageComponent));

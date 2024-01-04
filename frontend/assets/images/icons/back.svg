@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrow-narrow-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" fill="#61656F" stroke-linecap="round" stroke-linejoin="round">
    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-   <line x1="5" y1="12" x2="19" y2="12"></line>
-   <line x1="5" y1="12" x2="9" y2="16"></line>
-   <line x1="5" y1="12" x2="9" y2="8"></line>
+   <line x1="5" y1="12" x2="19" y2="12" stroke="#61656F"></line>
+   <line x1="5" y1="12" x2="9" y2="16" stroke="#61656F"></line>
+   <line x1="5" y1="12" x2="9" y2="8" stroke="#61656F"></line>
 </svg>

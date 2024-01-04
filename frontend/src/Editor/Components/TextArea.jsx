@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from 'react';
 
-export const TextArea = function TextArea({ height, properties, styles, setExposedVariable, registerAction, dataCy }) {
+export const TextArea = function TextArea({
+  height,
+  properties,
+  styles,
+  setExposedVariable,
+  setExposedVariables,
+  dataCy,
+}) {
   const [value, setValue] = useState(properties.value);
+
   useEffect(() => {
     setValue(properties.value);
-    setExposedVariable('value', properties.value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value]);
+    const exposedVariables = {
+      value: properties.value,
+      setText: async function (text) {
+        setValue(text);
+        setExposedVariable('value', text);
+      },
+      clear: async function (text) {
+        setValue('');
+        setExposedVariable('value', '');
+      },
+    };
+    setExposedVariables(exposedVariables);
 
-  registerAction(
-    'setText',
-    async function (text) {
-      setValue(text);
-      setExposedVariable('value', text);
-    },
-    [setValue]
-  );
-  registerAction(
-    'clear',
-    async function () {
-      setValue('');
-      setExposedVariable('value', '');
-    },
-    [setValue]
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.value, setValue]);
+
   return (
     <textarea
       disabled={styles.disabledState}
@@ -39,6 +43,7 @@ export const TextArea = function TextArea({ height, properties, styles, setExpos
         resize: 'none',
         display: styles.visibility ? '' : 'none',
         borderRadius: `${styles.borderRadius}px`,
+        boxShadow: styles.boxShadow,
       }}
       value={value}
       data-cy={dataCy}

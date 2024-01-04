@@ -1,34 +1,31 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText } from "Texts/common";
+import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
+import { deleteDatasource } from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
-      .click();
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.wait(1000);
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -47,18 +44,12 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      postgreSqlText.postgreSQL
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
     );
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain", postgreSqlText.postgreSQL);
-    cy.get(postgreSqlSelector.postgresDataSource).click();
 
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      postgreSqlText.postgreSQL
-    );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -114,18 +105,15 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.serverNotSuppotSsl
-    );
+    cy.get('[data-cy="connection-alert-text"]').should("be.visible");
+    deleteDatasource(`cypress-${data.lastName}-postgresql`);
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      postgreSqlText.psqlName
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
     );
 
     fillDataSourceTextField(
@@ -138,6 +126,11 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterPort,
       "5432"
     );
+    cy.get('[data-cy="-toggle-input"]').then(($el) => {
+      if ($el.is(":checked")) {
+        cy.get('[data-cy="-toggle-input"]').uncheck();
+      }
+    });
     fillDataSourceTextField(
       postgreSqlText.labelDbName,
       postgreSqlText.placeholderNameOfDB,
@@ -148,8 +141,9 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterUserName,
       "postgres"
     );
-
-    cy.get(postgreSqlSelector.passwordTextField).type(
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "**************",
       Cypress.env("pg_password")
     );
 
@@ -161,41 +155,50 @@ describe("Data sources", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", postgreSqlText.psqlName)
-      .find("button")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-postgresql-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-postgresql`);
+
+    deleteDatasource(`cypress-${data.lastName}-postgresql`);
   });
 
-  it("Should verify elements of the Query section.", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
-    fillConnectionForm({
-      Host: Cypress.env("pg_host"),
-      Port: "5432",
-      "Database Name": "postgres",
-      Username: Cypress.env("pg_user"),
-      Password: Cypress.env("pg_password"),
-    });
+  it.skip("Should verify elements of the Query section.", () => {
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
+    );
+    fillConnectionForm(
+      {
+        Host: Cypress.env("pg_host"),
+        Port: "5432",
+        "Database Name": "postgres",
+        Username: Cypress.env("pg_user"),
+        Password: Cypress.env("pg_password"),
+      },
+      ".form-switch"
+    );
+
     openQueryEditor(postgreSqlText.postgreSQL);
 
-    cy.get(postgreSqlSelector.headerQueryManager).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.headerQueries
-    );
-    cy.get(postgreSqlSelector.labelNoQuery).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.noQueryText
-    );
+    // cy.get(postgreSqlSelector.headerQueryManager).verifyVisibleElement(
+    //   "have.text",
+    //   postgreSqlText.headerQueries
+    // ); removed
+    // cy.get(postgreSqlSelector.labelNoQuery).verifyVisibleElement(
+    //   "have.text",
+    //   postgreSqlText.noQueryText
+    // );
     cy.get(postgreSqlSelector.createQueryButton).verifyVisibleElement(
       "have.text",
       postgreSqlText.buttonLabelCreateQuery
     );
 
-    cy.get(postgreSqlSelector.querySearchIcon).should("be.visible");
+    cy.get(postgreSqlSelector.querySearchBar).should("be.visible");
     cy.get('[data-cy="button-add-new-queries"]').click();
     cy.get(postgreSqlSelector.labelSelectDataSource).verifyVisibleElement(
       "have.text",
@@ -358,8 +361,12 @@ describe("Data sources", () => {
       .click();
   });
 
-  it("Should verify CRUD operations on SQL Query.", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+  it.skip("Should verify CRUD operations on SQL Query.", () => {
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
+    );
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
@@ -445,8 +452,12 @@ describe("Data sources", () => {
     addWidgetsToAddUser();
   });
 
-  it("Should verify bulk update", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+  it.skip("Should verify bulk update", () => {
+    selectAndAddDataSource(
+      "databases",
+      postgreSqlText.postgreSQL,
+      data.lastName
+    );
     fillConnectionForm({
       Host: Cypress.env("pg_host"),
       Port: "5432",

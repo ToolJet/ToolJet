@@ -7,7 +7,10 @@ import { debounce } from 'lodash';
 import Fuse from 'fuse.js';
 import { useTranslation } from 'react-i18next';
 
-export function CodeBuilder({ initialValue, onChange, components, dataQueries }) {
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+
+export function CodeBuilder({ initialValue, onChange, components }) {
+  const dataQueries = useDataQueries();
   const [showDropdown, setShowDropdown] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const [currentValue, setCurrentValue] = useState(initialValue);

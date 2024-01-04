@@ -52,5 +52,5 @@ ToolJet allows you to internally utilize these libraries:
 | Axios       | [https://axios-http.com/docs/intro](https://axios-http.com/docs/intro) |
 
 :::info
-Issues with writing custom JavaScript code? Ask in our [Slack community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg).
+Issues with writing custom JavaScript code? Ask in our [Slack Community](https://tooljet.com/slack).
 :::

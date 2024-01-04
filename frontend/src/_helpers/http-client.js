@@ -2,6 +2,7 @@ import config from 'config';
 import { authenticationService } from '@/_services';
 import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
+import { handleUnSubscription } from '@/_helpers/utils';
 
 const HttpVerb = {
   Get: 'GET',
@@ -33,15 +34,27 @@ class HttpClient {
     const endpoint = urlJoin(this.host, this.namespace, url);
     const options = {
       method,
-      headers: this.headers,
+      headers: { ...this.headers },
+      credentials: 'include',
     };
-    const user = JSON.parse(localStorage.getItem('currentUser')) || {};
-    if (user?.auth_token) {
-      options.headers['Authorization'] = `Bearer ${user?.auth_token}`;
+    let session = authenticationService.currentSessionValue;
+
+    let subsciption;
+    if (!subsciption || (subsciption?.isClosed && subsciption?.isStopped)) {
+      subsciption = authenticationService.currentSession.subscribe((newSession) => {
+        session = newSession;
+      });
+      handleUnSubscription(subsciption);
     }
+
+    options.headers['tj-workspace-id'] = session?.current_organization_id;
+
     if (data) {
-      options.body = JSON.stringify(data);
+      // fetch library generates content type with boundary for form data
+      data instanceof FormData && delete options.headers['content-type'];
+      options.body = data instanceof FormData ? data : JSON.stringify(data);
     }
+
     const response = await fetch(endpoint, options);
     const payload = {
       status: response.status,
@@ -55,7 +68,7 @@ class HttpClient {
         // TODO: add 403 to the below [401] array?
         if ([401].indexOf(response.status) !== -1) {
           // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-          authenticationService.logout();
+          location.reload();
         }
 
         throw payload;

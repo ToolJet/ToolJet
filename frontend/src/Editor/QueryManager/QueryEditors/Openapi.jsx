@@ -149,7 +149,11 @@ class OpenapiComponent extends React.Component {
       return servers.map((url) => {
         return url.url;
       });
-    } else if (path && this.state.spec.paths[path]['servers'] && this.state.spec?.paths[path]['servers'].length > 0) {
+    } else if (
+      path &&
+      this.state.spec.paths[path]?.['servers'] &&
+      this.state.spec.paths[path]?.['servers'].length > 0
+    ) {
       const servers = this.state.spec.paths[path]['servers'];
       return servers.map((url) => {
         return url.url;
@@ -167,7 +171,7 @@ class OpenapiComponent extends React.Component {
     const path = this.state.options.path;
 
     if (operation.parameters) {
-      if (this.state.spec.paths[path]['parameters']) {
+      if (this.state.spec.paths[path]?.['parameters']) {
         const generalParams = this.state.spec.paths[path]['parameters'].filter((param) => param.in === paramType);
         const operationParams = operation.parameters.filter((param) => param.in === paramType);
         const result = generalParams.concat(operationParams).filter(function (o) {
@@ -176,7 +180,7 @@ class OpenapiComponent extends React.Component {
         return result;
       }
       return operation.parameters.filter((param) => param.in === paramType);
-    } else if (this.state.spec.paths[path]['parameters'])
+    } else if (this.state.spec.paths[path]?.['parameters'])
       return this.state.spec.paths[path]['parameters'].filter((param) => param.in === paramType);
     else return [];
   }
@@ -208,9 +212,9 @@ class OpenapiComponent extends React.Component {
       queryParams = this.resolveParameters('query');
       headerParams = this.resolveParameters('header');
 
-      if (selectedOperation.request_body) {
-        const requestType = Object.keys(selectedOperation.request_body.content)[0];
-        requestBody = selectedOperation.request_body.content[requestType];
+      if (selectedOperation.requestBody) {
+        const requestType = Object.keys(selectedOperation.requestBody.content)[0];
+        requestBody = selectedOperation.requestBody.content[requestType];
       }
     }
 
@@ -285,7 +289,6 @@ class OpenapiComponent extends React.Component {
                         </div>
                         <div className="col field overflow-hidden">
                           <CodeHinter
-                            currentState={this.props.currentState}
                             initialValue={this.state.options.params.path[param.name]}
                             mode="text"
                             placeholder={'Value'}
@@ -334,7 +337,6 @@ class OpenapiComponent extends React.Component {
                         </div>
                         <div className="col field overflow-hidden">
                           <CodeHinter
-                            currentState={this.props.currentState}
                             initialValue={this.state.options.params.path[param.name]}
                             mode="text"
                             placeholder={'Value'}
@@ -383,7 +385,6 @@ class OpenapiComponent extends React.Component {
                         </div>
                         <div className="col field overflow-hidden">
                           <CodeHinter
-                            currentState={this.props.currentState}
                             initialValue={this.state.options.params?.query[param.name] ?? ''}
                             mode="text"
                             placeholder={'Value'}
@@ -436,7 +437,6 @@ class OpenapiComponent extends React.Component {
                         </div>
                         <div className="col field overflow-hiddel">
                           <CodeHinter
-                            currentState={this.props.currentState}
                             initialValue={this.state.options.params?.request[param] ?? ''}
                             mode="text"
                             placeholder={'Value'}

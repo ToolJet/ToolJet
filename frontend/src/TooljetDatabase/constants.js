@@ -1,6 +1,7 @@
 export const dataTypes = [
   { value: 'character varying', label: 'varchar' },
   { value: 'integer', label: 'int' },
+  { value: 'bigint', label: 'bigint' },
   { value: 'double precision', label: 'float' },
   { value: 'boolean', label: 'boolean' },
 ];
@@ -19,4 +20,5 @@ export const operators = [
   { value: 'match', label: 'match' },
   { value: 'imatch', label: 'imatch' },
   { value: 'in', label: 'in' },
+  { value: 'is', label: 'is' },
 ];

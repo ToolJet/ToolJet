@@ -4,6 +4,7 @@ import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
 import i18next from 'i18next';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -66,6 +67,11 @@ export const baseComponentProperties = (
     General: ['Modal'],
     Layout: [],
   };
+  if (component.component.component === 'Listview') {
+    if (!resolveReferences(component.component.definition.properties?.enablePagination?.value, currentState)) {
+      properties = properties.filter((property) => property !== 'rowsPerPage');
+    }
+  }
   let items = [];
   if (properties.length > 0) {
     items.push({
@@ -92,8 +98,9 @@ export const baseComponentProperties = (
       isOpen: true,
       children: (
         <EventManager
-          component={component}
-          componentMeta={componentMeta}
+          sourceId={component?.id}
+          eventSourceType="component"
+          eventMetaDefinition={componentMeta}
           currentState={currentState}
           dataQueries={dataQueries}
           components={allComponents}
@@ -101,6 +108,7 @@ export const baseComponentProperties = (
           apps={apps}
           darkMode={darkMode}
           pages={pages}
+          component={component}
         />
       ),
     });

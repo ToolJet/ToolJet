@@ -8,7 +8,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
     }),
     control: (provided, state) => ({
       ...provided,
-      border: state.isDisabled && darkMode ? 'none' : styles.border ?? '1px solid hsl(0, 0%, 80%)',
+      border: state.isDisabled && darkMode ? 'none' : styles.border ?? '1px solid var(--slate7)',
       boxShadow: 'none',
       '&:hover': {
         backgroundColor: darkMode ? '' : '#F8F9FA',
@@ -29,6 +29,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
     }),
     valueContainer: (provided, state) => ({
       ...provided,
+      display: 'flex',
       height: height,
       marginBottom: '4px',
     }),

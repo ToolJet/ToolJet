@@ -1,9 +1,23 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import MenuIcon from '@assets/images/icons/3dots-menu.svg';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
+export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, isViewerNavigationDisabled }) => {
+  const { isVersionReleased, enableReleasedVersionPopupState } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+    }),
+    shallow
+  );
+
   const onChange = () => {
+    if (isVersionReleased) {
+      enableReleasedVersionPopupState();
+      return;
+    }
     showHideViewerNavigationControls();
   };
 
@@ -13,22 +27,24 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
       placement={'bottom-end'}
       rootClose={true}
       overlay={
-        <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'popover-dark-themed'}`}>
-          <Popover.Content bsPrefix="popover-body">
+        <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'dark-theme'}`}>
+          <Popover.Body bsPrefix="popover-body">
             <div className="card-body">
               <label htmlFor="pin" className="form-label" data-cy={`page-settings-header`}>
                 Settings
               </label>
               <hr style={{ margin: '0.75rem 0' }} />
               <div className="menu-options mb-0">
-                <Toggle onChange={onChange} value={!showPageViwerPageNavitation} />
+                <Toggle onChange={onChange} value={isViewerNavigationDisabled} />
               </div>
             </div>
-          </Popover.Content>
+          </Popover.Body>
         </Popover>
       }
     >
-      <MenuIcon width="10" height="16" data-cy={'menu-icon'} />
+      <span>
+        <SolidIcon data-cy={'menu-icon'} name="morevertical" width="28" />
+      </span>
     </OverlayTrigger>
   );
 };

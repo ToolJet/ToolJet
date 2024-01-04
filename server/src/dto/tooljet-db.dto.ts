@@ -49,7 +49,7 @@ export class MatchTypeConstraint implements ValidatorConstraintInterface {
       return typeof value === 'string';
     }
 
-    if (relatedType === 'integer' || relatedType === 'double precision') {
+    if (relatedType === 'integer' || relatedType === 'bigint' || relatedType === 'double precision') {
       const isInt = Number.isInteger(value);
       const isFloat = !Number.isInteger(value) && !isNaN(value);
       return isInt || isFloat;
@@ -68,7 +68,14 @@ export class SQLInjectionValidator implements ValidatorConstraintInterface {
   validate(value: any) {
     // Todo: add validations to overcome for SQL Injection
     const sql_meta = new RegExp('^[a-zA-Z0-9_ .]*$', 'i');
+    // . and @ are allowed in email
+    const allowedSpecialChars = new RegExp('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$', 'i');
+
     if (sql_meta.test(value)) {
+      return true;
+    }
+
+    if (allowedSpecialChars.test(value)) {
       return true;
     }
 
@@ -133,7 +140,7 @@ export class PostgrestTableColumnDto {
   @Transform(({ value }) => sanitizeInput(value))
   @IsOptional()
   @Validate(SQLInjectionValidator)
-  constraint: string;
+  constraint_type: string;
 
   @IsOptional()
   @Transform(({ value, obj }) => {
@@ -143,8 +150,8 @@ export class PostgrestTableColumnDto {
   @Match('data_type', {
     message: 'Default value must match the data type',
   })
-  @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters' })
-  default: string | number | boolean;
+  @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
+  column_default: string | number | boolean;
 }
 
 export class RenamePostgrestTableDto {

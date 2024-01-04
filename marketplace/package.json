@@ -6,8 +6,28 @@
   ],
   "version": "1.0.0",
   "devDependencies": {
-    "aws-sdk": "^2.1185.0",
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "aws-sdk": "^2.1326.0",
+    "eslint": "^8.37.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-jest": "^27.2.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "lerna": "^6.4.1",
     "mime-types": "^2.1.35",
-    "recursive-readdir": "^2.2.2"
+    "prettier": "^2.8.7",
+    "recursive-readdir": "^2.2.3",
+    "ts-jest": "^29.0.5"
+  },
+  "peerDependencies": {
+    "typescript": "^4.9.5"
+  },
+  "scripts": {
+    "start:watch": "lerna run watch --stream --parallel",
+    "build": "npm run build --workspaces",
+    "start:dev": "npm run build && npm run start:watch",
+    "lint": "eslint .  '**/*.ts'",
+    "format": "eslint . --fix '**/*.ts'"
   }
 }

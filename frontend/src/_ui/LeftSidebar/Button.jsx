@@ -17,8 +17,8 @@ const Button = ({
   disabled = false,
   isLoading = false,
 }) => {
-  const baseHeight = size === 'sm' ? 28 : 40;
-  const baseWidth = size === 'sm' ? 92 : 150;
+  const baseHeight = size === 'sm' ? 28 : size === 'md' ? 36 : 40;
+  const baseWidth = size === 'sm' ? 92 : size === 'md' ? 100 : 150;
 
   const diabledStyles = {
     ...defaultDisabledStyles,
@@ -30,7 +30,7 @@ const Button = ({
       type="button"
       title={title}
       style={{ height: baseHeight, width: baseWidth, ...styles, ...(disabled ? diabledStyles : {}) }}
-      className={`btn base-button m-1 ${darkMode && 'dark'} ${classNames} ${isLoading && 'btn-loading'}`}
+      className={`btn base-button ${darkMode && 'dark'} ${classNames} ${isLoading && 'btn-loading'}`}
       onClick={onClick}
     >
       {!isLoading && children}
@@ -39,7 +39,7 @@ const Button = ({
 };
 
 const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) => {
-  const icon = !iconSrc ? (
+  const Icon = !iconSrc ? (
     ''
   ) : (
     <img
@@ -52,27 +52,46 @@ const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) =
         .replace(/\s+/g, '-')}-option-icon`}
     />
   );
-  const btnTitle = !title ? (
+  const BtnTitle = !title ? (
     ''
   ) : typeof title === 'function' ? (
     title()
   ) : (
-    <span data-cy={`${String(title).toLowerCase().replace(/\s+/g, '-')}-option-button`} className="mx-1">
+    <span
+      data-cy={`${String(typeof title === 'function' ? title() : title)
+        .toLowerCase()
+        .replace(/\s+/g, '-')}-option-button`}
+      className="mx-1"
+    >
       {title}
     </span>
   );
-  const content = direction === 'left' ? [icon, btnTitle] : [btnTitle, icon];
+
+  const content =
+    direction === 'left' ? (
+      <>
+        {Icon}
+        {BtnTitle}
+      </>
+    ) : (
+      <>
+        {BtnTitle}
+        {Icon}
+      </>
+    );
 
   return content;
 };
 
-const UnstyledButton = ({ children, onClick, classNames = '', styles = {}, disabled = false }) => {
+const UnstyledButton = ({ children, onClick, classNames = '', styles = {}, disabled = false, darkMode = false }) => {
+  const cursorNotPointer = onClick === undefined && { cursor: 'default' };
+
   return (
     <div
       type="button"
-      style={{ ...styles, ...(disabled ? defaultDisabledStyles : {}) }}
-      className={`unstyled-button ${classNames} ${disabled && 'disabled'}`}
-      onClick={onClick}
+      style={{ ...styles, ...(disabled ? defaultDisabledStyles : {}), ...cursorNotPointer }}
+      className={`unstyled-button ${classNames} ${disabled && 'disabled'} ${darkMode && 'dark'}`}
+      onMouseDown={onClick}
     >
       {children}
     </div>

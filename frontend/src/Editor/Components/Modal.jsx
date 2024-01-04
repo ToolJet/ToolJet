@@ -8,19 +8,29 @@ var tinycolor = require('tinycolor2');
 export const Modal = function Modal({
   id,
   component,
-  height,
   containerProps,
   darkMode,
   properties,
   styles,
   exposedVariables,
   setExposedVariable,
-  registerAction,
+  setExposedVariables,
   fireEvent,
   dataCy,
+  height,
 }) {
   const [showModal, setShowModal] = useState(false);
-  const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState, useDefaultButton, triggerButtonLabel } = properties;
+
+  const {
+    closeOnClickingOutside = false,
+    hideOnEsc,
+    hideCloseButton,
+    hideTitleBar,
+    loadingState,
+    useDefaultButton,
+    triggerButtonLabel,
+    modalHeight,
+  } = properties;
   const {
     headerBackgroundColor,
     headerTextColor,
@@ -29,52 +39,102 @@ export const Modal = function Modal({
     visibility,
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
+    boxShadow,
   } = styles;
   const parentRef = useRef(null);
 
   const title = properties.title ?? '';
   const size = properties.size ?? 'lg';
 
-  registerAction(
-    'open',
-    async function () {
-      setExposedVariable('show', true);
-      setShowModal(true);
-    },
-    [setShowModal]
-  );
-  registerAction(
-    'close',
-    async function () {
-      setShowModal(false);
-      setExposedVariable('show', false);
-    },
-    [setShowModal]
-  );
-
   useEffect(() => {
-    if (exposedVariables.show !== showModal) {
-      setExposedVariable('show', showModal).then(() => fireEvent(showModal ? 'onOpen' : 'onClose'));
-    }
+    const exposedVariables = {
+      open: async function () {
+        setExposedVariable('show', true);
+        setShowModal(true);
+      },
+      close: async function () {
+        setShowModal(false);
+        setExposedVariable('show', false);
+      },
+    };
+    setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
+  }, [setShowModal]);
 
   useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
-    if (canShowModal !== showModal) {
-      setShowModal(canShowModal);
-      fireEvent(canShowModal ? 'onOpen' : 'onClose');
-    }
+    setShowModal(exposedVariables.show ?? false);
+    fireEvent(canShowModal ? 'onOpen' : 'onClose');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
+  useEffect(() => {
+    const handleModalOpen = () => {
+      const canvasElement = document.getElementsByClassName('canvas-area')[0];
+      const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
+      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+      const modalCanvasEl = document.getElementById(`canvas-${id}`);
+
+      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl) {
+        canvasElement.style.height = '100vh';
+        canvasElement.style.maxHeight = '100vh';
+        canvasElement.style.minHeight = '100vh';
+        canvasElement.style.height = '100vh';
+        modalCanvasEl.style.height = modalHeight;
+
+        realCanvasEl.style.height = '100vh';
+        realCanvasEl.style.position = 'absolute';
+
+        canvasElement?.classList?.add('freeze-scroll');
+        modalBackdropEl.style.height = '100vh';
+        modalBackdropEl.style.minHeight = '100vh';
+        modalBackdropEl.style.minHeight = '100vh';
+      }
+    };
+
+    const handleModalClose = () => {
+      const canvasElement = document.getElementsByClassName('canvas-area')[0];
+      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+      const canvasHeight = realCanvasEl?.getAttribute('canvas-height');
+
+      if (canvasElement && realCanvasEl && canvasHeight) {
+        canvasElement.style.height = '';
+        canvasElement.style.minHeight = '';
+        canvasElement.style.maxHeight = '';
+
+        realCanvasEl.style.height = canvasHeight;
+        realCanvasEl.style.position = '';
+
+        canvasElement?.classList?.remove('freeze-scroll');
+      }
+    };
+    if (showModal) {
+      handleModalOpen();
+    } else {
+      if (document.getElementsByClassName('modal-content')[0] == undefined) {
+        handleModalClose();
+      }
+    }
+
+    // Cleanup the effect
+    return () => {
+      if (document.getElementsByClassName('modal-content')[0] == undefined) {
+        handleModalClose();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal, modalHeight]);
+
   function hideModal() {
     setShowModal(false);
+    setExposedVariable('show', false);
+    fireEvent('onClose');
   }
+  const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
   const customStyles = {
     modalBody: {
-      height,
+      height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
@@ -91,11 +151,12 @@ export const Modal = function Modal({
       width: '100%',
       display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
+      boxShadow,
     },
   };
 
   useEffect(() => {
-    if (containerProps.mode === 'view') {
+    if (closeOnClickingOutside) {
       const handleClickOutside = (event) => {
         const modalRef = parentRef.current.parentElement.parentElement.parentElement;
 
@@ -109,7 +170,8 @@ export const Modal = function Modal({
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [containerProps.mode, parentRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [closeOnClickingOutside, parentRef]);
 
   return (
     <div className="container" data-disabled={disabledState} data-cy={dataCy}>
@@ -121,7 +183,9 @@ export const Modal = function Modal({
           onClick={(event) => {
             event.stopPropagation();
             setShowModal(true);
+            setExposedVariable('show', true);
           }}
+          data-cy={`${dataCy}-launch-button`}
         >
           {triggerButtonLabel ?? 'Show Modal'}
         </button>
@@ -155,7 +219,7 @@ export const Modal = function Modal({
       >
         {!loadingState ? (
           <>
-            <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
+            <SubContainer parent={id} {...containerProps} parentRef={parentRef} parentComponent={component} />
             <SubCustomDragLayer
               snapToGrid={true}
               parentRef={parentRef}
@@ -202,10 +266,21 @@ const Component = ({ children, ...restProps }) => {
         />
       )}
       {!hideTitleBar && (
-        <BootstrapModal.Header style={{ ...customStyles.modalHeader }}>
-          <BootstrapModal.Title id="contained-modal-title-vcenter">{title}</BootstrapModal.Title>
+        <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
+          <BootstrapModal.Title id="contained-modal-title-vcenter" data-cy={`modal-title`}>
+            {title}
+          </BootstrapModal.Title>
           {!hideCloseButton && (
-            <span className="cursor-pointer" size="sm" onClick={() => hideModal()}>
+            <span
+              className="cursor-pointer"
+              data-cy={`modal-close-button`}
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                hideModal();
+              }}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="icon icon-tabler icon-tabler-x"
@@ -226,7 +301,7 @@ const Component = ({ children, ...restProps }) => {
           )}
         </BootstrapModal.Header>
       )}
-      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id}>
+      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
         {children}
       </BootstrapModal.Body>
     </BootstrapModal>

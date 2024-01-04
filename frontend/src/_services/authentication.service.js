@@ -1,24 +1,46 @@
 import { BehaviorSubject } from 'rxjs';
-import { handleResponse, setCookie, getCookie, eraseCookie, handleResponseWithoutValidation } from '@/_helpers';
+import {
+  handleResponse,
+  setCookie,
+  getCookie,
+  eraseCookie,
+  handleResponseWithoutValidation,
+  authHeader,
+} from '@/_helpers';
+import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
+import queryString from 'query-string';
+import { getRedirectToWithParams } from '@/_helpers/routes';
 
-const currentUserSubject = new BehaviorSubject(JSON.parse(localStorage.getItem('currentUser')));
+const currentSessionSubject = new BehaviorSubject({
+  current_organization_id: null,
+  current_organization_name: null,
+  super_admin: null,
+  admin: null,
+  group_permissions: null,
+  app_group_permissions: null,
+  organizations: [],
+  authentication_status: null,
+  authentication_failed: null,
+  isUserUpdated: false,
+  load_app: false, //key is used only in the viewer mode
+});
 
 export const authenticationService = {
   login,
   getOrganizationConfigs,
   logout,
-  clearUser,
   signup,
   verifyToken,
   verifyOrganizationToken,
-  updateCurrentUserDetails,
   onboarding,
-  updateUser,
   setupAdmin,
-  currentUser: currentUserSubject.asObservable(),
-  get currentUserValue() {
-    return currentUserSubject.value;
+  currentSession: currentSessionSubject.asObservable(),
+  get currentSessionValue() {
+    return currentSessionSubject.value;
+  },
+  updateCurrentSession(data) {
+    currentSessionSubject.next(data);
   },
   signInViaOAuth,
   resetPassword,
@@ -27,22 +49,44 @@ export const authenticationService = {
   deleteLoginOrganizationId,
   forgotPassword,
   resendInvite,
+  authorize,
+  validateSession,
+  getUserDetails,
+  getLoginOrganizationSlug,
+  saveLoginOrganizationSlug,
+  deleteLoginOrganizationSlug,
 };
 
 function login(email, password, organizationId) {
   const requestOptions = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeader(),
     body: JSON.stringify({ email, password }),
+    credentials: 'include',
   };
 
   return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
-      // store user details and jwt token in local storage to keep user logged in between page refreshes
-      updateUser(user);
+      authenticationService.updateCurrentSession(user);
       return user;
     });
+}
+
+function validateSession(appId, workspaceSlug) {
+  const requestOptions = {
+    method: 'GET',
+    credentials: 'include',
+  };
+  const query = queryString.stringify({ appId, workspaceSlug });
+  return fetch(`${config.apiUrl}/session${query ? `?${query}` : ''}`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
+}
+
+function getUserDetails() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/profile`, requestOptions).then(handleResponse);
 }
 
 function saveLoginOrganizationId(organizationId) {
@@ -57,6 +101,18 @@ function deleteLoginOrganizationId() {
   eraseCookie('login-workspace');
 }
 
+function saveLoginOrganizationSlug(organizationSlug) {
+  organizationSlug && setCookie('login-workspace-slug', organizationSlug);
+}
+
+function getLoginOrganizationSlug() {
+  return getCookie('login-workspace-slug');
+}
+
+function deleteLoginOrganizationSlug() {
+  eraseCookie('login-workspace-slug');
+}
+
 function getOrganizationConfigs(organizationId) {
   const requestOptions = {
     method: 'GET',
@@ -69,12 +125,6 @@ function getOrganizationConfigs(organizationId) {
   )
     .then(handleResponse)
     .then((configs) => configs?.sso_configs);
-}
-
-function updateCurrentUserDetails(details) {
-  const currentUserDetails = JSON.parse(localStorage.getItem('currentUser'));
-  const updatedUserDetails = Object.assign({}, currentUserDetails, details);
-  updateUser(updatedUserDetails);
 }
 
 function signup(email, name, password) {
@@ -103,10 +153,11 @@ function resendInvite(email) {
       return response;
     });
 }
-function onboarding({ companyName, companySize, role, token, organizationToken, source, password }) {
+function onboarding({ companyName, companySize, role, token, organizationToken, source, password, phoneNumber }) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({
       ...(companyName?.length > 0 && { companyName }),
       ...(companySize?.length > 0 && { companySize }),
@@ -115,6 +166,7 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
       ...(organizationToken?.length > 0 && { organizationToken }),
       ...(source?.length > 0 && { source }),
       ...(password?.length > 0 && { password }),
+      ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
     }),
   };
 
@@ -124,10 +176,11 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
       return response;
     });
 }
-function setupAdmin({ companyName, companySize, name, role, workspace, password, email }) {
+function setupAdmin({ companyName, companySize, name, role, workspace, password, email, phoneNumber }) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({
       companyName,
       companySize,
@@ -136,6 +189,7 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
       workspace,
       email,
       password,
+      ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
     }),
   };
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
@@ -195,26 +249,35 @@ function resetPassword(params) {
   return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
 }
 
-function logout() {
-  clearUser();
-  const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-  const pathname = window.public_config?.SUB_PATH
-    ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
-    : window.location.pathname;
-  window.location.href = loginPath + `?redirectTo=${!(pathname.indexOf('/') === 0) ? '/' : ''}${pathname}`;
-}
+function logout(avoidRedirection = false) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
 
-function clearUser() {
-  // remove user from local storage to log user out
-  localStorage.removeItem('currentUser');
-  currentUserSubject.next(null);
+  const redirectToLoginPage = () => {
+    const loginPath =
+      (window.public_config?.SUB_PATH || '/') + 'login' + `${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`;
+    if (avoidRedirection) {
+      window.location.href = loginPath;
+    } else {
+      const pathname = getRedirectToWithParams(true);
+      window.location.href = loginPath + `?redirectTo=${`${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`}`;
+    }
+  };
+
+  return fetch(`${config.apiUrl}/logout`, requestOptions)
+    .then(handleResponseWithoutValidation)
+    .finally(() => redirectToLoginPage());
 }
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {
   const organizationId = getLoginOrganizationId();
   const requestOptions = {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeader(),
+    credentials: 'include',
     body: JSON.stringify({ ...ssoResponse, organizationId }),
   };
 
@@ -224,12 +287,17 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
     .then(handleResponseWithoutValidation)
     .then((user) => {
       if (!user.redirect_url) {
-        updateUser(user);
+        authenticationService.updateCurrentSession(user);
       }
       return user;
     });
 }
-function updateUser(user) {
-  localStorage.setItem('currentUser', JSON.stringify(user));
-  currentUserSubject.next(user);
+
+function authorize() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponseWithoutValidation);
 }

@@ -10,7 +10,26 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
-    'getting-started',
+    {
+      'type': 'category',
+      'label': 'Getting Started',
+      'items': [
+        'getting-started/platform-overview',
+        'getting-started/quickstart-guide',
+      ],
+    },
+    {
+      'type': 'category',
+      'label': 'ToolJet Concepts',
+      'items': [
+        'tooljet-concepts/what-are-components',
+        'tooljet-concepts/what-are-datasources',
+        'tooljet-concepts/what-are-queries',
+        'tooljet-concepts/what-are-events',
+        'tooljet-concepts/how-to-access-values',
+        'tooljet-concepts/permissions',
+      ],
+    },
     {
       'type': 'category',
       'label': 'Setup',
@@ -22,12 +41,14 @@ const sidebars = {
         'setup/try-tooljet',
         'setup/digitalocean',
         'setup/docker',
-        'setup/heroku',
         'setup/ec2',
         'setup/ecs',
+        'setup/openshift',
+        'setup/helm',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
+        'setup/azure-container',
         'setup/google-cloud-run',
         'setup/client',
         'setup/env-vars',
@@ -37,6 +58,7 @@ const sidebars = {
       ]
     },
     'tooljet-database',
+    'tooljet-copilot',
     {
       'type': 'category',
       'label': 'Datasource Catalog',
@@ -51,6 +73,7 @@ const sidebars = {
             'data-sources/amazonses',
             'data-sources/appwrite',
             'data-sources/athena',
+            'data-sources/azureblob',
             'data-sources/baserow',
             'data-sources/bigquery',
             'data-sources/firestore',
@@ -62,6 +85,7 @@ const sidebars = {
             'data-sources/gcs',
             'data-sources/google.sheets',
             'data-sources/graphql',
+            'data-sources/grpc',
             'data-sources/influxdb',
             'data-sources/mailgun',
             'data-sources/mariadb',
@@ -103,6 +127,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Components library',
           'items': [
+            'widgets/bounded-box',
             'widgets/button',
             'widgets/button-group',
             'widgets/calendar',
@@ -189,18 +214,33 @@ const sidebars = {
         },
       ],
     },
+    'dashboard',
     {
       'type': 'category',
       'label': 'App Builder',
       'items': [
         'app-builder/overview',
-        'app-builder/toolbar',
+        'app-builder/topbar',
+        'app-builder/share',
         'app-builder/canvas',
         'app-builder/left-sidebar',
         'app-builder/components-library',
         'app-builder/query-panel',
         'tutorial/pages',
+        'app-builder/customstyles',
         'tutorial/keyboard-shortcuts',
+      ],
+    },
+
+    {
+      'type': 'category',
+      'label': 'Workflows',
+      'items': [
+        'workflows/overview',
+        'workflows/nodes',
+        'workflows/workflow-triggers',
+        'workflows/permissions',
+        'workflows/logs',
       ],
     },
     {
@@ -251,23 +291,27 @@ const sidebars = {
                     'user-authentication/sso/openid/google-openid',
                   ],
                 },
+                'user-authentication/sso/ldap',
+                'user-authentication/sso/saml',
               ],
             },
           ],
         },
         {
-          'type': 'category',
-          'label': 'Workspaces',
-          'items': [
-            'tutorial/multiworkspace',
-            'tutorial/workspace-environment-variables',
-          ],
+          "type": "category",
+          "label": "Workspaces",
+          "items": [
+            "org-management/workspaces/workspace_overview",
+            "org-management/workspaces/workspace-variables",
+            "org-management/workspaces/workspace_constants"
+          ]
         },
         'org-management/permissions',
         'tutorial/manage-users-groups',
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
+        'org-management/licensing',
       ],
     },
     {
@@ -278,7 +322,37 @@ const sidebars = {
         'tutorial/versioning-and-release',
       ],
     },
-    'marketplace',
+    'gitsync',
+    {
+      'type': 'category',
+      'label': 'Marketplace',
+      'link': {
+        'type': 'generated-index',
+        'title': 'Marketplace',
+        //        'description': 'ToolJet Marketplace documentation',
+        'keywords': [
+          'Marketplace',
+          'Marketplace for plugins',
+          'Using Marketplace',
+          'Build plugins for marketplace',
+        ],
+      },
+      'collapsed': true,
+      'items': [
+        'marketplace/marketplace-overview',
+        {
+          'type': 'category',
+          'label': 'Marketplace Plugins',
+          'items': [
+            'marketplace/plugins/marketplace-plugin-textract',
+            'marketplace/plugins/marketplace-plugin-github',
+            'marketplace/plugins/marketplace-plugin-harperdb',
+            'marketplace/plugins/marketplace-plugin-openai',
+            'marketplace/plugins/marketplace-plugin-plivo',
+          ],
+        },
+      ],
+    },
     {
       'type': 'category',
       'label': 'How To',
@@ -295,17 +369,23 @@ const sidebars = {
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
         'how-to/bulk-update-multiple-rows',
+        'how-to/delete-multiple-rows',
+        'how-to/use-server-side-pagination',
         'how-to/access-currentuser',
         'how-to/use-axios-in-runjs',
         'how-to/import-external-libraries-using-runpy',
+        'how-to/import-external-libraries-using-runjs',
         'how-to/run-actions-from-runjs',
+        'how-to/intentionally-fail-js-query',
         'how-to/run-query-at-specified-intervals',
+        'how-to/use-to-py-function-in-runpy',
         'how-to/access-users-location',
+        'how-to/use-s3-signed-url-to-upload-docs',
         'how-to/s3-custom-endpoints',
-        'how-to/oauth2-authorization',
         'how-to/upload-files-aws',
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',
+        'how-to/use-events-on-chart',
       ],
     },
     {
@@ -327,19 +407,22 @@ const sidebars = {
           'type': 'category',
           'label': 'Setup',
           'items': [
+            'contributing-guide/setup/codespaces',
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
+            'contributing-guide/setup/windows',
           ],
         },
         {
           'type': 'category',
-          'label': 'Tutorials',
+          'label': 'Marketplace',
           'items': [
-            'contributing-guide/tutorials/creating-widget',
-            'contributing-guide/tutorials/creating-a-plugin',
+            'contributing-guide/marketplace/marketplace-setup',
+            'contributing-guide/marketplace/creating-a-plugin',
           ],
         },
+        'tooljet-cli',
         'contributing-guide/testing',
         'contributing-guide/l10n',
         {
@@ -347,6 +430,7 @@ const sidebars = {
           'label': 'Troubleshooting',
           'items': [
             'contributing-guide/troubleshooting/eslint',
+            'contributing-guide/troubleshooting/runpy-limitations',
           ],
         },
         'contributing-guide/code-of-conduct',
@@ -368,7 +452,7 @@ const sidebars = {
         {
           'type': 'link',
           'label': 'Roadmap',
-          'href': 'https://github.com/ToolJet/ToolJet/projects/2?query=is%3Aopen+sort%3Aupdated-desc',
+          'href': 'https://github.com/tooljet/tooljet/milestones',
         },
       ],
     },

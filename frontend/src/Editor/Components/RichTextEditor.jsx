@@ -10,7 +10,7 @@ export const RichTextEditor = function RichTextEditor({
   setExposedVariable,
   dataCy,
 }) {
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState, boxShadow } = styles;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
 
@@ -27,7 +27,7 @@ export const RichTextEditor = function RichTextEditor({
   return (
     <div
       data-disabled={disabledState}
-      style={{ height: `${height}px`, display: visibility ? '' : 'none' }}
+      style={{ height: `${height}px`, display: visibility ? '' : 'none', boxShadow }}
       data-cy={dataCy}
     >
       <DraftEditor

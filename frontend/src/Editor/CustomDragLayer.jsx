@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { BoxDragPreview } from './BoxDragPreview';
 import { snapToGrid } from '@/_helpers/appUtils';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
+
 const layerStyles = {
   position: 'fixed',
   pointerEvents: 'none',
@@ -23,10 +26,10 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
 
   let id = item.id;
 
-  const canvasContainerBoundingRect = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
+  // const canvasContainerBoundingRect = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
   const realCanvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
-  const realCanvasDelta = realCanvasBoundingRect.x - canvasContainerBoundingRect.x;
+  // const realCanvasDelta = realCanvasBoundingRect.x - canvasContainerBoundingRect.x;
 
   if (id) {
     // Dragging within the canvas
@@ -45,15 +48,17 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
 
   [x, y] = snapToGrid(canvasWidth, x, y);
 
-  x += realCanvasDelta;
+  // commented to fix issue that caused the dragged element to be out of position with mouse pointer
+  // x += realCanvasDelta;
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
     transform,
     WebkitTransform: transform,
+    width: 'fit-content',
   };
 }
-export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
+export const CustomDragLayer = ({ canvasWidth, onDragging }) => {
   const { itemType, isDragging, item, initialOffset, currentOffset, delta, initialClientOffset } = useDragLayer(
     (monitor) => ({
       item: monitor.getItem(),
@@ -65,12 +70,23 @@ export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
       delta: monitor.getDifferenceFromInitialOffset(),
     })
   );
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
+
+  useEffect(() => {
+    onDragging(isDragging);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDragging]);
 
   if (itemType === ItemTypes.COMMENT) return null;
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} currentLayout={currentLayout} canvasWidth={canvasWidth} />;
+        return <BoxDragPreview item={item} canvasWidth={canvasWidth} />;
       default:
         return null;
     }

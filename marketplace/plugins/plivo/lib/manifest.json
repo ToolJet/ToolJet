@@ -1,7 +1,8 @@
+
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Plivo datasource",
-  "description": "A schema defining plivo datasource",
+  "description": "A schema defining Plivo datasource",
   "type": "api",
   "source": {
     "name": "Plivo",
@@ -43,8 +44,5 @@
       "helpText": "For generating Auth ID, visit: <a href='https://console.plivo.com/' target='_blank' rel='noreferrer'>Plivo Console</a>"
     }
   },
-  "required": [
-    "authToken",
-    "authId"
-  ]
+  "required": []
 }

@@ -54,6 +54,10 @@
         {
           "value": "aws_instance_credentials",
           "name": "Use AWS Instance Credentials"
+        },
+        {
+          "value": "aws_arn_role",
+          "name": "Use AWS ARN Role"
         }
       ],
       "commonFields": {
@@ -180,6 +184,14 @@
         "key": "secret_key",
         "type": "password",
         "description": "Enter secret key"
+      }
+    },
+    "aws_arn_role": {
+      "role_arn": {
+        "label": "Role ARN",
+        "key": "role_arn",
+        "type": "text",
+        "description": "Enter role ARN, e.g. arn:aws:iam::123456789012:role/role-name"
       }
     }
   },

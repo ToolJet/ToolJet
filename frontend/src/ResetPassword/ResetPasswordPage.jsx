@@ -9,6 +9,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import Spinner from '@/_ui/Spinner';
+import { withRouter } from '@/_hoc/withRouter';
 
 class ResetPasswordComponent extends React.Component {
   constructor(props) {
@@ -39,7 +40,7 @@ class ResetPasswordComponent extends React.Component {
 
   handleClick = (event) => {
     event.preventDefault();
-    const { token } = this.props.location.state;
+    const { token } = this.props.params;
     const { password, password_confirmation } = this.state;
 
     if (password !== password_confirmation) {
@@ -128,7 +129,7 @@ class ResetPasswordComponent extends React.Component {
                           )}
                         </div>
                         <span className="tj-input-helper-text" data-cy="password-helper-text">
-                          Password must be at least 5 characterss
+                          Password must be at least 5 characters
                         </span>
 
                         <span></span>
@@ -180,7 +181,7 @@ class ResetPasswordComponent extends React.Component {
                           )}
                         </div>
                         <span className="tj-input-helper-text" data-cy="password-helper-text">
-                          Password must be at least 5 characterss
+                          Password must be at least 5 characters
                         </span>
 
                         <span></span>
@@ -232,4 +233,4 @@ class ResetPasswordComponent extends React.Component {
   }
 }
 
-export const ResetPassword = withTranslation()(ResetPasswordComponent);
+export const ResetPassword = withTranslation()(withRouter(ResetPasswordComponent));

@@ -2,10 +2,10 @@ export const postgreSqlText = {
   labelDataSources: "Datasources",
   labelAddDataSource: "+ add data source",
 
-  allDataSources: "All Datasources (39)",
-  allDatabase: "Databases (17)",
-  allApis: "APIs (19)",
-  allCloudStorage: "Cloud Storage (3)",
+  allDataSources: "All data sources (43)",
+  allDatabase: "Databases (19)",
+  allApis: "APIs (20)",
+  allCloudStorage: "Cloud Storages (4)",
 
   postgreSQL: "PostgreSQL",
   labelHost: "Host",
@@ -13,7 +13,8 @@ export const postgreSqlText = {
   labelSSL: "SSL",
   labelDbName: "Database Name",
   labelUserName: "Username",
-  labelPassword: "PasswordEncrypted",
+  labelPassword: "Password",
+  label: "Encrypted",
   sslCertificate: "SSL Certificate",
   whiteListIpText:
     "Please white-list our IP address if the data source is not publicly accessible",
@@ -25,14 +26,14 @@ export const postgreSqlText = {
   psqlName: "cypress-postgresql",
 
   labelConnectionVerified: "connection verified",
-  toastDSAdded: "Datasource Added",
+  toastDSAdded: "Data Source Added",
   placeholderNameOfDB: "Name of the database",
   placeholderEnterHost: "Enter host",
   placeholderEnterPort: "Enter port",
   placeholderEnterUserName: "Enter username",
 
   headerQueries: "Queries",
-  headerSelectDatasource: "Select Datasource",
+  headerSelectDatasource: "Select Data Source",
   noQueryText: "You haven't created queries yet.",
   buttonLabelCreateQuery: "Create query",
   tabGeneral: "General",
@@ -43,8 +44,8 @@ export const postgreSqlText = {
   queryModeSql: "SQL mode",
   queryModeGui: "GUI mode",
 
-  headerTransformations: "Transformations",
-  json: "Json",
+  headerTransformations: "Enable Transformations",
+  json: "JSON",
   raw: "Raw",
 
   labelOperation: "Operation",
@@ -52,7 +53,7 @@ export const postgreSqlText = {
   labelPrimaryKeyColumn: "Primary key column",
   labelRecordsToUpdate: "Records to update",
 
-  toggleLabelRunOnPageLoad: "Run this query on page load?",
+  toggleLabelRunOnPageLoad: "Run this query on application load?",
   toggleLabelconfirmation: "Request confirmation before running query?",
   toggleLabelShowNotification: "Show notification on success?",
   labelSuccessMessage: "Success Message",
@@ -66,5 +67,6 @@ export const postgreSqlText = {
   buttonTextTestConnection: "Test Connection",
 
   tabAdvanced: "Advanced",
-  labelNoEventhandler: "This query doesn't have any event handlers",
+  labelNoEventhandler: "No event handlers",
+  toastDSSaved: "Data Source Saved",
 };

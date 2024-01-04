@@ -367,7 +367,7 @@
       "editFolder":"Редагувати папку",
       "deleteFolder":"Видалити папку",
       "folderName":"Ім'я папки",
-      "wishToDeleteFolder":"Ви впевнені, що хочете видалити папку? Програми не будуть видалені."
+      "wishToDeleteFolder":"Ви впевнені, що хочете видалити папку {{folderName}}? Програми не будуть видалені."
     },
     "header":{
       "createNewApplication":"Створити новий додаток",

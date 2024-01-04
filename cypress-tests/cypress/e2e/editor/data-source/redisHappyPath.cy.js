@@ -1,29 +1,30 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { redisText } from "Texts/redis";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert } from "Support/utils/dataSource";
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Redis", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on connecti Redison form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
-      .click();
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -42,16 +43,7 @@ describe("Data source Redis", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(redisText.redis);
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain", redisText.redis);
-    cy.get('[data-cy="data-source-redis"]').click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      redisText.redis
-    );
+    selectAndAddDataSource("databases", redisText.redis, data.lastName);
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -71,7 +63,7 @@ describe("Data source Redis", () => {
     );
     cy.get(postgreSqlSelector.labelPassword).verifyVisibleElement(
       "have.text",
-      'Password'
+      "Password"
     );
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
@@ -96,38 +88,50 @@ describe("Data source Redis", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    verifyCouldnotConnectWithAlert(redisText.errorMaxRetries);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      redisText.errorMaxRetries
+    );
+    cy.get(postgreSqlSelector.buttonSave)
+      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
+      .click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      postgreSqlText.toastDSSaved
+    );
+    deleteDatasource(`cypress-${data.lastName}-redis`);
   });
   it("Should verify the functionality of Redis connection form.", () => {
-    selectDataSource(redisText.redis);
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      redisText.cypressRedis
-    );
+    selectAndAddDataSource("databases", redisText.redis, data.lastName);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
       postgreSqlText.placeholderEnterHost,
-      "redis_host"
+      Cypress.env("redis_host")
     );
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,
       Cypress.env("redis_port")
     );
+
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
       "dev@tooljet.io"
     );
-    cy.get(postgreSqlSelector.passwordTextField).type(
+
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "**************",
       Cypress.env("redis_password")
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(redisText.errorMaxRetries);
-
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      "WRONGPASS invalid username-password pair or user is disabled."
+    );
     fillDataSourceTextField(
       postgreSqlText.labelHost,
       postgreSqlText.placeholderEnterHost,
@@ -139,34 +143,50 @@ describe("Data source Redis", () => {
       "108299"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(redisText.errorPort);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      redisText.errorPort
+    );
 
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,
       Cypress.env("redis_port")
     );
-    cy.get(postgreSqlSelector.passwordTextField).type(
-      `{selectAll}{backspace}"redis_password"`
-    );
-    cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(redisText.errorInvalidUserOrPassword);
 
-    cy.get(postgreSqlSelector.passwordTextField).type(
-      `{selectAll}{backspace}${Cypress.env("redis_password")}`
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "**************",
+      "redis_password"
     );
+
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      "WRONGPASS invalid username-password pair or user is disabled."
+    );
+
+    fillDataSourceTextField(
+      postgreSqlText.labelPassword,
+      "**************",
+      Cypress.env("redis_password")
+    );
+
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
       "redis"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(redisText.errorInvalidUserOrPassword);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      "WRONGPASS invalid username-password pair or user is disabled."
+    );
 
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      "redis"
+      "{del}"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -176,13 +196,14 @@ describe("Data source Redis", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", redisText.cypressRedis)
-      .find("button")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-redis-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-redis`);
+
+    deleteDatasource(`cypress-${data.lastName}-redis`);
   });
 });

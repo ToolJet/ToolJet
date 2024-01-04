@@ -5,7 +5,7 @@ import { logout } from "Support/utils/common";
 
 describe("Self host onboarding", () => {
   beforeEach(() => {
-    cy.visit(Cypress.env("self_host"));
+    cy.visit('/setup');
   });
 
   it("verify elements on self host onboarding page", () => {
@@ -66,7 +66,7 @@ describe("Self host onboarding", () => {
       .and("have.attr", "href")
       .and("equal", "https://www.tooljet.com/privacy");
 
-    cy.clearAndType(commonSelectors.nameInputField, "The developer");
+    cy.clearAndType(commonSelectors.nameInputField, "The Developer");
     cy.clearAndType(commonSelectors.emailInputField, "dev@tooljet.io");
     cy.clearAndType(commonSelectors.passwordInputField, "password");
     cy.get(commonSelectors.continueButton).click();
@@ -89,7 +89,7 @@ describe("Self host onboarding", () => {
     signup.commonElementsWorkspaceSetup();
     cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
       "have.text",
-      commonText.companyPageHeader("The developer")
+      commonText.companyPageHeader("The Developer")
     );
     cy.get(commonSelectors.companyNameInputField).should("be.visible");
     cy.clearAndType(commonSelectors.companyNameInputField, "ToolJet");
@@ -112,17 +112,55 @@ describe("Self host onboarding", () => {
 
     signup.verifyandModifySizeOftheCompany();
 
-    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+    cy.get(commonSelectors.pageLogo).should("be.visible");
+    cy.get(commonSelectors.setUpadminCheckPoint).verifyVisibleElement(
       "have.text",
-      "My workspace"
+      commonText.setUpadminCheckPoint
+    );
+    cy.get(commonSelectors.setUpworkspaceCheckPoint).verifyVisibleElement(
+      "have.text",
+      commonText.setUpworkspaceCheckPoint
+    );
+    cy.get(commonSelectors.companyProfileCheckPoint).verifyVisibleElement(
+      "have.text",
+      commonText.companyProfileCheckPoint
+    );
+    cy.get(commonSelectors.onboardingPageSubHeader).verifyVisibleElement(
+      "have.text",
+      commonText.onboardingPageSubHeader
+    );
+    cy.get(commonSelectors.continueButton).verifyVisibleElement(
+      "have.text",
+      commonText.continueButton
     );
 
-    logout();
-    cy.appUILogin();
-
-    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+    signup.commonElementsWorkspaceSetup();
+    cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
       "have.text",
-      "My workspace"
+      "Enter your phone number"
     );
+
+    cy.get(".form-control").should("be.visible");
+    cy.get(".tj-onboarding-phone-input-wrapper")
+      .find("input")
+      .type("919876543210");
+    cy.get(commonSelectors.continueButton).click();
+
+    cy.get("body").then(($title) => {
+      if (!$title.text().includes("Enter your phone number")) {
+        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+          "have.text",
+          "My workspace"
+        );
+
+        logout();
+        cy.appUILogin();
+
+        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+          "have.text",
+          "My workspace"
+        );
+      }
+    });
   });
 });

@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { bigqueryText } from "Texts/bigquery";
@@ -5,25 +6,26 @@ import { firestoreText } from "Texts/firestore";
 import { commonSelectors } from "Selectors/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
+import { commonText } from "Texts/common";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source BigQuery", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
+    cy.intercept("GET", "/api/v2/data_sources");
   });
 
   it("Should verify elements on BigQuery connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
-      .click();
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    // cy.get(commonSelectors.addNewDataSourceButton)
+    //   .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
+    //   .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -42,24 +44,13 @@ describe("Data source BigQuery", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      bigqueryText.bigQuery
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain", bigqueryText.bigQuery);
-    cy.get('[data-cy="data-source-bigquery"]').click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      bigqueryText.bigQuery
-    );
+    selectAndAddDataSource("databases", bigqueryText.bigQuery, data.lastName);
 
     cy.get('[data-cy="label-private-key"]').verifyVisibleElement(
       "have.text",
       firestoreText.labelPrivateKey
     );
-
+    cy.get(".datasource-edit-btn").should("be.visible");
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
       postgreSqlText.whiteListIpText
@@ -87,24 +78,24 @@ describe("Data source BigQuery", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
       bigqueryText.errorInvalidEmailId
+    );
+    deleteDatasource(
+      `cypress-${String(data.lastName).toLowerCase()}-${String(
+        bigqueryText.bigQuery
+      ).toLowerCase()}`
     );
   });
 
   it("Should verify the functionality of BigQuery connection form.", () => {
-    selectDataSource(bigqueryText.bigQuery);
-
-    cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
-      bigqueryText.cypressBigQuery
-    );
+    selectAndAddDataSource("databases", bigqueryText.bigQuery, data.lastName);
 
     fillDataSourceTextField(
       firestoreText.privateKey,
       bigqueryText.placehlderPrivateKey,
-      JSON.stringify(Cypress.env("bigquery_pvt_key")),
+      `${JSON.stringify(Cypress.env("bigquery_pvt_key"))}`,
       "contain",
       { parseSpecialCharSequences: false, delay: 0 }
     );
@@ -116,13 +107,14 @@ describe("Data source BigQuery", () => {
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", bigqueryText.cypressBigQuery)
-      .find("button")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-bigquery-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-bigquery`);
+
+    deleteDatasource(`cypress-${data.lastName}-bigquery`);
   });
 });

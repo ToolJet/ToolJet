@@ -5,6 +5,7 @@ import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateDataSourceDto {
   @IsUUID()
+  @IsOptional()
   app_version_id: string;
 
   @IsUUID()
@@ -23,10 +24,22 @@ export class CreateDataSourceDto {
 
   @IsDefined()
   options: any;
+
+  @IsOptional()
+  scope: string;
+
+  @IsUUID()
+  @IsOptional()
+  environment_id: string;
 }
 
 export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) {}
-export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {}
+export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {
+  @IsString()
+  @IsOptional()
+  @Transform(({ value }) => sanitizeInput(value))
+  environment_id: string;
+}
 
 export class GetDataSourceOauthUrlDto {
   @IsString()

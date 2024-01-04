@@ -26,27 +26,153 @@ The table component will **auto-generate all the columns** as soon as the expect
 
 ## Columns
 
+Whenever data is loaded into a table, the columns are automatically generated. You can add, remove, or modify columns by accessing the table properties under the column section.
+
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/columns.png" alt="ToolJet - Widget Reference - Table" width="400" />
+<img className="screenshot-full" src="/img/widgets/table/columntypes.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
-### Cell data types
+### Types of Columns
 
-You can define the cell types as per your table's data source using the following:
+The table provides different column types based on the data being displayed:
 
-- <b>String | Default</b>: It is used to render the data for cell types: <i>text or textarea</i>,
-- <b>Number</b>: This cell type will only expect the <b>numerical</b> values and can be sorted in ascending or descending order
-- <b>Badge</b>: It is a labeling component used to display data with badges for e.g <b><i>status of a shipment</i></b>
-- <b>Multiple badges</b>: Similar to badge, used to display multiple data badges in the form of array of objects,
-- <b>Tags</b>: Used to display an array of objects in the form of tags, e.g <b><i>status, levels, steps</i></b>
-- <b>Dropdown</b>: When data is in the form of an array of options to be selected, e.g <b><i>select priority</i></b>
-- <b>Radio</b>: Used to make a selection from a group of options, e.g <b><i>select your salary-range</i></b>
-- <b>Multiselect</b>: Similar to dropdown but to collect multiple user inputs from a list of options,
-- <b>Toggle switch</b>: Allows a user to change a setting between two states, e.g <b><i>select between Yes/No</i></b>,
-- <b>Date picker</b>: Allowing users to display and select dates, e.g <b><i>delivery date</i></b>
-- <b>Image</b>: This cell type expects the URL of image and will display the image in the cell. It also has the option to style the image.
+- [String | Default](#string--default)
+- [Number](#number)
+- [Badge](#badge)
+- [Multiple Badges](#multiple-badges)
+- [Tags](#tags)
+- [Dropdown](#dropdown)
+- [Radio](#radio)
+- [Multiselect](#multiselect)
+- [Toggle switch](#toggle-switch)
+- [Date Picker](#date-picker)
+- [Image](#image)
+
+#### String | Default
+
+This column type is selected by default when a column is added or when data is auto-populated in the table.
+
+#### Number
+
+Selecting the column type as "Number" will only load numerical data in the column cells.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/numbertype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Badge
+
+The "Badge" column type is used to display labels on the columns using the column data. The "Badge values" and "Badge labels" should be provided as an array.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/badgetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Multiple Badges
+
+Similar to the "Badge" column type, this type is used to display multiple badges in the column cell. The "Values" and "Labels" should be provided as arrays.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/multibadgetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Tags
+
+The "Tags" column type is used to show tags in the column cells using the column data. The "key" provided should have values in an array.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/tagtype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Dropdown
+
+The "Dropdown" column type is used to show a dropdown in the column cells using the column data. The "Values" and "Labels" should be provided as arrays.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/droptype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Radio
+
+The "Radio" column type is used to show radio buttons in the column cells using the column data. The "Values" and "Labels" should be provided as arrays.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/radiotype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Multiselect
+
+The "Multiselect" column type is used to show a multiselect dropdown in the column cells using the column data. The "Values" and "Labels" should be provided as arrays.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/multiselecttype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Toggle Switch
+
+The "Toggle Switch" column type is used to show a toggle switch in the column cells using the column data. The "key" provided should be a boolean value, either true or false.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/toggletype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Date Picker
+
+The "Date Picker" column type is used to show a date picker in the column cells using the column data.
+
+The "key" provided should be a date value.
+
+The "Date Display Format" determines how the date should be displayed in the table.
+
+The "Date Parse Format" is the format in which the date is stored in the database.
+
+The "Parse in timezone" is the timezone of the time stored in the database.
+
+The "Display in timezone" is the timezone in which the date should be displayed.
+
+"Parse in timezone" and "Display in timezone" are only required when the "Show time" option is enabled for the column.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/datetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Image
+
+The "Image" column type is used to display images in the column cells using the column data. The cell value of this column should be a URL of the image, and it will be displayed in the cell.
+
+By default, when an image is loaded in the column, its width is set to 100%. The border radius, width, and height of the image can be adjusted in the column properties.
+
+The "Object fit" option allows you to choose how the image should be fitted within its container. The options are:
+
+- "Cover": maintains the aspect ratio of the image but may crop or clip parts of it to cover the container's width.
+- "Contain": maintains the aspect ratio and resizes the image to fit within the given dimensions while displaying the entire image.
+- "Fill": stretches the image to cover 100% of the width.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/imagetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
 
 :::info
 Check this **[how-to guide](/docs/how-to/access-cellvalue-rowdata)** on dynamically change the color of text in a row and column in the table.

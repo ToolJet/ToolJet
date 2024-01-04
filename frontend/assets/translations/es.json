@@ -180,7 +180,7 @@
                 "table": "Tabla",
                 "pageIndex": "Índice de página",
                 "component": "Componente",
-                "addHandler": "+ Añadir manejador",
+                "addHandler": "Añadir manejador",
                 "addEventHandler": "+ Añadir manejador de eventos",
                 "emptyMessage": "Este {{componentName}} no tiene manejadores de eventos."
             }
@@ -367,7 +367,7 @@
             "editFolder": "Editar carpeta",
             "deleteFolder": "Borrar carpeta",
             "folderName": "Nombre de la carpeta",
-            "wishToDeleteFolder": "¿Estás seguro de que deseas eliminar la carpeta? Las aplicaciones dentro de la carpeta no se eliminarán."
+            "wishToDeleteFolder": "¿Estás seguro de que deseas eliminar la carpeta {{folderName}}? Las aplicaciones dentro de la carpeta no se eliminarán."
         },
         "header": {
             "createNewApplication": "Crear nueva aplicación",

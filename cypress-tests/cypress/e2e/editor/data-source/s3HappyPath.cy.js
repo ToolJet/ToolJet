@@ -1,29 +1,31 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { s3Selector } from "Selectors/awss3";
 import { postgreSqlText } from "Texts/postgreSql";
 import { s3Text } from "Texts/awss3";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
-  selectDataSource,
+  selectAndAddDataSource,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert } from "Support/utils/dataSource";
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
 describe("Data sources AWS S3", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on AWS S3 connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
-      .click();
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -42,14 +44,7 @@ describe("Data sources AWS S3", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(s3Text.awsS3);
-    cy.get("[data-cy*='data-source-']").eq(0).should("contain", s3Text.awsS3);
-    cy.get(s3Selector.awsDatasource).click();
-
-    cy.get(postgreSqlSelector.dataSourceNameInputField).should(
-      "have.value",
-      s3Text.awsS3
-    );
+    selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.lastName);
     cy.get(s3Selector.accessKeyLabel).verifyVisibleElement(
       "have.text",
       s3Text.accessKey
@@ -64,6 +59,7 @@ describe("Data sources AWS S3", () => {
     );
     cy.get(s3Selector.customEndpointLabel)
       .verifyVisibleElement("have.text", s3Text.customEndpoint)
+      .parent()
       .next()
       .find("input")
       .click();
@@ -93,13 +89,22 @@ describe("Data sources AWS S3", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    verifyCouldnotConnectWithAlert(s3Text.alertRegionIsMissing);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      s3Text.alertRegionIsMissing
+    );
+    cy.get(postgreSqlSelector.buttonSave)
+      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
+      .click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      postgreSqlText.toastDSSaved
+    );
+    deleteDatasource(`cypress-${data.lastName}-aws-s3`);
   });
 
   it("Should verify the functionality of AWS S3 connection form.", () => {
-    selectDataSource(s3Text.awsS3);
-
-    cy.clearAndType(s3Selector.dataSourceNameInput, s3Text.cypressAwsS3);
+    selectAndAddDataSource("cloudstorage", s3Text.awsS3, data.lastName);
 
     fillDataSourceTextField(
       s3Text.accessKey,
@@ -108,7 +113,10 @@ describe("Data sources AWS S3", () => {
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(s3Text.alertRegionIsMissing);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      s3Text.alertRegionIsMissing
+    );
 
     fillDataSourceTextField(
       "Secret key",
@@ -118,20 +126,26 @@ describe("Data sources AWS S3", () => {
     );
 
     cy.get(s3Selector.regionLabel)
+      .parent()
       .next()
       .find("input")
       .type(`${s3Text.region}{enter}`);
 
     cy.get(s3Selector.customEndpointLabel)
       .verifyVisibleElement("have.text", s3Text.customEndpoint)
+      .parent()
       .next()
       .find("input")
       .click();
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(s3Text.alertInvalidUrl);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      s3Text.alertInvalidUrl
+    );
     cy.get(s3Selector.customEndpointLabel)
       .verifyVisibleElement("have.text", s3Text.customEndpoint)
+      .parent()
       .next()
       .find("input")
       .click();
@@ -143,7 +157,10 @@ describe("Data sources AWS S3", () => {
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert(s3Text.accessKeyError);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      s3Text.accessKeyError
+    );
 
     fillDataSourceTextField(
       s3Text.accessKey,
@@ -159,18 +176,21 @@ describe("Data sources AWS S3", () => {
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
 
-    verifyCouldnotConnectWithAlert(s3Text.sinatureError);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      s3Text.sinatureError
+    );
     cy.get(postgreSqlSelector.buttonSave).click();
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      postgreSqlText.toastDSAdded
+      postgreSqlText.toastDSSaved
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", s3Text.cypressAwsS3)
-      .find("button")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-aws-s3-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-aws-s3`);
+    deleteDatasource(`cypress-${data.lastName}-aws-s3`);
   });
 });

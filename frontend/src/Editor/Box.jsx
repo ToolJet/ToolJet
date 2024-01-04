@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useContext, useRef, memo } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -45,11 +45,13 @@ import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
+import { Kanban } from './Components/Kanban/Kanban';
 import { Steps } from './Components/Steps';
 import { TreeSelect } from './Components/TreeSelect';
 import { Icon } from './Components/Icon';
 import { Link } from './Components/Link';
-import { Form } from './Components/Form';
+import { Form } from './Components/Form/Form';
+import { BoundedBox } from './Components/BoundedBox/BoundedBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { validateProperties } from './component-properties-validation';
@@ -64,6 +66,9 @@ import {
 import _ from 'lodash';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { useAppInfo } from '@/_stores/appDataStore';
+import WidgetIcon from '@/../assets/images/icons/widgets';
 
 const AllComponents = {
   Button,
@@ -111,178 +116,192 @@ const AllComponents = {
   PDF,
   ColorPicker,
   KanbanBoard,
+  Kanban,
   Steps,
   TreeSelect,
   Link,
   Icon,
   Form,
+  BoundedBox,
 };
 
-export const Box = function Box({
-  id,
-  width,
-  height,
-  yellow,
-  preview,
-  component,
-  inCanvas,
-  onComponentClick,
-  onEvent,
-  currentState,
-  onComponentOptionChanged,
-  onComponentOptionsChanged,
-  paramUpdated,
-  changeCanDrag,
-  containerProps,
-  darkMode,
-  removeComponent,
-  canvasWidth,
-  mode,
-  customResolvables,
-  parentId,
-  sideBarDebugger,
-  dataQueries,
-  readOnly,
-  childComponents,
-}) {
-  const { t } = useTranslation();
-  const backgroundColor = yellow ? 'yellow' : '';
+export const Box = memo(
+  ({
+    id,
+    width,
+    height,
+    yellow,
+    preview,
+    component,
+    inCanvas,
+    onComponentClick,
+    onEvent,
+    onComponentOptionChanged,
+    onComponentOptionsChanged,
+    paramUpdated,
+    changeCanDrag,
+    containerProps,
+    removeComponent,
+    canvasWidth,
+    mode,
+    customResolvables,
+    parentId,
+    sideBarDebugger,
+    readOnly,
+    childComponents,
+  }) => {
+    const { t } = useTranslation();
+    const backgroundColor = yellow ? 'yellow' : '';
+    const currentState = useCurrentState();
 
-  let styles = {
-    height: '100%',
-    padding: '1px',
-  };
-
-  if (inCanvas) {
-    styles = {
-      ...styles,
+    let styles = {
+      height: '100%',
+      padding: '1px',
     };
-  }
 
-  const componentMeta = useMemo(() => {
-    return componentTypes.find((comp) => component.component === comp.component);
-  }, [component]);
+    if (inCanvas) {
+      styles = {
+        ...styles,
+      };
+    }
 
-  const ComponentToRender = AllComponents[component.component];
-  const [renderCount, setRenderCount] = useState(0);
-  const [renderStartTime, setRenderStartTime] = useState(new Date());
-  const [resetComponent, setResetStatus] = useState(false);
+    const { events } = useAppInfo();
 
-  const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
-  const [validatedProperties, propertyErrors] =
-    mode === 'edit' && component.validate
-      ? validateProperties(resolvedProperties, componentMeta.properties)
-      : [resolvedProperties, []];
+    const componentMeta = useMemo(() => {
+      return componentTypes.find((comp) => component.component === comp.component);
+    }, [component]);
 
-  const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
-  const [validatedStyles, styleErrors] =
-    mode === 'edit' && component.validate
-      ? validateProperties(resolvedStyles, componentMeta.styles)
-      : [resolvedStyles, []];
-  validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
+    const ComponentToRender = AllComponents[component.component];
+    const [renderCount, setRenderCount] = useState(0);
+    const [renderStartTime, setRenderStartTime] = useState(new Date());
+    const [resetComponent, setResetStatus] = useState(false);
 
-  const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
-  const [validatedGeneralProperties, generalPropertiesErrors] =
-    mode === 'edit' && component.validate
-      ? validateProperties(resolvedGeneralProperties, componentMeta.general)
-      : [resolvedGeneralProperties, []];
+    const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
+    const [validatedProperties, propertyErrors] =
+      mode === 'edit' && component.validate
+        ? validateProperties(resolvedProperties, componentMeta.properties)
+        : [resolvedProperties, []];
 
-  const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
-  resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
-  const [validatedGeneralStyles, generalStylesErrors] =
-    mode === 'edit' && component.validate
-      ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
-      : [resolvedGeneralStyles, []];
+    const resolvedStyles = resolveStyles(component, currentState, null, customResolvables);
+    const [validatedStyles, styleErrors] =
+      mode === 'edit' && component.validate
+        ? validateProperties(resolvedStyles, componentMeta.styles)
+        : [resolvedStyles, []];
+    validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
 
-  const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
+    const resolvedGeneralProperties = resolveGeneralProperties(component, currentState, null, customResolvables);
+    const [validatedGeneralProperties, generalPropertiesErrors] =
+      mode === 'edit' && component.validate
+        ? validateProperties(resolvedGeneralProperties, componentMeta.general)
+        : [resolvedGeneralProperties, []];
 
-  const componentActions = useRef(new Set());
+    const resolvedGeneralStyles = resolveGeneralStyles(component, currentState, null, customResolvables);
+    resolvedStyles.visibility = resolvedStyles.visibility !== false ? true : false;
+    const [validatedGeneralStyles, generalStylesErrors] =
+      mode === 'edit' && component.validate
+        ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
+        : [resolvedGeneralStyles, []];
 
-  useEffect(() => {
-    const currentPage = currentState?.page;
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
-    const componentName = getComponentName(currentState, id);
-    const errorLog = Object.fromEntries(
-      [...propertyErrors, ...styleErrors, ...generalPropertiesErrors, ...generalStylesErrors].map((error) => [
-        `${componentName} - ${error.property}`,
-        {
-          page: currentPage,
-          type: 'component',
-          kind: 'component',
-          strace: 'page_level',
-          data: { message: `${error.message}`, status: true },
-          resolvedProperties: resolvedProperties,
-          effectiveProperties: validatedProperties,
-        },
-      ])
-    );
-    sideBarDebugger?.error(errorLog);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ propertyErrors, styleErrors, generalPropertiesErrors })]);
-
-  useEffect(() => {
-    setRenderCount(renderCount + 1);
-    if (renderCount > 10) {
-      setRenderCount(0);
-      const currentTime = new Date();
-      const timeDifference = Math.abs(currentTime - renderStartTime);
-      if (timeDifference < 1000) {
-        throw Error;
+    useEffect(() => {
+      if (!component?.parent) {
+        onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
       }
-      setRenderStartTime(currentTime);
-    }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); /*computeComponentState was not getting the id on initial render therefore exposed variables were not set.
+  computeComponentState was being executed before addNewWidgetToTheEditor was completed.*/
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
+    useEffect(() => {
+      const currentPage = currentState?.page;
+      const componentName = getComponentName(currentState, id);
+      const errorLog = Object.fromEntries(
+        [...propertyErrors, ...styleErrors, ...generalPropertiesErrors, ...generalStylesErrors].map((error) => [
+          `${componentName} - ${error.property}`,
+          {
+            page: currentPage,
+            type: 'component',
+            kind: 'component',
+            strace: 'page_level',
+            data: { message: `${error.message}`, status: true },
+            resolvedProperties: resolvedProperties,
+            effectiveProperties: validatedProperties,
+          },
+        ])
+      );
+      sideBarDebugger?.error(errorLog);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify({ propertyErrors, styleErrors, generalPropertiesErrors })]);
 
-  useEffect(() => {
-    if (customResolvables && !readOnly && mode === 'edit') {
-      const newCustomResolvable = {};
-      newCustomResolvable[id] = { ...customResolvables };
-      exposeToCodeHinter((prevState) => ({ ...prevState, ...newCustomResolvable }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(customResolvables), readOnly]);
-
-  useEffect(() => {
-    if (resetComponent) setResetStatus(false);
-  }, [resetComponent]);
-
-  let exposedVariables = currentState?.components[component.name] ?? {};
-
-  const fireEvent = (eventName, options) => {
-    if (mode === 'edit' && eventName === 'onClick') {
-      onComponentClick(id, component);
-    }
-    onEvent(eventName, { ...options, customVariables: { ...customResolvables }, component });
-  };
-  const validate = (value) =>
-    validateWidget({
-      ...{ widgetValue: value },
-      ...{ validationObject: component.definition.validation, currentState },
-      customResolveObjects: customResolvables,
-    });
-
-  return (
-    <OverlayTrigger
-      placement={inCanvas ? 'auto' : 'top'}
-      delay={{ show: 500, hide: 0 }}
-      trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
-      overlay={(props) =>
-        renderTooltip({
-          props,
-          text: inCanvas
-            ? `${validatedGeneralProperties.tooltip}`
-            : `${t(`widget.${component.name}.description`, component.description)}`,
-        })
+    useEffect(() => {
+      setRenderCount(renderCount + 1);
+      if (renderCount > 10) {
+        setRenderCount(0);
+        const currentTime = new Date();
+        const timeDifference = Math.abs(currentTime - renderStartTime);
+        if (timeDifference < 1000) {
+          throw Error;
+        }
+        setRenderStartTime(currentTime);
       }
-    >
-      <div
-        style={{ ...styles, backgroundColor, boxShadow: validatedGeneralStyles?.boxShadow }}
-        role={preview ? 'BoxPreview' : 'Box'}
+
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
+
+    useEffect(() => {
+      if (customResolvables && !readOnly && mode === 'edit') {
+        const newCustomResolvable = {};
+        newCustomResolvable[id] = { ...customResolvables };
+        exposeToCodeHinter((prevState) => ({ ...prevState, ...newCustomResolvable }));
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(customResolvables), readOnly]);
+
+    useEffect(() => {
+      if (resetComponent) setResetStatus(false);
+    }, [resetComponent]);
+
+    let exposedVariables = currentState?.components[component.name] ?? {};
+
+    const fireEvent = (eventName, options) => {
+      if (mode === 'edit' && eventName === 'onClick') {
+        onComponentClick(id, component);
+      }
+
+      const componentEvents = events.filter((event) => event.sourceId === id);
+
+      onEvent(eventName, componentEvents, { ...options, customVariables: { ...customResolvables } });
+    };
+    const validate = (value) =>
+      validateWidget({
+        ...{ widgetValue: value },
+        ...{ validationObject: component.definition.validation, currentState },
+        customResolveObjects: customResolvables,
+      });
+
+    return (
+      <OverlayTrigger
+        placement={inCanvas ? 'auto' : 'top'}
+        delay={{ show: 500, hide: 0 }}
+        trigger={inCanvas && !validatedGeneralProperties.tooltip?.toString().trim() ? null : ['hover', 'focus']}
+        overlay={(props) =>
+          renderTooltip({
+            props,
+            text: inCanvas
+              ? `${validatedGeneralProperties.tooltip}`
+              : `${t(`widget.${component.name}.description`, component.description)}`,
+          })
+        }
       >
-        {inCanvas ? (
-          !resetComponent ? (
+        <div
+          style={{
+            ...styles,
+            backgroundColor,
+          }}
+          role={preview ? 'BoxPreview' : 'Box'}
+        >
+          {!resetComponent ? (
             <ComponentToRender
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}
@@ -301,35 +320,15 @@ export const Box = function Box({
               canvasWidth={canvasWidth}
               properties={validatedProperties}
               exposedVariables={exposedVariables}
-              styles={validatedStyles}
+              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
-              setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
-              registerAction={(actionName, func, dependencies = []) => {
-                if (
-                  Object.keys(currentState?.components ?? {}).includes(component.name) &&
-                  currentState?.components[component.name].id === id
-                ) {
-                  if (!Object.keys(exposedVariables).includes(actionName)) {
-                    func.dependencies = dependencies;
-                    componentActions.current.add(actionName);
-                    return onComponentOptionChanged(component, actionName, func);
-                  } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
-                    return Promise.resolve();
-                  } else if (
-                    JSON.stringify(dependencies) !== JSON.stringify(exposedVariables[actionName]?.dependencies) ||
-                    !componentActions.current.has(actionName)
-                  ) {
-                    func.dependencies = dependencies;
-                    componentActions.current.add(actionName);
-                    return onComponentOptionChanged(component, actionName, func);
-                  }
-                }
-              }}
+              setExposedVariables={(variableSet) =>
+                onComponentOptionsChanged(component, Object.entries(variableSet), id)
+              }
               fireEvent={fireEvent}
               validate={validate}
               parentId={parentId}
               customResolvables={customResolvables}
-              dataQueries={dataQueries}
               variablesExposedForPreview={variablesExposedForPreview}
               exposeToCodeHinter={exposeToCodeHinter}
               setProperty={(property, value) => {
@@ -342,32 +341,9 @@ export const Box = function Box({
             ></ComponentToRender>
           ) : (
             <></>
-          )
-        ) : (
-          <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
-            <div
-              className="component-image-holder p-2 d-flex flex-column justify-content-center"
-              style={{ height: '100%' }}
-              data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
-            >
-              <center>
-                <div
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    backgroundSize: 'contain',
-                    backgroundImage: `url(assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
-                    backgroundRepeat: 'no-repeat',
-                  }}
-                ></div>
-              </center>
-              <span className="component-title">
-                {t(`widget.${component.name}.displayName`, component.displayName)}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-    </OverlayTrigger>
-  );
-};
+          )}
+        </div>
+      </OverlayTrigger>
+    );
+  }
+);

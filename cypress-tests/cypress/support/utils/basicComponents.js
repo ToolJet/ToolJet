@@ -5,23 +5,46 @@ import {
   openEditorSidebar,
   editAndVerifyWidgetName,
 } from "Support/utils/commonWidget";
+import { resizeQueryPanel } from "Support/utils/dataSource";
 
 export const verifyComponent = (widgetName) => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should("be.visible");
+  cy.get(commonWidgetSelector.draggableWidget(widgetName), {
+    timeout: 10000,
+  }).should("be.visible");
 };
 
 export const deleteComponentAndVerify = (widgetName) => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).click();
-  cy.get(`[data-cy="${widgetName}-delete-button"]`).last().click();
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .realHover()
+    .realHover();
+
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .realHover()
+    .then(() => {
+      cy.get(`[data-cy="${widgetName}-delete-button"]`)
+        .realHover({ position: "topRight" })
+        .last()
+        .realClick();
+    });
+  cy.verifyToastMessage(
+    `[class=go3958317564]`,
+    "Component deleted! (ctrl + Z to undo)"
+  );
   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };
 
-export const verifyComponentWithOutLabel=(component, defaultName, fakeName, appName, properties=[] )=>{
-  cy.dragAndDropWidget(component, 50, 50);
+export const verifyComponentWithOutLabel = (
+  component,
+  defaultName,
+  fakeName,
+  appName,
+  properties = []
+) => {
+  cy.dragAndDropWidget(component, 300, 300);
   cy.get(`[data-cy="draggable-widget-${defaultName}"]`).click({ force: true });
   verifyComponent(defaultName);
 
-  cy.resizeWidget(defaultName, 850, 600);
+  cy.resizeWidget(defaultName, 650, 600, false);
 
   openEditorSidebar(defaultName);
   editAndVerifyWidgetName(fakeName, properties);
@@ -33,13 +56,6 @@ export const verifyComponentWithOutLabel=(component, defaultName, fakeName, appN
   verifyComponent(fakeName);
 
   cy.go("back");
+  resizeQueryPanel(0);
   deleteComponentAndVerify(fakeName);
-  cy.get(commonSelectors.editorPageLogo).click();
-
-  cy.deleteApp(appName);
-}
-
-
-
-
-
+};

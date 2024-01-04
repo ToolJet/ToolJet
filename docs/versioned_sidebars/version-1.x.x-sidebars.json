@@ -15,9 +15,11 @@
         "setup/heroku",
         "setup/ec2",
         "setup/ecs",
+        "setup/helm",
         "setup/kubernetes",
         "setup/kubernetes-gke",
         "setup/kubernetes-aks",
+        "setup/azure-container",
         "setup/google-cloud-run",
         "setup/client",
         "setup/env-vars",
@@ -208,11 +210,13 @@
       },
       "items": [
         "how-to/run-actions-from-runjs",
+        "how-to/intentionally-fail-js-query",
         "how-to/run-query-at-specified-intervals",
         "how-to/bulk-update-multiple-rows",
         "how-to/access-cellvalue-rowdata",
         "how-to/access-currentuser",
         "how-to/oauth2-authorization",
+        "how-to/use-s3-signed-url-to-upload-docs",
         "how-to/upload-files-aws",
         "how-to/upload-files-gcs",
         "how-to/access-users-location"
@@ -296,7 +300,8 @@
           "items": [
             "contributing-guide/setup/macos",
             "contributing-guide/setup/docker",
-            "contributing-guide/setup/ubuntu"
+            "contributing-guide/setup/ubuntu",
+            "contributing-guide/setup/windows"
           ]
         },
         {
