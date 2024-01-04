@@ -11,6 +11,7 @@ import Boolean from '../Icons/Toggle.svg';
 import './styles.scss';
 
 const RowForm = ({ onCreate, onClose }) => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const { organizationId, selectedTable, columns } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
@@ -140,9 +141,17 @@ const RowForm = ({ onCreate, onClose }) => {
             type="text"
             value={inputValues[index]?.value}
             onChange={(e) => handleInputChange1(index, e.target.value, columnName)}
-            disabled={inputValues[index]?.disabled}
+            disabled={isPrimaryKey || inputValues[index]?.disabled}
             placeholder={isPrimaryKey ? 'Auto-generated' : 'Enter a value'}
-            className={isPrimaryKey ? 'primary-id' : 'form-control'}
+            className={
+              isPrimaryKey && !darkMode
+                ? 'primary-idKey-light'
+                : isPrimaryKey && darkMode
+                ? 'primary-idKey-dark'
+                : !darkMode
+                ? 'form-control'
+                : 'form-control dark-form-row'
+            }
             data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
             autoComplete="off"
           />
