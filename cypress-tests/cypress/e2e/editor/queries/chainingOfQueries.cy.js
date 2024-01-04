@@ -108,4 +108,69 @@ describe("Chaining of queries", () => {
     cy.verifyToastMessage(commonSelectors.toastMessage, "restapi");
     cy.verifyToastMessage(commonSelectors.toastMessage, "Invalid operation");
   });
+
+  it("should verify query duplication", () => {
+    const data = {};
+    let dsName = fake.companyName;
+    data.customText = randomString(12);
+    cy.apiAddQueryToApp(
+      "runjs",
+      { code: "return true", hasParamSupport: true, parameters: [] },
+      null,
+      "runjs"
+    );
+    cy.apiAddQueryToApp(
+      "runpy",
+      { code: "True", hasParamSupport: true, parameters: [] },
+      null,
+      "runpy"
+    );
+
+    cy.reload();
+    resizeQueryPanel("80");
+    addSuccessNotification("runpy");
+    chainQuery("runjs", "runpy");
+    addSuccessNotification("runjs");
+
+    openEditorSidebar(buttonText.defaultWidgetName);
+    selectEvent("On Click", "Run Query", 1, `[data-cy="add-event-handler"]`, 1);
+    cy.wait(500);
+    cy.get('[data-cy="query-selection-field"]')
+      .click()
+      .find("input")
+      .type(`{selectAll}{backspace}runjs{enter}`);
+    cy.forceClickOnCanvas();
+
+    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, "runjs");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "runpy");
+    cy.get('[data-cy="list-query-runjs"]')
+      .trigger("mouseover")
+      .parent()
+      .parent()
+      .find('[data-cy="copy-icon"]')
+      .eq(0)
+      .invoke("show")
+      .click({ force: true });
+    cy.get('[data-cy="list-query-runjs_copy"]').verifyVisibleElement(
+      "have.text",
+      "runjs_copy "
+    );
+    cy.get('[data-cy="notification-on-success-toggle-switch"]').should(
+      "have.value",
+      "on"
+    );
+    cy.get('[data-cy="success-message-input-field"]').should(
+      "contain.text",
+      "runjs"
+    );
+    cy.get(".query-definition-pane-wrapper").within(() => {
+      cy.get('[data-cy="event-handler-card"]').eq(0).click();
+      cy.wait(500);
+    });
+    cy.get(
+      `[data-cy="action-selection"] > .select-search > .react-select__control > .react-select__value-container > `
+    ).should("have.text", "Run Query");
+    cy.get('[data-cy="query-selection-field"]').should("have.text", "runpy");
+  });
 });
