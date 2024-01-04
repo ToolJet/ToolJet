@@ -28,7 +28,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable,
               onEdit();
             }}
           >
-            Edit
+            Rename
           </div>
         </div>
         <div className="row mt-3 cursor-pointer">
@@ -43,7 +43,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode, handleExportTable,
               handleExportTable();
             }}
           >
-            Export table
+            Export schema
           </div>
         </div>
         {/* <div className="row mt-3">

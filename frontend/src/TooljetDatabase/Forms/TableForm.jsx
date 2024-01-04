@@ -9,7 +9,7 @@ import { BreadCrumbContext } from '@/App/App';
 
 const TableForm = ({
   selectedTable = {},
-  selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraint_type: 'PRIMARY KEY' } },
+  selectedColumns = { 0: { column_name: 'id', data_type: 'serial', constraints_type: { is_primary_key: true } } },
   onCreate,
   onEdit,
   onClose,
@@ -131,6 +131,7 @@ const TableForm = ({
         onClose={onClose}
         onEdit={handleEdit}
         onCreate={handleCreate}
+        shouldDisableCreateBtn={isEmpty(tableName)}
       />
     </div>
   );

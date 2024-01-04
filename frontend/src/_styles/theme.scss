@@ -6903,6 +6903,29 @@ tbody {
     text-overflow: ellipsis;
   }
 
+  .table-cell-hover-background {
+    background-color: #F8F9FA;
+  }
+
+  .table-cell-click {
+    // background-color: #fbfdff;
+    background-color: #F8F9FA;
+    border-left: 1.5px solid #3E63DD !important;
+    border-right: 1.5px solid #3E63DD !important;
+  }
+
+  .row-tj:first-child {
+    .table-cell-click {
+      border-top: 1.5px solid #3E63DD !important;
+    }
+  }
+
+  .row-tj:last-of-type {
+    .table-cell-click {
+      border-bottom: 1.5px solid #3E63DD !important;
+    }
+  }
+
   .table-name {
     color: #000;
     width: 250px;
@@ -6916,13 +6939,38 @@ tbody {
     height: 32px;
   }
 
+  .table-header-click {
+    background: #DFE3E6;
+
+    .tjdb-menu-icon-parent {
+      background: #E6E8EB !important;
+      border-radius: 10px !important;
+
+      .tjdb-menu-icon {
+        display: block;
+        cursor: pointer;
+      }
+    }
+
+
+  }
+
   .table-header {
     background: #ECEEF0;
   }
 
+  .table-header:hover {
+    background: #E6E8EB;
+
+    .tjdb-menu-icon {
+      display: block;
+      cursor: pointer;
+    }
+  }
+
   .table-header,
   .table-cell {
-    max-width: 230px;
+    max-width: 230px !important;
   }
 
   .add-more-columns-btn {
@@ -8702,7 +8750,6 @@ tbody {
 
 
 .tj-db-dataype {
-  margin-left: 8px;
   color: var(--slate11);
 }
 
@@ -8726,9 +8773,10 @@ tbody {
 
 .tj-database-column-row {
   margin: 0;
+  width: 300px;
 
   th:first-child {
-    height: 28px;
+    height: 29px;
   }
 
   th:first-child>div {
@@ -8736,7 +8784,7 @@ tbody {
     width: 16px;
     display: flex;
     align-items: center;
-    height: 28px;
+    height: 29px;
 
     input {
       border-radius: 4px;
@@ -9806,7 +9854,7 @@ tbody {
 
   table {
     border-collapse: collapse;
-    width: 100%;
+    width: max-content;
   }
 }
 
@@ -10321,27 +10369,31 @@ tbody {
   }
 }
 
-.tj-db-table {
-  table {
-    max-width: calc(100% - 28px);
-  }
-
-  .datatable {
-    position: relative;
-  }
-}
-
-.add-row-btn-database {
+.add-row-btn-database-absolute {
   position: absolute;
-  top: 0;
+  top: 0px;
   right: -28px;
-  width: 28px;
-  height: 28px;
-  background: var(--slate7);
+  width: 29px;
+  height: 31px;
   border-width: 0px 1px 1px 1px;
   border-style: solid;
+  border-radius: 0px;
+  background: var(--slate7);
   border-color: var(--slate4);
-  border-radius: 0px !important;
+}
+
+.add-row-btn-database-fixed {
+  position: fixed;
+  top: 112px;
+  right: 0px;
+  width: 29px;
+  height: 31px;
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-radius: 0px;
+  z-index: 1;
+  background: var(--slate7);
+  border-color: var(--slate4);
 }
 
 .add-col-btn-database {
