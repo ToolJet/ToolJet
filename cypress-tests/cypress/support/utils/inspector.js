@@ -35,5 +35,5 @@ export const verifyValue = (node, type, children, index = 0) => {
 export const deleteComponentFromInspector = (node) => {
   cy.get('[data-cy="inspector-node-components"] > .node-key').click();
   cy.get(`[data-cy="inspector-node-${node}"] > .node-key`).click();
-  cy.get(cy.get('[style="height: 13px; width: 13px;"] > img').click());
+  cy.get('[style="height: 13px; width: 13px;"] > img').click();
 }
