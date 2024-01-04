@@ -344,6 +344,9 @@ export default function DragContainer({
                   }
 
                   // e.target.style.transform = e.drag.transform;
+                  e.target.style.width = `${width}px`;
+                  e.target.style.height = `${height}px`;
+                  e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
                   onResizeStop([
                     {
                       id: e.target.id,
@@ -782,6 +785,9 @@ export default function DragContainer({
                         }
 
                         // e.target.style.transform = e.drag.transform;
+                        e.target.style.width = `${width}px`;
+                        e.target.style.height = `${height}px`;
+                        e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
                         onResizeStop([
                           {
                             id: e.target.id,
