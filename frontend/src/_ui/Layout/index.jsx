@@ -12,7 +12,15 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
-function Layout({ children, switchDarkMode, darkMode }) {
+function Layout({
+  children,
+  switchDarkMode,
+  darkMode,
+  enableCollapsibleSidebar = false,
+  collapseSidebar = false,
+  toggleCollapsibleSidebar = () => {},
+}) {
+  console.log('At layout', { collapseSidebar }, { toggleCollapsibleSidebar });
   const router = useRouter();
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
@@ -172,7 +180,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
         </aside>
       </div>
       <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
-        <Header />
+        <Header
+          enableCollapsibleSidebar={enableCollapsibleSidebar}
+          collapseSidebar={collapseSidebar}
+          toggleCollapsibleSidebar={toggleCollapsibleSidebar}
+        />
         <div style={{ paddingTop: 64 }}>{children}</div>
       </div>
       <ConfirmDialog
