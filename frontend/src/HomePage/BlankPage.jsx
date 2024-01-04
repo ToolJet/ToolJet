@@ -114,7 +114,9 @@ export const BlankPage = function BlankPage({
                           >
                             <div
                               className="img-responsive img-responsive-21x9 card-img-top template-card-img"
-                              style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
+                              style={{
+                                backgroundImage: `url(assets/images/templates/${id}${darkMode ? '-dark' : ''}.png)`,
+                              }}
                               data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
                             />
                             <div className="card-body">
