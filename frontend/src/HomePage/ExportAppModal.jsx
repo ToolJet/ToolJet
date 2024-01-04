@@ -146,7 +146,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                   versionId={currentVersion?.id}
                   data-cy={`${currentVersion?.id.toLowerCase().replace(/\s+/g, '-')}-value`}
                   versionName={currentVersion?.name}
-                  versionCreatedAt={currentVersion?.createdAt}
+                  versionCreatedAt={currentVersion?.created_at}
                   checked={versionId === currentVersion?.id}
                   setVersionId={setVersionId}
                   className="current-version-wrap"
