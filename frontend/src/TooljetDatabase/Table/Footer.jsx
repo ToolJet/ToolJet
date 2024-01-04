@@ -78,7 +78,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
       <div className="table-footer row gx-0" data-cy="table-footer-section">
-        <div className="col-5" data-cy="add-new-row-button">
+        <div className="col-5 d-flex align-items-center justify-content-start" data-cy="add-new-row-button">
           <Button
             disabled={dataLoading}
             onClick={openCreateRowDrawer}
@@ -90,39 +90,45 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
           </Button>
         </div>
         {tableDataLength > 0 && (
-          <div className="col d-flex align-items-center justify-content-end">
-            <div className="col">
-              <Pagination
-                darkMode={darkMode}
-                gotoNextPage={gotoNextPage}
-                gotoPreviousPage={gotoPreviousPage}
-                currentPage={pageCount}
-                totalPage={totalPage}
-                isDisabled={dataLoading}
-              />
+          <>
+            <div className="col d-flex align-items-center">
+              <div className="col">
+                <Pagination
+                  darkMode={darkMode}
+                  gotoNextPage={gotoNextPage}
+                  gotoPreviousPage={gotoPreviousPage}
+                  currentPage={pageCount}
+                  totalPage={totalPage}
+                  isDisabled={dataLoading}
+                />
+              </div>
             </div>
-            <div className="col mx-2 records-dropdown-field" data-cy="records-dropdown-field">
-              <Select
-                isLoading={dataLoading}
-                options={selectOptions}
-                value={selectOptions.find((option) => option.value === pageSize)}
-                search={false}
-                onChange={(value) => handleSelectChange(value)}
-                placeholder={'Select page'}
-                useMenuPortal={false}
-                menuPlacement="top"
-              />
+            <div className="col-5 d-flex justify-content-end align-items-center" style={{ fontSize: '12px' }}>
+              <div className="mx-2" data-cy="total-records-section">
+                {dataLoading ? (
+                  <Skeleton count={1} height={3} className="mt-3" />
+                ) : (
+                  <span className="animation-fade" data-cy={`${pageRange}-of-${totalRecords}-records-text}`}>
+                    {pageRange} of {totalRecords} Records
+                  </span>
+                )}
+              </div>
+              <div className="mx-2 records-dropdown-field" data-cy="records-dropdown-field">
+                <Select
+                  isLoading={dataLoading}
+                  options={selectOptions}
+                  value={selectOptions.find((option) => option.value === pageSize)}
+                  search={false}
+                  onChange={(value) => handleSelectChange(value)}
+                  placeholder={'Select page'}
+                  useMenuPortal={false}
+                  menuPlacement="top"
+                  width={'150px'}
+                  styles={{ fontSize: '12px' }}
+                />
+              </div>
             </div>
-            <div className="col-4 mx-2" data-cy="total-records-section">
-              {dataLoading ? (
-                <Skeleton count={1} height={3} className="mt-3" />
-              ) : (
-                <span className="animation-fade" data-cy={`${pageRange}-of-${totalRecords}-records-text}`}>
-                  {pageRange} of {totalRecords} Records
-                </span>
-              )}
-            </div>
-          </div>
+          </>
         )}
       </div>
     </div>
