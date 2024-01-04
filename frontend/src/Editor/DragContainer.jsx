@@ -7,7 +7,7 @@ import DragContainerNested from './DragContainerNested';
 import _, { isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
-import { useGridStoreActions, useDragTarget } from '@/_stores/gridStore';
+import { useGridStoreActions, useDragTarget, useNoOfGrid } from '@/_stores/gridStore';
 const NO_OF_GRIDS = 43;
 
 const MouseCustomAble = {
@@ -81,6 +81,7 @@ export default function DragContainer({
   const childMoveableRefs = useRef([]);
   const isDraggingRef = useRef(false);
   const [movableTargets, setMovableTargets] = useState({});
+  const [noOfGrids] = useNoOfGrid();
   const boxList = boxes
     .filter((box) =>
       ['{{true}}', true].includes(
@@ -591,6 +592,7 @@ export default function DragContainer({
                     // individualGroupable={true}
                     individualGroupable={groupedTargets1.length <= 1}
                     onDragStart={(e) => {
+                      console.log('On-Drag start', e);
                       if (currentLayout === 'mobile' && autoComputeLayout) {
                         turnOffAutoLayout();
                         return false;
@@ -651,11 +653,8 @@ export default function DragContainer({
                       }
                       let {
                         translate: [left, top],
+                        width,
                       } = lastEvent;
-                      e.target.style.transform = `translate(${
-                        Math.round(left / subContainerWidths[i.parent]) * subContainerWidths[i.parent]
-                      }px, ${Math.round(top / 10) * 10}px)`;
-                      // }
 
                       let draggedOverElemId = i.parent;
                       if (document.elementFromPoint(e.clientX, e.clientY)) {
@@ -678,6 +677,31 @@ export default function DragContainer({
                           left = _left;
                           top = _top;
                         }
+                      }
+
+                      let _left = Math.round(left / subContainerWidths[draggedSubContainer]);
+                      let _width = Math.round(width / subContainerWidths[draggedSubContainer]);
+                      if (_width + _left > noOfGrids && draggedOverElemId === i.parent) {
+                        _left = _left - (_width + _left - noOfGrids);
+                        if (_left < 0) {
+                          _left = 0;
+                          _width = noOfGrids;
+                        }
+                        e.target.style.transform = `translate(${_left * subContainerWidths[i.parent]}px, ${
+                          Math.round(top / 10) * 10
+                        }px)`;
+                      } else if (_left < 0 && draggedOverElemId === i.parent) {
+                        _left = 0;
+                        if (_width > noOfGrids) {
+                          _width = noOfGrids;
+                        }
+                        e.target.style.transform = `translate(${_left * subContainerWidths[i.parent]}px, ${
+                          Math.round(top / 10) * 10
+                        }px)`;
+                      } else {
+                        e.target.style.transform = `translate(${
+                          Math.round(left / subContainerWidths[i.parent]) * subContainerWidths[i.parent]
+                        }px, ${Math.round(top / 10) * 10}px)`;
                       }
 
                       const _x = draggedOverElemId

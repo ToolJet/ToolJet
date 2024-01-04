@@ -399,6 +399,19 @@ export const Container = ({
       if (_width === 0) {
         _width = 1;
       }
+      let _left = Math.round(x / (parent ? subContainerWidths[parent] : gridWidth));
+      if (_width + _left > noOfGrids) {
+        _left = _left - (_width + _left - noOfGrids);
+        if (_left < 0) {
+          _left = 0;
+          _width = noOfGrids;
+        }
+      } else if (_left < 0) {
+        _left = 0;
+        if (_width > noOfGrids) {
+          _width = noOfGrids;
+        }
+      }
       return {
         ...boxesObj,
         [id]: {
@@ -417,7 +430,7 @@ export const Container = ({
               //   : boxes[id]['layouts'][currentLayout].width,
               width: _width,
               top: y,
-              left: Math.round(x / (parent ? subContainerWidths[parent] : gridWidth)),
+              left: _left,
             },
           },
         },
