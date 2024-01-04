@@ -4,7 +4,6 @@ import Float from './Icons/Float.svg';
 import Integer from './Icons/Integer.svg';
 import CharacterVar from './Icons/Text.svg';
 import Boolean from './Icons/Toggle.svg';
-const darkMode = localStorage.getItem('darkMode');
 
 export const dataTypes = [
   {
@@ -37,11 +36,89 @@ export const operators = [
 ];
 
 export const formatOptionLabel = ({ label, icon }) => {
-  const color = darkMode === 'true' ? '#fff' : '#232e3c';
   return (
     <div>
       <span style={{ marginRight: '4px' }}>{icon}</span>
-      <span style={{ color: `${color}` }}>{label}</span>
+      <span>{label}</span>
     </div>
   );
 };
+
+export default function tjdbDropdownStyles(
+  darkMode,
+  darkDisabledBackground,
+  lightDisabledBackground,
+  lightFocussedBackground,
+  darkFocussedBackground,
+  lightBackground,
+  darkBackground,
+  darkBorderHover,
+  lightBorderHover,
+  darkDisabledBorder,
+  lightDisabledBorder,
+  lightFocussedBorder,
+  darkFocussedBorder,
+  lightBorder,
+  darkBorder,
+  dropdownContainerWidth
+) {
+  return {
+    option: (base, state) => ({
+      ...base,
+      backgroundColor:
+        state.isSelected && !darkMode ? '#F0F4FF' : state.isSelected && darkMode ? '#323C4B' : 'transparent',
+      ':hover': {
+        backgroundColor: state.isFocused && !darkMode ? '#F0F4FF' : '#323C4B',
+      },
+      color: darkMode ? '#fff' : '#232e3c',
+      cursor: 'pointer',
+    }),
+    control: (provided, state) => ({
+      ...provided,
+      background:
+        state.isDisabled && darkMode
+          ? darkDisabledBackground
+          : state.isDisabled && !darkMode
+          ? lightDisabledBackground
+          : state.isFocused && !darkMode
+          ? lightFocussedBackground
+          : state.isFocused && darkMode
+          ? darkFocussedBackground
+          : !darkMode
+          ? lightBackground
+          : darkBackground,
+      borderColor:
+        state.isFocused && !darkMode
+          ? lightFocussedBorder
+          : state.isFocused && darkMode
+          ? darkFocussedBorder
+          : darkMode && state.isDisabled
+          ? !darkMode && state.isDisabled
+            ? lightDisabledBorder
+            : darkDisabledBorder
+          : darkMode
+          ? darkBorder
+          : lightBorder,
+      '&:hover': {
+        borderColor: darkMode ? darkBorderHover : lightBorderHover,
+      },
+      boxShadow: state.isFocused ? 'none' : 'none',
+      height: '36px !important',
+      minHeight: '36px',
+    }),
+    menuList: (provided, state) => ({
+      ...provided,
+      padding: '8px',
+      color: darkMode ? '#fff' : '#232e3c',
+    }),
+    menu: (base) => ({
+      ...base,
+      width: dropdownContainerWidth,
+      background: darkMode ? 'rgb(31,40,55)' : 'white',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: darkMode ? '#fff' : '#232e3c',
+    }),
+  };
+}
