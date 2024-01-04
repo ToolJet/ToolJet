@@ -3,8 +3,8 @@ import cx from 'classnames';
 //import Select from '@/_ui/Select';
 import Select, { components } from 'react-select';
 import AddColumnIcon from '../Icons/AddColumnIcon.svg';
-import DeleteIconNew from '../Icons/DeleteIconNew.svg';
-import { dataTypes, primaryKeydataTypes, formatOptionLabel } from '../constants';
+import DeleteIcon from '../Icons/DeleteIcon.svg';
+import tjdbDropdownStyles, { dataTypes, formatOptionLabel, primaryKeydataTypes } from '../constants';
 import Tick from '../Icons/Tick.svg';
 
 const ColumnsForm = ({ columns, setColumns }) => {
@@ -19,6 +19,24 @@ const ColumnsForm = ({ columns, setColumns }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { Option } = components;
 
+  const darkDisabledBackground = '#1f2936';
+  const lightDisabledBackground = '#f4f6fa';
+  const lightFocussedBackground = '#fff';
+  const darkFocussedBackground = 'transparent';
+  const lightBackground = '#fff';
+  const darkBackground = 'transparent';
+
+  const darkBorderHover = '#dadcde';
+  const lightBorderHover = '#dadcde';
+
+  const darkDisabledBorder = '#3a3f42';
+  const lightDisabledBorder = '#dadcde';
+  const lightFocussedBorder = '#90B5E2 !important';
+  const darkFocussedBorder = '#90b5e2 !important';
+  const lightBorder = '#dadcde';
+  const darkBorder = '#dadcde';
+  const dropdownContainerWidth = '360px';
+
   const CustomSelectOption = (props) => (
     <Option {...props}>
       <div className="selected-dropdownStyle d-flex align-items-center justify-content-between">
@@ -28,7 +46,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
           <span className="dataType-dropdown-value">{props.data.name}</span>
         </div>
         <div>
-          {columns[columnSelection.index].data_type === props.data.label ? (
+          {columns[columnSelection.index].data_type === props.data.value ? (
             <div>
               <Tick width="16" height="16" />
             </div>
@@ -38,58 +56,24 @@ const ColumnsForm = ({ columns, setColumns }) => {
     </Option>
   );
 
-  const CustomStyle = {
-    option: (base, state) => ({
-      ...base,
-      backgroundColor:
-        state.isSelected && !darkMode ? '#F0F4FF' : state.isSelected && darkMode ? '#323C4B' : 'transparent',
-      ':hover': {
-        backgroundColor: state.isFocused && !darkMode ? '#F0F4FF' : '#323C4B',
-      },
-      color: darkMode ? '#fff' : '#232e3c',
-      cursor: 'pointer',
-    }),
-    control: (provided, state) => ({
-      ...provided,
-      background:
-        state.isDisabled && darkMode
-          ? '#1f2936'
-          : state.isDisabled && !darkMode
-          ? '#f4f6fa'
-          : state.isFocused && !darkMode
-          ? '#fff'
-          : state.isFocused && darkMode
-          ? 'transparent'
-          : !darkMode
-          ? '#fff'
-          : 'transparent',
-      borderColor:
-        state.isFocused && !darkMode
-          ? '#90B5E2 !important'
-          : state.isFocused && darkMode
-          ? '#90b5e2 !important'
-          : darkMode && state.isDisabled
-          ? '#3a3f42'
-          : '#dadcde',
-      '&:hover': {
-        borderColor: darkMode ? '#dadcde' : '#dadcde',
-      },
-      boxShadow: state.isFocused ? 'none' : 'none',
-      height: '36px !important',
-      minHeight: '36px',
-    }),
-    menuList: (provided, _state) => ({
-      ...provided,
-      padding: '8px',
-      color: darkMode ? '#fff' : '#232e3c',
-    }),
-    menu: (base, _state) => ({
-      ...base,
-      width: '360px',
-      background: darkMode ? 'rgb(31,40,55)' : 'white',
-      //borderColor: darkMode ? '#4c5155 !important' : '#c1c8cd !important',
-    }),
-  };
+  const customStyles = tjdbDropdownStyles(
+    darkMode,
+    darkDisabledBackground,
+    lightDisabledBackground,
+    lightFocussedBackground,
+    darkFocussedBackground,
+    lightBackground,
+    darkBackground,
+    darkBorderHover,
+    lightBorderHover,
+    darkDisabledBorder,
+    lightDisabledBorder,
+    lightFocussedBorder,
+    darkFocussedBorder,
+    lightBorder,
+    darkBorder,
+    dropdownContainerWidth
+  );
 
   return (
     <div className="">
@@ -161,7 +145,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                     setColumns(prevColumns);
                   }}
                   components={{ Option: CustomSelectOption, IndicatorSeparator: () => null }}
-                  styles={CustomStyle}
+                  styles={customStyles}
                   formatOptionLabel={formatOptionLabel}
                   placeholder={columns[index].constraint_type === 'PRIMARY KEY' ? columns[0].data_type : 'Select...'}
                 />
@@ -214,7 +198,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                 data-cy="column-delete-icon"
                 onClick={() => handleDelete(index)}
               >
-                {columns[index].constraint_type !== 'PRIMARY KEY' && <DeleteIconNew width="16" height="16" />}
+                {columns[index].constraint_type !== 'PRIMARY KEY' && <DeleteIcon width="16" height="16" />}
               </div>
             </div>
           </div>
