@@ -3,6 +3,9 @@ id: gitsync
 title: GitSync
 ---
 
+<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+
+
 The GitSync feature enables synchronization of workspace applications with a git repository, streamlining application management and version control on ToolJet.
 
 ## Overview
