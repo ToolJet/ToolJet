@@ -114,7 +114,7 @@ const RowForm = ({ onCreate, onClose }) => {
 
   const handleSubmit = async () => {
     if (Object.values(data).includes('')) {
-      toast.error('Please fill the empty fields or select Null');
+      toast.error('Please fill the empty fields or select Null or Default value');
     } else {
       setFetching(true);
       const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable.id, data);
