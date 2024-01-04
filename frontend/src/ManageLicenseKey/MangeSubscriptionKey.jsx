@@ -16,7 +16,7 @@ import { BreadCrumbContext } from '@/App';
 import posthog from 'posthog-js';
 import ChatwootIntegration from '@/_components/ChatwootIntegration';
 
-function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings, darkMode }) {
+function ManageSubscriptionKey({ darkMode }) {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState('subscriptionKey');
   const [sidebarNavs, setSidebarNavs] = useState(['Subscription key']);
@@ -27,10 +27,13 @@ function ManageSubscriptionKey({ fetchFeatureAccessForInstanceSettings, darkMode
   const [searchParams, setSearchParams] = useSearchParams();
   const paymentStatus = searchParams.get('payment');
   const currentTab = searchParams.get('currentTab');
-  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
-    return () => window.$chatwoot?.toggleBubbleVisibility('hide');
+    return () => {
+      if (window.$chatwoot?.hasLoaded) {
+        window.$chatwoot?.toggleBubbleVisibility('hide');
+      }
+    };
   }, []);
 
   const defaultOrgName = (groupName) => {
